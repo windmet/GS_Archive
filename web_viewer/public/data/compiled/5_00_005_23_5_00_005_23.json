@@ -986,7 +986,8 @@
             },
             "source_hash": "sha256:ab11cfb33245ceec1b91f34b33b3fb44dce553a6967caeb4fcf9b7db9b9755ec"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "a2000"
         },
         {
           "option_id": "choice-option:v1:5_00_005_23_5_00_005_23:5_00_005_23:cmd-000031:001",
@@ -1003,7 +1004,8 @@
             },
             "source_hash": "sha256:4f0f342ee61a1538e3458a634930e1cdc5849b886378c515374fa73e556c4bec"
           },
-          "target_step_id": 10
+          "target_step_id": 10,
+          "label": "a2001"
         }
       ],
       "choice_id": "choice:v1:5_00_005_23_5_00_005_23:5_00_005_23:cmd-000030"
@@ -3975,5 +3977,102 @@
       "jump_id": "a2002",
       "target_step_id": 13
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:b4340143280d1d798f617ca412920d56df11714c57e04d4250aeb56dd3b1f7e4",
+    "forks": [
+      {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_00_005_23/scenario_5_00_005_23.json",
+        "raw_sha256": "sha256:3194ce68c7ae4e42a86f0b6c68bdf2fa0c7c3eac2e085106cb2b0466680de845",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          30,
+          31
+        ],
+        "join_command": 62,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2000",
+            "step_indices": [
+              6,
+              7,
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45
+            ],
+            "step_types": [
+              "stage",
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              7,
+              8,
+              9
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "a2001",
+            "step_indices": [
+              9,
+              10,
+              11
+            ],
+            "exit_index": 11,
+            "command_indices": [
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61
+            ],
+            "step_types": [
+              "stage",
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              10,
+              11,
+              12
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

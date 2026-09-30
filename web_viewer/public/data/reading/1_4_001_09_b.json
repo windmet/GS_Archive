@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_001_09_b.json",
-    "sha256": "sha256:6c4798b1a173e592f840a2bfc2b562536349cbec048fb5f39a653088053cfa38",
+    "sha256": "sha256:b797fb31db1275ccf685eb061e387e5dfc4cdcd050f93a3186380d239d93867e",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_001_09.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1597,7 +1597,75 @@
           "target_step_index": 38,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 36,
+        "choice_step_id": 37,
+        "join_index": 41,
+        "join_step_id": 42,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/1_4_001_09/scenario_1_4_001_09_b.json",
+        "raw_sha256": "sha256:ce8c1ef5f67e85cfdcafc4bc26b5ee3aade24f2396dfe140c0d0e0ab148638ed",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          230,
+          231
+        ],
+        "join_command": 245,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              37
+            ],
+            "exit_index": 37,
+            "command_indices": [
+              232,
+              233,
+              234,
+              235
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              38
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              38,
+              39,
+              40
+            ],
+            "exit_index": 40,
+            "command_indices": [
+              236,
+              237,
+              238,
+              239,
+              240,
+              241,
+              242,
+              243,
+              244
+            ],
+            "step_types": [
+              "call",
+              "choice",
+              "call"
+            ],
+            "step_ids": [
+              39,
+              40,
+              41
+            ]
+          }
+        ]
+      }
     },
     {
       "step_id": 40,
@@ -1650,7 +1718,44 @@
           "target_step_index": 45,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 44,
+        "choice_step_id": 45,
+        "join_index": 45,
+        "join_step_id": 46,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_4_001_09/scenario_1_4_001_09_b.json",
+        "raw_sha256": "sha256:ce8c1ef5f67e85cfdcafc4bc26b5ee3aade24f2396dfe140c0d0e0ab148638ed",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          253,
+          254
+        ],
+        "join_command": 256,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select6",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              255
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select7",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1658,21 +1763,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 36,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 36,
-      "severity": "unsupported"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 44,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

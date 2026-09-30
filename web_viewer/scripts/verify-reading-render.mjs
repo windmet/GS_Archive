@@ -41,14 +41,15 @@ try {
   }
   setReaderTheme('light')
   const sourceBefore = JSON.stringify(synopsisDoc)
-  const marker = synopsisDoc.rows.find(row => row.kind === 'choice_detail' && row.source_text === 'appeal')
+  const marker = synopsisDoc.rows.find(row => row.kind === 'choice_metadata' && row.source_text === 'appeal')
   assert.ok(marker)
   const projected = projectReadingChoiceRows(synopsisDoc)
   assert.ok(!projected.some(item => item.row === marker))
   assert.ok(projected.some(item => item.row.source_text === 'パーッション！！' && item.anchorAliases.includes(marker.anchor.row_id)))
   assert.equal(JSON.stringify(synopsisDoc), sourceBefore, 'source unit, hash and control evidence remain canonical')
   const proseDoc = structuredClone(synopsisDoc)
-  proseDoc.rows.find(row => row.kind === 'choice_detail').source_text = '長い返信本文です。'
+  const prose = proseDoc.rows.find(row => row.kind === 'choice_metadata')
+  prose.kind = 'choice_detail'; prose.source_text = '長い返信本文です。'
   assert.ok(projectReadingChoiceRows(proseDoc).some(item => item.row.source_text === '長い返信本文です。'), 'real long reply stays readable')
   const dialogue = { ...marker, kind: 'dialogue', anchor: { ...marker.anchor, row_id: 'dialogue-appeal' } }
   const option = { ...marker, kind: 'choice', anchor: { ...marker.anchor, row_id: 'option-appeal' } }

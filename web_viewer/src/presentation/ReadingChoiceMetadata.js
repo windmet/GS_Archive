@@ -8,8 +8,8 @@ export function projectReadingChoiceRows(document) {
   const rows = document?.rows || []
   const aliases = new Map(), metadataIds = new Set()
   for (const row of rows) {
-    if (row.kind !== 'choice_detail' || row.source_text !== 'appeal'
-      || row.text_ref?.source?.field_kind !== 'choice_detail') continue
+    if (row.kind !== 'choice_metadata' && !(row.kind === 'choice_detail' && row.source_text === 'appeal'
+      && row.text_ref?.source?.field_kind === 'choice_detail')) continue
     const choiceId = row.anchor.row_id.replace(/-detail$/, '')
     const choice = rows.find(candidate => candidate.kind === 'choice'
       && candidate.anchor.row_id === choiceId

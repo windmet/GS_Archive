@@ -1047,7 +1047,8 @@
             },
             "source_hash": "sha256:e4dd575a31a0f82be1478d7d939dd8a856c334d46a1d00781c444addbbf04483"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000017:001",
@@ -1064,7 +1065,8 @@
             },
             "source_hash": "sha256:9a0206e56560e0280261a4287a8ccc131e23f4eba1512dcf0c0ab7de47f57e98"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016"
@@ -1526,5 +1528,46 @@
       "jump_id": "phone_select1",
       "target_step_id": 8
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:7e95ef753dc06b6376dac77ceae4bac6cf6ce1da2beedad24fb44128a4d752aa",
+    "forks": [
+      {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "raw_sha256": "sha256:3b2ce1a472fb1eec524e2a41569dde1dd2eb91f85f39135268d7cd0ffbb99092",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

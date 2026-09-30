@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_002_07_i.json",
-    "sha256": "sha256:9e81a810c6c39817d786ebf5f3140c1a44aaaeb3456e0430b855e04d0ccad5ea",
+    "sha256": "sha256:51970f397ccd4b8f5220e8bbf96b88b2248194411c878c639730a85b98866a0b",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_002_07.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1581,7 +1581,44 @@
           "target_step_index": 46,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 45,
+        "choice_step_id": 46,
+        "join_index": 46,
+        "join_step_id": 47,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_4_002_07/scenario_1_4_002_07_i.json",
+        "raw_sha256": "sha256:381567b69861c8a4fba146c73f061823ce27f306a766e2111a0f2f0eece707ab",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          163,
+          164
+        ],
+        "join_command": 166,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "sel-1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              165
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "sel-2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1589,11 +1626,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 45,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

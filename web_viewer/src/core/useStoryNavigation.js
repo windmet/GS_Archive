@@ -2,7 +2,7 @@ import { episodeStartIndex, episodeEndIndex, resolveStoryPlaybackWindow } from '
 import { computed } from 'vue'
 import { isTransitionStep } from '../utils/StoryStepFlow.js'
 import { createChoiceSelectionRecord } from '../localization/story/LegacyDialogueAdapter.js'
-import { finiteBranchNextIndex } from '../../shared/story/FiniteBranchFlow.js'
+import { finiteBranchNextIndex, finiteChoiceTargetIndex } from '../../shared/story/FiniteBranchFlow.js'
 
 export function useStoryNavigation({
   compiledData,
@@ -25,7 +25,8 @@ export function useStoryNavigation({
   const navigationStartIndex = computed(() => playbackWindow.value.startIndex)
   const navigationEndIndex = computed(() => playbackWindow.value.endIndex)
   const isFirstStep = computed(() => historyStack.value.length === 0 && currentStepIndex.value <= navigationStartIndex.value)
-  const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= navigationEndIndex.value)
+  const isLastStep = computed(() => !compiledData.value || currentStepIndex.value >= navigationEndIndex.value
+    || finiteBranchNextIndex(compiledData.value, currentStepIndex.value) > navigationEndIndex.value)
 
   const currentEpisode = computed(() => {
     const episodes = compiledData.value?.episodes || []
@@ -128,7 +129,9 @@ export function useStoryNavigation({
     if (selection.source_text || selection.option_id) {
       selectedChoices.set(currentStepIndex.value, selection)
     }
-    const targetStepId = Number(opt.target_step_id ?? opt.step_id)
+    const targetIndex = finiteChoiceTargetIndex(compiledData.value,currentStepIndex.value,opt)
+    if (targetIndex === compiledData.value?.steps?.length && opt.target_kind === 'end') return 'finished'
+    const targetStepId = targetIndex + 1
     if (Number.isFinite(targetStepId) && targetStepId - 1 >= navigationStartIndex.value && targetStepId - 1 <= navigationEndIndex.value) {
       historyStack.value.push(currentStepIndex.value)
       beforeStepChange(targetStepId - 1)

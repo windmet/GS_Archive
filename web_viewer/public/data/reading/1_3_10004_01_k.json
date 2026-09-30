@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_10004_01_k.json",
-    "sha256": "sha256:eb9d50d390bca29b22c5920d3710b5c89bd7de9dd939abd0023147b11048d4f6",
+    "sha256": "sha256:dead910f64c347f9d13d777613c2b9c4a911c74741f1dc7fcaeac1aa2233933b",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_10004_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1711,7 +1711,42 @@
           "target_step_index": 39,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 38,
+        "choice_step_id": 39,
+        "join_index": 39,
+        "join_step_id": 40,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_3_10004_01/scenario_1_3_10004_01_k.json",
+        "raw_sha256": "sha256:92455183e4a3f69ace1e73a1a53a501a12c476605eee8c620fa7a3016387105b",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          150,
+          151
+        ],
+        "join_command": 152,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1719,11 +1754,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 38,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

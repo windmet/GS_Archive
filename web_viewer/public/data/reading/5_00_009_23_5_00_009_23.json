@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "5_00_009_23_5_00_009_23.json",
-    "sha256": "sha256:7d661699af0a6aacbe92c8ba54dea1b9869eab11b9743d92e084170140fa4095",
+    "sha256": "sha256:92d6da392d43e4b434c04177a3f44dfdded8a111e6bb3df252a2489c20c0b90c",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:8c416b03b0192cae25f73e76b5d4adf4d05565ed2dc4b9cea83ae8f04140143e",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "title",
@@ -270,7 +270,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020",
         "option_id": "choice-option:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -326,7 +326,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020",
         "option_id": "choice-option:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000021:001",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 10,
         "target_step_index": 9,
         "resolution": "resolved"
@@ -786,7 +786,7 @@
         {
           "choice_id": "choice:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020",
           "option_id": "choice-option:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
@@ -794,21 +794,50 @@
         {
           "choice_id": "choice:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000020",
           "option_id": "choice-option:v1:5_00_009_23_5_00_009_23:5_00_009_23:cmd-000021:001",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 8,
+        "choice_step_id": 9,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/5_00_009_23/scenario_5_00_009_23.json",
+        "raw_sha256": "sha256:b73fc91b2d053653bb5c61e98b19e0e2e16489b80f6436907124ef43da8fd66a",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          20,
+          21
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 8,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "新年を迎えた315プロダクション。",
     "episode_label": null

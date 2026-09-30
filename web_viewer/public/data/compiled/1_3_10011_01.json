@@ -31620,5 +31620,138 @@
       "end_step_id": 312,
       "step_count": 23
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:4d68a103927d081d23c396d2d76cb6ab01f3f118b132354e3a34868bdb8a40fa",
+    "forks": [
+      {
+        "choice_index": 118,
+        "choice_step_id": 119,
+        "join_index": 123,
+        "join_step_id": 124,
+        "join_step_type": "fadeout",
+        "source_file": "assets/resources/scenariodata/1_3_10011_01/scenario_1_3_10011_01_e.json",
+        "raw_sha256": "sha256:a3bf95a202dd16742148ffce1e7b5a8f307c4f3be42147c121653fac12705353",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          148,
+          149
+        ],
+        "join_command": 163,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select2",
+            "step_indices": [
+              119,
+              120
+            ],
+            "exit_index": 120,
+            "command_indices": [
+              150,
+              151,
+              152,
+              153,
+              154,
+              162
+            ],
+            "step_types": [
+              "talk",
+              "talk_stamp"
+            ],
+            "step_ids": [
+              120,
+              121
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select3",
+            "step_indices": [
+              121,
+              122
+            ],
+            "exit_index": 122,
+            "command_indices": [
+              155,
+              156,
+              157,
+              158,
+              159,
+              160,
+              161
+            ],
+            "step_types": [
+              "talk",
+              "talk"
+            ],
+            "step_ids": [
+              122,
+              123
+            ]
+          }
+        ]
+      },
+      {
+        "choice_index": 166,
+        "choice_step_id": 167,
+        "join_index": 169,
+        "join_step_id": 170,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_3_10011_01/scenario_1_3_10011_01_f.json",
+        "raw_sha256": "sha256:505a713a03290f6278fd26ce6953d2a147210c4f2f60e0aed173b40a155fef60",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          204,
+          205
+        ],
+        "join_command": 216,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              167
+            ],
+            "exit_index": 167,
+            "command_indices": [
+              206,
+              207,
+              208,
+              209,
+              210
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              168
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              168
+            ],
+            "exit_index": 168,
+            "command_indices": [
+              211,
+              212,
+              213,
+              214,
+              215
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              169
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

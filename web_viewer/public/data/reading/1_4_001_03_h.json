@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_001_03_h.json",
-    "sha256": "sha256:c515829da097dd95f2ad150b09fb797afbe2680514e1c6f50930fc800c8fdc63",
+    "sha256": "sha256:a4dedb97ebc668154f6edd394065aed12bea3ee763c086c5020838c15bbdefab",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_001_03.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -1770,7 +1770,87 @@
           "target_step_index": 29,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 26,
+        "choice_step_id": 27,
+        "join_index": 30,
+        "join_step_id": 31,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_4_001_03/scenario_1_4_001_03_h.json",
+        "raw_sha256": "sha256:0a88b341130c37944cf79a2ce8dcf33aeb4db5c898acd13f7ba1e3672e208cc1",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          151,
+          152,
+          153
+        ],
+        "join_command": 168,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [
+              27
+            ],
+            "exit_index": 27,
+            "command_indices": [
+              154,
+              155,
+              156,
+              157,
+              158
+            ],
+            "step_types": [
+              "talk"
+            ],
+            "step_ids": [
+              28
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [
+              28
+            ],
+            "exit_index": 28,
+            "command_indices": [
+              159,
+              160,
+              161,
+              162,
+              163
+            ],
+            "step_types": [
+              "talk"
+            ],
+            "step_ids": [
+              29
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "talk_select3",
+            "step_indices": [
+              29
+            ],
+            "exit_index": 29,
+            "command_indices": [
+              164,
+              165,
+              166,
+              167
+            ],
+            "step_types": [
+              "talk"
+            ],
+            "step_ids": [
+              30
+            ]
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1778,21 +1858,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 26,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 26,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 26,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

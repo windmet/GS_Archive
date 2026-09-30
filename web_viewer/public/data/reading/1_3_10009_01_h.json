@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_10009_01_h.json",
-    "sha256": "sha256:6616f57acadf35b7de792254f14812a006807ccfb3589377597604ed67861ead",
+    "sha256": "sha256:925d29b75e2cafcae39be4224799407c753c8345177c57a8b0b6235de8085834",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_10009_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1664,7 +1664,44 @@
           "target_step_index": 35,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 34,
+        "choice_step_id": 35,
+        "join_index": 35,
+        "join_step_id": 36,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_3_10009_01/scenario_1_3_10009_01_h.json",
+        "raw_sha256": "sha256:d38efa4263d75ffde1adf93e47ca918a97ad054862d129184cd8f05592a5f502",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          140,
+          141
+        ],
+        "join_command": 143,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "sel-2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              142
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "sel-3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1672,11 +1709,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 34,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "5_00_000_22_5_00_000_22.json",
-    "sha256": "sha256:2bd308a208afa7df05eac06597a70aa9b7879fc36ca6c3f7b35acbabd3e5c83f",
+    "sha256": "sha256:6cee52fe8efbcb04f7cc39f22ea15bd07a57d2ed71e3b543287eed76c7902b59",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:32be8234d63f955530bd92b3bbc7352b1b88098d6be973e81c3697769dc6338f",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "title",
@@ -320,7 +320,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035",
         "option_id": "choice-option:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035:000",
-        "source_label": null,
+        "source_label": "a1002",
         "target_step_id": 13,
         "target_step_index": 12,
         "resolution": "resolved"
@@ -375,7 +375,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035",
         "option_id": "choice-option:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000036:001",
-        "source_label": null,
+        "source_label": "a1003",
         "target_step_id": 13,
         "target_step_index": 12,
         "resolution": "resolved"
@@ -837,7 +837,7 @@
         {
           "choice_id": "choice:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035",
           "option_id": "choice-option:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035:000",
-          "source_label": null,
+          "source_label": "a1002",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
@@ -845,21 +845,52 @@
         {
           "choice_id": "choice:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000035",
           "option_id": "choice-option:v1:5_00_000_22_5_00_000_22:5_00_000_22:cmd-000036:001",
-          "source_label": null,
+          "source_label": "a1003",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 11,
+        "choice_step_id": 12,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_00_000_22/scenario_5_00_000_22.json",
+        "raw_sha256": "sha256:b1d275f2718b9e8ab069d5207088cd38dcf9abe6590a3877f688bf0f91babf30",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          35,
+          36
+        ],
+        "join_command": 38,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1002",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              37
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1003",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 11,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "事務所で新年の挨拶を交わす",
     "episode_label": null

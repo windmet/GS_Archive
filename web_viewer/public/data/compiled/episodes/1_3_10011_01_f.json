@@ -4270,5 +4270,70 @@
     "scenario_id": "1_3_10011_01",
     "start_step_index": 123,
     "end_step_index": 172
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:7428cee0aa7800bb473bfbb7442b0c02d3cca1dd4e634324266745b6856dafb4",
+    "forks": [
+      {
+        "choice_index": 43,
+        "choice_step_id": 44,
+        "join_index": 46,
+        "join_step_id": 47,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_3_10011_01/scenario_1_3_10011_01_f.json",
+        "raw_sha256": "sha256:505a713a03290f6278fd26ce6953d2a147210c4f2f60e0aed173b40a155fef60",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          204,
+          205
+        ],
+        "join_command": 216,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              44
+            ],
+            "exit_index": 44,
+            "command_indices": [
+              206,
+              207,
+              208,
+              209,
+              210
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              45
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              45
+            ],
+            "exit_index": 45,
+            "command_indices": [
+              211,
+              212,
+              213,
+              214,
+              215
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              46
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

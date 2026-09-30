@@ -749,7 +749,8 @@
             },
             "source_hash": "sha256:9c3e0eab7135bbf0124c363d162784a0708abfe045d94917138ffb36a58b21a3"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "2_4_009_01_09_a-sel1"
         },
         {
           "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_a:2_4_009_01_09_a:cmd-000013:001",
@@ -766,7 +767,8 @@
             },
             "source_hash": "sha256:1824d3a19d22ada862af1ed98635a8dfc6a50aa4e5ff9b42102492e55ab1f606"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "2_4_009_01_09_a-sel2"
         }
       ],
       "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_a:2_4_009_01_09_a:cmd-000012"
@@ -1652,7 +1654,8 @@
             },
             "source_hash": "sha256:1764254cc15cc885c0f23157e357ae7203bff876386c30b45b50efd390b0ae24"
           },
-          "target_step_id": 12
+          "target_step_id": 12,
+          "label": "2_4_009_01_09_a-sel3"
         },
         {
           "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_a:2_4_009_01_09_a:cmd-000031:001",
@@ -1669,7 +1672,8 @@
             },
             "source_hash": "sha256:c9c3c93524847ba29774a799295c0fdd472df43e2a24de668f045cc7966dd9f1"
           },
-          "target_step_id": 12
+          "target_step_id": 12,
+          "label": "2_4_009_01_09_a-sel4"
         }
       ],
       "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_a:2_4_009_01_09_a:cmd-000030"
@@ -1849,5 +1853,105 @@
       "jump_id": "2_4_009_01_09_a-sel4",
       "target_step_id": 12
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:682acc5010e93bbc25df117f2c0aebb0385fc1cd5deeda1bcf00c999ab829895",
+    "forks": [
+      {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/009kyj_401/scenario_2_4_009_01_09_a.json",
+        "raw_sha256": "sha256:661b12930f354ee1b5cef332e54b8969ecea1f8cee1cd7b8c494d6c5545af725",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_009_01_09_a-sel1",
+            "step_indices": [
+              5
+            ],
+            "exit_index": 5,
+            "command_indices": [
+              14,
+              15,
+              16,
+              17
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              6
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_009_01_09_a-sel2",
+            "step_indices": [
+              6
+            ],
+            "exit_index": 6,
+            "command_indices": [
+              18,
+              19,
+              20,
+              21
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              7
+            ]
+          }
+        ]
+      },
+      {
+        "choice_index": 10,
+        "choice_step_id": 11,
+        "join_index": 11,
+        "join_step_id": 12,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/009kyj_401/scenario_2_4_009_01_09_a.json",
+        "raw_sha256": "sha256:661b12930f354ee1b5cef332e54b8969ecea1f8cee1cd7b8c494d6c5545af725",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          30,
+          31
+        ],
+        "join_command": 33,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_009_01_09_a-sel3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              32
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_009_01_09_a-sel4",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

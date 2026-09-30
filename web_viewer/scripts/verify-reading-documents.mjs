@@ -65,14 +65,14 @@ const strictChoice = documents.find(d => d.document_id === '1_4_001_01_a')
 assert.equal(strictChoice.status, 'ready')
 assert.ok(strictChoice.rows.some(r => r.kind === 'caption'))
 assert.equal(strictChoice.controls.length, 2)
-assert.ok(strictChoice.rows.some(r => r.kind === 'choice_detail' && r.source_text === 'appeal'))
+assert.ok(strictChoice.rows.some(r => r.kind === 'choice_metadata' && r.source_text === 'appeal'))
 let markers = 0, longReplies = 0
 for (const doc of documents) {
   const before = JSON.stringify(doc)
   const projection = projectReadingChoiceRows(doc)
   for (const row of doc.rows) {
-    if (row.kind !== 'choice_detail') continue
-    if (row.source_text === 'appeal') {
+    if (!['choice_detail','choice_metadata'].includes(row.kind)) continue
+    if (row.kind === 'choice_metadata') {
       markers++
       assert.ok(!projection.some(item => item.row === row), 'RAW marker is not reading prose')
       assert.equal(projection.filter(item => item.anchorAliases.includes(row.anchor.row_id)).length, 1, 'one actual choice owns the legacy anchor')
@@ -87,9 +87,9 @@ assert.equal(markers, 12)
 assert.ok(longReplies > 0)
 assert.equal(documents.find(d => d.document_id === '1_4_001_02_a').status, 'ready')
 const multi = documents.find(d => d.document_id === '1_4_001_03_h')
-assert.equal(multi.status, 'unsupported')
+assert.equal(multi.status, 'ready')
 assert.equal(multi.controls[0].options.length, 3)
-assert.ok(multi.diagnostics.some(d => d.code === 'branch-exits-unavailable'))
+assert.ok(multi.controls[0].fork)
 const birthday = documents.find(d => d.document_id === '1_2_001_12')
 assert.equal(birthday.status, 'ready')
 assert.equal(birthday.source.file, '1_x_001tom_2_1_2_001_12.json')

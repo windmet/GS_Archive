@@ -898,7 +898,8 @@
             },
             "source_hash": "sha256:f8df078f57e7a01e62f11bf2a9f40807f525b37459aa327c40e9f18eb70abf64"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "2_4_011_01_09_sel1"
         },
         {
           "option_id": "choice-option:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000015:001",
@@ -915,7 +916,8 @@
             },
             "source_hash": "sha256:9089491c402ebd3e0e0cd735fd392a242977b968ff7189e3b3e92a128a9ce34a"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "2_4_011_01_09_sel1"
         }
       ],
       "choice_id": "choice:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014"
@@ -1675,5 +1677,46 @@
       "jump_id": "2_4_011_01_09_sel1",
       "target_step_id": 7
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:f88f49300232c9186676faedf406fff367b5484a8651452abf3408e91746565e",
+    "forks": [
+      {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 6,
+        "join_step_id": 7,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/011min_401/scenario_2_4_011_01_09_a.json",
+        "raw_sha256": "sha256:b3039addca6be1156d7c0b96576d87c47fbd821945a8b94921c1fa8cbde9c7d8",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 16,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_011_01_09_sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_011_01_09_sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

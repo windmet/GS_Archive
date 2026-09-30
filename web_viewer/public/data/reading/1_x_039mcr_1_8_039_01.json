@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "1_x_039mcr_1_8_039_01.json",
-    "sha256": "sha256:187bdd26c98e375d5721069759a19740490a7e5c4e5aa7264520ac123507551f",
+    "sha256": "sha256:6f87c3e99384728012f8d9e6b01c84bf1539f7ba4a0a11b5dcd2867b475116c5",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -22,7 +22,7 @@
       "aggregate_file": "1_x_039mcr_1_8_039_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -279,8 +279,9 @@
         "option_id": null,
         "source_label": "talk_select1",
         "target_step_id": 0,
-        "target_step_index": null,
-        "resolution": "unresolved"
+        "target_step_index": 8,
+        "resolution": "resolved",
+        "target_kind": "end"
       },
       "presentation": "talk"
     }
@@ -296,10 +297,36 @@
           "option_id": null,
           "source_label": "talk_select1",
           "target_step_id": 0,
-          "target_step_index": null,
-          "resolution": "unresolved"
+          "target_step_index": 8,
+          "resolution": "resolved",
+          "target_kind": "end"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": null,
+        "join_step_type": "end",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_8_039_01.json",
+        "raw_sha256": "sha256:6b54ce441058270ff77b9ea2465597d9aba36689630f6d983b0fb8dd3e54f525",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          17
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -307,11 +334,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "unresolved-choice-target",
-      "step_index": 7,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

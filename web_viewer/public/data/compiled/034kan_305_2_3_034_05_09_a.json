@@ -1047,7 +1047,8 @@
             },
             "source_hash": "sha256:11c2d5fa28f06cd91d5e212d97b6b0a8588d1f8af5c89ff5251225dbdeee2e74"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:034kan_305_2_3_034_05_09_a:2_3_034_05_09_a:cmd-000017:001",
@@ -1064,7 +1065,8 @@
             },
             "source_hash": "sha256:d9797c8372c10d40c19198835912ecc2c6cc7c0934d29d668f74deb9697ecee9"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:034kan_305_2_3_034_05_09_a:2_3_034_05_09_a:cmd-000016"
@@ -1679,5 +1681,48 @@
       "jump_id": "phone_select2",
       "target_step_id": 8
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:533111bb28fc78be9c8630e0c612573b100d7ca964e81afac423b3ee8f2b7364",
+    "forks": [
+      {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/034kan_305/scenario_2_3_034_05_09_a.json",
+        "raw_sha256": "sha256:53efa68a7d8277483888e57f246d1345b02db579281ba82198581d712244a39c",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 19,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              18
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

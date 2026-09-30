@@ -2523,7 +2523,9 @@
               "field_ordinal": 0
             },
             "source_hash": "sha256:da7e2d4b40b63f98e9fc566d7b5145da923c16c638a22c9f1885bf030e4dc72a"
-          }
+          },
+          "detail_kind": "presentation-marker",
+          "target_kind": "end"
         }
       ]
     }
@@ -2531,5 +2533,73 @@
   "jump_points": {
     "a1002": 10,
     "a1003": 10
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:2d095d6648e35d84fab119f8c10318731781c2609f8b979077d7e6c762ef19ba",
+    "forks": [
+      {
+        "choice_index": 8,
+        "choice_step_id": 9,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_00_017_23/scenario_5_00_017_23.json",
+        "raw_sha256": "sha256:34528070516a139d3c5a88555aff54c43f9a1563cf056e824592c98f822ef86f",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          28,
+          29
+        ],
+        "join_command": 31,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1002",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              30
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1003",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 30,
+        "choice_step_id": 31,
+        "join_index": 31,
+        "join_step_id": null,
+        "join_step_type": "end",
+        "source_file": "assets/resources/scenariodata/5_00_017_23/scenario_5_00_017_23.json",
+        "raw_sha256": "sha256:34528070516a139d3c5a88555aff54c43f9a1563cf056e824592c98f822ef86f",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          91
+        ],
+        "join_command": 92,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2011",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
   }
 }

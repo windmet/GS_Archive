@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "033shr_402_2_4_033_02_09_a.json",
-    "sha256": "sha256:8808b3e505a72b7d041db7e862e9b6b66ec29ba13a61a33e00528fb1dd091a9b",
+    "sha256": "sha256:e6b1f3b9c4f00a07ff96a11897547b74b606037b5b070b09cfd7b2dc7f6fe629",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -623,7 +623,44 @@
           "target_step_index": 5,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/033shr_402/scenario_2_4_033_02_09_a.json",
+        "raw_sha256": "sha256:30c3faac684e81051a010110644d18936a703e75c3fdf7b956521368d3f5a684",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 15,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              14
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 7,
@@ -646,11 +683,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 4,
-      "severity": "unsupported"
     },
     {
       "code": "unresolved-choice-target",

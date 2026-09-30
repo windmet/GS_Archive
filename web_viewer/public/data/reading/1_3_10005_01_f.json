@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_10005_01_f.json",
-    "sha256": "sha256:ca40cefb6d6aa7de2a4edeaf6c5a9fd772009dc92cc1fb8733e787528024186d",
+    "sha256": "sha256:4021d9cb6c1152e10f89f05209239cd79365b25dcfba7ce57ce680d0d93ff2dd",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_10005_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -810,7 +810,83 @@
           "target_step_index": 34,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 32,
+        "choice_step_id": 33,
+        "join_index": 35,
+        "join_step_id": 36,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/1_3_10005_01/scenario_1_3_10005_01_f.json",
+        "raw_sha256": "sha256:6b03c065e101f40d719559aa97878ac4abb550c1c23d3941b00a95cc0a65fd6f",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          188,
+          189
+        ],
+        "join_command": 217,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "1-sel1",
+            "step_indices": [
+              33
+            ],
+            "exit_index": 33,
+            "command_indices": [
+              190,
+              191,
+              192,
+              193,
+              194,
+              195,
+              196,
+              197,
+              198,
+              199,
+              200,
+              201,
+              216
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              34
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "1-sel2",
+            "step_indices": [
+              34
+            ],
+            "exit_index": 34,
+            "command_indices": [
+              202,
+              203,
+              204,
+              205,
+              206,
+              207,
+              208,
+              209,
+              210,
+              211,
+              212,
+              213,
+              214,
+              215
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              35
+            ]
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -818,16 +894,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 32,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 32,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

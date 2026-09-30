@@ -724,7 +724,8 @@
             },
             "source_hash": "sha256:5d6aa5ce4dd917e202abec6942f1e21bcb578fc231ea810a1765895e8ed65494"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "2_4_004_02_09_b-sel1"
         }
       ],
       "choice_id": "choice:v1:004ter_402_2_4_004_02_09_b:2_4_004_02_09_b:cmd-000012"
@@ -1163,7 +1164,8 @@
             },
             "source_hash": "sha256:11903bbeabd5af825a3aee3e3d53e0d1b91abb3976796a5c596e229eefa52fd2"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "2_4_004_02_09_b-sel2"
         },
         {
           "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_b:2_4_004_02_09_b:cmd-000020:001",
@@ -1180,7 +1182,8 @@
             },
             "source_hash": "sha256:b5761346f90f480ff2c7b9dc3dcd101cabd2363df1d3f76df23b32569e757e39"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "2_4_004_02_09_b-sel3"
         }
       ],
       "choice_id": "choice:v1:004ter_402_2_4_004_02_09_b:2_4_004_02_09_b:cmd-000019"
@@ -1621,5 +1624,48 @@
       "jump_id": "2_4_004_02_09_b-sel3",
       "target_step_id": 9
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:7b1396546927d683125dc45f1ff9580045ac1e0c11c4252f801218d61d730019",
+    "forks": [
+      {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/004ter_402/scenario_2_4_004_02_09_b.json",
+        "raw_sha256": "sha256:1a54db00415ce6ba8d8144e9ac559a7dfed765baf1dcb5deaf852650ac97d951",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          19,
+          20
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_004_02_09_b-sel2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              21
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_004_02_09_b-sel3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_001_10_i.json",
-    "sha256": "sha256:4ec2f31ec6910ff4fef362f6a62a7b997c9d8e1959309412454166bd10d3a8d3",
+    "sha256": "sha256:d6149aee07571925cc3e593bff6ab112e5ccc1ca0674642842ba0a480da62f35",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_001_10.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -1620,7 +1620,44 @@
           "target_step_index": 71,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 70,
+        "choice_step_id": 71,
+        "join_index": 71,
+        "join_step_id": 72,
+        "join_step_type": "talk_stamp",
+        "source_file": "assets/resources/scenariodata/1_4_001_10/scenario_1_4_001_10_i.json",
+        "raw_sha256": "sha256:14715d887c706b9002ff60a1d1462f975decc813ed1d290fa48ac7067cd0db99",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          508,
+          509
+        ],
+        "join_command": 511,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              510
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1628,11 +1665,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 70,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

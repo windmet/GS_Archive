@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "005kao_401_2_4_005_01_09_b.json",
-    "sha256": "sha256:cdfca777ded2c5f9860b74f903a0381368893be812b63782b7a6e630a1d8eb89",
+    "sha256": "sha256:47d79202241154dfa16bb822f656c0fb9c0a172d5b38f7a8a88c4b2e7531124a",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:bc0534d38989e0295b0f0f0336b4733a314e8c5e5a11069110aa0411d1925d18",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -174,7 +174,7 @@
       "option": {
         "choice_id": "choice:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010",
         "option_id": "choice-option:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -230,7 +230,7 @@
       "option": {
         "choice_id": "choice:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010",
         "option_id": "choice-option:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000011:001",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
         "resolution": "resolved"
@@ -345,7 +345,7 @@
         {
           "choice_id": "choice:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010",
           "option_id": "choice-option:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
@@ -353,21 +353,50 @@
         {
           "choice_id": "choice:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000010",
           "option_id": "choice-option:v1:005kao_401_2_4_005_01_09_b:2_4_005_01_09_b:cmd-000011:001",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 3,
+        "choice_step_id": 4,
+        "join_index": 4,
+        "join_step_id": 5,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/005kao_401/scenario_2_4_005_01_09_b.json",
+        "raw_sha256": "sha256:fe21f77cd78d86ea3c90947b2f859102e430dc1d8ede9524d957f612336eaf10",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          10,
+          11
+        ],
+        "join_command": 12,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 3,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "仮面舞踏会にまつわる資料を、",
     "episode_label": null

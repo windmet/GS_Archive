@@ -898,7 +898,8 @@
             },
             "source_hash": "sha256:8f2b24f7fa9a135ab1e0ec4d5d2785e06bd1f6799e0e6572415cb0a44666447e"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:009kyj_402_2_4_009_02_09_a:2_4_009_02_09_a:cmd-000015:001",
@@ -915,7 +916,8 @@
             },
             "source_hash": "sha256:be7e1f4dc143ea85464e56119e80076190d923501c2984aee4c0cf7cec4bf3b9"
           },
-          "target_step_id": 7
+          "target_step_id": 7,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:009kyj_402_2_4_009_02_09_a:2_4_009_02_09_a:cmd-000014"
@@ -1354,7 +1356,8 @@
             },
             "source_hash": "sha256:974480219c4ea99bd87df9a65ea032537a111764b2a7e3fec4602de7cbdafe3e"
           },
-          "target_step_id": 10
+          "target_step_id": 10,
+          "label": "phone_select3"
         },
         {
           "option_id": "choice-option:v1:009kyj_402_2_4_009_02_09_a:2_4_009_02_09_a:cmd-000024:001",
@@ -1371,7 +1374,8 @@
             },
             "source_hash": "sha256:bedc39a7b44843c85501b866d2010a614306a1e237171d433fd6243049de042a"
           },
-          "target_step_id": 10
+          "target_step_id": 10,
+          "label": "phone_select4"
         }
       ],
       "choice_id": "choice:v1:009kyj_402_2_4_009_02_09_a:2_4_009_02_09_a:cmd-000023"
@@ -1845,5 +1849,85 @@
       "jump_id": "phone_select4",
       "target_step_id": 10
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:a7824b6a744c13d842e01384df490fd2a40dde791d8c81de6c3307668c4504ce",
+    "forks": [
+      {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 6,
+        "join_step_id": 7,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/009kyj_402/scenario_2_4_009_02_09_a.json",
+        "raw_sha256": "sha256:313310a66d11a7c62e05a4194b0a6be553b44002211a7ba7255522e13196cdac",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 17,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              16
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 8,
+        "choice_step_id": 9,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/009kyj_402/scenario_2_4_009_02_09_a.json",
+        "raw_sha256": "sha256:313310a66d11a7c62e05a4194b0a6be553b44002211a7ba7255522e13196cdac",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          23,
+          24
+        ],
+        "join_command": 26,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              25
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select4",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

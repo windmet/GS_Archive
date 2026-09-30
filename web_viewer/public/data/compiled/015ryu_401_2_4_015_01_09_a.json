@@ -600,7 +600,8 @@
             },
             "source_hash": "sha256:bf19a7fa1009ad0e351ebf03d8cf81837e77141226ad8a27f04c5ec8ab997cad"
           },
-          "target_step_id": 5
+          "target_step_id": 5,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000011:001",
@@ -617,7 +618,8 @@
             },
             "source_hash": "sha256:f11061a68a9ae8c560ac853443f373604255b63929c76331184b55d47d9f1c92"
           },
-          "target_step_id": 5
+          "target_step_id": 5,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000010"
@@ -1205,7 +1207,8 @@
             },
             "source_hash": "sha256:6c23f1368cc68447aa8ece48ba82867a28d14e4949f6c551f968ac2ced1c57f3"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "phone_select2"
         },
         {
           "option_id": "choice-option:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000021:001",
@@ -1222,7 +1225,8 @@
             },
             "source_hash": "sha256:7594ad5f3f05c525e3e0e1e0e38e2dd9a544294205cbbe74f6127c516581830b"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:015ryu_401_2_4_015_01_09_a:2_4_015_01_09_a:cmd-000020"
@@ -1688,5 +1692,81 @@
       "jump_id": "phone_select2",
       "target_step_id": 9
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:f6aeccad71d880e048253396bf332db716aa0a135cae8cf37b3abcb3d51c25c3",
+    "forks": [
+      {
+        "choice_index": 3,
+        "choice_step_id": 4,
+        "join_index": 4,
+        "join_step_id": 5,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "raw_sha256": "sha256:7c7e19e195733f0dbb5c4793e524f2c6a11c37530eb625b821e03b5b2be9d017",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          10,
+          11
+        ],
+        "join_command": 12,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/015ryu_401/scenario_2_4_015_01_09_a.json",
+        "raw_sha256": "sha256:7c7e19e195733f0dbb5c4793e524f2c6a11c37530eb625b821e03b5b2be9d017",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          20,
+          21
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

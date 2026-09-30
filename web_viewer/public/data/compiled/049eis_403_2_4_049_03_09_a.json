@@ -451,7 +451,8 @@
             },
             "source_hash": "sha256:9304d6df730aa9403aca9a683205001b9daf7aa45f009fcf26228c682ae16d4a"
           },
-          "target_step_id": 4
+          "target_step_id": 4,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:049eis_403_2_4_049_03_09_a:2_4_049_03_09_a:cmd-000008"
@@ -741,7 +742,8 @@
             },
             "source_hash": "sha256:57e4b20416da2ae457589ea01818ac8d9b7c4e56a52844a8b6dc11ae7fda976a"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:049eis_403_2_4_049_03_09_a:2_4_049_03_09_a:cmd-000013"
@@ -1180,7 +1182,8 @@
             },
             "source_hash": "sha256:b6401cdb063356b16d518b87daad7f8c70798bd0e4f9c76e1bea9dd4123de55e"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "phone_select3"
         },
         {
           "option_id": "choice-option:v1:049eis_403_2_4_049_03_09_a:2_4_049_03_09_a:cmd-000021:001",
@@ -1197,7 +1200,8 @@
             },
             "source_hash": "sha256:20c88e73b2a57b77089c7b0678f2643fc141d6d8a33394a7f4fd01d8b8454ea8"
           },
-          "target_step_id": 10
+          "target_step_id": 10,
+          "label": "phone_select4"
         }
       ],
       "choice_id": "choice:v1:049eis_403_2_4_049_03_09_a:2_4_049_03_09_a:cmd-000020"
@@ -1679,5 +1683,69 @@
       "jump_id": "select4-end",
       "target_step_id": 11
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:c1df4ebf6ad7c13222145d423fd76a3429b8c13533bbe284a317fa89564edc3c",
+    "forks": [
+      {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 10,
+        "join_step_id": 11,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/049eis_403/scenario_2_4_049_03_09_a.json",
+        "raw_sha256": "sha256:3a89de82b822160e94c026bc6121c800100ece93d32b2220fabc148f6bac6382",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          20,
+          21
+        ],
+        "join_command": 31,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select3",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              22,
+              23,
+              24,
+              25,
+              30
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select4",
+            "step_indices": [
+              9
+            ],
+            "exit_index": 9,
+            "command_indices": [
+              26,
+              27,
+              28,
+              29
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              10
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

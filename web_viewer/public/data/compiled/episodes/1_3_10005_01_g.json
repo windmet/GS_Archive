@@ -4967,5 +4967,48 @@
     "scenario_id": "1_3_10005_01",
     "start_step_index": 212,
     "end_step_index": 260
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:c6e17036c535c1f4978c36d99a3e7ddfc8112a0a28101ee60b9f64852cc36d1b",
+    "forks": [
+      {
+        "choice_index": 40,
+        "choice_step_id": 41,
+        "join_index": 41,
+        "join_step_id": 42,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_3_10005_01/scenario_1_3_10005_01_g.json",
+        "raw_sha256": "sha256:314ce092dd7a0d9ff36f72cd1cb27d7312b696cfabc4441fd1d0d62a5fed4176",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          207,
+          208
+        ],
+        "join_command": 210,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              209
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
   }
 }

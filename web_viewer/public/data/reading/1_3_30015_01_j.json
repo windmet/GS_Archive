@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_30015_01_j.json",
-    "sha256": "sha256:65cb40326e2e67ccf3ec0e4431d3940f45e04fe27417182c3ddbc6ee3f58de9e",
+    "sha256": "sha256:fda04c8f97d04b5d5aa5b6479a2af11e504e8908ab8015d8503c3712487e2e90",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_30015_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -1376,7 +1376,44 @@
           "target_step_index": 44,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 43,
+        "choice_step_id": 44,
+        "join_index": 44,
+        "join_step_id": 45,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_3_30015_01/scenario_1_3_30015_01_j.json",
+        "raw_sha256": "sha256:fc553e153bbbeed9f1f6697ffc5acae392266c37b92b3bac919860dd1de09440",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          126,
+          127
+        ],
+        "join_command": 129,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "sel-1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              128
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "sel-2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1384,11 +1421,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 43,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

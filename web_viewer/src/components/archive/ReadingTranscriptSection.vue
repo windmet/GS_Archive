@@ -3,7 +3,7 @@
           <section v-for="item in rows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id || item.anchorAliases?.includes(anchor), 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
             <template v-if="!item.mergedTitle">
             <span v-for="alias in item.anchorAliases" :key="alias" :id="`reading-${alias}`" class="reader-anchor-alias" tabindex="-1" aria-hidden="true"></span>
-            <p v-if="item.branch?.first" class="reader-branch-label">选项 {{ item.branch.index + 1 }} 的分支（与其他选项互斥；下方汇合后继续）</p>
+            <p v-if="item.branch?.first" class="reader-branch-label">选项 {{ item.branch.index + 1 }}（{{ item.branch.shared ? '共用下方后续正文' : item.branch.terminal ? '该分支结束后本段完结' : '独立分支；下方汇合后继续' }}）</p>
             <ArchiveIdolAvatar v-if="item.avatar" class="reader-avatar" :idol-code="item.avatar" :size="40" :accent-color="idolDirectory.find(idol => idol.id === item.avatar)?.color" decorative />
             <div class="reader-content">
             <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>

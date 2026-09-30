@@ -3663,7 +3663,7 @@
           "label": "talk_select1",
           "text": "バッチリです！",
           "detail": "みなさんのおかげで\nバッチリです！",
-          "step_id": 32,
+          "step_id": 31,
           "text_ref": {
             "unit_id": "story-text:v1:1_3_30005_01:1_3_30005_01_i:cmd-000193:choice_short:000",
             "source": {
@@ -3693,7 +3693,7 @@
           "label": "talk_select2",
           "text": "もう少しで終わります",
           "detail": "もう少しで終わりそうです！\nお気遣いいただき、\nありがとうございました。",
-          "step_id": 32,
+          "step_id": 31,
           "text_ref": {
             "unit_id": "story-text:v1:1_3_30005_01:1_3_30005_01_i:cmd-000194:choice_short:000",
             "source": {
@@ -4080,5 +4080,48 @@
     "scenario_id": "1_3_30005_01",
     "start_step_index": 126,
     "end_step_index": 159
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:109090af4859c0ebca4d11e0b0f1a5c654f5bff93fbb39e111805a828d467268",
+    "forks": [
+      {
+        "choice_index": 29,
+        "choice_step_id": 30,
+        "join_index": 30,
+        "join_step_id": 31,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/1_3_30005_01/scenario_1_3_30005_01_i.json",
+        "raw_sha256": "sha256:31a80aed7e9675e4c18ca14c70fcaad38dd46f8c7f63f42c6a79006f20c528a0",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          193,
+          194
+        ],
+        "join_command": 196,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              195
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
   }
 }

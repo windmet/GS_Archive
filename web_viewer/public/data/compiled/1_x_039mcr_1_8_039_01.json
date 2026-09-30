@@ -553,10 +553,42 @@
               "field_ordinal": 0
             },
             "source_hash": "sha256:2d5d7e94510ead8570df198a8efac156405143f31b34bca9441b3943fd07219b"
-          }
+          },
+          "target_kind": "end"
         }
       ]
     }
   ],
-  "jump_points": {}
+  "jump_points": {},
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:0ca32e019078b1d1564f5b40a441fc7d458fb93c69c051852503bccb5b385497",
+    "forks": [
+      {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": null,
+        "join_step_type": "end",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_8_039_01.json",
+        "raw_sha256": "sha256:6b54ce441058270ff77b9ea2465597d9aba36689630f6d983b0fb8dd3e54f525",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          17
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

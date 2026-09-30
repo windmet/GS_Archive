@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "039mcr_402_2_4_039_02_09_a.json",
-    "sha256": "sha256:64ba96bc0079b7fccd0ca7a01a524bcdb2f65407b9efbb3be2d071bb4847d60e",
+    "sha256": "sha256:100160562a4a140c0b88736ccc2ea52675afa462c7df858bbe729c3535cba333",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:49f131deace66160d4bd45b8531e42ec479ab366aee9d11e39d632cc6aecc51c",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -272,7 +272,7 @@
       "option": {
         "choice_id": "choice:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014",
         "option_id": "choice-option:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -328,7 +328,7 @@
       "option": {
         "choice_id": "choice:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014",
         "option_id": "choice-option:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000015:001",
-        "source_label": null,
+        "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -590,7 +590,7 @@
         {
           "choice_id": "choice:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014",
           "option_id": "choice-option:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -598,26 +598,72 @@
         {
           "choice_id": "choice:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000014",
           "option_id": "choice-option:v1:039mcr_402_2_4_039_02_09_a:2_4_039_02_09_a:cmd-000015:001",
-          "source_label": null,
+          "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/039mcr_402/scenario_2_4_039_02_09_a.json",
+        "raw_sha256": "sha256:0c121dd9cb8a4e23088f9dd0e0d98a5cf80a015ae9280c1eefd7e788e1d1d1b3",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 24,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              6
+            ],
+            "exit_index": 6,
+            "command_indices": [
+              16,
+              17,
+              18,
+              19
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              7
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              20,
+              21,
+              22,
+              23
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              8
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 5,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、師匠？　すみません、急に。",
     "episode_label": null

@@ -9,7 +9,7 @@ const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
 const none = () => ({ kind: 'none', entityType: null, entityId: null, sourceName: '' })
 const text = value => typeof value === 'string' ? value : ''
 const TEXT_TYPES = new Set(['adv', 'talk', 'talk_stamp', 'call', 'synopsis', 'title', 'text_time', 'choice'])
-const VISUAL_TYPES = new Set(['stage', 'fadein', 'fadeout', 'slidein', 'slideout', 'text_disable'])
+const VISUAL_TYPES = new Set(['stage', 'fadein', 'fadeout', 'slidein', 'slideout', 'fadecolor', 'text_disable'])
 
 /** A text projection of published compiled input. No RAW interpretation or media loading. */
 export function createReadingDocument(input, { documentId, logicalId, file, sha256, knownIdolIds }) {
@@ -85,18 +85,19 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
     if (step.type === 'choice') {
       const options = (step.options || []).map((o, index) => {
         const targetId = o.target_step_id ?? o.step_id ?? null
-        const targetIndex = ids.get(targetId) ?? null
+        const terminal = fork?.join_step_type === 'end' && o.target_kind === 'end'
+        const targetIndex = terminal ? steps.length : ids.get(targetId) ?? null
         if (targetIndex === null) diagnose('unresolved-choice-target', stepIndex, 'unsupported')
         // Single-option back jumps or skips also require explicit traversal support.
         if (!fork && targetIndex !== null && targetIndex !== stepIndex + 1) diagnose('nonsequential-choice-path', stepIndex, 'unsupported')
         const option = { choice_id: step.choice_id ?? null, option_id: o.option_id ?? null,
           source_label: o.label ?? null, target_step_id: targetId, target_step_index: targetIndex,
-          resolution: targetIndex === null ? 'unresolved' : 'resolved' }
+          resolution: targetIndex === null ? 'unresolved' : 'resolved', ...(terminal ? { target_kind:'end' } : {}) }
         append({ kind: 'choice', source: text(o.source_text ?? o.text), textRef: o.text_ref,
           slot: `option-${index}`, option })
         // Preserve the third RAW slot as source evidence: it may be prose or a
-        // presentation marker. Reader presentation classifies known markers.
-        append({ kind: 'choice_detail', source: text(o.detail_source_text ?? o.detail), textRef: o.detail_text_ref,
+        // presentation marker. Its kind comes from compiler classification.
+        append({ kind: o.detail_kind === 'presentation-marker' ? 'choice_metadata' : 'choice_detail', source: text(o.detail_source_text ?? o.detail), textRef: o.detail_text_ref,
           slot: `option-${index}-detail`, option })
         return option
       })
@@ -118,19 +119,27 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
 // Rows remain canonical and unique. Reorder references, never duplicate units.
 export function readingBranchRows(document) {
   const rows = document?.rows || [], result = [], consumed = new Set()
+  const emitRow = (row, branch) => {
+    if (consumed.has(row.anchor.row_id)) return
+    consumed.add(row.anchor.row_id); result.push({row,branch})
+  }
+  const emitFork = (control, outer = null) => {
+    for (const [index, branch] of control.fork.branches.entries()) {
+      const ownRows = rows.filter(r => r.anchor.step_index === control.step_index && new RegExp(`:option-${index}($|-detail$)`).test(r.anchor.row_id))
+      const context = {index,choice:control.step_id,first:true,shared:!branch.step_indices.length,terminal:control.fork.join_step_type==='end',parent:outer?.choice ?? null}
+      for (const r of ownRows) { emitRow(r,{...context}); context.first=false }
+      for (const stepIndex of branch.step_indices) {
+        const nested = document.controls?.find(c => c.fork && c.step_index === stepIndex)
+        if (nested) emitFork(nested,context)
+        else for (const r of rows.filter(r => r.anchor.step_index===stepIndex)) emitRow(r,{...context,first:false})
+      }
+    }
+  }
   for (const row of rows) {
     if (consumed.has(row.anchor.row_id)) continue
     const control = document.controls?.find(c => c.fork && c.step_index === row.anchor.step_index)
-    if (!control) { result.push({ row, branch: null }); continue }
-    for (const [index, branch] of control.fork.branches.entries()) {
-      const option = control.options[index]
-      const branchRows = rows.filter(r => (r.anchor.step_index === control.step_index && r.option?.source_label === option.source_label)
-        || branch.step_indices.includes(r.anchor.step_index))
-      for (const r of branchRows) {
-        consumed.add(r.anchor.row_id)
-        result.push({ row: r, branch: { index, choice: control.step_id, first: r === branchRows[0] } })
-      }
-    }
+    if (control) emitFork(control)
+    else emitRow(row,null)
   }
   return result
 }

@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "001tom_307_2_3_001_07_09_a.json",
-    "sha256": "sha256:0ed54e5fc33ec8e9154730b9ea2184c1addee4534b50ae52cce804d126d4fb1e",
+    "sha256": "sha256:2ef3c23e3ff9228de5d16ad534fc0991aa72272580942760c7ed96dc2e38043e",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:fcd9033b4afa8a50365a58cb6a49d6feefdf5dccf754d125a2de80db61edd134",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -370,7 +370,7 @@
       "option": {
         "choice_id": "choice:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018",
         "option_id": "choice-option:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -426,7 +426,7 @@
       "option": {
         "choice_id": "choice:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018",
         "option_id": "choice-option:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000019:001",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -541,7 +541,7 @@
         {
           "choice_id": "choice:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018",
           "option_id": "choice-option:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -549,21 +549,50 @@
         {
           "choice_id": "choice:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000018",
           "option_id": "choice-option:v1:001tom_307_2_3_001_07_09_a:2_3_001_07_09_a:cmd-000019:001",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/001tom_307/scenario_2_3_001_07_09_a.json",
+        "raw_sha256": "sha256:ae2c510c4c2e12055dbefa8bccbf99d2ddfe32d94af78a47e4ac0c7b3d9262e0",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          18,
+          19
+        ],
+        "join_command": 20,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おう、●●●●プロデューサー？　お疲れ！",
     "episode_label": null

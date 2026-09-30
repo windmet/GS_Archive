@@ -942,9 +942,10 @@ function onChoice(option) {
   storyRuntimeCues.cancelCurrentStep('choice')
   const choiceStepIndex = currentStepIndex.value
   markStepRead(choiceStepIndex)
-  navigateChoice(option)
+  const outcome = navigateChoice(option)
   recordHistoryStep(choiceStepIndex)
   leaveRestoredScene()
+  if (outcome === 'finished') finishEpisode()
 }
 
 function goToStep(index) {

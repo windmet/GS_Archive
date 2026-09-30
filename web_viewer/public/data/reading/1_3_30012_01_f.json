@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_30012_01_f.json",
-    "sha256": "sha256:49357b774bc72a6271adf6771a3b72bc4ec76f2bba5e61e325637226e1408ab9",
+    "sha256": "sha256:04bd22d2d087c86729a25462692e172db009f5ddba7176c8abfad4c82b87ea19",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_30012_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1312,7 +1312,42 @@
           "target_step_index": 38,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 37,
+        "choice_step_id": 38,
+        "join_index": 38,
+        "join_step_id": 39,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_3_30012_01/scenario_1_3_30012_01_f.json",
+        "raw_sha256": "sha256:c2de280a88b5fb60887fe4f4dc8e3af06e454f331be46fe3fbf2d1d98a4ea4ab",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          133,
+          134
+        ],
+        "join_command": 135,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1320,11 +1355,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 37,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

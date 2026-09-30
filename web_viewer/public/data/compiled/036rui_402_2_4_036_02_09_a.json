@@ -749,7 +749,8 @@
             },
             "source_hash": "sha256:c8437da922b05a66a006272ae646cc70f57e96453c9e5b620e3abbd8e90368f7"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:036rui_402_2_4_036_02_09_a:2_4_036_02_09_a:cmd-000012"
@@ -1039,7 +1040,8 @@
             },
             "source_hash": "sha256:95bc43da13db1cb78b7a2a4d21db0628cfeeca8842070dd2be6ae59b6a2fbdc4"
           },
-          "target_step_id": 9
+          "target_step_id": 8,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:036rui_402_2_4_036_02_09_a:2_4_036_02_09_a:cmd-000017"
@@ -1180,7 +1182,8 @@
             },
             "source_hash": "sha256:b312d57d90b4806b31091ffeeec862217ca240c4ca4578230ae619ecc9fd3f82"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "phone_select3"
         }
       ],
       "choice_id": "choice:v1:036rui_402_2_4_036_02_09_a:2_4_036_02_09_a:cmd-000020"
@@ -1650,5 +1653,36 @@
       "jump_id": "phone_select3",
       "target_step_id": 9
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:c4fdd762d46b11f22cad7c1649ae0c5023189e20ee63c5cc4a37e037a0c3ffee",
+    "forks": [
+      {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/036rui_402/scenario_2_4_036_02_09_a.json",
+        "raw_sha256": "sha256:889b799b73b7285693a58133361342368691925202cc76b876e983414d600d0d",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          17
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

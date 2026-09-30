@@ -749,7 +749,8 @@
             },
             "source_hash": "sha256:db9c7569b3d9b0fad1be7340656d1b9ca86612019a95274eb1701c035e3ca5da"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:020hay_402_2_4_020_02_09_b:2_4_020_02_09_b:cmd-000013:001",
@@ -766,7 +767,8 @@
             },
             "source_hash": "sha256:e5a68f7820996a5ba9f5f3c60a3511125c2ac5e5de370edbaefa5cef9bac3843"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:020hay_402_2_4_020_02_09_b:2_4_020_02_09_b:cmd-000012"
@@ -1503,7 +1505,8 @@
             },
             "source_hash": "sha256:62a3e713f13c252452c90a0003af6e8df6b7db6b60f36a41f4d1260909358f2e"
           },
-          "target_step_id": 11
+          "target_step_id": 11,
+          "label": "phone_select2"
         },
         {
           "option_id": "choice-option:v1:020hay_402_2_4_020_02_09_b:2_4_020_02_09_b:cmd-000025:001",
@@ -1520,7 +1523,8 @@
             },
             "source_hash": "sha256:910e638c296c054b7ea5736cbf0a32a36bb946ac44cc15ecf379f9db381e4d43"
           },
-          "target_step_id": 11
+          "target_step_id": 11,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:020hay_402_2_4_020_02_09_b:2_4_020_02_09_b:cmd-000024"
@@ -1688,5 +1692,81 @@
       "jump_id": "phone_select2",
       "target_step_id": 11
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:5a39e124f16ec06b096824251dd12f531a9ad1740c6dfb5f1b5537f8c2a5c22f",
+    "forks": [
+      {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/020hay_402/scenario_2_4_020_02_09_b.json",
+        "raw_sha256": "sha256:9947c666dab01478f7b7f11be9a237abe2fd787ae7cc52b15aca307326124029",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 14,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 9,
+        "choice_step_id": 10,
+        "join_index": 10,
+        "join_step_id": 11,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/020hay_402/scenario_2_4_020_02_09_b.json",
+        "raw_sha256": "sha256:9947c666dab01478f7b7f11be9a237abe2fd787ae7cc52b15aca307326124029",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          24,
+          25
+        ],
+        "join_command": 26,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

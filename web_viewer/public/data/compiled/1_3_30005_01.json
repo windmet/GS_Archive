@@ -20951,7 +20951,7 @@
           "label": "talk_select1",
           "text": "バッチリです！",
           "detail": "みなさんのおかげで\nバッチリです！",
-          "step_id": 158,
+          "step_id": 157,
           "text_ref": {
             "unit_id": "story-text:v1:1_3_30005_01:1_3_30005_01_i:cmd-000193:choice_short:000",
             "source": {
@@ -20981,7 +20981,7 @@
           "label": "talk_select2",
           "text": "もう少しで終わります",
           "detail": "もう少しで終わりそうです！\nお気遣いいただき、\nありがとうございました。",
-          "step_id": 158,
+          "step_id": 157,
           "text_ref": {
             "unit_id": "story-text:v1:1_3_30005_01:1_3_30005_01_i:cmd-000194:choice_short:000",
             "source": {
@@ -27758,5 +27758,217 @@
       "end_step_id": 220,
       "step_count": 25
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:a719318dedcaac614f1974483faf9d32114dd34839566b56a3396f0d97c00a36",
+    "forks": [
+      {
+        "choice_index": 34,
+        "choice_step_id": 35,
+        "join_index": 44,
+        "join_step_id": 45,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/1_3_30005_01/scenario_1_3_30005_01_c.json",
+        "raw_sha256": "sha256:60c733b9aa0c53b120fcb8a1244dcd1f478968e779850bb9a442b351b18a9be5",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          31,
+          32,
+          33
+        ],
+        "join_command": 118,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "1-sel1",
+            "step_indices": [
+              35,
+              36,
+              37
+            ],
+            "exit_index": 37,
+            "command_indices": [
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              116,
+              117
+            ],
+            "step_types": [
+              "text_disable",
+              "adv",
+              "text_disable"
+            ],
+            "step_ids": [
+              36,
+              37,
+              38
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "1-sel2",
+            "step_indices": [
+              38,
+              39,
+              40
+            ],
+            "exit_index": 40,
+            "command_indices": [
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77,
+              78,
+              79,
+              80,
+              81,
+              82,
+              83,
+              84,
+              85,
+              117
+            ],
+            "step_types": [
+              "text_disable",
+              "adv",
+              "text_disable"
+            ],
+            "step_ids": [
+              39,
+              40,
+              41
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "1-sel3",
+            "step_indices": [
+              41,
+              42,
+              43
+            ],
+            "exit_index": 43,
+            "command_indices": [
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              94,
+              95,
+              96,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105,
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115
+            ],
+            "step_types": [
+              "text_disable",
+              "adv",
+              "text_disable"
+            ],
+            "step_ids": [
+              42,
+              43,
+              44
+            ]
+          }
+        ]
+      },
+      {
+        "choice_index": 155,
+        "choice_step_id": 156,
+        "join_index": 156,
+        "join_step_id": 157,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/1_3_30005_01/scenario_1_3_30005_01_i.json",
+        "raw_sha256": "sha256:31a80aed7e9675e4c18ca14c70fcaad38dd46f8c7f63f42c6a79006f20c528a0",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          193,
+          194
+        ],
+        "join_command": 196,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              195
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }

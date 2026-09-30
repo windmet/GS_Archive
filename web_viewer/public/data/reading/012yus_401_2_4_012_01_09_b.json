@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "012yus_401_2_4_012_01_09_b.json",
-    "sha256": "sha256:1fbfefb0e0541c2b1375a78a2d2b8e21872a2ff2f5a3277ffb5a2f50d97408b6",
+    "sha256": "sha256:99ccc81b049d454a0fa1c00278bebd6fcc0996023969e55a8f850a3d4e5c0623",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:48dfe26cf8739904a1f8d4aae714e792af2a5622aec739b32749ac04b062c083",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -174,7 +174,7 @@
       "option": {
         "choice_id": "choice:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012",
         "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -230,7 +230,7 @@
       "option": {
         "choice_id": "choice:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012",
         "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000013:001",
-        "source_label": null,
+        "source_label": "phone_select2",
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -443,7 +443,7 @@
         {
           "choice_id": "choice:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012",
           "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -451,26 +451,72 @@
         {
           "choice_id": "choice:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000012",
           "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_b:2_4_012_01_09_b:cmd-000013:001",
-          "source_label": null,
+          "source_label": "phone_select2",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_b.json",
+        "raw_sha256": "sha256:37d571cee963f40260df9063ee79b32857e29a7ff1a4ca89200c89fde013c6b7",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              5
+            ],
+            "exit_index": 5,
+            "command_indices": [
+              14,
+              15,
+              16,
+              17
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              6
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              6
+            ],
+            "exit_index": 6,
+            "command_indices": [
+              18,
+              19,
+              20,
+              21
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              7
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 4,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 4,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "遅くなってごめん監督！　お土産屋さんが結構",
     "episode_label": null

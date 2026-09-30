@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "009kyj_401_2_4_009_01_09_b.json",
-    "sha256": "sha256:b37337eb239a85f7efda273e4abfa1a76c430f0ab9531163957d29932940ef40",
+    "sha256": "sha256:ef73e539bb53b28fb7bac5dcccf5c5da35dc8bdc1f878f2ada97792c14e02343",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:b1b96150055f279af6a766c6c50477c0956d23a98c23abfff4ad30770d823f09",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -125,7 +125,7 @@
       "option": {
         "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008",
         "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008:000",
-        "source_label": null,
+        "source_label": "2_4_009_01_09_b-sel1",
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -181,7 +181,7 @@
       "option": {
         "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008",
         "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000009:001",
-        "source_label": null,
+        "source_label": "2_4_009_01_09_b-sel2",
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -394,7 +394,7 @@
         {
           "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008",
           "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008:000",
-          "source_label": null,
+          "source_label": "2_4_009_01_09_b-sel1",
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
@@ -402,21 +402,52 @@
         {
           "choice_id": "choice:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000008",
           "option_id": "choice-option:v1:009kyj_401_2_4_009_01_09_b:2_4_009_01_09_b:cmd-000009:001",
-          "source_label": null,
+          "source_label": "2_4_009_01_09_b-sel2",
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 2,
+        "choice_step_id": 3,
+        "join_index": 3,
+        "join_step_id": 4,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/009kyj_401/scenario_2_4_009_01_09_b.json",
+        "raw_sha256": "sha256:a4b3b661abeded4d586bc456aa987e045d6c2ce47264af94e98656065d1ce7c8",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          8,
+          9
+        ],
+        "join_command": 11,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_009_01_09_b-sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              10
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_009_01_09_b-sel2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 2,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし。",
     "episode_label": null

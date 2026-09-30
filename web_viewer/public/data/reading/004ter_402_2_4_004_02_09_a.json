@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "004ter_402_2_4_004_02_09_a.json",
-    "sha256": "sha256:15af0e3470f2c4c450f61e93aaa2d751be55f5b0ea1239103b178e37a59bcf84",
+    "sha256": "sha256:b8de2d00870e5f7c0a6bc194647e6979224cb6a5ee89b7d7307a640fd57bb771",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:bc5656780d69bfd9a392f9342d3d4432c0ac7f90ed1999a401e26e172567a021",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -174,7 +174,7 @@
       "option": {
         "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012",
         "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012:000",
-        "source_label": null,
+        "source_label": "2_4_004_02_09_a-sel1",
         "target_step_id": 6,
         "target_step_index": 5,
         "resolution": "resolved"
@@ -230,7 +230,7 @@
       "option": {
         "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012",
         "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000013:001",
-        "source_label": null,
+        "source_label": "2_4_004_02_09_a-sel2",
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -531,7 +531,7 @@
       "option": {
         "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000030",
         "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000030:000",
-        "source_label": null,
+        "source_label": "2_4_004_02_09_a-sel3",
         "target_step_id": 12,
         "target_step_index": 11,
         "resolution": "resolved"
@@ -646,7 +646,7 @@
         {
           "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012",
           "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012:000",
-          "source_label": null,
+          "source_label": "2_4_004_02_09_a-sel1",
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
@@ -654,12 +654,69 @@
         {
           "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000012",
           "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000013:001",
-          "source_label": null,
+          "source_label": "2_4_004_02_09_a-sel2",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/004ter_402/scenario_2_4_004_02_09_a.json",
+        "raw_sha256": "sha256:e20f3da1349cf4cec1669dfd0f14d83b4ebc5f917e5f2c715730256728552d71",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_004_02_09_a-sel1",
+            "step_indices": [
+              5
+            ],
+            "exit_index": 5,
+            "command_indices": [
+              14,
+              15,
+              16,
+              17
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              6
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_004_02_09_a-sel2",
+            "step_indices": [
+              6
+            ],
+            "exit_index": 6,
+            "command_indices": [
+              18,
+              19,
+              20,
+              21
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              7
+            ]
+          }
+        ]
+      }
     },
     {
       "step_id": 11,
@@ -669,7 +726,7 @@
         {
           "choice_id": "choice:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000030",
           "option_id": "choice-option:v1:004ter_402_2_4_004_02_09_a:2_4_004_02_09_a:cmd-000030:000",
-          "source_label": null,
+          "source_label": "2_4_004_02_09_a-sel3",
           "target_step_id": 12,
           "target_step_index": 11,
           "resolution": "resolved"
@@ -677,18 +734,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 4,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 4,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、撮影お疲れさま！",
     "episode_label": null

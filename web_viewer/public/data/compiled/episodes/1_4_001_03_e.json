@@ -5684,5 +5684,93 @@
     "scenario_id": "1_4_001_03",
     "start_step_index": 112,
     "end_step_index": 169
+  },
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:6896bfaee9b43754c80b390a89f354872e59155f5d837babbd93c08a00de0e14",
+    "forks": [
+      {
+        "choice_index": 46,
+        "choice_step_id": 47,
+        "join_index": 51,
+        "join_step_id": 52,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_4_001_03/scenario_1_4_001_03_e.json",
+        "raw_sha256": "sha256:6a71d404d5a7a668947a9835fa5c9d88123d01f0f7da0e41f47abfef3ac0f5a6",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          242,
+          243,
+          244
+        ],
+        "join_command": 258,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              47
+            ],
+            "exit_index": 47,
+            "command_indices": [
+              245,
+              246,
+              247,
+              248
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              48
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              48
+            ],
+            "exit_index": 48,
+            "command_indices": [
+              249,
+              250,
+              251,
+              252
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              49
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "phone_select3",
+            "step_indices": [
+              49,
+              50
+            ],
+            "exit_index": 50,
+            "command_indices": [
+              253,
+              254,
+              255,
+              256,
+              257
+            ],
+            "step_types": [
+              "call",
+              "call"
+            ],
+            "step_ids": [
+              50,
+              51
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

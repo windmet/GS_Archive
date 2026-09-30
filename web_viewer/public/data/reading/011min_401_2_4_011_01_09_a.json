@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "011min_401_2_4_011_01_09_a.json",
-    "sha256": "sha256:8800ce3458744a3e9fefb9bece97449296e6da6646fa0c5fd2ef27deaa288905",
+    "sha256": "sha256:15372c8fbfcf41808f7733a565ba6401f95504e3bfd0ad402f5ffc008e8b943d",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:8015f7f03497bba7a4c12f1febdbd431e93b6c415c5aa63d08d2666167cbad50",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -272,7 +272,7 @@
       "option": {
         "choice_id": "choice:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014",
         "option_id": "choice-option:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014:000",
-        "source_label": null,
+        "source_label": "2_4_011_01_09_sel1",
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -328,7 +328,7 @@
       "option": {
         "choice_id": "choice:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014",
         "option_id": "choice-option:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000015:001",
-        "source_label": null,
+        "source_label": "2_4_011_01_09_sel1",
         "target_step_id": 7,
         "target_step_index": 6,
         "resolution": "resolved"
@@ -590,7 +590,7 @@
         {
           "choice_id": "choice:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014",
           "option_id": "choice-option:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014:000",
-          "source_label": null,
+          "source_label": "2_4_011_01_09_sel1",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
@@ -598,21 +598,50 @@
         {
           "choice_id": "choice:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000014",
           "option_id": "choice-option:v1:011min_401_2_4_011_01_09_a:2_4_011_01_09_a:cmd-000015:001",
-          "source_label": null,
+          "source_label": "2_4_011_01_09_sel1",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 6,
+        "join_step_id": 7,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/011min_401/scenario_2_4_011_01_09_a.json",
+        "raw_sha256": "sha256:b3039addca6be1156d7c0b96576d87c47fbd821945a8b94921c1fa8cbde9c7d8",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 16,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_4_011_01_09_sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_4_011_01_09_sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 5,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、",
     "episode_label": null

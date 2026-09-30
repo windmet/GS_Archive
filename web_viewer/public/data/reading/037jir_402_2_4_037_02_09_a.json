@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "037jir_402_2_4_037_02_09_a.json",
-    "sha256": "sha256:fdc87994de0dbd432de6f1252ae191b914636c8dd272c813e86c6d06d439df66",
+    "sha256": "sha256:4081e61a8a473c4fb5e3d8f4f24f2f73598c0883291ffaa4c0a85d62bdeba23d",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:19cb4d6f90b162e9ba41d609831c1c24ba05d5d65a0161e5f0f56d72aec86a43",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -125,7 +125,7 @@
       "option": {
         "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000007",
         "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000007:000",
-        "source_label": null,
+        "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
         "resolution": "resolved"
@@ -328,7 +328,7 @@
       "option": {
         "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016",
         "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016:000",
-        "source_label": null,
+        "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -384,7 +384,7 @@
       "option": {
         "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016",
         "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000017:001",
-        "source_label": null,
+        "source_label": "phone_select3",
         "target_step_id": 8,
         "target_step_index": 7,
         "resolution": "resolved"
@@ -646,7 +646,7 @@
         {
           "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000007",
           "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000007:000",
-          "source_label": null,
+          "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
@@ -661,7 +661,7 @@
         {
           "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016",
           "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016:000",
-          "source_label": null,
+          "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
@@ -669,21 +669,52 @@
         {
           "choice_id": "choice:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000016",
           "option_id": "choice-option:v1:037jir_402_2_4_037_02_09_a:2_4_037_02_09_a:cmd-000017:001",
-          "source_label": null,
+          "source_label": "phone_select3",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/037jir_402/scenario_2_4_037_02_09_a.json",
+        "raw_sha256": "sha256:5ea65b1f3c45b62e0fda01bfc51f1596932787cccc83f7cb17eaba82b2c4d7fa",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 19,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              18
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーちゃん、",
     "episode_label": null

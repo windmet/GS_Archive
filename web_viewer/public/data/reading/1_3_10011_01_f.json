@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_10011_01_f.json",
-    "sha256": "sha256:50c48dcbe29b6844d5cac52ba645823a84c745a7dfdfae102f2436706611b96c",
+    "sha256": "sha256:c7ef539c600557ef117d53607fe9e6b0a65bcef628fe91ad7c48d5248127c65f",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_10011_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -1487,7 +1487,66 @@
           "target_step_index": 45,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 43,
+        "choice_step_id": 44,
+        "join_index": 46,
+        "join_step_id": 47,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/1_3_10011_01/scenario_1_3_10011_01_f.json",
+        "raw_sha256": "sha256:505a713a03290f6278fd26ce6953d2a147210c4f2f60e0aed173b40a155fef60",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          204,
+          205
+        ],
+        "join_command": 216,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              44
+            ],
+            "exit_index": 44,
+            "command_indices": [
+              206,
+              207,
+              208,
+              209,
+              210
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              45
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              45
+            ],
+            "exit_index": 45,
+            "command_indices": [
+              211,
+              212,
+              213,
+              214,
+              215
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              46
+            ]
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1495,16 +1554,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 43,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 43,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_3_30005_01_i.json",
-    "sha256": "sha256:0881031e825ac074b6a46a85bfd2302e5d8ab3f265611f6b074c49c396885e3b",
+    "sha256": "sha256:3f2327e58aad0dd6cc193337df32426408fc0dbfef792cabd5f488aae4babf51",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_3_30005_01.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "caption",
@@ -931,8 +931,8 @@
         "choice_id": null,
         "option_id": null,
         "source_label": "talk_select1",
-        "target_step_id": 32,
-        "target_step_index": 31,
+        "target_step_id": 31,
+        "target_step_index": 30,
         "resolution": "resolved"
       },
       "presentation": "talk"
@@ -987,8 +987,8 @@
         "choice_id": null,
         "option_id": null,
         "source_label": "talk_select1",
-        "target_step_id": 32,
-        "target_step_index": 31,
+        "target_step_id": 31,
+        "target_step_index": 30,
         "resolution": "resolved"
       },
       "presentation": "talk"
@@ -1043,8 +1043,8 @@
         "choice_id": null,
         "option_id": null,
         "source_label": "talk_select2",
-        "target_step_id": 32,
-        "target_step_index": 31,
+        "target_step_id": 31,
+        "target_step_index": 30,
         "resolution": "resolved"
       },
       "presentation": "talk"
@@ -1099,8 +1099,8 @@
         "choice_id": null,
         "option_id": null,
         "source_label": "talk_select2",
-        "target_step_id": 32,
-        "target_step_index": 31,
+        "target_step_id": 31,
+        "target_step_index": 30,
         "resolution": "resolved"
       },
       "presentation": "talk"
@@ -1381,19 +1381,56 @@
           "choice_id": null,
           "option_id": null,
           "source_label": "talk_select1",
-          "target_step_id": 32,
-          "target_step_index": 31,
+          "target_step_id": 31,
+          "target_step_index": 30,
           "resolution": "resolved"
         },
         {
           "choice_id": null,
           "option_id": null,
           "source_label": "talk_select2",
-          "target_step_id": 32,
-          "target_step_index": 31,
+          "target_step_id": 31,
+          "target_step_index": 30,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 29,
+        "choice_step_id": 30,
+        "join_index": 30,
+        "join_step_id": 31,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/1_3_30005_01/scenario_1_3_30005_01_i.json",
+        "raw_sha256": "sha256:31a80aed7e9675e4c18ca14c70fcaad38dd46f8c7f63f42c6a79006f20c528a0",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          193,
+          194
+        ],
+        "join_command": 196,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "talk_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              195
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "talk_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 31,
@@ -1416,21 +1453,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 29,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 29,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 29,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

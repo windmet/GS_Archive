@@ -30,7 +30,7 @@ assert.equal(project(step, { ...speaker, entityId: '001tom' }).visual.presence, 
 const optionalParts = structuredClone(step)
 optionalParts.entry_snapshot.spines[1].parts_visible = false
 assert.equal(avatar(project(optionalParts)), '047shu', 'optional costume parts do not hide the actor')
-for (const kind of ['title', 'synopsis', 'narration', 'caption', 'choice', 'choice_detail']) {
+for (const kind of ['title', 'synopsis', 'narration', 'caption', 'choice', 'choice_detail','choice_metadata']) {
   assert.equal(project(step, speaker, kind).visual.presence, 'not-applicable')
 }
 assert.equal(project(step, { ...speaker, kind: 'producer' }).visual.presence, 'not-applicable')

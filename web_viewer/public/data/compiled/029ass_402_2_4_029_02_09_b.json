@@ -724,7 +724,8 @@
             },
             "source_hash": "sha256:1428a619d9da6f90a8def61b6c3b53e725c281ca60823fbcb98ff905246c6075"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:029ass_402_2_4_029_02_09_b:2_4_029_02_09_b:cmd-000012:001",
@@ -741,7 +742,8 @@
             },
             "source_hash": "sha256:616188ed8d8fed21e3f2c1ba45221c9d2b65aa4d6bf5dbe826cad971514b3610"
           },
-          "target_step_id": 6
+          "target_step_id": 6,
+          "label": "phone_select1"
         }
       ],
       "choice_id": "choice:v1:029ass_402_2_4_029_02_09_b:2_4_029_02_09_b:cmd-000011"
@@ -1478,7 +1480,8 @@
             },
             "source_hash": "sha256:bbd641df64ba5feb488fe6f206d98b0b53d75760ae910525a9548f5af7a43983"
           },
-          "target_step_id": 11
+          "target_step_id": 11,
+          "label": "phone_select2"
         },
         {
           "option_id": "choice-option:v1:029ass_402_2_4_029_02_09_b:2_4_029_02_09_b:cmd-000023:001",
@@ -1495,7 +1498,8 @@
             },
             "source_hash": "sha256:600422df6bfda338b2f787eff40a3c2542c503939b0d907051f2068f044e04fa"
           },
-          "target_step_id": 12
+          "target_step_id": 12,
+          "label": "phone_select3"
         }
       ],
       "choice_id": "choice:v1:029ass_402_2_4_029_02_09_b:2_4_029_02_09_b:cmd-000022"
@@ -2238,5 +2242,105 @@
       "jump_id": "phone_select4",
       "target_step_id": 13
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:aa5badb597907d671b907bbd02b62de1b37730941aa33faca2fe9eef7a32d8cd",
+    "forks": [
+      {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/029ass_402/scenario_2_4_029_02_09_b.json",
+        "raw_sha256": "sha256:e5c612b3375e523279260c1219fea295ff92f5704b16452893051565e729f421",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          11,
+          12
+        ],
+        "join_command": 13,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 9,
+        "choice_step_id": 10,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/029ass_402/scenario_2_4_029_02_09_b.json",
+        "raw_sha256": "sha256:e5c612b3375e523279260c1219fea295ff92f5704b16452893051565e729f421",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          22,
+          23
+        ],
+        "join_command": 34,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              10
+            ],
+            "exit_index": 10,
+            "command_indices": [
+              24,
+              25,
+              26,
+              27,
+              28
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              11
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              11
+            ],
+            "exit_index": 11,
+            "command_indices": [
+              29,
+              30,
+              31,
+              32,
+              33
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              12
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

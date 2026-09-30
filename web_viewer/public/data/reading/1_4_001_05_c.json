@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_001_05_c.json",
-    "sha256": "sha256:0fd9738ae17b0dcb91b9144c8740cc3f4103c4fbd85493622fcf377275578953",
+    "sha256": "sha256:a4aa6c2264696cec24f02ed48eef896c1c9468af91a223b89568f0485327e0ef",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -1278,13 +1278,15 @@
         "choice_step_id": 26,
         "join_index": 28,
         "join_step_id": 29,
+        "join_step_type": "call",
         "source_file": "assets/resources/scenariodata/1_4_001_05/scenario_1_4_001_05_c.json",
         "raw_sha256": "sha256:fb30fe901fcbe451a2249666ab112d7d28b20bbd2105007ad5c902be3bd6772d",
+        "raw_hash_format": "sha256-raw-file-v1",
         "choice_commands": [
           116,
           117
         ],
-        "join_command": 126,
+        "join_command": 125,
         "branches": [
           {
             "option_index": 0,
@@ -1294,7 +1296,16 @@
             ],
             "exit_index": 26,
             "command_indices": [
-              119
+              118,
+              119,
+              120,
+              121
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              27
             ]
           },
           {
@@ -1305,7 +1316,15 @@
             ],
             "exit_index": 27,
             "command_indices": [
-              123
+              122,
+              123,
+              124
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              28
             ]
           }
         ]

@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "5_00_015_23_5_00_015_23.json",
-    "sha256": "sha256:8b82eccfdf0df818d8d58a481d929322eee07542a9c6c9fd1c91713bcd45ddaf",
+    "sha256": "sha256:fd0580cc494dc211a69f15ff6292693240caf39a405181582bcb04227b6dde5c",
     "schema_version": 2,
     "runtime_contract": "story-runtime-v2",
     "raw_hash": "sha256:a3f8579f422a63ad65d4050ec09dee336e0efdbb78de45b618916a79b453845c",
@@ -25,7 +25,7 @@
       }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "title",
@@ -320,7 +320,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
         "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042:000",
-        "source_label": null,
+        "source_label": "a1004",
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -375,7 +375,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
         "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:001",
-        "source_label": null,
+        "source_label": "a1005",
         "target_step_id": 9,
         "target_step_index": 8,
         "resolution": "resolved"
@@ -678,7 +678,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
         "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083:000",
-        "source_label": null,
+        "source_label": "a2005",
         "target_step_id": 18,
         "target_step_index": 17,
         "resolution": "resolved"
@@ -733,7 +733,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
         "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:001",
-        "source_label": null,
+        "source_label": "a2006",
         "target_step_id": 21,
         "target_step_index": 20,
         "resolution": "resolved"
@@ -788,7 +788,7 @@
       "option": {
         "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
         "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:002",
-        "source_label": null,
+        "source_label": "a2007",
         "target_step_id": 23,
         "target_step_index": 22,
         "resolution": "resolved"
@@ -1148,7 +1148,7 @@
         {
           "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042:000",
-          "source_label": null,
+          "source_label": "a1004",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
@@ -1156,12 +1156,49 @@
         {
           "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:001",
-          "source_label": null,
+          "source_label": "a1005",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          42,
+          43
+        ],
+        "join_command": 45,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1004",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              44
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1005",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 17,
@@ -1171,7 +1208,7 @@
         {
           "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083:000",
-          "source_label": null,
+          "source_label": "a2005",
           "target_step_id": 18,
           "target_step_index": 17,
           "resolution": "resolved"
@@ -1179,7 +1216,7 @@
         {
           "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:001",
-          "source_label": null,
+          "source_label": "a2006",
           "target_step_id": 21,
           "target_step_index": 20,
           "resolution": "resolved"
@@ -1187,36 +1224,123 @@
         {
           "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:002",
-          "source_label": null,
+          "source_label": "a2007",
           "target_step_id": 23,
           "target_step_index": 22,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 16,
+        "choice_step_id": 17,
+        "join_index": 24,
+        "join_step_id": 25,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          83,
+          84,
+          85
+        ],
+        "join_command": 116,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2005",
+            "step_indices": [
+              17,
+              18,
+              19
+            ],
+            "exit_index": 19,
+            "command_indices": [
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              94,
+              95
+            ],
+            "step_types": [
+              "stage",
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              18,
+              19,
+              20
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "a2006",
+            "step_indices": [
+              20,
+              21
+            ],
+            "exit_index": 21,
+            "command_indices": [
+              96,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              21,
+              22
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "a2007",
+            "step_indices": [
+              22,
+              23
+            ],
+            "exit_index": 23,
+            "command_indices": [
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              23,
+              24
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 16,
-      "severity": "unsupported"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "新年を迎えた315プロダクション。",
     "episode_label": null

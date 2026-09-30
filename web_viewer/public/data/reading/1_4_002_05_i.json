@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_002_05_i.json",
-    "sha256": "sha256:05f6b7003f4f70f07feb802d7ff7b76acb9f37c409f6e9d9514e4fc7cb8232af",
+    "sha256": "sha256:72195b1dc83031f81ab1a4a5aaf03396ee8b7b604ff3c7b1c40aaafde83aca29",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_002_05.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -2116,7 +2116,44 @@
           "target_step_index": 39,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 38,
+        "choice_step_id": 39,
+        "join_index": 39,
+        "join_step_id": 40,
+        "join_step_type": "talk",
+        "source_file": "assets/resources/scenariodata/1_4_002_05/scenario_1_4_002_05_i.json",
+        "raw_sha256": "sha256:791c93dcb014fb6f3540df2dceb01f9c248367d4a3467ed1e0b9d9a5cf88e21e",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          188,
+          189
+        ],
+        "join_command": 191,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "sel-1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              190
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "sel-2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 47,
@@ -2154,11 +2191,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 38,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

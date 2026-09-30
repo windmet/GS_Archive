@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "5_00_017_23_5_00_017_23.json",
-    "sha256": "sha256:584e89ead52ec1fe1711a9e1a11da372857b09ea62485a15c10f5a0d6475c1c4",
+    "sha256": "sha256:d389131cabb7da3f9e8243246fa51aa1fa0dd1c25eba0657c69bdfdd6396b4cc",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -22,7 +22,7 @@
       "aggregate_file": "5_00_017_23_5_00_017_23.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "title",
@@ -829,12 +829,13 @@
         "option_id": null,
         "source_label": "a2011",
         "target_step_id": 0,
-        "target_step_index": null,
-        "resolution": "unresolved"
+        "target_step_index": 31,
+        "resolution": "resolved",
+        "target_kind": "end"
       }
     },
     {
-      "kind": "choice_detail",
+      "kind": "choice_metadata",
       "source_text": "appeal",
       "text_ref": {
         "unit_id": "story-text:v1:5_00_017_23_5_00_017_23:5_00_017_23:cmd-000091:choice_detail:000",
@@ -884,8 +885,9 @@
         "option_id": null,
         "source_label": "a2011",
         "target_step_id": 0,
-        "target_step_index": null,
-        "resolution": "unresolved"
+        "target_step_index": 31,
+        "resolution": "resolved",
+        "target_kind": "end"
       }
     }
   ],
@@ -911,7 +913,44 @@
           "target_step_index": 9,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 8,
+        "choice_step_id": 9,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_00_017_23/scenario_5_00_017_23.json",
+        "raw_sha256": "sha256:34528070516a139d3c5a88555aff54c43f9a1563cf056e824592c98f822ef86f",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          28,
+          29
+        ],
+        "join_command": 31,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1002",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              30
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1003",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 31,
@@ -923,10 +962,36 @@
           "option_id": null,
           "source_label": "a2011",
           "target_step_id": 0,
-          "target_step_index": null,
-          "resolution": "unresolved"
+          "target_step_index": 31,
+          "resolution": "resolved",
+          "target_kind": "end"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 30,
+        "choice_step_id": 31,
+        "join_index": 31,
+        "join_step_id": null,
+        "join_step_type": "end",
+        "source_file": "assets/resources/scenariodata/5_00_017_23/scenario_5_00_017_23.json",
+        "raw_sha256": "sha256:34528070516a139d3c5a88555aff54c43f9a1563cf056e824592c98f822ef86f",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          91
+        ],
+        "join_command": 92,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2011",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -934,16 +999,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 8,
-      "severity": "unsupported"
-    },
-    {
-      "code": "unresolved-choice-target",
-      "step_index": 30,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

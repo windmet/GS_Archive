@@ -1724,7 +1724,8 @@
             },
             "source_hash": "sha256:ab11cfb33245ceec1b91f34b33b3fb44dce553a6967caeb4fcf9b7db9b9755ec"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "a1004"
         },
         {
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:001",
@@ -1741,7 +1742,8 @@
             },
             "source_hash": "sha256:ab741847666f7669c5dcdcf7883547dfec288784de8da99ea0a6a5b7a4853f12"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "a1005"
         }
       ],
       "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042"
@@ -3930,7 +3932,8 @@
             },
             "source_hash": "sha256:05d2b584e10cedf032eb42ca5ccb796bf60e90f25405c19f212ba90278404496"
           },
-          "target_step_id": 18
+          "target_step_id": 18,
+          "label": "a2005"
         },
         {
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:001",
@@ -3947,7 +3950,8 @@
             },
             "source_hash": "sha256:6db2598f523372425022ffd96fde6673a7621211fbfb631db446ed90d2875a3c"
           },
-          "target_step_id": 21
+          "target_step_id": 21,
+          "label": "a2006"
         },
         {
           "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:002",
@@ -3964,7 +3968,8 @@
             },
             "source_hash": "sha256:b4adabb1c49e4663fc1ddd7466b51586e5d4574af93656fdaee1b991c77ece11"
           },
-          "target_step_id": 23
+          "target_step_id": 23,
+          "label": "a2007"
         }
       ],
       "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083"
@@ -6769,5 +6774,156 @@
       "jump_id": "a3003",
       "target_step_id": 25
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:989cf90c6641ec014e3ce0fbc083b476045e3d7e5790445e94c3fa3ff36f2e6b",
+    "forks": [
+      {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          42,
+          43
+        ],
+        "join_command": 45,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1004",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              44
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1005",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      },
+      {
+        "choice_index": 16,
+        "choice_step_id": 17,
+        "join_index": 24,
+        "join_step_id": 25,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          83,
+          84,
+          85
+        ],
+        "join_command": 116,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2005",
+            "step_indices": [
+              17,
+              18,
+              19
+            ],
+            "exit_index": 19,
+            "command_indices": [
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              94,
+              95
+            ],
+            "step_types": [
+              "stage",
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              18,
+              19,
+              20
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "a2006",
+            "step_indices": [
+              20,
+              21
+            ],
+            "exit_index": 21,
+            "command_indices": [
+              96,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              21,
+              22
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "a2007",
+            "step_indices": [
+              22,
+              23
+            ],
+            "exit_index": 23,
+            "command_indices": [
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              23,
+              24
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

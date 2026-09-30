@@ -103,6 +103,7 @@ class ScenarioCompiler(ScenarioFileIO):
 
         # Branching / choice state
         self._pending_selection: Optional[dict] = None  # buffered choice step
+        self._raw_control_parts = {self._source_part_id: (self._source_file, self.raw)}
         self._pending_choice_count: int = 0
         self._jump_point_labels: list[str] = []          # pending labels from jump_point
         self._jump_point_map: dict[str, int] = {}       # label → step_id (last mapping only)
@@ -168,6 +169,7 @@ class ScenarioCompiler(ScenarioFileIO):
             source_id = source_id or f"episode_{idx + 1}"
             source_file = source_files[idx] if source_files and idx < len(source_files) else f"{source_id}.json"
             compiler._set_source_context(source_id, source_file)
+            compiler._raw_control_parts[source_id] = (source_file, data)
             compiler._begin_episode(source_id)
             for command_index, cmd in enumerate(data.get("Command", [])):
                 compiler._process(cmd, command_index)
@@ -1242,6 +1244,8 @@ class ScenarioCompiler(ScenarioFileIO):
         if long_text:
             option["detail_source_text"] = long_text
             option["detail_text_ref"] = self._text_ref(long_text, "choice_detail", 0)
+            if self._current_raw_type == 'text_select' and long_text == 'appeal':
+                option['detail_kind'] = 'presentation-marker'
         self._pending_selection["options"].append(option)
         self._pending_selection["command_end"] = self._current_command_index
 
@@ -1790,7 +1794,11 @@ class ScenarioCompiler(ScenarioFileIO):
         }
         if self.episodes:
             result["episodes"] = self.episodes
-        return result
+        from .control_flow import annotate_raw_control_flow, digest, encoded
+        records = [{'part': part, 'source_file': file, 'raw': raw,
+                    'raw_sha256': digest(encoded(raw)), 'raw_hash_format': 'sha256-decoded-command-json-v1'}
+                   for part, (file, raw) in self._raw_control_parts.items()]
+        return annotate_raw_control_flow(result, records)[0]
 
     @staticmethod
     def _infer_id(raw_data: dict) -> str:

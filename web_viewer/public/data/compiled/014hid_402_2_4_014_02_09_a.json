@@ -1047,7 +1047,8 @@
             },
             "source_hash": "sha256:6aea8544be4ea03bc94f219bc65d034515ad5d29d26d35a21968f7773d3da6dc"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:014hid_402_2_4_014_02_09_a:2_4_014_02_09_a:cmd-000016:001",
@@ -1064,7 +1065,8 @@
             },
             "source_hash": "sha256:65dab8a098453271bbd02bab23e772ef3de38286653a89fe49240905f40b6a87"
           },
-          "target_step_id": 9
+          "target_step_id": 9,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:014hid_402_2_4_014_02_09_a:2_4_014_02_09_a:cmd-000015"
@@ -1832,5 +1834,68 @@
       "jump_id": "phone_select3",
       "target_step_id": 10
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:c6620c1e105cba29fd967386f5d02ad9a49a4ac4bc1562e1302b94f4c03f6bcb",
+    "forks": [
+      {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/014hid_402/scenario_2_4_014_02_09_a.json",
+        "raw_sha256": "sha256:e9f4a13c935427965d7102fffa8b5798f420c62418ad9fb7984123ecd4672cb1",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          15,
+          16
+        ],
+        "join_command": 25,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              17,
+              18,
+              19,
+              20
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              8
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              21,
+              22,
+              23,
+              24
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          }
+        ]
+      }
+    ]
+  }
 }

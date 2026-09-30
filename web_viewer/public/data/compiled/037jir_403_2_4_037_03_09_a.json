@@ -1047,7 +1047,8 @@
             },
             "source_hash": "sha256:1c5f5dd090d3b4b693ff435f0385b9688a76eda56656e6b2f3085545320a19d8"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select1"
         },
         {
           "option_id": "choice-option:v1:037jir_403_2_4_037_03_09_a:2_4_037_03_09_a:cmd-000017:001",
@@ -1064,7 +1065,8 @@
             },
             "source_hash": "sha256:b9ed75f20b146f40a87954d8246ae46e5e65ba6f669c00101fe7e868379e0433"
           },
-          "target_step_id": 8
+          "target_step_id": 8,
+          "label": "phone_select2"
         }
       ],
       "choice_id": "choice:v1:037jir_403_2_4_037_03_09_a:2_4_037_03_09_a:cmd-000016"
@@ -1354,7 +1356,8 @@
             },
             "source_hash": "sha256:73042c33f803d402dd4a1c6c6f128bbe845f096af955ba85b8574b078c88dcf5"
           },
-          "target_step_id": 10
+          "target_step_id": 10,
+          "label": "phone_select3"
         }
       ],
       "choice_id": "choice:v1:037jir_403_2_4_037_03_09_a:2_4_037_03_09_a:cmd-000023"
@@ -1526,5 +1529,48 @@
       "jump_id": "phone_select3",
       "target_step_id": 10
     }
-  ]
+  ],
+  "reading_control_flow": {
+    "version": 1,
+    "base_compiled_sha256": "sha256:9d58b4f55ce6f6f1450daa2f548ab15b5a7a5af17bc4b426e892da948db2233b",
+    "forks": [
+      {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/037jir_403/scenario_2_4_037_03_09_a.json",
+        "raw_sha256": "sha256:13a79348fb5dec6eeb376eb34da1ac30c1224ae0f085ef129490db104c714159",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 19,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              18
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    ]
+  }
 }
