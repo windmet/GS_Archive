@@ -1054,6 +1054,7 @@ function buildRuntimeDiagnostics({ includeProjector = false } = {}) {
     spine: {
       instances: spineEntries.length,
       ids: spineEntries.map(([id]) => id),
+      models: spineEntries.map(([id, instance]) => ({ id, model: instance.modelId })),
       silhouettes: silhouetteEntries.length,
       silhouette_ids: silhouetteEntries.map(([id]) => id),
       pending_silhouettes: pendingSilhouettes.length,

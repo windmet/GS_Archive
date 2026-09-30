@@ -1,4 +1,5 @@
 import http from 'node:http'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -28,7 +29,8 @@ async function existing(candidates) {
 }
 const server = http.createServer(async (req, res) => {
   const route = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)
-  res.on('finish', () => { void fs.appendFile(path.join(evidence, 'http-requests.jsonl'), JSON.stringify({ at: new Date().toISOString(), url: req.url, status: res.statusCode }) + '\n') })
+  let receipt = {}
+  res.on('finish', () => { void fs.appendFile(path.join(evidence, 'http-requests.jsonl'), JSON.stringify({ at: new Date().toISOString(), url: req.url, status: res.statusCode, ...receipt }) + '\n') })
   try {
     if (!['GET', 'HEAD'].includes(req.method) || route.split('/').some(p => p === '..' || p.includes('\\'))) { res.writeHead(400); res.end(); return }
     if (isWithdrawnExternalStoryKey(route.slice(1))) { res.writeHead(410); res.end(); return }
@@ -37,6 +39,12 @@ const server = http.createServer(async (req, res) => {
     if (fault?.path === route && fault.remaining > 0) {
       fault.remaining--; await fs.writeFile(faults, JSON.stringify(fault))
       if (fault.status) { res.writeHead(fault.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end('{"expected_qa_fault":true}'); return }
+      if (fault.bodyFile) {
+        const file = path.resolve(evidence, fault.bodyFile)
+        if (!isWithinRoot(evidence, file)) throw Error('Fault body outside QA directory')
+        const body = await fs.readFile(file)
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(body); return
+      }
       if (fault.delayMs) await new Promise(resolve => setTimeout(resolve, fault.delayMs))
     }
     const candidates = []
@@ -50,6 +58,7 @@ const server = http.createServer(async (req, res) => {
     const file = await existing(candidates.filter(Boolean))
     if (!file) { res.writeHead(404); res.end(); return }
     const body = await fs.readFile(file)
+    receipt = { bytes: body.length, sha256: createHash('sha256').update(body).digest('hex') }
     const headers = { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' }
     const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/)
     if (range) {
