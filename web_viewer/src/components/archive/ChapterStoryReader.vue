@@ -3,7 +3,7 @@
     <ReaderPageHeader @back="emit('back')">{{ uiText('reader.chapter') }}</ReaderPageHeader>
     <div class="reader-body">
       <h1>{{ presentProducerAddressingText(chapter.title) }}</h1><p>{{ chapter.label }} · {{ chapter.segments.length }} 段</p>
-      <nav aria-label="本话阅读目录" class="chapter-reader-directory"><button v-for="segment in chapter.segments" :key="segment.episodeKey" :aria-label="`${presentIdolEpisodeLabel({ sourceName: segment.label })}${segment.status === 'ready' ? '' : ` · ${statusLabel(segment.status)}`}`" :title="statusLabel(segment.status) || undefined" :aria-current="segment.documentId === documentId ? 'location' : undefined" @click="select(segment)"><span>{{ presentIdolEpisodeLabel({ sourceName: segment.label, format:'reader' }) }}</span><i v-if="segment.status !== 'ready'" :class="`status-${segment.status}`" aria-hidden="true"></i></button></nav>
+      <ReaderStoryNavigation :segments="chapter.segments" :document-id="documentId" :chapter-navigation="chapterNavigation" allow-unlinked @select="select" @chapter="emit('chapter', $event)" />
       <ReaderControlBar :mode="mode" :search-open="searchOpen" @mode="emit('mode',$event)" @search="searchOpen = !searchOpen" />
       <form v-if="searchOpen" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)"><label>篇内查找<input v-model="query" type="search" placeholder="查找已载入的整话正文或说话人" /></label><p role="status">已处理 {{ loadedCount }}/{{ chapter.segments.length }} 段（{{ readableCount }} 段可读）；{{ searchMatches.length }} 处匹配{{ loadedCount < chapter.segments.length ? '（尚未载入的段落未搜索）' : '' }}</p><button type="button" :disabled="!searchMatches.length" @click="moveMatch(-1)">上一处</button><button :disabled="!searchMatches.length">下一处</button><button type="button" @click="searchOpen = false; query = ''">关闭查找</button></form>
       <p v-if="notice" role="alert">{{ notice }} <button @click="emit('refresh')">重新载入正文</button></p>
@@ -14,23 +14,22 @@
 </template>
 <script setup>
 import { computed, nextTick, onBeforeUpdate, onUpdated, ref, watch } from 'vue'
+import ReaderStoryNavigation from './ReaderStoryNavigation.vue'
 import ReaderPageHeader from './ReaderPageHeader.vue'
 import ChapterReadingSegment from './ChapterReadingSegment.vue'
 import ReaderControlBar from './ReaderControlBar.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
 import '../../presentation/reader-theme.css'
-import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
-const props = defineProps({ chapter: Object, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
-const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play', 'locate', 'refresh'])
+const props = defineProps({ chapter: Object, chapterNavigation: {type:Object,default:null}, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
+const emit = defineEmits(['chapter', 'select', 'mode', 'back', 'retry', 'play', 'locate', 'refresh'])
 const root = ref(null), sections = ref([]), query = ref(''), searchOpen = ref(false)
 const loadedCount = computed(() => props.chapter.segments.filter(segment => !['idle','loading'].includes(segment.status)).length)
 const readableCount = computed(() => props.chapter.segments.filter(segment => segment.status === 'ready').length)
 const searchMatches = computed(() => sections.value.flatMap(section => section?.matches(query.value) || []))
 const focused = computed(() => props.chapter.segments.find(segment => segment.documentId === props.documentId))
 const missingAnchor = computed(() => focused.value?.status === 'ready' && props.anchor && !focused.value.document.rows.some(row => row.anchor.row_id === props.anchor))
-function statusLabel(status) { return ({idle:'待载入',loading:'载入中',error:'载入失败',unsupported:'暂不支持',empty:'无正文','not-generated':'未生成'})[status] || '' }
 function select(segment) { if (segment.documentId) emit('select', segment.documentId); else root.value?.querySelector(`[id="reading-document-${segment.episodeKey}"]`)?.scrollIntoView({ block:'start' }) }
 function moveMatch(direction) {
   const list = searchMatches.value
@@ -67,10 +66,6 @@ onUpdated(() => {
 .story-reader { height:100%; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
 .reader-body { max-width:1000px; margin:0 auto; padding:28px max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
 h1 { margin:0; font-size:26px; line-height:1.5; }
-.chapter-reader-directory { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:8px; margin:20px 0; }
-.chapter-reader-directory button { position:relative; padding:8px 4px; font-size:14px; font-variant-numeric:tabular-nums; }
-.chapter-reader-directory i { position:absolute; width:5px; height:5px; top:5px; right:5px; border-radius:50%; background:#a0b4b5; }
-.chapter-reader-directory .status-error { background:#ba6659; }
 button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:6px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
 button[aria-current],button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
 button:disabled { opacity:.5; cursor:default; }
@@ -78,6 +73,5 @@ input { box-sizing:border-box; min-height:44px; width:min(250px,100%); border:1p
 label { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
 form { padding:16px; background:var(--reader-bg-card); border:1px solid var(--reader-border); border-radius:12px; }
 button:focus-visible,input:focus-visible { outline:2px solid var(--reader-accent-text); outline-offset:3px; }
-@media(max-width:1100px) { .chapter-reader-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
-@media(max-width:760px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } .chapter-reader-directory { gap:6px; } .chapter-reader-directory button { font-size:13px; } }
+@media(max-width:760px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } }
 </style>

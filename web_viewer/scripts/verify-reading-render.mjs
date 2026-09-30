@@ -18,6 +18,13 @@ try {
   const { default: CollectionSynopsis } = await server.ssrLoadModule('/src/components/archive/CollectionStorySynopsis.vue')
   const { default: ChapterSegment } = await server.ssrLoadModule('/src/components/archive/ChapterReadingSegment.vue')
   const { default: ChapterReader } = await server.ssrLoadModule('/src/components/archive/ChapterStoryReader.vue')
+  const { default: StoryNavigation } = await server.ssrLoadModule('/src/components/archive/ReaderStoryNavigation.vue')
+  const navProps = {documentId:'first',segments:[{documentId:'first',label:'エピソード1',status:'ready'},{documentId:'second',label:'エピソード2',status:'ready'}],
+    chapterNavigation:{chapterId:'one',chapters:[{id:'one',label:'第1話',title:'One',documentId:'first',storyFile:'one.json'},{id:'two',label:'第2話',title:'Two',documentId:'second',storyFile:'two.json'},{id:'missing',label:'第3話',title:'Missing',documentId:'',storyFile:'three.json'}]}}
+  const navHtml = await renderToString(createSSRApp(StoryNavigation,navProps))
+  assert.ok(navHtml.includes('切换话目') && navHtml.includes('第2話 · Two'))
+  assert.ok(navHtml.includes('value="missing" disabled'))
+  assert.ok(navHtml.includes('EP 01') && navHtml.includes('EP 02') && navHtml.includes('aria-current="location"'))
   const { setReaderTheme } = await server.ssrLoadModule('/src/presentation/ReaderTheme.js')
   const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
   const synopsis=readingSynopsisRow(synopsisDoc)
@@ -26,6 +33,7 @@ try {
     const single = await renderToString(createSSRApp(Reader, {state:{status:'ready',entries:[],document:synopsisDoc},documentId:synopsisDoc.document_id,mode:'original',anchor:''}))
     const whole = await renderToString(createSSRApp(ChapterReader, {chapter:{title:'Theme test',label:'第1話',segments:[]},documentId:'',mode:'original',anchor:''}))
     for (const html of [single,whole]) {
+      assert.ok(!html.includes('选择其他分段'),'old segment dropdown is removed from both scopes')
       assert.ok(html.includes(`data-theme="${theme}"`), 'both reading scopes inherit the shared preference')
       assert.ok(html.includes('aria-label="阅读主题"'))
       for (const label of ['极简白','护眼暖阳','深夜暗色','冰青冷调（事务所）']) assert.ok(html.includes(`aria-label="${label}"`))

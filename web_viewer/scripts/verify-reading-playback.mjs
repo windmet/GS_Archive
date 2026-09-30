@@ -65,7 +65,8 @@ const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurp
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
 const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry,
-  chapterReadingState: ref(null),
+  chapterReadingState: ref(null), readerCollectionDetail: ref(null),
+  loadCollectionDetail: async () => { throw Error('optional directory unavailable') },
   chapterReadingSession: createChapterReadingSession({ repository: {}, publish: () => {} }),
   captureActiveArchiveView: () => {},
   primeArchiveRouteComponent: () => {},

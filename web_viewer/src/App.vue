@@ -17,7 +17,7 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
-      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
+      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :chapter-navigation="readingChapterNavigation" @chapter="selectReaderChapter" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
@@ -526,6 +526,7 @@ import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterReadingPlan.js'
+import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession } from './core/ReadingSession.js'
@@ -1235,6 +1236,10 @@ const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
 
 const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
 const chapterReadingState = ref(null)
+const readerCollectionDetail = shallowRef(null)
+const readingChapterNavigation = computed(() => readerCollectionDetail.value && readerChapterNavigation(
+  readerCollectionDetail.value.view.collection, readerCollectionDetail.value.view.readingEntries,
+  readingDocumentId.value, currentStoryFile.value))
 const readingPlaybackNotice = ref('')
 const pickerPreparing = ref(false)
 let pickerRequest = 0
@@ -1536,6 +1541,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       readingRevision.value = route.readingRev || ''
       readingScope.value = route.readingScope || ''
       chapterReadingSession.close(); chapterReadingState.value = null
+      readerCollectionDetail.value = null
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentEpisodeId.value = route.episode || ''
@@ -1558,9 +1564,16 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
           const detail = await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
           if (!intent.isCurrent()) return
           const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
+          readerCollectionDetail.value = detail
           await chapterReadingSession.open(plan, intent)
         } catch (error) { if (intent.isCurrent()) readingState.value = {status:'error', document:null, entries:[], error:error.message} }
-      } else await readingSession.open(route.reading, intent)
+      } else {
+        const directory = route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })
+          .then(detail => { if (intent.isCurrent()) readerCollectionDetail.value = detail })
+          .catch(() => { /* Optional chapter navigation must not block a readable document. */ }) : Promise.resolve()
+        await readingSession.open(route.reading, intent)
+        await directory
+      }
       if (!intent.isCurrent()) return
       if (route.view === 'player') await openReaderPlayback(route.readingRow, { intent, route })
       else if (readingRevision.value && readingRevision.value !== readingState.value.entries.find(e => e.document_id === route.reading)?.sha256) {
@@ -1825,6 +1838,18 @@ function selectReaderDocument(documentId) {
   readingDocumentId.value = documentId; readingRowId.value = ''; readingRevision.value = segment.entry?.sha256 || ''
   readingState.value = { status:segment.status, document:segment.document, entries:chapterReadingState.value.segments.map(item=>item.entry).filter(Boolean), error:segment.error }
   syncArchiveRoute({ replace:true })
+}
+async function selectReaderChapter(chapterId) {
+  const target = readingChapterNavigation.value?.chapters.find(chapter => chapter.id === chapterId)
+  if (!target?.documentId || !target.storyFile || chapterId === readingChapterNavigation.value.chapterId) return
+  const context = currentArchiveRoute()
+  const source = readArchiveSourceRoute(context.sourceRoute || '')
+  if (source.view === 'story_collection' && source.storyType === context.storyType && source.storySection === context.storySection)
+    context.sourceRoute = buildArchiveSourceQuery({ ...source, story:target.storyFile })
+  const pending = applyArchiveRoute({ ...context, view:'reader', story:target.storyFile,
+    reading:target.documentId, readingRow:'', readingRev:'' }, { restoring:false })
+  syncArchiveRoute()
+  await pending
 }
 function locateChapterReadingRow({ documentId, rowId, revision }) {
   const segment = chapterReadingState.value?.segments.find(item => item.documentId === documentId)

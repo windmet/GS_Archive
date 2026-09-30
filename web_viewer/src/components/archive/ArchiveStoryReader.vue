@@ -1,14 +1,11 @@
 <template>
-  <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
+  <ChapterStoryReader v-if="chapter" :chapter="chapter" :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
   <section v-else ref="readerRoot" class="story-reader reader-container" :data-theme="readerTheme" :aria-busy="busy" aria-labelledby="reading-heading">
     <ReaderPageHeader @back="emit('back')">剧情阅读</ReaderPageHeader>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
       <p class="reader-subtitle">{{ episodeLabel }}</p>
-      <details class="reader-segments"><summary>选择其他分段</summary><label class="reader-picker">分段<select :value="documentId" :disabled="state.status === 'loading'" @change="emit('select', $event.target.value)">
-        <option v-if="!state.entries.some(e => e.document_id === documentId)" :value="documentId">{{ state.status === 'loading' ? '正在载入分段…' : '当前分段尚未收录' }}</option>
-        <option v-for="entry in segmentEntries" :key="entry.document_id" :value="entry.document_id">{{ [presentProducerAddressingText(entry.title) || '剧情标题待确认', presentIdolEpisodeLabel({ sourceName: entry.episode_label })].filter(Boolean).join(' · ') }}{{ entry.status === 'ready' ? '' : '（暂不支持阅读）' }}</option>
-      </select></label></details>
+      <ReaderStoryNavigation :segments="segmentEntries.map(entry => ({documentId:entry.document_id,label:entry.episode_label,status:entry.status}))" :document-id="documentId" :chapter-navigation="chapterNavigation" @select="emit('select', $event.documentId)" @chapter="emit('chapter', $event)" />
       <ReaderControlBar ref="controlBar" :mode="mode" :searchable="state.status === 'ready'" :search-open="searchOpen" search-id="reader-search" @mode="emit('mode',$event)" @search="toggleSearch" />
       <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
         已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
@@ -41,6 +38,7 @@
 </template>
 
 <script setup>
+import ReaderStoryNavigation from './ReaderStoryNavigation.vue'
 import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import ChapterStoryReader from './ChapterStoryReader.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
@@ -53,8 +51,8 @@ import ReaderPageHeader from './ReaderPageHeader.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
-const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
-const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
+const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, chapterNavigation: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
+const emit = defineEmits(['chapter', 'select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
 const searchQuery = ref('')
 const searchOpen = ref(false)
 const searchInput = ref(null)
@@ -145,10 +143,6 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--reader-acc
 .reader-body { max-width: 1000px; margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
 h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outline: none; }
 .reader-subtitle { font-size: 14px; color: var(--reader-text-sub); margin: 4px 0 22px; }
-.reader-picker { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 15px; font-weight: 600; }
-.reader-picker select { min-height: 44px; width: min(100%, 310px); min-width: 0; border: 1px solid var(--reader-border); border-radius: 6px; padding: 10px; background: var(--reader-bg-card); font-weight: 400; }
-.reader-segments { font-size: 14px; color: var(--reader-text-sub); }
-.reader-segments summary { cursor: pointer; padding: 10px 0; }
 .reader-full-play { padding: 10px 20px; border-radius: 8px; background: var(--reader-active); color: var(--reader-on-accent); }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: var(--reader-text-sub); }
