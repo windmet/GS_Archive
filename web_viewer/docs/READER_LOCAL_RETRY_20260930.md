@@ -33,3 +33,20 @@ EP07 的 62 个命令没有持久变量/条件读取，EP08 的 235 个命令也
 - verify:reading、publication/schema、代码构建与 Browser 验收结果记录在后续验收节。
 
 小型原始 JSON、候选、前后备份、ledger 与报告保存在 `E:/Web_build/SideM_EP07_Retry_QA_20260930`，不包含媒体包。既有无关文件保留；本轮不会作生产部署或完整资源打包。
+
+## 最终本地验收
+
+Source commit `1d7266c2`。readmodels 按已提交输入生成到 `E:/Web_build/SideM_EP07_Retry_Models_20260930`，release `deb7832d7615bf50edbb72909638d252652d71c5e7f6d66f5fe4d745faa0c8a1`，8,420 个产物通过完整字节/描述符/依赖闭包检查。更新 bootstrap 与 route ledger 的 release 绑定；既有路由、设备验收边界不提升。
+
+`verify:reading`、`generate-reading-documents --check`、RAW Python/JS 回归、player-qa-flow、authoritative-story-schema、reviewed-b001、publication-ledger 均通过。完整账本为 201 releases / 1,368 stable logical IDs；B001 仍为原 52 文档、42 目录、993 个 source-bound units。`git diff --check` 通过。
+
+`npm run build:check` 通过，2,604 模块，固定 `.analysis/build-check`，`copyPublicDir:false`。该构建的代码是 `1d7266c2`，当时仅 bootstrap/route 绑定未提交，audit 如实记录 sourceDirty，不冒充清洁提交构建。`verify-archive-build-audit --progress` 与 `check_cutover_routes --progress` 通过；启动 JS gzip 124,678 bytes，禁用模块与生产 legacy 模块清单为空。未创建完整资源包。
+
+Browser 使用 5197 上既有 QA 服务的生产 bundle、上述已验证 readmodels 和现有资源映射；仅重启核实归属的 QA 服务。实际旅程：
+
+- 手机 390×844：EP07 单页，三个选择组；199cm 显示对应两句反应和重答提示，后续正文隐藏；返回选项按钮聚焦当前选项，ArrowLeft 换成 191cm 后正文恢复，无横向溢出。
+- 桌面 1280×900：整话十 EP，定位 EP07；三组分别切到第二项，各显示对应反应，前两题共享后文保留，第三题后文隐藏。搜索“原来如此……关于他们”命中后，保留前两题选择，只将第三题恢复 191cm，关闭搜索并定位 `step-21:text`。
+- 从 EP07“播放本段”进入真实 Player；前两题选错仍分别汇合到下一题。第三题 199cm → 19/22、20/22 → 15/22 问题前缀；上一段返回已走过的 20/22。再次到 17/22 选择 191cm → 18/22 → 21/22 共同后文。返回恢复 Reader 的 EP07 定位。
+- 当前 Reader/Player 无捕获 warn/error，临时视口覆盖已重置，用户已有阅读页保留。
+
+截图：`mobile-wrong-retry.png`、`desktop-wrong-retry.png`、`desktop-correct-continuation.png`、`player-returned-question.png`、`player-correct-exit.png`，均位于上述小型 QA 目录。此为本地 Browser 验收，不是物理设备、部署、完整媒体或全画面验收。
