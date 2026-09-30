@@ -107,6 +107,9 @@ jobs:
       - name: Verify playback feature ownership
         run: npm run verify:playback-controller
 
+      - name: Verify player and story interaction recovery contracts
+        run: npm run verify:player-qa
+
       - name: Verify translation contracts
         run: npm run verify:story-translations
 

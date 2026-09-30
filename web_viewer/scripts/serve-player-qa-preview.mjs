@@ -36,16 +36,17 @@ const server = http.createServer(async (req, res) => {
     if (isWithdrawnExternalStoryKey(route.slice(1))) { res.writeHead(410); res.end(); return }
     let fault
     if (faults) try { fault = JSON.parse(await fs.readFile(faults, 'utf8')) } catch (error) { if (error.code !== 'ENOENT') throw error }
-    if (fault?.path === route && fault.remaining > 0) {
-      fault.remaining--; await fs.writeFile(faults, JSON.stringify(fault))
-      if (fault.status) { res.writeHead(fault.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end('{"expected_qa_fault":true}'); return }
-      if (fault.bodyFile) {
-        const file = path.resolve(evidence, fault.bodyFile)
+    const rule = (fault?.rules || [fault]).find(item => item?.path === route && item.remaining > 0)
+    if (rule) {
+      rule.remaining--; await fs.writeFile(faults, JSON.stringify(fault))
+      if (rule.status) { res.writeHead(rule.status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end('{"expected_qa_fault":true}'); return }
+      if (rule.bodyFile) {
+        const file = path.resolve(evidence, rule.bodyFile)
         if (!isWithinRoot(evidence, file)) throw Error('Fault body outside QA directory')
         const body = await fs.readFile(file)
         res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(body); return
       }
-      if (fault.delayMs) await new Promise(resolve => setTimeout(resolve, fault.delayMs))
+      if (rule.delayMs) await new Promise(resolve => setTimeout(resolve, rule.delayMs))
     }
     const candidates = []
     if (route.startsWith('/_catalog/')) candidates.push(path.join(models, 'pages', route))

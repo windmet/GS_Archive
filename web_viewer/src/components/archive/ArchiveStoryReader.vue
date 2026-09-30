@@ -1,5 +1,6 @@
 <template>
-  <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
+  <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
+  <section v-else ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
     <ArchivePageChrome class="reader-top" back-class="reader-back" @back="emit('back')"><template #title><span>剧情阅读</span></template></ArchivePageChrome>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
@@ -38,29 +39,15 @@
         </form>
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
 
-        <article class="reader-transcript" aria-label="剧情正文">
-          <section v-for="item in presentedRows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
-            <template v-if="!item.mergedTitle">
-            <p v-if="item.branch?.first" class="reader-branch-label">选项 {{ item.branch.index + 1 }} 的分支（与其他选项互斥；下方汇合后继续）</p>
-            <img v-if="item.avatar" class="reader-avatar" :src="getCharaIconUrl(item.avatar)" alt="" loading="lazy" @error="$event.target.hidden = true" />
-            <p v-if="item.view.speaker.display" class="reader-speaker">{{ item.view.speaker.display }}</p>
-            <span v-if="item.row.kind === 'choice'" class="reader-kind">选项</span>
-            <span v-if="item.row.kind === 'choice_detail'" class="reader-kind">选项附文</span>
-            <span v-if="item.row.presentation" class="reader-kind">{{ item.row.presentation === 'call' ? '通话' : '短信' }}</span>
-            <MobileStamp v-if="item.row.kind === 'stamp'" :id="item.row.media.id" />
-            <p v-else class="reader-primary" :lang="item.view.primary.locale">{{ reflowReadingText(item.view.primary.text, item.view.primary.locale) }}</p>
-            <p v-if="item.view.secondary" class="reader-secondary" :lang="item.view.secondary.locale">{{ reflowReadingText(item.view.secondary.text, item.view.secondary.locale) }}</p>
-            <span v-if="mode !== 'original' && item.view.translation.stale" class="reader-kind">译文待更新</span>
-            </template>
-          </section>
-        </article>
+        <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :search-match-ids="searchMatchIds" />
       </template>
     </div>
   </section>
 </template>
 
 <script setup>
-import MobileStamp from '../mobile/MobileStamp.vue'
+import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
+import ChapterStoryReader from './ChapterStoryReader.vue'
 import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -73,8 +60,8 @@ import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
-const props = defineProps({ state: { type: Object, required: true }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
-const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate'])
+const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean })
+const emit = defineEmits(['select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
 const searchQuery = ref('')
 const searchOpen = ref(false)
 const searchInput = ref(null)
@@ -148,6 +135,7 @@ const missingAnchor = computed(() => props.anchor && !document.value?.rows.some(
 const choiceRows = control => document.value.rows.filter(r => r.kind === 'choice' && r.anchor.step_index === control.step_index)
 watch(() => [props.state.status, props.documentId, props.anchor, props.notice], async () => {
   await nextTick()
+  if (props.chapter) return
   if (props.notice && playbackNotice.value) {
     playbackNotice.value.focus({ preventScroll: true })
     playbackNotice.value.scrollIntoView({ block: 'start' })

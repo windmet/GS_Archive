@@ -87,15 +87,16 @@
                 <BookOpen :size="17" />
                 <span><strong>Idol Episode</strong><small>{{ chapter.canonicalRelation.sectionName }}</small></span>
               </button>
+              <button v-if="!chapter.canonicalRelation" class="chapter-read" @click="readChapter(chapter)"><BookOpen :size="17" /><span><strong>整话阅读</strong></span></button>
               <button
-                v-else
+                v-if="!chapter.canonicalRelation"
                 class="chapter-play"
                 :disabled="!chapter.exists"
-                :title="chapter.exists ? '使用实验性剧情播放器播放整话' : '剧情文件未实装'"
+                :title="chapter.exists ? '连播本话，逐句播放由 AUTO 或手动控制' : '剧情文件未实装'"
                 @click="emit('play-chapter', chapter)"
               >
                 <Play :size="17" fill="currentColor" />
-                <span><strong>{{ chapter.exists ? '剧情播放器' : '未实装' }}</strong><small>实验功能</small></span>
+                <span><strong>{{ chapter.exists ? '连播本话' : '未实装' }}</strong></span>
               </button>
             </div>
           </div>
@@ -116,22 +117,16 @@
             </div>
             <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
+            <p v-if="readingStatusNotice" role="status">{{ readingStatusNotice }}</p>
+            <p v-if="!chapter.canonicalRelation" class="entry-help">点击分段阅读，▶ 播放演出。连播接续本话各段；逐句播放可开启 AUTO。剧情播放器为实验功能。</p>
             <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
               <div v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
-              <button
-                :disabled="!episode.exists"
-                @click="emit('play-episode', { chapter, episode })"
-              >
-                <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
-                <span class="episode-copy">
-                  <strong>{{ episode.label }}</strong>
-                  <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
-                </span>
-                <Play v-if="episode.exists" :size="15" fill="currentColor" />
-                <span v-else class="episode-lock">－</span>
-              </button>
-              <button v-if="readingEntry(episode)" class="episode-reading" :aria-label="`阅读 ${episode.label}`" @click="emit('read-episode', { chapter, documentId: readingEntry(episode).document_id })"><BookOpen :size="16" />阅读</button>
+              <a v-if="readingEntry(episode)" class="episode-reading-main" :href="readingHref(chapter, readingEntry(episode))" :aria-label="`阅读 ${episodeLabel(episode)}`" @click="readEpisode($event, chapter, episode)">
+                <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span><span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音{{ readingEntry(episode).status === 'ready' ? '' : ' · 阅读状态待确认' }}</small></span>
+              </a>
+              <button v-else class="episode-reading-main" @click="readingStatusNotice = '此分段尚未生成阅读正文，演出入口状态独立显示。'"><span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span><span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>正文未生成</small></span></button>
+              <button class="episode-play" :disabled="!episode.exists" :aria-label="`播放 ${episodeLabel(episode)}`" @click.stop="emit('play-episode', { chapter, episode })"><Play :size="18" fill="currentColor" /></button>
               </div>
             </div>
           </div>
@@ -146,10 +141,12 @@
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
+import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 
 const props = defineProps({
+  readerSource: { type:Object, default:()=>({}) },
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   initialChapterId: { type: String, default: '' },
@@ -158,8 +155,24 @@ const props = defineProps({
 })
 const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
-const readingByFile = computed(() => new Map(props.readingEntries.filter(e => e.status === 'ready' && e.source_file).map(e => [e.source_file, e])))
+const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
+const readingStatusNotice = ref('')
+const episodeLabel = episode => presentIdolEpisodeLabel({ sourceName: episode.label, kind:episode.kind, ordinal:episode.ordinal })
 const readingEntry = episode => readingByFile.value.get(episode.file)
+
+function readingHref(chapter, entry) {
+  const source = { ...props.readerSource, story: chapter.story?.file || chapter.file || '' }
+  return buildArchiveUrl('http://localhost/', { ...source, view:'reader', reading:entry.document_id, readingScope:'chapter', sourceRoute:buildArchiveSourceQuery(source) }).search
+}
+function readEpisode(event, chapter, episode) {
+  if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
+  event.preventDefault(); emit('read-episode', { chapter, documentId:readingEntry(episode).document_id })
+}
+function readChapter(chapter) {
+  const entry = chapter.episodes.map(readingEntry).find(Boolean)
+  if (entry) emit('read-episode', { chapter, documentId:entry.document_id })
+  else readingStatusNotice.value = '本话尚未生成可关联的阅读正文。'
+}
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -247,7 +260,12 @@ function externalResourcesForChapter(chapterId) {
 .episode-grid button { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 54px; padding: 8px 11px; border: 0; background: #fff; color: #2d3d45; cursor: pointer; font: inherit; text-align: left; }
 .episode-grid button:hover:not(:disabled) { background: #edf8f7; }.episode-grid button:disabled { background: #f4f6f7; color: #929da2; cursor: not-allowed; }
 .episode-entry { display: flex; min-width: 0; background: #fff; }
-.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-entry > .episode-reading-main { flex:1; min-width:0; display:grid; grid-template-columns:34px minmax(0,1fr); align-items:center; gap:8px; min-height:54px; padding:8px 11px; border:0; background:#fff; color:#2d3d45; font:inherit; text-align:left; text-decoration:none; box-sizing:border-box; }
+.episode-reading-main:hover { background:#edf8f7; }
+.episode-grid .episode-play { display:flex; justify-content:center; flex:0 0 48px; min-width:44px; min-height:44px; padding:8px; border-left:1px solid #e2ecef; }
+.episode-entry :focus-visible { outline:2px solid #168f98; outline-offset:-2px; }
+.entry-help { font-size:12px; color:#60727e; line-height:1.7; }
+.chapter-read { border:1px solid #cfe1df; color:#14766f; background:#fff; cursor:pointer; }
 .episode-grid .episode-reading { display: flex; flex: 0 0 auto; justify-content: center; min-width: 66px; min-height: 44px; border-left: 1px solid #e2ecef; color: #157c78; font-size: 13px; }
 .episode-number { color: #16877f; font-size: .59rem; font-weight: 800; font-variant-numeric: tabular-nums; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { color: #87949a; font-size: .53rem; }.episode-grid svg { color: #159087; }.episode-lock { text-align: center; }
 @media (max-width: 840px) { .collection-hero { grid-template-columns: 1fr; gap: 18px; }.collection-visual { max-width: 720px; }.chapter-toggle { grid-template-columns: 38px minmax(0, 1fr) 22px; }.chapter-stats { display: none; } }

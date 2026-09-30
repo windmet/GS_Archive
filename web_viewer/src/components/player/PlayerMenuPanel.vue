@@ -3,7 +3,7 @@
     <button class="player-modal-backdrop" data-testid="player-menu-backdrop" tabindex="-1" :aria-label="closeLabel" @click.stop="emit('close')" />
     <section ref="panel" class="player-menu-panel" data-testid="player-menu-panel" role="dialog" aria-modal="true" aria-labelledby="player-menu-title">
       <header><div><strong id="player-menu-title">{{ title }}</strong><small>{{ pausedLabel }}</small></div><button ref="closeButton" data-testid="player-menu-close" :aria-label="closeLabel" @click="emit('close')">×</button></header>
-      <div class="player-menu-scroll" data-testid="player-menu-scroll"><slot /></div>
+      <div class="player-menu-scroll" data-testid="player-menu-scroll" :data-scroll-input="scrollInput" :data-scroll-input-count="scrollInputCount" @wheel.passive="recordInput('wheel')" @touchmove.passive="recordInput('touch')"><slot /></div>
     </section>
   </div>
 </template>
@@ -13,6 +13,8 @@ import { trapDialogKey } from './dialogFocus.js'
 defineProps({ title: String, pausedLabel: String, closeLabel: String })
 const emit = defineEmits(['close'])
 const panel = ref(null), closeButton = ref(null)
+const scrollInput = ref(''), scrollInputCount = ref(0)
+function recordInput(kind) { scrollInput.value = kind; scrollInputCount.value++ }
 let trigger
 onMounted(() => { trigger = document.activeElement; closeButton.value?.focus({ preventScroll: true }) })
 onBeforeUnmount(() => { const previous = trigger; nextTick(() => { if (previous?.isConnected && !previous.closest('[inert]')) previous.focus({ preventScroll: true }) }) })

@@ -1,4 +1,17 @@
 export default Object.freeze({
+  'player.picker.select': '选择',
+  'player.picker.loading': '正在准备所选段落…',
+  'player.picker.current': '当前段',
+  'player.picker.missing': '未收录',
+  'player.picker.cancel': '取消选集载入',
+  'player.picker.failed': '本话目录载入失败',
+
+  'reader.chapter': '整话阅读',
+  'reader.playSegment': '播放本段',
+  'player.picker.title': '本话选集',
+  'player.picker.restart': '从本段开头重播',
+  'player.picker.back': '返回播放设置',
+
   'player.settings.paused': '剧情已暂停',
   'player.voice.backend': '语音播放方式',
   'player.voice.auto': '自动选择',

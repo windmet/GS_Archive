@@ -19,6 +19,66 @@ function setup(overrides = {}) {
   const reply = (index = requests.length - 1) => requests[index].resolve({ scenario_id: requests[index].file, steps: [{ step_id: 1 }] })
   return { state, navigation, controller, requests, writes, returns, errors, reply }
 }
+const pickerEpisodes = [{id:'one',file:'one.json',label:'エピソード1'}, {id:'two',file:'two.json',label:'エピソード2'}, {id:'three',file:'three.json',label:'エピソード3'}]
+{
+  const t=setup()
+  const initial=t.controller.startQueue(pickerEpisodes,0,'story_collection',{entryIntent:'chapter'})
+  assert.equal(t.controller.continuationOverride.value,null,'entry intent only commits after successful entry')
+  t.reply();await initial
+  assert.equal(t.controller.continuationOverride.value,true)
+  assert.equal(t.state.playMode.value,'chapter')
+  const snapshot=t.controller.queue.snapshot.value, instance=t.controller.currentScenarioInstance.value
+  const target=index=>({instance,queueRevision:snapshot.revision,entryKey:snapshot.entries[index].entryKey})
+  const older=t.controller.selectEpisode(target(2))
+  assert.equal(t.controller.selectEpisode(target(2)),older,'same target double click coalesces')
+  const newer=t.controller.selectEpisode(target(1))
+  assert.equal(t.requests[1].options.signal.aborted,true)
+  t.reply(1);assert.equal(await older,false)
+  t.reply(2);assert.equal(await newer,true)
+  assert.equal(t.state.currentScenarioFile.value,'two.json')
+  assert.equal(t.controller.queue.current.value.id,'two')
+  assert.equal(t.controller.queue.current.value.label,'EPISODE 02')
+  assert.equal(t.controller.continuationOverride.value,true,'selection retains session continuation')
+  assert.equal(await t.controller.selectEpisode(target(0)),false,'old snapshot/instance cannot select into new scene')
+  t.controller.close();assert.equal(t.controller.continuationOverride.value,null)
+  const single=t.controller.startQueue(pickerEpisodes,1,'story_collection',{entryIntent:'segment'})
+  t.reply();await single;assert.equal(t.controller.continuationOverride.value,false)
+}
+{
+  const t=setup(), initial=t.controller.startQueue(pickerEpisodes,0,'story_collection')
+  t.reply();await initial
+  const instance=t.controller.currentScenarioInstance.value, snapshot=t.controller.queue.snapshot.value
+  const target=index=>({instance,queueRevision:snapshot.revision,entryKey:snapshot.entries[index].entryKey})
+  const pending=t.controller.selectEpisode(target(2))
+  assert.equal(await t.controller.selectEpisode(target(0)),true,'newer current-segment choice cancels preparation without restarting')
+  assert.equal(t.controller.currentScenarioInstance.value,instance)
+  assert.equal(t.state.currentScenarioFile.value,'one.json')
+  assert.equal(t.controller.queue.current.value.id,'one')
+  const renewed=t.controller.selectEpisode(target(2))
+  assert.notEqual(renewed,pending,'a new choice after cancellation cannot coalesce with the obsolete request')
+  assert.equal(await t.controller.selectEpisode(target(0)),true)
+  t.reply(2);assert.equal(await renewed,false)
+  t.reply(1);assert.equal(await pending,false)
+  assert.equal(t.state.currentScenarioFile.value,'one.json')
+  const failure=t.controller.selectEpisode(target(1))
+  t.requests[3].reject(Error('picker target HTTP503'));assert.equal(await failure,false)
+  assert.equal(t.controller.queue.current.value.id,'one')
+  const retry=t.controller.retry();t.reply(4);assert.equal(await retry,true)
+  assert.equal(t.controller.queue.current.value.id,'two')
+  t.controller.dispose()
+}
+console.log('Picker: transaction identity, same-target coalescing, newer intent, current-segment cancellation, failure/retry, cursor consistency and session-only intent passed')
+{
+  const t=setup()
+  const restored=t.controller.restore('three.json','reader',{startStep:1,endStep:1,entryIntent:'segment'},[],undefined,{view:'reader',reading:'original-doc',readingScope:'chapter'})
+  t.requests[0].reject(Error('restoration source guard rejection'));assert.equal(await restored,false)
+  assert.equal(t.writes.length,0)
+  const retry=t.controller.retry();t.reply(1);assert.equal(await retry,true)
+  assert.equal(t.writes.length,1,'successful user retry publishes the current player URL')
+  assert.equal(t.writes[0].view,'player');assert.equal(t.writes[0].scenario,'three.json')
+  assert.equal(t.writes[0].reading,'original-doc');assert.equal(t.writes[0].readingScope,'chapter')
+  t.controller.dispose()
+}
 const episodes = [{ id: 'a', file: 'shared.json', startStep: 2, endStep: 8 },
   { id: 'b', file: 'shared.json', startStep: 12, endStep: 20 }]
 {

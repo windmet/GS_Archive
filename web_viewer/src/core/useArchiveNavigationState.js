@@ -13,6 +13,7 @@ export function useArchiveNavigationState() {
   const readingRowId = ref('')
   const readingMode = ref('original')
   const readingRevision = ref('')
+  const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
@@ -61,12 +62,12 @@ export function useArchiveNavigationState() {
       ...playerEntryRoute.value, view: 'player', scenario: currentScenarioFile.value,
       startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
       initialStep: currentScenarioInitialStep.value, voice: currentPreviewCue.value,
-      returnView: returnViewAfterPlayer.value,
+      returnView: returnViewAfterPlayer.value, ...(playMode.value ? { playMode:playMode.value } : {}),
     }
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-        readingMode: readingMode.value, readingRev: readingRevision.value,
+        readingMode: readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
@@ -169,7 +170,7 @@ export function useArchiveNavigationState() {
     readingDocumentId,
     readingRowId,
     readingMode,
-    readingRevision,
+    readingRevision, readingScope, playMode,
     currentScenarioInitialStep,
     returnViewAfterPlayer,
     storyCollectionParentView,

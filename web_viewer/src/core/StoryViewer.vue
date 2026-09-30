@@ -10,7 +10,7 @@
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
     </div>
-    <div class="viewer-stage" :inert="menuOpen || viewingOfferOpen || undefined">
+    <div class="viewer-stage" :inert="menuOpen || viewingOfferOpen || props.recoveryOpen || undefined">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
@@ -23,6 +23,7 @@
       :compact="immersiveCompact"
       :current="playableStepNumber"
       :total="playableStepTotal"
+      :episode-label="positionLabel"
       :language="langLabel"
       @back="$emit('back')"
       @language="cycleLanguage"
@@ -152,7 +153,10 @@
     </div>
 
     </div><!-- /viewer-stage -->
-    <PlayerMenuPanel v-if="menuOpen && !HIDE_UI" :title="uiText('player.settings.panel')" :paused-label="uiText('player.settings.paused')" :close-label="uiText('player.settings.close')" @close="menuOpen = false">
+    <PlayerMenuPanel v-if="menuOpen && !HIDE_UI" :title="uiText(pickerOpen ? 'player.picker.title' : 'player.settings.panel')" :paused-label="uiText('player.settings.paused')" :close-label="uiText('player.settings.close')" @close="menuOpen = false">
+        <PlayerEpisodePicker v-if="pickerOpen" :snapshot="queueSnapshot" :status="queueStatus" :pending="transitioning" @back="pickerOpen = false" @select="selectEpisode" @retry="emit('retry-queue')" />
+        <template v-else>
+        <button @click="pickerOpen = true">{{ uiText('player.picker.title') }}</button>
         <p v-if="positionLabel" class="menu-position">{{ positionLabel }}</p>
         <button v-if="nextTarget?.available" :disabled="transitioning" @click="requestNextEpisode()"><SkipForward :size="19" /><span>{{ nextLabel }}</span></button>
         <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
@@ -195,6 +199,7 @@
           </select>
         </label>
         <button @click="menuOpen = false; retryCurrentVoice()">{{ uiText('backlog.replayVoice') }}</button>
+        </template>
     </PlayerMenuPanel>
 
     <div v-if="viewingOfferOpen" class="viewing-offer" role="dialog" aria-modal="true" aria-labelledby="viewing-offer-title" @keydown.stop="handleViewingOfferKeydown">
@@ -217,7 +222,7 @@
 </template>
 
 <script setup>
-import { setStoryRuntimePaused } from './story-runtime/StoryPausePolicy.js'
+import { setStoryRuntimePaused, transferOverlayPause } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerSession } from '../composables/PlayerSession.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
 import AdvUI from '../components/AdvUI.vue'
@@ -230,6 +235,8 @@ import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
 import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import { presentIdolEpisodeLabel } from '../presentation/idolEpisodeLabel.js'
+import PlayerEpisodePicker from '../components/player/PlayerEpisodePicker.vue'
 import PlayerMenuPanel from '../components/player/PlayerMenuPanel.vue'
 import PlayerTopBar from '../components/player/PlayerTopBar.vue'
 import PlayerControlDock from '../components/player/PlayerControlDock.vue'
@@ -278,10 +285,12 @@ const props = defineProps({
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
   transitionPending: Boolean,
+  recoveryOpen: Boolean,
+  queueSnapshot: { type:Object, default:null },
   queueStatus: { type: String, default: 'ready' },
   queueError: { type: String, default: '' },
 })
-const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue', 'select-episode'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -375,6 +384,13 @@ const voiceBackend = ref(['auto', 'webaudio', 'media'].includes(URL_FLAGS.get('v
 const backlogVoiceNode = ref('')
 const isPlaying = ref(false)
 const menuOpen = ref(false)
+const pickerOpen = ref(false)
+watch(menuOpen, open => { if (!open) pickerOpen.value = false })
+watch(() => props.recoveryOpen, open => { if (open) menuOpen.value = false }, { flush:'sync' })
+function selectEpisode(request) {
+  if (!props.transitionPending && !request.restart && request.entryKey === props.queueSnapshot?.currentKey) { menuOpen.value = false; return }
+  emit('select-episode', { ...request, instance:props.playbackInstance })
+}
 const backlogOpen = ref(false)
 const backlogNodes = ref([])
 const autoEnabled = ref(initialPreferences.auto_enabled)
@@ -385,7 +401,7 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const completionDismissed = ref(false)
 let automaticNextRequested = false
-const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${props.nextTarget.label}` : '')
+const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${presentIdolEpisodeLabel({ sourceName: props.nextTarget.label })}` : '')
 function requestNextEpisode({ automatic = false } = {}) {
   if (props.transitionPending || (automatic && automaticNextRequested)) return
   if (automatic) automaticNextRequested = true
@@ -1240,14 +1256,12 @@ watch(currentStep, (newStep, oldStep) => {
   playbackController?.notifyStateChanged()
 })
 watch(currentStep, handleRuntimeStepChange, { immediate: true })
-watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen], ([menu, backlog, finished, viewingOffer], previous = []) => {
-  const any = menu || backlog || finished || viewingOffer
+watch([menuOpen, backlogOpen, episodeFinished, viewingOfferOpen, () => props.recoveryOpen], ([menu, backlog, finished, viewingOffer, recovery], previous = []) => {
+  const any = menu || backlog || finished || viewingOffer || recovery
   if (any) clearFadeAutoAdvance()
   playbackController?.setPaused('overlay', any)
-  for (const [reason, value] of [['menu', menu], ['backlog', backlog], ['episode-complete', finished], ['viewing-offer', viewingOffer]]) {
-    setRuntimeSessionPaused(reason, value)
-  }
-  if ([menu, backlog, finished, viewingOffer].some((value, index) => value && !previous[index]) || (previous[1] && !backlog)) {
+  transferOverlayPause(setRuntimeSessionPaused, [['menu', menu], ['backlog', backlog], ['episode-complete', finished], ['viewing-offer', viewingOffer], ['recovery', recovery]])
+  if ([menu, backlog, finished, viewingOffer, recovery].some((value, index) => value && !previous[index]) || (previous[1] && !backlog)) {
     _stopCurrentVoice('overlay-transition')
     backlogVoiceNode.value = ''
   }

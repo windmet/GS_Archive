@@ -9,6 +9,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { createReadingSession } from '../src/core/ReadingSession.js'
+import { createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
 
@@ -64,6 +65,8 @@ const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurp
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
 const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry,
+  chapterReadingState: ref(null),
+  chapterReadingSession: createChapterReadingSession({ repository: {}, publish: () => {} }),
   captureActiveArchiveView: () => {},
   primeArchiveRouteComponent: () => {},
   syncArchiveRoute: () => { url = buildArchiveUrl(url, state.currentArchiveRoute()) },
@@ -157,6 +160,30 @@ assert.equal(state.view.value, 'player', 'full playback URL restores without tre
 assert.equal(state.currentScenarioInitialStep.value, 1)
 await context.playbackController.close()
 assert.equal(state.readingRowId.value, row.anchor.row_id)
+const selectedDocument=structuredClone(document)
+selectedDocument.document_id='picker-refresh-proof'
+selectedDocument.source.file='picker-refresh-proof.json'
+selectedDocument.playback.file=selectedDocument.source.file
+const selectedEntry={...entry,document_id:selectedDocument.document_id,source_file:selectedDocument.source.file,sha256:`sha256:${'9'.repeat(64)}`}
+manifest.entries.push(selectedEntry)
+context.readingRepository={load:async(id,locator)=>{
+  assert.equal(id,selectedDocument.document_id);assert.deepEqual(locator,selectedEntry)
+  return {status:'ready',document:selectedDocument}
+}}
+// Production normalization omits at_step when starting at the queue boundary.
+const selectedShare=readArchiveRoute(buildArchiveUrl(url,{...fullShared,scenario:selectedDocument.source.file,initialStep:0}))
+await context.applyArchiveRoute(selectedShare)
+assert.equal(state.view.value,'player',`refresh restores picked segment: ${state.readingPlaybackNotice.value}`)
+assert.equal(state.currentScenarioFile.value,selectedDocument.source.file)
+assert.equal(state.readingDocumentId.value,document.document_id)
+assert.equal(state.readingRowId.value,row.anchor.row_id)
+await context.playbackController.close()
+assert.equal(state.view.value,'reader')
+await context.applyArchiveRoute({...fullShared,scenario:selectedDocument.source.file,initialStep:2})
+assert.equal(state.view.value,'reader','picked segment cannot invent an initial position')
+await context.applyArchiveRoute({...fullShared,scenario:'unrelated.json',initialStep:0})
+assert.equal(state.view.value,'reader','picked refresh source must belong to the original bounded locator')
+manifest.entries.pop()
 await context.applyArchiveRoute(shared)
 assert.equal(state.view.value, 'player', 'refresh restores validated media entry')
 await context.applyArchiveRoute({ ...shared, initialStep: shared.initialStep + 1 })

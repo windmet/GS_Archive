@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { createReadingSession } from '../src/core/ReadingSession.js'
+import { createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveUrl, readArchiveRoute, readPortalReturnRoute, buildPortalReturnQuery } from '../src/core/archiveRoute.js'
@@ -60,6 +61,7 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
 }
 // Exercise the actual App route branch with no player/preloader globals present.
 const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry,
+  chapterReadingState: { value:null }, chapterReadingSession: createChapterReadingSession({ repository, publish: () => {} }),
   readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
   captureActiveArchiveView: () => {}, primeArchiveRouteComponent: () => {} }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }

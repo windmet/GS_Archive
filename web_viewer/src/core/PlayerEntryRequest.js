@@ -8,7 +8,7 @@ export function isDirectScenarioEntry(route) {
 
 export function playerReturnRoute(route, destination = route?.returnView || 'home') {
   if (!route) return normalizeArchiveRoute({ view: destination })
-  const { scenario, voice, startStep, endStep, initialStep, returnView, ...context } = route
+  const { scenario, voice, startStep, endStep, initialStep, returnView, playMode, ...context } = route
   return normalizeArchiveRoute({ ...context, view: destination })
 }
 
@@ -18,7 +18,7 @@ export function selectPlayerQueue(groups, file, range = {}) {
     (!range.startStep || Number(episode.startStep) === Number(range.startStep)) &&
     (!range.endStep || Number(episode.endStep) === Number(range.endStep))
   const group = (groups || []).find(item => (item.episodes || []).some(same))
-  return (group?.episodes || []).filter(episode => episode.exists !== false && episode.file)
+  return group?.episodes || []
 }
 
 // Collection order is canonical. Never skip an unavailable adjacent chapter.
@@ -33,5 +33,5 @@ export function selectCollectionContinuation(collection, file, range = {}) {
   return { episodes, scope: 'story-sequence', currentLabel: chapter?.label || '',
     nextChapter: following ? { id: following.id, label: following.label, available: Boolean(available),
       reason: available ? '' : '相邻话目尚未实装或属于其他正式入口',
-      episodes: available ? following.episodes.filter(e => e.exists && e.file) : [] } : null }
+      episodes: available ? following.episodes : [] } : null }
 }

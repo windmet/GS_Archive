@@ -5,6 +5,8 @@ const ROUTE_QUERY_KEYS = [
   'reading_row',
   'reading_mode',
   'reading_rev',
+  'reading_scope',
+  'play_mode',
   'at_step',
   'view',
   'pick',
@@ -337,9 +339,11 @@ export function normalizeArchiveRoute(input = {}) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
     route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    route.readingScope = input.readingScope === 'chapter' ? 'chapter' : ''
     route.readingRev = /^sha256:[a-f0-9]{64}$/.test(input.readingRev || '') ? input.readingRev : ''
     if (!route.reading) route.view = 'story_catalog'
   }
+  if (route.view === 'player') route.playMode = ['chapter','segment'].includes(input.playMode) ? input.playMode : ''
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') {
     const portalFrom = clean(input.portalFrom)
@@ -548,6 +552,8 @@ export function readArchiveRoute(input = null) {
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
     readingRev: params.get('reading_rev'),
+    readingScope: params.get('reading_scope'),
+    playMode: params.get('play_mode'),
     initialStep: params.get('at_step'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
@@ -600,6 +606,7 @@ export function buildArchiveUrl(input, route) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
     if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
+    if (normalized.readingScope) url.searchParams.set('reading_scope', normalized.readingScope)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {
       if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
@@ -616,6 +623,7 @@ export function buildArchiveUrl(input, route) {
       return url
     }
   }
+  if (normalized.view === 'player' && normalized.playMode) url.searchParams.set('play_mode', normalized.playMode)
   if (normalized.view === 'player' && normalized.initialStep) url.searchParams.set('at_step', String(normalized.initialStep))
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
