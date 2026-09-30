@@ -11,6 +11,7 @@ for (const entry of manifest.entries.filter(entry => entry.status === 'ready')) 
   const visited = []
   function visit(nodes, path = []) {
     for (const node of nodes) {
+      if (node.kind === 'continuation') { visit(node.nodes,[...path,{choice:node.choice,index:node.index}]); continue }
       if (node.kind === 'row') {
         visited.push(node.item)
         assert.deepEqual(readingBranchAnchorPath(tree, node.item.row.anchor.row_id), path)
@@ -41,6 +42,14 @@ for (const entry of manifest.entries.filter(entry => entry.status === 'ready')) 
   assert.equal(readingBranchAnchorPath(tree, 'missing'), null)
 }
 const item = (id, kind, choice, index, parent = null) => ({row:{kind,anchor:{row_id:id,step_id:kind==='choice'?choice:99}},branch:{choice,index,parent},anchorAliases:[]})
+const quiz=read('1_4_001_04_g.json'), quizTree=readingBranchTree(projectReadingChoiceRows(quiz))
+const question=quiz.controls.find(c=>c.fork?.branches.some(b=>b.retry))
+assert.ok(question,'EP07 is a proven retry question')
+const continuation=quizTree.find(n=>n.kind==='continuation')
+assert.equal(continuation.choice,question.step_id)
+assert.deepEqual(continuation.retryIndices,[1])
+assert.equal(continuation.index,0)
+assert.deepEqual(readingBranchAnchorPath(quizTree,continuation.nodes[0].item.row.anchor.row_id),[{choice:question.step_id,index:0}], 'searching later prose restores the forward answer before locating it')
 const outer = item('outer-0','choice',1,0)
 const inner0 = item('inner-0','choice',2,0,1), inner1 = item('inner-1','choice',2,1,1)
 const reply = item('nested-reply','dialogue',2,1,1)

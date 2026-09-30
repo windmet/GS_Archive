@@ -57,6 +57,8 @@ def annotate_raw_control_flow(compiled, records):
             for i,c in enumerate(commands):
                 if c['Type'] == 'jump_point': labels.setdefault(c['Values'][0],[]).append(i)
             def target(label, after):
+                if len(labels.get(label,[])) > 1 and any(i<=after for i in labels[label]):
+                    raise ValueError('ambiguous-raw-jump-label')
                 candidates = [i for i in labels.get(label,[]) if i>after]
                 if not candidates: raise ValueError('missing-or-backward-raw-label')
                 return candidates[0]
@@ -86,8 +88,39 @@ def annotate_raw_control_flow(compiled, records):
             def postdominators(i): return post[i]
             starts = [target(o['label'],max(indices)) for o in options]
             shared = set.intersection(*(postdominators(i) for i in starts))
-            if not shared: raise ValueError('no-common-raw-join')
-            join_command = min(shared)
+            retries = {}
+            if shared:
+                join_command = min(shared)
+            else:
+                # A local quiz may repeat its own question. Prove each linear
+                # alternative's explicit exit, including a unique backward label;
+                # never turn a missing label or an arbitrary cycle into a join.
+                exits = []; linear_paths = []
+                for start in starts:
+                    cursor = start; path = []
+                    while cursor < len(commands):
+                        c = commands[cursor]; path.append(cursor)
+                        if c['Type'] in SELECT: raise ValueError('no-common-raw-join')
+                        if c['Type'] == 'jump':
+                            candidates = labels.get(c['Values'][0],[])
+                            if len(candidates) != 1: raise ValueError('missing-or-ambiguous-retry-label')
+                            exits.append((cursor,candidates[0])); break
+                        if c['Type'] not in PASSIVE | TEXT: raise ValueError('unsupported-retry-path')
+                        cursor += 1
+                    else: raise ValueError('no-common-raw-join')
+                    linear_paths.append(path)
+                forwards = {dest for _,dest in exits if dest > max(indices)}
+                if len(forwards) != 1: raise ValueError('no-common-raw-join')
+                join_command = next(iter(forwards))
+                for option_index,(jump,dest) in enumerate(exits):
+                    if dest > max(indices):
+                        if dest <= jump: raise ValueError('unsupported-retry-path')
+                        continue
+                    prefix = list(range(dest,min(indices)))
+                    if not prefix or commands[dest]['Type'] != 'jump_point' or any(commands[c]['Type'] not in (PASSIVE | TEXT) - {'jump'} for c in prefix):
+                        raise ValueError('unsupported-retry-prefix')
+                    retries[option_index] = {'target_command':dest,'jump_command':jump,'label':commands[jump]['Values'][0], 'prefix_commands':prefix}
+                if not retries: raise ValueError('no-common-raw-join')
             def reachable(start, stop):
                 found = set(); pending = [start]
                 while pending:
@@ -96,7 +129,7 @@ def annotate_raw_control_flow(compiled, records):
                     if i > stop: raise ValueError('conflicting-raw-join')
                     found.add(i); pending.extend(successors(i))
                 return sorted(found)
-            paths = [reachable(i,join_command) for i in starts]
+            paths = linear_paths if retries else [reachable(i,join_command) for i in starts]
             suffix = []
             cursor=join_command
             while cursor<len(commands):
@@ -152,6 +185,13 @@ def annotate_raw_control_flow(compiled, records):
                 branches.append({'option_index':i,'label':options[i]['label'],'step_indices':emitted,
                     'exit_index':emitted[-1] if emitted else None,'command_indices':exclusive,
                     'step_types':[steps[p]['type'] for p in emitted], 'step_ids':[steps[p]['step_id'] for p in emitted]})
+                if i in retries:
+                    retry = retries[i]
+                    prefix_steps = sorted({position(c) for c in retry['prefix_commands'] if c in by_command})
+                    if not prefix_steps or prefix_steps != list(range(prefix_steps[0],choice_index)) or any(steps[p]['type']=='choice' for p in prefix_steps):
+                        raise ValueError('uncovered-retry-prefix')
+                    branches[-1]['retry'] = {k:v for k,v in retry.items() if k!='prefix_commands'}
+                    branches[-1]['retry'].update({'index':prefix_steps[0],'step_id':steps[prefix_steps[0]]['step_id']})
             joins=[position(c) for c in suffix if c in by_command]
             # A part end in a group joins the first step of the next part.
             local_positions=[i for positions in by_command.values() for i in positions]
@@ -193,6 +233,10 @@ def relocate_control_flow(parent, child, start, end):
             branch['step_indices']=[i-start for i in branch['step_indices']]
             branch['step_ids']=[child['steps'][i]['step_id'] for i in branch['step_indices']]
             if branch['exit_index'] is not None: branch['exit_index']-=start
+            if branch.get('retry'):
+                if branch['retry']['index'] < start: raise ValueError('Cross-episode retry evidence')
+                branch['retry']['index']-=start
+                branch['retry']['step_id']=child['steps'][branch['retry']['index']]['step_id']
         forks.append(fork)
     if forks: child['reading_control_flow']={'version':1,'base_compiled_sha256':content_digest(child),'forks':forks}
     return child

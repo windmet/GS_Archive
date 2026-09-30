@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT.parent / 'data_pipeline'))
 from sidem_scenario.control_flow import annotate_raw_control_flow, digest, encoded
 
-def run(audit_root, apply=False):
+def run(audit_root, apply=False, selected=None):
     inventory=json.loads((audit_root / 'raw-selection-inventory.json').read_bytes())
     if inventory['summary']['errors']: raise ValueError('RAW inventory has errors')
     records=[]
@@ -25,6 +25,9 @@ def run(audit_root, apply=False):
         records.append({**row,'raw':json.loads(data)})
     manifest=json.loads((ROOT / 'public/data/reading/manifest.json').read_bytes())
     files=sorted({e[k] for e in manifest['entries'] for k in ['source_file','parent_file']})
+    if selected:
+        if set(selected)-set(files): raise ValueError('Unknown mounted scenario')
+        files=[f for f in files if f in selected]
     ledger={'schema_version':1,'input_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),'raw_summary':inventory['summary'],'files':[],'issues':[]}
     for file in files:
         target=ROOT / 'public/data/compiled' / file; old_bytes=target.read_bytes(); old=json.loads(old_bytes)
@@ -103,4 +106,5 @@ def run(audit_root, apply=False):
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--audit-root',type=Path,required=True); parser.add_argument('--apply',action='store_true')
-    args=parser.parse_args(); run(args.audit_root.resolve(),args.apply)
+    parser.add_argument('--files',help='Comma-separated mounted source/parent files; omit for full audit')
+    args=parser.parse_args(); run(args.audit_root.resolve(),args.apply,args.files.split(',') if args.files else None)

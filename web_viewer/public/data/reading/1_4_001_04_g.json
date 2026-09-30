@@ -11,7 +11,7 @@
   },
   "source": {
     "file": "episodes/1_4_001_04_g.json",
-    "sha256": "sha256:5ca35e9b4ae5fb4918650b6faa2bc041692df552d23132429d3b67705640b688",
+    "sha256": "sha256:e20551d57767c7df75683a7976c98a1ef533da835ab480ccd7c06e0bcaa3f6f5",
     "schema_version": 1,
     "runtime_contract": null,
     "raw_hash": null,
@@ -27,7 +27,7 @@
       "aggregate_file": "1_4_001_04.json"
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
@@ -1432,7 +1432,76 @@
           "target_step_index": 18,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 16,
+        "choice_step_id": 17,
+        "join_index": 20,
+        "join_step_id": 21,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/1_4_001_04/scenario_1_4_001_04_g.json",
+        "raw_sha256": "sha256:9ab43861fde93f8671213f3b2123cbc5c56f87ace99c21c1c7234f724d7f63ba",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          44,
+          45
+        ],
+        "join_command": 56,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "g3004",
+            "step_indices": [
+              17
+            ],
+            "exit_index": 17,
+            "command_indices": [
+              46,
+              47,
+              48,
+              49
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              18
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "g3005",
+            "step_indices": [
+              18,
+              19
+            ],
+            "exit_index": 19,
+            "command_indices": [
+              50,
+              51,
+              52,
+              53,
+              54,
+              55
+            ],
+            "step_types": [
+              "adv",
+              "adv"
+            ],
+            "step_ids": [
+              19,
+              20
+            ],
+            "retry": {
+              "target_command": 39,
+              "jump_command": 55,
+              "label": "g3000",
+              "index": 14,
+              "step_id": 15
+            }
+          }
+        ]
+      }
     }
   ],
   "diagnostics": [
@@ -1440,16 +1509,6 @@
       "code": "compatibility-source-fields-may-be-missing",
       "step_index": null,
       "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 16,
-      "severity": "unsupported"
     }
   ],
   "presentation": {

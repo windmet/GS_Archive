@@ -32896,6 +32896,75 @@
             ]
           }
         ]
+      },
+      {
+        "choice_index": 210,
+        "choice_step_id": 211,
+        "join_index": 214,
+        "join_step_id": 215,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/1_4_001_04/scenario_1_4_001_04_g.json",
+        "raw_sha256": "sha256:9ab43861fde93f8671213f3b2123cbc5c56f87ace99c21c1c7234f724d7f63ba",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          44,
+          45
+        ],
+        "join_command": 56,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "g3004",
+            "step_indices": [
+              211
+            ],
+            "exit_index": 211,
+            "command_indices": [
+              46,
+              47,
+              48,
+              49
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              212
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "g3005",
+            "step_indices": [
+              212,
+              213
+            ],
+            "exit_index": 213,
+            "command_indices": [
+              50,
+              51,
+              52,
+              53,
+              54,
+              55
+            ],
+            "step_types": [
+              "adv",
+              "adv"
+            ],
+            "step_ids": [
+              213,
+              214
+            ],
+            "retry": {
+              "target_command": 39,
+              "jump_command": 55,
+              "label": "g3000",
+              "index": 208,
+              "step_id": 209
+            }
+          }
+        ]
       }
     ]
   }

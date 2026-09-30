@@ -52,6 +52,17 @@ for(const entry of manifest.entries){
    else {
     assert.equal(index.value,b.step_indices[0]??fork.join_index)
     const visited=[];let budget=data.steps.length+1
+    if(b.retry){
+     for(const expected of b.step_indices){assert.equal(index.value,expected);assert.equal(navigation.goNext(),true)}
+     assert.equal(index.value,b.retry.index,'wrong answer returns to RAW question header')
+     navigation.goPrev();assert.equal(index.value,b.exit_index,'retry keeps selected history')
+     navigation.goNext();assert.equal(index.value,b.retry.index)
+     while(index.value<fork.choice_index){assert.equal(navigation.goNext(),true)}
+     const success=fork.branches.find(branch=>!branch.retry)
+     navigation.onChoice(data.steps[fork.choice_index].options[success.option_index])
+     for(const expected of success.step_indices){assert.equal(index.value,expected);navigation.goNext()}
+     assert.equal(index.value,fork.join_index,'correct answer exits retry loop')
+    }else{
     while(index.value<fork.join_index&&budget-->0){
      visited.push(index.value)
      const current=dataRef.value.steps[index.value]
@@ -63,16 +74,23 @@ for(const entry of manifest.entries){
     if(fork.join_index<data.steps.length)assert.equal(index.value,fork.join_index)
     navigation.goPrev()
     assert.ok(index.value===fork.choice_index||b.step_indices.includes(index.value),'back follows selected history')
+    }
    }
 
    assert.equal(finiteChoiceTargetIndex(data,fork.choice_index,data.steps[fork.choice_index].options[i]),b.step_indices[0]??fork.join_index)
-   if(b.exit_index!==null){const next=finiteBranchNextIndex(data,b.exit_index);assert.ok(next<=fork.join_index&&next>b.exit_index)}
+   if(b.exit_index!==null){const next=finiteBranchNextIndex(data,b.exit_index);if(b.retry)assert.equal(next,b.retry.index);else assert.ok(next<=fork.join_index&&next>b.exit_index)}
   }
   const bad=structuredClone(data);bad.reading_control_flow.forks.find(f=>f.choice_index===fork.choice_index).branches[0].exit_index=-1
   assert.throws(()=>validatedFiniteForks(bad))
+  if(fork.branches.some(b=>b.retry)){
+   for(const index of [-1,fork.choice_index,fork.join_index]){
+    const invalid=structuredClone(data);invalid.reading_control_flow.forks.find(f=>f.choice_index===fork.choice_index).branches.find(b=>b.retry).retry.index=index
+    assert.throws(()=>validatedFiniteForks(invalid),'reject invalid retry boundaries')
+   }
+  }
  }
 }
-for(const id of ['1_4_001_03_d','1_4_001_03_e','1_4_001_03_h','1_4_001_10_i','1_4_001_10_j','1_4_001_09_b'])assert.ok(!remaining.some(r=>r.id===id),id+' is readable')
+for(const id of ['1_4_001_03_d','1_4_001_03_e','1_4_001_03_h','1_4_001_10_i','1_4_001_10_j','1_4_001_09_b','1_4_001_04_g'])assert.ok(!remaining.some(r=>r.id===id),id+' is readable')
 assert.equal(markers,12)
 const report={documents:manifest.entries.length,counts,recovered:recovered.length,forks,markers,remaining}
 if(auditRoot)await fs.writeFile(path.join(auditRoot,'reading-candidate-acceptance.json'),JSON.stringify(report,null,2)+'\n')

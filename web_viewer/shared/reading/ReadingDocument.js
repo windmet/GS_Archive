@@ -126,7 +126,7 @@ export function readingBranchRows(document) {
   const emitFork = (control, outer = null) => {
     for (const [index, branch] of control.fork.branches.entries()) {
       const ownRows = rows.filter(r => r.anchor.step_index === control.step_index && new RegExp(`:option-${index}($|-detail$)`).test(r.anchor.row_id))
-      const context = {index,choice:control.step_id,first:true,shared:!branch.step_indices.length,terminal:control.fork.join_step_type==='end',parent:outer?.choice ?? null}
+      const context = {index,choice:control.step_id,first:true,shared:!branch.step_indices.length,terminal:control.fork.join_step_type==='end',parent:outer?.choice ?? null,...(branch.retry ? {retry:branch.retry} : {})}
       for (const r of ownRows) { emitRow(r,{...context}); context.first=false }
       for (const stepIndex of branch.step_indices) {
         const nested = document.controls?.find(c => c.fork && c.step_index === stepIndex)

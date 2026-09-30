@@ -10,13 +10,13 @@
 
 阅读文档 2,801 份：ready 2,492 → 2,798，unsupported 309 → 3。指定第三话 EP04/05/08、第十话 EP09/10 已 ready。另两份原先因 `fadecolor` 被误判的文档恢复，作为静默视觉步骤投影。
 
-剩余 3 份是 RAW 缺陷，不猜测替代标签：
+初轮剩余 3 份未解析；后续 EP07 审计已纠正第三项的分类（见 [局部重答修复](READER_LOCAL_RETRY_20260930.md)）。前两项是源标签缺失，第三项是编译器不支持合法向后跳转：
 
 | 文档 | 源证据 |
 | --- | --- |
 | `025suz_403_2_4_025_03_09_b` | cmd20/21 都指向 `phone_select2`，后面仅 `phone_select1` 标签 |
 | `033shr_402_2_4_033_02_09_a` | cmd19 指向 `phone_select3`，cmd20 标签实际为 `0.5` |
-| `1_4_001_04_g` | cmd55 跳往 `g3000`，不存在该前向标签；另一分支跳往 `g4000` |
+| `1_4_001_04_g` | cmd55 跳往已有 cmd39 `g3000`，要求重答；另一分支跳往 cmd56 `g4000`。现已补充源证据与运行时支持 |
 
 校验：全 1,286 份含选择 RAW 经当前 Python 编译器回归，仅上述 3 份异常；2,801 文档完整哈希/合同/行唯一性/真实附文/元数据别名验证；324 个阅读分支的所有选项执行实际 useStoryNavigation 前进、嵌套选择、返回和结束检查；损坏证据拒绝。`verify:reading`、`verify:reading-sources`、`verify:player-qa`、`verify:story-schema`、`verify:reviewed-b001` 通过（B001 52 文档、42 目录、993 单位）。原 schema 验证把历史 identity backfill 一律误当 strict promotion，现按实际 runtime_contract 区分，严格输出仍必须登记、通过严格 schema。
 
@@ -42,6 +42,6 @@ Browser 在 1280×720/900 桌面与 390×844 手机验证横排/纵排、三项�
 
 头像缺失链路：RAW/compiled 的 `chara_id`、Reading 的 performance actor 仍在，显示层旧头像策略将 Call/Chat 的 `medium-policy-unavailable` 排除；遗留 snapshot `phone_mode` 还会使后续 ADV 得到同一 visual reason。说话人参考头像现要求源 performance actor 与公开原文姓名一致（支持原文 NBSP），不改 stage presence/RAW/snapshot。unknown、演员冲突、隐藏/轮廓或明确不在场规则保留；NPC 审计清单不扩张。第三话 EP04 至 EP10 回归通过；Browser 确认悠介两条分支回复图片实际 loaded，后续 EP05 的隼人、四季、春名头像 loaded。分支面板内定位/搜索行不再增加竖线。截图 `browser-reader-choice-tabs-avatars-desktop.png`；Reader 无 console error。
 
-不宣称部署、媒体发布、真实设备或全分支画面验收；三份缺失/错误标签的 RAW 仍明确 unsupported，原始来源不改写。
+不宣称部署、媒体发布、真实设备或全分支画面验收；初轮三份未解析中，后续已恢复 EP07，余下两份缺失/错误标签的 RAW 仍明确 unsupported，原始来源不改写。
 
 Publication 全量门禁最终通过：200 个 releases / 1,368 个稳定 logical IDs。首次检查仅第一话 11 个新增文件缺 LF 声明；补限定 `.gitattributes` 规则后，逐文件及全量复验通过，未扩大归一化范围。

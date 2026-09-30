@@ -41,12 +41,14 @@ for(const id of [...selected].sort()){
   entry.published.push({...a,bytes:bytes.length,sha256:hash(bytes)})
  }
  entry.transform={tool:'repair-raw-selection-flow.py',contract_version:1}
- entry.comparison={state:'parity-verified',evidence:['Exact RAW source hashes and command coordinates; forward postdominating joins, nested branches, silent steps and end choices','All old text units, source hashes, dialogue, scene snapshots, audio and step identities preserved; five option targets repaired from RAW paths','12 text_select appeal slots classified as presentation metadata; genuine long replies preserved']}
+ entry.comparison={state:'parity-verified',evidence:['Exact RAW source hashes and command coordinates; proven forward joins and explicit local question retries','All old text units, source hashes, dialogue, scene snapshots, audio and step identities preserved; targets follow RAW paths','Presentation metadata classification preserved; genuine long replies preserved']}
  entry.browser_acceptance={state:'not-tested',tested_url:null,tested_at:null,tested_commit:null,environment:null,evidence:[]}
  entry.rollback_evidence={performed:false,backup_manifest:null,restored_artifacts:[],final_republish_verified:false}
  entries.push(entry)
 }
-const release={schema_version:2,release_id:'2026-09-30-raw-selection-flow-001',created_at:new Date().toISOString(),prepared_from_commit:ledger.input_head,transaction_kind:'supersede',scope:{kind:'batch',ids:[...selected].sort()},entries}
+const releaseId=argument('--release-id')||'2026-09-30-raw-selection-flow-001'
+if(!/^[a-zA-Z0-9_-]+$/.test(releaseId))throw Error('Invalid release ID')
+const release={schema_version:2,release_id:releaseId,created_at:new Date().toISOString(),prepared_from_commit:ledger.input_head,transaction_kind:'supersede',scope:{kind:'batch',ids:[...selected].sort()},entries}
 const ajv=new Ajv2020({strict:true,allErrors:true});addFormats(ajv)
 const valid=ajv.compile(await read('schemas/publication-release-v2.schema.json'))
 if(!valid(release))throw Error(JSON.stringify(valid.errors))

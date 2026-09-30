@@ -80,7 +80,7 @@ export function useStoryNavigation({
       // Enter every authored step. Transition timers carry the scene to the
       // next reading boundary without dropping its animations or silent text.
       const target = finiteBranchNextIndex(compiledData.value, currentStepIndex.value)
-      if (target > navigationEndIndex.value) return false
+      if (target < navigationStartIndex.value || target > navigationEndIndex.value) return false
       const step = compiledData.value?.steps?.[currentStepIndex.value]
       if (!isTransitionStep(step)) {
         historyStack.value.push(currentStepIndex.value)

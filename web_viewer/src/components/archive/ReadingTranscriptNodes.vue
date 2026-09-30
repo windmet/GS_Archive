@@ -1,6 +1,9 @@
 <template>
   <template v-for="node in nodes" :key="node.kind === 'row' ? node.item.row.anchor.row_id : node.key">
     <ReadingTranscriptRow v-if="node.kind === 'row'" :item="node.item" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
+    <div v-else-if="node.kind === 'continuation'" v-show="!node.retryIndices.includes(selection[node.choice] ?? 0)" class="branch-continuation">
+      <ReadingTranscriptNodes :nodes="node.nodes" :selection="selection" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" @select="emit('select', $event)" />
+    </div>
     <section v-else class="reader-branch" aria-label="制作人选择分支">
       <header class="branch-header"><span>制作人选择</span><span>点击选项，切换对话反应</span></header>
       <div class="branch-choices" role="tablist" aria-label="分支选项">
@@ -16,7 +19,8 @@
       </div>
       <div :id="`branch-panel-${node.key}-${selected(node)}`" role="tabpanel" :aria-labelledby="`reading-${node.options[selected(node)].choice.row.anchor.row_id}`" class="branch-panel">
         <ReadingTranscriptNodes :nodes="node.options[selected(node)].nodes" :selection="selection" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" @select="emit('select', $event)" />
-        <p v-if="node.options[selected(node)].shared" class="branch-hint">此选项共用下方后续正文。</p>
+        <p v-if="node.options[selected(node)].retry" class="branch-hint">此答案会返回当前问题重答。请选择其他答案，查看继续的剧情。<button type="button" class="retry-question" @click="focusChoices($event)">返回选项</button></p>
+        <p v-else-if="node.options[selected(node)].shared" class="branch-hint">此选项共用下方后续正文。</p>
         <p v-else-if="node.options[selected(node)].terminal" class="branch-hint">此分支结束后，本段完结。</p>
       </div>
     </section>
@@ -29,6 +33,7 @@ import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
 const props = defineProps({ nodes: Array, selection: Object, mode: String, anchor: String, idolDirectory: Array, searchMatchIds: Set })
 const emit = defineEmits(['select'])
 const selected = node => props.selection[node.choice] ?? 0
+function focusChoices(event) { event.currentTarget.closest('.reader-branch')?.querySelector('[role=tab][aria-selected=true]')?.focus() }
 async function moveTab(event, node, index) {
   const direction = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key]
   if (!direction && !['Home', 'End'].includes(event.key)) return
@@ -56,6 +61,7 @@ async function moveTab(event, node, index) {
 .branch-panel { margin-top:14px; border-top:1px dashed var(--reader-border); }
 .branch-panel :deep(.reader-row.selected), .branch-panel :deep(.reader-row.search-match) { box-shadow:none; }
 .branch-hint { margin:12px 0 0; color:var(--reader-text-sub); font-size:13px; }
+.retry-question { margin-left:8px; padding:6px 10px; border:1px solid var(--reader-border); border-radius:6px; background:var(--reader-bg-page); color:var(--reader-accent-text); cursor:pointer; }
 .reader-anchor-alias { position:absolute; inset:0 auto auto 0; width:0; height:0; overflow:hidden; }
 @media(max-width:760px) { .branch-choices { flex-direction:column; } .branch-choice { flex:auto; width:100%; border-radius:12px; } .reader-branch { padding:12px; } }
 </style>
