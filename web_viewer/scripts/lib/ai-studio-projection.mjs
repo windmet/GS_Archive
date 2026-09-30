@@ -15,9 +15,9 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   assert(version === 2 || version === 3, 'Unsupported Studio projection version')
   const selected = version === 3 ? {
     ...files,
-    voice: 'translation/studio/policy/voice-profiles.trial.v1.json',
-    trial: 'translation/studio/policy/trial-policy.v2.json',
-    prompt: 'translation/studio/policy/translation-r3.md',
+    voice: 'translation/studio/policy/voice-profiles.trial.v1.1.json',
+    trial: 'translation/studio/policy/trial-policy.v2.1.json',
+    prompt: 'translation/studio/policy/translation-r3.1.md',
   } : files
   const bytes = Object.fromEntries(await Promise.all(Object.entries(selected).map(async ([key, file]) =>
     [key, await fs.readFile(path.join(projectRoot, file))])))
@@ -37,6 +37,12 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
     assert.equal(trial.public_approval, false)
     assert(trial.items.every(item => item.editorial_status === 'frozen-for-trial'
       && item.public_approval === false && item.chosen_rendering))
+    assert.equal(new Set(trial.items.map(item => item.key)).size, trial.items.length, 'Duplicate trial key')
+    for (const item of trial.items) if (item.target_term) {
+      assert(!item.target_entity_id, 'Term hints must not also claim an idol target')
+      assert(item.target_term.entity_id.startsWith('trial:') && item.target_term.entity_type
+        && item.target_term.canonical_ja, `Invalid trial term: ${item.key}`)
+    }
   }
   return {
     version, idolIndex: buildIdolIndex(dictionary), voice, glossary, trial,
@@ -50,21 +56,23 @@ export function projectDocumentContext(rows, policy) {
   return rows.map(row => {
     const context = projectStudioContext(row, policy.idolIndex)
     context.choice_entry = choices.get(row.text_ref.unit_id) || null
-    if (policy.version === 3) context.mentions = projectMentions(row, policy)
+    if (policy.version === 3) context.mentions = projectMentions(row, policy, context.actor)
     return context
   })
 }
 
-function projectMentions(row, policy) {
+function projectMentions(row, policy, actor) {
   const matches = []
   for (const item of policy.trial.items) {
-    if (!item.source_form || !item.target_entity_id) continue
-    const target = policy.idolIndex.get(item.target_entity_id)
-    assert(target, `Trial mention target absent from idol registry: ${item.key}`)
+    if (!item.source_form || (!item.target_entity_id && !item.target_term)) continue
+    if (item.actor_ids && (actor.status !== 'resolved' || !item.actor_ids.includes(actor.entity_id))) continue
+    const target = item.target_term || policy.idolIndex.get(item.target_entity_id)
+    assert(target, `Trial mention target absent from registry: ${item.key}`)
     let from = 0, index
     while ((index = row.source_text.indexOf(item.source_form, from)) !== -1) {
       matches.push({ source_form: item.source_form, source_start: index,
-        target_entity_id: item.target_entity_id, canonical_ja: target.canonical_ja,
+        target_entity_id: target.entity_id, canonical_ja: target.canonical_ja,
+        ...(item.target_term ? { target_entity_type: target.entity_type } : {}),
         chosen_rendering: item.chosen_rendering, policy_key: item.key,
         evidence: 'exact-source-form+trial-policy', status: 'editorial-trial-hint' })
       from = index + item.source_form.length

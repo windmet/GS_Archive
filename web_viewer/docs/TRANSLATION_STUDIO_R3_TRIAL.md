@@ -2,7 +2,7 @@
 
 R3 adds an explicit `projection_version: 3` to the existing two-column
 `GS-STUDIO-MD-V1` result contract. V1 and V2 renderers remain available for
-their original source-bound batches. The active trial recipe and nine voice
+their original source-bound batches. The active trial recipe and voice
 profiles are versioned under `translation/studio/policy`; they are editorial
 choices for this experiment, **not** public or official name approvals. The
 unselected null term template remains separate. An external alias table is
@@ -67,3 +67,25 @@ The R3 guidance ZIP was verified against its manifest at the audited
 unchanged Producer slots, and 54 kana-bearing rows versus R1's 43. These
 figures describe supplied output, not the quality or outcome of a new R3 model
 run. Browser/Player translation acceptance awaits an actual new result.
+
+## R3.1: B002 input refinement
+
+The active V3 projection now hashes `translation-r3.1.md`,
+`trial-policy.v2.1.json`, and `voice-profiles.trial.v1.1.json`.
+The previous policy files remain immutable comparison material. Result
+schema and `projection_version: 3` stay unchanged; a freshly generated
+request must bind to the current committed HEAD and active policy hashes.
+
+R3.1 adds source-matched glossary hints for non-idol entities, Aslan's
+explicit forms of address, Soichiro's nickname, and Kyoji's interrupted
+self-introduction. Non-idol targets use the `trial:` namespace and never
+become Speaker or Voice. Actor-scoped terms require a resolved matching
+source actor; an unresolved or conflicting actor does not inherit the hint.
+Four additional short voice profiles cover Aslan, Suzaku, Genbu and Kanon.
+All new renderings remain editorial trial choices, `public_approval: false`.
+
+The request explicitly demonstrates six-digit IDs at the 99/100 and 999
+boundaries. The result parser still rejects shortened IDs; it performs no
+automatic padding, renumbering or translation repair. Input refinement does
+not validate the supplied audit's claims about an external model output.
+See [B002 input refinement acceptance](TRANSLATION_B002_INPUT_R31_20260930.md).

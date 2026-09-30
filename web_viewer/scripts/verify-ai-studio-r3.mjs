@@ -7,6 +7,7 @@ const policy = await loadStudioPolicy({ version: 3 })
 assert.equal(policy.trial.schema, 'GS-TRIAL-POLICY-V2')
 assert.equal(policy.trial.editorial_status, 'frozen-for-trial')
 assert.equal(policy.trial.public_approval, false)
+assert.equal(policy.trial.revision, 'R3.1')
 assert(policy.voice.profiles.every(profile => profile.required && profile.forbidden))
 const sourceRow = (id, text, speaker = { kind: 'none' }, extra = {}) => ({
   kind: 'dialogue', source_text: text, speaker,
@@ -38,6 +39,48 @@ assert(input.includes('Mention T000001: なおくん → 岡村 直央 (032nao)'
 assert(input.includes('Mention T000002: 道流さん → 円城寺 道流 (039mcr)'))
 assert(input.includes('Choice entry T000003: resolved; target T000004'))
 assert(!input.includes('Avoid:'))
+assert(input.includes('T000099, T000100, T000999'))
+for (const rid of ['T000099', 'T000100', 'T000999'])
+  assert.deepEqual(parseStudioResult(`| ${rid} | 中文 |`, [rid]).errors, [])
+for (const [invalid, expected] of [['T00100', 'T000100'], ['T00999', 'T000999']]) {
+  const result = parseStudioResult(`| ${invalid} | 中文 |`, [expected])
+  assert(result.errors.some(error => error.includes('Txxxxxx')))
+  assert.deepEqual(result.missing, [expected]) // No silent padding or renumbering.
+}
+const idol = id => ({ kind: 'idol', entityType: 'idol', entityId: id })
+const termSources = [
+  sourceRow('cat', 'にゃこさんと315プロダクション', { kind: 'producer' }),
+  sourceRow('master', '主よ、シモベとソーイチロー', idol('029ass')),
+  sourceRow('other', '主よ、シモベとエンジェルちゃん', idol('025suz')),
+  sourceRow('unknown', '主よ、シモベ', { kind: 'unknown', sourceName: '？？？' }),
+  sourceRow('unit', 'もふもふえん'),
+  sourceRow('slip', 'Beitのたきゃっ……', idol('009kyj')),
+  sourceRow('angel', 'エンジェルちゃん', idol('003hok')),
+]
+const termContexts = projectDocumentContext(termSources, policy)
+assert(termContexts[0].mentions.some(m => m.target_entity_type === 'animal' && m.chosen_rendering === '喵子'))
+assert.equal(termContexts[0].actor.status, 'producer')
+assert(termContexts[1].mentions.some(m => m.chosen_rendering === '吾主'))
+assert(termContexts[1].mentions.some(m => m.target_entity_id === '028soi' && m.chosen_rendering === '庄一郎'))
+assert.equal(termContexts[1].actor.entity_id, '029ass') // Mentioned idol never replaces actor.
+assert.deepEqual(termContexts[2].mentions, [])
+assert.deepEqual(termContexts[3].mentions, [])
+assert.equal(termContexts[3].actor.status, 'unresolved')
+assert(termContexts[4].mentions.some(m => m.chosen_rendering === 'もふもふえん'))
+assert(termContexts[5].mentions.some(m => m.policy_key === 'kyoji-stutter'))
+assert(termContexts[6].mentions.some(m => m.chosen_rendering === '天使酱'))
+const roster = Object.fromEntries(voiceRoster(termSources.map((row, i) => ({ context: termContexts[i] })), policy.voice))
+assert(roster['025suz'].style && roster['029ass'].required)
+for (const id of ['026gen', '034kan']) {
+  const context = projectDocumentContext([sourceRow(id, '台詞', idol(id))], policy)[0]
+  assert(Object.fromEntries(voiceRoster([{ context }], policy.voice))[id].forbidden)
+}
+const wrongActor = checkStudioRows([{ rid: 'T000001', kind: 'dialogue',
+  source_text: termSources[2].source_text, context: termContexts[2] }], new Map([['T000001', '主人，仆人和粉丝']]), { trialPolicy: policy.trial })
+assert(!wrongActor.review.some(w => /aslan-|hokuto-angel/.test(w)))
+const keptUnit = checkStudioRows([{ rid: 'T000001', kind: 'dialogue', source_text: 'もふもふえん',
+  protected_source: 'もふもふえん' }], new Map([['T000001', 'もふもふえん']]), { trialPolicy: policy.trial })
+assert(!keptUnit.review.some(w => w.includes('kana')))
 const qa = checkStudioRows([batch.rows[1]], new Map([['T000002', '道夫先生']]), { trialPolicy: policy.trial })
 assert(qa.review.some(item => item.includes('trial term name-michiru')))
 const name = checkStudioRows([{ rid: 'T1', source_text: 'タケルさん', protected_source: 'タケルさん', kind: 'dialogue' }],

@@ -27,6 +27,10 @@ export function renderStudioInput(batch) {
     `Batch schema: ${studioSchema}`, 'Target: Simplified Chinese',
     `Source commit: ${batch.source_commit}`, '',
     'Translate every T ID exactly once. Return only a Markdown table with columns `ID` and `Chinese`.',
+    ...(batch.projection_version === 3 ? [
+      'IDs are opaque strings: copy each T plus SIX digits exactly, including every leading zero. Never renumber or shorten an ID.',
+      'Boundary examples: T000099, T000100, T000999. T00100 and T00999 are INVALID. Before returning, compare the complete ID set with the input.',
+    ] : []),
     contextual
       ? 'Do not copy Japanese or context columns into the answer. Do not invent missing rows.'
       : 'Do not copy Japanese, Speaker or Kind into the answer. Do not invent missing rows.',
@@ -133,6 +137,8 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
       review.push(`${row.rid}: Japanese kana remains`)
     if (/^\n|\n$/u.test(translated)) review.push(`${row.rid}: leading or trailing line break`)
     if (trialPolicy) for (const item of trialPolicy.items) {
+      if (item.actor_ids && (row.context?.actor?.status !== 'resolved'
+        || !item.actor_ids.includes(row.context.actor.entity_id))) continue
       if (item.source_form && row.source_text.includes(item.source_form)
         && !translated.includes(item.chosen_rendering))
         review.push(`${row.rid}: trial term ${item.key} needs review`)
