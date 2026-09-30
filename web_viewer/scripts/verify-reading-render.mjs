@@ -19,6 +19,21 @@ try {
   const { default: ChapterSegment } = await server.ssrLoadModule('/src/components/archive/ChapterReadingSegment.vue')
   const { default: ChapterReader } = await server.ssrLoadModule('/src/components/archive/ChapterStoryReader.vue')
   const { default: StoryNavigation } = await server.ssrLoadModule('/src/components/archive/ReaderStoryNavigation.vue')
+  const branchDoc = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_03_d.json',import.meta.url)))
+  const fork = branchDoc.controls.find(control => control.fork).fork
+  const compact = value => value.replace(/\s+/g, '')
+  for (const option of fork.branches) {
+    const anchor = `${branchDoc.document_id}:step-${fork.choice_step_id}:option-${option.option_index}`
+    const html = compact(await renderToString(createSSRApp(Reader, {state:{status:'ready',entries:[],document:branchDoc},documentId:branchDoc.document_id,mode:'original',anchor})))
+    assert.equal((html.match(/role="tab"/g)||[]).length, 3)
+    assert.equal((html.match(/role="tabpanel"/g)||[]).length, 1)
+    assert.ok(html.includes('image_chara_icon_012yus.png'), 'actual Call reader renders the named source speaker icon')
+    for (const branch of fork.branches) for (const row of branchDoc.rows.filter(row => branch.step_indices.includes(row.anchor.step_index))) {
+      assert.equal(html.includes(compact(row.source_text)), branch.option_index === option.option_index, 'actual Vue renders only the selected reply path')
+    }
+    const shared = branchDoc.rows.find(row => row.anchor.step_index === fork.join_index)
+    assert.equal(html.split(compact(shared.source_text)).length - 1, 1, 'shared continuation appears once outside the tab panel')
+  }
   const navProps = {documentId:'first',segments:[{documentId:'first',label:'エピソード1',status:'ready'},{documentId:'second',label:'エピソード2',status:'ready'}],
     chapterNavigation:{chapterId:'one',chapters:[{id:'one',label:'第1話',title:'One',documentId:'first',storyFile:'one.json'},{id:'two',label:'第2話',title:'Two',documentId:'second',storyFile:'two.json'},{id:'missing',label:'第3話',title:'Missing',documentId:'',storyFile:'three.json'}]}}
   const navHtml = await renderToString(createSSRApp(StoryNavigation,navProps))

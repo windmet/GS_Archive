@@ -21,7 +21,7 @@
       <div v-else-if="state.status === 'unsupported'" class="reader-feedback" role="status"><h2>这个分段暂不支持完整阅读</h2><p>部分分支或来源字段无法可靠还原，正文尚未开放。</p><details><summary>分支与来源说明</summary><ul><li v-for="(control, i) in state.document.controls" :key="i">选项：<span v-for="(option, j) in choiceRows(control)" :key="j">{{ presentProducerAddressingText(option.source_text) }}{{ j < choiceRows(control).length - 1 ? ' ／ ' : '' }}</span></li></ul><p>选项目标已保留，分支结束位置未确认。</p></details></div>
       <template v-else-if="state.status === 'ready'">
         <form v-if="searchOpen" id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
-          <label>篇内查找<input ref="searchInput" v-model="searchQuery" type="search" placeholder="查找当前显示的正文或说话人" /></label>
+          <label>篇内查找<input ref="searchInput" v-model="searchQuery" type="search" placeholder="查找本段正文、全部分支或说话人" /></label>
           <div class="reader-search-actions">
             <span role="status">{{ searchQuery.trim() ? (searchMatches.length ? `${matchIndex >= 0 ? `${matchIndex + 1} / ` : ''}${searchMatches.length} 处匹配` : '未找到匹配内容') : '仅查找当前分段' }}</span>
             <button type="button" :disabled="!searchMatches.length" @click="moveMatch(-1)">上一处</button>

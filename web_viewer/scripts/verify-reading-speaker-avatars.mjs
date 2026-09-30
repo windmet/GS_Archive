@@ -35,4 +35,16 @@ assert.ok(idol)
 assert.equal(readingSpeakerAvatarEntity({...idol,visual:{...idol.visual,presence:'hidden'}}), null)
 assert.equal(readingSpeakerAvatarEntity({...idol,visual:{...idol.visual,presence:'offstage'}}), null)
 assert.equal(JSON.stringify(opening), before, 'canonical text, hash, actor and anchors are immutable')
+for (const id of ['1_4_001_03_d','1_4_001_03_e','1_4_001_03_f','1_4_001_03_g','1_4_001_03_h','1_4_001_03_i','1_4_001_03_j']) {
+  const doc = read(`public/data/reading/${id}.json`)
+  const candidates = doc.rows.filter(row => row.kind === 'dialogue' && row.visual?.reason === 'medium-policy-unavailable')
+  assert.ok(candidates.length)
+  for (const row of candidates) {
+    assert.equal(readingSpeakerAvatarEntity(row), row.performance.entityId, 'Call/Chat and post-call ADV retain exact named source portraits')
+    assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,kind:'unknown'}}), null)
+    assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,sourceName:'？？？'}}), null)
+    assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,sourceName:'別人'}}), null)
+    assert.equal(readingSpeakerAvatarEntity({...row,visual:{...row.visual,reason:'speaker-performance-conflict'}}), null)
+  }
+}
 console.log('Reader speaker icons verified: 25 audited NPC assets, real Ken/President/Nyankee rows, unknown and generic exclusions, idol visual policy')

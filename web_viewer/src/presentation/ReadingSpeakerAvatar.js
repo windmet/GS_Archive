@@ -1,4 +1,5 @@
 import { readingAvatarEntity } from '../../shared/reading/ReadingDocument.js'
+import { IDOL_ID_TO_NAME } from '../utils/IdolNameMap.js'
 
 // Audited against RAW image_chara_icons.unity3d and published character PNGs.
 // These are speaker reference icons, not proof of a character being on stage.
@@ -15,6 +16,18 @@ export function readingSpeakerAvatarEntity(row) {
   const idol = readingAvatarEntity(row)
   if (idol) return idol
   const speaker = row?.speaker
+  // Call/Chat portraits identify the named speaker, not an on-stage model.
+  // Legacy snapshots can also retain phone_mode after an authored ADV boundary.
+  // Require the source actor AND public name to agree; unknown/concealed stage
+  // rows and conflicting actor evidence retain the existing exclusion policy.
+  const actor = row?.performance?.entityId
+  const compactName = value => String(value || '').normalize('NFKC').replace(/\s+/g, '')
+  if (row?.kind === 'dialogue' && ['named', 'idol'].includes(speaker?.kind)
+    && row.performance?.entityType === 'idol' && row.visual?.reason === 'medium-policy-unavailable'
+    && row.visual?.stepId === row.anchor?.step_id
+    && (!speaker.entityId || speaker.entityId === actor)
+    && (!speaker.entityType || speaker.entityType === 'idol')
+    && IDOL_ID_TO_NAME[actor] && compactName(speaker.sourceName) === compactName(IDOL_ID_TO_NAME[actor])) return actor
   // Legacy compiled NPCs may be typed as "idol". Use their explicit canonical
   // code, never parse a localized name or infer identity from a model.
   return row?.kind === 'dialogue' && ['named', 'idol', 'npc'].includes(speaker?.kind) &&

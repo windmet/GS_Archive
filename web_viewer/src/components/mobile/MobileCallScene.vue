@@ -19,6 +19,8 @@
     <template #rail>
       <MobileChoiceRail
         v-if="context.phase === 'choice'"
+        class="call-choice-rail"
+        reverse-three
         :options="currentChoices"
         @select="$emit('select', $event)"
       />
