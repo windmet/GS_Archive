@@ -8,6 +8,7 @@ import {
 } from "../src/core/StudioDocument.mjs";
 import { studioReference } from "../src/core/StudioReferences.mjs";
 import { readCheckout } from "../readmodels/lib/checkout_adapter.mjs";
+import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile, STUDIO_DOCUMENT_FILE_MAX_BYTES } from "../src/core/StudioDocumentFile.mjs";
 const { product } = await readCheckout(
   new URL("..", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1"),
   { dataRevision: "test", mediaEpoch: "test" },
@@ -26,6 +27,10 @@ for (const name of ["A", "B"]) {
   assert.deepEqual(restored, doc);
   assert.equal(doc.actors.length, name === "A" ? 2 : 3);
   assert.equal(doc.stickers.length, 5);
+  const fileText = serializeStudioDocument(doc);
+  assert.deepEqual(parseStudioDocument(fileText), doc);
+  assert.deepEqual(parseStudioDocument('\uFEFF' + fileText), doc, 'Accept UTF-8 BOM from desktop editors');
+  assert.deepEqual(await readStudioDocumentFile(new File([fileText], 'composition.json')), doc);
   const originalOrder = doc.actors.map((row) => row.instanceId);
   moveStudioObject(doc, "actors", originalOrder[0], 1);
   assert.notDeepEqual(
@@ -66,6 +71,10 @@ for (const name of ["A", "B"]) {
     assert.throws(() => validateStudioDocument(broken));
   }
 }
+assert.throws(() => parseStudioDocument('{broken'), /有效的 JSON/);
+assert.throws(() => parseStudioDocument('{"schemaVersion":2,"actors":[],"stickers":[]}'), /不支持/);
+assert.throws(() => parseStudioDocument('雪'.repeat(STUDIO_DOCUMENT_FILE_MAX_BYTES / 2)), /过大/, 'Limit UTF-8 bytes, not JS character count');
+await assert.rejects(readStudioDocumentFile({size:STUDIO_DOCUMENT_FILE_MAX_BYTES + 1, text(){throw Error('must not read oversized files')}}), /过大/);
 assert.deepEqual(
   validateStudioDocument(createStudioDocument()),
   createStudioDocument(),
@@ -79,5 +88,5 @@ assert.match(stage,/this\.actorInstances\s*=\s*new Map\(\)/);
 assert(stage.includes("extract.canvas()"));
 assert.match(stage,/this\.outline\.visible\s*=\s*false/);
 console.log(
-  "Composition: source-bound A/B, independent and duplicate instances, z-order, JSON round-trip, invalid/cross-idol rejection and bounded framebuffer export passed",
+  "Composition: source-bound A/B, independent and duplicate instances, z-order, bounded file/BOM round-trip, invalid/cross-idol rejection and bounded framebuffer export passed",
 );

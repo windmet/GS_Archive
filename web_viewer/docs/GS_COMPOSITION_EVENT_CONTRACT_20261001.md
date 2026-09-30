@@ -83,3 +83,15 @@ A/B 是可继续编辑的参考构图。A 已匹配两位人物、道流小人�
 只替换本任务已核对身份的 5198 QA 服务，映射 r6 与现有 public。1440×900 Browser 实际打开参考 A，将漣从 `040ren_005_00` 换为字典的「ベーシックウェア」`040ren_002_00`；2 人 5 贴纸保持，生成 PNG 预览固有 1280×720。参考 B 为 3 人 5 贴纸并生成同尺寸 PNG，控制台 error 为空。Not Alone 活动实际打开，11 章、3 张报酬卡、159 条奖励正常消费。证据 `ren-costume-ui.png`、`reference-B-ui.png` 与 HTTP 摘要日志在 `E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6`。这里验证新 release 的代表消费，未重复宣称全部 UI、实际下载或设备验收。
 
 原生追查补充：本地 2.6.10 IPA 的标准 IL2CPP v27 元数据可读，确认 StudioRoot.AddFrame、IdolSlot.PlayPose/PlayFace、插槽缩放与贴纸编辑等接口名；但 UnityFramework 的 Mach-O 代码段 cryptid=1，当前工具未恢复方法体。接口名不能证明相框尺寸或随机动作参数。按已核对摘要重读完整摄影 PB 后，395 条姿势与 554 条表情均未写入 storyCostumeId，395 条姿势亦未写入 defaultPhotoFaceId；现有域投影没有漏掉这些值，不能凭 schema 字段存在虚构 fallback。薰的举手、原生相框尺寸、天气、shader 和 lipsync 仍保留未完成边界。
+
+## 可交换构图文件与导入失败保护
+
+输入 HEAD：80e65e46。原页面仅有此浏览器的单个存档，且载入失败会写入画布错误、禁用原本有效构图的 PNG 导出。现提供折叠的「构图文件」入口：生成 JSON 文件、从文件载入、复制构图内容。文件沿用 StudioDocument v1，仅包含素材身份与构图参数，不嵌入媒体；加载前限制 64 KiB，并检查实际 UTF-8 字节数、JSON、版本、对象数、重复实例、数值范围及当前资料中的人物/服装/预设/素材归属。接受 UTF-8 BOM。
+
+读取与素材验证完成后才替换 draft。错误导入保留当前构图、选中对象与渲染，错误消息独立于画布加载错误。读取期间禁止保存与导出；更晚的参考构图请求可覆盖正在读取的文档。文件和 PNG 的 Blob URL 独立管理，修改构图或退出工作台时释放，生成 PNG 不会移除已有构图文件链接。复制、保存与导出继续按文档定格恢复预览。
+
+`verify:studio-composition` 验证真实 A/B 经文件序列化、File 读取及 BOM 的完整往返，拒绝损坏 JSON、其他版本和 UTF-8 超限文本；超过文件大小限制时不调用 file.text。最终 `build:check` 9.35 秒完成，copyPublicDir:false。该批仅改消费与文档，不改变 r6 数据 release。
+
+同一已核对 PID 39916、5198/r6 生产代码服务的 Browser：载入三人五贴纸文件，薰 rotation=8、poseTime=.42、faceTime=3.4 保留；串服装文件、损坏 JSON 和 65,537 字节文件实际拒绝，当前旋转与对象数不变，仍可生成 1280×720 PNG。通过页面「复制构图内容」实际读回内容，再从该内容保存的文件导入，切换到 A 后恢复原 B 的三人、五贴纸、顺序与数值。构图文件链接和 PNG 预览同时保留。390×844 页面 scrollWidth=390，画布固有 1280×720，无控制台 error，结束时 viewport 重置。
+
+证据在 `E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6/document-import-r1`，含 Browser 实际复制的 `copied-composition.json`、`document-roundtrip-ui.png`、`document-mobile.png`、输入失败文件与最终 build 日志。原生 JSON Blob 下载事件等待 8 秒仍超时，因此 JSON 下载落盘未验收；复制→文件→重新载入路径已实际验证，不把它记为下载通过。薰的原图举手、原始效果与物理设备仍未完成。

@@ -11,6 +11,7 @@ import {
 import { StudioCompositionStage } from "../../core/StudioCompositionStage.js";
 import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
+import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile } from "../../core/StudioDocumentFile.mjs";
 
 export function useStudioComposition(props, canvas) {
   const repository = new DomainRepository(props.client, props.bootstrap),
@@ -27,7 +28,11 @@ export function useStudioComposition(props, canvas) {
     playing = ref(false),
     exportUrl = ref(""),
     exportStatus = ref(""),
-    exporting = ref(false);
+    exporting = ref(false),
+    documentError = ref(""),
+    documentStatus = ref(""),
+    documentUrl = ref(""),
+    documentLoading = ref(false);
   const selected = computed(() => studioObject(draft.value, selectedId.value)),
     selectedActor = computed(() =>
       selected.value?.idolId
@@ -49,6 +54,11 @@ export function useStudioComposition(props, canvas) {
     if (exportUrl.value) URL.revokeObjectURL(exportUrl.value);
     exportUrl.value = "";
     exportStatus.value = "";
+  }
+  function clearDocumentFile() {
+    if (documentUrl.value) URL.revokeObjectURL(documentUrl.value);
+    documentUrl.value = "";
+    documentStatus.value = "";
   }
   async function actorView(id) {
     id = String(id);
@@ -199,6 +209,7 @@ export function useStudioComposition(props, canvas) {
     () => {
       renderVersion++;
       clearExport();
+      clearDocumentFile();
       void sync();
     },
     { deep: true },
@@ -294,12 +305,15 @@ export function useStudioComposition(props, canvas) {
   }
   async function reference(name) {
     const request = ++documentRequest;
+    documentLoading.value = false;
+    documentError.value = "";
+    documentStatus.value = "";
     try {
       await Promise.all((name === "A" ? [38, 40] : [4, 5, 6]).map(actorView));
       if (request !== documentRequest || disposed) return;
       await replace(studioReference(name, views.value), request);
     } catch (cause) {
-      if (request === documentRequest && !disposed) error.value = cause.message;
+      if (request === documentRequest && !disposed) documentError.value = cause.message;
     }
   }
   function reset() {
@@ -340,27 +354,67 @@ export function useStudioComposition(props, canvas) {
     }
   }
   function save() {
+    documentError.value = "";
     try {
       settleFrame();
       localStorage.setItem(
         "sidem-studio-document-v1",
-        JSON.stringify(validateStudioDocument(draft.value)),
+        serializeStudioDocument(draft.value),
       );
-      status.value = "构图已保存在此浏览器。";
+      documentStatus.value = "构图已保存在此浏览器。";
     } catch (cause) {
-      error.value = `保存失败：${cause.message}`;
+      documentStatus.value = "";
+      documentError.value = `保存失败：${cause.message}`;
+    }
+  }
+  function exportDocument() {
+    documentError.value = "";
+    try {
+      settleFrame();
+      const text = serializeStudioDocument(draft.value);
+      if (documentUrl.value) URL.revokeObjectURL(documentUrl.value);
+      documentUrl.value = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+      documentStatus.value = "构图文件已生成，可保存后继续编辑。";
+    } catch (cause) {
+      documentError.value = `构图文件无法生成：${cause.message}`;
+    }
+  }
+  async function copyDocument() {
+    documentError.value = "";
+    try {
+      settleFrame();
+      await navigator.clipboard.writeText(serializeStudioDocument(draft.value));
+      if (!disposed) documentStatus.value = "构图内容已复制，可粘贴保存为 .json 文件。";
+    } catch (cause) {
+      if (!disposed) documentError.value = `无法复制构图：${cause.message}。可使用「生成构图文件」。`;
+    }
+  }
+  async function loadDocument(read, label) {
+    const request = ++documentRequest;
+    documentLoading.value = true;
+    documentError.value = "";
+    documentStatus.value = "";
+    try {
+      const doc = await read();
+      if (disposed || request !== documentRequest) return;
+      if (await replace(doc, request)) documentStatus.value = label;
+    } catch (cause) {
+      if (request === documentRequest && !disposed)
+        documentError.value = `载入失败：${cause.message}。当前构图已保留。`;
+    } finally {
+      if (request === documentRequest && !disposed) documentLoading.value = false;
     }
   }
   async function restore() {
-    const request = ++documentRequest;
-    try {
+    await loadDocument(() => {
       const value = localStorage.getItem("sidem-studio-document-v1");
       if (!value) throw Error("此浏览器尚未保存构图");
-      await replace(JSON.parse(value), request);
-    } catch (cause) {
-      if (request === documentRequest && !disposed)
-        error.value = `载入失败：${cause.message}`;
-    }
+      return parseStudioDocument(value);
+    }, "已载入此浏览器保存的构图。");
+  }
+  async function importDocument(file) {
+    if (!file) return;
+    await loadDocument(() => readStudioDocumentFile(file), "已载入构图文件。");
   }
   async function load() {
     busy.value = true;
@@ -439,6 +493,7 @@ export function useStudioComposition(props, canvas) {
     disposed = true;
     controller.abort();
     clearExport();
+    clearDocumentFile();
     stage?.destroy();
   });
   return {
@@ -458,6 +513,10 @@ export function useStudioComposition(props, canvas) {
     exportUrl,
     exportStatus,
     exporting,
+    documentError,
+    documentStatus,
+    documentUrl,
+    documentLoading,
     actorView,
     select,
     addActor,
@@ -471,6 +530,9 @@ export function useStudioComposition(props, canvas) {
     exportPng,
     save,
     restore,
+    exportDocument,
+    copyDocument,
+    importDocument,
     load,
     retry: sync,
   };

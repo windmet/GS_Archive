@@ -31,7 +31,7 @@
             <button
               type="button"
               class="studio-export"
-              :disabled="busy || rendering || !!error || exporting"
+              :disabled="busy || rendering || documentLoading || !!error || exporting"
               @click="exportPng"
             >
               <Download :size="17" />导出 PNG
@@ -41,11 +41,11 @@
             正在预览动作；返回、保存或导出时会恢复所选定格。
           </p>
           <div class="studio-toolbar studio-document-toolbar">
-            <button type="button" :disabled="busy || rendering" @click="save">
+            <button type="button" :disabled="busy || rendering || documentLoading" @click="save">
               <Save :size="16" />保存构图</button
             ><button
               type="button"
-              :disabled="busy || rendering"
+              :disabled="busy || rendering || documentLoading"
               @click="restore"
             >
               <FolderOpen :size="16" />载入构图
@@ -56,6 +56,26 @@
               <Image :size="16" />参考构图 B
             </button>
           </div>
+          <details class="studio-document-files">
+            <summary>构图文件</summary>
+            <p>文件保留素材选择、位置和定格，可在下次载入后继续编辑。照片请使用「导出 PNG」。</p>
+            <div class="studio-toolbar">
+              <button type="button" :disabled="busy || rendering || documentLoading" @click="exportDocument">
+                <Download :size="16" />生成构图文件
+              </button>
+              <button type="button" :disabled="busy || documentLoading" @click="fileInput.click()">
+                <FolderOpen :size="16" />从文件载入
+              </button>
+              <button type="button" :disabled="busy || rendering || documentLoading" @click="copyDocument">
+                <Copy :size="16" />复制构图内容
+              </button>
+              <input ref="fileInput" type="file" accept=".json,application/json" aria-label="选择构图文件" hidden @change="onDocumentFile" />
+              <a v-if="documentUrl" :href="documentUrl" download="sidem-composition.json">保存构图文件</a>
+            </div>
+          </details>
+          <p v-if="documentLoading" role="status">正在读取构图文件及素材…</p>
+          <p v-if="documentStatus" role="status">{{ documentStatus }}</p>
+          <p v-if="documentError" role="alert" class="domain-error">{{ documentError }}</p>
           <p v-if="exportStatus" role="status">{{ exportStatus }}</p>
           <details v-if="exportUrl" open class="studio-export-preview">
             <summary>
@@ -430,6 +450,7 @@
 import { computed, onMounted, ref, shallowRef, watch } from "vue";
 import {
   Download,
+  Copy,
   Pause,
   Play,
   RotateCcw,
@@ -455,7 +476,7 @@ const props = defineProps({
   photoIdol: { type: String, default: "" },
   photoEntity: { type: String, default: "" },
 });
-const canvas = ref(null);
+const canvas = ref(null), fileInput = ref(null);
 const {
   draft,
   actors,
@@ -473,6 +494,10 @@ const {
   exportUrl,
   exportStatus,
   exporting,
+  documentError,
+  documentStatus,
+  documentUrl,
+  documentLoading,
   actorView,
   select,
   addActor,
@@ -486,9 +511,17 @@ const {
   exportPng,
   save,
   restore,
+  exportDocument,
+  copyDocument,
+  importDocument,
   load,
   retry,
 } = useStudioComposition(props, canvas);
+function onDocumentFile(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
+  void importDocument(file);
+}
 const libraryTab = ref("stickers"),
   stickerSearch = ref(""),
   materialPage = ref(0),
