@@ -4,7 +4,46 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
-import { validateDomainPayload, validateMediaPayload, REVIEWED_DOMAIN_PB,domainProductTarget } from '../lib/domain_expansion.mjs';
+import { validateDomainPayload, validateMediaPayload, validatePhotoCostumes, REVIEWED_DOMAIN_PB,domainProductTarget } from '../lib/domain_expansion.mjs';
+import { sha256 } from '../lib/common.mjs';
+
+test('[local-corpus] costume leaves reject stale dictionaries, omissions, duplicate and wrong model identities', async () => {
+  const root = fileURLToPath(new URL('../../public/data/masterdata/', import.meta.url));
+  const bytes = await fs.readFile(path.join(root, 'costume_dictionary.json'));
+  const dictionary = JSON.parse(bytes), digest = sha256(bytes);
+  let models = 0;
+  for (let id = 1; id <= 49; id++) {
+    const leaf = JSON.parse(await fs.readFile(path.join(root, 'domains/photo_costumes', `${id}.json`)));
+    assert.equal(validatePhotoCostumes(leaf, id, dictionary, digest), leaf);
+    models += leaf.costumes.length;
+  }
+  assert.equal(models, 690);
+  const sample = JSON.parse(await fs.readFile(path.join(root, 'domains/photo_costumes/5.json')));
+  // Numeric costume IDs overlap in the real source. Identity is model + owner,
+  // so the valid base costume and SSR both remain present despite sharing ID.
+  assert(sample.costumes.filter(row => row.costumeId === 205001).length > 1);
+  for (const mutate of [
+    leaf => leaf.dictionarySha256 = 'a'.repeat(64),
+    leaf => leaf.costumes.pop(),
+    leaf => leaf.costumes.push({ ...leaf.costumes[0] }),
+    leaf => leaf.costumes[0].idolId = 4,
+    leaf => leaf.costumes[0].costumeId = 1,
+    leaf => leaf.costumes[0].nameJa = 'invented',
+    leaf => leaf.costumes[0].sourceTables = [999],
+    leaf => leaf.models.extra = leaf.models[leaf.costumes[0].modelId],
+    leaf => leaf.models[leaf.costumes[0].modelId].skeleton.url = '/assets/spines/004ter_001_00/comu.skel',
+    leaf => leaf.models[leaf.costumes[0].modelId].textures[0].url = '/assets/spines/004ter_001_00/comu.png',
+    leaf => leaf.models[leaf.costumes[0].modelId].animationNames = ['hello', 'hello'],
+    leaf => leaf.costumes[0].status = 'model-files-missing',
+  ]) {
+    const broken = structuredClone(sample);
+    mutate(broken);
+    assert.throws(() => validatePhotoCostumes(broken, 5, dictionary, digest));
+  }
+  const renamedDictionary = structuredClone(dictionary);
+  renamedDictionary.by_model_resource_id[sample.costumes[0].modelId].costume_name = 'changed';
+  assert.throws(() => validatePhotoCostumes(sample, 5, renamedDictionary, digest), /row mismatch/);
+});
 
 test('Reward targets require exact canonical cards and typed photo identities',()=>{
   const card={card_id:10,resource_id:'001tom_sr01'},cards=[card],materials={spots:[{id:10}]};

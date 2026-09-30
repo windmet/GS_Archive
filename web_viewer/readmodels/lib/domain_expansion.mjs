@@ -38,8 +38,41 @@ export function validateDomainPayload(payload, kind) {
   return payload;
 }
 
+/** A PB stamp alone does not prove that a costume leaf used this dictionary. */
+export function validatePhotoCostumes(payload, idolId, dictionary, dictionarySha256) {
+  validateMediaPayload(payload, 'gs-photo-costumes');
+  assert(/^[a-f0-9]{64}$/.test(dictionarySha256 || '') && payload.dictionarySha256 === dictionarySha256,
+    'Photo costume dictionary digest mismatch');
+  assert(payload.idolId === idolId && Array.isArray(payload.costumes) && payload.models && typeof payload.models === 'object',
+    'Photo costume identity mismatch');
+  const expected = new Map(Object.values(dictionary.by_model_resource_id)
+    .filter(row => row.idol_numeric_id === idolId).map(row => [row.model_resource_id, row]));
+  const actual = payload.costumes.map(row => row.modelId);
+  assert(expected.size > 0 && actual.length === expected.size && new Set(actual).size === actual.length &&
+    actual.every(id => expected.has(id)) && Object.keys(payload.models).length === expected.size &&
+    Object.keys(payload.models).every(id => expected.has(id)), 'Photo costume dictionary coverage mismatch');
+  for (const row of payload.costumes) {
+    const source = expected.get(row.modelId), model = payload.models[row.modelId];
+    assert(row.idolId === idolId && row.costumeId === source.costume_id &&
+      row.nameJa === ((source.costume_name || '').trim() || source.model_resource_id) &&
+      JSON.stringify(row.sourceTables) === JSON.stringify(source.source_tables), 'Photo costume dictionary row mismatch');
+    assert(model && row.status === model.status && ['verified-local-files','model-files-missing','atlas-texture-missing'].includes(model.status),
+      'Photo costume model status mismatch');
+    if (model.status !== 'verified-local-files') continue;
+    const prefix = `/assets/spines/${row.modelId}/`;
+    assert(model.atlas?.url === `${prefix}comu.atlas` && model.skeleton?.url === `${prefix}comu.skel` &&
+      Array.isArray(model.textures) && model.textures.length > 0 &&
+      model.textures.every(texture => texture.status === 'verified-local-file' && texture.url?.startsWith(prefix)),
+      'Photo costume model resource identity mismatch');
+    assert(Array.isArray(model.animationNames) && model.animationNames.length > 0 &&
+      model.animationNames.every(name => typeof name === 'string' && name.length > 0) &&
+      new Set(model.animationNames).size === model.animationNames.length, 'Photo costume animation inventory mismatch');
+  }
+  return payload;
+}
+
 /** Offline joins only. Runtime consumers receive bounded, release-pinned leaves. */
-export async function applyDomainExpansion(domains, data, readSource) {
+export async function applyDomainExpansion(domains, data, readSource, { costumeDictionarySha256 }) {
   const collectionMedia=validateMediaPayload(data.domainCollectionMedia,'gs-collection-media').entries;
   const photoMedia=validateMediaPayload(data.domainPhotoMedia,'gs-photo-media').entries;
   const eventMedia=validateMediaPayload(data.domainEventMedia,'gs-event-media');
@@ -137,8 +170,8 @@ export async function applyDomainExpansion(domains, data, readSource) {
   const photoRecords = await Promise.all(data.domainPhotoIndex.actorIds.map(async id => {
     const actor = validateDomainPayload(await readSource(`data/masterdata/domains/photo_idols/${id}.json`), 'gs-photo-idol');
     const media = validateMediaPayload(await readSource(`data/masterdata/domains/photo_media_idols/${id}.json`), 'gs-photo-media-actor');
-    const costumes=validateMediaPayload(await readSource(`data/masterdata/domains/photo_costumes/${id}.json`),'gs-photo-costumes');
-    assert(costumes.idolId===id && costumes.costumes.every(row=>row.idolId===id),'Photo costume identity mismatch');
+    const costumes=validatePhotoCostumes(await readSource(`data/masterdata/domains/photo_costumes/${id}.json`),id,
+      data.costumeDictionary,costumeDictionarySha256);
     assert(media.idolId === id, 'Photo media identity mismatch');
     assert([...actor.faces,...actor.poses].every(row=>media.entries[`${actor.faces.includes(row)?'faces':'poses'}:${row.id}`]?.preset?.label===row.animationName), 'Photo media label mismatch');
     const idol = idolsById.get(id); assert(idol && actor.idolId === id, 'Photo idol identity mismatch');
