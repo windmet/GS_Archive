@@ -17,8 +17,21 @@ try {
   const { default: Synopsis } = await server.ssrLoadModule('/src/components/archive/StorySynopsisCard.vue')
   const { default: CollectionSynopsis } = await server.ssrLoadModule('/src/components/archive/CollectionStorySynopsis.vue')
   const { default: ChapterSegment } = await server.ssrLoadModule('/src/components/archive/ChapterReadingSegment.vue')
+  const { default: ChapterReader } = await server.ssrLoadModule('/src/components/archive/ChapterStoryReader.vue')
+  const { setReaderTheme } = await server.ssrLoadModule('/src/presentation/ReaderTheme.js')
   const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
   const synopsis=readingSynopsisRow(synopsisDoc)
+  for (const theme of ['light','warm','dark','game']) {
+    setReaderTheme(theme)
+    const single = await renderToString(createSSRApp(Reader, {state:{status:'ready',entries:[],document:synopsisDoc},documentId:synopsisDoc.document_id,mode:'original',anchor:''}))
+    const whole = await renderToString(createSSRApp(ChapterReader, {chapter:{title:'Theme test',label:'第1話',segments:[]},documentId:'',mode:'original',anchor:''}))
+    for (const html of [single,whole]) {
+      assert.ok(html.includes(`data-theme="${theme}"`), 'both reading scopes inherit the shared preference')
+      assert.ok(html.includes('aria-label="阅读主题"'))
+      for (const label of ['极简白','护眼暖阳','深夜暗色','315 事务所原版']) assert.ok(html.includes(`aria-label="${label}"`))
+    }
+  }
+  setReaderTheme('light')
   const sourceBefore = JSON.stringify(synopsisDoc)
   const marker = synopsisDoc.rows.find(row => row.kind === 'choice_detail' && row.source_text === 'appeal')
   assert.ok(marker)

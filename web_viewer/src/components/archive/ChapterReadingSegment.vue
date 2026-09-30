@@ -38,10 +38,10 @@ defineExpose({ matches })
 </script>
 <style scoped>
 .chapter-reading-segment { scroll-margin-top:20px; outline:none; margin:32px 0; overflow-anchor:auto; }
-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid #cbd8df; }
-h2 { margin:0; font-size:20px; color:#183846; }
-button { min-height:44px; padding:8px 14px; border:1px solid #cddde4; border-radius:8px; background:#fff; color:#16838d; font:inherit; cursor:pointer; }
+header { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 0; border-bottom:1px solid var(--reader-border); }
+h2 { margin:0; font-size:20px; color:var(--reader-text-main); }
+button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:8px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
 button:disabled { opacity:.5; cursor:wait; }
-.segment-placeholder { min-height:240px; padding:20px; background:#edf3f3; color:#60727e; }
-.segment-notice { color:#60727e; font-size:14px; }
+.segment-placeholder { min-height:240px; padding:20px; background:var(--reader-bg-card); color:var(--reader-text-sub); }
+.segment-notice { color:var(--reader-text-sub); font-size:14px; }
 </style>

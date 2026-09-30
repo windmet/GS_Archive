@@ -1,5 +1,5 @@
 <template>
-  <section ref="root" class="story-reader" aria-label="整话阅读" data-testid="chapter-reader" :data-anchor-follow="anchoring" :data-scroll-input="scrollInput" :data-scroll-input-count="scrollInputCount" @wheel.passive="stopAnchoring('wheel')" @touchstart.passive="stopAnchoring('touch')" @keydown="onUserKey">
+  <section ref="root" class="story-reader reader-container" :data-theme="readerTheme" aria-label="整话阅读" data-testid="chapter-reader" :data-anchor-follow="anchoring" :data-scroll-input="scrollInput" :data-scroll-input-count="scrollInputCount" @wheel.passive="stopAnchoring('wheel')" @touchstart.passive="stopAnchoring('touch')" @keydown="onUserKey">
     <ArchivePageChrome class="reader-top" @back="emit('back')"><template #title><span>{{ uiText('reader.chapter') }}</span></template></ArchivePageChrome>
     <div class="reader-body">
       <h1>{{ presentProducerAddressingText(chapter.title) }}</h1><p>{{ chapter.label }} · {{ chapter.segments.length }} 段</p>
@@ -17,6 +17,8 @@ import { computed, nextTick, onBeforeUpdate, onUpdated, ref, watch } from 'vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ChapterReadingSegment from './ChapterReadingSegment.vue'
 import ReaderControlBar from './ReaderControlBar.vue'
+import { readerTheme } from '../../presentation/ReaderTheme.js'
+import '../../presentation/reader-theme.css'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { resolveUiText as uiText } from '../../localization/ui/UiTextResolver.js'
@@ -62,21 +64,21 @@ onUpdated(() => {
 })
 </script>
 <style scoped>
-.story-reader { height:100%; overflow-y:auto; overflow-x:hidden; background:#f3f7f7; color:#183846; font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
-.reader-top { min-height:64px; border-bottom:1px solid #d7e1e6; }
+.story-reader { height:100%; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
+.reader-top { min-height:64px; border-bottom:1px solid var(--reader-border); }
 .reader-body { max-width:1000px; margin:0 auto; padding:28px max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
 h1 { margin:0; font-size:26px; line-height:1.5; }
 .chapter-reader-directory { display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:8px; margin:20px 0; }
 .chapter-reader-directory button { position:relative; padding:8px 4px; font-size:14px; font-variant-numeric:tabular-nums; }
 .chapter-reader-directory i { position:absolute; width:5px; height:5px; top:5px; right:5px; border-radius:50%; background:#a0b4b5; }
 .chapter-reader-directory .status-error { background:#ba6659; }
-button { min-height:44px; padding:8px 14px; border:1px solid #cddde4; border-radius:6px; background:white; color:#16838d; font:inherit; cursor:pointer; }
-button[aria-current],button[aria-pressed=true] { background:#16838d; color:white; }
+button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:6px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
+button[aria-current],button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
 button:disabled { opacity:.5; cursor:default; }
-input { box-sizing:border-box; min-height:44px; width:min(250px,100%); border:1px solid #becdd5; border-radius:6px; padding:8px; font:inherit; }
+input { box-sizing:border-box; min-height:44px; width:min(250px,100%); border:1px solid var(--reader-border); border-radius:6px; padding:8px; background:var(--reader-bg-card); color:var(--reader-text-main); font:inherit; }
 label { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
-form { padding:16px; background:#fff; border:1px solid #cbd8df; border-radius:12px; }
-button:focus-visible,input:focus-visible { outline:2px solid #168f98; outline-offset:3px; }
+form { padding:16px; background:var(--reader-bg-card); border:1px solid var(--reader-border); border-radius:12px; }
+button:focus-visible,input:focus-visible { outline:2px solid var(--reader-accent-text); outline-offset:3px; }
 @media(max-width:1100px) { .chapter-reader-directory { grid-template-columns:repeat(5,minmax(0,1fr)); } }
 @media(max-width:620px) { .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } .chapter-reader-directory { gap:6px; } .chapter-reader-directory button { font-size:13px; } }
 </style>

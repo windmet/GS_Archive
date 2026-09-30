@@ -1,6 +1,6 @@
 <template>
   <ChapterStoryReader v-if="chapter" :chapter="chapter" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
-  <section v-else ref="readerRoot" class="story-reader" :aria-busy="busy" aria-labelledby="reading-heading">
+  <section v-else ref="readerRoot" class="story-reader reader-container" :data-theme="readerTheme" :aria-busy="busy" aria-labelledby="reading-heading">
     <ArchivePageChrome class="reader-top" back-class="reader-back" @back="emit('back')"><template #title><span>剧情阅读</span></template></ArchivePageChrome>
     <div class="reader-body">
       <h1 id="reading-heading" ref="heading" tabindex="-1">{{ title }}</h1>
@@ -43,6 +43,8 @@
 <script setup>
 import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import ChapterStoryReader from './ChapterStoryReader.vue'
+import { readerTheme } from '../../presentation/ReaderTheme.js'
+import '../../presentation/reader-theme.css'
 import GsLoadingIndicator from '../GsLoadingIndicator.vue'
 import ReaderControlBar from './ReaderControlBar.vue'
 import { useReadingPresentation } from './useReadingPresentation.js'
@@ -126,35 +128,37 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
 </script>
 
 <style scoped>
-.reader-search { margin: 20px 0; padding: 16px; background: #fff; border: 1px solid #cbd8df; border-radius: 12px; }
+.reader-search { margin: 20px 0; padding: 16px; background: var(--reader-bg-card); border: 1px solid var(--reader-border); border-radius: 12px; }
 .reader-search label { display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap; }
-.reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; font: inherit; border: 1px solid #becdd5; border-radius: 6px; }
+.reader-search input { min-width: 0; width: 100%; min-height: 44px; padding: 8px; background:var(--reader-bg-card); color:var(--reader-text-main); font: inherit; border: 1px solid var(--reader-border); border-radius: 6px; }
 .reader-search-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 13px; }
 .reader-search-actions span { margin-right: auto; }
 .reader-search-actions button:disabled { opacity: .45; cursor: default; }
-.reader-notice[role="alert"] { scroll-margin-top: 20px; padding: 12px; border: 1px solid #d3dfe4; border-radius: 8px; outline: none; }
-.reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid #cddde4; border-radius: 8px; background: #f5f9fb; color: #315a6b; font: inherit; font-size: 13px; cursor: pointer; }
+.reader-notice[role="alert"] { scroll-margin-top: 20px; padding: 12px; border: 1px solid var(--reader-border); border-radius: 8px; outline: none; }
+.reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid var(--reader-border); border-radius: 8px; background: var(--reader-bg-card); color: var(--reader-accent-text); font: inherit; font-size: 13px; cursor: pointer; }
 .reader-play:disabled { opacity: .5; cursor: wait; }
-.reader-play:focus-visible { outline: 2px solid #168f98; outline-offset: 3px; }
-.story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd8df transparent; background: #f3f7f7; color: #183846; font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
-.reader-top { height: calc(64px + var(--archive-safe-top)); box-sizing: border-box; padding-top: var(--archive-safe-top); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #d7e1e6; position: relative; font-size: 17px; font-weight: 700; }
+.reader-play:focus-visible { outline: 2px solid var(--reader-accent-text); outline-offset: 3px; }
+.story-reader { height: 100%; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--reader-border) transparent; background: var(--reader-bg-page); color: var(--reader-text-main); font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
+.reader-top { height: calc(64px + var(--archive-safe-top)); box-sizing: border-box; padding-top: var(--archive-safe-top); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--reader-border); position: relative; font-size: 17px; font-weight: 700; }
 .reader-top :deep(.reader-back) { position: absolute; left: 12px; }
 button, select { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
-button { min-height: 44px; border: 0; background: none; color: #16838d; }
-button:focus-visible, select:focus-visible { outline: 3px solid #168f98; outline-offset: 3px; }
+button { min-height: 44px; border: 0; background: none; color: var(--reader-accent-text); }
+button:focus-visible, select:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }
 .reader-body { max-width: 1000px; margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
 h1 { margin: 0; font-size: 26px; line-height: 1.5; letter-spacing: -.5px; outline: none; }
-.reader-subtitle { font-size: 14px; color: #6e808a; margin: 4px 0 22px; }
+.reader-subtitle { font-size: 14px; color: var(--reader-text-sub); margin: 4px 0 22px; }
 .reader-picker { display: flex; align-items: center; gap: 22px; white-space: nowrap; font-size: 15px; font-weight: 600; }
-.reader-picker select { min-height: 44px; width: min(100%, 310px); min-width: 0; border: 1px solid #becdd5; border-radius: 6px; padding: 10px; background: #fff; font-weight: 400; }
-.reader-segments { font-size: 14px; color: #60727e; }
+.reader-picker select { min-height: 44px; width: min(100%, 310px); min-width: 0; border: 1px solid var(--reader-border); border-radius: 6px; padding: 10px; background: var(--reader-bg-card); font-weight: 400; }
+.reader-segments { font-size: 14px; color: var(--reader-text-sub); }
 .reader-segments summary { cursor: pointer; padding: 10px 0; }
-.reader-full-play { padding: 10px 20px; border-radius: 8px; background: #16838d; color: white; }
+.reader-full-play { padding: 10px 20px; border-radius: 8px; background: var(--reader-active); color: var(--reader-on-accent); }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
-.reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: #60727e; }
-.reader-feedback h2 { font-size: 18px; color: #183846; }
+.reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: var(--reader-text-sub); }
+.reader-feedback h2 { font-size: 18px; color: var(--reader-text-main); }
 .reader-feedback details { margin-top: 18px; overflow-wrap: anywhere; }
 .reader-feedback summary { cursor: pointer; }
 @media (max-width:760px) { .reader-search { padding:12px; } .reader-search label { display:block; white-space:normal; } .reader-search input { box-sizing:border-box; margin-top:8px; } .reader-body { padding:20px 14px 40px; } h1 { font-size:22px; } }
 .reader-loading { margin-block: 18px; max-width: 100%; }
+.reader-container .reader-loading :deep(.gs-loading-indicator__badge) { background:var(--reader-bg-card); border-color:var(--reader-border); }
+.reader-container .reader-loading :deep(.gs-loading-indicator__message) { color:var(--reader-text-sub); }
 </style>
