@@ -115,9 +115,9 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice], 
     return
   }
   if (props.state.status !== 'ready') return
-  const target = props.anchor && globalThis.document.getElementById(`reading-${props.anchor}`)
+  const target = props.anchor && readerRoot.value?.querySelector(`[id="reading-${props.anchor}"]`)
   if (target) {
-    const visibleTarget = target.classList.contains('merged-title') ? heading.value : target
+    const visibleTarget = target.classList.contains('merged-title') ? heading.value : target.closest('.reader-row') || target
     visibleTarget?.focus({ preventScroll: true })
     visibleTarget?.scrollIntoView({ block: 'start' })
   }

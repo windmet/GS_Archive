@@ -94,6 +94,8 @@ export function createReadingDocument(input, { documentId, logicalId, file, sha2
           resolution: targetIndex === null ? 'unresolved' : 'resolved' }
         append({ kind: 'choice', source: text(o.source_text ?? o.text), textRef: o.text_ref,
           slot: `option-${index}`, option })
+        // Preserve the third RAW slot as source evidence: it may be prose or a
+        // presentation marker. Reader presentation classifies known markers.
         append({ kind: 'choice_detail', source: text(o.detail_source_text ?? o.detail), textRef: o.detail_text_ref,
           slot: `option-${index}-detail`, option })
         return option

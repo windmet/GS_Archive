@@ -1,8 +1,9 @@
 import { computed } from 'vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { producerName } from '../../utils/LanguageStore.js'
-import { readingAvatarEntity, readingPresentationSpeaker, readingBranchRows } from '../../../shared/reading/ReadingDocument.js'
+import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
+import { projectReadingChoiceRows } from '../../presentation/ReadingChoiceMetadata.js'
 
 export function useReadingPresentation(document, mode) {
   const input = computed(() => document.value ? { scenario_id: document.value.scenario_id, text_catalog_id: document.value.text_catalog_id,
@@ -12,7 +13,7 @@ export function useReadingPresentation(document, mode) {
   const localization = createStoryLocalization({ compiledData: input, storyPreferences: preferences })
   const sourceTitle = computed(() => document.value?.presentation?.title || document.value?.rows.find(row => row.kind === 'title')?.source_text || '剧情阅读')
   const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, sourceTitle.value))
-  const presentedRows = computed(() => readingBranchRows(document.value).map(({ row, branch }) => ({ row, branch,
+  const presentedRows = computed(() => projectReadingChoiceRows(document.value).map(({ row, branch, anchorAliases }) => ({ row, branch, anchorAliases,
     frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id), mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
     avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text, textRef: row.text_ref,
       speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }) })))

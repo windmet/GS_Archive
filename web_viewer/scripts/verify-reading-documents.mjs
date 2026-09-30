@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { createReadingDocument, readingAvatarEntity } from '../shared/reading/ReadingDocument.js'
 import { validateReadingDocument, validateReadingManifest } from '../shared/reading/ReadingContract.js'
 import { sourceHash } from './audit-reading-diagnostics.mjs'
+import { projectReadingChoiceRows } from '../src/presentation/ReadingChoiceMetadata.js'
 
 const read = async file => JSON.parse(await fs.readFile(new URL(`../${file}`, import.meta.url), 'utf8'))
 const hash = value => `sha256:${createHash('sha256').update(value).digest('hex')}`
@@ -65,6 +66,25 @@ assert.equal(strictChoice.status, 'ready')
 assert.ok(strictChoice.rows.some(r => r.kind === 'caption'))
 assert.equal(strictChoice.controls.length, 2)
 assert.ok(strictChoice.rows.some(r => r.kind === 'choice_detail' && r.source_text === 'appeal'))
+let markers = 0, longReplies = 0
+for (const doc of documents) {
+  const before = JSON.stringify(doc)
+  const projection = projectReadingChoiceRows(doc)
+  for (const row of doc.rows) {
+    if (row.kind !== 'choice_detail') continue
+    if (row.source_text === 'appeal') {
+      markers++
+      assert.ok(!projection.some(item => item.row === row), 'RAW marker is not reading prose')
+      assert.equal(projection.filter(item => item.anchorAliases.includes(row.anchor.row_id)).length, 1, 'one actual choice owns the legacy anchor')
+    } else {
+      longReplies++
+      assert.ok(projection.some(item => item.row === row), 'genuine choice details survive')
+    }
+  }
+  assert.equal(JSON.stringify(doc), before, 'presentation never rewrites source evidence')
+}
+assert.equal(markers, 12)
+assert.ok(longReplies > 0)
 assert.equal(documents.find(d => d.document_id === '1_4_001_02_a').status, 'ready')
 const multi = documents.find(d => d.document_id === '1_4_001_03_h')
 assert.equal(multi.status, 'unsupported')

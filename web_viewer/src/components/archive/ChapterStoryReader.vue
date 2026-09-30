@@ -38,7 +38,10 @@ function moveMatch(direction) {
 }
 let positioned = '', beforeTop = null
 const anchoring = ref(false), scrollInput = ref(''), scrollInputCount = ref(0)
-function target() { return root.value?.querySelector(`[id="${props.anchor && !missingAnchor.value ? 'reading-'+props.anchor : 'reading-document-'+props.documentId}"]`) }
+function target() {
+  const node = root.value?.querySelector(`[id="${props.anchor && !missingAnchor.value ? 'reading-'+props.anchor : 'reading-document-'+props.documentId}"]`)
+  return node?.closest('.reader-row') || node
+}
 function stopAnchoring(kind) { anchoring.value = false; scrollInput.value = kind; scrollInputCount.value++ }
 function onUserKey(event) { if (['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(event.key) && !event.target.closest('input,select')) stopAnchoring('key') }
 watch(() => [props.documentId, props.anchor, focused.value?.status], async () => {

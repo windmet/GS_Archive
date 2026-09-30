@@ -8,6 +8,7 @@ import { projectReadingFrontMatter } from '../src/presentation/ReadingFrontMatte
 import { readingSynopsisRow } from '../src/presentation/StorySynopsis.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
+import { projectReadingChoiceRows } from '../src/presentation/ReadingChoiceMetadata.js'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
 const server = await createServer({ configFile: false, plugins: [vue()], optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, watch: null }, appType: 'custom' })
@@ -15,8 +16,37 @@ try {
   const { default: Reader } = await server.ssrLoadModule('/src/components/archive/ArchiveStoryReader.vue')
   const { default: Synopsis } = await server.ssrLoadModule('/src/components/archive/StorySynopsisCard.vue')
   const { default: CollectionSynopsis } = await server.ssrLoadModule('/src/components/archive/CollectionStorySynopsis.vue')
+  const { default: ChapterSegment } = await server.ssrLoadModule('/src/components/archive/ChapterReadingSegment.vue')
   const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
   const synopsis=readingSynopsisRow(synopsisDoc)
+  const sourceBefore = JSON.stringify(synopsisDoc)
+  const marker = synopsisDoc.rows.find(row => row.kind === 'choice_detail' && row.source_text === 'appeal')
+  assert.ok(marker)
+  const projected = projectReadingChoiceRows(synopsisDoc)
+  assert.ok(!projected.some(item => item.row === marker))
+  assert.ok(projected.some(item => item.row.source_text === 'パーッション！！' && item.anchorAliases.includes(marker.anchor.row_id)))
+  assert.equal(JSON.stringify(synopsisDoc), sourceBefore, 'source unit, hash and control evidence remain canonical')
+  const proseDoc = structuredClone(synopsisDoc)
+  proseDoc.rows.find(row => row.kind === 'choice_detail').source_text = '長い返信本文です。'
+  assert.ok(projectReadingChoiceRows(proseDoc).some(item => item.row.source_text === '長い返信本文です。'), 'real long reply stays readable')
+  const dialogue = { ...marker, kind: 'dialogue', anchor: { ...marker.anchor, row_id: 'dialogue-appeal' } }
+  const option = { ...marker, kind: 'choice', anchor: { ...marker.anchor, row_id: 'option-appeal' } }
+  assert.equal(projectReadingChoiceRows({rows:[dialogue,option]}).length, 2, 'same word in dialogue or actual option is not filtered')
+  assert.equal(projectReadingChoiceRows({rows:[marker]}).length, 1, 'unpaired evidence is never silently discarded')
+  const proseHtml = await renderToString(createSSRApp(Reader, {
+    state:{status:'ready',entries:[],document:proseDoc}, documentId:proseDoc.document_id, mode:'original', anchor:'',
+  }))
+  assert.ok(proseHtml.includes('选项附文') && proseHtml.includes('長い返信本文です。'), 'actual Vue still renders genuine long replies')
+  for (const mode of ['original', 'translation', 'bilingual']) {
+    const props = { state: { status:'ready', entries:[], document:synopsisDoc }, documentId:synopsisDoc.document_id, mode, anchor:marker.anchor.row_id }
+    const readerHtml = await renderToString(createSSRApp(Reader, props))
+    const segmentHtml = await renderToString(createSSRApp(ChapterSegment, { segment:{status:'ready',document:synopsisDoc,documentId:synopsisDoc.document_id,label:'EPISODE 01',entry:{sha256:'test'}}, mode, anchor:marker.anchor.row_id, query:'appeal' }))
+    for (const html of [readerHtml, segmentHtml]) {
+      assert.ok(!html.includes('appeal') && !html.includes('选项附文'), `${mode}: no metadata prose in either reading scope`)
+      assert.ok(html.includes('パーッション！！'))
+      assert.ok(html.includes(`id="reading-${marker.anchor.row_id}"`), 'old metadata anchor resolves at its actual choice')
+    }
+  }
   assert.equal(synopsis.text_ref.unit_id,'story-text:v1:1_4_001_01:1_4_001_01_a:cmd-000000:synopsis:000')
   assert.equal(readingSynopsisRow({rows:[synopsisDoc.rows.find(row=>row.kind==='dialogue'),synopsis]}),null,'never treat later content as leading synopsis')
   assert.equal(readingSynopsisRow({rows:[{...synopsis,text_ref:null}]}),null,'plain text cannot unlock translation controls')

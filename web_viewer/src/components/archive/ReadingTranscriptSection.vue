@@ -1,7 +1,8 @@
 <template>
         <article class="reader-transcript" aria-label="剧情正文">
-          <section v-for="item in rows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id, 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
+          <section v-for="item in rows" :key="item.row.anchor.row_id" :id="`reading-${item.row.anchor.row_id}`" tabindex="-1" class="reader-row" :aria-hidden="item.mergedTitle ? 'true' : undefined" :class="[`kind-${item.row.kind}`, { selected: anchor === item.row.anchor.row_id || item.anchorAliases?.includes(anchor), 'search-match': searchMatchIds.has(item.row.anchor.row_id), 'front-matter': item.frontMatter, 'merged-title': item.mergedTitle }]">
             <template v-if="!item.mergedTitle">
+            <span v-for="alias in item.anchorAliases" :key="alias" :id="`reading-${alias}`" class="reader-anchor-alias" tabindex="-1" aria-hidden="true"></span>
             <p v-if="item.branch?.first" class="reader-branch-label">选项 {{ item.branch.index + 1 }} 的分支（与其他选项互斥；下方汇合后继续）</p>
             <ArchiveIdolAvatar v-if="item.avatar" class="reader-avatar" :idol-code="item.avatar" :size="40" :accent-color="idolDirectory.find(idol => idol.id === item.avatar)?.color" decorative />
             <div class="reader-content">
@@ -31,6 +32,7 @@ defineProps({ rows: Array, mode: String, anchor: String, idolDirectory:{type:Arr
 .reader-transcript { margin-top:18px; }
 .reader-row { position:relative; display:grid; grid-template-columns:40px minmax(0,1fr); column-gap:14px; margin:0; padding:16px 4px; border-bottom:1px solid #dfe8e7; scroll-margin-top:20px; outline:none; }
 .reader-content { grid-column:2; min-width:0; }
+.reader-anchor-alias { position:absolute; top:0; width:0; height:0; overflow:hidden; scroll-margin-top:20px; outline:none; }
 .reader-avatar { grid-column:1; grid-row:auto; margin-top:3px; }
 .reader-row.selected, .reader-row.search-match { background:#eaf6f2; box-shadow:inset 3px 0 #29958a; }
 .reader-row.merged-title { display:block; height:0; margin:0; padding:0; border:0; overflow:hidden; }
