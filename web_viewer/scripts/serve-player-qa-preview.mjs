@@ -13,7 +13,7 @@ if (!process.argv.includes('--models')) throw Error('Supply --models <verified e
 const models = path.resolve(option('--models'))
 const build = path.join(root, '.analysis/build-check')
 const publicRoot = path.join(root, 'public')
-const evidence = path.join(root, '.analysis/player-b002-repair')
+const evidence = process.argv.includes('--evidence') ? path.resolve(option('--evidence')) : path.join(root, '.analysis/player-b002-repair')
 const faults = process.argv.includes('--faults') ? path.resolve(option('--faults')) : null
 if (faults && !isWithinRoot(evidence, faults)) throw Error('Fault file must be inside this QA evidence directory')
 await fs.mkdir(evidence, { recursive: true })
@@ -29,7 +29,7 @@ async function existing(candidates) {
 }
 const server = http.createServer(async (req, res) => {
   const route = decodeURIComponent(new URL(req.url, 'http://localhost').pathname)
-  let receipt = {}
+  let receipt = {release:bootstrap.release,pid:process.pid}
   res.on('finish', () => { void fs.appendFile(path.join(evidence, 'http-requests.jsonl'), JSON.stringify({ at: new Date().toISOString(), url: req.url, status: res.statusCode, ...receipt }) + '\n') })
   try {
     if (!['GET', 'HEAD'].includes(req.method) || route.split('/').some(p => p === '..' || p.includes('\\'))) { res.writeHead(400); res.end(); return }
@@ -59,7 +59,7 @@ const server = http.createServer(async (req, res) => {
     const file = await existing(candidates.filter(Boolean))
     if (!file) { res.writeHead(404); res.end(); return }
     const body = await fs.readFile(file)
-    receipt = { bytes: body.length, sha256: createHash('sha256').update(body).digest('hex') }
+    receipt = { ...receipt, bytes: body.length, sha256: createHash('sha256').update(body).digest('hex') }
     const headers = { 'Content-Type': types[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' }
     const range = req.headers.range?.match(/^bytes=(\d+)-(\d*)$/)
     if (range) {

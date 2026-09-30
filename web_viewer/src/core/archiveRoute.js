@@ -34,6 +34,8 @@ const ROUTE_QUERY_KEYS = [
   'stage',
   'song_scope',
   'event',
+  'entity',
+  'photo_idol',
   'gasha',
   'gasha_type',
   'rarity',
@@ -63,6 +65,9 @@ const VALID_VIEWS = new Set([
   'cards',
   'card_detail',
   'event_detail',
+  'event_catalog',
+  'collection_catalog',
+  'photo_catalog',
   'gashas',
   'gasha_detail',
   'song_catalog',
@@ -123,7 +128,10 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   files: { section: 'category', required: ['group'], fallback: 'home' },
   cards: { section: 'cards', required: [], fallback: 'home' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
-  event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
+  event_detail: { section: 'events', required: ['event'], fallback: 'event_catalog' },
+  event_catalog: { section: 'events', required: [] },
+  collection_catalog: { section: 'collections', required: [] },
+  photo_catalog: { section: 'photos', required: [] },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
@@ -141,6 +149,9 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
   { id: 'interactions', label: '互动' },
+  { id: 'events', label: '活动' },
+  { id: 'collections', label: '藏品' },
+  { id: 'photos', label: '摄影' },
   { id: 'resources', label: '资源' },
 ])
 
@@ -313,6 +324,8 @@ export function normalizeArchiveRoute(input = {}) {
     song: clean(input.song),
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
+    ...(view==='collection_catalog' ? {entity:/^(item|honor):\d+$/.test(input.entity || '') ? input.entity : ''} : {}),
+    ...(view==='photo_catalog' ? {photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : ''} : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -406,6 +419,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
   const home = { label: '资料馆', route: { view: 'home' } }
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
@@ -470,8 +484,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       home,
       {
         label: '活动',
-        route: breadcrumbRoute(route, 'story_catalog', {
-          storyType: 'event',
+        route: breadcrumbRoute(route, 'event_catalog', {
+          storyType: '',
           storySection: '',
           story: '',
           event: '',
@@ -579,6 +593,8 @@ export function readArchiveRoute(input = null) {
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
+    entity: params.get('entity'),
+    photoIdol: params.get('photo_idol'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -601,6 +617,8 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
+  if (normalized.view === 'photo_catalog' && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)

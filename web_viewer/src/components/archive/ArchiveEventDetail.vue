@@ -2,7 +2,8 @@
   <article v-if="event" class="event-detail" data-archive-scroll-container>
     <section class="event-identity">
       <div class="event-visual">
-        <img class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" />
+        <img v-if="!bannerFailed" class="event-banner" :src="getEventBannerUrl(event.event_code)" :alt="event.title" @error="bannerFailed=true" />
+        <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动横幅尚未收录</small></p>
       </div>
       <div class="event-summary">
         <div class="event-kicker">
@@ -104,6 +105,13 @@
       <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
     </section>
 
+    <section v-if="supplement" class="detail-section" aria-labelledby="event-general-rewards">
+      <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
+      <nav v-if="supplement.items?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in supplement.items" :key="`${item.role}:${item.itemId}`" type="button" @click="emit('open-entity',`item:${item.itemId}`)">{{ item.nameJa }}</button></nav>
+      <ArchiveRewardTable :rows="supplement.rewards || []" @open-entity="emit('open-entity',$event)" />
+      <div v-if="supplement.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in supplement.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
+    </section>
+
     <section class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
@@ -150,16 +158,19 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed,ref,watch } from 'vue'
 import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import ArchiveRewardTable from './ArchiveRewardTable.vue'
+import '../../styles/archive-domains.css'
 import { buildEventIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getEventBannerUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 const props = defineProps({
+  supplement:{type:Object,default:null},
   event: { type: Object, default: null },
   masterEvent: { type: Object, default: null },
   story: { type: Object, default: null },
@@ -176,7 +187,9 @@ const props = defineProps({
   readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event'])
+const bannerFailed=ref(false)
+watch(()=>props.event?.event_code,()=>{bannerFailed.value=false})
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
 const castReferences = computed(() => props.projectedCastReferences?.map(entry => {
@@ -265,7 +278,7 @@ function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
 }
 function formatDateTime(timestamp) {
-  if (!Number.isFinite(Number(timestamp))) return '未记录'
+  if (timestamp===null || timestamp===undefined || !Number.isFinite(Number(timestamp)) || Number(timestamp)<=0) return '未记录'
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Tokyo',
   }).format(new Date(Number(timestamp) * 1000))
@@ -273,6 +286,7 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
+.event-banner-unavailable{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;margin:0;padding:20px;text-align:center;color:#57738a;gap:12px}.event-banner-unavailable small{font-size:13px}.event-related-history{margin-top:20px}.event-related-history h3{font-size:16px}
 .episode-entry { display: flex; min-width: 0; }
 .episode-entry > button:first-child { flex: 1; min-width: 0; }
 .episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: 5px; color: #157c78; font-size: 13px; }

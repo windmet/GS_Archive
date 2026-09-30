@@ -52,6 +52,6 @@ const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWa
 const backdropFailed = ref(false)
 watch(wallpaper.revision, () => { backdropFailed.value = false })
 const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', label: '故事' }, { id: 'cards', label: '卡片' }, { id: 'work', label: '工作' }, { id: 'mobile', label: '通信' }]
-const appEnglish = { home: 'HOME', stories: 'STORY', songs: 'MUSIC', idols: 'IDOL', cards: 'CARD', gashas: 'GASHA', interactions: 'MOBILE', resources: 'FILES' }
+const appEnglish = { home: 'HOME', stories: 'STORY', songs: 'MUSIC', idols: 'IDOL', cards: 'CARD', gashas: 'GASHA', interactions: 'MOBILE', resources: 'FILES', events:'EVENT', collections:'COLLECTION', photos:'PHOTO' }
 onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.preferences.value.wallpaperKey) wallpaper.load() })
 </script>

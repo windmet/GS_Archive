@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {useArchiveNavigationState} from '../src/core/useArchiveNavigationState.js';
+import {buildArchiveUrl,readArchiveRoute,buildArchiveSourceQuery,readArchiveSourceRoute} from '../src/core/archiveRoute.js';
+import {DomainRepository} from '../readmodels/runtime/DomainRepository.mjs';
+import {rewardCondition,historicalDate} from '../src/components/archive/DomainPresentation.mjs';
+
+const state=useArchiveNavigationState();
+state.view.value='collection_catalog';state.currentEntityKey.value='honor:30017001';state.filterQuery.value='周年';
+const route=readArchiveRoute(buildArchiveUrl('http://localhost/?entity=item:999&photo_idol=2',state.currentArchiveRoute()));
+assert.equal(route.view,'collection_catalog');assert.equal(route.entity,'honor:30017001');assert.equal(route.query,'周年');assert.equal(route.photoIdol,undefined);
+assert.equal(readArchiveSourceRoute(buildArchiveSourceQuery(route)).entity,'honor:30017001');
+state.view.value='photo_catalog';state.currentPhotoIdol.value='49';
+const photo=readArchiveRoute(buildArchiveUrl('http://localhost/',state.currentArchiveRoute()));assert.equal(photo.photoIdol,'49');assert.equal(photo.entity,undefined);
+assert.equal(readArchiveRoute('http://localhost/?view=collection_catalog&entity=card:1').entity,'');
+assert.equal(readArchiveRoute('http://localhost/?view=photo_catalog&photo_idol=../../bad').photoIdol,'');
+assert.match(rewardCondition({intervalPoint:0,offsetPoint:0,limitPoint:1000}),/每 0 PT/);
+assert.match(rewardCondition({upperRank:1,lowerRank:10}),/1–10/);
+assert.equal(historicalDate(7258086000),'配置占位日期');assert.equal(historicalDate(null),'未记录');
+
+const index={count:2,pages:[{url:'page'}]},rows=[{id:'1',detail:{url:'detail'}},{id:'2',detail:{url:'detail'}}];
+const values=new Map([['index',index],['page',{rows}],['detail',{rows:[{id:'1',view:{entry:{id:1}}},{id:'2',view:{entry:{id:2}}}]}]]);
+const client={load:async descriptor=>values.get(descriptor.url)};
+const repo=new DomainRepository(client,{domains:{items:{url:'index'}}});
+assert.equal((await repo.catalog('items')).length,2);assert.equal((await repo.detail('items',rows[1])).entry.id,2);
+values.set('detail',{rows:[{id:'2',view:{entry:{id:1}}}]});await assert.rejects(repo.detail('items',rows[1]),/identity/);
+values.set('page',{rows:[rows[0],rows[0]]});await assert.rejects(repo.catalog('items'),/identity/);
+await assert.rejects(repo.catalog('unknown'),/Unavailable/);
+console.log('Domain navigation: shared URLs, bounded source returns, typed selection, incomplete dates and mixed identities passed');

@@ -45,6 +45,8 @@ export function useArchiveNavigationState() {
   const stageTargetId = ref('')
   const currentSongScope = ref('all')
   const currentEventId = ref('')
+  const currentEntityKey = ref('')
+  const currentPhotoIdol = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
   const currentCardRarity = ref('all')
@@ -105,6 +107,8 @@ export function useArchiveNavigationState() {
     return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
+      ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value} : {}),
+      ...(view.value === 'photo_catalog' ? {photoIdol:currentPhotoIdol.value} : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
@@ -162,6 +166,8 @@ export function useArchiveNavigationState() {
   }
 
   return {
+    currentEntityKey,
+    currentPhotoIdol,
     view,
     playerEntryRoute,
     currentPickTarget,

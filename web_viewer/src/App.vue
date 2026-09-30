@@ -191,6 +191,7 @@
         v-if="view === 'event_detail'"
         :event="currentEvent"
         :master-event="currentMasterEvent"
+        :supplement="currentEventProjection?.supplement || null"
         :story="currentEventStory"
         :episodes="currentEventEpisodes"
         :cards="currentEventCards"
@@ -208,7 +209,16 @@
         @open-card="openEventCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
+        @open-entity="openCollectionEntity"
+        @open-event="openEventDetail($event, 'event_detail')"
       />
+
+      <ArchiveDomainCatalog v-if="['event_catalog','collection_catalog','photo_catalog'].includes(view)"
+        :mode="view" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey"
+        :photo-idol="currentPhotoIdol" :query="filterQuery"
+        @query="filterQuery = $event; syncArchiveRoute({ replace:true })"
+        @entity="openCollectionEntity" @photo-idol="selectPhotoIdol"
+        @open-event="openEventDetail($event, view)" />
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
@@ -610,6 +620,9 @@ const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
 const archiveRouteLoaders = {
+  event_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
+  collection_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
+  photo_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
   story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
@@ -638,6 +651,7 @@ const archiveRouteLoaders = {
 }
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
+const ArchiveDomainCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
 const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
 const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
 const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
@@ -716,6 +730,8 @@ const {
   stageTargetId,
   currentSongScope,
   currentEventId,
+  currentEntityKey,
+  currentPhotoIdol,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
@@ -1315,6 +1331,9 @@ const archiveTitle = computed(() => {
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'collection_catalog') return '藏品馆'
+  if (view.value === 'photo_catalog') return '摄影资料'
+  if (view.value === 'event_catalog') return '活动一览'
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
@@ -1657,6 +1676,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCharacterId.value = validRouteIdol ? (route.idol || '') : ''
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
+    currentEntityKey.value = route.entity || ''
+    currentPhotoIdol.value = route.photoIdol || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
@@ -1797,7 +1818,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','photos'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -1812,6 +1833,23 @@ function navigateArchiveSection(section) {
   }
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'resources') openArchiveStatus()
+  else if (['events','collections','photos'].includes(section)) openDomainCatalog(section)
+}
+
+function openDomainCatalog(section) {
+  filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''
+  currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
+  commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
+}
+function openCollectionEntity(key) {
+  if (!/^(item|honor):\d+$/.test(key || '')) return
+  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value=''}
+  currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
+  commitView('collection_catalog')
+}
+function selectPhotoIdol(id) {
+  if (!/^\d{1,4}$/.test(String(id))) return
+  currentPhotoIdol.value=String(id); syncArchiveRoute()
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
@@ -2229,6 +2267,9 @@ function goArchiveBack() {
   if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
+    event_catalog:goHome,
+    collection_catalog:goHome,
+    photo_catalog:goHome,
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,
@@ -4237,6 +4278,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
     ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||

@@ -82,6 +82,7 @@ import {
   Search,
   Sparkles,
   Users,
+  CalendarDays, Box, Camera,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
@@ -102,7 +103,7 @@ defineProps({
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
+const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
 const mobileNavigation = [
   { id: 'home', label: '首页', icon: Home },
