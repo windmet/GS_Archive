@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
 import { trapDialogKey } from '../src/components/player/dialogFocus.js'
 import { chapterReadingPlan, createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
@@ -80,4 +82,15 @@ for (const view of ['reader','player']) {
   assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(readerReturn)),readArchiveRoute(buildArchiveUrl('http://localhost/',readerReturn)))
 }
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=doc-7').readingScope,'','old Reader URLs remain single-document')
+const acknowledgements=[], pendingSelections=[]
+const pickerContext={pickerRequest:0,pickerPreparing:{value:false},playbackController:{selectEpisode:()=>new Promise(resolve=>pendingSelections.push(resolve))}}
+const appSource=readFileSync(new URL('../src/App.vue',import.meta.url),'utf8')
+vm.runInNewContext(appSource.match(/async function selectPlayerEpisode\([^]*?\n\}/)[0],pickerContext)
+const oldSelection=pickerContext.selectPlayerEpisode({onComplete:()=>acknowledgements.push('old')})
+const latestSelection=pickerContext.selectPlayerEpisode({onComplete:()=>acknowledgements.push('latest')})
+pendingSelections[0](true);await oldSelection
+assert.equal(pickerContext.pickerPreparing.value,true)
+assert.equal(acknowledgements.length,0,'obsolete cancellation cannot close a newer picker')
+pendingSelections[1](true);await latestSelection
+assert.deepEqual(acknowledgements,['latest']);assert.equal(pickerContext.pickerPreparing.value,false)
 console.log('Interaction: atomic overlay transfer, canonical chapter plan, ambiguity/missing guards, bounded target-first loading, per-section errors, late cancellation and scope round trips passed')

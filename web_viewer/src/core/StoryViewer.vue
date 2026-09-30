@@ -389,7 +389,9 @@ watch(menuOpen, open => { if (!open) pickerOpen.value = false })
 watch(() => props.recoveryOpen, open => { if (open) menuOpen.value = false }, { flush:'sync' })
 function selectEpisode(request) {
   if (!props.transitionPending && !request.restart && request.entryKey === props.queueSnapshot?.currentKey) { menuOpen.value = false; return }
-  emit('select-episode', { ...request, instance:props.playbackInstance })
+  const keepCurrent = !request.restart && request.entryKey === props.queueSnapshot?.currentKey
+  emit('select-episode', { ...request, instance:props.playbackInstance,
+    onComplete: keepCurrent ? success => { if (success) menuOpen.value = false } : undefined })
 }
 const backlogOpen = ref(false)
 const backlogNodes = ref([])

@@ -3473,7 +3473,11 @@ function playbackEpisodes(returnView) {
 async function selectPlayerEpisode(request) {
   const token = ++pickerRequest
   pickerPreparing.value = true
-  try { return await playbackController.selectEpisode(request) }
+  try {
+    const selected = await playbackController.selectEpisode(request)
+    if (token === pickerRequest) request.onComplete?.(selected)
+    return selected
+  }
   finally { if (token === pickerRequest) pickerPreparing.value = false }
 }
 
