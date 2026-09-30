@@ -55,6 +55,7 @@ const server = http.createServer(async (req, res) => {
       if (route.startsWith('/assets/audio/')) candidates.push(...assets.audioCandidates(route.slice('/assets/audio/'.length)))
       if (route.startsWith('/assets/lipsync/adxlip/')) candidates.push(assets.lipsyncPath(route.slice('/assets/lipsync/adxlip/'.length)))
       if (route.startsWith('/assets/card-art/')) candidates.push(assets.cardArtPath(route.slice('/assets/card-art/'.length)))
+      if (route.startsWith('/assets/domain-images/')) candidates.push(assets.domainImagePath(route.slice('/assets/domain-images/'.length)))
     }
     const file = await existing(candidates.filter(Boolean))
     if (!file) { res.writeHead(404); res.end(); return }

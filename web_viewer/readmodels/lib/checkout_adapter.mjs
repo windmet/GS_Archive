@@ -11,6 +11,8 @@ export const INPUTS = {
  domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
  domainEvents:'data/masterdata/domains/event_supplement_index.json', domainPhotoIndex:'data/masterdata/domains/photo_index.json',
  domainPhotoMaterials:'data/masterdata/domains/photo_materials.json',
+ domainLogin:'data/masterdata/domains/login_campaign_catalog.json',
+ domainCollectionMedia:'data/masterdata/domains/collection_media.json', domainPhotoMedia:'data/masterdata/domains/photo_media.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',

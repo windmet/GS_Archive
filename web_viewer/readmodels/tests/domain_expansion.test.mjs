@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
-import { validateDomainPayload, REVIEWED_DOMAIN_PB } from '../lib/domain_expansion.mjs';
+import { validateDomainPayload, validateMediaPayload, REVIEWED_DOMAIN_PB } from '../lib/domain_expansion.mjs';
 
 test('Domain gate rejects mixed snapshots and generator versions', () => {
   const source = {decodedPbSha256:REVIEWED_DOMAIN_PB,generatorVersion:'gs-archive-domains-v1'};
@@ -12,6 +12,15 @@ test('Domain gate rejects mixed snapshots and generator versions', () => {
   assert.equal(validateDomainPayload(value, value.kind),value);
   for (const mutation of [{schemaVersion:2},{kind:'gs-honor-catalog'},{source:{...source,decodedPbSha256:'a'.repeat(64)}},{source:{...source,generatorVersion:'other'}}])
     assert.throws(() => validateDomainPayload({...value,...mutation},value.kind));
+});
+
+test('Media gate rejects external and traversing URLs and malformed digests',()=>{
+  const source={decodedPbSha256:REVIEWED_DOMAIN_PB,generatorVersion:'gs-domain-media-v1'};
+  const sample={schemaVersion:1,kind:'gs-photo-media',source,entries:{image:{url:'/assets/bg/bg1.png',sha256:'a'.repeat(64)}}};
+  assert.equal(validateMediaPayload(sample,sample.kind),sample);
+  for (const url of ['https://example.com/a.png','/assets/bg/../a.png','/data/secret.json','/assets/bg/%2e%2e/a.png'])
+    assert.throws(()=>validateMediaPayload({...sample,entries:{image:{url}}},sample.kind));
+  assert.throws(()=>validateMediaPayload({...sample,entries:{image:{sha256:'wrong'}}},sample.kind));
 });
 
 test('[local-corpus] domain projection preserves story identities, typed rewards and partial sources', async () => {
@@ -45,4 +54,13 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   assert(Object.keys(provenance.sources).some(k=>k.includes('/entity_sources/item/')));
   assert(Object.keys(provenance.sources).some(k=>k.includes('/photo_idols/')));
   assert(!Object.keys(provenance.sources).some(k=>k.endsWith('reward_catalog.json')));
+  const jelly=domains.items.records.find(r=>r.id==='10101').view;
+  assert.equal(jelly.media.image.status,'verified-local-file');
+  assert.equal(jelly.sources.find(r=>r.sourceTable===83).dayCount,2);
+  assert(jelly.sources.find(r=>r.sourceTable===117).campaigns.some(c=>c.term.openAt>0));
+  const actor=domains.photos.records.find(r=>r.id==='1').view;
+  assert.equal(actor.media.entries['poses:10102'].preset.motion,'weight');
+  assert.equal(actor.media.entries['faces:10102001'].preset.face,'face_joy');
+  assert.equal(actor.media.models['001tom_002_00'].status,'verified-local-files');
+  assert.equal(actor.media.voiceCues.length,5);
 });

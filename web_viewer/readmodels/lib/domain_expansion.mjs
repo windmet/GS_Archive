@@ -1,7 +1,23 @@
 import { assert, pick } from './common.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
-const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolType','sourceTable','sourceRowId','role'];
+const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolType','sourceTable','sourceRowId','role','groupId','dayCount','sumFanAmount','sourceDomain'];
+
+export function validateMediaPayload(payload, kind) {
+  assert(payload?.schemaVersion === 1 && payload.kind === kind &&
+    payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB &&
+    payload.source?.generatorVersion === 'gs-domain-media-v1', `Archive media source contract: ${kind}`);
+  const inspect=value=>{
+    if (!value || typeof value!=='object') return;
+    for (const [key,child] of Object.entries(value)) {
+      if (key==='url') assert(typeof child==='string' && /^\/assets\/(domain-images|bg|spines|voice)\/[a-z0-9_./-]+$/i.test(child) && !child.split('/').includes('..'), 'Unsafe domain media URL');
+      if (key==='sha256') assert(/^[a-f0-9]{64}$/.test(child), 'Invalid domain media digest');
+      inspect(child);
+    }
+  };
+  inspect(payload);
+  return payload;
+}
 
 export function validateDomainPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
@@ -12,6 +28,9 @@ export function validateDomainPayload(payload, kind) {
 
 /** Offline joins only. Runtime consumers receive bounded, release-pinned leaves. */
 export async function applyDomainExpansion(domains, data, readSource) {
+  const collectionMedia=validateMediaPayload(data.domainCollectionMedia,'gs-collection-media').entries;
+  const photoMedia=validateMediaPayload(data.domainPhotoMedia,'gs-photo-media').entries;
+  const loginCampaigns=validateDomainPayload(data.domainLogin,'gs-login-campaign-catalog').entries;
   const events = validateDomainPayload(data.domainEvents, 'gs-event-supplement-index').entries;
   assert(Array.isArray(events) && new Set(events.map(e => e.eventCode)).size === events.length, 'Duplicate event codes');
   const legacy = domains.events.records;
@@ -67,10 +86,12 @@ export async function applyDomainExpansion(domains, data, readSource) {
         const reward = rewards.get(link.rewardKey);
         return { ...pick({...reward,...link}, sourceKeys),
           ...(reward ? {amount:reward.product.amount} : {}),
+          ...((reward?.sourceTable ?? link.sourceTable) === 117 ? {campaigns:loginCampaigns.filter(campaign=>campaign.campaignLoginBonusProductGroupId===(reward?.groupId ?? link.groupId)).map(campaign=>pick(campaign,['id','type','term']))} : {}),
           ...(link.eventId ? {event:eventLink(link.eventId)} : {}) };
       });
+      assert(collectionMedia[entry.key], `Missing collection media binding: ${entry.key}`);
       return { id:String(entry.id), summary:pick(entry,['nameJa','itemType','honorType','effectType','resourceId','hasPrefab']),
-        view:{ entry, sources:links, sourceCoverage:'partial-client-masterdata' } };
+        view:{ entry, media:collectionMedia[entry.key], sources:links, sourceCoverage:'partial-client-masterdata' } };
     }));
     domains[domain] = { searchable:true, packed:true, records };
   }
@@ -79,8 +100,11 @@ export async function applyDomainExpansion(domains, data, readSource) {
   const idolsById = new Map(Object.entries(data.idolUnit.by_idol_code).map(([code, idol]) => [idol.idol_id,{code,...idol}]));
   const photoRecords = await Promise.all(data.domainPhotoIndex.actorIds.map(async id => {
     const actor = validateDomainPayload(await readSource(`data/masterdata/domains/photo_idols/${id}.json`), 'gs-photo-idol');
+    const media = validateMediaPayload(await readSource(`data/masterdata/domains/photo_media_idols/${id}.json`), 'gs-photo-media-actor');
+    assert(media.idolId === id, 'Photo media identity mismatch');
+    assert([...actor.faces,...actor.poses].every(row=>media.entries[`${actor.faces.includes(row)?'faces':'poses'}:${row.id}`]?.preset?.label===row.animationName), 'Photo media label mismatch');
     const idol = idolsById.get(id); assert(idol && actor.idolId === id, 'Photo idol identity mismatch');
-    return { id:String(id), summary:{ nameJa:idol.display_name, idolCode:idol.code }, view:{actor} };
+    return { id:String(id), summary:{ nameJa:idol.display_name, idolCode:idol.code }, view:{actor,media} };
   }));
-  domains.photos = { records:[{id:'materials',summary:{nameJa:'摄影素材'},view:{materials,index:data.domainPhotoIndex}},...photoRecords] };
+  domains.photos = { records:[{id:'materials',summary:{nameJa:'摄影素材'},view:{materials,index:data.domainPhotoIndex,media:photoMedia}},...photoRecords] };
 }
