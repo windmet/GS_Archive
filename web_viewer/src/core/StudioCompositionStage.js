@@ -343,6 +343,8 @@ export class StudioCompositionStage {
         face.label,
         model.row.poseTime == null,
       ]);
+      model.pose = pose;
+      model.face = face;
       this.applyFrame(model);
       this.updateModel(model, 0);
       return plan;
@@ -448,13 +450,14 @@ export class StudioCompositionStage {
       );
   }
   setPlaying(value) {
-    if (value && !this.playing)
-      for (const model of this.actorInstances.values())
-        for (const track of [0, 3]) {
-          const current = model.spine.state.getCurrent(track);
-          if (current) current.trackTime = 0;
-        }
-    this.playing = !!value;
+    value = !!value;
+    if (value === this.playing) return;
+    this.playing = value;
+    // Preview starts the source motion and its verified loop. Leaving preview
+    // reconstructs the document's frame, including face and neck tracks.
+    for (const [id, model] of this.actorInstances)
+      this.setActorPose(id, model.pose, model.face);
+    this.render();
   }
   setWebFilter(resourceId = "") {
     if (this.filterId === resourceId) return;
@@ -535,6 +538,7 @@ export class StudioCompositionStage {
       ![...this.actorInstances.values()].every((m) => m.spine.visible)
     )
       throw Error("画布尚未准备好");
+    this.setPlaying(false);
     for (const model of this.actorInstances.values())
       this.updateModel(model, 0);
     this.outline.visible = false;

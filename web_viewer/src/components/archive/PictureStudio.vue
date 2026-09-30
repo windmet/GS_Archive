@@ -22,7 +22,7 @@
               @click="togglePlayback"
             >
               <Pause v-if="playing" :size="17" /><Play v-else :size="17" />{{
-                playing ? "暂停动作" : "播放动作"
+                playing ? "返回定格" : "预览动作"
               }}
             </button>
             <button type="button" :disabled="!selected" @click="reset">
@@ -37,6 +37,9 @@
               <Download :size="17" />导出 PNG
             </button>
           </div>
+          <p v-if="playing" role="status">
+            正在预览动作；返回、保存或导出时会恢复所选定格。
+          </p>
           <div class="studio-toolbar studio-document-toolbar">
             <button type="button" :disabled="busy || rendering" @click="save">
               <Save :size="16" />保存构图</button

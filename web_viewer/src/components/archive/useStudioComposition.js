@@ -316,8 +316,15 @@ export function useStudioComposition(props, canvas) {
     playing.value = !playing.value;
     stage.setPlaying(playing.value);
   }
+  function settleFrame() {
+    if (!playing.value) return;
+    playing.value = false;
+    stage.setPlaying(false);
+    clearExport();
+  }
   async function exportPng() {
     if (rendering.value || error.value || busy.value) return;
+    settleFrame();
     exporting.value = true;
     clearExport();
     const version = exportVersion;
@@ -334,6 +341,7 @@ export function useStudioComposition(props, canvas) {
   }
   function save() {
     try {
+      settleFrame();
       localStorage.setItem(
         "sidem-studio-document-v1",
         JSON.stringify(validateStudioDocument(draft.value)),

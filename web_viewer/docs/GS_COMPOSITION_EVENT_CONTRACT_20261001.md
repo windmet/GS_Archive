@@ -51,3 +51,15 @@ StudioDocument v1 为 JSON 构图真相：背景、独立 actors/stickers、fram
 对照设计稿与实际截图：宽屏采用大画布及 320px 对象栏；背景和边框沿用资料馆浅蓝/白，选择与导出使用薄荷绿；24px 页面标题、较小表单与实际字体保持原站层级；贴纸由源缩略图显示；主操作和保存/载入分两排；手机改成单列，把对象操作放在素材库前。原站「故事/资源」导航保留。设计稿里的虚构人物替换为本地真素材。
 
 A/B 是可继续编辑的参考构图。A 已匹配两位人物、道流小人、背景和贴纸来源；B 已匹配三人服装、背景及贴纸，薰的手部姿势仍与原图有明显差异，尺寸/角度尚非逐像素一致。没有伪造原游戏存档或隐瞒来源差异。拖拽已实现，当前 DOM Browser 接口未提供实际拖拽操作，数值与方向键交互已验收；触屏与物理设备待验。原相框 Prefab、天气粒子、shader 参数和 lipsync 仍未完整复原。
+
+## 动作预览与构图定格修正
+
+输入 HEAD：8ef141eb。原实现从定格循环直接开始预览，退出预览时保留了运行帧；保存的 poseTime/faceTime 却没有改变，导致当前画面和刷新后载入的构图不一致。
+
+现在预览重新播放来源 main motion，并排入骨架实际存在的循环；「返回定格」、保存与导出都重新构建文档指定的身体、表情和颈部轨道。预览不会修改 StudioDocument；播放中显示保存/导出会恢复定格的说明。PNG 以文档定格为准。
+
+`verify:studio-animation` 使用本地四个真实骨架状态（含同人重复实例和 sad + neck_question），检查 main→loop、独立表情起点、默认与 0.42 秒定格、精确恢复骨骼/附件/颜色以及静止重复更新不累积颈部变换。无 GPU 的状态回归与 `verify:studio-composition` 均通过；`build:check` 10.13 秒完成，copyPublicDir:false。
+
+5198 同一 r5 映射服务的生产代码 Browser 在 1440×900 实际检查：参考 B 三人五贴纸，预览后返回、预览中保存和导出均退出预览；PNG naturalWidth/Height=1280/720；薰动作 0.42 秒、表情 3.4 秒保存后刷新/载入数值一致，控制台 error 为空。截图 `animation-restored-ui.png` 在既有 E:/Web_build/GS_Archive_Domain_Work/composition-browser-r5；屏幕裁图只支持视觉观察，未据其宣称像素级同一性。设备、实际拖拽与 Blob 落盘边界不变。
+
+另外直接检查 RAW costume_005kao_002_00.unity3d：仅一个 comu.skel，并非遗漏另一个摄影骨架；原 idol_motion_stg_005kao 的 7 条 motion→pose 映射均为现有 main/loop，weight 的 backAnimationName=back。Browser 第八个 sad + neck_question 仍未呈现参考图举手动作。这里证明本次检查范围，不能据此判定原图动作不存在或已经完成复刻。
