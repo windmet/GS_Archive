@@ -6,7 +6,7 @@
       <button type="button" :aria-pressed="kind==='honors'" @click="switchKind('honors')"><Medal :size="18"/>称号</button>
     </nav>
     <nav v-if="mode==='photo_catalog'" class="domain-tabs" aria-label="摄影分类">
-      <button v-for="tab in photoTabs" :key="tab.id" type="button" :aria-pressed="photoTab===tab.id" @click="photoTab=tab.id;page=0;photoSelection=''">{{ tab.label }}</button>
+      <button v-for="tab in photoTabs" :key="tab.id" type="button" :aria-pressed="photoTab===tab.id" @click="switchPhotoTab(tab.id)">{{ tab.label }}</button>
     </nav>
     <p v-if="busy" role="status" class="domain-muted">正在读取{{ title }}…</p>
     <p v-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="load">重试</button></p>
@@ -50,6 +50,7 @@
         </section>
         <section v-else-if="mode==='photo_catalog' && photoEntry" class="domain-panel">
           <h3>{{ photoEntry.name || photoName(photoEntry) }}</h3>
+          <button type="button" class="domain-action" @click="emit('open-studio',`${photoTab}:${photoEntry.id}`)"><Camera :size="18"/>在摄影工作台打开</button>
           <DomainMediaPreview v-if="photoTab!=='filters' && !busy" :binding="photoBinding?.image" :effect-status="photoBinding?.effectStatus" :name="photoEntry.name || photoName(photoEntry)"/>
           <p v-if="photoTab==='filters'" class="domain-muted">原始 shader 参数尚未解析，此页仅展示滤镜名称与配置。</p>
           <p class="domain-description">{{ photoEntry.description || '摄影脚本配置；图片展示对应的配置图标。' }}</p>
@@ -78,8 +79,8 @@ import ArchiveRewardTable from './ArchiveRewardTable.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import DomainVoicePreview from './DomainVoicePreview.vue'
 import '../../styles/archive-domains.css'
-const props=defineProps({mode:String,client:Object,bootstrap:Object,entity:{type:String,default:''},photoIdol:{type:String,default:''},query:{type:String,default:''}})
-const emit=defineEmits(['query','entity','photo-idol','open-event'])
+const props=defineProps({mode:String,client:Object,bootstrap:Object,entity:{type:String,default:''},photoIdol:{type:String,default:''},photoEntity:{type:String,default:''},query:{type:String,default:''}})
+const emit=defineEmits(['query','entity','photo-idol','photo-entity','open-studio','open-event'])
 const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=ref(props.entity.startsWith('honor:')?'honors':'items'),rows=shallowRef([]),detail=shallowRef(null),materials=shallowRef(null),actor=shallowRef(null),actors=shallowRef([])
 const busy=ref(false),error=ref(''),category=ref(''),eventKind=ref(''),page=ref(0),photoTab=ref('spots'),photoSelection=ref('')
@@ -129,10 +130,13 @@ async function load(){
 async function select(row){
   if(props.mode==='event_catalog')emit('open-event',{event_id:row.id})
   else if(props.mode==='photo_catalog'){
-    photoSelection.value=String(row.id);await nextTick()
+    photoSelection.value=String(row.id);emit('photo-entity',`${photoTab.value}:${row.id}`);await nextTick()
     if(photoSelection.value===String(row.id) && window.matchMedia('(max-width:700px)').matches)detailElement.value?.scrollIntoView({block:'start'})
   }else emit('entity',`${kind.value==='honors'?'honor':'item'}:${row.id}`)
 }
+function applyPhotoSelection(key){const [kind,id]=(key || '').split(':');if(photoTabs.some(tab=>tab.id===kind)){photoTab.value=kind;photoSelection.value=id;page.value=0}else photoSelection.value=''}
+function switchPhotoTab(tab){photoTab.value=tab;page.value=0;photoSelection.value='';if(photoRows.value[0])emit('photo-entity',`${tab}:${photoRows.value[0].id}`)}
+watch(()=>props.photoEntity,applyPhotoSelection,{immediate:true})
 function switchKind(value){if(kind.value===value)return;emit('query','');pendingKindSelection=value;kind.value=value;category.value='';page.value=0}
 watch(()=>[props.mode,props.entity,props.photoIdol],()=>{if(props.entity)kind.value=props.entity.startsWith('honor:')?'honors':'items';load()},{immediate:true})
 watch(kind,load);watch(()=>[props.query,category.value,eventKind.value],()=>{page.value=0})

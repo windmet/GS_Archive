@@ -215,10 +215,12 @@
 
       <ArchiveDomainCatalog v-if="['event_catalog','collection_catalog','photo_catalog'].includes(view)"
         :mode="view" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey"
-        :photo-idol="currentPhotoIdol" :query="filterQuery"
+        :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
         @query="filterQuery = $event; syncArchiveRoute({ replace:true })"
-        @entity="openCollectionEntity" @photo-idol="selectPhotoIdol"
+        @entity="openCollectionEntity" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio"
         @open-event="openEventDetail($event, view)" />
+
+      <PictureStudio v-if="view==='picture_studio'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @photo-idol="selectPhotoIdol" />
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
@@ -623,6 +625,7 @@ const archiveRouteLoaders = {
   event_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
   collection_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
   photo_catalog: () => import('./components/archive/ArchiveDomainCatalog.vue'),
+  picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
   story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
@@ -652,6 +655,7 @@ const archiveRouteLoaders = {
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
 const ArchiveDomainCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
+const PictureStudio = defineAsyncComponent(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
 const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
 const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
@@ -732,6 +736,7 @@ const {
   currentEventId,
   currentEntityKey,
   currentPhotoIdol,
+  currentPhotoEntity,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
@@ -1333,6 +1338,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return '藏品馆'
   if (view.value === 'photo_catalog') return '摄影资料'
+  if (view.value === 'picture_studio') return '摄影工作台'
   if (view.value === 'event_catalog') return '活动一览'
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
@@ -1678,6 +1684,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentEventId.value = route.event || ''
     currentEntityKey.value = route.entity || ''
     currentPhotoIdol.value = route.photoIdol || ''
+    currentPhotoEntity.value = route.photoEntity || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
@@ -1837,7 +1844,7 @@ function navigateArchiveSection(section) {
 }
 
 function openDomainCatalog(section) {
-  filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''
+  filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
   commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
 }
@@ -1849,7 +1856,16 @@ function openCollectionEntity(key) {
 }
 function selectPhotoIdol(id) {
   if (!/^\d{1,4}$/.test(String(id))) return
+  if (currentPhotoIdol.value!==String(id) && /^(faces|poses):/.test(currentPhotoEntity.value)) currentPhotoEntity.value=''
   currentPhotoIdol.value=String(id); syncArchiveRoute()
+}
+
+function selectPhotoEntity(key) {
+  if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
+  currentPhotoEntity.value=key; syncArchiveRoute({replace:true})
+}
+function openPictureStudio(key) {
+  selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
@@ -2270,6 +2286,7 @@ function goArchiveBack() {
     event_catalog:goHome,
     collection_catalog:goHome,
     photo_catalog:goHome,
+    picture_studio:()=>commitView('photo_catalog'),
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,
@@ -4278,7 +4295,7 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return true
+  if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
     ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||

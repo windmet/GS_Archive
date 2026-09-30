@@ -36,6 +36,7 @@ const ROUTE_QUERY_KEYS = [
   'event',
   'entity',
   'photo_idol',
+  'photo',
   'gasha',
   'gasha_type',
   'rarity',
@@ -68,6 +69,7 @@ const VALID_VIEWS = new Set([
   'event_catalog',
   'collection_catalog',
   'photo_catalog',
+  'picture_studio',
   'gashas',
   'gasha_detail',
   'song_catalog',
@@ -132,6 +134,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   event_catalog: { section: 'events', required: [] },
   collection_catalog: { section: 'collections', required: [] },
   photo_catalog: { section: 'photos', required: [] },
+  picture_studio: { section: 'photos', required: [], fallback:'photo_catalog' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
@@ -325,7 +328,9 @@ export function normalizeArchiveRoute(input = {}) {
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
     ...(view==='collection_catalog' ? {entity:/^(item|honor):\d+$/.test(input.entity || '') ? input.entity : ''} : {}),
-    ...(view==='photo_catalog' ? {photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : ''} : {}),
+    ...(['photo_catalog','picture_studio'].includes(view) ? {
+      photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
+      photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -419,6 +424,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
   const home = { label: '资料馆', route: { view: 'home' } }
+  if(route.view==='picture_studio')return [home,{label:'摄影资料',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
   if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
@@ -595,6 +601,7 @@ export function readArchiveRoute(input = null) {
     event: clean(params.get('event')),
     entity: params.get('entity'),
     photoIdol: params.get('photo_idol'),
+    photoEntity: params.get('photo'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -618,7 +625,8 @@ export function buildArchiveUrl(input, route) {
 
   url.searchParams.set('view', normalized.view)
   if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
-  if (normalized.view === 'photo_catalog' && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)

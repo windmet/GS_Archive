@@ -9,8 +9,11 @@ state.view.value='collection_catalog';state.currentEntityKey.value='honor:300170
 const route=readArchiveRoute(buildArchiveUrl('http://localhost/?entity=item:999&photo_idol=2',state.currentArchiveRoute()));
 assert.equal(route.view,'collection_catalog');assert.equal(route.entity,'honor:30017001');assert.equal(route.query,'周年');assert.equal(route.photoIdol,undefined);
 assert.equal(readArchiveSourceRoute(buildArchiveSourceQuery(route)).entity,'honor:30017001');
-state.view.value='photo_catalog';state.currentPhotoIdol.value='49';
-const photo=readArchiveRoute(buildArchiveUrl('http://localhost/',state.currentArchiveRoute()));assert.equal(photo.photoIdol,'49');assert.equal(photo.entity,undefined);
+state.view.value='photo_catalog';state.currentPhotoIdol.value='49';state.currentPhotoEntity.value='faces:14902049';
+const photo=readArchiveRoute(buildArchiveUrl('http://localhost/',state.currentArchiveRoute()));assert.equal(photo.photoIdol,'49');assert.equal(photo.entity,undefined);assert.equal(photo.photoEntity,'faces:14902049');
+state.view.value='picture_studio';const studio=readArchiveRoute(buildArchiveUrl('http://localhost/',state.currentArchiveRoute()));assert.equal(studio.view,'picture_studio');assert.equal(studio.photoIdol,'49');assert.equal(studio.photoEntity,'faces:14902049');assert.equal(readArchiveSourceRoute(buildArchiveSourceQuery(photo)).photoEntity,'faces:14902049');
+assert.equal(readArchiveRoute('http://localhost/?view=picture_studio&photo=honor:1').photoEntity,'');
+assert.equal(readArchiveRoute('http://localhost/?view=cards&photo=faces:1').photoEntity,undefined);
 assert.equal(readArchiveRoute('http://localhost/?view=collection_catalog&entity=card:1').entity,'');
 assert.equal(readArchiveRoute('http://localhost/?view=photo_catalog&photo_idol=../../bad').photoIdol,'');
 assert.match(rewardCondition({intervalPoint:0,offsetPoint:0,limitPoint:1000}),/每 0 PT/);

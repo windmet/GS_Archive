@@ -1883,6 +1883,61 @@
       },
       "legacyRemaining": [],
       "blockedReasons": []
+    },
+    {
+      "view": "picture_studio",
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/PictureStudio.vue",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "parity": {
+        "status": "partial",
+        "evidence": [
+          "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md"
+        ]
+      },
+      "browserEvidence": [
+        {
+          "kind": "local-browser",
+          "path": "docs/GS_PICTURE_STUDIO_LOCAL_ACCEPTANCE_20261001.md",
+          "scope": "Production bundle IAB 1440x1000 and 390x844; verified skeleton/texture composition, face and neck preset, static effect fallback, owned audio, texture failure retry, release-pinned source return, encoded 1280x720 PNG preview. Blob file download and physical devices remain unverified."
+        }
+      ],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": [
+        "Experimental web composition; original frame prefab, scene effects and shader parameters remain unresolved."
+      ]
     }
   ],
   "reviewedSourceRevision": "63676a105a7199ef54187caa3aec5f3d9ac3bfe0",
