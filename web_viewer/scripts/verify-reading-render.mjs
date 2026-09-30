@@ -55,6 +55,7 @@ try {
     const readerHtml = await renderToString(createSSRApp(Reader, props))
     const segmentHtml = await renderToString(createSSRApp(ChapterSegment, { segment:{status:'ready',document:synopsisDoc,documentId:synopsisDoc.document_id,label:'EPISODE 01',entry:{sha256:'test'}}, mode, anchor:marker.anchor.row_id, query:'appeal' }))
     for (const html of [readerHtml, segmentHtml]) {
+      for (const code of ['101ken','102sha']) assert.ok(html.includes(`image_chara_icon_${code}.png`), 'both reading scopes render the actual NPC speaker icon')
       assert.ok(!html.includes('appeal') && !html.includes('选项附文'), `${mode}: no metadata prose in either reading scope`)
       assert.ok(html.includes('パーッション！！'))
       assert.ok(html.includes(`id="reading-${marker.anchor.row_id}"`), 'old metadata anchor resolves at its actual choice')

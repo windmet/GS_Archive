@@ -1,7 +1,8 @@
 import { computed } from 'vue'
 import { createStoryLocalization } from '../../localization/story/StoryLocalizationContext.js'
 import { producerName } from '../../utils/LanguageStore.js'
-import { readingAvatarEntity, readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
+import { readingPresentationSpeaker } from '../../../shared/reading/ReadingDocument.js'
+import { readingSpeakerAvatarEntity } from '../../presentation/ReadingSpeakerAvatar.js'
 import { projectReadingFrontMatter } from '../../presentation/ReadingFrontMatter.js'
 import { projectReadingChoiceRows } from '../../presentation/ReadingChoiceMetadata.js'
 
@@ -15,7 +16,7 @@ export function useReadingPresentation(document, mode) {
   const frontMatter = computed(() => projectReadingFrontMatter(document.value?.rows, sourceTitle.value))
   const presentedRows = computed(() => projectReadingChoiceRows(document.value).map(({ row, branch, anchorAliases }) => ({ row, branch, anchorAliases,
     frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id), mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
-    avatar: readingAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text, textRef: row.text_ref,
+    avatar: readingSpeakerAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text, textRef: row.text_ref,
       speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }) })))
   return { localization, sourceTitle, presentedRows }
 }
