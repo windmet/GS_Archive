@@ -73,3 +73,13 @@ A/B 是可继续编辑的参考构图。A 已匹配两位人物、道流小人�
 这里仅恢复原始锚点。原生 RectTransform 的 sizeDelta 为零，实际相框尺寸应由运行时代码设置；APK 脚本元数据头不符合标准 IL2CPP 格式，现有 TypeTreeGenerator 无法读取该代码合同。因此保留既有网页尺寸近似，并在 UI 明示。素材对图层的配对来自缩略图交叉确认，未宣称已反编译验证原游戏的绑定方法；相框全精度、shader、天气效果继续 pending。
 
 `verify:studio-frames` 对 26 套真实两图层绑定使用实际 Pixi Sprite 检查边界和切换释放，同时核对五处源布局一致；`verify:studio-animation` 再次通过。`build:check` 9.48 秒完成，copyPublicDir:false。同一 5198/r5 映射服务的 1440×900 Browser 实际导出相框 01 和 26，naturalWidth/Height=1280/720，无控制台 error。390×844 页面宽度为 390，画布固有 1280×720。截图 `frame-01-export-preview.png`、`frame-26-export-preview.png` 和 `frame-mobile.png` 存在 composition-browser-r5。原生 Blob 下载事件仍超时，落盘下载没有被提升为通过。
+
+## 服装字典来源门与 r6 消费
+
+生产器提交 `74f61ffd3abe8fcef0198a82aef53049ac0e64a6`。服装叶子的 PB 摘要不足以证明其使用了当前服装字典；现在从 checkout 实际读取的字典字节取得 SHA256，逐偶像校验 dictionarySha256、完整模型集合、名称、costumeId、sourceTables 与资源所属模型。拒绝旧字典、漏行、重复行、额外模型、状态不一致、跨模型 atlas/骨架/纹理以及重复动画名。真实数据中同一个 numeric costumeId 可对应不同模型，按 modelId + idolId 保留，不错误去重。
+
+47 项 readmodel 回归全部通过，包括真实 49 人、690 模型和上述损坏输入拒绝。新候选 `E:/Web_build/GS_Archive_Domain_Work/composition-readmodels-r6` 的 8750 份 JSON 通过摘要、包络与依赖闭包验证，解码合计 75,907,935 字节；bootstrap 为 14,344 字节。release 为 `ff4455d1d133f86c0fa5c2f4c3503642e48e62c22866a6df16a72758677c8fb7`。挂载 bootstrap 与路由台账后 `build:check` 9.83 秒完成，无媒体复制。
+
+只替换本任务已核对身份的 5198 QA 服务，映射 r6 与现有 public。1440×900 Browser 实际打开参考 A，将漣从 `040ren_005_00` 换为字典的「ベーシックウェア」`040ren_002_00`；2 人 5 贴纸保持，生成 PNG 预览固有 1280×720。参考 B 为 3 人 5 贴纸并生成同尺寸 PNG，控制台 error 为空。Not Alone 活动实际打开，11 章、3 张报酬卡、159 条奖励正常消费。证据 `ren-costume-ui.png`、`reference-B-ui.png` 与 HTTP 摘要日志在 `E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6`。这里验证新 release 的代表消费，未重复宣称全部 UI、实际下载或设备验收。
+
+原生追查补充：本地 2.6.10 IPA 的标准 IL2CPP v27 元数据可读，确认 StudioRoot.AddFrame、IdolSlot.PlayPose/PlayFace、插槽缩放与贴纸编辑等接口名；但 UnityFramework 的 Mach-O 代码段 cryptid=1，当前工具未恢复方法体。接口名不能证明相框尺寸或随机动作参数。按已核对摘要重读完整摄影 PB 后，395 条姿势与 554 条表情均未写入 storyCostumeId，395 条姿势亦未写入 defaultPhotoFaceId；现有域投影没有漏掉这些值，不能凭 schema 字段存在虚构 fallback。薰的举手、原生相框尺寸、天气、shader 和 lipsync 仍保留未完成边界。
