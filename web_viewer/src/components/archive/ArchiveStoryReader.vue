@@ -17,6 +17,7 @@
     <section ref="readerRoot" class="story-reader" :aria-busy="busy" aria-label="剧情阅读" @keydown="controls?.onReaderKey($event)">
       <div class="reader-body">
       <p class="reader-subtitle">{{ episodeLabel }}</p>
+      <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
       <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
         已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
         <button v-if="translationLoadFailed" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
@@ -45,6 +46,7 @@ import ReaderChapterEnd from './ReaderChapterEnd.vue'
 import ReadingTranscriptSection from './ReadingTranscriptSection.vue'
 import ChapterStoryReader from './ChapterStoryReader.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
+import { useReaderTitle } from './useReaderTitles.js'
 import '../../presentation/reader-theme.css'
 import { useReadingPresentation } from './useReadingPresentation.js'
 import { computed, nextTick, ref, watch } from 'vue'
@@ -65,7 +67,8 @@ const segmentEntries = computed(() => {
   return logicalId ? props.state.entries.filter(entry => entry.logical_id === logicalId) : []
 })
 const { localization, sourceTitle, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
-const title = computed(() => presentProducerAddressingText(document.value ? sourceTitle.value : focusedEntry.value?.title || props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.title))
+const originalTitle = computed(() => presentProducerAddressingText(document.value ? sourceTitle.value : focusedEntry.value?.title || props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.title))
+const title = useReaderTitle(focusedEntry,originalTitle)
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label || focusedEntry.value?.episode_label }))
 const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.row.kind !== 'stamp' && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
@@ -138,6 +141,7 @@ button { min-height: 44px; border: 0; background: none; color: var(--reader-acce
 button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }
 .reader-body { max-width: 1000px; margin: 0 auto; padding: 28px max(24px, var(--archive-safe-right)) 60px max(24px, var(--archive-safe-left)); }
 .reader-subtitle { font-size: 14px; color: var(--reader-text-sub); margin: 4px 0 22px; }
+.reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:-12px 0 22px; }
 .reader-full-play { padding: 10px 20px; border-radius: 8px; background: var(--reader-active); color: var(--reader-on-accent); }
 .reader-full-play:disabled { opacity: .5; cursor: wait; }
 .reader-notice, .reader-feedback { font-size: 14px; line-height: 1.8; color: var(--reader-text-sub); }

@@ -8,7 +8,7 @@
     <details v-if="chapterNavigation?.chapters.length > 1" :open="expandChapters" class="reader-chapter-picker" :class="{'expanded-chapters':expandChapters}">
       <summary>切换话目</summary>
       <nav aria-label="其他话目" class="reader-chapter-list">
-        <button v-for="chapter in chapterNavigation.chapters" :key="chapter.id" :data-chapter-id="chapter.id" :aria-current="chapter.id === chapterNavigation.chapterId ? 'page' : undefined" :disabled="!chapter.documentId || !chapter.storyFile" @click="emit('chapter', chapter.id)">{{ chapter.label }} · {{ presentProducerAddressingText(chapter.title) }}{{ chapter.documentId ? '' : '（暂无阅读正文）' }}</button>
+        <button v-for="chapter in chapterNavigation.chapters" :key="chapter.id" :data-chapter-id="chapter.id" :aria-current="chapter.id === chapterNavigation.chapterId ? 'page' : undefined" :disabled="!chapter.documentId || !chapter.storyFile" @click="emit('chapter', chapter.id)">{{ chapter.label }} · {{ presentProducerAddressingText(displayTitle({document_id:chapter.documentId,sha256:chapter.revision},chapter.title)) }}{{ chapter.documentId ? '' : '（暂无阅读正文）' }}</button>
       </nav>
     </details>
   </div>
@@ -16,6 +16,8 @@
 <script setup>
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { useReaderTitles } from './useReaderTitles.js'
+const displayTitle = useReaderTitles()
 defineProps({ segments:{type:Array,default:()=>[]}, documentId:String, chapterNavigation:{type:Object,default:null}, allowUnlinked:Boolean, expandChapters:Boolean })
 const emit = defineEmits(['select','chapter'])
 function statusLabel(status) { return ({idle:'待载入',loading:'载入中',error:'载入失败',unsupported:'暂不支持',empty:'无正文','not-generated':'未生成'})[status] || '' }

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { createReadingSession, knownReadingLocator } from '../src/core/ReadingSession.js'
+import { readerScopeForViewport } from '../src/core/ReaderViewport.js'
 import { chapterReadingPlan, createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
@@ -62,7 +63,7 @@ for (const status of ['empty', 'unsupported', 'not-generated', 'error']) {
   assert.equal(state.document, null)
 }
 // Exercise the actual App route branch with no player/preloader globals present.
-const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry, knownReadingLocator,
+const context = { ...useArchiveNavigationState(), navigation, readingSession: session, isDirectScenarioEntry, knownReadingLocator, readerScopeForViewport,
   readerCollectionDetail: { value:null }, loadCollectionDetail: async () => { throw Error('optional directory unavailable') },
   chapterReadingState: { value:null }, chapterReadingSession: createChapterReadingSession({ repository, publish: () => {} }),
   readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
@@ -163,6 +164,20 @@ context.chapterReadingSession = createChapterReadingSession({repository:{peek:id
 await context.applyArchiveRoute({view:'reader',reading:'second',readingScope:'chapter',storyType:'main',storySection:'101',story:'two.json'})
 assert.equal(mountedChapter.chapterId,'two')
 assert.ok(chapterTransitions.length && chapterTransitions.every(value=>value!==null),'chapter switch never remounts the generic single-reader loading page')
+const mobileLoads = []
+context.readerScopeForViewport = route => readerScopeForViewport(route,true)
+context.chapterReadingSession = {close(){},open(){throw Error('mobile must never open a whole chapter session')}}
+context.readingSession = createReadingSession({repository:{load:async id=>{mobileLoads.push(id);return {status:'ready',document:{document_id:id}}}},publish:value=>{context.readingState.value=value}})
+await context.applyArchiveRoute({view:'reader',reading:'second',readingScope:'chapter',readingRow:'second:step-1:text',storyType:'main',storySection:'101',story:'two.json'})
+assert.deepEqual(mobileLoads,['second'],'mobile ignores a whole-chapter request and loads only the requested EP')
+assert.equal(context.chapterReadingState.value,null)
+assert.equal(context.readingScope.value,'')
+assert.equal(context.readingRowId.value,'second:step-1:text')
+context.view.value = 'story_collection'
+context.collectionReadModelDetail = {value:{view:{collection,readingEntries:chapterEntries}}}
+context.readerCollectionDetail.value = null
+await context.applyArchiveRoute({view:'reader',reading:'second',readingScope:'chapter',storyType:'main',storySection:'101',story:'two.json'})
+assert.equal(context.readerCollectionDetail.value,context.collectionReadModelDetail.value,'verified directory metadata is reused when entering from the collection')
 const unknown = { speaker: { kind: 'unknown', entityType: 'idol', entityId: '047shu', sourceName: '？？？' } }
 const display = resolveStoryText({ source: 'text', speaker: readingPresentationSpeaker(unknown),
   entityNames: { 'zh-CN': { '047shu': 'must not reveal' } }, preferences: { story_content_mode: 'translation' } })

@@ -527,6 +527,7 @@ import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterReadingPlan.js'
 import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
+import { readerScopeForViewport } from './core/ReaderViewport.js'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
@@ -1535,11 +1536,12 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
         [], intent, destination)
     }
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
+      route = { ...route, readingScope:readerScopeForViewport(route) }
       // Reuse only this mounted collection's verified membership. Keep the
       // chapter component mounted while changing its plan; never flash through
       // the generic single-document loading page between two chapters.
-      const reusableDirectory = view.value === 'reader' && currentStoryDomain.value === route.storyType && currentStorySection.value === route.storySection
-        ? readerCollectionDetail.value : null
+      const reusableDirectory = currentStoryDomain.value === route.storyType && currentStorySection.value === route.storySection
+        ? view.value === 'reader' ? readerCollectionDetail.value : view.value === 'story_collection' ? collectionReadModelDetail.value : null : null
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'

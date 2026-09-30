@@ -9,6 +9,7 @@ import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { createReadingSession, knownReadingLocator } from '../src/core/ReadingSession.js'
+import { readerScopeForViewport } from '../src/core/ReaderViewport.js'
 import { createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
@@ -64,7 +65,7 @@ const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurp
   readingState: ref({}), readingPlaybackNotice: ref('') }
 const navigation = createArchiveNavigationCoordinator()
 let url = new URL('http://localhost/')
-const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry, knownReadingLocator,
+const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry, knownReadingLocator, readerScopeForViewport,
   chapterReadingState: ref(null), readerCollectionDetail: ref(null),
   loadCollectionDetail: async () => { throw Error('optional directory unavailable') },
   chapterReadingSession: createChapterReadingSession({ repository: {}, publish: () => {} }),

@@ -1,6 +1,6 @@
 <template>
   <div class="reader-workspace reader-container" :data-theme="readerTheme">
-    <ReaderWorkspaceControls ref="controls" :title="presentProducerAddressingText(chapter.title)" :segments="chapter.segments" :document-id="documentId" :active-document-id="visibleDocumentId || documentId" :chapter-navigation="chapterNavigation" :mode="mode" allow-unlinked @back="emit('back')" @chapter="emit('chapter', $event)" @select="select" @mode="emit('mode', $event)">
+    <ReaderWorkspaceControls ref="controls" :title="title" :segments="chapter.segments" :document-id="documentId" :active-document-id="visibleDocumentId || documentId" :chapter-navigation="chapterNavigation" :mode="mode" allow-unlinked @back="emit('back')" @chapter="emit('chapter', $event)" @select="select" @mode="emit('mode', $event)">
       <template #search>
         <form role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
           <label>篇内查找<input v-model="query" type="search" placeholder="查找已载入正文、全部分支或说话人" /></label>
@@ -13,6 +13,7 @@
     <div class="reader-body">
       <p v-if="notice" role="alert">{{ notice }} <button @click="emit('refresh')">重新载入正文</button></p>
       <p v-if="missingAnchor" role="alert">原定位行已不存在，请确认当前正文后重新选择。</p>
+      <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
       <ChapterReadingSegment v-for="(segment, index) in chapter.segments" :key="segment.episodeKey" :ref="el => sections[index] = el" :segment="segment" :mode="mode" :anchor="segment.documentId === documentId ? anchor : ''" :query="query" :busy="busy" :idol-directory="idolDirectory" @play="emit('play', $event)" @retry="emit('retry', $event)" />
       <ReaderChapterEnd :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" />
     </div>
@@ -23,6 +24,7 @@
 import { computed, nextTick, onBeforeUnmount, onBeforeUpdate, onUpdated, ref, watch } from 'vue'
 import ReaderWorkspaceControls from './ReaderWorkspaceControls.vue'
 import ReaderChapterEnd from './ReaderChapterEnd.vue'
+import { useReaderTitle } from './useReaderTitles.js'
 import { visibleReaderDocument } from '../../presentation/ReaderControls.js'
 import ChapterReadingSegment from './ChapterReadingSegment.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
@@ -35,6 +37,8 @@ const loadedCount = computed(() => props.chapter.segments.filter(segment => !['i
 const readableCount = computed(() => props.chapter.segments.filter(segment => segment.status === 'ready').length)
 const searchMatches = computed(() => sections.value.flatMap(section => section?.matches(query.value) || []))
 const focused = computed(() => props.chapter.segments.find(segment => segment.documentId === props.documentId))
+const originalTitle = computed(() => presentProducerAddressingText(props.chapter.title))
+const title = useReaderTitle(computed(() => focused.value?.entry),originalTitle)
 const missingAnchor = computed(() => focused.value?.status === 'ready' && props.anchor && !focused.value.document.rows.some(row => row.anchor.row_id === props.anchor))
 function select(segment) { if (segment.documentId) emit('select', segment.documentId); else root.value?.querySelector(`[id="reading-document-${segment.episodeKey}"]`)?.scrollIntoView({ block:'start' }) }
 async function moveMatch(direction) {
@@ -90,6 +94,7 @@ onUpdated(() => {
 <style scoped>
 .story-reader { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
 .reader-body { max-width:1000px; margin:0 auto; padding:0 max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
+.reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:20px 0 0; }
 button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:6px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }
 button[aria-current],button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
 button:disabled { opacity:.5; cursor:default; }

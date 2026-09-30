@@ -56,7 +56,7 @@
               <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
               <span class="chapter-identity">
                 <small>{{ chapter.label }}</small>
-                <strong>{{ presentProducerAddressingText(chapter.title) }}</strong>
+                <strong>{{ chapterTitle(chapter) }}</strong>
               </span>
               <span class="chapter-stats">
                 <small>{{ chapter.episodeCount }} 段剧情</small>
@@ -87,7 +87,7 @@
                 <BookOpen :size="17" />
                 <span><strong>Idol Episode</strong><small>{{ chapter.canonicalRelation.sectionName }}</small></span>
               </button>
-              <button v-if="!chapter.canonicalRelation" class="chapter-read" @click="readChapter(chapter)"><BookOpen :size="17" /><span><strong>整话阅读</strong></span></button>
+              <button v-if="!chapter.canonicalRelation" class="chapter-read" @click="readChapter(chapter)"><BookOpen :size="17" /><span><strong class="desktop-read-label">整话阅读</strong><strong class="mobile-read-label">阅读本话</strong></span></button>
               <button
                 v-if="!chapter.canonicalRelation"
                 class="chapter-play"
@@ -114,7 +114,7 @@
             <p v-if="!chapter.exists && !chapter.synopsis" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
             <p v-if="readingStatusNotice" role="status">{{ readingStatusNotice }}</p>
-            <p v-if="!chapter.canonicalRelation" class="entry-help">点击分段阅读，▶ 播放演出。连播接续本话各段；逐句播放可开启 AUTO。剧情播放器为实验功能。</p>
+            <p v-if="!chapter.canonicalRelation" class="entry-help">点击 EP 阅读并定位剧情，▶ 播放演出。连播接续本话各段；逐句播放可开启 AUTO。剧情播放器为实验功能。</p>
             <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
               <div v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
@@ -141,6 +141,7 @@ import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } fr
 import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { useReaderTitles } from './useReaderTitles.js'
 
 const props = defineProps({
   readerSource: { type:Object, default:()=>({}) },
@@ -171,6 +172,8 @@ function readChapter(chapter) {
   if (entry) emit('read-episode', { chapter, documentId:entry.document_id })
   else readingStatusNotice.value = '本话尚未生成可关联的阅读正文。'
 }
+const displayTitle = useReaderTitles()
+function chapterTitle(chapter) { return presentProducerAddressingText(displayTitle(chapter.episodes.map(readingEntry).find(Boolean),chapter.title)) }
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -264,6 +267,8 @@ function externalResourcesForChapter(chapterId) {
 .episode-entry :focus-visible { outline:2px solid #168f98; outline-offset:-2px; }
 .entry-help { font-size:12px; color:#60727e; line-height:1.7; }
 .chapter-read { border:1px solid #cfe1df; color:#14766f; background:#fff; cursor:pointer; }
+.mobile-read-label { display:none; }
+@media(max-width:760px) { .desktop-read-label { display:none; } .mobile-read-label { display:inline; } }
 .episode-grid .episode-reading { display: flex; flex: 0 0 auto; justify-content: center; min-width: 66px; min-height: 44px; border-left: 1px solid #e2ecef; color: #157c78; font-size: 13px; }
 .episode-number { color: #16877f; font-size: .59rem; font-weight: 800; font-variant-numeric: tabular-nums; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { color: #87949a; font-size: .53rem; }.episode-grid svg { color: #159087; }.episode-lock { text-align: center; }
 @media (max-width: 840px) { .collection-hero { grid-template-columns: 1fr; gap: 18px; }.collection-visual { max-width: 720px; }.chapter-toggle { grid-template-columns: 38px minmax(0, 1fr) 22px; }.chapter-stats { display: none; } }

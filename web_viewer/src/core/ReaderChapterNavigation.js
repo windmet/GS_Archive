@@ -13,6 +13,6 @@ export function readerChapterNavigation(collection, entries, documentId, chapter
       return matches.length === 1 && matches[0].status === 'ready' ? matches[0] : null
     }).find(Boolean)
     return { id: chapter.id, label: chapter.label, title: chapter.title,
-      storyFile: fileOf(chapter), documentId: first?.document_id || '' }
+      storyFile: fileOf(chapter), documentId: first?.document_id || '', revision:first?.sha256 || '' }
   }) }
 }
