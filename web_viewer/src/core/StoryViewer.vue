@@ -10,7 +10,7 @@
       <button data-testid="story-debug-hide" @click.stop="applyDebugVisibility(true)">SIMULATE HIDDEN</button>
       <button data-testid="story-debug-show" @click.stop="applyDebugVisibility(false)">SIMULATE VISIBLE</button>
     </div>
-    <div class="viewer-stage" :inert="viewingOfferOpen || undefined">
+    <div class="viewer-stage" :inert="menuOpen || viewingOfferOpen || undefined">
     <!-- Spine rendering layer (background + characters) -->
     <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
@@ -127,9 +127,32 @@
       @next="goNext"
     />
 
-    <Transition name="menu-slide">
-      <aside v-if="menuOpen && !HIDE_UI" class="playback-menu" :aria-label="uiText('player.settings.panel')">
-        <header><strong>MENU</strong><button class="icon-btn dark" :title="uiText('player.settings.close')" :aria-label="uiText('player.settings.close')" @click="menuOpen = false"><X :size="20" /></button></header>
+    <StoryBacklog
+      v-if="backlogOpen && !HIDE_UI"
+      :nodes="backlogNodes"
+      :voice-node="backlogVoiceNode" :voice-status="voiceStatus"
+      @close="backlogOpen = false"
+      @restore="restoreFromBacklog"
+      @replay-voice="replayBacklogVoice"
+    />
+
+    <div v-if="episodeFinished && !completionDismissed && !HIDE_UI && !uiHidden" class="episode-complete" role="region" aria-label="观看导航">
+      <div class="complete-panel">
+        <strong>{{ communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
+        <div class="complete-actions">
+          <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
+          <button v-else-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
+          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
+          <span v-else-if="nextTarget">{{ nextTarget.reason }}</span>
+          <span v-else>当前观看范围已结束</span>
+          <button @click="continueReview">继续回看</button>
+          <button @click="emit('back')">{{ returnLabel }}</button>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- /viewer-stage -->
+    <PlayerMenuPanel v-if="menuOpen && !HIDE_UI" :title="uiText('player.settings.panel')" :paused-label="uiText('player.settings.paused')" :close-label="uiText('player.settings.close')" @close="menuOpen = false">
         <p v-if="positionLabel" class="menu-position">{{ positionLabel }}</p>
         <button v-if="nextTarget?.available" :disabled="transitioning" @click="requestNextEpisode()"><SkipForward :size="19" /><span>{{ nextLabel }}</span></button>
         <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
@@ -172,34 +195,8 @@
           </select>
         </label>
         <button @click="menuOpen = false; retryCurrentVoice()">{{ uiText('backlog.replayVoice') }}</button>
-      </aside>
-    </Transition>
+    </PlayerMenuPanel>
 
-    <StoryBacklog
-      v-if="backlogOpen && !HIDE_UI"
-      :nodes="backlogNodes"
-      :voice-node="backlogVoiceNode" :voice-status="voiceStatus"
-      @close="backlogOpen = false"
-      @restore="restoreFromBacklog"
-      @replay-voice="replayBacklogVoice"
-    />
-
-    <div v-if="episodeFinished && !completionDismissed && !HIDE_UI && !uiHidden" class="episode-complete" role="region" aria-label="观看导航">
-      <div class="complete-panel">
-        <strong>{{ communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
-        <div class="complete-actions">
-          <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
-          <button v-else-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
-          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
-          <span v-else-if="nextTarget">{{ nextTarget.reason }}</span>
-          <span v-else>当前观看范围已结束</span>
-          <button @click="continueReview">继续回看</button>
-          <button @click="emit('back')">{{ returnLabel }}</button>
-        </div>
-      </div>
-    </div>
-
-    </div><!-- /viewer-stage -->
     <div v-if="viewingOfferOpen" class="viewing-offer" role="dialog" aria-modal="true" aria-labelledby="viewing-offer-title" @keydown.stop="handleViewingOfferKeydown">
       <div class="viewing-offer-panel">
         <h2 id="viewing-offer-title">{{ uiText('player.immersive.title') }}</h2>
@@ -233,6 +230,7 @@ import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
 import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
+import PlayerMenuPanel from '../components/player/PlayerMenuPanel.vue'
 import PlayerTopBar from '../components/player/PlayerTopBar.vue'
 import PlayerControlDock from '../components/player/PlayerControlDock.vue'
 // SpineStage is lazy-loaded so PIXI.js only loads when a story opens
@@ -1448,19 +1446,6 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   outline: 2px solid var(--player-focus-outer);
   outline-offset: 2px;
 }
-.playback-menu { position: absolute; top: 0; right: 0; z-index: 40; display: flex; flex-direction: column; gap: 8px; width: min(320px, 86vw); height: 100%; padding: 18px; border-left: 1px solid #dfe5e7; background: rgba(248,250,251,.97); color: #26343c; box-shadow: -10px 0 30px rgba(0,0,0,.22); }
-.playback-menu header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.25rem; }
-.playback-menu > button, .menu-toggle { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 13px; border: 1px solid #dce3e6; border-radius: 5px; background: #fff; color: #26343c; font: inherit; cursor: pointer; }
-.playback-menu > button b { margin-left: auto; color: #718087; font-size: .68rem; }
-.playback-menu > button.active { border-color: #33aa92; background: #e9f8f4; color: #167a67; }
-.playback-menu > button.active b { color: #167a67; }
-.menu-toggle { justify-content: space-between; cursor: default; }
-.menu-toggle input { width: 42px; height: 22px; accent-color: #12a87d; cursor: pointer; }
-.menu-setting { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid #e3e8ea; border-radius: 5px; background: #f7f9fa; color: #4b5b63; font-size: .78rem; }
-.menu-setting input { width: 76px; }
-.menu-setting .producer-name-input { width: min(150px, 42vw); }
-.menu-setting select, .menu-setting input { min-height: 28px; border: 1px solid #ccd5d9; border-radius: 4px; background: #fff; color: #26343c; }
-.menu-setting small { color: #839096; }
 .episode-complete { position: absolute; left: var(--player-edge); right: var(--player-edge); bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 8px + env(safe-area-inset-bottom)); z-index: 35; }
 .communication-complete-toast { position: absolute; right: var(--player-edge); bottom: var(--player-content-bottom); z-index: 24; display: inline-flex; align-items: center; gap: 7px; max-width: min(320px, calc(100vw - 32px)); min-height: 38px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(250,252,252,.94); color: #2c4545; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .78rem; font-weight: 700; pointer-events: none; }
 .communication-complete-toast span { color: #0d9c75; font-size: 1rem; }

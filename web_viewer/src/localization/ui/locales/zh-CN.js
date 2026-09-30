@@ -1,4 +1,5 @@
 export default Object.freeze({
+  'player.settings.paused': '剧情已暂停',
   'player.voice.backend': '语音播放方式',
   'player.voice.auto': '自动选择',
   'player.voice.compat': '兼容播放',

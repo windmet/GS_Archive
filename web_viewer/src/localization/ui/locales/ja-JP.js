@@ -1,4 +1,5 @@
 export default Object.freeze({
+  'player.settings.paused': 'ストーリーを一時停止中',
   'player.voice.backend': '音声の再生方式',
   'player.voice.auto': '自動',
   'player.voice.compat': '互換モードで再生',

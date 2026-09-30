@@ -25,7 +25,7 @@
       <button v-if="!compact" class="lang-btn" :title="uiText('player.language')" :aria-label="uiText('player.language')" @click="$emit('language')">
         {{ language }}
       </button>
-      <PlayerIconButton :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click="$emit('menu')">
+      <PlayerIconButton data-testid="player-menu-open" :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click="$emit('menu')">
         <Menu :size="20" />
       </PlayerIconButton>
     </div>
