@@ -11,6 +11,7 @@ import { createStoryAssetTransport } from "./StoryAssetTransport.js";
 import { decodeSpineAtlasText } from "../../shared/story/SpineAtlasPages.js";
 import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
+import { studioFramePlacement } from "./StudioFramePlacement.mjs";
 import {
   STUDIO_WIDTH as W,
   STUDIO_HEIGHT as H,
@@ -510,11 +511,9 @@ export class StudioCompositionStage {
           sprite.scale.set(
             Math.min(1.5, 340 / texture.width, 220 / texture.height),
           );
-          if (loaded.length === 1) sprite.position.set(0, 0);
-          else {
-            sprite.anchor.set(1);
-            sprite.position.set(W, H);
-          }
+          const placement = studioFramePlacement(loaded.length - 1, W, H);
+          sprite.anchor.set(placement.anchorX, placement.anchorY);
+          sprite.position.set(placement.x, placement.y);
         }
       }
       if (!owner.current()) throw new DOMException("Aborted", "AbortError");

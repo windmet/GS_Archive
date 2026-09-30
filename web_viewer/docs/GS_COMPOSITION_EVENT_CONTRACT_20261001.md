@@ -63,3 +63,13 @@ A/B 是可继续编辑的参考构图。A 已匹配两位人物、道流小人�
 5198 同一 r5 映射服务的生产代码 Browser 在 1440×900 实际检查：参考 B 三人五贴纸，预览后返回、预览中保存和导出均退出预览；PNG naturalWidth/Height=1280/720；薰动作 0.42 秒、表情 3.4 秒保存后刷新/载入数值一致，控制台 error 为空。截图 `animation-restored-ui.png` 在既有 E:/Web_build/GS_Archive_Domain_Work/composition-browser-r5；屏幕裁图只支持视觉观察，未据其宣称像素级同一性。设备、实际拖拽与 Blob 落盘边界不变。
 
 另外直接检查 RAW costume_005kao_002_00.unity3d：仅一个 comu.skel，并非遗漏另一个摄影骨架；原 idol_motion_stg_005kao 的 7 条 motion→pose 映射均为现有 main/loop，weight 的 backAnimationName=back。Browser 第八个 sad + neck_question 仍未呈现参考图举手动作。这里证明本次检查范围，不能据此判定原图动作不存在或已经完成复刻。
+
+## 原生相框锚点修正
+
+输入 HEAD：6bd16a17。新增 `scripts/inspect-photo-studio-layout.py` 从本地 2.6.10 XAPK 的 base APK、assets/bin/Data/data.unity3d 直接读取 Unity 原生 RectTransform；只生成外部 JSON，不解包复制媒体库，也不运行游戏。候选 `E:/Web_build/GS_Archive_Domain_Work/studio-native-frame-anchors-r2.json` 核对后保存为 `src/core/studio-native-frame-anchors.json`。
+
+源 Unity 2020.3.34f1，data.unity3d SHA256 `d35231c0b00a09f6941f47f7ffedde9e9b35701f5b66d6f432517da860e1a500`。五处 StudioRoot 的 LeftFrame/RightFrame 原生锚点、pivot、位置、缩放一致；LeftFrame=(1,1)、RightFrame=(0,0)，位移为零。相框 0001 的真实缩略图与两张 PNG 交叉确认 _01 对应右上、_02 对应左下。网页之前的左上/右下放反了，现通过 Unity→Pixi 坐标换算改正。
+
+这里仅恢复原始锚点。原生 RectTransform 的 sizeDelta 为零，实际相框尺寸应由运行时代码设置；APK 脚本元数据头不符合标准 IL2CPP 格式，现有 TypeTreeGenerator 无法读取该代码合同。因此保留既有网页尺寸近似，并在 UI 明示。素材对图层的配对来自缩略图交叉确认，未宣称已反编译验证原游戏的绑定方法；相框全精度、shader、天气效果继续 pending。
+
+`verify:studio-frames` 对 26 套真实两图层绑定使用实际 Pixi Sprite 检查边界和切换释放，同时核对五处源布局一致；`verify:studio-animation` 再次通过。`build:check` 9.48 秒完成，copyPublicDir:false。同一 5198/r5 映射服务的 1440×900 Browser 实际导出相框 01 和 26，naturalWidth/Height=1280/720，无控制台 error。390×844 页面宽度为 390，画布固有 1280×720。截图 `frame-01-export-preview.png`、`frame-26-export-preview.png` 和 `frame-mobile.png` 存在 composition-browser-r5。原生 Blob 下载事件仍超时，落盘下载没有被提升为通过。

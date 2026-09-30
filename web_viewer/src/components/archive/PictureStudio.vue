@@ -245,7 +245,7 @@
               </select></label
             >
             <p class="studio-boundary">
-              相框采用网页角落排布；滤镜为网页近似，场景天气效果尚未重建。
+              相框使用原始锚点，尺寸仍为网页近似；滤镜为网页近似，场景天气效果尚未重建。
             </p>
           </template>
         </section>
