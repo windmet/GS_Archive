@@ -31,6 +31,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
   const openAt = Number(song.open_at)
   return {
     id: song.song_code, title: song.title || '曲名待确认', kana: song.kana || '', jacketUrl: song.jacket_url,
+    attributeLabel: ({ physical: 'Physical', intelli: 'Intelli', mental: 'Mental', all: 'ALL' })[song.attribute?.key] || '待确认',
     parentId: song.parent_song_code,
     special: song.archive_status === 'special',
     openDate: song.archive_status === 'special' ? '特殊版本' : song.archive_status === 'initial' ? '初始收录'

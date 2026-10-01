@@ -137,13 +137,16 @@ def search_queue(catalog, registry):
                         f'"{entry["nameJa"]}" "GROWING STARS"',
                         f'"{entry["nameJa"]}" "サイスタ" "ミッション"'],
             'previousAttempts': attempts[entry['id']],
+            'workStatus': 'todo',
+            'resumeWhen': 'new-evidence-or-explicitly-resumed-research',
             'titleObservations': copy.deepcopy(entry.get('titleObservations', [])),
             'neededEvidence': 'Title name + explicit condition/threshold + idol/song if applicable + source URL or gameplay image; conflict additionally needs date/version.'})
     return sorted(rows, key=lambda r: ({'conflict': 0, 'search': 1, 'defer-label': 2}[r['priority']], r['honorId']))
 
 
 def handoff(report, queue, templates):
-    text = ['# 常驻称号：下一轮搜索清单', '',
+    text = ['# 常驻称号：待办清单（本轮收口）', '',
+        '按用户要求，缺少证据的链路暂记待办，停止本轮泛关键词扩搜。取得状态与来源证据状态保持原样。',
         f"已接入 {report['webMappedHonors']} 个明确网页配对，其中 {report['webConflictHonors']} 个有冲突。",
         f"无语义来源的非活动分类称号剩 {report['unknownNonEventHonors']} 个：普通 {report['unknownByHonorType']['1']}、偶像 {report['unknownByHonorType']['2']}。",
         f"其中 {report['placeholderUnknownHonors']} 个名称呈占位文本形态，暂不优先搜索；不能据此认定未实装。",
@@ -164,11 +167,15 @@ def handoff(report, queue, templates):
             evidence = observation['evidence'][0]
             text.append(f"| {row['honorId']} | {row['nameJa']} | {observation['assertion']} | [{evidence['key']}]({evidence['url']})：{observation['locator']} |")
     text.append('')
+    tried = [r for r in queue if r['previousAttempts']]
+    attempt_count = sum(len(r['previousAttempts']) for r in tried)
+    text += [f'队列中有 {len(tried)} 个候选保留检索记录，共 {attempt_count} 次尝试。未命中只描述已查看结果，不能证明称号没有来源。',
+             '下表的次数是本地已记录尝试数；未记录不表示从未被任何人搜索。JSON队列保留查询原文、结果边界及批次引用。', '']
     for priority, heading in [('conflict', '优先核实的冲突'), ('search', '可直接反搜的称号'), ('defer-label', '保留但暂缓的占位名称与内部条件标签')]:
-        text += [f'## {heading}', '', '| Honor ID | 类型 | 原名 | 建议查询 |', '| --- | --- | --- | --- |']
+        text += [f'## {heading}', '', '| Honor ID | 类型 | 原名 | 建议查询 | 已记尝试 |', '| --- | --- | --- | --- | --- |']
         for row in queue:
             if row['priority'] == priority:
-                text.append(f"| {row['honorId']} | {'普通' if row['honorType'] == 1 else '偶像'} | {row['nameJa'].replace('|', '&#124;')} | {row['queries'][0].replace('|', '&#124;')} |")
+                text.append(f"| {row['honorId']} | {'普通' if row['honorType'] == 1 else '偶像'} | {row['nameJa'].replace('|', '&#124;')} | {row['queries'][0].replace('|', '&#124;')} | {len(row['previousAttempts'])} |")
         text.append('')
     return '\n'.join(text)
 
@@ -204,7 +211,8 @@ def run(decoded, registry_path=REGISTRY):
         'namedUnknownSearchCandidates': sum(r['priority'] == 'search' for r in queue),
         'conditionTemplateFamilies': len(templates), 'searchQueueEntriesIncludingConflict': len(queue),
         'publicationReady': False, 'frontendChanged': False,
-        'nextGate': 'Find explicit named reward pairs for non-event catalog candidates; preserve versioned conflicts; original responses are needed only for official mission/Product identity.'}
+        'researchWorkStatus': 'closed-with-todos',
+        'nextGate': 'Deferred by user: resume with new named reward/condition evidence or an explicit research request. Preserve versioned conflicts; original responses are needed for official mission/Product identity.'}
     proof = {**baseline['source'], 'webRegistrySha256': scan.sha(registry_bytes),
              'webCheckedOn': registry['checkedOn'], 'mergerVersion': 'honor-acquisition-web-v1',
              'mergerSha256': scan.sha(Path(__file__).read_bytes())}

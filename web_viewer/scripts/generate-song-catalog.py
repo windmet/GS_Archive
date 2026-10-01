@@ -40,6 +40,7 @@ ARCHIVE_MANIFEST = PROJECT_ROOT / "public" / "data" / "archive_manifest.json"
 
 DISABLED_OPEN_AT = 4102412400  # 2100-01-01 UTC sentinel in this snapshot.
 INITIAL_OPEN_AT = 946652400  # 2000-01-01 JST baseline sentinel in this snapshot.
+SONG_ATTRIBUTE_KEYS = {1: "physical", 2: "intelli", 3: "mental", 4: "all"}
 
 IDOL_SUFFIX_RE = re.compile(r"^\d{3}[a-z]{3}$")
 SONG3_PREFIX = "song3_"
@@ -54,8 +55,15 @@ def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
         code = row.get("4")
         if not isinstance(code, str):
             continue
+        attribute_id = row.get("13")  # SongData.IdolType, not the Singer selector.
+        if attribute_id not in SONG_ATTRIBUTE_KEYS:
+            raise ValueError(f"{code}: missing or unsupported SongData.IdolType: {attribute_id}")
+        attribute = {"idol_type": attribute_id, "key": SONG_ATTRIBUTE_KEYS[attribute_id]}
+        if code in identities and identities[code]["attribute"] != attribute:
+            raise ValueError(f"{code}: conflicting SongData.IdolType across table-46 rows")
         identities[code] = {
             "song_id": row.get("1"),
+            "attribute": attribute,
             "open_at": row.get("29"),
             "on_stage_count": row.get("16"),
             "has_switch_singer": bool(row.get("17", 0)),
@@ -264,6 +272,7 @@ def build_catalog(
         songs[code] = {
             "song_id": song_id,
             "song_code": code,
+            "attribute": identity.get("attribute"),
             "title": meta.get("title"),
             "kana": meta.get("kana"),
             "credits": meta.get("credits"),

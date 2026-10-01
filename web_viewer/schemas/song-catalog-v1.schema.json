@@ -87,6 +87,7 @@
         "required": [
           "song_id",
           "song_code",
+          "attribute",
           "title",
           "kana",
           "credits",
@@ -112,6 +113,18 @@
         "properties": {
           "song_id": { "type": "integer" },
           "song_code": { "type": "string" },
+          "attribute": {
+            "type": "object",
+            "required": ["idol_type", "key"],
+            "oneOf": [
+              { "properties": { "idol_type": { "const": 1 }, "key": { "const": "physical" } } },
+              { "properties": { "idol_type": { "const": 2 }, "key": { "const": "intelli" } } },
+              { "properties": { "idol_type": { "const": 3 }, "key": { "const": "mental" } } },
+              { "properties": { "idol_type": { "const": 4 }, "key": { "const": "all" } } }
+            ],
+            "properties": { "idol_type": { "type": "integer" }, "key": { "type": "string" } },
+            "additionalProperties": false
+          },
           "title": { "type": "string" },
           "kana": { "type": "string" },
           "credits": { "type": "string" },

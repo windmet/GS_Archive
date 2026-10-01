@@ -8,6 +8,7 @@
         <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
         <button v-if="song.parentId" class="song-parent-link" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
         <div class="song-detail-badges">
+          <span class="badge badge-layered">属性 · {{ song.attributeLabel || '待确认' }}</span>
           <span v-if="song.special" class="badge badge-special">特殊版本</span>
           <span class="badge badge-layered">{{ song.formLabel }}</span>
         </div>
