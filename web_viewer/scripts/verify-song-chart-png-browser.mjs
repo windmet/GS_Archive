@@ -9,10 +9,13 @@ import assert from 'node:assert/strict'
 import sharp from 'sharp'
 const root=fileURLToPath(new URL('../', import.meta.url)).replace(/\/$/, '')
 const outputDir=resolve(process.env.GS_PNG_QA_DIR || tmpdir()+'/gs-song-chart-png-qa'); await fs.mkdir(outputDir,{recursive:true})
-const {createServer}=await import(root+'/node_modules/vite/dist/node/index.js'); const server=await createServer({root,configLoader:'native',server:{host:'127.0.0.1',port:5198,strictPort:true,hmr:false}}); await server.listen();
+const port=Number(process.env.GS_PNG_QA_PORT || 5198)
+assert.ok(Number.isInteger(port)&&port>0&&port<=65535,'Invalid PNG QA port')
+const {createServer}=await import(new URL('../node_modules/vite/dist/node/index.js',import.meta.url)); const server=await createServer({root,configLoader:'native',server:{host:'127.0.0.1',port,strictPort:true,hmr:false}}); await server.listen();
 const catalog=JSON.parse(await fs.readFile(root+'/public/data/song_catalog.json'))
 const browser=await chromium.launch({headless:true,...(process.env.GS_CHROMIUM_EXECUTABLE ? {executablePath:process.env.GS_CHROMIUM_EXECUTABLE} : {}),args:['--no-sandbox','--disable-gpu','--disable-dev-shm-usage','--no-zygote']})
 const page=await browser.newPage({viewport:{width:1440,height:1000},acceptDownloads:true})
+try {
 const errors=[]; page.on('pageerror',e=>(errors.push(e.message),console.log('ERROR',e.message)))
 page.on('console',m=>{if(m.type()==='error') (errors.push(m.text()),console.log('CONSOLE',m.text()))})
 await page.route('**/__png-qa',r=>r.fulfill({contentType:'text/html',body:`<!doctype html><html><head><title>GS chart PNG QA</title></head><body><div id="app"></div><script type="module">
@@ -21,7 +24,7 @@ const catalog=await(await fetch('/data/song_catalog.json')).json();
 window.mountChart=(code)=>{window.qaApp?.unmount(); window.qaApp=createApp({render:()=>h(Chart,{songCode:code,title:catalog.songs[code].title,difficulties:catalog.songs[code].gameplay.difficulties})}); window.qaApp.mount('#app')}; window.mountChart('brndnf');
 </script></body></html>`}))
 const chartRequests=[];page.on('request',r=>{if(r.url().includes('/data/song_charts/'))chartRequests.push(r.url())});
-await page.goto('http://127.0.0.1:5198/__png-qa')
+await page.goto(`http://127.0.0.1:${port}/__png-qa`)
 await page.getByRole('button',{name:'打开谱面预览'}).waitFor()
 assert.equal(await page.title(),'GS chart PNG QA'); assert.equal(await page.locator('vite-error-overlay').count(),0); assert.equal(chartRequests.length,0,'chart fetched before preview opened')
 const results=[]
@@ -91,7 +94,7 @@ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWid
 const environmentWarnings=errors.filter(e=>e.includes('WebSocket connection')||e.includes('[vite] failed to connect'));
 assert.deepEqual(errors.filter(e=>!environmentWarnings.includes(e)),[])
 await fs.writeFile(outputDir+'/receipt.json',JSON.stringify({results,receipts,environmentWarnings},null,2)); console.log(JSON.stringify(results))
-await browser.close(); await server.close()
+} finally { await browser.close(); await server.close() }
 
 // To verify a completed offline image without allocating its entire raster:
 // npm run verify:song-chart-png -- output.png 820 <height>
