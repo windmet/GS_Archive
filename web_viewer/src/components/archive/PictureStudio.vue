@@ -11,7 +11,7 @@
       <button v-if="focused" ref="menuButton" type="button" :aria-expanded="menuOpen && drawerTab === 'files'" aria-controls="studio-focus-menu" title="保存构图、导出图片及全屏设置" aria-label="保存与导出" @click="openDrawer('files')"><Save :size="18" /></button>
     </header>
     <div v-if="focused" class="studio-selection-bar" aria-label="当前图层操作">
-      <span><strong>{{ selected ? objectName(selected) : '未选择图层' }}</strong><small>{{ selected ? (selected.idolId ? '人物图层' : '贴纸图层') : '从图层列表选择，或添加素材' }}</small></span>
+      <button type="button" class="studio-edit-selection" :disabled="!selected" :aria-label="selected ? `编辑 ${objectName(selected)}` : '未选择图层'" title="打开所选图层的编辑面板" @click="openDrawer('edit')"><span><strong>{{ selected ? objectName(selected) : '未选择图层' }}</strong><small>{{ selected ? '编辑 ' + (selected.idolId ? '人物' : '贴纸') : '添加素材' }}</small></span><Pencil :size="16" /></button>
       <button type="button" :disabled="!selected" aria-label="缩小所选图层" title="缩小所选图层" @click="adjustSelected(1 / 1.1)"><Minus :size="18" /></button>
       <button type="button" :disabled="!selected" aria-label="放大所选图层" title="放大所选图层" @click="adjustSelected(1.1)"><Plus :size="18" /></button>
       <button type="button" :disabled="!selected" aria-label="删除所选图层" title="删除所选图层，可撤销这次删除" class="studio-delete studio-labeled-action" @click="remove(selectedId)"><Trash2 :size="16" />删除</button>
@@ -23,7 +23,7 @@
         <button v-for="tab in drawerTabs" :key="tab.id" type="button" :aria-pressed="drawerTab === tab.id" @click="drawerTab = tab.id">{{ tab.label }}</button>
       </nav>
       <div v-show="drawerTab === 'materials'" ref="materialsHost"></div>
-      <div v-show="drawerTab === 'objects'"><div ref="controlsHost"></div><div ref="voicesHost"></div></div>
+      <div v-show="drawerTab === 'objects' || drawerTab === 'edit'"><div ref="controlsHost"></div></div>
       <div v-show="drawerTab === 'files'">
         <div class="studio-fullscreen-actions"><button v-if="!immersive.active.value" type="button" :disabled="immersive.pending.value" @click="immersive.enter(studioShell)"><Maximize :size="18" />横屏全屏</button><button v-else type="button" @click="immersive.leave()"><Minimize :size="18" />退出全屏</button></div>
         <div ref="toolsHost"></div>
@@ -203,7 +203,7 @@
               ><button
                 type="button"
                 :disabled="busy || personBusy || draft.actors.length >= 6"
-                @click="addActor(personToAdd)"
+                @click="addPersonAndEdit"
               >
                 <Plus :size="18" />添加人物
               </button>
@@ -222,7 +222,7 @@
                 :src="
                   libraryPerson.media.entries[`faces:${face.id}`]?.image?.url
                 "
-                :alt="face.iconResourceId"
+                :alt="faceName(libraryPerson, face)"
               />
             </div>
           </template>
@@ -314,20 +314,10 @@
           </template>
         </section>
         </Teleport>
-        <Teleport :to="voicesHost || 'body'" :disabled="!focused || !voicesHost">
-        <section v-if="selectedActor" class="domain-panel studio-voices">
-          <h3>语音试听</h3>
-          <DomainVoicePreview
-            :key="selected.instanceId"
-            :cues="poseCues"
-            :bindings="selectedActor.media.voiceCues"
-          />
-        </section>
-        </Teleport>
       </div>
       <Teleport :to="controlsHost || 'body'" :disabled="!focused || !controlsHost">
       <aside class="domain-panel studio-controls" aria-label="画布对象与属性">
-        <section class="studio-object-picker" aria-label="图层列表">
+        <section v-show="!focused || drawerTab === 'objects'" class="studio-object-picker" aria-label="图层列表">
         <h3 class="studio-layer-heading"><Layers :size="18" />图层 <span>{{ objects.length }}</span></h3>
         <p class="studio-status">上方在前。人物和贴纸分别调整顺序。</p>
         <div class="studio-object-list">
@@ -384,7 +374,7 @@
         </div>
         <button type="button" class="studio-undo-delete" :disabled="!canUndoDelete" @click="undoDelete"><Undo2 :size="17" />撤销删除</button>
         </section>
-        <template v-if="selected">
+        <section v-if="selected" v-show="!focused || drawerTab === 'edit'" class="studio-layer-editor" aria-label="编辑所选图层">
           <h3 class="studio-selected-title">
             图层属性：{{ objectName(selected) }}
           </h3>
@@ -400,46 +390,23 @@
                 </option>
               </select></label
             >
-            <label class="studio-field"
-              >姿势<select v-model="selected.poseId">
-                <option
-                  v-for="pose in selectedActor.actor.poses"
-                  :key="pose.id"
-                  :value="pose.id"
-                >
-                  {{ poseName(selectedActor, pose) }}
-                </option>
-              </select></label
-            >
-            <label class="studio-field"
-              >表情<select v-model="selected.faceId">
-                <option
-                  v-for="face in selectedActor.actor.faces"
-                  :key="face.id"
-                  :value="face.id"
-                >
-                  {{ faceName(selectedActor, face) }}
-                </option>
-              </select></label
-            >
-            <div class="studio-faces">
-              <button
-                v-for="face in faceSamples"
-                :key="face.id"
-                type="button"
-                :aria-pressed="selected.faceId === face.id"
-                :aria-label="`选择${faceName(selectedActor, face)}`" :title="faceName(selectedActor, face)"
-                @click="selected.faceId = face.id"
-              >
-                <img
-                  :src="
-                    selectedActor.media.entries[`faces:${face.id}`]?.image?.url
-                  "
-                  :alt="faceName(selectedActor, face)"
-                />
+            <div class="studio-framing" aria-label="人物景别">
+              <button v-for="frame in framingPresets" :key="frame.label" type="button" :aria-pressed="selected.scale === frame.scale && selected.y === frame.y" :title="frame.hint" @click="Object.assign(selected, { scale: frame.scale, y: frame.y })">{{ frame.label }}</button>
+            </div>
+            <nav class="studio-variant-tabs" aria-label="人物差分种类">
+              <button v-for="variant in variantTabs" :key="variant.id" type="button" :aria-pressed="variantTab === variant.id" @click="variantTab = variant.id">{{ variant.label }} <small>{{ selectedActor.actor[variant.id].length }}</small></button>
+            </nav>
+            <p class="studio-current-variant">{{ variantTab === 'faces' ? '表情' : '动作' }}：{{ variantName(selectedActor, variantTab, currentVariant) }}</p>
+            <div class="studio-variant-grid" :aria-label="variantTab === 'faces' ? '表情差分' : '动作差分'">
+              <button v-for="variant in selectedActor.actor[variantTab]" :key="variant.id" type="button" :aria-pressed="currentVariant.id === variant.id" :aria-label="`选择${variantTab === 'faces' ? '表情' : '动作'} ${variantName(selectedActor, variantTab, variant)}`" :title="variantTitle(selectedActor, variantTab, variant)" @click="selected[variantTab === 'faces' ? 'faceId' : 'poseId'] = variant.id">
+                <img v-if="selectedActor.media.entries[`${variantTab}:${variant.id}`]?.image?.url" :src="selectedActor.media.entries[`${variantTab}:${variant.id}`].image.url" alt="" loading="lazy" />
+                <ImageOff v-else :size="24" />
+                <span>{{ variantName(selectedActor, variantTab, variant) }}</span><small>{{ studioPresetPresentation(selectedActor, variantTab, variant).number }}</small>
               </button>
             </div>
           </template>
+          <div class="studio-order-tools" aria-label="所选图层叠放顺序"><button type="button" :disabled="atEdge(selected, 1)" title="在同类图层中向前移动一层" @click="move(selectedId, 1)"><ArrowUp :size="16" />前移</button><button type="button" :disabled="atEdge(selected, -1)" title="在同类图层中向后移动一层" @click="move(selectedId, -1)"><ArrowDown :size="16" />后移</button></div>
+          <details class="studio-fine-adjust"><summary>位置与大小微调</summary>
           <label
             v-for="field in transformFields"
             :key="field.key"
@@ -459,6 +426,7 @@
               :max="field.max"
               :step="field.step"
           /></label>
+          </details>
           <details v-if="selectedActor" class="studio-source">
             <summary>预设来源</summary>
             <p>
@@ -468,14 +436,14 @@
               }}<br />{{
                 selectedActor.media.entries[`faces:${selected.faceId}`]?.preset
                   .label
-              }}
+              }}<br />动作：{{ variantTitle(selectedActor, 'poses', selectedActor.actor.poses.find(row => row.id === selected.poseId)) }}<br />表情：{{ variantTitle(selectedActor, 'faces', selectedActor.actor.faces.find(row => row.id === selected.faceId)) }}
             </p>
             <p>
               摄影脚本映射动作与表情；其他服装使用同一偶像的实际动作兼容校验。
             </p>
           </details>
-        </template>
-        <p v-else class="studio-status">添加或选择一个画布对象。</p>
+        </section>
+        <p v-else-if="!focused || drawerTab === 'edit'" class="studio-status">添加或选择一个画布对象。</p>
       </aside>
       </Teleport>
     </div>
@@ -501,11 +469,11 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
-  ArrowLeft, Layers, Minus, Undo2, Maximize, Minimize,
+  ArrowLeft, Layers, Minus, Undo2, Maximize, Minimize, Pencil,
 } from "@lucide/vue";
 import { useStudioComposition } from "./useStudioComposition.js";
-import DomainVoicePreview from "./DomainVoicePreview.vue";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
+import { studioPresetPresentation } from '../../presentation/studio-preset-labels.mjs';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const emit = defineEmits(['back']);
@@ -518,10 +486,17 @@ const props = defineProps({
 });
 const canvas = ref(null), fileInput = ref(null);
 const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
-const materialsHost = ref(null), controlsHost = ref(null), voicesHost = ref(null), toolsHost = ref(null);
+const materialsHost = ref(null), controlsHost = ref(null), toolsHost = ref(null);
 const focused = ref(props.standalone);
-const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref('objects');
-const drawerTabs = [{ id: 'materials', label: '素材' }, { id: 'objects', label: '图层' }, { id: 'files', label: '保存 / 导出' }];
+const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref('edit');
+const drawerTabs = [{ id: 'materials', label: '素材' }, { id: 'objects', label: '图层' }, { id: 'edit', label: '编辑' }, { id: 'files', label: '保存' }];
+const variantTab = ref('faces');
+const variantTabs = [{ id: 'poses', label: '动作' }, { id: 'faces', label: '表情' }];
+const framingPresets = [
+  { label: '远景', scale: .7, y: .97, hint: '缩小人物，保留更多环境' },
+  { label: '中景', scale: 1.15, y: 1.1, hint: '拉近人物，突出上半身' },
+  { label: '近景', scale: 1.8, y: 1.68, hint: '放大人物，突出脸部；可继续拖动微调' },
+];
 const immersive = usePlayerImmersiveMode();
 watch(drawerTab, async () => { await nextTick(); if (drawerHost.value) drawerHost.value.scrollTop = 0; });
 function enterFocus() { focused.value = true; menuOpen.value = false; }
@@ -584,7 +559,7 @@ function onDocumentFile(event) {
   event.target.value = "";
   void importDocument(file);
 }
-const libraryTab = ref("stickers"),
+const libraryTab = ref("actors"),
   stickerSearch = ref(""),
   materialPage = ref(0),
   personToAdd = ref(props.photoIdol || "1"),
@@ -633,31 +608,18 @@ const layerGroups = computed(() => [
   { kind: 'stickers', label: '贴纸 · 前景', rows: [...draft.value.stickers].reverse() },
   { kind: 'actors', label: '人物', rows: [...draft.value.actors].reverse() },
 ]);
-const poseCues = computed(() => [
-  ...new Map(
-    (selectedActor.value?.actor.poseVoices || [])
-      .filter((cue) => cue.photoPoseId === selected.value?.poseId)
-      .map((cue) => [`${cue.cueSheetName}:${cue.cueName}`, cue]),
-  ).values(),
-]);
-const faceSamples = computed(() => {
-  const faces = selectedActor.value?.actor.faces || [],
-    chosen = faces.find((face) => face.id === selected.value?.faceId);
-  return [
-    ...new Map(
-      [...faces.filter((face) => face !== chosen).slice(0, 2), chosen]
-        .filter(Boolean)
-        .map((face) => [face.id, face]),
-    ).values(),
-  ];
-});
-function poseName(view, row) {
-  return numberedSourceLabel(view.actor.poses, row, '动作');
+const currentVariant = computed(() => selectedActor.value?.actor[variantTab.value].find(row => row.id === selected.value?.[variantTab.value === 'faces' ? 'faceId' : 'poseId']));
+function variantName(view, kind, row) { return row ? studioPresetPresentation(view, kind, row).label : '未选择'; }
+function faceName(view, row) { return variantName(view, 'faces', row); }
+function variantTitle(view, kind, row) {
+  if (!row) return '';
+  const value = studioPresetPresentation(view, kind, row);
+  return `${value.label} · ${value.number} · ${value.source || row.iconResourceId}`;
 }
-function faceName(view, row) { return numberedSourceLabel(view.actor.faces, row, '表情'); }
-function numberedSourceLabel(rows, row, noun) {
-  const sorted = [...rows].sort((a, b) => (a.sortOrder ?? a.id) - (b.sortOrder ?? b.id));
-  return `${noun} ${String(sorted.findIndex(candidate => candidate.id === row.id) + 1).padStart(2, '0')}`;
+async function addPersonAndEdit() {
+  const before = selectedId.value;
+  await addActor(personToAdd.value);
+  if (selectedId.value !== before) { drawerTab.value = 'edit'; variantTab.value = 'faces'; }
 }
 function objectName(row) {
   return row.idolId
