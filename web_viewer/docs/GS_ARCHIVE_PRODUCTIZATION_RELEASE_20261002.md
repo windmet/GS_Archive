@@ -28,7 +28,7 @@ Pages 包只带代码、readmodel、已提交翻译和既有工作回填目录�
 - Browser 5213：中文“映在眼眸”、原文“瞳に映る”均匹配同两张卡面；选择卡面后重新载入门户，署名中文、选择保留、实际无损横图载入。390×844 选择器可见且缩略图完整。截图 61～63 位于 `.analysis/ux-productization-20261001`。
 - Console 日志有先前 Spine 运行时的历史 deprecation 堆栈；不能把累积日志误写为本次新增异常。最终测试页另按本次时间检查。
 
-远端上传、HTTP 和测试页 Browser 结果在完成后补充；本记录当前不声称已发布。
+远端上传、HTTP 和测试页 Browser 已完成，结果见末尾。本次只发布测试分支。
 
 ## 增量暂存核验
 
@@ -43,3 +43,15 @@ Pages 包只带代码、readmodel、已提交翻译和既有工作回填目录�
 上传工具 `--plan` 于北京时间 03:27:06 完成：11257 个暂存及当前来源 hash、2884 个 gzip 解压 hash、图片验收绑定均通过。再次读取目标桶仍为 6633752018 B，其他桶为 444588701 B；按保守预留计入后的账户峰值 8290544554 B，目标桶保守峰值 7410544554 B，通过严格容量门禁。此 plan 为只读核验，尚未上传。HTTP 工具已通过语法检查，真实网络字节和 Browser 验收保留到部署后执行。
 
 测试包准备曾因翻译目录中已跟踪的 `scenarios/.gitattributes` 被当作 JSON 报错。打包选择器改为 Git 的 JSON glob，仍只复制已跟踪的翻译 JSON。真实文件复制核验：112 JSON、2236086 B，全部与来源字节一致，Git 控制文件未复制。中止的本地代码包保留；没有因这个错误执行任何 Pages 发布。
+
+## 最终上传与测试页验收
+
+北京时间 2026-10-02 03:56:56 完成增量 copy。上传后实时目标桶为 **7410544554 B**，与预测完全一致，距离严格 8600000000 B 上限还有 **1189455446 B**。其他桶实际为 444588701 B；计入保守预留后仍通过账户门禁。旧对象保留，未执行 sync/delete。回执：`.deploy/productization-assets-lossless-20261002/upload-receipt.json`。
+
+测试页：[固定版本 275e46ff](https://275e46ff.gs-archive-preview.pages.dev)，[测试分支入口](https://gs-architecture-device-test.gs-archive-preview.pages.dev)。Pages 包来源 `e0999ef1`，10306 文件、121066841 B，全部包文件校验 size/hash；最终 build-check 为 2697 modules / 11.59 s，sourceDirty=false。仅更新 `gs-architecture-device-test`，没有发布 Production。部署时工作树的文档更新未进入代码包。
+
+HTTP 于北京时间 04:03:19 通过：六类 WebP 的字节、Content-Type、ETag/304；版本化目录 JSON/HEAD；compiled gzip 原始与解压 hash、identity 406；语音 Range 206/416 与实际字节；翻译 JSON；404/405。回执为同批目录 `http-validation.json`。语音使用此前已部署的 voice64 清单及暂存 hash 作为基准：旧原始文件清单的 36655 B 不适用于当前 17904 B 文件。本批没有重新转换或上传语音。
+
+线上 Browser 实测：首次引导输入 windmet 后进入门户，重新打开根入口与再次刷新都不重复引导；390×844 壁纸选择器中文及原文搜索返回同两张卡面，截图显示缩略图实际载入，documentWidth=390；选用后桌面刷新仍保持壁纸和中文署名。摄影资料中文地点进入工作台，默认冬马删除→撤销、图层锁定→缩放禁用、隐藏→显示反馈通过，测试后恢复可见和可编辑。摄影背景与立绘实际载入，无常驻中央说明框。证据为 `.analysis/ux-productization-20261001/online-browser-acceptance.json` 及截图 66～68。
+
+线上日志未捕获 error，有一条 Spine 更新调用栈 warning；保留回执，不将其宣称为零警告。完整元数据与 Reader/Player 回归见本地验收文档。Browser 不替代真机方向锁、清缓存性能和全部页面的线上遍历；productionApproved、deviceReviewAccepted 及全部架构迁移状态仍为 false。历史 PR2 验证脚本的断言失败继续列为待单独核对。
