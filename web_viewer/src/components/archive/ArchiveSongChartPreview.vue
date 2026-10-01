@@ -88,7 +88,7 @@ async function loadChart() {
   } finally { if (current === generation) loading.value = false }
 }
 watch([opened, selected, () => props.songCode], loadChart)
-watch(mode, async () => { await nextTick(); goToFirstNote() })
+watch(mode, async () => { lastLocateTick = -1; locateMessage.value = ''; await nextTick(); goToFirstNote() })
 watch(locateRole, () => { lastLocateTick = -1; locateMessage.value = '' })
 onBeforeUnmount(() => { generation++; controller?.abort() })
 function goToFirstNote() {
