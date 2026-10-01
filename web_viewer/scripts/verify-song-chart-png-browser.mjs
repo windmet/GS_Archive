@@ -22,15 +22,26 @@ window.mountChart=(code)=>{window.qaApp?.unmount(); window.qaApp=createApp({rend
 </script></body></html>`}))
 const chartRequests=[];page.on('request',r=>{if(r.url().includes('/data/song_charts/'))chartRequests.push(r.url())});
 await page.goto('http://127.0.0.1:5198/__png-qa')
-await page.getByRole('button',{name:'打开长轨谱面预览'}).waitFor()
+await page.getByRole('button',{name:'打开谱面预览'}).waitFor()
 assert.equal(await page.title(),'GS chart PNG QA'); assert.equal(await page.locator('vite-error-overlay').count(),0); assert.equal(chartRequests.length,0,'chart fetched before preview opened')
 const results=[]
+async function openLong(type=1,scale=90){
+ await page.getByRole('button',{name:'打开谱面预览',exact:true}).click()
+ await page.locator('.track-svg').waitFor()
+ const label=['','EASY','NORMAL','HARD','EXPERT'][type]
+ await page.getByRole('group',{name:'谱面难度',exact:true}).getByRole('button',{name:new RegExp('^'+label)}).click()
+ await page.locator('.chart-count').filter({hasText:label}).waitFor()
+ await page.getByRole('button',{name:'长轨图',exact:true}).click()
+ await page.locator('svg.chart-svg').waitFor()
+ await page.getByRole('button',{name:'视图设置',exact:true}).click()
+ const popup=page.getByRole('dialog',{name:'谱面视图设置',exact:true})
+ await popup.getByLabel('长轨排布',{exact:true}).selectOption('continuous')
+ await popup.getByLabel('谱面纵向缩放',{exact:true}).selectOption(String(scale))
+ await popup.getByRole('button',{name:'关闭视图设置',exact:true}).click()
+}
 async function exportChart(code,type,scale=90){
  await page.evaluate(c=>window.mountChart(c),code)
- await page.getByRole('button',{name:'打开长轨谱面预览'}).click()
- await page.getByLabel('谱面难度',{exact:true}).selectOption(String(type))
- await page.locator('svg.chart-svg').waitFor()
- await page.getByLabel('谱面纵向缩放').selectOption(String(scale))
+ await openLong(type,scale)
  const svgHeight=Number(await page.locator('svg.chart-svg').getAttribute('height'))
  if (svgHeight*2*820>64*1024*1024) { await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).click(); await page.getByRole('alert').filter({hasText:'安全像素预算'}).waitFor(); const dl=page.waitForEvent('download');await page.getByRole('button',{name:'导出 SVG',exact:true}).click();await(await dl).saveAs(`${outputDir}/${code}-${type}-${scale}.svg`);results.push({code,type,scale,width:820,height:svgHeight*2,offline:true});return }
  const pending=page.waitForEvent('download',{timeout:600000}); await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).click()
@@ -50,7 +61,7 @@ const bpm=all.find(x=>x.c.tempos.length>1); await exportChart(bpm.code,bpm.type)
 const longest=all.sort((a,b)=>b.c.maxTick-a.c.maxTick)[0]; await exportChart(longest.code,longest.type,150)
 await page.evaluate(()=>window.mountChart('brndnf'));
 const receipts=[]
-await page.getByRole('button',{name:'打开长轨谱面预览'}).click(); await page.locator('svg.chart-svg').waitFor()
+await openLong()
 // Compare each real split around a 1024-row boundary to a single bounded SVG raster.
 const cross=await page.evaluate(async()=>{
  const {embedSongChartImages}=await import('/src/presentation/SongNotePresentation.js');
@@ -68,7 +79,7 @@ const pending=page.waitForEvent('download');await page.getByRole('button',{name:
 const original=await sharp(outputDir+'/retry.png').extract({left:0,top:0,width:820,height:4096}).raw().toBuffer();const reference=await sharp(outputDir+'/single-reference.png').raw().toBuffer();let differences=0,maxDelta=0;for(let i=0;i<original.length;i++)if(original[i]!==reference[i]){differences++;maxDelta=Math.max(maxDelta,Math.abs(original[i]-reference[i]))}assert.ok(differences/original.length<0.0001 && maxDelta<=16,`unexpected raster difference: ${differences}, ${maxDelta}`);receipts.push(`4096 rows / 3 seams: ${differences} antialias channel differences, max ${maxDelta}/255; no missing pixels`)
 // Cancel a verified snapshot when difficulty changes. It must not download the old chart.
 let unexpectedDownload=false;const onDownload=()=>{unexpectedDownload=true};page.on('download',onDownload);
-await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).click();await page.getByLabel('谱面难度',{exact:true}).selectOption('2');await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).waitFor();await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).isEnabled();await page.waitForFunction(()=>!document.querySelector('[aria-busy="true"]'));assert.equal(unexpectedDownload,false);page.off('download',onDownload);receipts.push('difficulty switch cancellation')
+await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).click();await page.getByRole('group',{name:'谱面难度',exact:true}).getByRole('button',{name:/^NORMAL/}).click();await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).waitFor();await page.getByRole('button',{name:'保存长轨 PNG',exact:true}).isEnabled();await page.waitForFunction(()=>!document.querySelector('[aria-busy="true"]'));assert.equal(unexpectedDownload,false);page.off('download',onDownload);receipts.push('difficulty switch cancellation')
 // Known-type validation stays ahead of rendering, even when fixture hash is correct.
 await page.evaluate(async()=>{const {validateSongChart}=await import('/src/presentation/SongChartPresentation.js');const c=await(await fetch('/data/song_charts/brndnf-1.json')).json();c.notes[0].type='UNKNOWN';let rejected=false;try{validateSongChart(c,'brndnf',1)}catch{rejected=true}if(!rejected)throw Error('unknown type accepted')});receipts.push('unknown type rejection; initial chart fetch stays lazy')
 // A synthetic tall chart marks the last row, and crosses the common 32767 Canvas limit.
