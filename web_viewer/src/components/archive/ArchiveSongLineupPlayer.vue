@@ -94,9 +94,10 @@ import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
 })
-const emit = defineEmits(['open-stage'])
+const emit = defineEmits(['open-stage', 'request-play'])
 
 const session = useSongPerformanceSession()
+defineExpose({ pause: () => session.pause() })
 const slotNumbers = [1, 2, 3, 4, 5]
 const stagePositions = [1, 2, 3, 4, 5]
 const arrangements = ref([])
@@ -201,7 +202,7 @@ async function reloadSession() {
 
 async function togglePlayback() {
   if (session.playing.value) session.pause()
-  else await session.play()
+  else { emit('request-play'); await session.play() }
 }
 
 function openStageWithLineup() {

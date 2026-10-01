@@ -47,7 +47,9 @@
 
     <ArchiveSongLineupPlayer
       v-if="mode === 'lineup'"
+      ref="lineupPlayer"
       :audio-experiment="audioExperiment"
+      @request-play="emit('request-play')"
       @open-stage="emit('open-stage', $event)"
     />
 
@@ -110,7 +112,9 @@ const props = defineProps({
   song: { type: Object, required: true },
   audioExperiment: { type: Object, default: null },
 })
-const emit = defineEmits(['open-stage'])
+const emit = defineEmits(['open-stage', 'request-play'])
+const lineupPlayer = ref(null)
+defineExpose({ pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() } })
 
 const mode = ref('single')
 const selectedSingleKey = ref('full_mix')
@@ -191,6 +195,7 @@ function onTimeUpdate() {
 }
 
 async function togglePlayback() {
+  if (!transportPlaying.value) emit('request-play')
   audioError.value = ''
   if (mode.value === 'solo') {
     if (soloSession.playing.value) soloSession.pause()

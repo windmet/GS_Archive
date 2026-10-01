@@ -20,8 +20,8 @@
       </dl>
     </header>
     <div class="song-detail-body">
-      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
-      <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" @request-play="chartPlayer?.pause()" />
+      <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" @request-play="chartPlayer?.pause()" />
       <section v-if="song.gameplay" class="song-block song-gameplay">
         <div class="song-block-heading"><span>CHARTS</span><h3>难度与解锁</h3></div>
         <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">查看历史来源</a></p>
@@ -32,7 +32,7 @@
         <p v-if="song.gameplay.wikiLevelStatus === 'resolved_song_page'" class="song-block-note">Wiki 列表与单曲页难度有差异，已按本地主数据与单曲页核对。</p>
         <p v-else-if="song.gameplay.wikiLevelStatus === 'conflict_pending'" class="song-block-note">Wiki 与主数据难度不一致，暂按主数据展示；差异待核实。</p>
         <table class="song-difficulties"><caption>谱面难度与最大 Combo</caption><thead><tr><th scope="col">难度</th><th scope="col">等级</th><th scope="col">最大 Combo</th></tr></thead><tbody><tr v-for="d in song.gameplay.difficulties" :key="d.id"><th scope="row">{{ d.label }}</th><td>{{ d.levelLabel }}</td><td>{{ d.maxCombo }}</td></tr></tbody></table>
-        <ArchiveSongChartPreview :key="song.id" :song-code="song.id" :title="song.title" :difficulties="song.gameplay.difficulties" />
+        <ArchiveSongChartPreview :key="song.id" ref="chartPlayer" :song-code="song.id" :title="song.title" :difficulties="song.gameplay.difficulties" :audio-track="song.playback.track" @request-play="songPlayer?.pause()" />
       </section>
       <section class="song-block">
         <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
@@ -87,6 +87,7 @@
 
 <script setup>
 import { ChevronRight, ExternalLink } from '@lucide/vue'
+import { ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
@@ -94,6 +95,7 @@ import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 import ArchiveSongChartPreview from './ArchiveSongChartPreview.vue'
 defineProps({ song: { type: Object, required: true } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage'])
+const songPlayer = ref(null), chartPlayer = ref(null)
 </script>
 
 <style scoped>

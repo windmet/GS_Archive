@@ -68,3 +68,22 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
 }
 import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { songTextureTriangle } from './SongTrackPresentation.js'
+import { buildSongChartTiming } from './SongChartTiming.js'
+
+// Split equal time intervals, preserving tempo-dependent source tick bounds.
+export function buildSongChartColumns(chart, pixelsPerThousand = 90, targetHeight = 620) {
+  if (!Number.isFinite(pixelsPerThousand) || pixelsPerThousand <= 0 || !Number.isFinite(targetHeight) || targetHeight <= 100) throw new Error('Invalid chart column size')
+  const timing = buildSongChartTiming(chart)
+  const length = timing.duration - timing.offset
+  const maxTicksPerSecond = Math.max(...timing.segments.map(s => 1 / s.secondsPerTick))
+  const count = Math.max(1, Math.ceil(length * maxTicksPerSecond * pixelsPerThousand / 1000 / (targetHeight - 100)))
+  return Array.from({ length: count }, (_, index) => {
+    const fromSeconds = timing.offset + index * length / count, toSeconds = timing.offset + (index + 1) * length / count
+    const from = timing.secondsToTick(fromSeconds), to = index === count - 1 ? chart.maxTick : timing.secondsToTick(toSeconds)
+    return { index, from, to, fromSeconds, toSeconds, startY: 42 + from * pixelsPerThousand / 1000, height: (to - from) * pixelsPerThousand / 1000 }
+  })
+}
+
+export function songChartColumnAt(columns, tick) {
+  return columns.find(c => tick >= c.from && tick < c.to)?.index ?? columns.length - 1
+}

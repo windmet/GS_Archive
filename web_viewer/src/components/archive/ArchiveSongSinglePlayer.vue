@@ -34,10 +34,13 @@ const props = defineProps({
 })
 
 const volume = ref(1)
+const emit = defineEmits(['request-play'])
+defineExpose({ pause: () => audioElement.value?.pause() })
 async function togglePlayback() {
   const el = audioElement.value
   if (!el) return
   if (!el.paused) { el.pause(); return }
+  emit('request-play')
   if (el.error) el.load()
   audioError.value = ''
   try { await el.play() } catch (error) { if (error.name !== 'AbortError') audioError.value = '暂时无法播放，请重试。' }
