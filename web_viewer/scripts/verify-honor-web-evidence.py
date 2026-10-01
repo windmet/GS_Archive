@@ -103,6 +103,46 @@ class WebEvidenceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             web.merge(self.baseline, honors, self.registry)
 
+    def test_other_game_or_old_wiki_path_cannot_establish_gs_rules(self):
+        for field, value in [('game', 'sidem-social'), ('url', 'https://wikiwiki.jp/sidem/ﾌﾟﾛﾃﾞｭｰｻｰ称号')]:
+            registry = copy.deepcopy(self.registry)
+            registry['sources'][0][field] = value
+            with self.assertRaises(ValueError):
+                web.merge(self.baseline, self.honors, registry)
+
+    def test_templates_and_observation_sources_cannot_be_promoted_to_named_pairs(self):
+        registry = copy.deepcopy(self.registry)
+        registry['mappings'][0]['evidenceRoles'] = {'wiki-missions': 'condition-template-only'}
+        with self.assertRaises(ValueError):
+            web.merge(self.baseline, self.honors, registry)
+        registry = copy.deepcopy(self.registry)
+        registry['mappings'][0]['evidence'] = ['yuzuhi-title-list-1']
+        with self.assertRaises(ValueError):
+            web.merge(self.baseline, self.honors, registry)
+
+    def test_title_observations_remain_unknown_and_keep_queue_and_sources(self):
+        observed = [h for h in self.catalog['entries'] if h.get('titleObservations')]
+        self.assertEqual(len(observed), 17)
+        baseline = {h['id']: h for h in self.baseline['entries']}
+        queue = {r['honorId']: r for r in web.search_queue(self.catalog, self.registry)}
+        for h in observed:
+            self.assertEqual(h['status'], 'unknown')
+            self.assertEqual(h['sources'], baseline[h['id']]['sources'])
+            self.assertEqual(queue[h['id']]['titleObservations'], h['titleObservations'])
+            for observation in h['titleObservations']:
+                self.assertIsNone(observation['condition'])
+                self.assertTrue(all(c['role'] == 'title-observation-only' for c in observation['evidence']))
+        self.assertEqual(self.by_id[24415001]['titleObservations'][0]['assertion'], 'mentioned-not-yet-acquired')
+
+    def test_bad_observation_identity_or_acquisition_condition_rejects(self):
+        for field, value in [('nameJa', 'unproved-title'), ('honorId', 999999),
+                             ('condition', {'metric': 'idol_level', 'requiredCount': 100}),
+                             ('assertion', 'confirmed-acquisition')]:
+            registry = copy.deepcopy(self.registry)
+            registry['titleObservations'][0][field] = value
+            with self.assertRaises(ValueError):
+                web.merge(self.baseline, self.honors, registry)
+
 
 if __name__ == '__main__':
     unittest.main()

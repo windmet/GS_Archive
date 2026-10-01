@@ -11,6 +11,7 @@ import importlib.util
 import json
 from pathlib import Path
 import re
+from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = ROOT / 'config/honor-acquisition-web-evidence.v1.json'
@@ -40,8 +41,38 @@ def merge(baseline, honors, registry):
             source = sources[key]
             if not source['url'].startswith('https://') or not source['locator']:
                 raise ValueError('Web URL / locator missing')
-            result.append({**copy.deepcopy(source), 'role': (roles or {}).get(key, 'named-condition-pair')})
+            parsed = urlsplit(source['url'])
+            if (source.get('game') != 'sidem-growing-stars'
+                    or (parsed.hostname == 'wikiwiki.jp'
+                        and not unquote(parsed.path).startswith('/sidem-gstars/'))):
+                raise ValueError('Web evidence belongs to another or unidentified game')
+            role = (roles or {}).get(key, 'named-condition-pair')
+            if role not in source.get('supports', []):
+                raise ValueError('Source cannot support this evidence role')
+            result.append({**copy.deepcopy(source), 'role': role})
         return result
+
+    def exact_identity(record):
+        identity = identities.get(record['honorId'])
+        if (not identity or record['nameJa'] != identity['nameJa']
+                or record['honorType'] != identity['honorType']
+                or record['honorType'] not in (1, 2)
+                or sum(h['nameJa'] == record['nameJa'] for h in identities.values()) != 1):
+            raise ValueError('Missing, ambiguous or out-of-scope exact honor identity')
+
+    observations = defaultdict(list)
+    scan.unique_rows(registry.get('titleObservations', []), 'key')
+    for observation in registry.get('titleObservations', []):
+        exact_identity(observation)
+        if (observation.get('condition') is not None or not observation.get('locator')
+                or observation.get('assertion') not in
+                ('displayed-as-acquired', 'reported-acquired', 'mentioned-not-yet-acquired')):
+            raise ValueError('Title observation cannot supply acquisition semantics')
+        observations[observation['honorId']].append({**copy.deepcopy(observation),
+            'status': 'title-observed-condition-unresolved', 'condition': None,
+            'checkedOn': registry['checkedOn'],
+            'evidence': refs(observation['evidence'],
+                {k: 'title-observation-only' for k in observation['evidence']})})
 
     catalog = copy.deepcopy(baseline)
     catalog['coverage'] = 'client-PB-plus-reviewed-web-semantics-not-complete-server-acquisition-library'
@@ -49,15 +80,17 @@ def merge(baseline, honors, registry):
     for entry in catalog['entries']:
         entry['pbStatus'] = entry['status']
         entry['honorType'] = identities[entry['id']]['honorType']
+        if observations[entry['id']]:
+            entry['titleObservations'] = observations[entry['id']]
         mapping = mappings.get(entry['id'])
         if not mapping:
             continue
-        if (mapping['nameJa'] != entry['nameJa'] or mapping['honorType'] != entry['honorType']
-                or entry['honorType'] not in (1, 2)
-                or sum(h['nameJa'] == entry['nameJa'] for h in identities.values()) != 1):
-            raise ValueError('Missing, ambiguous or out-of-scope exact honor identity')
+        exact_identity(mapping)
         if not mapping['condition'].get('metric'):
             raise ValueError('Missing acquisition metric')
+        citations = refs(mapping['evidence'], mapping.get('evidenceRoles'))
+        if not any(c['role'] == 'named-condition-pair' for c in citations):
+            raise ValueError('No named acquisition pair; templates and title observations cannot bind')
         conflicts = [{**copy.deepcopy(c), 'evidence': refs(c['evidence'])}
                      for c in mapping.get('conflicts', [])]
         source = {'type': 'normal_mission', 'sourceId': None,
@@ -67,7 +100,7 @@ def merge(baseline, honors, registry):
                   'externalEvidence': {'registryKey': f"web-honor:{entry['id']}",
                       'identityJoin': 'exact-unique-name-and-reviewed-id-and-honor-type',
                       'checkedOn': registry['checkedOn'],
-                      'citations': refs(mapping['evidence'], mapping.get('evidenceRoles')),
+                      'citations': citations,
                       'conflicts': conflicts, 'resolution': mapping.get('resolution'),
                       'proofBoundary': 'reported-semantic-pair-no-encoded-Product-or-official-mission-id'}}
         entry['sources'].append(source)
@@ -104,6 +137,7 @@ def search_queue(catalog, registry):
                         f'"{entry["nameJa"]}" "GROWING STARS"',
                         f'"{entry["nameJa"]}" "サイスタ" "ミッション"'],
             'previousAttempts': attempts[entry['id']],
+            'titleObservations': copy.deepcopy(entry.get('titleObservations', [])),
             'neededEvidence': 'Title name + explicit condition/threshold + idol/song if applicable + source URL or gameplay image; conflict additionally needs date/version.'})
     return sorted(rows, key=lambda r: ({'conflict': 0, 'search': 1, 'defer-label': 2}[r['priority']], r['honorId']))
 
@@ -121,6 +155,15 @@ def handoff(report, queue, templates):
     text += [f"| {t['key']} | {', '.join(map(str, t['requiredCounts'])) or '完成集合'} | {', '.join(t['parameters']) or '无'} |" for t in templates]
     text += ['', '信赖度100的模板同时奖励 Talk 与称号；仍缺每名偶像的具体称号名。',
         '391 条 ReleasedByMission 是 MobileReleaseConditions 的手机内容解锁引用，不作为称号池，也不连接此表。', '']
+    observed = [r for r in queue if r['titleObservations']]
+    text += ['## 已见显示或提及，仍缺取得条件', '',
+        '这些记录不增加获取来源数量，也不移出待查队列。取得列表不显示阈值；未取得的提及也不证明取得方式。', '',
+        '| Honor ID | 原名 | 观察 | 出处 |', '| --- | --- | --- | --- |']
+    for row in observed:
+        for observation in row['titleObservations']:
+            evidence = observation['evidence'][0]
+            text.append(f"| {row['honorId']} | {row['nameJa']} | {observation['assertion']} | [{evidence['key']}]({evidence['url']})：{observation['locator']} |")
+    text.append('')
     for priority, heading in [('conflict', '优先核实的冲突'), ('search', '可直接反搜的称号'), ('defer-label', '保留但暂缓的占位名称与内部条件标签')]:
         text += [f'## {heading}', '', '| Honor ID | 类型 | 原名 | 建议查询 |', '| --- | --- | --- | --- |']
         for row in queue:
@@ -150,6 +193,7 @@ def run(decoded, registry_path=REGISTRY):
     report = {'kind': 'gs-honor-web-validation', 'honors': len(catalog['entries']),
         'pbKnownSourceHonors': sum(h['pbStatus'] == 'known-source' for h in catalog['entries']),
         'webMappedHonors': len(registry['mappings']),
+        'titleObservationHonors': sum(bool(h.get('titleObservations')) for h in catalog['entries']),
         'webConflictHonors': sum(h['status'] == 'web-conflict' for h in catalog['entries']),
         'webNonConflictHonors': sum(h['status'] == 'web-reported-source' for h in catalog['entries']),
         'unknownHonors': len(unknown), 'unknownNonEventHonors': len(permanent),

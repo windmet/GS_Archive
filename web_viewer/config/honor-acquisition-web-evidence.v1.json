@@ -4,11 +4,34 @@
   "checkedOn": "2026-10-01",
   "scope": "permanent-normal-mission-producer-level-rank-cumulative-only",
   "sources": [
-    {"key": "wiki-missions", "url": "https://wikiwiki.jp/sidem-gstars/ミッション", "kind": "community-mission-table", "locator": "ノーマルミッション / 育成 / その他"},
-    {"key": "wiki-2021", "url": "https://wikiwiki.jp/sidem-gstars/過去のお知らせ/2021年", "kind": "community-notice-transcription", "locator": "2021-12-23 normal mission additions"},
-    {"key": "wiki-2022a", "url": "https://wikiwiki.jp/sidem-gstars/過去のお知らせ/2022年前半", "kind": "community-notice-transcription", "locator": "2022-04-15 producer level cap increase"},
-    {"key": "gamerch-updates", "url": "https://gamerch.com/sidem-gs/307004", "kind": "community-notice-transcription", "locator": "2021-12-23 / 2022-04-15 / 2022-09-28 additions"},
-    {"key": "teru-player-report", "url": "https://note.com/echo_howling/n/n07e07b93dc48", "kind": "first-person-gameplay-report", "locator": "2023-04-14 article, Lv100 paragraph and adjacent honor image"}
+    {"key": "wiki-missions", "url": "https://wikiwiki.jp/sidem-gstars/ミッション", "game": "sidem-growing-stars", "supports": ["named-condition-pair", "condition-template-only"], "kind": "community-mission-table", "locator": "ノーマルミッション / 育成 / その他"},
+    {"key": "wiki-2021", "url": "https://wikiwiki.jp/sidem-gstars/過去のお知らせ/2021年", "game": "sidem-growing-stars", "supports": ["named-condition-pair", "condition-template-only"], "kind": "community-notice-transcription", "locator": "2021-12-23 normal mission additions"},
+    {"key": "wiki-2022a", "url": "https://wikiwiki.jp/sidem-gstars/過去のお知らせ/2022年前半", "game": "sidem-growing-stars", "supports": ["named-condition-pair", "condition-template-only"], "kind": "community-notice-transcription", "locator": "2022-04-15 producer level cap increase"},
+    {"key": "gamerch-updates", "url": "https://gamerch.com/sidem-gs/307004", "game": "sidem-growing-stars", "supports": ["named-condition-pair", "condition-template-only"], "kind": "community-notice-transcription", "locator": "2021-12-23 / 2022-04-15 / 2022-09-28 additions"},
+    {"key": "teru-player-report", "url": "https://note.com/echo_howling/n/n07e07b93dc48", "game": "sidem-growing-stars", "supports": ["named-condition-pair"], "kind": "first-person-gameplay-report", "locator": "2023-04-14 article, Lv100 paragraph and adjacent honor image"},
+    {"key": "yuzuhi-title-list-1", "url": "https://yuzuhi.hateblo.jp/entry/2023/12/16/220730", "imageUrl": "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuzuhi/20230917/20230917151236.png", "game": "sidem-growing-stars", "supports": ["title-observation-only"], "kind": "player-screenshot-visually-inspected", "locator": "７月 / サイスタ_サ終 / first acquired-title list image"},
+    {"key": "yuzuhi-title-list-2", "url": "https://yuzuhi.hateblo.jp/entry/2023/12/16/220730", "imageUrl": "https://cdn-ak.f.st-hatena.com/images/fotolife/y/yuzuhi/20230917/20230917151251.png", "game": "sidem-growing-stars", "supports": ["title-observation-only"], "kind": "player-screenshot-visually-inspected", "locator": "７月 / サイスタ_サ終 / second acquired-title list image"},
+    {"key": "iwai-tanto-mention", "url": "https://note.com/joyous_aster709/n/n7909f55b74a0", "game": "sidem-growing-stars", "supports": ["title-observation-only"], "kind": "first-person-title-mention", "locator": "2023-01-06 / 担当に会う"},
+    {"key": "imasbbs-title-mention", "url": "https://imasbbs.com/patio.cgi?read=22461&tr=all", "game": "sidem-growing-stars", "supports": ["title-observation-only"], "kind": "anonymous-player-title-mention", "locator": "GS thread Part1 / post 185 / 2021-10-17 07:13:12"}
+  ],
+  "titleObservations": [
+    {"key": "shota-acquired-list", "honorId": 20222001, "nameJa": "僕が一番、でしょ？", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 1, column 1; acquired-only checkbox checked", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "kei-acquired-list", "honorId": 20722001, "nameJa": "”弾むように軽やかに”", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 2, column 1; phrase and Kei portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "rei-acquired-list", "honorId": 20822001, "nameJa": "”丁寧にゆっくりと”", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 2, column 3; phrase and Rei portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "pierre-acquired-list", "honorId": 21022001, "nameJa": "笑顔いっぱいの王子様", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 3, column 2; phrase and Pierre portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "jun-acquired-list", "honorId": 22122001, "nameJa": "音符を弾いて、奏でて", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 4, column 3; phrase and Jun portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "ryo-acquired-list", "honorId": 24122001, "nameJa": "希望と夢の旗印", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 7, column 1; phrase and Ryo portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "daigo-acquired-list", "honorId": 24222001, "nameJa": "希望と笑顔の旗印", "honorType": 2, "assertion": "displayed-as-acquired", "locator": "row 7, column 3 and selected slot; phrase and Daigo portrait", "evidence": ["yuzuhi-title-list-1"]},
+    {"key": "mood-acquired-list", "honorId": 10007001, "nameJa": "ムードメーカー", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 1, column 1; acquired-only checkbox checked", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "comfort-acquired-list", "honorId": 10007002, "nameJa": "心のよりどころ", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 1, column 2", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "consult-acquired-list", "honorId": 10008001, "nameJa": "相談相手", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 1, column 3", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "dependable-acquired-list", "honorId": 10008002, "nameJa": "頼れる存在", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 2, column 1", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "persistence-acquired-list", "honorId": 10010001, "nameJa": "継続は力なり", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 2, column 2", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "beyond-acquired-list", "honorId": 10012001, "nameJa": "ずっとずっとその先へ", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 3, column 3; acquired-only checkbox checked", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "escort-acquired-list", "honorId": 10012006, "nameJa": "最高の瞬間へとエスコート", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 4, column 1", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "voyager-acquired-list", "honorId": 10012017, "nameJa": "さあ 出航！夢色VOYAGER", "honorType": 1, "assertion": "displayed-as-acquired", "locator": "row 4, column 3", "evidence": ["yuzuhi-title-list-2"]},
+    {"key": "amehiko-not-yet-acquired", "honorId": 24415001, "nameJa": "葛之葉雨彦担当", "honorType": 2, "assertion": "mentioned-not-yet-acquired", "locator": "担当に会う / named title still pending; trust and level mentioned without thresholds", "evidence": ["iwai-tanto-mention"]},
+    {"key": "kagayaki-player-mention", "honorId": 10004001, "nameJa": "輝きの向こう側へ", "honorType": 1, "assertion": "reported-acquired", "locator": "post 185; explicit title name but no condition", "evidence": ["imasbbs-title-mention"]}
   ],
   "mappings": [
     {"honorId": 10013001, "nameJa": "一人前", "honorType": 1, "condition": {"metric": "producer_level", "requiredCount": 200}, "evidence": ["wiki-missions"]},
@@ -71,6 +94,8 @@
     "Web reports prove reported acquisition semantics, not encoded Product, official mission ID, version applicability or server completeness.",
     "Wiki mission table supplies the generic idol level template; the Teru player report supplies the named reward pair.",
     "391 ReleasedByMission rows concern MobileReleaseConditions; no honor join is established.",
-    "Event honors are excluded from new mappings and web search queue, while existing PB event sources remain intact."
+    "Event honors are excluded from new mappings and web search queue, while existing PB event sources remain intact.",
+    "Title observations preserve displayed or mentioned names only; they do not bind conditions or reduce unknown acquisition counts.",
+    "Sources must identify GROWING STARS and permitted evidence roles; the older wikiwiki.jp/sidem game cannot establish GS acquisition rules."
   ]
 }
