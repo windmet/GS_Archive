@@ -79,7 +79,17 @@ function seekContinuous(event) {
   const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
   emit('seek', Math.max(0, Math.min(props.chart.maxTick, (local.y - 42) * 1000 / props.scale)))
 }
-defineExpose({ getSvg: () => svg.value, scrollToTick })
+function getSourceSvg() {
+  const source = svg.value?.cloneNode(true)
+  if (!source) return null
+  for (const child of [...source.children]) if (!['defs', 'title'].includes(child.tagName)) child.remove()
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
+  use.setAttribute('href', `#${uid}-source`); source.append(use)
+  source.setAttribute('viewBox', `0 0 ${geometry.value.width} ${geometry.value.height}`)
+  source.setAttribute('width', geometry.value.width); source.setAttribute('height', geometry.value.height)
+  return source
+}
+defineExpose({ getSvg: () => svg.value, getSourceSvg, scrollToTick })
 </script>
 
 <style scoped>

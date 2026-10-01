@@ -266,7 +266,10 @@
     "verify:player-repair": "node --test scripts/repair/*.test.mjs",
     "verify:voice-load-recovery": "node scripts/verify-voice-load-recovery.mjs --source src/core/useVoicePlayer.js --expect candidate",
     "verify:load-boundaries": "node --test scripts/boundary.test.mjs scripts/image-boundary.test.mjs",
-    "verify:external-publication-off": "node scripts/verify-external-publication-off.mjs"
+    "verify:external-publication-off": "node scripts/verify-external-publication-off.mjs",
+    "export:song-chart-png": "node scripts/export-song-chart-png.mjs",
+    "verify:song-chart-png": "node scripts/verify-song-chart-png.mjs",
+    "verify:song-chart-png:browser": "node scripts/verify-song-chart-png-browser.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.24.0",

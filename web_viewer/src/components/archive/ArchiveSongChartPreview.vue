@@ -5,7 +5,7 @@
       <header class="chart-toolbar">
         <div class="chart-difficulties" role="group" aria-label="谱面难度"><button v-for="d in difficulties" :key="d.type" type="button" :class="`difficulty-${d.type}`" :aria-pressed="selected === d.type" @click="selected = d.type">{{ d.label }} <small>Lv {{ d.levelLabel }}</small></button></div>
         <div class="chart-modes" role="group" aria-label="谱面视图"><button type="button" :aria-pressed="mode === 'perspective'" @click="mode = 'perspective'">透视轨道</button><button type="button" :aria-pressed="mode === 'long'" @click="mode = 'long'">长轨图</button></div>
-        <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="chart && mode === 'long'" type="button" :disabled="exporting" :aria-busy="exporting" @click="download"><Download :size="15" aria-hidden="true" />{{ exporting ? '正在导出…' : '导出 SVG' }}</button><button type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button></div>
+        <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
       <Teleport to="body">
         <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
@@ -16,7 +16,7 @@
           <div class="settings-audio"><label>播放速度 <select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></label><label>音量 <input v-model.number="volume" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></label></div>
         </div>
       </Teleport>
-      <p v-if="exportError" role="alert">{{ exportError }} <button type="button" @click="download">重试导出</button></p>
+      <p v-if="exportError" role="alert">{{ exportError }} <button type="button" :disabled="exporting" @click="download(exportFormat)">重试导出</button></p>
       <p v-if="audioError" role="alert">{{ audioError }}</p>
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
@@ -25,26 +25,27 @@
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
-          <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div><div class="chart-filter"><label>定位 <select v-model="locateRole" aria-label="定位音符类型"><option value="all">全部音符</option><option value="normal">普通 Tap / 长条</option><option value="swipe_left">左划</option><option value="swipe_right">右划</option><option value="swipe_up">上划</option><option value="p_skill">紫星 P 技能</option><option value="sp">315 Special</option><option value="middle">长条中间节点</option></select></label><button type="button" :disabled="!nextHold" @click="seek(nextHold.tick)"><CornerDownRight :size="16" aria-hidden="true" />下一条长条</button></div></div>
+          <div class="chart-navigation"><div class="chart-step" role="group" aria-label="谱面播放操作"><button type="button" aria-label="回到开头" title="歌曲开头 · 0 秒" @click="seek(0)"><SkipBack :size="19" aria-hidden="true" /></button><button type="button" aria-label="上一个音符" title="上一个音符 · ←" :disabled="!previousNote" @click="step(-1)"><ChevronLeft :size="23" aria-hidden="true" /></button><button type="button" class="chart-play" :aria-label="starting || playing ? '暂停' : '播放'" :disabled="!audioTrack?.url" @click="togglePlayback"><component :is="starting || playing ? Pause : Play" :size="21" aria-hidden="true" />{{ starting || playing ? '暂停' : '播放' }}</button><button type="button" aria-label="下一个音符" title="下一个音符 · →" :disabled="!nextNote" @click="step(1)"><ChevronRight :size="23" aria-hidden="true" /></button><button type="button" aria-label="播放末尾" title="播放末尾（含尾奏）" @click="seekSeconds(totalSeconds)"><SkipForward :size="19" aria-hidden="true" /></button></div></div>
           <p v-if="clockSnapshot.phase === 'waiting' || locateMessage" class="chart-position-status" role="status">{{ clockSnapshot.phase === 'waiting' ? '正在缓冲音频…' : locateMessage }}</p>
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。</p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
     </template>
   </section>
 </template>
 
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ChevronLeft, ChevronRight, CornerDownRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
 import { validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
+import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
 import ArchiveSongLongPreview from './ArchiveSongLongPreview.vue'
-import { embedSongChartImages, songNoteEndpoints, songHoldMiddleNodes } from '../../presentation/SongNotePresentation.js'
+import { embedSongChartImages, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null } })
 const emit = defineEmits(['request-play'])
 const uid = `chart-viewer-${getCurrentInstance().uid}`
@@ -53,8 +54,9 @@ const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayo
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
-const chart = ref(null), error = ref(''), loading = ref(false), cursor = ref(0), locateRole = ref('all'), locateMessage = ref('')
+const chart = ref(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
+const exportFormat = ref('svg'), exportProgress = ref(0)
 const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null })
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
@@ -65,10 +67,8 @@ const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(sa
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
-const targets = computed(() => !chart.value ? [] : locateRole.value === 'all' ? endpoints.value : locateRole.value === 'middle' ? songHoldMiddleNodes(chart.value) : endpoints.value.filter(n => n.role === locateRole.value))
-const previousNote = computed(() => targets.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
-const nextNote = computed(() => targets.value.find(n => n.tick > safeCursor.value + .001))
-const nextHold = computed(() => chart.value?.notes.filter(n => n.duration > 0 && n.tick > safeCursor.value + .001).sort((a, b) => a.tick - b.tick)[0])
+const previousNote = computed(() => endpoints.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
+const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.value + .001))
 let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
@@ -97,7 +97,6 @@ async function loadChart() {
   finally { if (current === generation) loading.value = false }
 }
 watch([opened, selected, () => props.songCode], loadChart)
-watch(locateRole, () => { locateMessage.value = '' })
 onMounted(() => {
   document.addEventListener('pointerdown', onOutsideSettings)
   document.addEventListener('keydown', onSettingsEscape)
@@ -200,16 +199,24 @@ async function cancelTick(restoreFocus = false) {
   editingTick.value = false
   if (restoreFocus) { await nextTick(); tickButton.value?.focus({ preventScroll: true }) }
 }
-async function download() {
-  const svg = longPreview.value?.getSvg()
-  if (!svg || !chart.value) return
-  const fileName = `${props.songCode}-${activeDifficulty.value.label}.svg`, current = generation
-  exporting.value = true; exportError.value = ''
+async function download(format = 'svg') {
+  const svg = format === 'png' ? longPreview.value?.getSourceSvg() : longPreview.value?.getSvg()
+  if (exporting.value || !svg || !chart.value) return
+  const fileName = `${props.songCode}-${activeDifficulty.value.label}.${format}`, current = generation
+  exporting.value = true; exportError.value = ''; exportFormat.value = format; exportProgress.value = 0
+  const check = () => { if (current !== generation) throw new Error('谱面已切换，请重新导出') }
   try {
+    if (format === 'png') {
+      const box = svg.getAttribute('viewBox').split(/\s+/).map(Number)
+      assertBrowserSongChartPng(box[2], box[3])
+    }
     const content = await embedSongChartImages(svg)
-    const url = URL.createObjectURL(new Blob([content], { type: 'image/svg+xml;charset=utf-8' }))
+    check()
+    const blob = format === 'png' ? await exportSongChartPng(content, { check, onProgress: n => { exportProgress.value = n } }) : new Blob([content], { type: 'image/svg+xml;charset=utf-8' })
+    check()
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a'); a.href = url; a.download = fileName; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
-  } catch (e) { if (current === generation) exportError.value = `SVG 导出失败：${e.message || '贴图读取失败'}` }
+  } catch (e) { if (current === generation) exportError.value = `${format.toUpperCase()} 导出失败：${e.message || '贴图读取失败'}` }
   finally { exporting.value = false }
 }
 </script>
@@ -225,14 +232,14 @@ input[type=number] { min-height: 32px; padding: 4px 7px; }
 .chart-open { min-height: 44px; }
 .chart-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
 .chart-difficulties, .chart-modes, .chart-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
-.chart-difficulties button { height: 36px; border-color: var(--diff-color); color: var(--diff-color); gap: 5px; font-size: .7rem; white-space: nowrap; }
+.chart-difficulties button { flex-direction: column; height: 44px; min-width: 76px; border-color: var(--diff-color); color: var(--diff-color); gap: 2px; padding: 5px 10px; font-size: .7rem; line-height: 1.2; white-space: nowrap; }
 .chart-difficulties small { font-size: .65rem; opacity: .85; }
 .difficulty-1 { --diff-color: #247145; }.difficulty-2 { --diff-color: #24649c; }.difficulty-3 { --diff-color: #936309; }.difficulty-4 { --diff-color: #994070; }
 .chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: #fff; }
-.chart-modes { height: 36px; padding: 2px; box-sizing: border-box; gap: 2px; border-radius: 6px; background: #eaf2f3; }
-.chart-modes button { min-height: 32px; height: 32px; border-color: transparent; background: transparent; font-size: .7rem; }
+.chart-modes { height: 44px; padding: 2px; box-sizing: border-box; gap: 2px; border-radius: 6px; background: #eaf2f3; }
+.chart-modes button { min-height: 40px; height: 40px; border-color: transparent; background: transparent; font-size: .7rem; }
 .chart-modes button[aria-pressed=true] { background: #205d60; color: #fff; }
-.chart-actions { margin-left: auto; }.chart-actions button { height: 36px; font-size: .7rem; }
+.chart-actions { margin-left: auto; }.chart-actions button { height: 44px; font-size: .7rem; gap: 6px; }.chart-actions svg { flex-shrink: 0; }.chart-export-actions { display: flex; align-items: center; gap: 5px; }
 .chart-settings { position: fixed; z-index: 1200; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 15px; padding: 16px; border: 1px solid #b5cdcc; border-radius: 10px; background: #f8fcfb; box-shadow: 0 10px 35px #173e4638; color: #295a60; }
 .settings-heading { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #dde9e6; font-size: .83rem; }
 .settings-heading button { width: 32px; min-height: 32px; padding: 0; border: 0; background: transparent; }
@@ -253,22 +260,20 @@ input[type=number] { min-height: 32px; padding: 4px 7px; }
 .tick-position { min-width: 156px; font-size: .67rem; color: #617980; font-variant-numeric: tabular-nums; }
 .tick-position span { color: #84949a; }.tick-position label { display: flex; align-items: center; justify-content: flex-end; gap: 5px; white-space: nowrap; }
 .tick-position input { width: 78px; font-size: .69rem; }.tick-readout { width: 100%; justify-content: flex-end; border-color: transparent; background: transparent; padding: 3px 0; font-size: .67rem; color: #617980; }
-.chart-navigation { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-top: 8px; }
+.chart-navigation { display: flex; align-items: center; justify-content: center; margin-top: 8px; }
 .chart-step { display: flex; align-items: center; gap: 6px; }.chart-step button { width: 38px; height: 38px; padding: 0; border-color: transparent; background: transparent; }
 .chart-step .chart-play { width: 100px; height: 48px; margin: 0 6px; border-radius: 24px; border-color: #1e716b; background: #1e716b; color: #fff; font-size: .8rem; font-weight: 600; }.chart-step .chart-play:not(:disabled):hover { background: #145d58; }
-.chart-filter { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding-left: 18px; border-left: 1px solid #c9dcdd; }
-.chart-filter label { display: flex; align-items: center; gap: 8px; font-size: .71rem; color: #607980; }.chart-filter select { max-width: 145px; font-size: .71rem; }.chart-filter button { border-color: transparent; background: transparent; padding: 6px 4px; font-size: .72rem; }
 input[type=range] { min-height: 32px; accent-color: #167e79; cursor: pointer; }
 .chart-position-status, .chart-shortcuts { margin: 8px 0 0; color: #6a8288; font-size: .66rem; line-height: 1.7; }.chart-shortcuts { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; }
 kbd { font-family: inherit; padding: 0 3px; border: 1px solid #d7e3e3; border-radius: 3px; color: #5b757d; background: #f7fafb; font-size: .61rem; }.chart-shortcuts > span { margin: 0 3px; color: #a0b2b6; }
 .chart-info { margin-top: 10px; padding: 10px 14px; background: #f2f6fa; border-radius: 8px; font-size: .74rem; line-height: 1.7; color: #597080; }.chart-info p { margin: 4px 0; }
 button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport:focus-visible { outline: 3px solid #1d938a; outline-offset: 2px; }
 @media (max-width: 560px) {
- .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: 4px; }.chart-difficulties button { height: 44px; padding: 6px 2px; gap: 3px; font-size: .58rem; }.chart-difficulties small { font-size: .55rem; }
- .chart-toolbar { gap: 8px; }.chart-actions { margin-left: 0; gap: 5px; }.chart-actions button { height: 44px; padding: 6px 8px; }.chart-actions svg { display: none; }.chart-modes { height: 44px; }.chart-modes button { height: 40px; min-height: 40px; }
+ .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: 4px; }.chart-difficulties button { height: 44px; min-width: 0; padding: 5px 2px; gap: 2px; font-size: .7rem; }.chart-difficulties small { font-size: .63rem; }
+ .chart-toolbar { gap: 8px; }.chart-actions { margin-left: 0; gap: 5px; width: 100%; }.chart-actions > button { flex: 1; }.chart-actions button { height: 44px; padding: 6px; gap: 4px; }.chart-export-actions { width: 100%; justify-content: flex-end; }.chart-export-actions button { flex: 1; }
  .chart-hud { top: 8px; left: 8px; padding: 4px 7px; font-size: .6rem; gap: 7px; }.chart-hud strong { font-size: .58rem; }
  .chart-timeline { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; }.chart-timeline > input[type=range] { grid-row: 2; grid-column: 1 / -1; min-height: 44px; }.tick-position { min-width: 0; }.tick-position input { width: 76px; min-height: 36px; }.tick-readout { min-height: 44px; }
- .chart-navigation { justify-content: center; gap: 12px; margin-top: 0; }.chart-step { width: 100%; justify-content: center; gap: 4px; }.chart-step button { width: 44px; height: 44px; }.chart-step .chart-play { width: 96px; height: 48px; margin: 0 4px; }.chart-filter { padding: 8px 0 0; border-left: 0; border-top: 1px solid #d9e4e4; justify-content: center; width: 100%; gap: 6px; }.chart-filter select, .chart-filter button { min-height: 44px; }.chart-shortcuts { margin-top: 8px; font-size: .6rem; }
+ .chart-navigation { margin-top: 0; }.chart-step { width: 100%; justify-content: center; gap: 4px; }.chart-step button { width: 44px; height: 44px; }.chart-step .chart-play { width: 96px; height: 48px; margin: 0 4px; }.chart-shortcuts { margin-top: 8px; font-size: .6rem; }
  .chart-settings select, .chart-settings input[type=range] { min-height: 44px; }.chart-settings { padding: 14px; }.settings-heading button { min-height: 44px; width: 44px; }
 }
 </style>
