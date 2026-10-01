@@ -66,12 +66,8 @@
               <Camera v-else :size="21" />
             </span>
             <span class="domain-list-copy">
-              <strong>{{
-                row.nameJa || row.title || row.name || photoName(row)
-              }}</strong>
-              <small>{{
-                row.resourceId || row.iconResourceId || "配置资料"
-              }}</small>
+              <strong>{{ photoName(row) }}</strong>
+              <small>{{ photoTabs.find(tab => tab.id === photoTab)?.label }}</small>
             </span>
             <ChevronRight :size="16" />
           </button>
@@ -89,7 +85,7 @@
       </section>
       <div class="domain-detail" ref="detailElement">
         <section v-if="photoEntry" class="domain-panel">
-          <h3>{{ photoEntry.name || photoName(photoEntry) }}</h3>
+          <h3>{{ photoName(photoEntry) }}</h3>
           <button
             type="button"
             class="domain-action"
@@ -101,17 +97,17 @@
             v-if="photoTab !== 'filters' && !busy"
             :binding="photoBinding?.image"
             :effect-status="photoBinding?.effectStatus"
-            :name="photoEntry.name || photoName(photoEntry)"
+            :name="photoName(photoEntry)"
           />
           <p v-if="photoTab === 'filters'" class="domain-muted">
             原始 shader 参数尚未解析，此页仅展示滤镜名称与配置。
           </p>
           <p class="domain-description">
             {{
-              photoEntry.description || "摄影脚本配置；图片展示对应的配置图标。"
+              archiveText(`photo-${photoTab}`, photoEntry.description, 'description') || "查看对应场景或预设。"
             }}
           </p>
-          <dl class="domain-meta">
+          <details><summary>来源与资源</summary><dl class="domain-meta">
             <div>
               <dt>配置编号</dt>
               <dd>{{ photoEntry.id }}</dd>
@@ -154,28 +150,20 @@
                 }}
               </dd>
             </div>
-          </dl>
+          </dl></details>
           <div v-if="photoTab === 'spots'">
             <h3>关联场景</h3>
             <div class="domain-records">
               <div v-for="scene in scenesForSpot" :key="scene.id">
-                {{ scene.name || `场景 ${scene.id}`
+                {{ archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`
                 }}<small
-                  >{{ scene.backgroundResourceId
-                  }}{{ scene.effectResourceId ? " · 效果尚未重建" : "" }}</small
+                  >{{ scene.effectResourceId ? "含场景效果" : "背景场景" }}</small
                 >
               </div>
             </div>
             <p v-if="!scenesForSpot.length" class="domain-muted">
               没有关联的场景配置。
             </p>
-          </div>
-          <div v-if="photoTab === 'poses' && !busy">
-            <h3>语音试听</h3>
-            <DomainVoicePreview
-              :cues="poseCues"
-              :bindings="actorMedia?.voiceCues"
-            />
           </div>
         </section>
         <p v-else-if="!busy" class="domain-muted">选择资料查看详情。</p>
@@ -194,7 +182,8 @@ import {
 } from "vue";
 import { Camera, ChevronRight } from "@lucide/vue";
 import DomainMediaPreview from "./DomainMediaPreview.vue";
-import DomainVoicePreview from "./DomainVoicePreview.vue";
+import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
+import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import "../../styles/archive-domains.css";
 const props = defineProps({
@@ -245,7 +234,7 @@ const filtered = computed(() => {
     (row) =>
       !q ||
       String(
-        (row.name || "") +
+        archiveSearchText(`photo-${photoTab.value}`, row.name) + ' ' + photoName(row) +
           " " +
           row.id +
           " " +
@@ -297,14 +286,13 @@ const scenesForSpot = computed(() => {
   const ids = materials.value?.sceneIdsBySpotId?.[photoEntry.value?.id] || [];
   return (materials.value?.scenes || []).filter((row) => ids.includes(row.id));
 });
-const poseCues = computed(() => [
-  ...new Map(
-    (actor.value?.poseVoices || [])
-      .filter((cue) => cue.photoPoseId === photoEntry.value?.id)
-      .map((cue) => [`${cue.cueSheetName}:${cue.cueName}`, cue]),
-  ).values(),
-]);
 function photoName(row) {
+  if (['faces','poses'].includes(photoTab.value)) {
+    const value = studioPresetPresentation({actor: actor.value, media: actorMedia.value}, photoTab.value, row);
+    return `${value.label} · ${value.number}`;
+  }
+  const source = row.nameJa || row.title || row.name;
+  if (source) return archiveText(`photo-${photoTab.value}`, source);
   return `${photoTabs.find((tab) => tab.id === photoTab.value)?.label} ${row.id}`;
 }
 let controller = null,

@@ -8,7 +8,7 @@
           <p v-else-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="emit('retry')">重试</button></p>
           <template v-else-if="detail?.entry">
             <CollectionEntryDetails :detail="detail" :kind="kind" />
-            <section class="domain-panel"><h3>已知来源与用途</h3><ArchiveRewardTable :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
+            <section class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊等级 50 / 100 称号<small class="domain-muted">用户补充来源；两组称号与单独等级的对应待确认。</small></p><ArchiveRewardTable v-if="detail.sources?.length || !bond" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
           </template>
           <p v-else class="domain-muted">选择资料查看详情。</p>
         </div>
@@ -21,9 +21,11 @@ import {computed,nextTick,onBeforeUnmount,ref,watch} from 'vue'
 import {X} from '@lucide/vue'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
+import {honorBondSource} from '../../presentation/ArchiveGeneralText.mjs'
 const props=defineProps({detail:Object,kind:String,busy:Boolean,error:String,modal:Boolean})
 const emit=defineEmits(['close','retry','open-event'])
 const title=computed(()=>props.kind==='honors'?'称号详情':'道具详情')
+const bond=computed(()=>props.kind==='honors'?honorBondSource(props.detail?.entry):null)
 const panel=ref(null),closeButton=ref(null)
 let opener=null,background=null,wasInert=false,focusRun=0
 function restore(){if(background)background.inert=wasInert;background=null;if(opener?.isConnected)opener.focus({preventScroll:true});opener=null}

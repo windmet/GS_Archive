@@ -94,7 +94,7 @@
               />
             </span>
             <span class="collection-card-copy">
-              <strong>{{ row.nameJa || row.title || row.name }}</strong>
+              <strong :title="row.nameJa">{{ archiveText(kind === 'honors' ? 'honor' : 'item', row.nameJa || row.title || row.name) }}</strong>
               <small
                 >{{ kind === "items" ? "道具" : "称号" }} · {{ row.id }}</small
               >
@@ -130,6 +130,7 @@ import {
   itemBrowseGroup,
 } from "./DomainPresentation.mjs";
 import CollectionDetailPanel from "./CollectionDetailPanel.vue";
+import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
 import "../../styles/archive-collection.css";
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import { createCollectionCatalogSession } from "../../../readmodels/runtime/CollectionCatalogSession.mjs";
@@ -161,7 +162,7 @@ const filtered = computed(() => {
   return rows.value.filter(
     (row) =>
       (!q ||
-        String(row.nameJa + " " + row.id)
+        String(archiveSearchText(kind.value === 'honors' ? 'honor' : 'item', row.nameJa) + " " + row.id)
           .toLocaleLowerCase()
           .includes(q)) &&
       (!category.value ||

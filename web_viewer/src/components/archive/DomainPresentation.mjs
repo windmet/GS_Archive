@@ -9,6 +9,15 @@ export function historicalDate(seconds) {
   if (date.getUTCFullYear()<=2000 || date.getUTCFullYear()>=2099) return '配置占位日期';
   return new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeZone:'Asia/Tokyo'}).format(date);
 }
+export function historicalPeriod(entry) {
+  const open = entry.termInfo?.open, close = entry.termInfo?.close;
+  const from = open?.sentinelCandidate ? null : entry.term?.openAt;
+  const to = close?.sentinelCandidate ? null : entry.term?.closeAt;
+  if (from == null && to == null) return '未限定配置期';
+  if (from == null) return `至 ${historicalDate(to)}`;
+  if (to == null) return `${historicalDate(from)} 起`;
+  return `${historicalDate(from)} — ${historicalDate(to)}`;
+}
 export function rewardConditions(row) {
   const values=[];
   if (row.totalPoint!==undefined) values.push(`${number(row.totalPoint)} PT`);

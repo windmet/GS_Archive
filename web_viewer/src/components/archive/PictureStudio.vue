@@ -160,7 +160,7 @@
                   :key="spot.id"
                   :value="spot.id"
                 >
-                  {{ spot.name }}
+                  {{ materialName('spots', spot) }}
                 </option>
               </select></label
             >
@@ -183,9 +183,9 @@
                 <img
                   v-if="media[`scenes:${scene.id}`]?.image?.url"
                   :src="media[`scenes:${scene.id}`].image.url"
-                  :alt="scene.name"
+                  :alt="materialName('scenes', scene)"
                   loading="lazy"
-                /><span>{{ scene.name }}</span>
+                /><span>{{ materialName('scenes', scene) }}</span>
               </button>
             </div>
           </template>
@@ -293,7 +293,7 @@
                   :key="frame.id"
                   :value="frame.id"
                 >
-                  {{ frame.name }}
+                  {{ materialName('frames', frame) }}
                 </option>
               </select></label
             >
@@ -305,7 +305,7 @@
                   :key="filter.id"
                   :value="filter.id"
                 >
-                  {{ filter.name }}
+                  {{ materialName('filters', filter) }}
                 </option>
               </select></label
             >
@@ -379,7 +379,7 @@
                   :key="costume.modelId"
                   :value="costume.modelId"
                 >
-                  {{ costume.nameJa }}
+                  {{ archiveText('costume', costume.nameJa) }}
                 </option>
               </select></label
             >
@@ -468,6 +468,7 @@ import {
 import { useStudioComposition } from "./useStudioComposition.js";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import { studioPresetPresentation } from '../../presentation/studio-preset-labels.mjs';
+import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const emit = defineEmits(['back']);
@@ -654,6 +655,7 @@ watch(selectedId, async () => {
 const currentVariant = computed(() => selectedActor.value?.actor[variantTab.value].find(row => row.id === selected.value?.[variantTab.value === 'faces' ? 'faceId' : 'poseId']));
 function variantName(view, kind, row) { return row ? studioPresetPresentation(view, kind, row).label : '未选择'; }
 function faceName(view, row) { return variantName(view, 'faces', row); }
+function materialName(kind, row) { return archiveText(`photo-${kind}`, row?.name).replace('ステッカー ', ''); }
 function variantTitle(view, kind, row) {
   if (!row) return '';
   const value = studioPresetPresentation(view, kind, row);

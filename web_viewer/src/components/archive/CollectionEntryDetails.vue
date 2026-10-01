@@ -1,11 +1,11 @@
 <template>
   <section class="domain-panel collection-entry-details">
-    <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="detail.entry.nameJa" />
-    <div class="domain-detail-title"><h3>{{ detail.entry.nameJa }}</h3></div>
-    <p class="domain-description">{{ detail.entry.descriptionText?.plain || '尚未收录说明。' }}</p>
+    <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="name" />
+    <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3></div>
+    <p class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
       <div><dt>种类</dt><dd>{{ kind === 'honors' ? '称号' : '道具' }} · 类别 {{ detail.entry.itemType ?? detail.entry.honorType }}</dd></div>
-      <div v-if="detail.entry.term"><dt>历史配置期</dt><dd>{{ historicalDate(detail.entry.term.openAt) }} — {{ historicalDate(detail.entry.term.closeAt) }}</dd></div>
+      <div v-if="detail.entry.term"><dt>历史配置期</dt><dd>{{ historicalPeriod(detail.entry) }}</dd></div>
       <div v-if="kind === 'items'"><dt>持有上限</dt><dd>{{ detail.entry.maxAmount === undefined ? '未记录' : number(detail.entry.maxAmount) }}</dd></div>
       <div v-if="detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
     </dl>
@@ -13,9 +13,16 @@
   </section>
 </template>
 <script setup>
-import {historicalDate,number} from './DomainPresentation.mjs'
+import {number} from './DomainPresentation.mjs'
+import {computed} from 'vue'
+import {historicalPeriod} from './DomainPresentation.mjs'
+import {archiveText} from './useArchiveGeneralText.js'
+import DomainInlineText from './DomainInlineText.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
-defineProps({detail:{type:Object,required:true},kind:{type:String,required:true}})
+const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true}})
+const domain=computed(()=>props.kind==='honors'?'honor':'item')
+const name=computed(()=>archiveText(domain.value,props.detail.entry.nameJa))
+const description=computed(()=>archiveText(domain.value,props.detail.entry.descriptionText?.plain,'description') || '尚未收录说明。')
 </script>
 <style scoped>
 .domain-detail-title { display:block; }

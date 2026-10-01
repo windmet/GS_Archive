@@ -125,23 +125,23 @@
           <div class="skill-panel">
             <div v-if="card.gameplay.center_skill?.name" class="skill-row">
               <div class="skill-heading">
-                <strong>中心效果 · {{ card.gameplay.center_skill.name }}</strong>
+                <strong>中心效果 · {{ archiveText('center-skill', card.gameplay.center_skill.name) }}</strong>
                 <span v-if="card.gameplay.center_skill.category?.name" class="skill-category">
-                  {{ card.gameplay.center_skill.category.name }}
+                  {{ archiveText('center-skill', card.gameplay.center_skill.category.name) }}
                 </span>
               </div>
-              <p>{{ presentCardSkillDescription(card.gameplay.center_skill.description) }}</p>
+              <p>{{ formatCardSkillDescription(archiveText('center-skill', card.gameplay.center_skill.description, 'description')) }}</p>
             </div>
             <div v-if="card.gameplay.skill?.name" class="skill-row">
               <div class="skill-heading">
                 <div class="skill-title">
-                  <strong>技能 · {{ card.gameplay.skill.name }}</strong>
+                  <strong>技能 · {{ archiveText('skill', card.gameplay.skill.name) }}</strong>
                   <span
                     v-if="card.gameplay.skill.category?.name"
                     class="skill-category"
                     :style="{ '--skill-category-color': card.gameplay.skill.category.color || '#168b83' }"
                   >
-                    {{ card.gameplay.skill.category.name }}
+                    {{ archiveText('skill-category', card.gameplay.skill.category.name) }}
                   </span>
                 </div>
                 <select v-if="card.gameplay.skill.levels?.length" v-model.number="selectedSkillLevel" aria-label="技能等级">
@@ -311,7 +311,9 @@ import { Activity, CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand,
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
-import { presentCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
+import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
+import {archiveText} from './useArchiveGeneralText.js'
+const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
