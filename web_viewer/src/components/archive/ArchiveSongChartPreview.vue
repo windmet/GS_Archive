@@ -30,7 +30,7 @@
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<button type="button" class="info-jump" @click="goToFirstNote">首个音符</button></p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
     </template>
   </section>
 </template>
@@ -256,7 +256,7 @@ input[type=number] { min-height: 32px; padding: 4px 7px; }
 input[type=range] { min-height: 32px; accent-color: #167e79; cursor: pointer; }
 .chart-position-status, .chart-shortcuts { margin: 8px 0 0; color: #6a8288; font-size: .66rem; line-height: 1.7; }.chart-shortcuts { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; }
 kbd { font-family: inherit; padding: 0 3px; border: 1px solid #d7e3e3; border-radius: 3px; color: #5b757d; background: #f7fafb; font-size: .61rem; }.chart-shortcuts > span { margin: 0 3px; color: #a0b2b6; }
-.chart-info { margin-top: 10px; padding: 10px 14px; background: #f2f6fa; border-radius: 8px; font-size: .74rem; line-height: 1.7; color: #597080; }.chart-info p { margin: 4px 0; }.info-jump { margin-left: 8px; min-height: 32px; border: 0; background: transparent; text-decoration: underline; }
+.chart-info { margin-top: 10px; padding: 10px 14px; background: #f2f6fa; border-radius: 8px; font-size: .74rem; line-height: 1.7; color: #597080; }.chart-info p { margin: 4px 0; }
 button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport:focus-visible { outline: 3px solid #1d938a; outline-offset: 2px; }
 @media (max-width: 560px) {
  .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: 4px; }.chart-difficulties button { height: 44px; padding: 6px 2px; gap: 3px; font-size: .58rem; }.chart-difficulties small { font-size: .55rem; }
