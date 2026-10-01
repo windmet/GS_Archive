@@ -38,7 +38,14 @@ function triangle(screen, uv) {
     return [m, n, p[key] - m * a.x - n * a.y]
   }
   const [m, n, tx] = axis('x'), [o, pY, ty] = axis('y')
-  return { points: screen.map(p => `${round(p.x)},${round(p.y)}`).join(' '),
+  // Subpixel overlap prevents antialiased clip edges from cutting dark seams
+  // through the continuous native strip. Texture UVs remain unchanged.
+  const center = { x: screen.reduce((v, p) => v + p.x, 0) / 3, y: screen.reduce((v, p) => v + p.y, 0) / 3 }
+  const clip = screen.map(p => {
+    const length = Math.hypot(p.x - center.x, p.y - center.y) || 1
+    return { x: p.x + (p.x - center.x) / length * .7, y: p.y + (p.y - center.y) / length * .7 }
+  })
+  return { points: clip.map(p => `${round(p.x)},${round(p.y)}`).join(' '),
     matrix: `matrix(${[m, o, n, pY, tx, ty].map(round).join(' ')})` }
 }
 
