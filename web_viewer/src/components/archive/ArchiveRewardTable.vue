@@ -39,7 +39,8 @@
 <script setup>
 import {computed,ref,watch} from 'vue'
 import {ChevronRight,ImageOff} from '@lucide/vue'
-import {historicalDate,number,rewardConditions,rewardScopeLabels,rewardRelationLabel,rewardProductName,rewardProductLabel,rewardCollectionKey} from './DomainPresentation.mjs'
+import {historicalDate,number,rewardConditions,rewardScopeLabels,rewardRelationLabel,rewardProductLabel,rewardCollectionKey} from './DomainPresentation.mjs'
+import {presentRewardProductName as rewardProductName} from './useArchiveRewardText.js'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import '../../styles/archive-rewards.css'
 const props=defineProps({rows:{type:Array,default:()=>[]},sources:Boolean})

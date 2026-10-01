@@ -44,6 +44,17 @@ assert.match(text('honor','2022/VDCPの硲 道夫の渡したチョコ数100個�
 assert.equal(text('honor','12月上旬イベント のランキングで4～10位にランクイン'),'12月上旬活动 · 第 4–10 名');
 assert.ok(corpus.filter(row=>row.kind==='honor').every(row=>translation.entries.honor[row.field]?.[row.source]),'All published honor titles and descriptions covered');
 assert.ok(corpus.filter(row=>row.kind==='photo-stickers').every(row=>translation.entries['photo-stickers'][row.field]?.[row.source]),'All sticker names/descriptions covered');
+for (const kind of ['card','costume','item']) {
+  assert.ok(corpus.filter(row=>row.kind===kind).every(row=>translation.entries[kind][row.field]?.[row.source]),`All ${kind} sources covered`);
+}
+for (const row of corpus.filter(row=>row.kind==='item' && row.field==='description')) {
+  const amount=row.source.match(/STを(\d+)回復する。/)?.[1];
+  if(amount) assert.match(text('item',row.source,'description'),new RegExp(`恢复 ${amount} 点 ST`));
+}
+assert.equal(text('card','瞳に映るその先に','title'),'映在眼眸中的远方');
+assert.equal(text('costume','ミッドナイトプラネット+'),'午夜行星+');
+assert.match(text('item','Welcome Sunlight Liveガシャ\n10回チケット'),/10次票券$/);
+assert.match(text('item','SSR確定！今年も良い1年に！心を込めた年賀状ガシャを\n10回引けるチケット。','description'),/10 次.*保证 SSR/);
 assert.equal(isArchiveResourceDescription('photo-scenes','bg211_catcafe_in_01'),true);
 assert.equal(isArchiveResourceDescription('photo-scenes','摄影棚'),false);
 assert.equal(text('costume','040ren_004_00'),'040ren_004_00');
@@ -53,6 +64,10 @@ const honorRows = read('public/data/masterdata/domains/honor_catalog.json').entr
 assert.equal(honorRows.filter(row => honorBondSource(row)).length,98);
 assert.equal(Object.keys(bonds.entries).length,98);
 assert.deepEqual(honorBondSource(honorRows.find(row => row.id===20915001)).levels,[50,100]);
+assert.equal(honorBondSource(honorRows.find(row => row.id===20915001)).level,50);
+assert.equal(honorBondSource(honorRows.find(row => row.id===20922001)).level,100);
+assert.equal(honorRows.filter(row=>honorBondSource(row)?.level===50).length,49);
+assert.equal(honorRows.filter(row=>honorBondSource(row)?.level===100).length,49);
 assert.equal(honorBondSource({...honorRows.find(row => row.id===20915001), nameJa:'changed'}),null);
 assert.equal(honorBondSource(honorRows.find(row => row.id===10001001)),null);
 assert.equal(historicalPeriod({term:{openAt:946652400,closeAt:4102412400},termInfo:{open:{sentinelCandidate:true},close:{sentinelCandidate:true}}}),'未限定配置期');

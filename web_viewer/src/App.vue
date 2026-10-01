@@ -524,6 +524,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
+import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
@@ -1192,8 +1193,15 @@ const currentCards = computed(() => (cardReadModelCatalog.value || [])
 
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
+watch(view,nextView=>{
+  if (['cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
+    void loadArchiveNames('cards').catch(error=>console.warn('Card name translations unavailable',error));
+  }
+},{immediate:true});
+
 const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
   query: filterQuery.value,
+  titleSearchText: source=>archiveNamedSearchText('card',source,'title'),
   rarity: currentCardRarity.value,
   assetState: currentCardAssetState.value,
   relationState: currentCardRelationState.value,
@@ -1247,7 +1255,7 @@ const currentSeriesCards = computed(() => {
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
-  return idolSourceName(id) || 'Cards'
+  return idolSourceName(id) || '全部偶像的卡片'
 })
 
 const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
@@ -1366,7 +1374,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
   if (view.value === 'groups') return groupTitle.value
   if (view.value === 'cards') return currentCardCharacterName.value
-  if (view.value === 'card_detail') return currentCard.value?.title || '卡片详情'
+  if (view.value === 'card_detail') return archiveNamedText('card',currentCard.value?.title,'title') || '卡片详情'
   if (view.value === 'episode_zero_units') return '第零话'
   if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
   if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
@@ -1399,7 +1407,7 @@ const archiveBreadcrumbs = computed(() => {
       id: currentArchiveUnitCode.value,
     },
     card_detail: {
-      title: currentCard.value?.title,
+      title: archiveNamedText('card',currentCard.value?.title,'title'),
       id: currentCardId.value,
     },
     gasha_detail: {
@@ -3335,7 +3343,7 @@ function selectPrimaryIdol(idolCode) {
 }
 
 function selectCardIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
+  if (idolCode !== '' && !archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   currentCharacterId.value = idolCode
   currentCardId.value = ''
   filterQuery.value = ''

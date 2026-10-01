@@ -152,6 +152,7 @@
 <script setup>
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, Info, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
@@ -245,7 +246,7 @@ function unlockAction(unlock) {
 }
 function unlockText(unlock) {
   const card = unlockCard(unlock)
-  if (card) return `${card.title_full || `【${card.title || '卡名待确认'}】`} ${unlockAction(unlock)}`
+  if (card) return `${archiveCardFullTitle(card) || '卡名待确认'} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
   if (story) return `「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
@@ -254,7 +255,7 @@ function unlockText(unlock) {
 }
 function unlockTitle(unlock) {
   const card = unlockCard(unlock)
-  if (card) return `卡片 · ${card.title_full || card.title} · ${unlockAction(unlock)} · 点击查看卡片资料`
+  if (card) return `卡片 · ${archiveCardFullTitle(card)} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
   if (story) return `个人故事 · ${story.sectionName}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'

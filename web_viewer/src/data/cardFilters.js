@@ -28,14 +28,14 @@ function matchesCardRelationState(card, state, { eventRelations, gashaRelations 
   return true
 }
 
-export function filterArchiveCards(cards, { query = '', rarity = 'all', assetState = 'all', relationState = 'all', assets, eventRelations, gashaRelations } = {}) {
+export function filterArchiveCards(cards, { query = '', rarity = 'all', assetState = 'all', relationState = 'all', assets, eventRelations, gashaRelations, titleSearchText = source => source } = {}) {
   const q = query.toLowerCase()
   return cards.filter(card =>
     (rarity === 'all' || card.rarity === rarity) &&
     matchesCardAssetState(card.asset_status || assets?.[card.resource_id], assetState) &&
     matchesCardRelationState(card, relationState, { eventRelations, gashaRelations }) &&
     (!q ||
-    String(card.title || '').toLowerCase().includes(q) ||
+    String(titleSearchText(card.title || '')).toLowerCase().includes(q) ||
     String(card.resource_id || '').toLowerCase().includes(q) ||
     String(card.rarity || '').toLowerCase().includes(q))
   )
@@ -48,7 +48,7 @@ export function buildCardRarityTabs(cards) {
     const rarity = card.rarity || 'CARD'
     counts.set(rarity, (counts.get(rarity) || 0) + 1)
   }
-  const tabs = [{ id: 'all', label: 'All', count: cards.length }]
+  const tabs = [{ id: 'all', label: '全部', count: cards.length }]
   for (const rarity of order) {
     if (counts.has(rarity)) tabs.push({ id: rarity, label: rarity, count: counts.get(rarity) })
   }

@@ -18,6 +18,7 @@
       </div>
       <ArchiveIdolSwitcher
         :idols="idols"
+        allow-all
         :selected-idol="selectedIdol"
         @select="emit('select-idol', $event)"
       />
@@ -85,14 +86,14 @@
       >
         <img
           :src="getCardIconUrl(card.resource_id, true)"
-          :alt="card.title || '卡名待确认'"
+          :alt="archiveText('card', card.title, 'title') || '卡名待确认'"
           class="card-thumb"
           loading="lazy" decoding="async"
           @error="fallbackCardIcon($event, card.resource_id)"
         />
         <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
         <span class="card-main">
-          <span class="card-title">{{ card.title || '卡名待确认' }}</span>
+          <span class="card-title" :title="card.title">{{ archiveText('card', card.title, 'title') || '卡名待确认' }}</span>
           <span class="card-owner-name">{{ card.ownerReference?.displayName || '姓名待确认' }}</span>
         </span>
         <span class="card-counts">
@@ -107,6 +108,7 @@
 import { LayoutGrid, List } from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
+import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 defineProps({

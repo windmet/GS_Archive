@@ -5,10 +5,16 @@ import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
 import {photoStickerDraft, photoUnitNames} from '../translation/studio/general/photo-drafts.mjs';
+import {costumeNameDraft} from '../translation/studio/general/costume-names.mjs';
+import {itemTicketDraft} from '../translation/studio/general/item-ticket-drafts.mjs';
+import {itemGiftNameDraft} from '../translation/studio/general/item-gift-drafts.mjs';
 
 const root = process.cwd();
 const read = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const corpus = archiveGeneralTextCorpus(root);
+const cardDrafts = read('translation/studio/general/card-drafts.json');
+const costumeDescriptions = read('translation/studio/general/costume-descriptions.json');
+const itemExtraDescriptions = read('translation/studio/general/item-descriptions.json');
 const idols = read('public/data/masterdata/idol_unit_dictionary.json').idols;
 const chineseIdols = read('public/translations/zh-CN/entities/idols.json').entries;
 const honorRows = read('public/data/masterdata/domains/honor_catalog.json').entries;
@@ -24,8 +30,8 @@ for (const idol of idols) for (const suffix of [15001, 22001]) {
   if (suffix === 15001) assert.equal(row.nameJa, `${idol.idol_id === 29 ? 'アスラン=BBⅡ世' : idol.display_name.replace(/\s/g, '')}担当`);
   else assert.ok(Object.hasOwn(bondHonorNames, row.nameJa), `Missing bond title ${row.nameJa}`);
   bonds[id] = {sourceName: row.nameJa, resourceId: row.resourceId, idolCode: idol.idol_code,
-    levels: [50, 100], level: null, evidence: 'user-reported', evidenceDate: '2026-10-02',
-    note: '用户转述朋友确认两组称号对应偶像羁绊等级 50 / 100；两组与单独等级的对应尚未明确。'};
+    levels: [50, 100], level: suffix === 15001 ? 50 : 100, evidence: 'user-reported', evidenceDate: '2026-10-02',
+    note: '用户转述朋友确认两组称号为偶像羁绊奖励，并明确确认担当为 Lv.50、专属称号为 Lv.100。'};
 }
 assert.equal(Object.keys(bonds).length, 98);
 const entries = {}, missing = [];
@@ -39,12 +45,16 @@ for (const row of corpus) {
     if (row.kind === 'photo-stickers') translation = photoStickerDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
     if (row.kind === 'photo-scenes' && row.field === 'name' && photoUnitNames.has(row.source)) translation = photoUnitNames.get(row.source);
     if (row.kind === 'photo-frames' && row.source === 'WANTED') translation = 'WANTED';
+  } else if (row.kind === 'card') {
+    translation = cardDrafts[row.source];
+  } else if (row.kind === 'costume') {
+    translation = row.field === 'name' ? costumeNameDraft(row.source) : costumeDescriptions[row.source];
   } else if (row.kind === 'skill' || row.kind === 'skill-category') {
     translation = row.field === 'description' ? skillDescriptionDraft(row.source) : skillNames[row.source];
   } else if (row.kind === 'center-skill') {
     translation = centerSkillDraft(row.source, row.field);
   } else if (row.kind === 'item') {
-    translation = row.field === 'name' ? itemNames[row.source] : itemDescriptions[row.source] || itemMaterialDescriptionDraft(row.source);
+    translation = (row.field === 'name' ? itemNames[row.source] || itemGiftNameDraft(row.source,source=>compactNames.get(source.replace(/\s/g,''))) : itemDescriptions[row.source] || itemExtraDescriptions[row.source] || itemMaterialDescriptionDraft(row.source)) || itemTicketDraft(row.source,row.field);
   } else if (row.kind === 'honor') {
     if (row.field === 'description') translation = row.source === 'プロデューサーのプロフィールに\n設定できる称号。' ? '可设置在制作人个人资料中的称号。' : honorNameDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
     else if (row.source.endsWith('担当') && compactNames.has(row.source.slice(0, -2))) translation = `${compactNames.get(row.source.slice(0, -2))}担当`;

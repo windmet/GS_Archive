@@ -66,7 +66,7 @@
           @change="emit('update:selectedCostume', $event.target.value)"
         >
           <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-            {{ costume.name }}
+            {{ archiveText('costume',costume.name) }}
           </option>
         </select>
       </label>
@@ -149,7 +149,7 @@
           @click="selectCostume(costume.modelId)"
         >
           <span><Shirt :size="18" /></span>
-          <small>{{ costume.name }}</small>
+          <small>{{ archiveText('costume',costume.name) }}</small>
         </button>
       </div>
     </aside>
@@ -160,7 +160,7 @@
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
       <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
       <div class="dialogue-meta">
-        <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
+        <span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span>
 
       </div>
       <div class="dialogue-actions">
@@ -220,7 +220,7 @@
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
             <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-              {{ costume.name }}
+              {{ archiveText('costume',costume.name) }}
             </option>
           </select>
         </label>
@@ -285,6 +285,8 @@ import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
 import ProducerNameSetting from './ProducerNameSetting.vue'
+import {archiveText} from './useArchiveCostumeText.js'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {
   loadArchiveHomePreferences,

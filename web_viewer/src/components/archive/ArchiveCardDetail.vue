@@ -1,6 +1,6 @@
 <template>
   <section class="screen list-screen" data-archive-scroll-container>
-    <ArchiveListHeader v-if="!embedded" :title="card?.title || '卡片详情'" @back="emit('back')" />
+    <ArchiveListHeader v-if="!embedded" :title="displayCardTitle || '卡片详情'" @back="emit('back')" />
     <div v-if="card" class="card-detail">
       <section class="card-detail-head">
         <div class="card-art-comparison" :class="{ single: card.single_state }">
@@ -14,7 +14,7 @@
             >
               <img
                 :src="assetStatus?.normal_portrait ? normalPortraitUrl : getCardIconUrl(card.resource_id, false)"
-                :alt="`${card.title || '卡名待确认'} 普通`"
+                :alt="`${displayCardTitle} 普通`"
               />
               <Expand v-if="assetStatus?.normal_portrait" :size="17" />
             </button>
@@ -31,7 +31,7 @@
             >
               <img
                 :src="assetStatus?.awakened_portrait ? awakenedPortraitUrl : getCardIconUrl(card.resource_id, true)"
-                :alt="`${card.title || '卡名待确认'} 特训后`"
+                :alt="`${displayCardTitle} 特训后`"
               />
               <Expand v-if="assetStatus?.awakened_portrait" :size="17" />
             </button>
@@ -45,7 +45,7 @@
             <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
             <span v-if="card.gameplay?.attribute?.name" class="card-attribute">{{ card.gameplay.attribute.name }}</span>
           </div>
-          <h3>{{ card.title || '卡名待确认' }}</h3>
+          <h3 :title="card.title">{{ displayCardTitle }}</h3>
           <div class="card-owner-block">
             <span>所属偶像</span>
             <ArchiveIdolReference :reference="ownerReference" density="identity" @open="emit('open-idol', $event)" />
@@ -54,7 +54,7 @@
             <button
               class="card-nav-button"
               :disabled="!previousCard"
-              :title="previousCard ? `上一张：${previousCard.title || '卡片'}` : '已经是第一张'"
+              :title="previousCard ? `上一张：${archiveText('card', previousCard.title, 'title') || '卡片'}` : '已经是第一张'"
               @click="emit('navigate-card', previousCard)"
             >
               <ChevronLeft :size="18" />
@@ -66,7 +66,7 @@
             <button
               class="card-nav-button"
               :disabled="!nextCard"
-              :title="nextCard ? `下一张：${nextCard.title || '卡片'}` : '已经是最后一张'"
+              :title="nextCard ? `下一张：${archiveText('card', nextCard.title, 'title') || '卡片'}` : '已经是最后一张'"
               @click="emit('navigate-card', nextCard)"
             >
               <ChevronRight :size="18" />
@@ -154,8 +154,8 @@
               <PackageOpen :size="19" />
               <div>
                 <small>突破素材</small>
-                <strong>{{ card.limitbreak_item.name }}</strong>
-                <p>{{ card.limitbreak_item.description }}</p>
+                <strong :title="card.limitbreak_item.name">{{ archiveText('item', card.limitbreak_item.name) }}</strong>
+                <p>{{ archiveText('item', card.limitbreak_item.description, 'description') }}</p>
               </div>
             </div>
           </div>
@@ -169,10 +169,10 @@
             <Shirt :size="20" />
             <div>
               <div class="costume-heading">
-                <strong>{{ costume.name || '衣装名称待确认' }}</strong>
+                <strong :title="costume.name">{{ archiveText('costume', costume.name) || '衣装名称待确认' }}</strong>
                 <span>{{ costume.labels.join(' · ') }}</span>
               </div>
-              <p v-if="costume.description">{{ costume.description }}</p>
+              <p v-if="costume.description">{{ archiveText('costume', costume.description, 'description') }}</p>
             </div>
           </div>
         </div>
@@ -183,14 +183,14 @@
         <div class="card-landscape-comparison">
           <figure v-if="assetStatus?.normal_landscape">
             <button class="card-art-open landscape" title="查看普通横图原图" @click="openLightbox(normalLandscapeUrl)">
-              <img :src="normalLandscapeUrl" :alt="`${card.title || '卡名待确认'} 普通横图`" loading="lazy" />
+              <img :src="normalLandscapeUrl" :alt="`${displayCardTitle} 普通横图`" loading="lazy" />
               <Expand :size="17" />
             </button>
             <figcaption>普通</figcaption>
           </figure>
           <figure v-if="assetStatus?.awakened_landscape">
             <button class="card-art-open landscape" title="查看特训后横图原图" @click="openLightbox(awakenedLandscapeUrl)">
-              <img :src="awakenedLandscapeUrl" :alt="`${card.title || '卡名待确认'} 特训后横图`" loading="lazy" />
+              <img :src="awakenedLandscapeUrl" :alt="`${displayCardTitle} 特训后横图`" loading="lazy" />
               <Expand :size="17" />
             </button>
             <figcaption>特训后</figcaption>
@@ -352,6 +352,7 @@ const emit = defineEmits([
 ])
 
 const lightboxOpen = ref(false)
+const displayCardTitle = computed(()=>archiveText('card',props.card?.title,'title') || '卡名待确认')
 const lightboxIndex = ref(0)
 const selectedSkillLevel = ref(1)
 const framedPortrait = computed(() => props.artMode === 'framed')
@@ -399,7 +400,7 @@ function voiceSourceLabel(sourceType) {
 
 const lightboxItems = computed(() => {
   if (!props.card) return []
-  const title = props.card.title || props.card.resource_id
+  const title = displayCardTitle.value
   const items = []
   if (!props.card.single_state && props.assetStatus?.normal_portrait) {
     items.push({ label: `${title} · 普通${framedPortrait.value ? '带框' : '无框'}`, src: normalPortraitUrl.value })

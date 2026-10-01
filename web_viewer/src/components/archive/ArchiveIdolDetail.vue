@@ -50,7 +50,7 @@
 
     <section v-if="honors.length" class="idol-related" aria-labelledby="idol-honors-title">
       <div class="section-heading"><h3 id="idol-honors-title">关联排名称号</h3><span>{{ honors.length }} 条 · 已知来源</span></div>
-      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong>{{ honor.nameJa }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
+      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong :title="honor.nameJa">{{ archiveText('honor',honor.nameJa) }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
       <p class="idol-honor-note">按历史排名配置中的偶像编号关联；未推断持有或其他称号的归属。</p>
     </section>
 
@@ -98,6 +98,7 @@
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, Camera, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import {archiveText} from './useArchiveCollectionText.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
