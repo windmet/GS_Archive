@@ -7,13 +7,16 @@
         <label>视图 <select v-model="mode" aria-label="谱面视图"><option value="long">长轨图</option><option value="perspective">透视轨道</option></select></label>
         <label>贴图 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形（截图样式）</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
         <label v-if="mode === 'long'">纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label>
-        <button v-if="chart && mode === 'long'" type="button" :disabled="exporting" :aria-busy="exporting" @click="download">{{ exporting ? '正在导出…' : '导出 SVG' }}</button>
+        <button v-if="chart && mode === 'long'" type="button" :disabled="exporting" :aria-busy="exporting" @click="download('png')">{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button>
+        <button v-if="chart && mode === 'long'" type="button" :disabled="exporting" :aria-busy="exporting" @click="download('svg')">{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button>
         <button v-if="chart && mode === 'long'" type="button" @click="goToFirstNote">首个音符</button>
         <button type="button" @click="opened = false">收起谱面</button>
         <template v-if="chart"><label>定位音符 <select v-model="locateRole" aria-label="定位音符类型"><option value="swipe_left">左划</option><option value="swipe_right">右划</option><option value="swipe_up">上划</option><option value="p_skill">紫星 P 技能</option><option value="sp">315 Special</option><option value="middle">长条中间节点</option></select></label><button type="button" @click="locateNext">下一个音符</button><span class="chart-note" role="status">{{ locateMessage }}</span></template>
       </div>
       <p v-if="mode === 'long'" class="chart-note">五轨 · 从上往下阅读。原贴图：绿色 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能（LARGE）；绿色 315 徽标 Special。横线连接相同 tick 的头尾，绿色短横条标记原始滑条中间节点（中途判定规则待核实）。纵轴为原始 tick，尚未与音频同步；密集段可放大阅读。</p>
-      <p v-if="exportError" role="alert">{{ exportError }} <button type="button" @click="download">重试导出</button></p>
+      <p v-if="mode === 'long' && chart" class="chart-note">PNG 保存当前缩放的完整长轨，宽 820 像素（2 倍原图）。</p>
+      <details v-if="mode === 'long' && chart" class="chart-note"><summary>浏览器无法保存 PNG？</summary><p>可先导出 SVG，再在本地 web_viewer 目录运行 <code>npm run export:song-chart-png -- input.svg output.png</code>，保持相同尺寸和完整谱面。使用前需安装项目依赖（npm ci）。</p></details>
+      <p v-if="exportError" role="alert">{{ exportError }} <button type="button" :disabled="exporting" @click="download(exportFormat)">重试导出</button></p>
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
@@ -46,6 +49,7 @@
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { buildSongChartGeometry, validateSongChart } from '../../presentation/SongChartPresentation.js'
+import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentation/SongChartPngExport.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 import { embedSongChartImages, noteRendering, songNoteEndpoints, songHoldMiddleNodes } from '../../presentation/SongNotePresentation.js'
@@ -56,7 +60,7 @@ const chartScroll = ref(null)
 const mode = ref('long')
 const uid = `long-chart-${getCurrentInstance().uid}`
 const skin = ref('Note1SpriteAtlas'), trackPreview = ref(null), locateRole = ref('swipe_left'), locateMessage = ref('')
-const exporting = ref(false), exportError = ref('')
+const exporting = ref(false), exportError = ref(''), exportFormat = ref('png'), exportProgress = ref(0)
 let lastLocateTick = -1
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const geometry = computed(() => chart.value ? buildSongChartGeometry(chart.value, scale.value) : null)
@@ -105,19 +109,23 @@ function locateNext() {
   if (mode.value === 'perspective') trackPreview.value.goToTick(note.tick)
   else chartScroll.value.scrollTop = Math.max(0, 42 + note.tick * scale.value / 1000 - 100)
 }
-async function download() {
-  if (!svg.value || !chart.value) return
-  const fileName = `${props.songCode}-${activeDifficulty.value.label}.svg`
+async function download(format = 'svg') {
+  if (exporting.value || !svg.value || !chart.value) return
+  const fileName = `${props.songCode}-${activeDifficulty.value.label}.${format}`
   const current = generation
-  exporting.value = true; exportError.value = ''
+  exporting.value = true; exportError.value = ''; exportFormat.value = format; exportProgress.value = 0
+  const check = () => { if (current !== generation) throw new Error('谱面已切换，请重新导出') }
   try {
+  if (format === 'png') assertBrowserSongChartPng(geometry.value.width, geometry.value.height)
   const content = await embedSongChartImages(svg.value)
-  const blob = new Blob([content], { type: 'image/svg+xml;charset=utf-8' })
+  check()
+  const blob = format === 'png' ? await exportSongChartPng(content, { check, onProgress: n => { exportProgress.value = n } }) : new Blob([content], { type: 'image/svg+xml;charset=utf-8' })
+  check()
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url; a.download = fileName; a.click()
   setTimeout(() => URL.revokeObjectURL(url), 1000)
-  } catch (e) { if (current === generation) exportError.value = `SVG 导出失败：${e.message || '贴图读取失败'}` }
+  } catch (e) { if (current === generation) exportError.value = `${format.toUpperCase()} 导出失败：${e.message || '贴图读取失败'}` }
   finally { exporting.value = false }
 }
 </script>
