@@ -23,6 +23,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 from archive_paths import add_sources_config_argument, load_archive_sources
 
 from sidem_masterdata import extract_table_rows, iter_top_records
+from song_gameplay import CHART_ROOT, gameplay_by_code
 
 try:
     import UnityPy
@@ -49,7 +50,9 @@ SONG3_PREFIX = "song3_"
 def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
     """Extract identity and SongData selection flags for every table-46 song."""
     records = list(iter_top_records(masterdata_decoded.read_bytes()))
-    rows = extract_table_rows(records, {46})
+    rows = extract_table_rows(records, {4, 5, 46, 47})
+    chart_manifest = json.loads((CHART_ROOT / 'manifest.json').read_text(encoding='utf-8'))
+    gameplay = gameplay_by_code(rows, chart_manifest)
     identities: dict[str, dict] = {}
     for row in rows[46]:
         code = row.get("4")
@@ -63,6 +66,7 @@ def load_table46_song_identities(masterdata_decoded: Path) -> dict[str, dict]:
             raise ValueError(f"{code}: conflicting SongData.IdolType across table-46 rows")
         identities[code] = {
             "song_id": row.get("1"),
+            "gameplay": gameplay[code],
             "attribute": attribute,
             "open_at": row.get("29"),
             "on_stage_count": row.get("16"),
@@ -273,6 +277,7 @@ def build_catalog(
             "song_id": song_id,
             "song_code": code,
             "attribute": identity.get("attribute"),
+            "gameplay": identity.get("gameplay"),
             "title": meta.get("title"),
             "kana": meta.get("kana"),
             "credits": meta.get("credits"),
@@ -384,6 +389,8 @@ def build_catalog(
             "idol_unit_dictionary": "public/data/masterdata/idol_unit_dictionary.json",
             "archive_manifest": "public/data/archive_manifest.json",
             "masterdata_table": 46,
+            "gameplay_evidence": "config/song-release-evidence.v1.json",
+            "chart_manifest": "public/data/song_charts/manifest.json",
             "choreography_root": "RAW/asset",
         },
         "summary": summary,

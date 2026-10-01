@@ -16,12 +16,24 @@
       <dl class="song-detail-stats" aria-label="歌曲档案统计">
         <div><dt>试听</dt><dd>{{ song.playbackLabel }}</dd></div>
         <div><dt>音频形态</dt><dd>{{ song.formLabel }}</dd></div>
-        <div><dt>开放时间</dt><dd>{{ song.openDate }}</dd></div>
+        <div><dt>首次实装</dt><dd>{{ song.gameplay?.history.firstImplementedOn || song.openDate }}</dd></div>
       </dl>
     </header>
     <div class="song-detail-body">
       <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
+      <section v-if="song.gameplay" class="song-block song-gameplay">
+        <div class="song-block-heading"><span>CHARTS</span><h3>难度与解锁</h3></div>
+        <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">查看历史来源</a></p>
+        <p class="song-block-note">历史解锁：{{ song.gameplay.history.historicalUnlock }}</p>
+        <p v-if="song.gameplay.history.permanentOn" class="song-block-note">加入普通歌曲：{{ song.gameplay.history.permanentOn }}</p>
+        <p v-else-if="song.gameplay.history.permanentDateStatus === 'pending'" class="song-block-note">加入普通歌曲的确切日期：待核实</p>
+        <p v-if="!song.special" class="song-block-note">{{ song.gameplay.releaseCondition.label }}</p>
+        <p v-if="song.gameplay.wikiLevelStatus === 'resolved_song_page'" class="song-block-note">Wiki 列表与单曲页难度有差异，已按本地主数据与单曲页核对。</p>
+        <p v-else-if="song.gameplay.wikiLevelStatus === 'conflict_pending'" class="song-block-note">Wiki 与主数据难度不一致，暂按主数据展示；差异待核实。</p>
+        <table class="song-difficulties"><caption>谱面难度与最大 Combo</caption><thead><tr><th scope="col">难度</th><th scope="col">等级</th><th scope="col">最大 Combo</th></tr></thead><tbody><tr v-for="d in song.gameplay.difficulties" :key="d.id"><th scope="row">{{ d.label }}</th><td>{{ d.levelLabel }}</td><td>{{ d.maxCombo }}</td></tr></tbody></table>
+        <ArchiveSongChartPreview :key="song.id" :song-code="song.id" :title="song.title" :difficulties="song.gameplay.difficulties" />
+      </section>
       <section class="song-block">
         <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
         <div v-if="song.unit" class="song-subsection">
@@ -79,6 +91,7 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
+import ArchiveSongChartPreview from './ArchiveSongChartPreview.vue'
 defineProps({ song: { type: Object, required: true } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage'])
 </script>
@@ -131,6 +144,11 @@ const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-s
 }
 .song-block-heading span { color: #2bb3aa; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; }
 .song-block-heading h3 { margin: 4px 0 0; font-size: 0.94rem; }
+.song-difficulties { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: .78rem; }
+.song-difficulties caption { text-align: left; font-size: .75rem; color: #617380; margin-bottom: 8px; }
+.song-difficulties th, .song-difficulties td { text-align: left; padding: 10px; border-bottom: 1px solid #e0e9ed; }
+.song-difficulties thead { background: #f1f7f8; }
+.song-gameplay a { color: #137b75; }
 .song-block-note { margin: 8px 0 0; color: #7a858e; font-size: 0.72rem; }
 .stage-open-button { min-height: 44px; margin-top: 12px; padding: 0 18px; border: 0; border-radius: 22px; background: #168f87; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
 .stage-open-button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
