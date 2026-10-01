@@ -44,6 +44,7 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
     grid: Array.from({ length: Math.floor(chart.maxTick / 2000) + 1 }, (_, i) => ({ tick: i * 2000, y: y(i * 2000) })),
     tempos: chart.tempos.map(t => ({ ...t, y: y(t.tick) })),
     links: songSimultaneousLinks(chart).map(l => ({ ...l, x1: x(l.from), x2: x(l.to), y: y(l.tick) })),
+    middleNodes: songHoldMiddleNodes(chart).map(n => ({ ...n, x: x(n.lane), y: y(n.tick) })),
     notes: chart.notes.map(n => {
       const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
       const last = points.at(-1)
@@ -65,5 +66,5 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
     }),
   }
 }
-import { songNoteRole, songSimultaneousLinks } from './SongNotePresentation.js'
+import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 import { songTextureTriangle } from './SongTrackPresentation.js'

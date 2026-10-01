@@ -80,6 +80,10 @@ def run(args):
     reference_notes=[n for n in chart['notes'] if n['sourceIndex'] in [172,176,180,181,239,1035]]
     assert next(n for n in reference_notes if n['sourceIndex']==239)['type']=='LARGE'
     assert next(n for n in reference_notes if n['sourceIndex']==239)['tick']==30720
+    special_path=ROOT/'public/data/song_charts/knwonl-4.json';special_chart=json.loads(special_path.read_bytes())
+    special_note=next(n for n in special_chart['notes'] if n['sourceIndex']==610)
+    assert (special_note['type'],special_note['tick'],special_note['start'])==('SPECIAL',74400,2)
+    middle_note=next(n for n in special_chart['notes'] if n['sourceIndex']==994)
     framework=args.framework.read_bytes()
     if struct.unpack_from('<I',framework)[0]!=0xfeedfacf:raise ValueError('Expected 64-bit Mach-O framework')
     commands=struct.unpack_from('<I',framework,16)[0];offset=32;encryption=[]
@@ -96,7 +100,10 @@ def run(args):
             HOLD='normal',VARIABLE_HOLD='normal',LARGE_HOLD='p_skill',LARGE_VARIABLE_HOLD='p_skill',SPECIAL='sp'),
         evidence=dict(songCode='cfprde',difficultyType=4,chartSha256=sha(chart_path.read_bytes()),referenceNotes=reference_notes,
             largeMapping='screenshot matched: purple star on lane 4 before LARGE tick 30720; LARGE hold family follows the same native LARGE declaration',
-            specialMapping='name/enum based SP crest; live method branch unverified',
+            specialMapping='user screenshot confirmed: K.now O.nly EX SPECIAL sourceIndex 610, tick 74400, lane 2 uses green 315 crest',
+            specialReference=dict(songCode='knwonl',difficultyType=4,chartSha256=sha(special_path.read_bytes()),note=special_note),
+            middleReference=dict(songCode='knwonl',difficultyType=4,note=middle_note,
+                interpretation='native live_notes_middle at interior source poly nodes; automatic judgement generation/merging unverified'),
             flickHint='native particle texture and start colors; static compositing/placement estimated',
             simultaneousLine='native sameTiming fields and screenshot; group raw heads/tails at identical tick, no synthesized middle nodes',
             methodCode='UnityFramework LC_ENCRYPTION_INFO_64 cryptid=1; live branch disassembly unavailable'))

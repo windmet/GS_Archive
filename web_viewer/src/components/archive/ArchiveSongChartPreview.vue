@@ -10,9 +10,9 @@
         <button v-if="chart && mode === 'long'" type="button" :disabled="exporting" :aria-busy="exporting" @click="download">{{ exporting ? '正在导出…' : '导出 SVG' }}</button>
         <button v-if="chart && mode === 'long'" type="button" @click="goToFirstNote">首个音符</button>
         <button type="button" @click="opened = false">收起谱面</button>
-        <template v-if="chart"><label>定位音符 <select v-model="locateRole" aria-label="定位音符类型"><option value="swipe_left">左划</option><option value="swipe_right">右划</option><option value="swipe_up">上划</option><option value="p_skill">紫星 P 技能</option><option value="sp">Special</option></select></label><button type="button" @click="locateNext">下一个音符</button><span class="chart-note" role="status">{{ locateMessage }}</span></template>
+        <template v-if="chart"><label>定位音符 <select v-model="locateRole" aria-label="定位音符类型"><option value="swipe_left">左划</option><option value="swipe_right">右划</option><option value="swipe_up">上划</option><option value="p_skill">紫星 P 技能</option><option value="sp">315 Special</option><option value="middle">长条中间节点</option></select></label><button type="button" @click="locateNext">下一个音符</button><span class="chart-note" role="status">{{ locateMessage }}</span></template>
       </div>
-      <p v-if="mode === 'long'" class="chart-note">五轨 · 从上往下阅读。原贴图：绿色 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能（LARGE）；绿色徽标 Special 映射暂定。横线连接相同 tick 的头尾。纵轴为原始 tick，尚未与音频同步；密集段可放大阅读。</p>
+      <p v-if="mode === 'long'" class="chart-note">五轨 · 从上往下阅读。原贴图：绿色 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能（LARGE）；绿色 315 徽标 Special。横线连接相同 tick 的头尾，绿色短横条标记原始滑条中间节点（中途判定规则待核实）。纵轴为原始 tick，尚未与音频同步；密集段可放大阅读。</p>
       <p v-if="exportError" role="alert">{{ exportError }} <button type="button" @click="download">重试导出</button></p>
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
@@ -31,6 +31,7 @@
               <g v-for="(mesh, i) in n.bodyTriangles" :key="i" :clip-path="`url(#${uid}-${n.id}-${i})`"><image :href="noteRendering.skins[skin].hold_line.url" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g>
             </g>
             <line v-for="link in geometry.links" :key="link.tick" :data-simultaneous-tick="link.tick" :x1="link.x1" :x2="link.x2" :y1="link.y" :y2="link.y" stroke="#e9faf6" stroke-width="1" opacity=".65" />
+            <g v-for="n in geometry.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick"><ArchiveSongNoteGlyph role="middle" :skin="skin" :x="n.x" :y="n.y" :width="30" /></g>
             <g v-for="n in geometry.notes.filter(n => n.held)" :key="`tail:${n.id}`" :data-note-tail="n.id" :data-note-role="n.endRole"><ArchiveSongNoteGlyph :role="n.endRole" :skin="skin" :x="n.endX" :y="n.endY" :width="30" /></g>
             <g v-for="n in geometry.notes" :key="n.id" :data-note="n.id" :data-note-type="n.type">
               <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="30" />
@@ -47,7 +48,7 @@ import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } f
 import { buildSongChartGeometry, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
-import { embedSongChartImages, noteRendering, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
+import { embedSongChartImages, noteRendering, songNoteEndpoints, songHoldMiddleNodes } from '../../presentation/SongNotePresentation.js'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true } })
 const opened = ref(false), selected = ref(props.difficulties[0]?.type || 1), scale = ref(90)
 const chart = ref(null), error = ref(''), loading = ref(false), svg = ref(null)
@@ -97,7 +98,7 @@ function goToFirstNote() {
   chartScroll.value.scrollTop = Math.max(0, 42 + firstTick * scale.value / 1000 - 80)
 }
 function locateNext() {
-  const notes = songNoteEndpoints(chart.value).filter(n => n.role === locateRole.value)
+  const notes = [...songNoteEndpoints(chart.value), ...songHoldMiddleNodes(chart.value)].filter(n => n.role === locateRole.value).sort((a, b) => a.tick - b.tick)
   const note = notes.find(n => n.tick > lastLocateTick) || notes[0]
   if (!note) { locateMessage.value = '这档谱面没有此类音符'; return }
   lastLocateTick = note.tick; locateMessage.value = `tick ${note.tick} · 第 ${note.lane + 1} 轨`

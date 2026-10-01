@@ -1,11 +1,21 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
-import { noteRendering, songNoteRole, songNoteEndpoints, songSimultaneousLinks } from '../src/presentation/SongNotePresentation.js'
+import { noteRendering, songNoteRole, songNoteEndpoints, songSimultaneousLinks, songHoldMiddleNodes } from '../src/presentation/SongNotePresentation.js'
 import { buildSongChartGeometry } from '../src/presentation/SongChartPresentation.js'
-import { buildSongTrackGeometry } from '../src/presentation/SongTrackPresentation.js'
+import { buildSongTrackGeometry, songTrackSpanForSpeed } from '../src/presentation/SongTrackPresentation.js'
 const root = new URL('../public/data/', import.meta.url)
 const cafe = JSON.parse(readFileSync(new URL('song_charts/cfprde-4.json', root)))
+const know = JSON.parse(readFileSync(new URL('song_charts/knwonl-4.json', root)))
+assert.equal(buildSongTrackGeometry(know, 72015, 3000).glyphs.find(n => n.sourceIndex === 610).role, 'sp')
+assert.equal(buildSongChartGeometry(know).notes.find(n => n.id === 610).x, 215)
+const middle = songHoldMiddleNodes(know).filter(n => n.sourceIndex === 994)
+assert.deepEqual(middle.map(n => [n.tick, n.lane]), [[124080,0],[124320,1],[124560,0],[124680,1]])
+assert.equal(buildSongTrackGeometry(know,123406,3000).middleNodes.filter(n => n.sourceIndex === 994).length,4)
+assert.equal(buildSongTrackGeometry(know,124400,100).middleNodes.filter(n => n.sourceIndex === 994).length,0)
+assert.equal(songTrackSpanForSpeed(8),3000)
+assert.ok(songTrackSpanForSpeed(6)>songTrackSpanForSpeed(8) && songTrackSpanForSpeed(8)>songTrackSpanForSpeed(11))
+assert.throws(() => songTrackSpanForSpeed(0),/speed/)
 assert.equal(cafe.notes.find(n => n.sourceIndex === 239).tick, 30720)
 assert.equal(songNoteRole(cafe.notes.find(n => n.sourceIndex === 239).type), 'p_skill', 'purple star belongs to LARGE, not SPECIAL')
 assert.equal(songNoteRole(cafe.notes.find(n => n.sourceIndex === 1035).type), 'sp')
@@ -33,6 +43,7 @@ for (const song of Object.values(catalog.songs)) for (const difficulty of song.g
   const notes = songNoteEndpoints(chart)
   assert.equal(notes.length, chart.notes.length + chart.notes.filter(n => n.duration > 0).length)
   assert.equal(long.notes.length, chart.notes.length)
+  assert.equal(long.middleNodes.length, songHoldMiddleNodes(chart).length)
   assert.equal(long.notes.filter(n => n.role === 'p_skill').length, chart.notes.filter(n => n.type.startsWith('LARGE')).length)
   for (const n of long.notes) for (const mesh of n.bodyTriangles) assert.ok(!/NaN|Infinity/.test(mesh.points + mesh.matrix))
   for (const link of long.links) assert.ok(link.x1 < link.x2)

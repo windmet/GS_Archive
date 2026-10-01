@@ -1,5 +1,5 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
-import { songNoteRole, songSimultaneousLinks } from './SongNotePresentation.js'
+import { songNoteRole, songSimultaneousLinks, songHoldMiddleNodes } from './SongNotePresentation.js'
 
 export const trackReference = reference
 const estimate = reference.screenshotEstimates
@@ -7,6 +7,12 @@ const laneCount = reference.constants.LaneCount.value
 const nearWidth = reference.constants.TargetLaneWidth.value
 const farWidth = reference.constants.TopLaneWidth.value
 const round = value => Number(value.toFixed(5))
+
+// Visual calibration only: the user's 3000-tick reference is labelled 8.
+export function songTrackSpanForSpeed(speed) {
+  if (!Number.isFinite(speed) || speed < 6 || speed > 11) throw new Error('Invalid visual speed')
+  return Math.round(24000 / speed)
+}
 
 // Native constants establish five lanes and the two widths. This interpolation
 // is a screenshot reconstruction, not the unrecovered Unity camera matrix.
@@ -97,6 +103,10 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
   }
   const bottomWidth = farWidth + (nearWidth - farWidth) * (720 - estimate.topY) / (estimate.judgeY - estimate.topY)
   return { width: 1280, height: 720, cursor, span, holds,
+    middleNodes: songHoldMiddleNodes(chart).filter(n => n.tick >= cursor && n.tick <= cursor + span).map(n => {
+      const p = project(n.lane, n.tick)
+      return { ...n, x: p.x, y: p.y, width: estimate.normalVisibleWidth * p.scale }
+    }),
     links: songSimultaneousLinks(chart).filter(l => l.tick >= cursor && l.tick <= cursor + span).map(l => ({ ...l, a: project(l.from, l.tick), b: project(l.to, l.tick) })),
     glyphs: glyphs.sort((a, b) => b.tick - a.tick),
     lanes: Array.from({ length: laneCount + 1 }, (_, i) => ({

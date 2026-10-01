@@ -1,10 +1,13 @@
 <template>
   <div class="track-preview">
     <div class="track-controls">
-      <label>视野 <select v-model.number="span" aria-label="轨道视野"><option :value="3000">3000 tick</option><option :value="6000">6000 tick</option><option :value="12000">12000 tick</option></select></label>
+      <label>视觉配速 <input v-model.number="speed" type="number" min="6" max="11" step="0.1" aria-label="轨道视觉配速" @input="windowMode = 'speed'" /></label>
+      <input v-model.number="speed" class="speed-slider" type="range" min="6" max="11" step="0.1" aria-label="轨道配速滑杆" @input="windowMode = 'speed'" />
+      <label>视野 <select v-model="windowMode" aria-label="轨道视野"><option value="speed">跟随配速</option><option value="3000">3000 tick</option><option value="6000">6000 tick</option><option value="12000">12000 tick</option></select></label>
       <button type="button" @click="cursor = firstTick">首个音符</button>
       <button type="button" @click="nextHold">下一条长条</button>
     </div>
+    <p class="track-caption">可见 {{ span }} tick · 配速越高，音符间距越大。8 对应 3000 tick，按目测暂定；默认 10，尚未校准为游戏原版流速。</p>
     <label class="track-position">判定线位置 <input v-model.number="cursor" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" /> / {{ chart.maxTick }} tick
       <input v-model.number="cursor" class="track-slider" type="range" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置滑杆" />
     </label>
@@ -23,6 +26,7 @@
         <g v-for="(mesh, i) in hold.triangles" :key="i" :clip-path="`url(#${uid}-${hold.id}-${i})`"><image :href="holdSprite" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g>
       </g>
       <line v-for="link in scene.links" :key="link.tick" :data-simultaneous-tick="link.tick" :x1="link.a.x" :x2="link.b.x" :y1="link.a.y" :y2="link.b.y" stroke="#e9faf6" :stroke-width="Math.max(.5, 2 * link.a.scale)" opacity=".8" />
+      <g v-for="n in scene.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick"><ArchiveSongNoteGlyph role="middle" :skin="skin" :x="n.x" :y="n.y" :width="n.width" /></g>
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" y="558" width="1280" height="24" preserveAspectRatio="none" />
       <image href="/assets/song-chart-track/live_target_line.png" x="0" y="560" width="1280" height="20" preserveAspectRatio="none" />
       <g v-for="(p, i) in scene.judges" :key="i" :data-judge-lane="i">
@@ -33,19 +37,21 @@
         <ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="n.width" />
       </g>
     </svg>
-    <p class="track-caption">原生音符与长条贴图；可拖动 tick 查看长按和跨轨滑条。紫星对应截图核对的 LARGE 类型；绿色徽标 Special 映射暂定。透视、尺寸、方向提示的位置及条带合成仍为估计，尚未与音频同步。</p>
+    <p class="track-caption">原生音符与长条贴图；可拖动 tick 查看长按和跨轨滑条。紫星为 LARGE，绿色 315 徽标为 Special。绿色横条标记原始滑条中间节点，中途判定规则待核实。透视、尺寸、方向提示的位置及条带合成仍为估计，尚未与音频同步。</p>
   </div>
 </template>
 
 <script setup>
 import { computed, getCurrentInstance, ref, watch } from 'vue'
-import { buildSongTrackGeometry } from '../../presentation/SongTrackPresentation.js'
+import { buildSongTrackGeometry, songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
 const props = defineProps({ chart: { type: Object, required: true }, title: { type: String, required: true }, skin: { type: String, default: 'Note1SpriteAtlas' } })
 const uid = `track-${getCurrentInstance().uid}`
 const firstTick = computed(() => Math.min(...props.chart.notes.map(n => n.tick), props.chart.maxTick))
-const cursor = ref(firstTick.value), span = ref(6000)
+const cursor = ref(firstTick.value), speed = ref(10), windowMode = ref('speed')
+const safeSpeed = computed(() => Math.max(6, Math.min(11, Number(speed.value) || 10)))
+const span = computed(() => windowMode.value === 'speed' ? songTrackSpanForSpeed(safeSpeed.value) : Number(windowMode.value))
 const safeCursor = computed(() => Math.max(0, Math.min(props.chart.maxTick, Number(cursor.value) || 0)))
 watch(() => props.chart, () => { cursor.value = firstTick.value })
 const scene = computed(() => buildSongTrackGeometry(props.chart, safeCursor.value, span.value))
@@ -70,6 +76,7 @@ button { cursor: pointer; }
 input[type=number] { width: 105px; box-sizing: border-box; }
 .track-position { display: block; margin: 12px 0; }
 .track-slider { display: block; width: 100%; min-height: 44px; accent-color: #167e79; }
+.speed-slider { width: 150px; min-height: 44px; accent-color: #167e79; }
 .track-svg { display: block; width: 100%; border: 1px solid #35485a; border-radius: 6px; }
 .track-caption { font-size: .75rem; line-height: 1.7; color: #617380; }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #1d938a; outline-offset: 2px; }
