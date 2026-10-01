@@ -4,17 +4,19 @@
     <template v-else>
       <div class="chart-toolbar">
         <label>难度 <select v-model.number="selected" aria-label="谱面难度"><option v-for="d in difficulties" :key="d.type" :value="d.type">{{ d.label }} · Lv {{ d.levelLabel }}</option></select></label>
-        <label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label>
-        <button v-if="chart" type="button" @click="download">导出 SVG</button>
-        <button v-if="chart" type="button" @click="goToFirstNote">首个音符</button>
+        <label>视图 <select v-model="mode" aria-label="谱面视图"><option value="long">长轨图</option><option value="perspective">透视轨道</option></select></label>
+        <label v-if="mode === 'long'">纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label>
+        <button v-if="chart && mode === 'long'" type="button" @click="download">导出 SVG</button>
+        <button v-if="chart && mode === 'long'" type="button" @click="goToFirstNote">首个音符</button>
         <button type="button" @click="opened = false">收起谱面</button>
       </div>
-      <p class="chart-note">五轨 · 从上往下阅读。蓝色 Tap，绿色长按 / 滑条，粉色 Flick，金色 Special；宽音符加宽显示。纵轴为原始 tick，尚未与音频同步。</p>
+      <p v-if="mode === 'long'" class="chart-note">五轨示意图 · 从上往下阅读。蓝色 Tap，绿色长按 / 滑条，粉色 Flick，金色 Special；宽音符加宽显示。纵轴为原始 tick，尚未与音频同步。</p>
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
         <p class="chart-note chart-count">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}（两者计数规则不同）</p>
-        <div ref="chartScroll" class="chart-scroll" tabindex="0" role="region" :aria-label="`${title} ${activeDifficulty.label} 长轨谱面`">
+        <ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :title="`${title} ${activeDifficulty.label}`" />
+        <div v-else ref="chartScroll" class="chart-scroll" tabindex="0" role="region" :aria-label="`${title} ${activeDifficulty.label} 长轨谱面`">
           <svg ref="svg" class="chart-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" :viewBox="`0 0 ${geometry.width} ${geometry.height}`" :height="geometry.height" width="410" role="img" :aria-label="`${title} ${activeDifficulty.label} 谱面`">
             <title>{{ title }} · {{ activeDifficulty.label }} · 原始 tick</title>
             <rect width="410" :height="geometry.height" fill="#13212e" />
@@ -40,10 +42,12 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { buildSongChartGeometry, validateSongChart } from '../../presentation/SongChartPresentation.js'
+import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true } })
 const opened = ref(false), selected = ref(props.difficulties[0]?.type || 1), scale = ref(90)
 const chart = ref(null), error = ref(''), loading = ref(false), svg = ref(null)
 const chartScroll = ref(null)
+const mode = ref('long')
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const geometry = computed(() => chart.value ? buildSongChartGeometry(chart.value, scale.value) : null)
 let controller, generation = 0
@@ -74,6 +78,7 @@ async function loadChart() {
   } finally { if (current === generation) loading.value = false }
 }
 watch([opened, selected, () => props.songCode], loadChart)
+watch(mode, async () => { await nextTick(); goToFirstNote() })
 onBeforeUnmount(() => { generation++; controller?.abort() })
 function goToFirstNote() {
   if (!chartScroll.value || !chart.value?.notes.length) return
