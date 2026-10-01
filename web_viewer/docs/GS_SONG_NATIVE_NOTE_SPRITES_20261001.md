@@ -47,4 +47,4 @@ native `RhythmIconListItem` 声明顺序包括 `_toggle`、`_notesNormalImage`�
 
 本批仅新增资源审计脚本、证据 JSON、小型 PNG 和记录。没有复制 IPA、`data.unity3d`、音频或其他公共语料，没有改前端组件、只读模型和已运行的 5200 服务。依据构建政策执行内容 / 资源身份 / diff 检查，无需再次 Vite 构建；不新增 UI / Browser 或真实设备验收声明。
 
-后续 [五轨透视与长条预览](GS_SONG_FIVE_LANE_HOLD_PREVIEW_20261001.md) 已接入上述原贴图并完成独立本地 Browser 验收。本篇及原审计中的预览未接入状态只描述资源审计时点；相机、Shader、UV、Special 映射等尚未恢复的边界仍成立。
+后续 [五轨透视与长条预览](GS_SONG_FIVE_LANE_HOLD_PREVIEW_20261001.md) 已接入上述原贴图；再经 [音符映射与配速核实](GS_SONG_NOTE_ROLE_MATCHING_20261001.md)，两视图使用原贴图，Café EX 的 LARGE 确认为紫星、K.now EX 的 SPECIAL 确认为绿色 315。未绑定状态描述原审计时点；相机、Shader、UV 和运行时方法体仍未恢复。
