@@ -45,7 +45,6 @@
         <h2>{{ activeIdol.name }}</h2>
         <small>{{ activeIdol.kana }}</small>
       </div>
-      <button class="home-archive-link" type="button" @click="emit('open-portal')">打开资料馆 <span aria-hidden="true">→</span></button>
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
@@ -209,6 +208,7 @@
           <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
         </fieldset>
 
+        <ProducerNameSetting />
         <label class="settings-field">
           <span>首页偶像</span>
           <select v-model="selectedId">
@@ -284,6 +284,7 @@ import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
+import ProducerNameSetting from './ProducerNameSetting.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {
   loadArchiveHomePreferences,
@@ -302,7 +303,7 @@ const props = defineProps({
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-portal', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',

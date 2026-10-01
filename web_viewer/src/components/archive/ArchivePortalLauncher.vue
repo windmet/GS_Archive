@@ -17,6 +17,7 @@
         <p v-if="preferenceNotice || wallpaper.notice.value" class="terminal-notice" role="status">{{ preferenceNotice || wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
         <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
+        <button class="terminal-text-button" type="button" @click="producerOpen = true">P 名字 · {{ producerName || '未设置' }}</button>
         <section class="terminal-personal" aria-label="我的偶像快捷入口">
           <ArchivePreferredIdolSlot :idols="idols" :value="preferredReference?.idolCode || ''" id-prefix="portal" @save="emit('save-preferred', $event)" />
           <nav v-if="preferredReference?.actionable" class="terminal-preferred-actions" aria-label="我的偶像快捷入口">
@@ -33,10 +34,14 @@
       </div>
     </div>
     <div v-if="wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ wallpaper.selected.value.label }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
+    <ArchiveTerminalDialog :open="producerOpen" title="P 名字" title-id="portal-producer-title" @close="producerOpen = false"><ProducerNameSetting /></ArchiveTerminalDialog>
     <ArchiveWallpaperPicker :open="wallpaperOpen" @close="wallpaperOpen = false" />
   </section>
 </template>
 <script setup>
+import ProducerNameSetting from './ProducerNameSetting.vue'
+import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
+import { producerName } from '../../utils/LanguageStore.js'
 import { onMounted, ref, watch } from 'vue'
 import { ArrowLeft, Images, Settings2, Sparkles } from '@lucide/vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
@@ -48,6 +53,7 @@ import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.j
 import '../../styles/archive-terminal.css'
 defineProps({ preferredReference: { type: Object, default: null }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
+const producerOpen = ref(false)
 const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWallpaper()
 const backdropFailed = ref(false)
 watch(wallpaper.revision, () => { backdropFailed.value = false })

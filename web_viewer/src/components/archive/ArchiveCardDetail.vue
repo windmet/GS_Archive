@@ -208,7 +208,7 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
-          <p><span class="authored-text">{{ card.texts.normal }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.normal) }}</span></p>
+          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.normal) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.normal)) }}</span></p>
         </div>
         <div v-if="card.texts?.awakened" class="card-text-block">
           <div class="card-text-heading">
@@ -218,11 +218,11 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
-          <p><span class="authored-text">{{ card.texts.awakened }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.awakened) }}</span></p>
+          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.awakened) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.awakened)) }}</span></p>
         </div>
         <div v-if="card.texts?.extra?.trim() && card.texts.extra !== '0'" class="card-text-block">
           <strong>短台词</strong>
-          <p><span class="authored-text">{{ card.texts.extra }}</span><span class="reflowed-text">{{ reflowArchiveText(card.texts.extra) }}</span></p>
+          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.extra) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.extra)) }}</span></p>
         </div>
       </section>
 

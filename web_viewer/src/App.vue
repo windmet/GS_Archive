@@ -62,7 +62,6 @@
         @update:home-mode="storeUserPreferences({ homeMode: $event })"
         @focus-change="homeFocus = $event"
         :stats="archiveStats"
-        @open-portal="navigateArchiveSection('portal')"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"

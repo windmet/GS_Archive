@@ -3,7 +3,7 @@
     <div v-if="!producerOnly" class="reader-languages" role="group" aria-label="正文语言">
       <button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button>
     </div>
-    <label class="reader-producer-name">Producer 显示名<input :value="producerName" autocomplete="off" placeholder="未设置时保留原文黑点" @input="saveProducerName($event.target.value)" /></label>
+    <label class="reader-producer-name">P 名字<input :value="producerName" autocomplete="off" placeholder="例如 windmet（不用加 P）" @input="saveProducerName($event.target.value)" /></label>
     <button v-if="searchable && !producerOnly" ref="searchToggle" class="reader-search-toggle" :aria-expanded="searchOpen" :aria-controls="searchId || undefined" @click="emit('search')"><Search :size="17" aria-hidden="true" />篇内查找</button>
     <div v-if="!producerOnly" class="reader-theme-switchers" role="group" aria-label="阅读主题">
       <button v-for="theme in READER_THEMES" :key="theme.id" type="button" :title="theme.label" :aria-label="theme.label" :aria-pressed="readerTheme === theme.id" @click="setReaderTheme(theme.id)">
