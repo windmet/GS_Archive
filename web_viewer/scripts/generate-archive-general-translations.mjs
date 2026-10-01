@@ -3,6 +3,8 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
+import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
+import {photoStickerDraft, photoUnitNames} from '../translation/studio/general/photo-drafts.mjs';
 
 const root = process.cwd();
 const read = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
@@ -34,6 +36,9 @@ for (const row of corpus) {
     translation = (row.field === 'description' ? photoDescriptions : commonNames)[row.source];
     const corner = row.source.match(/^コーナーデコ（(.+)）$/);
     if (corner && cornerColors[corner[1]]) translation = `角落装饰（${cornerColors[corner[1]]}）`;
+    if (row.kind === 'photo-stickers') translation = photoStickerDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
+    if (row.kind === 'photo-scenes' && row.field === 'name' && photoUnitNames.has(row.source)) translation = photoUnitNames.get(row.source);
+    if (row.kind === 'photo-frames' && row.source === 'WANTED') translation = 'WANTED';
   } else if (row.kind === 'skill' || row.kind === 'skill-category') {
     translation = row.field === 'description' ? skillDescriptionDraft(row.source) : skillNames[row.source];
   } else if (row.kind === 'center-skill') {
@@ -41,9 +46,9 @@ for (const row of corpus) {
   } else if (row.kind === 'item') {
     translation = row.field === 'name' ? itemNames[row.source] : itemDescriptions[row.source] || itemMaterialDescriptionDraft(row.source);
   } else if (row.kind === 'honor') {
-    if (row.field === 'description') translation = row.source === 'プロデューサーのプロフィールに\n設定できる称号。' ? '可设置在制作人个人资料中的称号。' : null;
+    if (row.field === 'description') translation = row.source === 'プロデューサーのプロフィールに\n設定できる称号。' ? '可设置在制作人个人资料中的称号。' : honorNameDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
     else if (row.source.endsWith('担当') && compactNames.has(row.source.slice(0, -2))) translation = `${compactNames.get(row.source.slice(0, -2))}担当`;
-    else translation = bondHonorNames[row.source];
+    else translation = bondHonorNames[row.source] || honorNameDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
   }
   if (translation) ((entries[row.kind] ||= {})[row.field] ||= {})[row.source] = translation;
   else missing.push(row);
@@ -51,6 +56,18 @@ for (const row of corpus) {
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',
   scope: 'metadata-only', excluded: ['dialogue','unit-story','work-communication','home-dialogue'], entries}, null, 2) + '\n');
+const shardDirectory = path.join(root,'public/translations/zh-CN/archive-general');
+fs.mkdirSync(shardDirectory,{recursive:true});
+const shards = {
+  photos: kind => kind === 'background' || kind.startsWith('photo-'),
+  costumes: kind => kind === 'costume', cards: kind => kind === 'card',
+  skills: kind => ['skill','skill-category','center-skill'].includes(kind),
+  items: kind => kind === 'item', honors: kind => kind === 'honor',
+};
+for (const [name, select] of Object.entries(shards)) {
+  fs.writeFileSync(path.join(shardDirectory,`${name}.json`),JSON.stringify({schemaVersion:1,status:'draft',
+    entries:Object.fromEntries(Object.entries(entries).filter(([kind])=>select(kind)))},null,2)+'\n');
+}
 const bondTarget = path.join(root, 'public/data/editorial/honor-bonds.json');
 fs.mkdirSync(path.dirname(bondTarget), {recursive: true});
 fs.writeFileSync(bondTarget, JSON.stringify({schemaVersion: 1, evidence: 'user-reported', entries: bonds}, null, 2) + '\n');

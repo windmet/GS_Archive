@@ -4,10 +4,21 @@ import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {resolveArchiveGeneralText as text, honorBondSource} from '../src/presentation/ArchiveGeneralText.mjs';
 import {domainInlineParts} from '../src/presentation/DomainInlineText.mjs';
 import {historicalPeriod} from '../src/components/archive/DomainPresentation.mjs';
+import {isArchiveResourceDescription} from '../src/presentation/ArchiveGeneralTextCore.mjs';
 
 const corpus = archiveGeneralTextCorpus(process.cwd());
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const translation = read('public/translations/zh-CN/archive-general.json');
+const shardNames=['photos','costumes','cards','skills','items','honors'];
+const shardEntries={};
+for (const name of shardNames) {
+  const shard=read(`public/translations/zh-CN/archive-general/${name}.json`);
+  for (const [kind, fields] of Object.entries(shard.entries)) {
+    assert.ok(!Object.hasOwn(shardEntries,kind),'Domains must not be duplicated across shards');
+    shardEntries[kind]=fields;
+  }
+}
+assert.deepEqual(shardEntries,translation.entries,'Page shards must be exactly the source-bound index');
 const bonds = read('public/data/editorial/honor-bonds.json');
 const sources = new Set(corpus.map(row => JSON.stringify([row.kind,row.field,row.source])));
 let count = 0;
@@ -28,6 +39,13 @@ assert.ok(skillRows.every(row => translation.entries.skill[row.field]?.[row.sour
 assert.ok(corpus.filter(row => row.kind === 'center-skill').every(row => translation.entries['center-skill'][row.field]?.[row.source]), 'All center skills must be covered');
 assert.equal(text('skill','8秒ごとに32％の確率で4秒間、コンボスコアが18%アップ','description'), '每 8 秒以 32% 的概率触发，持续 4 秒：连击得分提升 18%。');
 assert.equal(text('photo-spots','Café Parade店内'),'Café Parade 店内');
+assert.equal(text('photo-stickers','ステッカー SideMini 鷹城恭二'),'SideMini 鹰城恭二');
+assert.match(text('honor','2022/VDCPの硲 道夫の渡したチョコ数100個達成'),/硲道夫.*100 个$/);
+assert.equal(text('honor','12月上旬イベント のランキングで4～10位にランクイン'),'12月上旬活动 · 第 4–10 名');
+assert.ok(corpus.filter(row=>row.kind==='honor').every(row=>translation.entries.honor[row.field]?.[row.source]),'All published honor titles and descriptions covered');
+assert.ok(corpus.filter(row=>row.kind==='photo-stickers').every(row=>translation.entries['photo-stickers'][row.field]?.[row.source]),'All sticker names/descriptions covered');
+assert.equal(isArchiveResourceDescription('photo-scenes','bg211_catcafe_in_01'),true);
+assert.equal(isArchiveResourceDescription('photo-scenes','摄影棚'),false);
 assert.equal(text('costume','040ren_004_00'),'040ren_004_00');
 assert.equal(text('skill','constructor'),'constructor');
 assert.equal(text('dialogue','クールで熱い王子様'),'クールで熱い王子様');

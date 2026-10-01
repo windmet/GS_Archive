@@ -130,7 +130,7 @@ import {
   itemBrowseGroup,
 } from "./DomainPresentation.mjs";
 import CollectionDetailPanel from "./CollectionDetailPanel.vue";
-import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
+import {archiveText, archiveSearchText} from './useArchiveCollectionText.js';
 import "../../styles/archive-collection.css";
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import { createCollectionCatalogSession } from "../../../readmodels/runtime/CollectionCatalogSession.mjs";

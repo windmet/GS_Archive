@@ -312,7 +312,7 @@ import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
-import {archiveText} from './useArchiveGeneralText.js'
+import {archiveText} from './useArchiveCardText.js'
 const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'

@@ -240,7 +240,7 @@
                 v-for="sticker in visibleStickers"
                 :key="sticker.id"
                 type="button"
-                :aria-label="`添加贴纸 ${sticker.name}`"
+                :aria-label="`添加贴纸 ${materialName('stickers',sticker)}`"
                 :disabled="draft.stickers.length >= 32"
                 @click="addSticker(sticker.id)"
               >
@@ -259,7 +259,7 @@
                     ])
                   "
                 /><ImageOff v-else :size="24" /><span>{{
-                  sticker.name.replace("ステッカー ", "")
+                  materialName('stickers',sticker)
                 }}</span>
               </button>
             </div>
@@ -468,7 +468,7 @@ import {
 import { useStudioComposition } from "./useStudioComposition.js";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import { studioPresetPresentation } from '../../presentation/studio-preset-labels.mjs';
-import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
+import {archiveText, archiveSearchText} from './useArchivePhotoText.js';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const emit = defineEmits(['back']);
@@ -588,7 +588,7 @@ const scenes = computed(
 const filteredStickers = computed(
   () =>
     materials.value?.stickers.filter((row) =>
-      `${row.name} ${row.id}`
+      `${archiveSearchText('photo-stickers', row.name)} ${row.id}`
         .toLocaleLowerCase()
         .includes(stickerSearch.value.trim().toLocaleLowerCase()),
     ) || [],
@@ -670,9 +670,7 @@ function objectName(row) {
   return row.idolId
     ? actors.value.find((actor) => actor.id === String(row.idolId))?.nameJa ||
         String(row.idolId)
-    : materials.value?.stickers
-        .find((sticker) => sticker.id === row.stickerId)
-        ?.name.replace("ステッカー ", "") || String(row.stickerId);
+    : materialName('stickers',materials.value?.stickers.find(sticker => sticker.id === row.stickerId)) || String(row.stickerId);
 }
 function objectThumbnail(row) {
   return row.idolId

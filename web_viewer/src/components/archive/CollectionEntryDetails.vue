@@ -16,7 +16,7 @@
 import {number} from './DomainPresentation.mjs'
 import {computed} from 'vue'
 import {historicalPeriod} from './DomainPresentation.mjs'
-import {archiveText} from './useArchiveGeneralText.js'
+import {archiveText} from './useArchiveCollectionText.js'
 import DomainInlineText from './DomainInlineText.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true}})

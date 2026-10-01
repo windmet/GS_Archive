@@ -21,7 +21,7 @@ import {computed,nextTick,onBeforeUnmount,ref,watch} from 'vue'
 import {X} from '@lucide/vue'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
-import {honorBondSource} from '../../presentation/ArchiveGeneralText.mjs'
+import {honorBondSource} from '../../presentation/HonorBondSource.mjs'
 const props=defineProps({detail:Object,kind:String,busy:Boolean,error:String,modal:Boolean})
 const emit=defineEmits(['close','retry','open-event'])
 const title=computed(()=>props.kind==='honors'?'称号详情':'道具详情')

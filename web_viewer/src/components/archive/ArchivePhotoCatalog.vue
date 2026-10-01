@@ -104,10 +104,11 @@
           </p>
           <p class="domain-description">
             {{
-              archiveText(`photo-${photoTab}`, photoEntry.description, 'description') || "查看对应场景或预设。"
+              photoDescription || "查看对应场景或预设。"
             }}
           </p>
           <details><summary>来源与资源</summary><dl class="domain-meta">
+            <div v-if="resourceDescription"><dt>原始说明</dt><dd>{{ photoEntry.description }}</dd></div>
             <div>
               <dt>配置编号</dt>
               <dd>{{ photoEntry.id }}</dd>
@@ -182,8 +183,9 @@ import {
 } from "vue";
 import { Camera, ChevronRight } from "@lucide/vue";
 import DomainMediaPreview from "./DomainMediaPreview.vue";
-import {archiveText, archiveSearchText} from './useArchiveGeneralText.js';
+import {archiveText, archiveSearchText} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
+import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import "../../styles/archive-domains.css";
 const props = defineProps({
@@ -268,6 +270,8 @@ function thumbnail(row) {
 const photoBinding = computed(() =>
   photoEntry.value ? binding(photoEntry.value) : null,
 );
+const resourceDescription = computed(()=>isArchiveResourceDescription(`photo-${photoTab.value}`,photoEntry.value?.description));
+const photoDescription = computed(()=>resourceDescription.value ? '' : archiveText(`photo-${photoTab.value}`,photoEntry.value?.description,'description'));
 const initialGrant = computed(() => {
   const field = {
     filters: "photoFilterId",
