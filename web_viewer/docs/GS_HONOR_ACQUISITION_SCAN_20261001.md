@@ -58,3 +58,5 @@ python scripts/verify-archive-domains.py --decoded-masterdata .analysis/masterda
 新增 8 项回归通过；既有 archive domains 14 项回归及实际 PB 生成通过，仍为 535 道具、1,613 称号、59 活动、7,943 奖励链接。原来源条件、PB 位置/哈希、typed Product 命名空间、消耗与奖励方向、缺失和歧义拒绝均覆盖。`git diff --check` 通过。本批是独立 Python 工具和离线审计，不触发 Vite 构建或 Browser 验收，也无部署结论。
 
 nextGate：取得本地历史 `Mission*ListReply` 或 `ProductRouteReply` 真实响应，确认载荷版本和来源，解析嵌套模型，证明 Product.type=6、ProductId、条件、唯一 source 身份。当前没有这些响应证据；目录仍为候选，publicationReady=false。关键词队列可供后续检索，不触发在线接口调用，也不读取凭据。
+
+后续网页语义层见[常驻称号网页证据合并与搜索缺口](GS_HONOR_WEB_ACQUISITION_20261001.md)：22个具名配对已连接到本地Honor身份，其中1个条件冲突保留。原始Mission/API响应仍是官方任务ID和编码Product的门禁；补充网页获取语义不再以它为唯一入口。本记录的886/727是PB单源基线，最新合并结果与非活动检索清单见后续记录。
