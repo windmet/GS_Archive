@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { createStudioDocument, studioObject, moveStudioObject, STUDIO_LIMITS } from '../src/core/StudioDocument.mjs'
-import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer } from '../src/core/StudioLayerEditing.mjs'
+import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer, reorderStudioLayer } from '../src/core/StudioLayerEditing.mjs'
+import { validateStudioDocument } from '../src/core/StudioDocument.mjs'
 
 const doc = createStudioDocument()
 doc.actors = [{ instanceId: 'touma', x: .4 }, { instanceId: 'shota', x: .6 }]
@@ -25,4 +26,16 @@ empty.actors = [{ instanceId: 'default-touma' }]
 const defaultDeletion = removeStudioLayer(empty, 'default-touma')
 assert.equal(empty.actors.length, 0)
 assert.equal(restoreStudioLayer(empty, defaultDeletion), true)
+const order = createStudioDocument()
+order.actors = ['a', 'b', 'c'].map(instanceId => ({ instanceId }))
+order.stickers = [{ instanceId: 'sticker' }]
+assert.equal(reorderStudioLayer(order, 'a', 'c'), true)
+assert.deepEqual(order.actors.map(r => r.instanceId), ['b', 'c', 'a'])
+assert.equal(reorderStudioLayer(order, 'a', 'sticker'), false)
+assert.equal(reorderStudioLayer(order, 'a', 'a'), false)
+const persisted = createStudioDocument()
+persisted.stickers = [{instanceId:'sticker', stickerId:1, x:.5,y:.3,scale:1,rotation:0,locked:true,hidden:true}]
+assert.deepEqual(validateStudioDocument(JSON.parse(JSON.stringify(persisted))), persisted)
+persisted.stickers[0].hidden = 'yes'
+assert.throws(() => validateStudioDocument(persisted), /图层状态/)
 console.log('Layer editing: default actor deletion, exact order restore, later-edit preservation, group order, duplicate/limit and cross-document guards passed')

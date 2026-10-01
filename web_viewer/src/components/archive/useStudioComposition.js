@@ -13,7 +13,7 @@ import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
 import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile } from "../../core/StudioDocumentFile.mjs";
 import { studioTransformPatch } from '../../core/StudioGestures.mjs';
-import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer } from '../../core/StudioLayerEditing.mjs';
+import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer, reorderStudioLayer } from '../../core/StudioLayerEditing.mjs';
 
 export function useStudioComposition(props, canvas) {
   const repository = new DomainRepository(props.client, props.bootstrap),
@@ -36,6 +36,7 @@ export function useStudioComposition(props, canvas) {
     documentUrl = ref(""),
     documentLoading = ref(false);
   const lastRemoval = shallowRef(null);
+  const interaction = ref(null);
   const canUndoDelete = computed(() => canRestoreStudioLayer(draft.value, lastRemoval.value));
   const selected = computed(() => studioObject(draft.value, selectedId.value)),
     selectedActor = computed(() =>
@@ -298,6 +299,14 @@ export function useStudioComposition(props, canvas) {
       direction,
     );
   }
+  function reorder(id, targetId) { cancelInteraction(); reorderStudioLayer(draft.value, id, targetId); }
+  function toggleLayer(id, key) {
+    if (!['hidden', 'locked'].includes(key)) return;
+    const row = studioObject(draft.value, id);
+    if (!row) return;
+    cancelInteraction();
+    row[key] = !row[key];
+  }
   function setSpot(id) {
     draft.value.background = {
       spotId: Number(id),
@@ -330,7 +339,7 @@ export function useStudioComposition(props, canvas) {
     }
   }
   function reset() {
-    if (!selected.value) return;
+    if (!selected.value || selected.value.locked) return;
     Object.assign(selected.value, {
       x: 0.5,
       y: selected.value.idolId ? 0.97 : 0.3,
@@ -436,6 +445,7 @@ export function useStudioComposition(props, canvas) {
       stage ||= new StudioCompositionStage(canvas.value, {
         onSelect: select,
         onTransform: transform,
+        onInteraction: value => { interaction.value = value; },
       });
       const catalog = await repository.catalog("photos", {
         signal: controller.signal,
@@ -522,6 +532,7 @@ export function useStudioComposition(props, canvas) {
     selectedId,
     selected,
     selectedActor,
+    interaction,
     playing,
     exportUrl,
     exportStatus,
@@ -540,6 +551,8 @@ export function useStudioComposition(props, canvas) {
     canUndoDelete,
     undoDelete,
     move,
+    reorder,
+    toggleLayer,
     setSpot,
     reference,
     reset,

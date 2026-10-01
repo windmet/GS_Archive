@@ -13,7 +13,7 @@ import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
 import { studioFramePlacement } from "./StudioFramePlacement.mjs";
 import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
-import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls } from './StudioGestures.mjs';
+import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls, studioSnapMove } from './StudioGestures.mjs';
 import { bindStudioCanvasInput } from './StudioCanvasInput.mjs';
 import { studioSkeletonContains, studioStickerContains } from './StudioHitTest.js';
 import {
@@ -25,7 +25,7 @@ import {
 
 /** Per-instance requests, textures, animation state and transforms; no Player cache. */
 export class StudioCompositionStage {
-  constructor(container, { onSelect = () => {}, onTransform = () => {} } = {}) {
+  constructor(container, { onSelect = () => {}, onTransform = () => {}, onInteraction = () => {} } = {}) {
     this.disposed = false;
     this.controllers = new Map();
     this.actorInstances = new Map();
@@ -34,6 +34,9 @@ export class StudioCompositionStage {
     this.playing = false;
     this.onSelect = onSelect;
     this.onTransform = onTransform;
+    this.onInteraction = onInteraction;
+    this.guides = [];
+    this.snapEnabled = true;
     this.selectedId = "";
     this.transport = createStoryAssetTransport({
       maxBytes: 24 * 1024 * 1024,
@@ -49,7 +52,6 @@ export class StudioCompositionStage {
     this.app.view.setAttribute("aria-label", "摄影画布");
     this.app.view.setAttribute("role", "img");
     this.app.view.tabIndex = 0;
-    this.app.view.title = "拖动对象移动；双指缩放和旋转；滚轮缩放，Shift＋滚轮旋转；方向键微调";
     container.appendChild(this.app.view);
     this.backgroundLayer = new PIXI.Container();
     this.actorLayer = new PIXI.Container();
@@ -132,28 +134,45 @@ export class StudioCompositionStage {
     this.outline.clear();
     const controls = this.selectionControls();
     if (controls) {
-      const { rect, unit, rotate, scale } = controls;
+      const { rect, unit, rotate, corners } = controls;
+      const locked = this.selectedRow()?.locked;
       this.outline
-        .lineStyle(1.5 * unit, 0x50c7a4, 0.9)
-        .drawRect(rect.x, rect.y, rect.right - rect.x, rect.bottom - rect.y)
-        .beginFill(0xffffff).drawCircle(rotate.x, rotate.y, 9 * unit)
-        .drawRoundedRect(scale.x - 9 * unit, scale.y - 9 * unit, 18 * unit, 18 * unit, 3 * unit).endFill()
-        .lineStyle(1.5 * unit, 0x076b54)
-        .arc(rotate.x, rotate.y, 4.5 * unit, -.8, 4.3)
-        .moveTo(rotate.x - 5 * unit, rotate.y - 5 * unit).lineTo(rotate.x - 5 * unit, rotate.y)
-        .moveTo(scale.x - 4 * unit, scale.y + 4 * unit).lineTo(scale.x + 4 * unit, scale.y - 4 * unit)
-        .lineTo(scale.x, scale.y - 4 * unit)
-        .moveTo(scale.x + 4 * unit, scale.y - 4 * unit).lineTo(scale.x + 4 * unit, scale.y);
+        .lineStyle(1.5 * unit, locked ? 0x95a6a3 : 0x50c7a4, 0.9)
+        .drawRect(rect.x, rect.y, rect.right - rect.x, rect.bottom - rect.y);
+      if (!locked) {
+        for (const corner of corners) this.outline.beginFill(0xffffff).drawRoundedRect(corner.x - 5 * unit, corner.y - 5 * unit, 10 * unit, 10 * unit, 2 * unit).endFill();
+        this.outline.beginFill(0xffffff).drawCircle(rotate.x, rotate.y, 9 * unit).endFill()
+          .lineStyle(1.5 * unit, 0x076b54).arc(rotate.x, rotate.y, 4.5 * unit, -.8, 4.3)
+          .moveTo(rotate.x - 5 * unit, rotate.y - 5 * unit).lineTo(rotate.x - 5 * unit, rotate.y);
+      }
+      this.outline.lineStyle(unit, 0x80c7ff, .9);
+      for (const guide of this.guides || []) {
+        const extent = guide.axis === 'x' ? H : W;
+        for (let i = 0; i < extent; i += 12 * unit) {
+          const end = Math.min(i + 6 * unit, extent);
+          if (guide.axis === 'x') this.outline.moveTo(guide.value, i).lineTo(guide.value, end);
+          else this.outline.moveTo(i, guide.value).lineTo(end, guide.value);
+        }
+      }
     }
   }
-  pointerIntent(point) {
+  pointerIntent(point, pointerType = 'mouse') {
     const controls = this.selectionControls();
-    if (controls) {
-      for (const mode of ['rotate', 'scale'])
-        if (Math.hypot(point.x - controls[mode].x, point.y - controls[mode].y) <= controls.radius)
-          return { id: this.selectedId, mode, center: controls.center };
+    if (controls && !this.selectedRow()?.locked) {
+      const radius = (pointerType === 'mouse' ? 10 : 22) * controls.unit;
+      for (const corner of controls.corners)
+        if (Math.hypot(point.x - corner.x, point.y - corner.y) <= radius)
+          return { id: this.selectedId, mode: 'scale', center: controls.center };
+      if (Math.hypot(point.x - controls.rotate.x, point.y - controls.rotate.y) <= radius)
+        return { id: this.selectedId, mode: 'rotate', center: controls.center };
+      if (pointerType === 'mouse')
+        for (const corner of controls.corners)
+          if ((point.x < controls.rect.x || point.x > controls.rect.right || point.y < controls.rect.y || point.y > controls.rect.bottom) && Math.hypot(point.x - corner.x, point.y - corner.y) <= 25 * controls.unit)
+            return { id: this.selectedId, mode: 'rotate', center: controls.center };
     }
     const hit = this.hitTest(point);
+    if (!hit && controls && !this.selectedRow()?.locked && point.x >= controls.rect.x && point.x <= controls.rect.right && point.y >= controls.rect.y && point.y <= controls.rect.bottom)
+      return { id: this.selectedId, mode: 'move' };
     return hit ? { id: hit, mode: 'move' }
       : this.selectedRow() ? { id: this.selectedId, mode: 'blank' } : null;
   }
@@ -161,25 +180,35 @@ export class StudioCompositionStage {
     const p = new PIXI.Point(point.x, point.y);
     for (const sprite of [...this.stickerLayer.children].reverse()) {
       const entry = this.stickerInstances.get(sprite.name);
-      if (sprite.visible && entry && studioStickerContains(entry, p)) return sprite.name;
+      if (sprite.visible && entry && !entry.row.locked && !entry.row.hidden && studioStickerContains(entry, p)) return sprite.name;
     }
     for (const spine of [...this.actorLayer.children].reverse())
-      if (spine.visible && studioSkeletonContains(spine.skeleton, spine.toLocal(p))) return spine.name;
+      if (spine.visible && !this.row(spine.name)?.locked && !this.row(spine.name)?.hidden && studioSkeletonContains(spine.skeleton, spine.toLocal(p))) return spine.name;
     return '';
   }
   applyInteractiveTransform(id, values) {
     const actor = this.actorInstances.get(id), sticker = this.stickerInstances.get(id);
     const model = actor || sticker;
-    if (!model) return;
-    const patch = studioTransformPatch(values), row = { ...model.row, ...patch };
+    if (!model || model.row.locked || model.row.hidden) return;
+    let patch = studioTransformPatch(values);
+    this.guides = [];
+    if (this.snapEnabled && this.gestures?.mode === 'move' && this.gestures.points.size === 1) {
+      const bounds = actor ? studioActorSelectionBounds(actor.spine) : sticker.sprite.getBounds();
+      const snapped = studioSnapMove(model.row, patch, bounds, 6 * W / this.app.view.getBoundingClientRect().width, !!actor);
+      patch = snapped.patch; this.guides = snapped.guides;
+    }
+    const row = { ...model.row, ...patch };
     if (actor) this.setActorTransform(id, row);
     else this.setStickerTransform(id, row);
     this.onTransform(id, patch);
+    if (this.gestures?.points.size) this.onInteraction?.({ mode: this.gestures.mode, rotation: Math.round(row.rotation), aligned: this.guides.length > 0 });
     this.render();
+    return patch;
   }
+  endInteraction() { this.guides = []; this.onInteraction?.(null); }
   adjustSelected({ point, factor = 1, angle = 0 } = {}) {
     const row = this.selectedRow(), center = point || this.selectionControls()?.center;
-    if (!row || !center || this.gestures.points.size) return false;
+    if (!row || row.locked || row.hidden || !center || this.gestures.points.size) return false;
     this.applyInteractiveTransform(this.selectedId, studioTransformAround(row, center, center, factor, angle));
     return true;
   }
@@ -282,7 +311,7 @@ export class StudioCompositionStage {
       const plan = studioAnimationPlan(pose, face, model.names);
       spine.state.clearTracks();
       spine.skeleton.setToSetupPose();
-      spine.visible = true;
+      spine.visible = !model.row.hidden;
       const settled = plan.motion + "_loop",
         motion =
           !this.playing &&
@@ -397,6 +426,7 @@ export class StudioCompositionStage {
     const model = this.actorInstances.get(id);
     if (!model?.baseScale) return;
     model.row = row;
+    model.spine.visible = !row.hidden;
     this.applyFrame(model);
     model.spine.scale.set(model.baseScale * row.scale);
     model.spine.position.set(W * row.x, H * row.y);
@@ -447,6 +477,7 @@ export class StudioCompositionStage {
     const entry = this.stickerInstances.get(id);
     if (!entry) return;
     entry.row = row;
+    entry.sprite.visible = !row.hidden;
     entry.sprite.position.set(W * row.x, H * row.y);
     entry.sprite.scale.set(row.scale);
     entry.sprite.rotation = (row.rotation * Math.PI) / 180;
@@ -560,7 +591,7 @@ export class StudioCompositionStage {
   async exportPng() {
     if (
       this.disposed ||
-      ![...this.actorInstances.values()].every((m) => m.spine.visible)
+      ![...this.actorInstances.values()].every((m) => m.row.hidden || m.spine.visible)
     )
       throw Error("画布尚未准备好");
     this.setPlaying(false);

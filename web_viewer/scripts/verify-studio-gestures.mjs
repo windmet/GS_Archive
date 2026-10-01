@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { Sprite, Texture, Point } from 'pixi.js';
 import { MeshAttachment, RegionAttachment } from '@pixi-spine/runtime-3.8';
-import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls } from '../src/core/StudioGestures.mjs';
+import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls, studioSnapMove } from '../src/core/StudioGestures.mjs';
 import { bindStudioCanvasInput } from '../src/core/StudioCanvasInput.mjs';
 import { studioSkeletonContains, studioStickerContains } from '../src/core/StudioHitTest.js';
 import { StudioCompositionStage } from '../src/core/StudioCompositionStage.js';
@@ -96,6 +96,7 @@ class Canvas extends EventTarget {
 }
 const canvas = new Canvas(), blur = new EventTarget();
 const stage = Object.create(StudioCompositionStage.prototype);
+stage.app = { view: canvas };
 stage.selectedId = 'a'; stage.actorInstances = new Map(); stage.stickerInstances = new Map();
 const display = new Sprite(Texture.EMPTY);
 stage.stickerInstances.set('a', { row: row(), sprite: display });
@@ -132,4 +133,35 @@ blur.dispatchEvent(new Event('resize')); assert.equal(canvas.capture.size, 0);
 assert.equal(stage.gestures.points.size, 0, 'Device rotation cancels contacts in the old coordinate system');
 const final = { ...stage.row('a') }; input.dispose(); send('wheel', { clientX: 320, clientY: 200, deltaY: -100, deltaMode: 0 }); assert.deepEqual(stage.row('a'), final);
 display.destroy();
+// New editor gestures: every visible corner scales, locked/hidden rows reject
+// pointer and keyboard transforms, and Shift snaps the actual angle.
+{
+  const { gestures: g, get } = fixture();
+  const center = { x: 640, y: 360 };
+  g.down(1, { x: 740, y: 360 }, { id: 'a', mode: 'rotate', center });
+  g.move(1, { x: 738, y: 382 }, { shiftKey: true }); near(get().rotation, 15);
+  g.cancel(true); assert.deepEqual(get(), row());
+  for (const state of ['locked', 'hidden']) {
+    const blocked = new StudioGestures({ getRow: () => ({ ...row(), [state]: true }), onTransform: () => assert.fail('Protected layer changed') });
+    assert.equal(blocked.down(1, center, { id: 'a' }), false);
+  }
+}
+{
+  const r = { x: .5, y: .97 }, bounds = { x: 540, y: 600, width: 200, height: 98.4 };
+  const snapped = studioSnapMove(r, { x: .503, y: .973 }, bounds, 6);
+  near(snapped.patch.x, .5); near(snapped.patch.y, .97); assert.equal(snapped.guides.length, 2);
+  assert.equal(studioSnapMove(r, { x: .55, y: 1.02 }, bounds, 6).guides.length, 0);
+  assert.equal(studioSnapMove(r, { y: .973 }, bounds, 6, false).guides.some(g => g.value === 720 * .97), false, 'Sticker has no foot anchor');
+}
+{
+  const stage = Object.create(StudioCompositionStage.prototype);
+  stage.selectedId = 'a'; stage.selectedRow = () => ({ ...row(), locked: false });
+  const controls = studioSelectionControls({ x: 300, y: 100, width: 500, height: 500 }, 1280);
+  stage.selectionControls = () => controls; stage.hitTest = () => '';
+  for (const corner of controls.corners) assert.equal(stage.pointerIntent(corner).mode, 'scale');
+  assert.equal(stage.pointerIntent({ x: 290, y: 90 }).mode, 'rotate');
+  assert.equal(stage.pointerIntent({ x: 400, y: 300 }).mode, 'move', 'Transparent selected-box interior is draggable');
+  stage.selectedRow = () => ({ ...row(), locked: true });
+  assert.equal(stage.pointerIntent(controls.corners[0]).mode, 'blank');
+}
 console.log('Studio gestures: native capture/disposal, CSS coordinate mapping, drag→pinch→drag continuity, midpoint-preserving scale/rotation, limits, cancellation, handles, wheel/keyboard and attachment/alpha hit tests passed; physical touch still requires device acceptance');

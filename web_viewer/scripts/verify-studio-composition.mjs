@@ -100,3 +100,16 @@ assert.match(stage,/this\.outline\.visible\s*=\s*false/);
 console.log(
   "Composition: source-bound A/B, independent and duplicate instances, z-order, bounded file/BOM round-trip, invalid/cross-idol rejection and bounded framebuffer export passed",
 );
+
+// A hidden layer is deliberately absent, not an unready failed actor.
+const { StudioCompositionStage } = await import('../src/core/StudioCompositionStage.js');
+const exportStage = Object.create(StudioCompositionStage.prototype);
+exportStage.actorInstances = new Map([['hidden', { row: { hidden: true }, spine: { visible: false } }]]);
+exportStage.outline = { visible: true };
+exportStage.setPlaying = () => {};
+exportStage.updateModel = () => {};
+exportStage.app = { renderer: { render() { throw Error('reached-renderer'); } } };
+await assert.rejects(exportStage.exportPng(), /reached-renderer/, 'Hidden actors must reach export rendering');
+exportStage.actorInstances.get('hidden').row.hidden = false;
+await assert.rejects(exportStage.exportPng(), /画布尚未准备好/, 'Failed visible actors still block export');
+assert.equal(exportStage.outline.visible, true);

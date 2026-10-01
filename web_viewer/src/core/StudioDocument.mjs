@@ -37,6 +37,8 @@ export function validateStudioDocument(input) {
   const result = createStudioDocument(),
     ids = new Set();
   const instance = (row) => {
+    for (const key of ['locked', 'hidden'])
+      if (row[key] !== undefined && typeof row[key] !== 'boolean') throw Error('无效的图层状态');
     if (
       typeof row.instanceId !== "string" ||
       !/^[-a-z0-9]{1,80}$/i.test(row.instanceId) ||
@@ -50,6 +52,8 @@ export function validateStudioDocument(input) {
       y: numeric(row.y, -1, 3, "纵向位置"),
       scale: numeric(row.scale, 0.1, 5, "大小"),
       rotation: numeric(row.rotation ?? 0, -180, 180, "旋转"),
+      ...(row.locked ? { locked: true } : {}),
+      ...(row.hidden ? { hidden: true } : {}),
     };
   };
   result.background = {

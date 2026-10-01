@@ -15,13 +15,14 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
   };
   const cancel = restore => {
     stage.gestures.cancel(restore);
+    stage.endInteraction?.();
     for (const id of [...captured]) release(id);
     view.style.cursor = 'default';
   };
   const down = event => {
     if (event.button !== 0) return;
     const p = point(event);
-    const intent = stage.gestures.points.size ? null : stage.pointerIntent(p);
+    const intent = stage.gestures.points.size ? null : stage.pointerIntent(p, event.pointerType);
     if (intent?.id && !stage.gestures.points.size) stage.onSelect(intent.id);
     if (!stage.gestures.down(event.pointerId, p, intent)) return;
     event.preventDefault();
@@ -32,14 +33,15 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
   };
   const move = event => {
     const p = point(event);
-    if (stage.gestures.move(event.pointerId, p)) { event.preventDefault(); return; }
+    stage.snapEnabled = !event.altKey;
+    if (stage.gestures.move(event.pointerId, p, { shiftKey: event.shiftKey })) { event.preventDefault(); return; }
     if (event.pointerType === 'mouse' && !stage.gestures.points.size) {
-      const intent = stage.pointerIntent(p);
+      const intent = stage.pointerIntent(p, event.pointerType);
       view.style.cursor = !intent || intent.mode === 'blank' ? 'default'
         : intent.mode === 'scale' ? 'nwse-resize' : intent.mode === 'rotate' ? 'grab' : 'move';
     }
   };
-  const up = event => { stage.gestures.up(event.pointerId); release(event.pointerId); view.style.cursor = 'default'; };
+  const up = event => { stage.gestures.up(event.pointerId); if (!stage.gestures.points.size) stage.endInteraction?.(); release(event.pointerId); view.style.cursor = 'default'; };
   const wheel = event => {
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 720 : 1);
     if (!stage.adjustSelected({ point: point(event),
@@ -51,7 +53,7 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
     if (event.key === 'Escape' && stage.gestures.points.size) { event.preventDefault(); cancel(true); return; }
     if (stage.gestures.points.size) return;
     const row = stage.selectedRow();
-    if (!row || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!row || row.locked || row.hidden || event.ctrlKey || event.metaKey || event.altKey) return;
     const directions = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     const delta = directions[event.key];
     if (delta) {

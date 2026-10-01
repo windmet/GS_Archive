@@ -6,16 +6,16 @@
       <button v-else-if="focused" type="button" @click="leaveFocus">退出专注编辑</button>
       <button v-if="!focused" type="button" @click="enterFocus">专注编辑</button>
       <span v-if="focused">摄影工作台 · {{ selected ? objectName(selected) : '点选对象后拖动' }}</span>
-      <button v-if="focused" type="button" :aria-pressed="menuOpen && drawerTab === 'materials'" title="添加人物、贴纸或更换背景" @click="openDrawer('materials')"><Plus :size="18" />素材</button>
-      <button v-if="focused" type="button" :aria-pressed="menuOpen && drawerTab === 'objects'" title="查看图层、选择对象、调整顺序与删除" @click="openDrawer('objects')"><Layers :size="18" />图层 {{ objects.length }}</button>
+      <button v-if="focused" type="button" :disabled="!canUndoDelete" aria-label="撤销删除" title="恢复最近删除的图层" @click="undoDelete"><Undo2 :size="18" /></button>
+      <button v-if="focused" type="button" :aria-expanded="menuOpen" title="素材、图层与所选对象的编辑菜单" @click="menuOpen = !menuOpen"><PanelRight :size="18" />菜单</button>
+      <button v-if="focused" type="button" :disabled="busy || rendering || documentLoading || !!error || exporting" title="生成无选框的 PNG 图片" @click="exportAndShow"><Download :size="18" />导出</button>
       <button v-if="focused" ref="menuButton" type="button" :aria-expanded="menuOpen && drawerTab === 'files'" aria-controls="studio-focus-menu" title="保存构图、导出图片及全屏设置" aria-label="保存与导出" @click="openDrawer('files')"><Save :size="18" /></button>
     </header>
     <div v-if="focused" class="studio-selection-bar" aria-label="当前图层操作">
       <button type="button" class="studio-edit-selection" :disabled="!selected" :aria-label="selected ? `编辑 ${objectName(selected)}` : '未选择图层'" title="打开所选图层的编辑面板" @click="openDrawer('edit')"><span><strong>{{ selected ? objectName(selected) : '未选择图层' }}</strong><small>{{ selected ? '编辑 ' + (selected.idolId ? '人物' : '贴纸') : '添加素材' }}</small></span><Pencil :size="16" /></button>
-      <button type="button" :disabled="!selected" aria-label="缩小所选图层" title="缩小所选图层" @click="adjustSelected(1 / 1.1)"><Minus :size="18" /></button>
-      <button type="button" :disabled="!selected" aria-label="放大所选图层" title="放大所选图层" @click="adjustSelected(1.1)"><Plus :size="18" /></button>
+      <button type="button" :disabled="!selected || selected.locked || selected.hidden" aria-label="缩小所选图层" title="缩小所选图层" @click="adjustSelected(1 / 1.1)"><Minus :size="18" /></button>
+      <button type="button" :disabled="!selected || selected.locked || selected.hidden" aria-label="放大所选图层" title="放大所选图层" @click="adjustSelected(1.1)"><Plus :size="18" /></button>
       <button type="button" :disabled="!selected" aria-label="删除所选图层" title="删除所选图层，可撤销这次删除" class="studio-delete studio-labeled-action" @click="remove(selectedId)"><Trash2 :size="16" />删除</button>
-      <button type="button" :disabled="!canUndoDelete" aria-label="撤销删除" title="恢复最近删除的图层" class="studio-labeled-action" @click="undoDelete"><Undo2 :size="16" />撤销</button>
     </div>
     <aside id="studio-focus-menu" ref="drawerHost" v-show="focused && menuOpen" class="studio-focus-drawer" :data-tab="drawerTab" aria-label="摄影工作台菜单">
       <div class="studio-drawer-heading"><strong>摄影菜单</strong><button type="button" @click="closeMenu">收起菜单</button></div>
@@ -42,17 +42,17 @@
       <div class="studio-preview-column">
         <section class="domain-panel studio-canvas-panel" aria-label="摄影预览">
           <div ref="canvas" class="studio-canvas" data-studio-rotation="0"></div>
+          <details class="studio-canvas-help"><summary><CircleHelp :size="15" />操作提示</summary><p>拖动所选对象移动；四角缩放，圆柄旋转；双指缩放、旋转。</p><p>滚轮调整对象大小，Shift＋滚轮旋转。方向键微调，＋/− 调整大小，[ / ] 旋转；Esc 取消拖动。</p></details>
+          <output v-if="interaction && (interaction.mode === 'rotate' || interaction.aligned)" class="studio-interaction-feedback">{{ interaction.mode === 'rotate' ? `${interaction.rotation}°` : '已对齐' }}</output>
           <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
           <div class="studio-session-tools">
-          <div v-if="selected" class="studio-quick-tools" aria-label="所选对象快捷操作">
+          <div v-if="selected && !focused" class="studio-quick-tools" aria-label="所选对象快捷操作">
             <span>{{ objectName(selected) }}</span>
             <button type="button" aria-label="缩小所选对象" title="缩小" @click="adjustSelected(1 / 1.1)">−</button>
             <button type="button" aria-label="放大所选对象" title="放大" @click="adjustSelected(1.1)">＋</button>
             <button type="button" aria-label="逆时针旋转所选对象" title="左转 5°" @click="adjustSelected(1, -5)">↶</button>
             <button type="button" aria-label="顺时针旋转所选对象" title="右转 5°" @click="adjustSelected(1, 5)">↷</button>
           </div>
-          <p class="studio-gesture-hint">直接拖动对象移动，双指缩放、旋转。圆柄旋转，方柄缩放；在画布外滑动可滚动页面。</p>
-          <p class="studio-gesture-hint studio-mouse-hint">滚轮缩放，Shift＋滚轮旋转；方向键微调，＋/− 调整大小，[ / ] 旋转。Esc 取消正在进行的拖动。</p>
           <p role="status" class="studio-status">
             {{ rendering ? "正在更新构图…" : status }}
           </p>
@@ -66,10 +66,11 @@
                 playing ? "返回定格" : "预览动作"
               }}
             </button>
-            <button type="button" :disabled="!selected" @click="reset">
+            <button type="button" :disabled="!selected || selected.locked" @click="reset">
               <RotateCcw :size="17" />重置对象
             </button>
             <button
+              v-if="!focused"
               type="button"
               class="studio-export"
               :disabled="busy || rendering || documentLoading || !!error || exporting"
@@ -323,13 +324,15 @@
         <div class="studio-object-list">
           <div v-if="draft.frameId" class="studio-background-layer"><Image :size="18" /><span>画框 · 最前景</span><small>在画面效果中更换</small></div>
           <template v-for="group in layerGroups" :key="group.kind">
-          <h4 class="studio-layer-group">{{ group.label }} <span>{{ group.rows.length }}</span></h4>
+          <h4 v-if="group.rows.length" class="studio-layer-group">{{ group.label }}</h4>
           <div
             v-for="(row, index) in group.rows"
             :key="row.instanceId"
             class="studio-object-row"
-            :class="{ 'is-selected': selectedId === row.instanceId }"
+            :data-studio-layer="row.instanceId"
+            :class="{ 'is-selected': selectedId === row.instanceId, 'is-hidden': row.hidden, 'is-drop-target': layerDrag.targetId === row.instanceId }"
           >
+            <button type="button" class="studio-layer-grip" :aria-label="`拖拽排序 ${objectName(row)}`" title="拖动重排；方向键上下调整" @pointerdown="startLayerDrag($event, row)" @keydown.up.prevent="move(row.instanceId, 1)" @keydown.down.prevent="move(row.instanceId, -1)"><GripVertical :size="15" /></button>
             <button
               type="button"
               class="studio-object-select"
@@ -346,21 +349,9 @@
                 :size="20"
               /><span>{{ objectName(row) }}</span><small class="studio-layer-number">{{ group.rows.length - index }}</small>
             </button>
+            <button type="button" :aria-label="`${row.locked ? '解锁' : '锁定'} ${objectName(row)}`" :aria-pressed="!!row.locked" :title="row.locked ? '解锁后可在画布调整' : '防止画布误选与移动'" @click="toggleLayer(row.instanceId, 'locked')"><Lock v-if="row.locked" :size="15" /><Unlock v-else :size="15" /></button>
+            <button type="button" :aria-label="`${row.hidden ? '显示' : '隐藏'} ${objectName(row)}`" :aria-pressed="!!row.hidden" title="临时显示或隐藏，保留图层" @click="toggleLayer(row.instanceId, 'hidden')"><EyeOff v-if="row.hidden" :size="15" /><Eye v-else :size="15" /></button>
             <button
-              type="button"
-              :aria-label="`前移 ${objectName(row)}`" :title="`在${group.kind === 'actors' ? '人物' : '贴纸'}图层中前移`"
-              :disabled="atEdge(row, 1)"
-              @click="move(row.instanceId, 1)"
-            >
-              <ArrowUp :size="15" /></button
-            ><button
-              type="button"
-              :aria-label="`后移 ${objectName(row)}`" :title="`在${group.kind === 'actors' ? '人物' : '贴纸'}图层中后移`"
-              :disabled="atEdge(row, -1)"
-              @click="move(row.instanceId, -1)"
-            >
-              <ArrowDown :size="15" /></button
-            ><button
               type="button"
               :aria-label="`删除 ${objectName(row)}`" title="删除图层，可撤销" class="studio-delete"
               @click="remove(row.instanceId)"
@@ -372,12 +363,14 @@
           <p v-if="!objects.length" class="studio-layer-empty">画布还没有人物或贴纸。点击「素材」添加。</p>
           <div class="studio-background-layer"><Image :size="18" /><span>背景</span><small>在素材中更换</small></div>
         </div>
-        <button type="button" class="studio-undo-delete" :disabled="!canUndoDelete" @click="undoDelete"><Undo2 :size="17" />撤销删除</button>
+        <button v-if="!focused" type="button" class="studio-undo-delete" :disabled="!canUndoDelete" @click="undoDelete"><Undo2 :size="17" />撤销删除</button>
         </section>
         <section v-if="selected" v-show="!focused || drawerTab === 'edit'" class="studio-layer-editor" aria-label="编辑所选图层">
           <h3 class="studio-selected-title">
             图层属性：{{ objectName(selected) }}
           </h3>
+          <p v-if="selected.locked" class="studio-status"><Lock :size="13" />图层已锁定。<button type="button" @click="toggleLayer(selectedId, 'locked')">解锁编辑</button></p>
+          <fieldset class="studio-editable-properties" :disabled="!!selected.locked">
           <template v-if="selectedActor">
             <label class="studio-field"
               >服装<select v-model="selected.modelId">
@@ -427,6 +420,7 @@
               :step="field.step"
           /></label>
           </details>
+          </fieldset>
           <details v-if="selectedActor" class="studio-source">
             <summary>预设来源</summary>
             <p>
@@ -469,7 +463,7 @@ import {
   ArrowUp,
   ArrowDown,
   Trash2,
-  ArrowLeft, Layers, Minus, Undo2, Maximize, Minimize, Pencil,
+  ArrowLeft, Layers, Minus, Undo2, Maximize, Minimize, Pencil, PanelRight, CircleHelp, GripVertical, Eye, EyeOff, Lock, Unlock,
 } from "@lucide/vue";
 import { useStudioComposition } from "./useStudioComposition.js";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
@@ -522,6 +516,7 @@ const {
   selectedId,
   selected,
   selectedActor,
+  interaction,
   playing,
   exportUrl,
   exportStatus,
@@ -540,6 +535,8 @@ const {
   canUndoDelete,
   undoDelete,
   move,
+  reorder,
+  toggleLayer,
   setSpot,
   reference,
   reset,
@@ -559,6 +556,7 @@ function onDocumentFile(event) {
   event.target.value = "";
   void importDocument(file);
 }
+function exportAndShow() { drawerTab.value = 'files'; menuOpen.value = true; void exportPng(); }
 const libraryTab = ref("actors"),
   stickerSearch = ref(""),
   materialPage = ref(0),
@@ -608,6 +606,51 @@ const layerGroups = computed(() => [
   { kind: 'stickers', label: '贴纸 · 前景', rows: [...draft.value.stickers].reverse() },
   { kind: 'actors', label: '人物', rows: [...draft.value.actors].reverse() },
 ]);
+const layerDrag = ref({ id: '', targetId: '' });
+let finishLayerDrag = null;
+function startLayerDrag(event, row) {
+  if (event.button !== 0) return;
+  finishLayerDrag?.(false);
+  const handle = event.currentTarget, pointerId = event.pointerId;
+  event.preventDefault();
+  handle.setPointerCapture(pointerId);
+  layerDrag.value = { id: row.instanceId, targetId: '' };
+  const pointerMove = moveEvent => {
+    if (moveEvent.pointerId !== pointerId) return;
+    const targetId = document.elementFromPoint(moveEvent.clientX, moveEvent.clientY)?.closest('[data-studio-layer]')?.dataset.studioLayer;
+    const target = objects.value.find(candidate => candidate.instanceId === targetId);
+    layerDrag.value.targetId = target && !!target.idolId === !!row.idolId ? targetId : '';
+    const list = handle.closest('.studio-object-list'), rect = list.getBoundingClientRect();
+    if (moveEvent.clientY < rect.top + 24) list.scrollTop -= 12;
+    if (moveEvent.clientY > rect.bottom - 24) list.scrollTop += 12;
+  };
+  const finish = commit => {
+    handle.removeEventListener('pointermove', pointerMove);
+    handle.removeEventListener('pointerup', pointerUp);
+    handle.removeEventListener('pointercancel', pointerCancel);
+    handle.removeEventListener('lostpointercapture', pointerCancel);
+    window.removeEventListener('blur', pointerCancel);
+    if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+    if (commit && layerDrag.value.targetId) reorder(row.instanceId, layerDrag.value.targetId);
+    layerDrag.value = { id: '', targetId: '' };
+    finishLayerDrag = null;
+  };
+  const pointerUp = upEvent => { if (upEvent.pointerId === pointerId) finish(true); };
+  const pointerCancel = () => finish(false);
+  finishLayerDrag = finish;
+  handle.addEventListener('pointermove', pointerMove);
+  handle.addEventListener('pointerup', pointerUp);
+  handle.addEventListener('pointercancel', pointerCancel);
+  handle.addEventListener('lostpointercapture', pointerCancel);
+  window.addEventListener('blur', pointerCancel);
+}
+onScopeDispose(() => finishLayerDrag?.(false));
+watch([selectedId, drawerTab, menuOpen], () => finishLayerDrag?.(false));
+watch(selectedId, async () => {
+  await nextTick();
+  if (drawerTab.value === 'objects' && menuOpen.value)
+    controlsHost.value?.querySelector('.studio-object-row.is-selected')?.scrollIntoView({ block: 'nearest' });
+});
 const currentVariant = computed(() => selectedActor.value?.actor[variantTab.value].find(row => row.id === selected.value?.[variantTab.value === 'faces' ? 'faceId' : 'poseId']));
 function variantName(view, kind, row) { return row ? studioPresetPresentation(view, kind, row).label : '未选择'; }
 function faceName(view, row) { return variantName(view, 'faces', row); }
