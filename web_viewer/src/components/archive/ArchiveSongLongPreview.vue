@@ -67,14 +67,17 @@ async function scrollToTick() {
 }
 watch([() => props.cursor, folded, () => props.scale, () => props.chart], scrollToTick, { immediate: true })
 function seekColumn(event, column) {
-  const box = event.currentTarget.getBoundingClientRect()
-  const local = (event.clientY - box.top) / box.height * (column.height + 40) - 20
-  emit('seek', Math.max(column.from, Math.min(column.to, column.from + local * 1000 / props.scale)))
+  const matrix = event.currentTarget.getScreenCTM()
+  if (!matrix) return
+  const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+  emit('seek', Math.max(column.from, Math.min(column.to, (local.y - 42) * 1000 / props.scale)))
 }
 function seekContinuous(event) {
   if (folded.value) return
-  const box = svg.value.getBoundingClientRect()
-  emit('seek', Math.max(0, Math.min(props.chart.maxTick, ((event.clientY - box.top) / box.height * drawingHeight.value - 42) * 1000 / props.scale)))
+  const matrix = svg.value.getScreenCTM()
+  if (!matrix) return
+  const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+  emit('seek', Math.max(0, Math.min(props.chart.maxTick, (local.y - 42) * 1000 / props.scale)))
 }
 defineExpose({ getSvg: () => svg.value, scrollToTick })
 </script>
