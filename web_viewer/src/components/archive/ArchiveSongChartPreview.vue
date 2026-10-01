@@ -6,6 +6,7 @@
         <label>难度 <select v-model.number="selected" aria-label="谱面难度"><option v-for="d in difficulties" :key="d.type" :value="d.type">{{ d.label }} · Lv {{ d.levelLabel }}</option></select></label>
         <label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label>
         <button v-if="chart" type="button" @click="download">导出 SVG</button>
+        <button v-if="chart" type="button" @click="goToFirstNote">首个音符</button>
         <button type="button" @click="opened = false">收起谱面</button>
       </div>
       <p class="chart-note">五轨 · 从上往下阅读。蓝色 Tap，绿色长按 / 滑条，粉色 Flick，金色 Special；宽音符加宽显示。纵轴为原始 tick，尚未与音频同步。</p>
@@ -13,7 +14,7 @@
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
         <p class="chart-note chart-count">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}（两者计数规则不同）</p>
-        <div class="chart-scroll" tabindex="0" role="region" :aria-label="`${title} ${activeDifficulty.label} 长轨谱面`">
+        <div ref="chartScroll" class="chart-scroll" tabindex="0" role="region" :aria-label="`${title} ${activeDifficulty.label} 长轨谱面`">
           <svg ref="svg" class="chart-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" :viewBox="`0 0 ${geometry.width} ${geometry.height}`" :height="geometry.height" width="410" role="img" :aria-label="`${title} ${activeDifficulty.label} 谱面`">
             <title>{{ title }} · {{ activeDifficulty.label }} · 原始 tick</title>
             <rect width="410" :height="geometry.height" fill="#13212e" />
@@ -37,11 +38,12 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { buildSongChartGeometry, validateSongChart } from '../../presentation/SongChartPresentation.js'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true } })
 const opened = ref(false), selected = ref(props.difficulties[0]?.type || 1), scale = ref(90)
 const chart = ref(null), error = ref(''), loading = ref(false), svg = ref(null)
+const chartScroll = ref(null)
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const geometry = computed(() => chart.value ? buildSongChartGeometry(chart.value, scale.value) : null)
 let controller, generation = 0
@@ -61,13 +63,23 @@ async function loadChart() {
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2, '0')).join('')
     if (hash !== difficulty.chart.sha256 || bytes.byteLength !== difficulty.chart.bytes) throw new Error('谱面校验失败，请刷新页面后重试')
     const parsed = validateSongChart(JSON.parse(new TextDecoder().decode(bytes)), props.songCode, difficulty.type)
-    if (current === generation) chart.value = parsed
+    if (current === generation) {
+      chart.value = parsed
+      loading.value = false
+      await nextTick()
+      if (current === generation) goToFirstNote()
+    }
   } catch (e) {
     if (current === generation && e.name !== 'AbortError') error.value = e.message || '谱面加载失败'
   } finally { if (current === generation) loading.value = false }
 }
 watch([opened, selected, () => props.songCode], loadChart)
 onBeforeUnmount(() => { generation++; controller?.abort() })
+function goToFirstNote() {
+  if (!chartScroll.value || !chart.value?.notes.length) return
+  const firstTick = Math.min(...chart.value.notes.map(n => n.tick))
+  chartScroll.value.scrollTop = Math.max(0, 42 + firstTick * scale.value / 1000 - 80)
+}
 function download() {
   if (!svg.value || !chart.value) return
   const blob = new Blob([new XMLSerializer().serializeToString(svg.value)], { type: 'image/svg+xml;charset=utf-8' })
