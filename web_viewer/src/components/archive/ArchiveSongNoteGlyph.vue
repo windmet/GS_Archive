@@ -4,11 +4,7 @@
       <image :href="sprite.url" :width="sprite.width" :height="sprite.height" />
     </svg>
     <template v-if="hint">
-      <defs><filter :id="uid" color-interpolation-filters="sRGB"><feComponentTransfer>
-        <feFuncR type="linear" :slope="2 - 2 * color.r" :intercept="2 * color.r - 1" />
-        <feFuncG type="linear" :slope="2 - 2 * color.g" :intercept="2 * color.g - 1" />
-        <feFuncB type="linear" :slope="2 - 2 * color.b" :intercept="2 * color.b - 1" />
-      </feComponentTransfer></filter></defs>
+      <defs><filter :id="uid" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" :values="tintMatrix" /></filter></defs>
       <g :data-direction-hint="role" :transform="role === 'swipe_left' ? `translate(${2*x} 0) scale(-1 1)` : undefined">
         <svg :x="hintX" :y="hintY" :width="hintWidth" :height="hintHeight" :viewBox="viewBox(hint)" overflow="hidden">
           <image :href="hint.url" :width="hint.width" :height="hint.height" :filter="`url(#${uid})`" />
@@ -28,6 +24,10 @@ const viewBox = s => { const [x, y, r, b] = s.displayBounds; return `${x} ${y} $
 const bodyHeight = computed(() => props.width * aspect(sprite.value))
 const hint = computed(() => props.role.startsWith('swipe_') ? noteRendering.hints[props.role === 'swipe_up' ? 'up' : 'right'] : null)
 const color = computed(() => noteRendering.particles[props.role]?.startColor)
+// This native mask stores its pale fill in alpha, while RGB stays white.
+// Preserve the opaque white rim and tint the translucent center from the
+// prefab's native color. Additive shader/animation remain unreconstructed.
+const tintMatrix = computed(() => [color.value.r, color.value.g, color.value.b].map(v => `0 0 0 ${2-2*v} ${2*v-1}`).join(' ') + ' 0 0 0 1 0')
 const hintWidth = computed(() => props.width * (props.role === 'swipe_up' ? .65 : .28))
 const hintHeight = computed(() => hintWidth.value * aspect(hint.value))
 const hintX = computed(() => props.role === 'swipe_up' ? props.x - hintWidth.value / 2 : props.x + props.width * .57)
