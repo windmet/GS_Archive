@@ -43,15 +43,27 @@ export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
     lanes: Array.from({ length: 6 }, (_, i) => 77.5 + i * 55),
     grid: Array.from({ length: Math.floor(chart.maxTick / 2000) + 1 }, (_, i) => ({ tick: i * 2000, y: y(i * 2000) })),
     tempos: chart.tempos.map(t => ({ ...t, y: y(t.tick) })),
+    links: songSimultaneousLinks(chart).map(l => ({ ...l, x1: x(l.from), x2: x(l.to), y: y(l.tick) })),
     notes: chart.notes.map(n => {
       const points = n.poly?.length ? n.poly : [{ subtick: 0, posx: n.start }, { subtick: n.duration, posx: n.end }]
       const last = points.at(-1)
+      const bodyTriangles = []
+      for (let i = 1; n.duration > 0 && i < points.length; i++) {
+        const a = points[i - 1], b = points[i]
+        const leftA = { x: x(a.posx) - 5.5, y: y(n.tick + a.subtick) }, rightA = { x: x(a.posx) + 5.5, y: y(n.tick + a.subtick) }
+        const leftB = { x: x(b.posx) - 5.5, y: y(n.tick + b.subtick) }, rightB = { x: x(b.posx) + 5.5, y: y(n.tick + b.subtick) }
+        const va = a.subtick / n.duration * 200, vb = b.subtick / n.duration * 200
+        for (const mesh of [songTextureTriangle([leftA, rightA, leftB], [{x:0,y:va},{x:200,y:va},{x:0,y:vb}]), songTextureTriangle([rightA, rightB, leftB], [{x:200,y:va},{x:200,y:vb},{x:0,y:vb}])]) if (mesh) bodyTriangles.push(mesh)
+      }
       return {
         id: n.sourceIndex, type: n.type, x: x(n.start), y: y(n.tick), endX: x(last.posx), endY: y(n.tick + n.duration),
         path: points.map((p, i) => `${i ? 'L' : 'M'} ${x(p.posx)} ${y(n.tick + p.subtick)}`).join(' '),
         held: n.duration > 0, wide: n.type.startsWith('LARGE'), special: n.type === 'SPECIAL',
         flick: arrow(n.type), endFlick: arrow(n.endtype),
+        role: songNoteRole(n.type), endRole: songNoteRole(n.endtype || 'END_NORMAL'), bodyTriangles,
       }
     }),
   }
 }
+import { songNoteRole, songSimultaneousLinks } from './SongNotePresentation.js'
+import { songTextureTriangle } from './SongTrackPresentation.js'

@@ -1,4 +1,5 @@
 import reference from '../../config/song-track-reference.v1.json' with { type: 'json' }
+import { songNoteRole, songSimultaneousLinks } from './SongNotePresentation.js'
 
 export const trackReference = reference
 const estimate = reference.screenshotEstimates
@@ -28,7 +29,7 @@ export function laneAt(points, subtick) {
 
 // Map native 200px hold texture coordinates onto clipped triangle geometry.
 // Keep the full hold's V coordinates when the preview window cuts either end.
-function triangle(screen, uv) {
+export function songTextureTriangle(screen, uv) {
   const [p, q, r] = screen, [a, b, c] = uv
   const determinant = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)
   if (Math.abs(determinant) < 1e-8) return null
@@ -58,9 +59,9 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     const p = project(lane, tick)
     glyphs.push({ id: `${n.sourceIndex}-${endpoint}`, sourceIndex: n.sourceIndex, type,
       endpoint, tick, lane, x: p.x, y: p.y,
-      width: estimate.normalVisibleWidth * p.scale * (n.type.startsWith('LARGE') ? 1.45 : 1),
+      width: estimate.normalVisibleWidth * p.scale,
       special: type === 'SPECIAL',
-      role: type.endsWith('LEFT') ? 'swipe_left' : type.endsWith('RIGHT') ? 'swipe_right' : type.endsWith('UP') ? 'swipe_up' : 'normal' })
+      role: songNoteRole(type) })
   }
   for (const n of chart.notes) {
     const end = n.tick + n.duration
@@ -81,21 +82,22 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     }
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
       const lane = laneAt(points, tick - n.tick), p = project(lane, tick)
-      const half = estimate.normalVisibleWidth * estimate.holdWidthRatio * p.scale / 2 * (n.type.startsWith('LARGE') ? 1.45 : 1)
+      const half = estimate.normalVisibleWidth * estimate.holdWidthRatio * p.scale / 2
       return { tick, lane, left: { x: p.x - half, y: p.y }, right: { x: p.x + half, y: p.y }, v: (tick - n.tick) / n.duration * 200 }
     })
     const triangles = []
     for (let i = 1; i < samples.length; i++) {
       const a = samples[i - 1], b = samples[i]
       for (const mesh of [
-        triangle([a.left, a.right, b.left], [{ x: 0, y: a.v }, { x: 200, y: a.v }, { x: 0, y: b.v }]),
-        triangle([a.right, b.right, b.left], [{ x: 200, y: a.v }, { x: 200, y: b.v }, { x: 0, y: b.v }]),
+        songTextureTriangle([a.left, a.right, b.left], [{ x: 0, y: a.v }, { x: 200, y: a.v }, { x: 0, y: b.v }]),
+        songTextureTriangle([a.right, b.right, b.left], [{ x: 200, y: a.v }, { x: 200, y: b.v }, { x: 0, y: b.v }]),
       ]) if (mesh) triangles.push(mesh)
     }
     holds.push({ id: n.sourceIndex, from, to, samples, triangles })
   }
   const bottomWidth = farWidth + (nearWidth - farWidth) * (720 - estimate.topY) / (estimate.judgeY - estimate.topY)
   return { width: 1280, height: 720, cursor, span, holds,
+    links: songSimultaneousLinks(chart).filter(l => l.tick >= cursor && l.tick <= cursor + span).map(l => ({ ...l, a: project(l.from, l.tick), b: project(l.to, l.tick) })),
     glyphs: glyphs.sort((a, b) => b.tick - a.tick),
     lanes: Array.from({ length: laneCount + 1 }, (_, i) => ({
       topX: estimate.centerX + (i - laneCount / 2) * farWidth / laneCount,
