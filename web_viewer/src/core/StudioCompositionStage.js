@@ -13,6 +13,9 @@ import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
 import { studioFramePlacement } from "./StudioFramePlacement.mjs";
 import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
+import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls } from './StudioGestures.mjs';
+import { bindStudioCanvasInput } from './StudioCanvasInput.mjs';
+import { studioSkeletonContains, studioStickerContains } from './StudioHitTest.js';
 import {
   STUDIO_WIDTH as W,
   STUDIO_HEIGHT as H,
@@ -46,7 +49,7 @@ export class StudioCompositionStage {
     this.app.view.setAttribute("aria-label", "摄影画布");
     this.app.view.setAttribute("role", "img");
     this.app.view.tabIndex = 0;
-    this.app.view.title = "选中对象后可拖动，方向键微调，Shift 加速";
+    this.app.view.title = "拖动对象移动；双指缩放和旋转；滚轮缩放，Shift＋滚轮旋转；方向键微调";
     container.appendChild(this.app.view);
     this.backgroundLayer = new PIXI.Container();
     this.actorLayer = new PIXI.Container();
@@ -71,44 +74,14 @@ export class StudioCompositionStage {
       this.drawSelection();
     };
     this.app.ticker.add(this.tick);
-    this.visibility = () =>
-      document.hidden ? this.app.stop() : this.app.start();
+    this.visibility = () => {
+      if (document.hidden) { this.input.cancel(false); this.app.stop(); }
+      else this.app.start();
+    };
     document.addEventListener("visibilitychange", this.visibility);
-    this.pointerMove = (event) => {
-      if (!this.drag) return;
-      const rect = this.app.view.getBoundingClientRect(),
-        x = (event.clientX - rect.left) / rect.width,
-        y = (event.clientY - rect.top) / rect.height;
-      this.onTransform(this.drag.id, {
-        x: this.drag.x + x - this.drag.startX,
-        y: this.drag.y + y - this.drag.startY,
-      });
-    };
-    this.pointerUp = () => {
-      this.drag = null;
-    };
-    this.keyDown = (event) => {
-      const delta = {
-          ArrowLeft: [-1, 0],
-          ArrowRight: [1, 0],
-          ArrowUp: [0, -1],
-          ArrowDown: [0, 1],
-        }[event.key],
-        row =
-          this.actorInstances.get(this.selectedId)?.row ||
-          this.stickerInstances.get(this.selectedId)?.row;
-      if (!delta || !row) return;
-      event.preventDefault();
-      const step = event.shiftKey ? 0.05 : 0.01;
-      this.onTransform(this.selectedId, {
-        x: row.x + delta[0] * step,
-        y: row.y + delta[1] * step,
-      });
-    };
-    this.app.view.addEventListener("keydown", this.keyDown);
-    this.app.view.addEventListener("pointermove", this.pointerMove);
-    this.app.view.addEventListener("pointerup", this.pointerUp);
-    this.app.view.addEventListener("pointercancel", this.pointerUp);
+    this.gestures = new StudioGestures({ getRow: id => this.row(id),
+      onTransform: (id, patch) => this.applyInteractiveTransform(id, patch) });
+    this.input = bindStudioCanvasInput(this.app.view, this);
   }
   owner(key) {
     this.controllers.get(key)?.abort();
@@ -138,47 +111,80 @@ export class StudioCompositionStage {
     }
   }
   select(id) {
+    if (id !== this.selectedId) this.input?.cancel(false);
     this.selectedId = id;
     this.drawSelection();
   }
+  row(id) {
+    return this.actorInstances.get(id)?.row || this.stickerInstances.get(id)?.row;
+  }
+  selectedRow() { return this.row(this.selectedId); }
+  selectionControls() {
+    const actor = this.actorInstances.get(this.selectedId);
+    const object = actor?.spine || this.stickerInstances.get(this.selectedId)?.sprite;
+    if (!object?.visible) return null;
+    const bounds = actor ? studioActorSelectionBounds(object) : object.getBounds();
+    const rect = this.app.view.getBoundingClientRect();
+    const cssWidth = this.app.view.parentElement?.dataset.studioRotation === '90' ? rect.height : rect.width;
+    return studioSelectionControls(bounds, cssWidth);
+  }
   drawSelection() {
     this.outline.clear();
-    const actor = this.actorInstances.get(this.selectedId);
-    const object =
-      actor?.spine ||
-      this.stickerInstances.get(this.selectedId)?.sprite;
-    if (object?.visible) {
-      const b = actor ? studioActorSelectionBounds(object) : object.getBounds();
+    const controls = this.selectionControls();
+    if (controls) {
+      const { rect, unit, rotate, scale } = controls;
       this.outline
-        .lineStyle(2, 0x50c7a4, 0.9)
-        .drawRect(b.x, b.y, b.width, b.height);
+        .lineStyle(1.5 * unit, 0x50c7a4, 0.9)
+        .drawRect(rect.x, rect.y, rect.right - rect.x, rect.bottom - rect.y)
+        .beginFill(0xffffff).drawCircle(rotate.x, rotate.y, 9 * unit)
+        .drawRoundedRect(scale.x - 9 * unit, scale.y - 9 * unit, 18 * unit, 18 * unit, 3 * unit).endFill()
+        .lineStyle(1.5 * unit, 0x076b54)
+        .arc(rotate.x, rotate.y, 4.5 * unit, -.8, 4.3)
+        .moveTo(rotate.x - 5 * unit, rotate.y - 5 * unit).lineTo(rotate.x - 5 * unit, rotate.y)
+        .moveTo(scale.x - 4 * unit, scale.y + 4 * unit).lineTo(scale.x + 4 * unit, scale.y - 4 * unit)
+        .lineTo(scale.x, scale.y - 4 * unit)
+        .moveTo(scale.x + 4 * unit, scale.y - 4 * unit).lineTo(scale.x + 4 * unit, scale.y);
     }
   }
-  interactive(display, row) {
-    display.interactive = true;
-    display.interactiveChildren = false;
-    display.cursor = "move";
-    display.on("pointerdown", (event) => {
-      event.stopPropagation();
-      const current =
-        this.actorInstances.get(row.instanceId)?.row ||
-        this.stickerInstances.get(row.instanceId)?.row;
-      if (!current) return;
-      this.onSelect(row.instanceId);
-      const native = event.data?.originalEvent || event.nativeEvent,
-        rect = this.app.view.getBoundingClientRect();
-      this.drag = {
-        id: row.instanceId,
-        x: current.x,
-        y: current.y,
-        startX: (native.clientX - rect.left) / rect.width,
-        startY: (native.clientY - rect.top) / rect.height,
-      };
-      if (native.pointerId !== undefined)
-        this.app.view.setPointerCapture(native.pointerId);
-    });
+  pointerIntent(point) {
+    const controls = this.selectionControls();
+    if (controls) {
+      for (const mode of ['rotate', 'scale'])
+        if (Math.hypot(point.x - controls[mode].x, point.y - controls[mode].y) <= controls.radius)
+          return { id: this.selectedId, mode, center: controls.center };
+    }
+    const hit = this.hitTest(point);
+    return hit ? { id: hit, mode: 'move' }
+      : this.selectedRow() ? { id: this.selectedId, mode: 'blank' } : null;
+  }
+  hitTest(point) {
+    const p = new PIXI.Point(point.x, point.y);
+    for (const sprite of [...this.stickerLayer.children].reverse()) {
+      const entry = this.stickerInstances.get(sprite.name);
+      if (sprite.visible && entry && studioStickerContains(entry, p)) return sprite.name;
+    }
+    for (const spine of [...this.actorLayer.children].reverse())
+      if (spine.visible && studioSkeletonContains(spine.skeleton, spine.toLocal(p))) return spine.name;
+    return '';
+  }
+  applyInteractiveTransform(id, values) {
+    const actor = this.actorInstances.get(id), sticker = this.stickerInstances.get(id);
+    const model = actor || sticker;
+    if (!model) return;
+    const patch = studioTransformPatch(values), row = { ...model.row, ...patch };
+    if (actor) this.setActorTransform(id, row);
+    else this.setStickerTransform(id, row);
+    this.onTransform(id, patch);
+    this.render();
+  }
+  adjustSelected({ point, factor = 1, angle = 0 } = {}) {
+    const row = this.selectedRow(), center = point || this.selectionControls()?.center;
+    if (!row || !center || this.gestures.points.size) return false;
+    this.applyInteractiveTransform(this.selectedId, studioTransformAround(row, center, center, factor, angle));
+    return true;
   }
   destroyActor(id) {
+    if (this.gestures?.id === id) this.input.cancel(false);
     this.controllers.get("actor:" + id)?.abort();
     this.controllers.delete("actor:" + id);
     const model = this.actorInstances.get(id);
@@ -243,6 +249,7 @@ export class StudioCompositionStage {
         throw Error("模型没有可展示的图像附件");
       }
       const spine = result.spine;
+      spine.name = row.instanceId;
       spine.autoUpdate = false;
       const model = {
         modelId: row.modelId,
@@ -257,7 +264,6 @@ export class StudioCompositionStage {
       this.actorInstances.set(row.instanceId, model);
       this.actorLayer.addChild(spine);
       this.setActorPose(row.instanceId, pose, face);
-      this.interactive(spine, row);
       this.setActorTransform(row.instanceId, row);
     } catch (error) {
       if (this.actorInstances.get(row.instanceId)?.textures === textures)
@@ -397,6 +403,7 @@ export class StudioCompositionStage {
     model.spine.rotation = (row.rotation * Math.PI) / 180;
   }
   removeSticker(id) {
+    if (this.gestures?.id === id) this.input.cancel(false);
     this.controllers.get("sticker:" + id)?.abort();
     this.controllers.delete("sticker:" + id);
     const entry = this.stickerInstances.get(id);
@@ -416,15 +423,24 @@ export class StudioCompositionStage {
       throw new DOMException("Aborted", "AbortError");
     }
     const sprite = new PIXI.Sprite(texture);
+    sprite.name = row.instanceId;
     sprite.anchor.set(0.5);
+    let alpha = null;
+    try {
+      const probe = document.createElement('canvas');
+      probe.width = texture.width; probe.height = texture.height;
+      const context = probe.getContext('2d', { willReadFrequently: true });
+      context.drawImage(texture.baseTexture.resource.source, 0, 0);
+      alpha = context.getImageData(0, 0, probe.width, probe.height).data;
+    } catch { /* A remote texture without pixel access still has its bounded hit area. */ }
     this.stickerInstances.set(row.instanceId, {
       sprite,
       texture,
       stickerId: row.stickerId,
       row,
+      alpha,
     });
     this.stickerLayer.addChild(sprite);
-    this.interactive(sprite, row);
     this.setStickerTransform(row.instanceId, row);
   }
   setStickerTransform(id, row) {
@@ -581,10 +597,7 @@ export class StudioCompositionStage {
     for (const controller of this.controllers.values()) controller.abort();
     this.transport.clear();
     document.removeEventListener("visibilitychange", this.visibility);
-    this.app.view.removeEventListener("keydown", this.keyDown);
-    this.app.view.removeEventListener("pointermove", this.pointerMove);
-    this.app.view.removeEventListener("pointerup", this.pointerUp);
-    this.app.view.removeEventListener("pointercancel", this.pointerUp);
+    this.input.dispose();
     for (const id of this.actorInstances.keys()) this.destroyActor(id);
     for (const id of this.stickerInstances.keys()) this.removeSticker(id);
     for (const key of this.images.keys()) this.clearImages(key);

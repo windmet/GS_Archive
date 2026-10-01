@@ -12,6 +12,7 @@ import { StudioCompositionStage } from "../../core/StudioCompositionStage.js";
 import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
 import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile } from "../../core/StudioDocumentFile.mjs";
+import { studioTransformPatch } from '../../core/StudioGestures.mjs';
 
 export function useStudioComposition(props, canvas) {
   const repository = new DomainRepository(props.client, props.bootstrap),
@@ -86,10 +87,12 @@ export function useStudioComposition(props, canvas) {
   }
   function transform(id, values) {
     const row = studioObject(draft.value, id);
-    if (row)
-      for (const [key, value] of Object.entries(values))
-        row[key] = Math.min(key === "y" ? 3 : 2, Math.max(-1, value));
+    if (row) Object.assign(row, studioTransformPatch(values));
   }
+  function adjustSelected(factor = 1, angle = 0) {
+    stage?.adjustSelected({ factor, angle });
+  }
+  function cancelInteraction() { stage?.input.cancel(false); }
   function poseFor(view, row) {
     const pose = verifiedStudioPreset(
         view.media,
@@ -522,6 +525,8 @@ export function useStudioComposition(props, canvas) {
     select,
     addActor,
     addSticker,
+    adjustSelected,
+    cancelInteraction,
     remove,
     move,
     setSpot,

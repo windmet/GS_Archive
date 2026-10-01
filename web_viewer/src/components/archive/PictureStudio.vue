@@ -1,5 +1,22 @@
 <template>
-  <article class="domain-page studio-page" data-archive-scroll-container>
+  <div ref="studioShell" class="studio-shell" :class="{ 'is-focused': focused }">
+  <article class="domain-page studio-page" :class="{ 'is-focused': focused, 'is-rotated': rotated }" data-archive-scroll-container>
+    <header class="studio-focus-bar">
+      <button v-if="focused" type="button" @click="leaveFocus">退出工作台</button>
+      <button v-else type="button" @click="enterFocus">全屏工作台</button>
+      <span v-if="focused">摄影工作台 · {{ selected ? objectName(selected) : '点选对象后拖动' }}</span>
+      <button v-if="focused && !immersive.active.value" type="button" :disabled="immersive.pending.value" @click="immersive.enter(studioShell)">隐藏浏览器栏</button>
+      <button v-if="focused" ref="menuButton" type="button" :aria-expanded="menuOpen" aria-controls="studio-focus-menu" @click="menuOpen = !menuOpen">菜单</button>
+    </header>
+    <aside id="studio-focus-menu" ref="drawerHost" v-show="focused && menuOpen" class="studio-focus-drawer" :data-tab="drawerTab" aria-label="摄影工作台菜单">
+      <div class="studio-drawer-heading"><strong>摄影菜单</strong><button type="button" @click="closeMenu">收起菜单</button></div>
+      <nav aria-label="摄影菜单分区" class="studio-drawer-tabs">
+        <button v-for="tab in drawerTabs" :key="tab.id" type="button" :aria-pressed="drawerTab === tab.id" @click="drawerTab = tab.id">{{ tab.label }}</button>
+      </nav>
+      <div v-show="drawerTab === 'materials'" ref="materialsHost"></div>
+      <div v-show="drawerTab === 'objects'"><div ref="controlsHost"></div><div ref="voicesHost"></div></div>
+      <div v-show="drawerTab === 'files'" ref="toolsHost"></div>
+    </aside>
     <h2>摄影工作台</h2>
     <p v-if="busy" role="status">正在读取摄影资料…</p>
     <p v-if="error" role="alert" class="domain-error">
@@ -11,7 +28,18 @@
     <div class="studio-layout">
       <div class="studio-preview-column">
         <section class="domain-panel studio-canvas-panel" aria-label="摄影预览">
-          <div ref="canvas" class="studio-canvas"></div>
+          <div ref="canvas" class="studio-canvas" :data-studio-rotation="rotated ? '90' : '0'"></div>
+          <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
+          <div class="studio-session-tools">
+          <div v-if="selected" class="studio-quick-tools" aria-label="所选对象快捷操作">
+            <span>{{ objectName(selected) }}</span>
+            <button type="button" aria-label="缩小所选对象" title="缩小" @click="adjustSelected(1 / 1.1)">−</button>
+            <button type="button" aria-label="放大所选对象" title="放大" @click="adjustSelected(1.1)">＋</button>
+            <button type="button" aria-label="逆时针旋转所选对象" title="左转 5°" @click="adjustSelected(1, -5)">↶</button>
+            <button type="button" aria-label="顺时针旋转所选对象" title="右转 5°" @click="adjustSelected(1, 5)">↷</button>
+          </div>
+          <p class="studio-gesture-hint">直接拖动对象移动，双指缩放、旋转。圆柄旋转，方柄缩放；在画布外滑动可滚动页面。</p>
+          <p class="studio-gesture-hint studio-mouse-hint">滚轮缩放，Shift＋滚轮旋转；方向键微调，＋/− 调整大小，[ / ] 旋转。Esc 取消正在进行的拖动。</p>
           <p role="status" class="studio-status">
             {{ rendering ? "正在更新构图…" : status }}
           </p>
@@ -84,7 +112,10 @@
             </summary>
             <img :src="exportUrl" alt="导出的摄影画面" />
           </details>
+          </div>
+          </Teleport>
         </section>
+        <Teleport :to="materialsHost || 'body'" :disabled="!focused || !materialsHost">
         <section
           v-if="materials"
           class="domain-panel studio-library"
@@ -269,6 +300,8 @@
             </p>
           </template>
         </section>
+        </Teleport>
+        <Teleport :to="voicesHost || 'body'" :disabled="!focused || !voicesHost">
         <section v-if="selectedActor" class="domain-panel studio-voices">
           <h3>语音试听</h3>
           <DomainVoicePreview
@@ -277,9 +310,12 @@
             :bindings="selectedActor.media.voiceCues"
           />
         </section>
+        </Teleport>
       </div>
+      <Teleport :to="controlsHost || 'body'" :disabled="!focused || !controlsHost">
       <aside class="domain-panel studio-controls" aria-label="画布对象与属性">
-        <h3>画布对象</h3>
+        <details class="studio-object-picker" :open="!focused || !selected">
+        <summary>画布对象 · {{ objects.length }}</summary>
         <p class="studio-status">列表从后到前排列。可直接拖动画布中的对象。</p>
         <div class="studio-object-list">
           <div
@@ -327,6 +363,7 @@
             </button>
           </div>
         </div>
+        </details>
         <template v-if="selected">
           <h3 class="studio-selected-title">
             对象控制：{{ objectName(selected) }}
@@ -443,11 +480,13 @@
         </template>
         <p v-else class="studio-status">添加或选择一个画布对象。</p>
       </aside>
+      </Teleport>
     </div>
   </article>
+  </div>
 </template>
 <script setup>
-import { computed, onMounted, ref, shallowRef, watch } from "vue";
+import { computed, nextTick, onMounted, onScopeDispose, ref, shallowRef, watch } from "vue";
 import {
   Download,
   Copy,
@@ -468,6 +507,7 @@ import {
 } from "@lucide/vue";
 import { useStudioComposition } from "./useStudioComposition.js";
 import DomainVoicePreview from "./DomainVoicePreview.vue";
+import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const props = defineProps({
@@ -477,6 +517,34 @@ const props = defineProps({
   photoEntity: { type: String, default: "" },
 });
 const canvas = ref(null), fileInput = ref(null);
+const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
+const materialsHost = ref(null), controlsHost = ref(null), voicesHost = ref(null), toolsHost = ref(null);
+const compactScreen = window.matchMedia('(max-width: 600px), (max-width: 1024px) and (max-height: 600px)');
+const portraitScreen = window.matchMedia('(orientation: portrait)');
+const compact = ref(compactScreen.matches);
+const focused = ref(compact.value), portrait = ref(portraitScreen.matches);
+const rotated = computed(() => focused.value && portrait.value && compact.value);
+const menuOpen = ref(false), drawerTab = ref('materials');
+const drawerTabs = [{ id: 'materials', label: '素材' }, { id: 'objects', label: '对象' }, { id: 'files', label: '保存 / 导出' }];
+const immersive = usePlayerImmersiveMode();
+watch(drawerTab, async () => { await nextTick(); if (drawerHost.value) drawerHost.value.scrollTop = 0; });
+let focusChoice = null;
+function resizeStudio() {
+  portrait.value = portraitScreen.matches;
+  compact.value = compactScreen.matches;
+  if (focusChoice === null) focused.value = compact.value;
+}
+window.addEventListener('resize', resizeStudio);
+onScopeDispose(() => window.removeEventListener('resize', resizeStudio));
+function enterFocus() { focusChoice = true; focused.value = true; menuOpen.value = false; }
+function leaveFocus() { focusChoice = false; focused.value = false; menuOpen.value = false; void immersive.leave(); }
+function closeMenu() { menuOpen.value = false; menuButton.value?.focus(); }
+function escapeStudio(event) {
+  if (event.key !== 'Escape') return;
+  if (menuOpen.value) { closeMenu(); event.preventDefault(); }
+}
+window.addEventListener('keydown', escapeStudio);
+onScopeDispose(() => window.removeEventListener('keydown', escapeStudio));
 const {
   draft,
   actors,
@@ -502,6 +570,8 @@ const {
   select,
   addActor,
   addSticker,
+  adjustSelected,
+  cancelInteraction,
   remove,
   move,
   setSpot,
@@ -517,6 +587,7 @@ const {
   load,
   retry,
 } = useStudioComposition(props, canvas);
+watch([focused, rotated], cancelInteraction);
 function onDocumentFile(event) {
   const file = event.target.files?.[0];
   event.target.value = "";
