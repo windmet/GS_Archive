@@ -24,6 +24,8 @@
 
 对象数与最大 Combo 计数不同，页面分别标明。此版尚不复刻原游戏判定规则、透视、速度参数、Shaders、原始 note 皮肤或动态播放。tick 每拍比例、offset 单位及音频对齐仍未验证，所以不推算毫秒，不声称与试听同步。
 
+后续已对 IPA Unity 内置资源完成 [原始音符贴图核实](GS_SONG_NATIVE_NOTE_SPRITES_20261001.md)：三套图集及独立长条图集已解码并保存来源；当前预览尚未接入这些 PNG。默认皮肤编号、SP / P 技能映射、运行时 Shader / UV 等边界见该记录。
+
 附件仅为研究参考。核对 [pjsekai-scores-rs 项目仓库](https://github.com/Team-Haruki/pjsekai-scores-rs)和 MIT LICENSE 后，它是社区 SUS / JSON 渲染器，而非 SideM 官方工具；本实现不引入该项目、不转换为 SUS，也不根据附件推断资产授权。
 
 ## 验证记录
