@@ -74,7 +74,11 @@ export function buildSongTrackGeometry(chart, cursor = 0, span = 6000) {
     const ticks = new Set([from, to])
     // Include every native bend before adding perspective tessellation points.
     for (const p of points) if (n.tick + p.subtick > from && n.tick + p.subtick < to) ticks.add(n.tick + p.subtick)
-    for (let t = from + span / 32; t < to; t += span / 32) ticks.add(t)
+    // A hold within one lane already projects to a straight trapezoid. Avoid
+    // unnecessary internal clip edges there; curved slides need subdivision.
+    if (points.some(p => p.posx !== points[0].posx)) {
+      for (let t = from + span / 32; t < to; t += span / 32) ticks.add(t)
+    }
     const samples = [...ticks].sort((a, b) => a - b).map(tick => {
       const lane = laneAt(points, tick - n.tick), p = project(lane, tick)
       const half = estimate.normalVisibleWidth * estimate.holdWidthRatio * p.scale / 2 * (n.type.startsWith('LARGE') ? 1.45 : 1)
