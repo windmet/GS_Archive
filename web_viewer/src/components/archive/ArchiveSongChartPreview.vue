@@ -37,7 +37,7 @@
 
 <script setup>
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { ChevronLeft, ChevronRight, CornerDownRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, CornerDownRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
 import { validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
