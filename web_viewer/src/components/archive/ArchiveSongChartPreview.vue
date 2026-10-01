@@ -158,8 +158,9 @@ function onCanvasKey(event) {
 function positionSettings() {
   if (!settingsOpen.value || !settingsButton.value || !settingsPanel.value) return
   const box = settingsButton.value.getBoundingClientRect(), width = Math.min(384, window.innerWidth - 24)
+  if (box.bottom < 12 || box.top > window.innerHeight - 12) { void closeSettings(false); return }
   const below = Math.max(0, window.innerHeight - box.bottom - 20), above = Math.max(0, box.top - 20)
-  const openAbove = below < Math.min(250, settingsPanel.value.scrollHeight) && above > below
+  const openAbove = below < settingsPanel.value.scrollHeight && above > below
   const height = Math.min(settingsPanel.value.scrollHeight, openAbove ? above : below)
   settingsPosition.value = {
     width: `${width}px`, left: `${Math.max(12, Math.min(box.right - width, window.innerWidth - width - 12))}px`,
