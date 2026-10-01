@@ -5,6 +5,45 @@ import vm from 'node:vm'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+{
+  const events = []
+  const context = {
+    view: { value: 'welcome' }, detailSourceRoute: { value: '' },
+    storeUserPreferences: value => events.push(['save', { ...value }]),
+    openRootPortal: () => events.push(['portal']),
+    restoreDetailSource: () => events.push(['return']),
+  }
+  for (const name of ['chooseStartupLater', 'choosePortalStartup']) {
+    vm.runInNewContext(app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0], context)
+  }
+  context.chooseStartupLater()
+  assert.deepEqual(events.splice(0), [['save', { onboardingComplete: true }], ['portal']])
+  context.detailSourceRoute.value = '?view=portal'
+  context.chooseStartupLater()
+  assert.deepEqual(events.splice(0), [['return']], 'canceling settings must not overwrite the saved default')
+  context.choosePortalStartup()
+  assert.deepEqual(events.splice(0), [['save', { homeMode: 'portal', onboardingComplete: true }], ['portal']])
+  assert.equal(context.detailSourceRoute.value, '')
+}
+{
+  let preferences = { homeMode: 'portal', startupIdol: null, onboardingComplete: true }
+  const opened = []
+  const context = {
+    view: { value: 'idol_picker' }, currentPickTarget: { value: 'home' }, homeSelectedId: { value: '' },
+    userPreferences: { value: preferences }, archivePickerIdols: { value: [{ id: '001tom' }] },
+    archiveHomeIdols: { value: [{ id: '001tom' }] },
+    storeUserPreferences: value => { preferences = { ...preferences, ...value }; context.userPreferences.value = preferences },
+    captureDetailSource: () => {}, openGameHome: idol => opened.push(idol),
+  }
+  vm.runInNewContext(app.match(/function chooseImmersiveIdol\([^]*?\n\}/)[0], context)
+  context.chooseImmersiveIdol({ idolCode: '001tom', rememberStartup: false })
+  assert.equal(preferences.homeMode, 'portal', 'opening Home from its picker keeps the archive startup choice')
+  assert.equal(preferences.startupIdol, '001tom')
+  assert.deepEqual(opened, ['001tom'])
+  context.view.value = 'welcome'
+  context.chooseImmersiveIdol({ idolCode: '001tom', rememberStartup: true, homeMode: 'card' })
+  assert.equal(preferences.homeMode, 'card', 'an explicit startup choice may update the default')
+}
 const bootstrapContext = { EXTERNAL_STORY_RESOURCES_ENABLED: false }
 vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'external_story_resources' }), true,

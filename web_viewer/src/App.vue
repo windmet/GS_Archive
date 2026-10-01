@@ -45,6 +45,7 @@
         :target-label="idolPickerLabel"
         @cancel="cancelWelcomeOrPicker"
         @choose-later="chooseStartupLater"
+        @choose-portal="choosePortalStartup"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
         @clear-preferences="clearUserPreferences"
@@ -61,6 +62,7 @@
         @update:home-mode="storeUserPreferences({ homeMode: $event })"
         @focus-change="homeFocus = $event"
         :stats="archiveStats"
+        @open-portal="navigateArchiveSection('portal')"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"
@@ -2058,6 +2060,13 @@ function openRootPortal() {
 
 function chooseStartupLater() {
   if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
+  storeUserPreferences({ onboardingComplete: true })
+  openRootPortal()
+}
+
+function choosePortalStartup() {
+  storeUserPreferences({ homeMode: 'portal', onboardingComplete: true })
+  detailSourceRoute.value = ''
   openRootPortal()
 }
 
@@ -2065,7 +2074,10 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
   const next = {}
-  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) Object.assign(next, { homeMode: rememberStartup ? homeMode : (userPreferences.value.homeMode === 'card' ? 'card' : 'spine'), startupIdol: idolCode, onboardingComplete: true })
+  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) {
+    Object.assign(next, { startupIdol: idolCode, onboardingComplete: true })
+    if (rememberStartup) next.homeMode = homeMode
+  }
   if (setPreferred) next.preferredIdol = idolCode
   if (Object.keys(next).length) storeUserPreferences(next)
   if (view.value === 'idol_picker') {

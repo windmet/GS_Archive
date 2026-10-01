@@ -45,6 +45,7 @@
         <h2>{{ activeIdol.name }}</h2>
         <small>{{ activeIdol.kana }}</small>
       </div>
+      <button class="home-archive-link" type="button" @click="emit('open-portal')">打开资料馆 <span aria-hidden="true">→</span></button>
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
@@ -301,7 +302,7 @@ const props = defineProps({
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['open-portal', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
