@@ -1,7 +1,6 @@
 <template>
   <section class="song-block single-song-player" aria-labelledby="song-single-player-title" :data-clock-phase="clockSnapshot.phase">
     <div class="song-block-heading">
-      <span>FULL MIX</span>
       <h3 id="song-single-player-title">歌曲播放</h3>
     </div>
     <p class="song-block-note">完整混音试听</p>
@@ -13,7 +12,7 @@
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
     <ArchiveMediaTransport :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
-      <label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume" /></label>
+      <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume" /></label></details>
     </ArchiveMediaTransport>
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>

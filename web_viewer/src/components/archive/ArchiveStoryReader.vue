@@ -22,7 +22,7 @@
         已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
         <button v-if="translationLoadFailed" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
       </p>
-      <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情（实验）' }}</button>
+      <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
       <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>
       <div v-if="state.status === 'loading'" class="reader-loading" role="status">正在载入正文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
       <div v-else-if="state.status === 'error'" class="reader-feedback" role="alert"><h2>正文暂时无法载入</h2><p>请重试，或选择其他分段。</p><button @click="emit('retry')">重试</button><details><summary>加载详情</summary><p>{{ state.error }}</p></details></div>

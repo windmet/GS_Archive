@@ -4,5 +4,5 @@ import { BookOpen, FolderOpen, Home, Images, MessageCircle, Music, Sparkles, Use
 export const archiveNavigationIcons = {
   home: Home, stories: BookOpen, songs: Music, idols: Users,
   cards: Images, gashas: Sparkles, interactions: MessageCircle, resources: FolderOpen,
-  events:CalendarDays, collections:Box, photos:Camera,
+  events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles,
 }

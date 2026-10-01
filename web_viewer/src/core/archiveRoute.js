@@ -74,6 +74,8 @@ const VALID_VIEWS = new Set([
   'gasha_detail',
   'song_catalog',
   'song_detail',
+  'chart_lab',
+  'experiments',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -139,6 +141,8 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
   song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
+  chart_lab: { section: 'experiments', required: ['song'], fallback: 'song_catalog' },
+  experiments: { section: 'experiments', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'resources', required: [] },
@@ -155,11 +159,12 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'events', label: '活动' },
   { id: 'collections', label: '藏品' },
   { id: 'photos', label: '摄影' },
+  { id: 'experiments', label: '实验室' },
   { id: 'resources', label: '资源' },
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
-const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage'])
+const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage', 'chart_lab'])
 const MAX_SOURCE_DEPTH = 16
 const MAX_SOURCE_LENGTH = 8192
 

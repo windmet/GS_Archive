@@ -4,7 +4,7 @@
       <button class="icon-button" aria-label="返回来源目录" title="返回来源目录" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
       <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}{{ title || '剧情阅读' }}</span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
       <button class="desktop-search icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
-      <button class="desktop-settings icon-button" aria-label="Producer 显示名" title="Producer 显示名" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
+      <button class="desktop-settings icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
     </header>
     <div class="reader-desktop-toolbar">
       <nav class="compact-episodes" aria-label="本话快速定位">
@@ -30,8 +30,8 @@
         <template v-else>
           <ReaderControlBar v-if="panel === 'settings' || panel === 'producer'" :producer-only="panel === 'producer'" :mode="mode" :searchable="searchable" @mode="emit('mode', $event)" @search="openPanel('search')" />
           <slot v-if="panel === 'search'" name="search" />
-          <p v-if="panel === 'settings'" class="settings-note">配色和 Producer 显示名会保存在本机。篇内查找包含已载入的所有分支。</p>
-          <p v-if="panel === 'producer'" class="settings-note">显示名保存在本机，用于正文中的制作人称呼。留空时保留来源占位符。</p>
+          <p v-if="panel === 'settings'" class="settings-note">配色和 P 名字会保存在本机。篇内查找包含已载入的所有分支。</p>
+          <p v-if="panel === 'producer'" class="settings-note">显示名保存在本机，用于剧情、首页与卡面中的制作人称呼。留空时保留来源占位符。</p>
         </template>
       </div>
     </dialog>
@@ -57,7 +57,7 @@ const hasDirectory = computed(() => props.segments.length > 0)
 const hasChapters = computed(() => props.chapterNavigation?.chapters.length > 1)
 const segmentLabel = segment => presentIdolEpisodeLabel({sourceName:segment.label,format:'reader'})
 const activeLabel = computed(() => segmentLabel(props.segments.find(segment => (segment.documentId || segment.episodeKey) === props.activeDocumentId) || {label:props.subtitle}) || '目录')
-const panelTitle = computed(() => panel.value === 'chapters' ? '切换话目' : panel.value === 'directory' ? '本话 EP 目录' : panel.value === 'search' ? '篇内查找' : panel.value === 'producer' ? 'Producer 显示名' : '阅读设置')
+const panelTitle = computed(() => panel.value === 'chapters' ? '切换话目' : panel.value === 'directory' ? '本话 EP 目录' : panel.value === 'search' ? '篇内查找' : panel.value === 'producer' ? 'P 名字' : '阅读设置')
 async function openPanel(name, event) {
   if (!dialog.value?.open) opener = event?.currentTarget || globalThis.document?.activeElement
   panel.value = name

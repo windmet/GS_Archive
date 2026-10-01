@@ -1,24 +1,12 @@
 <template>
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
-    <div class="song-block-heading">
-      <span>SONG PLAYER</span>
-      <h3 id="song-experimental-player-title">演唱试听（实验）</h3>
+    <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small>分轨混音 · 实验</small></div>
+    <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
+    <div class="song-modes" role="group" aria-label="试听模式" data-vocal-setting-selector>
+      <button v-for="item in listeningModes" :key="item.id" type="button" :aria-pressed="mode === item.id" @click="mode = item.id">{{ item.label }}</button>
     </div>
-    <p class="song-block-note">
-      选择组合、中心偶像或自由编成试听。分轨试听与原游戏混音可能不同。
-    </p>
-
+    <button v-if="hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${currentSoloTrack?.displayName || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
     <div class="experimental-controls">
-      <label>
-        演唱指定
-        <select v-model="mode" data-vocal-setting-selector>
-          <option v-if="hasVocalSetting('formation')" value="lineup">编成偶像（五槽合唱）</option>
-          <option v-if="hasVocalSetting('unit')" value="unit">组合（单轨）</option>
-          <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音试听）</option>
-          <option v-if="hasVocalSetting('center')" value="solo">中心偶像＋伴奏</option>
-          <option v-if="auditedOptions.length" value="single">其他收录音轨</option>
-        </select>
-      </label>
       <label v-if="mode === 'unit'">
         组合
         <select v-model="selectedUnitKey">
@@ -32,14 +20,6 @@
         <select v-model="selectedSingleKey">
           <option v-for="option in auditedOptions" :key="option.key" :value="option.key">
             {{ option.label }}
-          </option>
-        </select>
-      </label>
-      <label v-else-if="mode === 'solo'">
-        中心偶像
-        <select v-model="selectedIdolCode">
-          <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.displayName }}
           </option>
         </select>
       </label>
@@ -75,7 +55,7 @@
 
       <ArchiveMediaTransport :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
 
-      <div v-if="mode === 'solo'" class="experimental-mix-controls">
+      <details v-if="mode === 'solo'"><summary>音轨平衡</summary><div class="experimental-mix-controls">
         <label>
           Solo 音量
           <input v-model.number="vocalVolume" type="range" min="0" max="1" step="0.01" aria-label="Solo 音量" />
@@ -84,7 +64,7 @@
           伴奏音量
           <input v-model.number="backingVolume" type="range" min="0" max="1" step="0.01" aria-label="伴奏音量" />
         </label>
-      </div>
+      </div></details>
     </div>
 
     <ArchiveSongLyrics v-if="mode !== 'lineup'" :song-code="song.id"
@@ -97,12 +77,23 @@
       </p>
     </ArchiveTechnicalDetails>
     <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
+    <ArchiveTerminalDialog class="solo-drawer" :open="soloOpen" title="Solo 声部试听" :title-id="soloTitleId" @close="soloOpen = false">
+      <div class="solo-filters">
+        <label>查找偶像<input v-model="soloQuery" type="search" placeholder="输入姓名或组合" /></label>
+        <label>组合<select v-model="soloUnit"><option value="">全部组合</option><option v-for="unit in soloUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
+      </div>
+      <p role="status">{{ filteredSoloEntries.length }} 位偶像 · 选择后回到播放条</p>
+      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="mode === 'solo' && selectedIdolCode === entry.idol_code" @click="selectSolo(entry.idol_code)"><strong>{{ entry.displayName }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}</small></button></div>
+      <p v-if="!filteredSoloEntries.length">没有匹配的偶像，请调整搜索或组合。</p>
+    </ArchiveTerminalDialog>
   </section>
 </template>
 
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
+import '../../styles/archive-terminal.css'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -111,12 +102,32 @@ import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
 const props = defineProps({
   song: { type: Object, required: true },
   audioExperiment: { type: Object, default: null },
+  idolDirectory: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['open-stage', 'request-play'])
 const lineupPlayer = ref(null)
 defineExpose({ pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() } })
 
 const mode = ref('single')
+const soloOpen = ref(false), soloQuery = ref(''), soloUnit = ref('')
+const soloTitleId = useId()
+const soloDirectory = computed(() => new Map(props.idolDirectory.map(idol => [idol.id, idol])))
+const soloUnits = computed(() => [...new Map(soloEntries.value.map(entry => {
+  const idol = soloDirectory.value.get(entry.idol_code)
+  return [idol?.unitCode, { id: idol?.unitCode, name: idol?.unitName }]
+}).filter(([id]) => id)).values()])
+const filteredSoloEntries = computed(() => soloEntries.value.filter(entry => {
+  const idol = soloDirectory.value.get(entry.idol_code)
+  return (!soloUnit.value || idol?.unitCode === soloUnit.value) &&
+    (!soloQuery.value.trim() || `${entry.displayName} ${idol?.kana || ''} ${idol?.unitName || ''}`.toLowerCase().includes(soloQuery.value.trim().toLowerCase()))
+}))
+const listeningModes = computed(() => [
+  ...(hasVocalSetting('all_stars') ? [{ id: 'all_stars', label: '全员合唱' }] : []),
+  ...(hasVocalSetting('unit') ? [{ id: 'unit', label: '组合预设' }] : []),
+  ...(hasVocalSetting('formation') ? [{ id: 'lineup', label: '自由编成 · 5 槽' }] : []),
+  ...(auditedOptions.value.length ? [{ id: 'single', label: '收录音轨' }] : []),
+])
+function selectSolo(id) { selectedIdolCode.value = id; mode.value = 'solo'; soloOpen.value = false }
 const selectedSingleKey = ref('full_mix')
 const selectedIdolCode = ref('')
 const singleAudio = ref(null)
@@ -204,7 +215,7 @@ async function togglePlayback() {
   }
   const elements = audioElements()
   if (!elements.length || elements.some(audio => !audio.src)) {
-    audioError.value = '实验音频尚未准备，无法播放。'
+    audioError.value = '当前试听资源暂时不可用，请稍后重试。'
     return
   }
   if (isPlaying.value) {
@@ -311,4 +322,25 @@ onBeforeUnmount(() => resetPlayback())
   .experimental-mix-controls { grid-template-columns: 1fr; }
   .experimental-time { width: 100%; text-align: left; }
 }
+</style>
+
+<style scoped>
+.song-block-heading { display: flex; gap: 8px; align-items: center; }
+.song-block-heading small { font-size: 11px; padding: 3px 6px; border-radius: 4px; color: #60717d; background: #eef4f7; }
+.song-modes { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; background: #eef5f5; border-radius: 8px; }
+.song-modes button, .solo-open { min-height: 44px; padding: 8px 12px; border: 1px solid #c7dcdf; border-radius: 6px; background: white; color: #245a64; font: inherit; font-size: 12px; cursor: pointer; }
+.song-modes button { flex: 1; } .song-modes button[aria-pressed=true] { background: #176f69; color: white; border-color: #176f69; }
+.solo-open { width: 100%; margin-top: 12px; text-align: left; }
+summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #245a64; font-size: 13px; }
+button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }
+.solo-drawer { position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box; width: min(480px,100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: 1px solid #bed3db; border-radius: 0; padding: 0; color: #254858; background: white; }
+.solo-drawer::backdrop { background: #102b3d88; }
+.solo-drawer :deep(.terminal-dialog-body) { padding: 18px; }
+.solo-filters { display: grid; gap: 12px; }
+.solo-filters label { display: grid; gap: 8px; font-size: 13px; }
+.solo-filters input, .solo-filters select { width: 100%; min-height: 44px; border: 1px solid #afc8ce; padding: 8px 10px; box-sizing: border-box; border-radius: 6px; font: inherit; background: white; color: #254858; }
+.solo-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.solo-list button { display: grid; gap: 5px; min-height: 64px; border: 1px solid #cbdee4; padding: 10px; border-radius: 6px; text-align: left; color: #254858; background: #f5fafb; font: inherit; font-size: 13px; cursor: pointer; }
+.solo-list small { color: #657f8a; } .solo-list button[aria-pressed=true] { border-color: #168f87; background: #e4f7f1; }
+@media(max-width:760px) { .solo-drawer { inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 14px 14px 0 0; } }
 </style>

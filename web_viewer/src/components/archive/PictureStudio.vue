@@ -1,11 +1,13 @@
 <template>
   <div ref="studioShell" class="studio-shell" :class="{ 'is-focused': focused }">
-  <article class="domain-page studio-page" :class="{ 'is-focused': focused, 'is-rotated': rotated }" data-archive-scroll-container>
+  <article class="domain-page studio-page" :class="{ 'is-focused': focused }" data-archive-scroll-container>
     <header class="studio-focus-bar">
-      <button v-if="focused" type="button" @click="leaveFocus">退出工作台</button>
-      <button v-else type="button" @click="enterFocus">全屏工作台</button>
+      <button v-if="standalone" type="button" @click="emit('back')">返回来源页</button>
+      <button v-else-if="focused" type="button" @click="leaveFocus">退出专注编辑</button>
+      <button v-if="!focused" type="button" @click="enterFocus">专注编辑</button>
       <span v-if="focused">摄影工作台 · {{ selected ? objectName(selected) : '点选对象后拖动' }}</span>
-      <button v-if="focused && !immersive.active.value" type="button" :disabled="immersive.pending.value" @click="immersive.enter(studioShell)">隐藏浏览器栏</button>
+      <button v-if="focused && !immersive.active.value" type="button" :disabled="immersive.pending.value" @click="immersive.enter(studioShell)">横屏全屏</button>
+      <button v-if="immersive.active.value" type="button" @click="immersive.leave()">退出全屏</button>
       <button v-if="focused" ref="menuButton" type="button" :aria-expanded="menuOpen" aria-controls="studio-focus-menu" @click="menuOpen = !menuOpen">菜单</button>
     </header>
     <aside id="studio-focus-menu" ref="drawerHost" v-show="focused && menuOpen" class="studio-focus-drawer" :data-tab="drawerTab" aria-label="摄影工作台菜单">
@@ -18,6 +20,7 @@
       <div v-show="drawerTab === 'files'" ref="toolsHost"></div>
     </aside>
     <h2>摄影工作台</h2>
+    <p v-if="immersive.notice.value" role="status">{{ immersive.notice.value === 'rotate' ? '可继续竖屏编辑，或自行旋转设备。' : '浏览器暂不支持全屏，可继续当前编辑。' }}</p>
     <p v-if="busy" role="status">正在读取摄影资料…</p>
     <p v-if="error" role="alert" class="domain-error">
       {{ error
@@ -28,7 +31,7 @@
     <div class="studio-layout">
       <div class="studio-preview-column">
         <section class="domain-panel studio-canvas-panel" aria-label="摄影预览">
-          <div ref="canvas" class="studio-canvas" :data-studio-rotation="rotated ? '90' : '0'"></div>
+          <div ref="canvas" class="studio-canvas" data-studio-rotation="0"></div>
           <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
           <div class="studio-session-tools">
           <div v-if="selected" class="studio-quick-tools" aria-label="所选对象快捷操作">
@@ -510,7 +513,9 @@ import DomainVoicePreview from "./DomainVoicePreview.vue";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
+const emit = defineEmits(['back']);
 const props = defineProps({
+  standalone: Boolean,
   client: Object,
   bootstrap: Object,
   photoIdol: { type: String, default: "" },
@@ -519,25 +524,13 @@ const props = defineProps({
 const canvas = ref(null), fileInput = ref(null);
 const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
 const materialsHost = ref(null), controlsHost = ref(null), voicesHost = ref(null), toolsHost = ref(null);
-const compactScreen = window.matchMedia('(max-width: 600px), (max-width: 1024px) and (max-height: 600px)');
-const portraitScreen = window.matchMedia('(orientation: portrait)');
-const compact = ref(compactScreen.matches);
-const focused = ref(compact.value), portrait = ref(portraitScreen.matches);
-const rotated = computed(() => focused.value && portrait.value && compact.value);
+const focused = ref(props.standalone);
 const menuOpen = ref(false), drawerTab = ref('materials');
 const drawerTabs = [{ id: 'materials', label: '素材' }, { id: 'objects', label: '对象' }, { id: 'files', label: '保存 / 导出' }];
 const immersive = usePlayerImmersiveMode();
 watch(drawerTab, async () => { await nextTick(); if (drawerHost.value) drawerHost.value.scrollTop = 0; });
-let focusChoice = null;
-function resizeStudio() {
-  portrait.value = portraitScreen.matches;
-  compact.value = compactScreen.matches;
-  if (focusChoice === null) focused.value = compact.value;
-}
-window.addEventListener('resize', resizeStudio);
-onScopeDispose(() => window.removeEventListener('resize', resizeStudio));
-function enterFocus() { focusChoice = true; focused.value = true; menuOpen.value = false; }
-function leaveFocus() { focusChoice = false; focused.value = false; menuOpen.value = false; void immersive.leave(); }
+function enterFocus() { focused.value = true; menuOpen.value = false; }
+function leaveFocus() { focused.value = false; menuOpen.value = false; void immersive.leave(); }
 function closeMenu() { menuOpen.value = false; menuButton.value?.focus(); }
 function escapeStudio(event) {
   if (event.key !== 'Escape') return;
@@ -587,7 +580,7 @@ const {
   load,
   retry,
 } = useStudioComposition(props, canvas);
-watch([focused, rotated], cancelInteraction);
+watch(focused, cancelInteraction);
 function onDocumentFile(event) {
   const file = event.target.files?.[0];
   event.target.value = "";

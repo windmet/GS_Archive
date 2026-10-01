@@ -1,11 +1,12 @@
 <template>
-  <section class="chart-preview" aria-label="谱面查看器">
+  <section class="chart-preview" :class="{ 'is-long': mode === 'long' }" aria-label="谱面查看器">
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
         <div class="chart-difficulties" role="group" aria-label="谱面难度"><button v-for="d in difficulties" :key="d.type" type="button" :class="`difficulty-${d.type}`" :aria-pressed="selected === d.type" @click="selected = d.type">{{ d.label }} <small>Lv {{ d.levelLabel }}</small></button></div>
         <div class="chart-modes" role="group" aria-label="谱面视图"><button type="button" :aria-pressed="mode === 'perspective'" @click="mode = 'perspective'">透视轨道</button><button type="button" :aria-pressed="mode === 'long'" @click="mode = 'long'">长轨图</button></div>
-        <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
+        <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
+        <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
       <Teleport to="body">
         <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
@@ -21,7 +22,7 @@
       <p v-if="loading" role="status">正在加载谱面…</p>
       <p v-else-if="error" role="alert">{{ error }} <button type="button" @click="loadChart">重试</button></p>
       <template v-else-if="chart">
-        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :span="span" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" @seek="seek" /></div>
+        <div class="chart-viewport" :class="{ 'is-long': mode === 'long' }" tabindex="0" role="region" aria-label="谱面画布" @keydown="onCanvasKey"><p class="chart-count chart-hud"><strong>{{ activeDifficulty.label }}</strong><span>Combo {{ activeDifficulty.maxCombo }}</span></p><ArchiveSongTrackPreview v-if="mode === 'perspective'" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :span="span" /><ArchiveSongLongPreview v-else ref="longPreview" :chart="chart" :skin="skin" :title="`${title} ${activeDifficulty.label}`" :cursor="safeCursor" :scale="scale" :layout="longLayout" :follow="followPlayback && playing" @seek="seek" /></div>
         <footer class="chart-transport" aria-label="谱面播放控制台" :data-clock-phase="clockSnapshot.phase">
           <audio v-if="audioTrack?.url" ref="audio" :src="audioTrack.url" preload="none" aria-label="谱面同步完整混音" @loadedmetadata="applyPendingSeek" />
           <div class="chart-timeline"><span class="chart-time">{{ formatChartTime(currentSeconds) }} <small>/ {{ formatChartTime(totalSeconds) }}</small></span><input :value="currentSeconds" type="range" min="0" :max="totalSeconds" step="0.01" aria-label="谱面时间轴" @input="seekSeconds(Number($event.target.value))" /><div class="tick-position"><button v-if="!editingTick" ref="tickButton" type="button" class="tick-readout" aria-label="编辑谱面 tick 位置" title="点击输入 tick 精确定位" :data-tick="Math.round(safeCursor)" @click="editTick">Tick {{ Math.round(safeCursor) }} <span>/ {{ chart.maxTick }}</span></button><label v-else>Tick <input ref="tickInput" v-model="tickDraft" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" @blur="commitTick()" @keydown.enter.prevent="commitTick(true)" @keydown.esc.stop.prevent="cancelTick(true)" /> <span>/ {{ chart.maxTick }}</span></label></div></div>
@@ -46,11 +47,11 @@ import { assertBrowserSongChartPng, exportSongChartPng } from '../../presentatio
 import ArchiveSongTrackPreview from './ArchiveSongTrackPreview.vue'
 import ArchiveSongLongPreview from './ArchiveSongLongPreview.vue'
 import { embedSongChartImages, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
-const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null } })
+const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null }, standalone: Boolean })
 const emit = defineEmits(['request-play'])
 const uid = `chart-viewer-${getCurrentInstance().uid}`
-const opened = ref(false), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
-const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayout = ref('auto')
+const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
+const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayout = ref('auto'), followPlayback = ref(false)
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
@@ -98,6 +99,7 @@ async function loadChart() {
 }
 watch([opened, selected, () => props.songCode], loadChart)
 onMounted(() => {
+  if (props.standalone) { if (window.matchMedia('(max-width: 760px)').matches) mode.value = 'long'; void loadChart() }
   document.addEventListener('pointerdown', onOutsideSettings)
   document.addEventListener('keydown', onSettingsEscape)
   window.addEventListener('resize', positionSettings)
@@ -115,6 +117,7 @@ function seekSeconds(seconds) {
   const time = Math.max(0, Math.min(totalSeconds.value, Number(seconds) || 0))
   pendingSeconds = time; cursor.value = timing.value.secondsToTick(time); locateMessage.value = ''
   if (audio.value?.readyState >= 1) clock.seek(time)
+  void nextTick(() => longPreview.value?.scrollToTick())
 }
 function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0)))) }
 function goToFirstNote() { seek(Math.min(...chart.value.notes.map(n => n.tick), chart.value.maxTick)) }
@@ -227,6 +230,7 @@ button, select, input[type=number] { box-sizing: border-box; border: 1px solid #
 button { display: inline-flex; justify-content: center; align-items: center; gap: 6px; min-height: 36px; padding: 6px 10px; cursor: pointer; }
 button:disabled { opacity: .4; cursor: default; }
 button:not(:disabled):hover { border-color: #438d8a; background: #eaf4f2; }
+.chart-toolbar > button[aria-pressed=true] { background: #205d60; border-color: #205d60; color: #fff; }
 select { min-height: 36px; padding: 6px 8px; max-width: 100%; }
 input[type=number] { min-height: 32px; padding: 4px 7px; }
 .chart-open { min-height: 44px; }

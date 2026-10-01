@@ -8,6 +8,7 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
+      :immersive-tool="view === 'song_detail'"
       :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
       :searchable="archiveSearchable"
@@ -53,7 +54,8 @@
       <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
-        v-model:selected-id="homeSelectedId"
+        :selected-id="homeSelectedId"
+        @update:selected-id="selectHomeIdol"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
         :no-audio="NO_AUDIO"
@@ -68,6 +70,7 @@
         @open-chat="openHomeChat"
       />
 
+      <ArchiveExperiments v-if="view === 'experiments'" @charts="openSongCatalog" @photo="openPictureStudio()" @stage="openChibiStage()" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -181,6 +184,8 @@
       <ArchiveSongDetail
         v-if="view === 'song_detail' && currentSongPresentation"
         :song="currentSongPresentation"
+        :idol-directory="archiveBootstrap.idols"
+        @open-chart="openChartLab"
         @open-song="openSong"
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
@@ -210,7 +215,6 @@
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
 
-      <PictureStudio v-if="view==='picture_studio'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" />
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
@@ -479,6 +483,11 @@
     <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
     </PlayerSessionShell>
 
+    <ArchiveExperimentFrame v-if="view === 'chart_lab'" :title="`谱面 · ${currentSongPresentation?.title || '正在读取'}`" :back-label="detailSourceRoute ? '返回来源页' : '返回歌曲'" @back="closeFullScreenExperiment">
+      <ArchiveChartLab v-if="view === 'chart_lab' && currentSongPresentation?.gameplay" :song="currentSongPresentation" />
+      <p v-else-if="view === 'chart_lab'" role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
+    </ArchiveExperimentFrame>
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
@@ -509,6 +518,7 @@
 </template>
 
 <script setup>
+import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
@@ -615,6 +625,8 @@ const archiveRouteLoaders = {
   event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
   collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
   photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
+  experiments: () => import('./components/archive/ArchiveExperiments.vue'),
+  chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
   picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
@@ -647,6 +659,8 @@ const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail
 const ArchiveEventCatalog = defineAsyncComponent(archiveRouteLoaders.event_catalog)
 const ArchiveCollectionCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
 const ArchivePhotoCatalog = defineAsyncComponent(archiveRouteLoaders.photo_catalog)
+const ArchiveExperiments = defineAsyncComponent(archiveRouteLoaders.experiments)
+const ArchiveChartLab = defineAsyncComponent(archiveRouteLoaders.chart_lab)
 const PictureStudio = defineAsyncComponent(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
 const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
@@ -1294,7 +1308,7 @@ const chapterReadingSession = createChapterReadingSession({ repository: readingR
 } })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
 
-const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
+const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage', 'chart_lab', 'picture_studio'].includes(view.value))
 
 const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.song : null)
@@ -1322,6 +1336,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
+  if (view.value === 'experiments') return '实验室'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return '藏品馆'
   if (view.value === 'photo_catalog') return '摄影资料'
@@ -1751,7 +1766,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
-    else if (route.view === 'song_detail' && !currentSong.value) view.value = 'song_catalog'
+    else if (['song_detail', 'chart_lab'].includes(route.view) && !currentSong.value) view.value = 'song_catalog'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
@@ -1812,7 +1827,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','photos'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','photos','experiments'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -1826,6 +1841,7 @@ function navigateArchiveSection(section) {
     else openIdolPicker('mobile')
   }
   else if (section === 'gashas') openGashaCatalog()
+  else if (section === 'experiments') { filterQuery.value = ''; commitView('experiments') }
   else if (section === 'resources') openArchiveStatus()
   else if (['events','collections','photos'].includes(section)) openDomainCatalog(section)
 }
@@ -1856,7 +1872,7 @@ function selectPhotoEntity(key) {
   currentPhotoEntity.value=key; syncArchiveRoute({replace:true})
 }
 function openPictureStudio(key) {
-  selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
+  if (key) selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
@@ -2091,6 +2107,12 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
     return
   }
   openGameHome(idolCode)
+}
+
+function selectHomeIdol(idolCode) {
+  if (!archiveHomeIdols.value.some(idol => idol.id === idolCode)) return
+  homeSelectedId.value = idolCode
+  storeUserPreferences({ startupIdol: idolCode })
 }
 
 function savePreferredIdol(idolCode) {
@@ -2393,6 +2415,12 @@ function goArchiveBack() {
   }
   const handler = backByView[view.value] || goHome
   handler()
+}
+
+function openChartLab() { captureDetailSource(); filterQuery.value = ''; commitView('chart_lab') }
+function closeFullScreenExperiment() {
+  if (detailSourceRoute.value) return restoreDetailSource(goHome)
+  commitView(view.value === 'chart_lab' ? 'song_detail' : 'photo_catalog')
 }
 
 async function openSpineLab() {
@@ -3380,7 +3408,7 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
   if (route.view === 'song_catalog') await ensureSongCatalog()
-  if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
+  if (['song_detail', 'chart_lab'].includes(route.view) && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
   const pending = applyArchiveRoute(route, { restoring: false })
   const revision = navigation.getRevision()
@@ -4307,7 +4335,7 @@ async function loadSongDetail(songCode) {
 function isBootstrapRoute(route) {
   if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['experiments', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
@@ -4544,7 +4572,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
       }
       if (route.view === 'song_catalog') await ensureSongCatalog()
       if (!intent.isCurrent() || request !== restoreRequest) return
-      if (['song_detail', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
+      if (['song_detail', 'chart_lab', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
         try {
           const detail = await loadSongDetail(route.song || 'drvalv')
           if (!intent.isCurrent() || request !== restoreRequest) return
@@ -4553,7 +4581,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
         } catch (error) {
           if (!intent.isCurrent() || request !== restoreRequest) return
           console.error('[SongReadModel] Failed to restore song detail:', error)
-          if (route.view === 'song_detail') {
+          if (['song_detail', 'chart_lab'].includes(route.view)) {
             await ensureSongCatalog()
             if (!intent.isCurrent() || request !== restoreRequest) return
             songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'

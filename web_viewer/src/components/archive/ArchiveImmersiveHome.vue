@@ -210,7 +210,7 @@
 
         <ProducerNameSetting />
         <label class="settings-field">
-          <span>首页偶像</span>
+          <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
             <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
           </select>

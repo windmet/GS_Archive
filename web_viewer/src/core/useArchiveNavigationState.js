@@ -96,7 +96,7 @@ export function useArchiveNavigationState() {
     const preservesEventContext = view.value === 'event_detail' || returnsToEvent
     const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
     const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
-    const preservesSongContext = view.value === 'song_detail' ||
+    const preservesSongContext = ['song_detail', 'chart_lab'].includes(view.value) ||
       (view.value === 'chibi_stage' && Boolean(currentSongId.value)) ||
       (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
     const preservesArchiveUnit = view.value === 'unit_detail' ||

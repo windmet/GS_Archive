@@ -37,7 +37,7 @@ import { buildSongChartGeometry, buildSongChartColumns, songChartColumnAt } from
 import { noteRendering } from '../../presentation/SongNotePresentation.js'
 import { formatChartTime } from '../../presentation/SongChartTiming.js'
 import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
-const props = defineProps({ chart: { type: Object, required: true }, title: String, skin: String, scale: Number, cursor: Number, layout: { type: String, default: 'auto' } })
+const props = defineProps({ chart: { type: Object, required: true }, title: String, skin: String, scale: Number, cursor: Number, layout: { type: String, default: 'auto' }, follow: Boolean })
 const emit = defineEmits(['seek'])
 const uid = `long-chart-${getCurrentInstance().uid}`
 const scroll = ref(null), svg = ref(null), viewportWidth = ref(0)
@@ -62,10 +62,15 @@ async function scrollToTick() {
   if (folded.value) {
     const left = activeColumn.value * panelWidth.value
     if (left < scroll.value.scrollLeft || left + panelWidth.value > scroll.value.scrollLeft + scroll.value.clientWidth) scroll.value.scrollLeft = left
-    scroll.value.scrollTop = 0
-  } else scroll.value.scrollTop = Math.max(0, cursorY.value - 100)
+  }
+  const column = columns.value[activeColumn.value]
+  const y = folded.value ? 52 + cursorY.value - column.startY : cursorY.value
+  const outer = scroll.value.closest('[data-chart-scroll-host]')
+  if (outer && scroll.value.scrollHeight <= scroll.value.clientHeight + 1) {
+    outer.scrollTop += svg.value.getBoundingClientRect().top - outer.getBoundingClientRect().top + y - 160
+  } else scroll.value.scrollTop = Math.max(0, y - 100)
 }
-watch([() => props.cursor, folded, () => props.scale, () => props.chart], scrollToTick, { immediate: true })
+watch([() => props.cursor, () => props.follow], () => { if (props.follow) void scrollToTick() })
 function seekColumn(event, column) {
   const matrix = event.currentTarget.getScreenCTM()
   if (!matrix) return

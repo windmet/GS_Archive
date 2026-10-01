@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'is-reader': activeSection === 'reader', 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -55,7 +55,7 @@
       <slot name="inspector" />
     </aside>
 
-    <nav v-if="activeSection !== 'reader'" class="archive-mobile-nav" aria-label="移动资料馆导航">
+    <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
         :key="item.id"
@@ -90,7 +90,7 @@ import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
 defineProps({
-  homeFocus: Boolean,
+  homeFocus: Boolean, immersiveTool: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
@@ -103,7 +103,7 @@ defineProps({
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera }
+const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
 const mobileNavigation = [
   { id: 'home', label: '首页', icon: Home },
@@ -357,4 +357,14 @@ const mobileNavigation = [
 .archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
 .archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
 .archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
+</style>
+
+<style scoped>
+@media(max-width:760px) {
+.archive-shell.is-tool { --archive-topbar: calc(62px + var(--archive-safe-top)); grid-template-rows: var(--archive-topbar) minmax(0,1fr); }
+.is-tool .archive-topbar { display: flex; padding: var(--archive-safe-top) 12px 0; gap: 12px; }
+.is-tool .archive-mobile-brand, .is-tool .archive-heading :deep(.archive-breadcrumb) { display: none; }
+.is-tool .archive-heading { min-width: 0; }
+.is-tool .archive-topbar h1 { font-size: 16px; }
+}
 </style>
