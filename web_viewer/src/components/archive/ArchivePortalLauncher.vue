@@ -33,7 +33,7 @@
         <footer class="terminal-signature">SideM Archive · 非官方资料存档</footer>
       </div>
     </div>
-    <div v-if="wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ wallpaper.selected.value.label }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
+    <div v-if="wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ archiveNamedText('card', wallpaper.selected.value.label, 'title') }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
     <ArchiveTerminalDialog :open="producerOpen" title="P 名字" title-id="portal-producer-title" @close="producerOpen = false"><ProducerNameSetting /></ArchiveTerminalDialog>
     <ArchiveWallpaperPicker :open="wallpaperOpen" @close="wallpaperOpen = false" />
   </section>
@@ -50,6 +50,7 @@ import ArchiveTerminalBackdrop from './terminal/ArchiveTerminalBackdrop.vue'
 import ArchivePreferredIdolSlot from './terminal/ArchivePreferredIdolSlot.vue'
 import ArchiveWallpaperPicker from './terminal/ArchiveWallpaperPicker.vue'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
 defineProps({ preferredReference: { type: Object, default: null }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
@@ -59,5 +60,8 @@ const backdropFailed = ref(false)
 watch(wallpaper.revision, () => { backdropFailed.value = false })
 const preferredActions = [{ id: 'profile', label: '资料' }, { id: 'story', label: '故事' }, { id: 'cards', label: '卡片' }, { id: 'work', label: '工作' }, { id: 'mobile', label: '通信' }]
 const appEnglish = { home: 'HOME', stories: 'STORY', songs: 'MUSIC', idols: 'IDOL', cards: 'CARD', gashas: 'GASHA', interactions: 'MOBILE', resources: 'FILES', events:'EVENT', collections:'COLLECTION', photos:'PHOTO', experiments:'LAB' }
-onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.preferences.value.wallpaperKey) wallpaper.load() })
+onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.preferences.value.wallpaperKey) {
+  wallpaper.load()
+  void loadArchiveNames('cards').catch(error => console.warn('Wallpaper card names unavailable', error))
+} })
 </script>
