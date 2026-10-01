@@ -107,7 +107,7 @@ const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Us
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
 const mobileNavigation = [
   { id: 'home', label: '首页', icon: Home },
-  { id: 'portal', label: '门户', icon: LayoutGrid },
+  { id: 'portal', label: '资料馆', icon: LayoutGrid },
 ]
 </script>
 

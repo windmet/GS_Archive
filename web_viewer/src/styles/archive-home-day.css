@@ -14,6 +14,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .stage-tap-target:disabled { cursor: progress; }
 .scene-shade { position: absolute; z-index: 2; inset: 0; pointer-events: none; background: linear-gradient(180deg, #102b411c, transparent 35%); }
 .home-masthead { position: absolute; z-index: 4; top: 22px; left: 24px; max-width: 34%; }
+.home-archive-link { display: inline-flex; align-items: center; gap: 16px; min-height: 44px; margin-top: 12px; padding: 8px 14px; border: 1px solid #d1e0eb; border-radius: 6px; background: #ffffffed; color: #20516d; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.home-archive-link:focus-visible { outline: 3px solid #007caa; outline-offset: 3px; }
 .idol-heading { border-left: 4px solid var(--idol-color); padding: 5px 0 5px 15px; background: transparent; text-shadow: 0 2px 8px #061825d1, 0 1px 2px #061825eb; }
 .idol-heading span, .idol-heading small { display: block; color: #fff; font-size: 11px; }
 .idol-heading h2 { margin: 5px 0; font-size: 24px; line-height: 1.25; color: #fff; }
@@ -81,4 +83,5 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 .exit-focus { position: absolute; z-index: 7; top: 16px; right: 16px; min-height: 44px; padding: 8px 14px; border: 1px solid #ffffff88; border-radius: 6px; background: #173047b8; color: white; }
 .is-focus-mode .home-context, .is-focus-mode .mobile-idol-switch, .is-focus-mode .mobile-settings-trigger, .is-focus-mode .mobile-costume-trigger { display: none; }
+.is-focus-mode .home-archive-link { display: none; }
 .immersive-home[data-home-mode="card"] .stage-tap-target { inset: 0; width: 100%; }

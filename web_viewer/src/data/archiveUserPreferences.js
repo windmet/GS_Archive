@@ -17,7 +17,7 @@ export function normalizeArchiveUserPreferences(value = {}) {
   if (![1, ARCHIVE_USER_PREFERENCES_VERSION].includes(value?.version)) return { ...DEFAULT_ARCHIVE_USER_PREFERENCES }
   return {
     version: ARCHIVE_USER_PREFERENCES_VERSION,
-    homeMode: value.version === 1 ? ({ light: 'card', immersive: 'spine' }[value.startupMode] || 'unset') : (['card', 'spine'].includes(value.homeMode) ? value.homeMode : 'unset'),
+    homeMode: value.version === 1 ? ({ light: 'card', immersive: 'spine' }[value.startupMode] || 'unset') : (['portal', 'card', 'spine'].includes(value.homeMode) ? value.homeMode : 'unset'),
     startupIdol: idolCode(value.startupIdol),
     preferredIdol: idolCode(value.preferredIdol),
     onboardingComplete: value.onboardingComplete === true,

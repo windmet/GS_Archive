@@ -37,6 +37,9 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
     const idol = [preferences.startupIdol, preferences.preferredIdol].find(id => validIdol(id, validHomeIdols))
     return { route: idol ? { view: 'home', homeIdol: idol } : { view: 'home' }, lightweight: !idol, source: idol ? 'preference' : 'invalid-home-idol' }
   }
+  if (preferences?.homeMode === 'portal' || preferences?.onboardingComplete) {
+    return { route: { view: 'portal' }, lightweight: true, source: 'preference' }
+  }
   return { route: { view: 'welcome' }, lightweight: true, source: 'new-user' }
 }
 
