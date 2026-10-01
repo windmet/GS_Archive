@@ -4,7 +4,7 @@ import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {resolveArchiveGeneralText as text, honorBondSource} from '../src/presentation/ArchiveGeneralText.mjs';
 import {domainInlineParts} from '../src/presentation/DomainInlineText.mjs';
 import {historicalPeriod} from '../src/components/archive/DomainPresentation.mjs';
-import {isArchiveResourceDescription} from '../src/presentation/ArchiveGeneralTextCore.mjs';
+import {isArchiveResourceDescription, archiveBackgroundLabel} from '../src/presentation/ArchiveGeneralTextCore.mjs';
 
 const corpus = archiveGeneralTextCorpus(process.cwd());
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -52,6 +52,13 @@ for (const row of corpus.filter(row=>row.kind==='item' && row.field==='descripti
   if(amount) assert.match(text('item',row.source,'description'),new RegExp(`恢复 ${amount} 点 ST`));
 }
 assert.equal(text('card','瞳に映るその先に','title'),'映在眼眸中的远方');
+assert.ok(corpus.filter(row=>row.kind==='background-variant').every(row=>translation.entries['background-variant'][row.field]?.[row.source]), 'All source scene variants covered');
+assert.equal(archiveBackgroundLabel(translation.entries,'会議室 / 通常'),'会议室 / 通常');
+assert.equal(archiveBackgroundLabel(translation.entries,'電気街 / 夕方'),'电器街 / 傍晚');
+assert.equal(archiveBackgroundLabel(translation.entries,'曇り'),'阴天');
+assert.equal(archiveBackgroundLabel(translation.entries,'unknown / 日中2'),'unknown / 白天 2');
+assert.equal(archiveBackgroundLabel(translation.entries,'電気街 / 夕方','ja-JP'),'電気街 / 夕方');
+assert.equal(archiveBackgroundLabel(translation.entries,'bg014_otokomichi_in_01'),'bg014_otokomichi_in_01');
 assert.equal(text('costume','ミッドナイトプラネット+'),'午夜行星+');
 assert.match(text('item','Welcome Sunlight Liveガシャ\n10回チケット'),/10次票券$/);
 assert.match(text('item','SSR確定！今年も良い1年に！心を込めた年賀状ガシャを\n10回引けるチケット。','description'),/10 次.*保证 SSR/);

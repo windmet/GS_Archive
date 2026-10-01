@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
-import {photoStickerDraft, photoUnitNames} from '../translation/studio/general/photo-drafts.mjs';
+import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../translation/studio/general/photo-drafts.mjs';
 import {costumeNameDraft} from '../translation/studio/general/costume-names.mjs';
 import {itemTicketDraft} from '../translation/studio/general/item-ticket-drafts.mjs';
 import {itemGiftNameDraft} from '../translation/studio/general/item-gift-drafts.mjs';
@@ -38,7 +38,9 @@ const entries = {}, missing = [];
 const cornerColors = {'ホワイト':'白色','ブラック':'黑色','グラスグリーン':'草绿','オレンジ':'橙色','スカイブルー':'天蓝','レッド':'红色','イエロー':'黄色','ピンク':'粉色'};
 for (const row of corpus) {
   let translation = null;
-  if (row.kind === 'background' || row.kind.startsWith('photo-')) {
+  if (row.kind === 'background-variant') {
+    translation = backgroundVariantNames[row.source] || photoUnitNames.get(row.source);
+  } else if (row.kind === 'background' || row.kind.startsWith('photo-')) {
     translation = (row.field === 'description' ? photoDescriptions : commonNames)[row.source];
     const corner = row.source.match(/^コーナーデコ（(.+)）$/);
     if (corner && cornerColors[corner[1]]) translation = `角落装饰（${cornerColors[corner[1]]}）`;
@@ -69,7 +71,7 @@ fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', stat
 const shardDirectory = path.join(root,'public/translations/zh-CN/archive-general');
 fs.mkdirSync(shardDirectory,{recursive:true});
 const shards = {
-  photos: kind => kind === 'background' || kind.startsWith('photo-'),
+  photos: kind => kind === 'background' || kind === 'background-variant' || kind.startsWith('photo-'),
   costumes: kind => kind === 'costume', cards: kind => kind === 'card',
   skills: kind => ['skill','skill-category','center-skill'].includes(kind),
   items: kind => kind === 'item', honors: kind => kind === 'honor',

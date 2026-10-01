@@ -201,7 +201,7 @@
           <div class="background-grid">
             <button v-for="background in visibleBackgrounds" :key="background.id" type="button" :aria-pressed="preferences.background === background.id" @click="preferences.background = background.id">
               <img v-if="background.thumbnail" :src="background.thumbnail" alt="" loading="lazy" decoding="async" />
-              <strong>{{ background.label }}</strong>
+              <strong>{{ archiveNamedBackground(background.label) }}</strong>
             </button>
           </div>
           <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
@@ -281,6 +281,7 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
+import { archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
@@ -354,7 +355,7 @@ const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume =>
 const backgroundEntries = ref([])
 const backgroundReady = ref(false), backgroundLoading = ref(false), backgroundError = ref('')
 const backgroundQuery = ref(''), backgroundLimit = ref(12)
-const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => entry.label.toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
+const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
 watch(backgroundQuery, () => { backgroundLimit.value = 12 })
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
@@ -363,6 +364,7 @@ const selectedBackground = computed(() => resolveHomeBackground(preferences.back
 async function loadBackgroundCatalogue(retry = false) {
   if (backgroundLoading.value || (backgroundReady.value && !retry)) return
   backgroundLoading.value = true; backgroundError.value = ''
+  void loadArchiveNames('photos').catch(error => console.warn('Background names unavailable', error))
   try {
     const catalogue = await loadTerminalManifest('backgrounds', { retry })
     if (homeDisposed) return

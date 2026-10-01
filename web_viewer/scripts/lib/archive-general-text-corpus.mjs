@@ -38,6 +38,7 @@ export function archiveGeneralTextCorpus(root) {
   const backgrounds = load('background_catalog.json').backgrounds;
   for (const [key, row] of Object.entries(backgrounds)) {
     for (const name of row.names || []) add('background', row.resource_id || row.resourceId || key, 'name', name);
+    for (const scene of row.picture_studio_scenes || []) add('background-variant', `${key}:${scene.id || scene.variant}`, 'name', scene.variant);
   }
   return rows;
 }

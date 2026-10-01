@@ -18,6 +18,12 @@ export const photoStickerNames = {
 export const photoUnitNames = new Map(['Jupiter','DRAMATIC STARS','Altessimo','Beit','W','FRAME','彩','High×Joker','神速一魂','Café Parade',
   'S.E.M','THE 虎牙道','F-LAGS','Legenders','C.FIRST'].map(name => [name,name]));
 photoUnitNames.set('もふもふえん','毛茸茸园');
+export const backgroundVariantNames = {
+  '通常':'通常','通常1':'通常 1','通常2':'通常 2','日中':'白天','日中1':'白天 1','日中2':'白天 2',
+  '昼':'白天','朝':'早晨','夜':'夜晚','夕方':'傍晚','曇り':'阴天','雨':'雨天','豪雨':'大雨',
+  '朝焼け':'朝霞','日の出':'日出','点灯':'亮灯','点灯1':'亮灯 1','点灯2':'亮灯 2','点灯3':'亮灯 3',
+  '握手会用':'握手会','装飾前':'装饰前','装飾後':'装饰后','クロマキー':'色键背景',
+};
 // Song / concert / event names are retained as identifying proper names, not guessed official Chinese titles.
 const photoProperNames = new Set(['Not Alone','想いはETERNITY','Plus 1 Good Day!','Study Equal Magic!','Pavé Étoiles',
   'OUR SONG -それは世界でひとつだけ-','Time Before Time','LEADING YOUR DREAM','いとをかし！〜一彩×合彩〜','MOON NIGHTのせいにして',
