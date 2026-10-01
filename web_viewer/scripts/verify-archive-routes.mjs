@@ -75,7 +75,7 @@ assert.equal(normalizeArchiveRoute({ view: 'cards' }).view, 'cards')
 assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
-assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
+assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'event_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'external_story_resources' }).view, 'external_story_resources')
@@ -91,7 +91,7 @@ assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'i
 assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
-assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'events')
 assert.equal(archiveSectionForRoute({ view: 'story_detail', story: '1_4_001_01.json' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'story_collection', storyType: 'main', storySection: '101' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'external_story_resources' }), 'stories')
@@ -138,8 +138,8 @@ const eventBreadcrumbs = buildArchiveBreadcrumbs(
   { title: '活动标题' },
 )
 assert.deepEqual(eventBreadcrumbs.map(item => item.label), ['资料馆', '活动', '活动标题'])
-assert.equal(eventBreadcrumbs[1].route.view, 'story_catalog')
-assert.equal(eventBreadcrumbs[1].route.storyType, 'event')
+assert.equal(eventBreadcrumbs[1].route.view, 'event_catalog')
+assert.equal(eventBreadcrumbs[1].route.storyType, '')
 assert.equal(eventBreadcrumbs[1].route.eventScope, 'fixed_unit_event')
 
 const collectionBreadcrumbs = buildArchiveBreadcrumbs(

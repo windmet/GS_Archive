@@ -333,12 +333,15 @@ const mobileNavigation = [
 .archive-content { grid-row: 2; }
 .archive-pending-layer {
   grid-column: 2; grid-row: 2; z-index: 25;
-  display: flex; align-items: flex-end; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: center;
   min-width: 0; min-height: 0; padding: 18px;
   pointer-events: none;
 }
 .archive-pending-layer :deep(.gs-loading-indicator) {
   max-width: 100%; pointer-events: none;
+  padding: 18px 24px; border-radius: 14px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 8px 32px rgb(22 47 56 / 12%);
   animation: gs-archive-pending-in 120ms ease-out 140ms both;
 }
 .archive-shell.is-home .archive-pending-layer,

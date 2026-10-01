@@ -24,7 +24,9 @@
       :current="playableStepNumber"
       :total="playableStepTotal"
       :episode-label="positionLabel"
-      :language="langLabel"
+      :language="languageStatus.label"
+      :compact-language="languageStatus.compact"
+      :language-description="languageStatus.description"
       @back="$emit('back')"
       @language="cycleLanguage"
       @menu="menuOpen = true"
@@ -262,6 +264,7 @@ import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { getStepSceneState, projectStepSceneState } from './story-runtime/StepSceneState.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
+import { playerLanguageStatus } from '../presentation/PlayerLanguageStatus.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
 import { releaseSoakRecorder } from './story-runtime/ReleaseSoakRecorder.js'
@@ -359,10 +362,11 @@ function updateViewingViewport() {
   portraitScreen.value = width < height
 }
 
-provideStoryLocalization(createStoryLocalization({
+const storyLocalization = createStoryLocalization({
   compiledData,
   storyPreferences: storyLanguagePreferences,
-}))
+})
+provideStoryLocalization(storyLocalization)
 const currentStepIndex = ref(0)
 const historyStack = ref([])
 const selectedChoices = reactive(new Map())
@@ -543,6 +547,9 @@ const currentStep = computed(() => {
   if (!compiledData.value?.steps) return {}
   return compiledData.value.steps[currentStepIndex.value] || {}
 })
+const languageStatus = computed(() => playerLanguageStatus(storyLanguagePreferences.value,
+  currentStep.value.dialogue && currentStep.value.hide_dialogue !== true
+    ? storyLocalization.resolveDialogue(currentStep.value.dialogue).view : null))
 
 const currentSceneState = computed(() => restoredSceneState.value || getStepSceneState(currentStep.value))
 const stageStep = computed(() => projectStepSceneState(currentStep.value, currentSceneState.value))

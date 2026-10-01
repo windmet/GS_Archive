@@ -19,6 +19,9 @@ import {
   validateStoryTranslationOverlay,
 } from '../src/localization/story/TranslationRepository.js'
 import { resolveText } from '../src/utils/TextHelper.js'
+import { playbackPreferencesForReadingMode } from '../src/core/ReaderPlaybackPreferences.js'
+import { playerLanguageStatus } from '../src/presentation/PlayerLanguageStatus.js'
+import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 
 const overlayPath = new URL('../fixtures/localization/scenario-overlay-zh-CN.json', import.meta.url)
 const overlay = JSON.parse(await readFile(overlayPath, 'utf8'))
@@ -418,6 +421,30 @@ assert.equal(resolveUiText('unknown.key', {}, 'ja-JP'), 'unknown.key')
 const empty = resolveStoryText()
 assert.equal(empty.primary.text, '')
 assert.equal(empty.speaker.kind, 'none')
+
+// Handoff writes only language fields, preserving the Producer and playback settings.
+const savedValues = new Map()
+const preferencesRepository = new PlayerPreferencesRepository({storage:{
+  getItem:key=>savedValues.get(key) ?? null,
+  setItem:(key,value)=>savedValues.set(key,value),
+}})
+preferencesRepository.update({producer_name:'windmet',auto_enabled:true,volumes:{master:0.3}})
+for (const mode of ['original','translation','bilingual']) {
+  const saved = preferencesRepository.update(playbackPreferencesForReadingMode(mode))
+  assert.equal(saved.story_content_mode,mode)
+  assert.equal(saved.producer_name,'windmet')
+  assert.equal(saved.auto_enabled,true)
+  assert.equal(saved.volumes.master,0.3)
+  const translated = resolve({preferences:saved})
+  assert.equal(playerLanguageStatus(saved,translated).compact.includes('*'),false)
+  for (const unavailable of [null,{...fixtureEntry,source_hash:'stale-source'}]) {
+    const fallback = resolve({preferences:saved,overlayEntry:unavailable})
+    assert.equal(fallback.primary.text,source)
+    assert.equal(playerLanguageStatus(saved,fallback).compact.includes('*'),mode!=='original')
+    if (mode!=='original') assert.match(playerLanguageStatus(saved,fallback).description,/暂无可用译文/)
+  }
+  assert.equal(playerLanguageStatus(saved,null).compact.includes('*'),false)
+}
 
 console.log('Story localization runtime verification passed')
 console.log(`  fixture entries: ${Object.keys(overlay.entries).length}`)

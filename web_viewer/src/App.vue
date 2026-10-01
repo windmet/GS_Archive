@@ -428,7 +428,7 @@
       <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
       <template #pending>
-        <GsLoadingIndicator v-if="routePending" variant="inline" message="正在准备下一页…" />
+        <GsLoadingIndicator v-if="routePending" variant="inline" :message="routePendingMessage" />
       </template>
     </ArchiveShell>
 
@@ -579,6 +579,7 @@ import {
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
+import { playbackPreferencesForReadingMode } from './core/ReaderPlaybackPreferences.js'
 import {
   setStoryLanguagePreferences,
   storyTranslationLocale,
@@ -695,9 +696,22 @@ function prepareArchivePage(routeView, data) {
   return prepareArchiveRoute(archiveRouteLoaders, routeView, data)
 }
 
+const archiveComponentPending = ref(false)
+const routePendingMessage = ref('正在准备下一页…')
+let componentLoadRevision = 0
 function primeArchiveRouteComponent(routeView) {
+  const revision = ++componentLoadRevision
+  const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
+    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'藏品馆',
+    picture_studio:'摄影工作台',photo_catalog:'摄影资料',story_catalog:'故事目录'}
+  routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
+  archiveComponentPending.value = Boolean(load)
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
+    .finally(async () => {
+      await nextTick()
+      if (revision === componentLoadRevision) archiveComponentPending.value = false
+    })
 }
 
 const {
@@ -884,7 +898,7 @@ const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') ==
 const loading = ref(initialArchiveStartup.route.view === 'player' || !isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const hardLoading = computed(() => loading.value && (view.value === '__boot__' || loadingPurpose.value !== 'archive-data'))
-const routePending = computed(() => loading.value && !hardLoading.value)
+const routePending = computed(() => archiveComponentPending.value || (loading.value && !hardLoading.value))
 const preloadProgress = ref(0)
 
 // View preferences and history lifecycle (navigation refs are owned above).
@@ -2044,6 +2058,10 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
       // Pin the requested text version/row even if media preparation subsequently fails.
       if (!route) syncArchiveRoute({ replace: true })
       loadingPurpose.value = 'story-playback'
+      if (!intent.isCurrent()) return false
+      const languagePreferences = new PlayerPreferencesRepository().update(
+        playbackPreferencesForReadingMode(readingMode.value))
+      setStoryLanguagePreferences(languagePreferences)
       const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route, lazyQueue: true, entryIntent: route?.playMode || 'segment' })
       if (!loaded && intent.isCurrent()) readingPlaybackNotice.value = playbackError.value
     } catch (error) {

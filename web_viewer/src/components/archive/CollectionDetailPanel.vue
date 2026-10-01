@@ -8,7 +8,7 @@
           <p v-else-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="emit('retry')">重试</button></p>
           <template v-else-if="detail?.entry">
             <CollectionEntryDetails :detail="detail" :kind="kind" />
-            <section class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号<small class="domain-muted">用户补充来源。</small></p><ArchiveRewardTable v-if="detail.sources?.length || !bond" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
+            <section class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号。<small class="domain-muted">用户补充来源。</small></p><ArchiveRewardTable v-if="detail.sources?.length || !bond" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
           </template>
           <p v-else class="domain-muted">选择资料查看详情。</p>
         </div>

@@ -22,8 +22,8 @@
     </div>
 
     <div class="bar-right">
-      <button v-if="!compact" class="lang-btn" :title="uiText('player.language')" :aria-label="uiText('player.language')" @click="$emit('language')">
-        {{ language }}
+      <button class="lang-btn" :title="languageDescription || uiText('player.language')" :aria-label="languageDescription || uiText('player.language')" @click="$emit('language')">
+        <span class="language-full">{{ language }}</span><span class="language-short">{{ compactLanguage || language }}</span>
       </button>
       <PlayerIconButton data-testid="player-menu-open" :title="uiText('player.menu')" :aria-label="uiText('player.menu')" @click="$emit('menu')">
         <Menu :size="20" />
@@ -44,6 +44,8 @@ const props = defineProps({
   current: { type: Number, default: 0 },
   total: { type: Number, default: 0 },
   language: { type: String, default: '' },
+  compactLanguage: { type: String, default: '' },
+  languageDescription: { type: String, default: '' },
 })
 
 defineEmits(['back', 'language', 'menu'])
@@ -165,6 +167,16 @@ const progressPercent = computed(() => {
 .lang-btn:focus-visible {
   outline: 2px solid var(--player-focus-outer);
   outline-offset: 2px;
+}
+.language-short { display: none; }
+.compact .language-full { display: none; }
+.compact .language-short { display: inline; }
+@media (max-width: 420px) {
+  .language-full { display: none; }
+  .language-short { display: inline; }
+  .lang-btn { min-width: 44px; padding-inline: 10px; }
+  .bar-center { top: 48px; }
+  .episode-badge { display: none; }
 }
 
 @media (max-width: 699px) {
