@@ -33,4 +33,18 @@
 - 称号证据回归 10 项通过；新增 32 次查询原文和身份校验通过，配对/模板/观察保持不变。
 - 歌曲 masterdata 身份、属性及原生枚举校验、歌曲目录 schema/source-only 校验通过。
 - 两个既有综合校验存在其他表面失败：`verify-song-domain-landing.mjs` 仍断言迁移前 `songCatalogData.value = data.songCatalog`；`verify-archive-presentation.mjs` 的歌曲投影和 61 个歌曲详情 SSR 已通过，随后在活动页“剧情暂未收录”的断言失败。不能将其报告成全套通过；本批未修改活动页或主页面迁移。
-- 页面数据重生成、代码编译及实际 Browser 结果在完成后补记。本批不部署、不复制媒体语料，也不授予真实设备或发布验收。
+- 数据候选：`E:/Web_build/GS_Archive_Domain_Work/song-attribute-readmodels-20261001`，源提交 `6919f637`，release `d8c744d57396f790627a3fefc33eed67457eb5dca316e31c8ff78cf60c429934`。8,750 个模型文件约 75.9 MB，字节/descriptor 校验通过；bootstrap 14,344 字节。候选包含元数据，不是媒体包。
+- 61 个歌曲详情 leaf 逐项核对：`song.attribute` 与 PB 已核实目录完全一致，`view.attributeLabel` 均为对应属性标签；`npm run verify:cutover-routes` 和独立工作区 `npm run verify:build-audit` 的 progress 门禁通过，仍明确报告全路由/设备验收未完成。
+- 为保护正在使用主工作区 `.analysis/build-check` 的 5198 调试服务，在 `E:/Web_build/GS_Archive_Domain_Work/song-attribute-qa-20261001/web_viewer` 独立工作区执行 `npm run build:check`。首次发现 route ledger 仍绑定旧 release，更新数据绑定后编译通过。固定输出是该工作区 `.analysis/build-check`，`copyPublicDir:false`，没有复制 public 语料。原有 5198 进程保持运行。
+- 实际验收 URL：`http://127.0.0.1:5200/?view=song_catalog`。该服务挂载独立生产代码、新数据候选及主工作区已有 public 资源。Browser plugin not available，使用已捆绑 Playwright Chromium；没有安装浏览器依赖。
+
+| 页面检查 | 结果 |
+| --- | --- |
+| 身份与非空页面 | 标题 SideM Story Viewer，歌曲列表 60 个常规作品 |
+| 搜索 → 详情 → 返回 | 桌面 1440×1000：BRAND NEW FIELD / Intelli、バーニン・クールで輝いて / Physical、Café Parade! / Mental、DRIVE A LIVE / ALL；每次对应 song 参数正确 |
+| 手机展示 | 390×844 的 Café Parade! 显示 Mental，属性标签边界在视口内，截图未见遮挡或溢出 |
+| 框架覆盖层、控制台及请求 | 无覆盖层、pageerror、控制台 error/warn 或 HTTP ≥400 |
+
+截图与机器记录保存在 `E:/Web_build/GS_Archive_Domain_Work/song-attribute-browser-20261001`：`desktop-intelli.png`、`mobile-mental.png`、`browser-receipt.json`。编译、模型与日志均在 E 盘；未执行全量媒体打包。
+
+同步 bootstrap 和 route ledger 的数据/源绑定，不把其他路由的历史 Browser 记录提升为本次验收。本批仅验收歌曲属性，未执行实际音频播放、全曲 Browser 逐页检查、真实设备或部署。
