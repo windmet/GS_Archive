@@ -13,6 +13,7 @@ import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
 import { serializeStudioDocument, parseStudioDocument, readStudioDocumentFile } from "../../core/StudioDocumentFile.mjs";
 import { studioTransformPatch } from '../../core/StudioGestures.mjs';
+import { removeStudioLayer, canRestoreStudioLayer, restoreStudioLayer } from '../../core/StudioLayerEditing.mjs';
 
 export function useStudioComposition(props, canvas) {
   const repository = new DomainRepository(props.client, props.bootstrap),
@@ -34,6 +35,8 @@ export function useStudioComposition(props, canvas) {
     documentStatus = ref(""),
     documentUrl = ref(""),
     documentLoading = ref(false);
+  const lastRemoval = shallowRef(null);
+  const canUndoDelete = computed(() => canRestoreStudioLayer(draft.value, lastRemoval.value));
   const selected = computed(() => studioObject(draft.value, selectedId.value)),
     selectedActor = computed(() =>
       selected.value?.idolId
@@ -268,16 +271,22 @@ export function useStudioComposition(props, canvas) {
     select(row.instanceId);
   }
   function remove(id) {
-    for (const kind of ["actors", "stickers"])
-      draft.value[kind] = draft.value[kind].filter(
-        (row) => row.instanceId !== id,
-      );
+    const removal = removeStudioLayer(draft.value, id);
+    if (!removal) return;
+    cancelInteraction();
+    lastRemoval.value = removal;
     if (selectedId.value === id)
       select(
-        draft.value.actors.at(-1)?.instanceId ||
+        draft.value[removal.kind][Math.min(removal.index, draft.value[removal.kind].length - 1)]?.instanceId ||
           draft.value.stickers.at(-1)?.instanceId ||
+          draft.value.actors.at(-1)?.instanceId ||
           "",
       );
+  }
+  function undoDelete() {
+    if (!restoreStudioLayer(draft.value, lastRemoval.value)) return;
+    select(lastRemoval.value.row.instanceId);
+    lastRemoval.value = null;
   }
   function move(id, direction) {
     moveStudioObject(
@@ -528,6 +537,8 @@ export function useStudioComposition(props, canvas) {
     adjustSelected,
     cancelInteraction,
     remove,
+    canUndoDelete,
+    undoDelete,
     move,
     setSpot,
     reference,

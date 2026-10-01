@@ -177,7 +177,9 @@
 }
 .studio-object-row.is-selected {
   background: #dcf8ed;
+  box-shadow: inset 3px 0 #16856f;
 }
+
 .studio-object-row > button {
   flex: 0 0 auto;
   display: flex;
@@ -677,3 +679,49 @@
     margin-top: 0;
   }
 }
+
+.studio-focus-bar button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.studio-focus-bar button[aria-pressed=true] { background: #dcf8ed; border-color: #45a58e; }
+.studio-selection-bar { position: absolute; top: 60px; left: 0; right: 0; z-index: 4; display: flex; align-items: center; gap: 6px; padding: 4px 12px; height: 52px; box-sizing: border-box; background: #20313beb; color: #eef8f7; border-top: 1px solid #ffffff18; }
+.studio-selection-bar > span { display: grid; gap: 3px; flex: 1; min-width: 0; }
+.studio-selection-bar strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.studio-selection-bar small { color: #b2cbc8; font-size: 10px; }
+.studio-selection-bar button { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #49616b; border-radius: 8px; background: #304753; color: #e8f7f4; cursor: pointer; }
+.studio-selection-bar button:not(:disabled):hover { background: #3d605f; border-color: #6bd6ba; }
+.studio-selection-bar button:disabled { opacity: .35; cursor: default; }
+.studio-page button.studio-delete { color: #b44754; }
+.studio-selection-bar button.studio-delete { color: #ffc0c6; }
+.studio-page button:focus-visible { outline: 3px solid #47b8a0; outline-offset: 2px; }
+.studio-layer-heading { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 16px; }
+.studio-layer-heading span { margin-left: auto; padding: 3px 8px; border-radius: 12px; background: #e1f1ec; font-size: 12px; }
+.studio-layer-group { display: flex; justify-content: space-between; align-items: center; padding: 8px; margin: 8px 0 0; color: #57717b; font-size: 11px; background: #edf3f5; border-radius: 5px; }
+.studio-object-list { max-height: 290px; gap: 4px; }
+.studio-object-row { border: 1px solid #d9e5e9; padding: 5px; background: white; }
+
+.studio-object-row > button { min-width: 36px; min-height: 44px; }
+.studio-object-row .studio-object-select { min-height: 44px; }
+.studio-object-row.is-selected .studio-object-select span::after { content: ' · 已选'; color: #167d65; font-size: 10px; }
+.studio-background-layer { display: flex; gap: 8px; align-items: center; padding: 12px 8px; color: #71868e; font-size: 12px; }
+.studio-background-layer small { margin-left: auto; font-size: 10px; }
+.studio-layer-empty { margin: 10px 0; padding: 12px; border: 1px dashed #b8d2cf; border-radius: 8px; line-height: 1.6; color: #507376; font-size: 12px; }
+.studio-undo-delete, .studio-fullscreen-actions button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; margin-top: 10px; padding: 8px 12px; border: 1px solid #c4dbd5; border-radius: 8px; color: #176954; background: #edf8f4; cursor: pointer; }
+.studio-undo-delete { width: 100%; }.studio-undo-delete:disabled { opacity: .4; cursor: default; }
+.studio-fullscreen-actions { padding-bottom: 12px; }
+.is-focused .studio-focus-bar { height: 60px; box-sizing: border-box; }
+.is-focused .studio-canvas { top: 112px; width: min(100%, calc((var(--studio-screen-height) - 124px) * 1.777778)); height: min(calc(var(--studio-screen-height) - 124px), calc(var(--studio-screen-width) * .5625)); }
+.studio-focus-drawer { top: 116px; }
+@media (min-width: 901px) {
+  .studio-page.has-drawer .studio-canvas { right: 390px; width: min(calc(100% - 390px), calc((var(--studio-screen-height) - 124px) * 1.777778)); height: min(calc(var(--studio-screen-height) - 124px), calc((var(--studio-screen-width) - 390px) * .5625)); }
+}
+@media (max-width: 560px) {
+  .studio-focus-bar > span { display: none; }
+  .studio-focus-bar { justify-content: space-between; }
+  .studio-selection-bar { padding-inline: 8px; gap: 4px; }
+  .studio-selection-bar button { width: 40px; flex-shrink: 0; }
+  .is-focused .studio-focus-bar { gap: 4px; }
+  .studio-object-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .studio-object-row .studio-object-select { grid-column: 1 / -1; }
+  .studio-object-row:not(.is-selected) > button:not(.studio-object-select) { display: none; }
+}
+.studio-selection-bar button.studio-labeled-action { width: 64px; gap: 4px; font-size: 12px; }
+.studio-layer-number { margin-left: auto; min-width: 16px; font-size: 10px; color: #71878b; background: #eef4f4; border-radius: 4px; padding: 3px; }
