@@ -5,7 +5,9 @@ import { execFileSync } from 'node:child_process'
 // Only repository-owned translation JSON belongs in the code package. Never
 // broaden this to copying public, which contains the multi-GiB media corpus.
 export async function copyPreviewTranslations(root, outDir) {
-  const files = execFileSync('git', ['ls-files', '-z', '--', 'public/translations'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
+  // Git control files such as scenarios/.gitattributes are tracked too, but
+  // are not browser resources. Select JSON at the index, never copy a corpus.
+  const files = execFileSync('git', ['ls-files', '-z', '--', ':(glob)public/translations/**/*.json'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
   let bytes = 0
   for (const relative of files) {
     if (!relative.startsWith('public/translations/') || !relative.endsWith('.json')) throw new Error(`Unexpected translation file: ${relative}`)
