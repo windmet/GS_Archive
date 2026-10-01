@@ -1,13 +1,13 @@
 <template>
   <div class="track-preview">
     <div class="track-controls">
-      <label>视觉配速 <input v-model.number="speed" type="number" min="6" max="11" step="0.1" aria-label="轨道视觉配速" @input="windowMode = 'speed'" /></label>
-      <input v-model.number="speed" class="speed-slider" type="range" min="6" max="11" step="0.1" aria-label="轨道配速滑杆" @input="windowMode = 'speed'" />
+      <label>视觉配速 <input v-model.number="speed" type="number" min="1" max="20" step="0.1" aria-label="轨道视觉配速" @input="windowMode = 'speed'" @change="speed = safeSpeed" /></label>
+      <input v-model.number="speed" class="speed-slider" type="range" min="1" max="20" step="0.1" aria-label="轨道配速滑杆" @input="windowMode = 'speed'" />
       <label>视野 <select v-model="windowMode" aria-label="轨道视野"><option value="speed">跟随配速</option><option value="3000">3000 tick</option><option value="6000">6000 tick</option><option value="12000">12000 tick</option></select></label>
       <button type="button" @click="cursor = firstTick">首个音符</button>
       <button type="button" @click="nextHold">下一条长条</button>
     </div>
-    <p class="track-caption">可见 {{ span }} tick · 配速越高，音符间距越大。8 对应 3000 tick，按目测暂定；默认 10，尚未校准为游戏原版流速。</p>
+    <p class="track-caption">可见 {{ span }} tick · 1–20 相对配速，数值越大，音符间距越大；默认 10。此刻度与游戏原版流速尚未校准。</p>
     <label class="track-position">判定线位置 <input v-model.number="cursor" type="number" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置 tick" /> / {{ chart.maxTick }} tick
       <input v-model.number="cursor" class="track-slider" type="range" min="0" :max="chart.maxTick" step="1" aria-label="轨道位置滑杆" />
     </label>
@@ -50,7 +50,7 @@ const props = defineProps({ chart: { type: Object, required: true }, title: { ty
 const uid = `track-${getCurrentInstance().uid}`
 const firstTick = computed(() => Math.min(...props.chart.notes.map(n => n.tick), props.chart.maxTick))
 const cursor = ref(firstTick.value), speed = ref(10), windowMode = ref('speed')
-const safeSpeed = computed(() => Math.max(6, Math.min(11, Number(speed.value) || 10)))
+const safeSpeed = computed(() => Math.max(1, Math.min(20, Number(speed.value) || 10)))
 const span = computed(() => windowMode.value === 'speed' ? songTrackSpanForSpeed(safeSpeed.value) : Number(windowMode.value))
 const safeCursor = computed(() => Math.max(0, Math.min(props.chart.maxTick, Number(cursor.value) || 0)))
 watch(() => props.chart, () => { cursor.value = firstTick.value })

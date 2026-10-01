@@ -8,9 +8,9 @@ const nearWidth = reference.constants.TargetLaneWidth.value
 const farWidth = reference.constants.TopLaneWidth.value
 const round = value => Number(value.toFixed(5))
 
-// Visual calibration only: the user's 3000-tick reference is labelled 8.
+// Relative visual scale only; this is not the game's unrecovered speed formula.
 export function songTrackSpanForSpeed(speed) {
-  if (!Number.isFinite(speed) || speed < 6 || speed > 11) throw new Error('Invalid visual speed')
+  if (!Number.isFinite(speed) || speed < 1 || speed > 20) throw new Error('Invalid visual speed')
   return Math.round(24000 / speed)
 }
 
