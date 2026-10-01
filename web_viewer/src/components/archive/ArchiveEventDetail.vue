@@ -115,8 +115,8 @@
 
     <section v-if="view.rewards" class="detail-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
-      <nav v-if="view.rewards.materials?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" type="button" @click="emit('open-entity',`item:${item.itemId}`)"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/>{{ item.nameJa }}</button></nav>
-      <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="emit('open-entity',$event)" @open-target="emit('open-target',$event)" />
+      <nav v-if="view.rewards.materials?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" type="button" @click="openQuick(`item:${item.itemId}`)"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/>{{ item.nameJa }}</button></nav>
+      <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
       <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
@@ -149,6 +149,8 @@
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
 
+    <CollectionQuickView v-if="quickEntity" :client="client" :bootstrap="bootstrap" :entity-key="quickEntity" @close="quickEntity=''" @open-entity="emit('open-entity',$event)" />
+
     <ArchiveTechnicalDetails :key="event.event_id" :evidence="view.provenance">
       <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
         <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
@@ -166,7 +168,7 @@
 </template>
 
 <script setup>
-import { computed,ref,watch } from 'vue'
+import { computed,ref,watch,defineAsyncComponent } from 'vue'
 import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
@@ -177,14 +179,19 @@ import '../../styles/archive-domains.css'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
+const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
+const quickEntity=ref('')
+function openQuick(key){if(/^(item|honor):\d+$/.test(key))quickEntity.value=key}
 const props = defineProps({
+  client: Object,
+  bootstrap: Object,
   view: {type:Object,default:null},
   externalResources: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
 const bannerFailed=ref(false)
-watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false})
+watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 
 const event=computed(()=>props.view?.story.entry)

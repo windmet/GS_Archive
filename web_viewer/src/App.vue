@@ -190,6 +190,7 @@
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
         :view="currentEventProjection"
+        :client="readModelClient" :bootstrap="archiveBootstrap"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         @read="openEventReader"
         @play="playCurrentEvent"

@@ -1,0 +1,38 @@
+.domain-rewards { container-type:inline-size; }
+.domain-reward-list { display:grid; gap:8px; margin:0; padding:0; list-style:none; color:#213b54; font-size:14px; }
+.domain-reward-entry { display:grid; grid-template-columns:minmax(150px,.8fr) minmax(0,2fr) auto; align-items:center; gap:12px; min-width:0; padding:12px 14px; border:1px solid #dce7ef; border-radius:10px; background:#fff; }
+.domain-reward-entry.is-card { border-left:4px solid #19896e; background:#f3fbf8; }
+.domain-reward-heading { display:contents; }
+.domain-reward-conditions { grid-column:1; grid-row:1; min-width:0; }
+.domain-reward-conditions > small { display:block; color:#60758a; font-size:11px; margin-bottom:6px; }
+.domain-reward-conditions > div { display:flex; flex-wrap:wrap; gap:5px; }
+.domain-reward-condition { display:inline-block; padding:4px 7px; border-radius:6px; background:#edf6f3; color:#17674f; font-size:12px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.domain-reward-quantity { grid-column:3; grid-row:1; white-space:nowrap; font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; color:#1b4f43; }
+.domain-reward-product { grid-column:2; grid-row:1; display:grid; grid-template-columns:48px minmax(0,1fr); align-items:center; gap:10px; min-width:0; }
+.domain-reward-icon { display:grid; place-items:center; width:48px; height:48px; background:#f1f6f9; border:1px solid #e2eaf0; border-radius:8px; color:#8295a4; }
+.domain-reward-icon .domain-media-compact { margin:0; padding:0; }
+.domain-reward-icon .domain-media-preview img { min-height:0; }
+.domain-reward-name { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; min-height:48px; padding:5px 0; color:inherit; text-align:left; background:transparent; border:0; text-decoration:none; line-height:1.5; }
+button.domain-reward-name { width:100%; border-radius:6px; }
+button.domain-reward-name:hover { background:#edf8f3; color:#08745b; }
+.domain-reward-name > span { min-width:0; }
+.domain-reward-name strong { display:block; font-weight:600; overflow-wrap:anywhere; }
+.domain-reward-name small { display:inline-block; margin-top:4px; color:#60758a; font-size:11px; }
+.domain-reward-name svg { flex:none; color:#248978; }
+.domain-reward-source { grid-column:2; grid-row:1; min-width:0; }
+.domain-reward-unresolved { grid-column:2; color:#80632f; font-size:11px; }
+.domain-reward-campaigns { grid-column:1/-1; display:grid; gap:4px; color:#60758a; font-size:11px; line-height:1.6; }
+@media(max-width:600px) {
+  .domain-reward-entry { grid-template-columns:minmax(0,1fr); gap:9px; padding:12px; }
+  .domain-reward-heading { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .domain-reward-conditions { flex:1 1 170px; }
+  .domain-reward-quantity { margin-left:auto; }
+  .domain-reward-product,.domain-reward-source { grid-column:1; grid-row:2; }
+}
+@container(max-width:600px) {
+  .domain-reward-entry { grid-template-columns:minmax(0,1fr); gap:9px; padding:12px; }
+  .domain-reward-heading { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .domain-reward-conditions { flex:1 1 170px; }
+  .domain-reward-quantity { margin-left:auto; }
+  .domain-reward-product,.domain-reward-source { grid-column:1; grid-row:2; }
+}

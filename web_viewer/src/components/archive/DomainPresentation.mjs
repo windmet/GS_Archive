@@ -9,7 +9,7 @@ export function historicalDate(seconds) {
   if (date.getUTCFullYear()<=2000 || date.getUTCFullYear()>=2099) return '配置占位日期';
   return new Intl.DateTimeFormat('zh-CN',{dateStyle:'medium',timeZone:'Asia/Tokyo'}).format(date);
 }
-export function rewardCondition(row) {
+export function rewardConditions(row) {
   const values=[];
   if (row.totalPoint!==undefined) values.push(`${number(row.totalPoint)} PT`);
   if (row.upperRank!==undefined || row.lowerRank!==undefined) values.push(`第 ${number(row.upperRank ?? row.lowerRank)}–${number(row.lowerRank ?? row.upperRank)} 名`);
@@ -22,8 +22,16 @@ export function rewardCondition(row) {
   if (row.sumFanAmount!==undefined) values.push(`累计粉丝 ${number(row.sumFanAmount)}`);
   if (row.episodeId) values.push('阅读对应分段');
   if (row.sectionId) values.push('阅读对应章节');
-  return values.join(' · ') || (row.relation==='event-material' ? '活动所用材料' : row.relation==='card-awakening-cost' ? '卡片觉醒消耗' : '条件未完整收录');
+  return values.length ? values : [row.relation==='event-material' ? '活动所用材料' : row.relation==='card-awakening-cost' ? '卡片觉醒消耗' : '条件未完整收录'];
 }
+export const rewardCondition=row=>rewardConditions(row).join(' · ');
+export const rewardProductName=product=>product?.presentation?.name || product?.nameJa || product?.typeNameJa || `未解析奖励 ${product?.productId ?? ''}`;
+export const rewardRelationLabel=row=>rewardScopeLabels[row.scope] || (row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他客户端来源');
+export function rewardProductLabel(product) {
+  return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'卡片碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '种类待确认';
+}
+export const rewardCollectionKey=product=>product?.referenceStatus==='resolved-entity' &&
+  ['item','honor'].includes(product.kind) && new RegExp(`^${product.kind}:\\d+$`).test(product.entityKey || '') ? product.entityKey : '';
 // Editorial navigation labels reviewed against source descriptions; not official enums.
 export const itemBrowseGroups=[
   {key:'recovery',label:'体力恢复',codes:[1]},

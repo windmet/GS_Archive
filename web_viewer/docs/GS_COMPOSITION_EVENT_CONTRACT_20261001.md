@@ -135,3 +135,17 @@ StudioDocument 现在写入 schemaVersion=2。新人物的 layoutBasis=source-bo
 390×844 旋转工作台实际拖动薰，x 从 .266653 变为 .3166387397238167、y 从 1.999961 变为 2.042860602089807，符合旋转坐标逆变换。1440×900 桌面切入同一工作台并拖动新增贴纸到 x=.6484717970497448、y=.7352939330406697；Esc 收起菜单，退出后这两个数值保持。参考 A/B 的 PNG 预览仍为 1280×720，不含手柄；最终控制台 error 为空。这些 Browser 拖动由真实鼠标输入完成，不能提升为手机双指设备通过。
 
 证据在 E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6/gestures-r1：landscape-focus.png、landscape-objects.png、portrait-focus.png、landscape-materials.png、desktop-focus.png、focus-export-preview.png、回归日志和最终 build-check.log。未重新宣称 Blob 下载落盘通过；触屏双指、移动浏览器工具栏和系统旋转锁定仍需实际设备验收。
+
+## 藏品与奖励条目响应式展示、快捷查看（2026-10-01）
+
+输入代码基线为 3f09739e；工作期间另一窗口独立提交 d3880d7d（称号离线证据工具），本批接续该 HEAD，没有覆盖该提交。用户提供的修复建议仅作为设计参考：采用条件、图片/名称、数量的响应式条目，数字不拆行，复用藏品资料快捷查看。不采用示例奖励数值、未经确认的译名或“限定/关键大奖”等分类。数据 release 仍为 r6 ff4455d1d133f86c0fa5c2f4c3503642e48e62c22866a6df16a72758677c8fb7，无语料和来源规则变更。
+
+ArchiveRewardTable 同时用于活动奖励和藏品已知来源，保留原顺序、25 条分页、获取方式过滤、未知引用提示、历史企划日期。条件分别显示累计点数、排名区间、重复点数的间隔/起点/上限、剧情阅读、登录天数等，不能全部化为 PT 里程碑。宽区域显示三列，手机或桌面窄详情栏以容器宽度切为上下排列。图片只有在已有绑定时展示；标量奖励保留真实名称，不虚构图标、藏品身份或重复类别。
+
+活动材料及已解析道具/称号打开快捷查看，经过现有 release-pinned ReadModelClient 和 DomainRepository 严格查找及核验实体身份。共享 CollectionEntryDetails 与藏品馆使用同一说明、类别、持有上限及历史配置提示；关闭保留活动地址、过滤和当前页，焦点返回触发条目，弹层打开时背景 inert，Tab 在弹层内循环，Esc 关闭。失败可重试；关闭、切换和卸载中止旧请求，并以 revision 拒绝迟到结果。卡片和摄影素材继续使用原有类型化详情入口。
+
+回归：verify:reward-presentation --models E:/Web_build/GS_Archive_Domain_Work/composition-readmodels-r6 通过，实际读取并验证活动 410014 的 161 条奖励、item:10401 的原名称、称号实体，以及并发切换、关闭、卸载、失败重试、非法和混合实体拒绝。verify:domain-navigation 和 verify-event-readmodel-navigation 通过。最终 npm run build:check 9.60 秒完成，复用 .analysis/build-check，copyPublicDir:false，不复制 public 媒体。构建过程中曾因旧浏览器页面引用已替换的 chunk 出现动态模块加载错误，完成构建后刷新并重新验收，不将中间状态算作通过。
+
+Browser 为 PID 39916、5198 的既有生产 bundle / r6 映射服务。390×844 实际核对首条 100 PT、フィジカルバッジ、数量 40，打开 item:10401 的原始日文说明与持有上限 999,999；关闭返回相同活动地址和焦点。真实排名共有 12 条，第一名称号 honor:30017340 可快捷查看并进入藏品馆，已知来源指回本活动。重复奖励的每 10,000 PT、起点 200,000 PT、上限 9,999,999 PT、数量 100,000 在 320×740 下保持数字完整、条目无横向溢出。分页第二页的 25,000 PT 卡片“楽しく弾んで”实际进入卡片详情；13,400 PT 贴纸实际进入摄影资料 stickers:162。840×900 的道具详情 336px 窄来源栏改为上下排列，1280×900 和 1440×900 验证桌面奖励布局。最终构建的手机道具/称号旅程控制台新增 error 为空，临时 viewport 已恢复。
+
+证据位于 E:/Web_build/GS_Archive_Domain_Work/collection-rewards-browser-r1：before-mobile.png、mobile-rewards.png、mobile-quick-view.png、narrow-repeated.png、desktop-rewards.png、desktop-quick-view.png、desktop-narrow-sources.png、reward-regression.log、build-check.log。该证据属于桌面 Browser 的尺寸测试，不代表实体手机触屏、原生全屏或完整媒体发布验收。
