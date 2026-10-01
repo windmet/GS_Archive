@@ -46,3 +46,5 @@ native `RhythmIconListItem` 声明顺序包括 `_toggle`、`_notesNormalImage`�
 运行 `python scripts/audit-song-note-sprites.py --ipa <本地 IPA 路径>` 生成上述小型审计与 PNG；`--check` 重新从 IPA 解码，逐一比较完整审计及全部 29 个 PNG 字节。核实了图集唯一键、完整来源、native 字段顺序、各 Sprite 像素及输出身份。两步均通过。
 
 本批仅新增资源审计脚本、证据 JSON、小型 PNG 和记录。没有复制 IPA、`data.unity3d`、音频或其他公共语料，没有改前端组件、只读模型和已运行的 5200 服务。依据构建政策执行内容 / 资源身份 / diff 检查，无需再次 Vite 构建；不新增 UI / Browser 或真实设备验收声明。
+
+后续 [五轨透视与长条预览](GS_SONG_FIVE_LANE_HOLD_PREVIEW_20261001.md) 已接入上述原贴图并完成独立本地 Browser 验收。本篇及原审计中的预览未接入状态只描述资源审计时点；相机、Shader、UV、Special 映射等尚未恢复的边界仍成立。
