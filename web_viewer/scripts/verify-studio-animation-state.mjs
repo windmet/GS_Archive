@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import { Container } from 'pixi.js';
 import {
   SkeletonBinary, Skeleton, AnimationState, AnimationStateData,
   RegionAttachment, MeshAttachment, BoundingBoxAttachment,
@@ -34,10 +35,10 @@ for (const [idolId, modelId, motion, neck, faceTime] of [
   )));
   const skeleton = new Skeleton(data), state = new AnimationState(new AnimationStateData(data));
   const id = `actor-${stage.actorInstances.size}`;
-  const row = { instanceId: id, poseTime: null, faceTime };
+  const row = { instanceId: id, poseTime: null, faceTime, scale: 1, layoutBasis: 'source-bounds' };
   const model = {
     row, names: data.animations.map(a => a.name), neckBones: [], neckSlots: [], flags: {},
-    spine: { skeleton, state, visible: true, update(delta) { state.update(delta); state.apply(skeleton); skeleton.updateWorldTransform(); } },
+    spine: Object.assign(new Container(), { skeleton, state, update(delta) { state.update(delta); state.apply(skeleton); skeleton.updateWorldTransform(); } }),
   };
   stage.actorInstances.set(id, model);
   stage.setActorPose(id, { motion, neck, commands: [], label: id }, { face: 'face_trouble', commands: [], label: 'face' });

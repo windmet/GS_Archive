@@ -222,6 +222,7 @@ export function useStudioComposition(props, canvas) {
       instanceId: `actor-${++serial}-${Date.now()}`,
       idolId: Number(id),
       modelId: preset.modelId,
+      layoutBasis: 'source-bounds',
       poseId: pose.id,
       faceId: view.actor.faces[0].id,
       x: 0.5,

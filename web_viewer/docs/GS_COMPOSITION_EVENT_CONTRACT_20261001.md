@@ -95,3 +95,19 @@ A/B 是可继续编辑的参考构图。A 已匹配两位人物、道流小人�
 同一已核对 PID 39916、5198/r6 生产代码服务的 Browser：载入三人五贴纸文件，薰 rotation=8、poseTime=.42、faceTime=3.4 保留；串服装文件、损坏 JSON 和 65,537 字节文件实际拒绝，当前旋转与对象数不变，仍可生成 1280×720 PNG。通过页面「复制构图内容」实际读回内容，再从该内容保存的文件导入，切换到 A 后恢复原 B 的三人、五贴纸、顺序与数值。构图文件链接和 PNG 预览同时保留。390×844 页面 scrollWidth=390，画布固有 1280×720，无控制台 error，结束时 viewport 重置。
 
 证据在 `E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6/document-import-r1`，含 Browser 实际复制的 `copied-composition.json`、`document-roundtrip-ui.png`、`document-mobile.png`、输入失败文件与最终 build 日志。原生 JSON Blob 下载事件等待 8 秒仍超时，因此 JSON 下载落盘未验收；复制→文件→重新载入路径已实际验证，不把它记为下载通过。薰的原图举手、原始效果与物理设备仍未完成。
+
+## 人物坐标稳定性与 v2 兼容
+
+输入 HEAD：30118538。旧 Stage 以人物首次载入的姿势范围决定大小和 pivot，随后换姿势仍沿用首次范围。同一份参考 B 的薰改为 hello 后保存，刷新再载入，1440×900 Browser 同位置的 843×474 画布截图有 100,712 像素不同（25.2043%）。这是构图解释依赖操作历史，不能由保存的 JSON 恢复。
+
+StudioDocument 现在写入 schemaVersion=2。新人物的 layoutBasis=source-bounds，以骨架导出的不可变 x/y/width/height 计算大小及脚底锚点，并转换源 Y-up 到 Pixi Y-down。v1 文件仍接受并规范化为 v2，强制保留 pose-bounds 规则和原 x/y/scale/rotation；按文档最终姿势的当前附件几何测量，播放预览期间不更新尺寸。再次保存时携带该规则，不把旧坐标直接套用新模型尺寸。旧浏览器存档 key 保留。参考 A/B 的数值按真实骨架几何换算到新规则，继续保留可编辑、来源明确的构图。
+
+选择框原先读取 Pixi 保留的显示对象范围，换姿势后也可能沿用旧范围。现在按当前骨架附件测量，再经实际人物 transform 换算画布四角；旋转后取画布轴对齐范围。旧人物尺寸也使用当前骨架附件，避免显示对象缓存带入历史状态。
+
+`verify:studio-placement` 读取全部 49 人、690 套真实骨架及 atlas，验证原始尺寸可用；五位参考人物使用真实 Skeleton/AnimationState 与 Pixi Container，比较 weight→angry→hello 和直接载入 hello 的骨骼坐标、大小、pivot、选择框，分别覆盖两种尺寸规则。新文档换姿势的锚点保持固定。这里是无图像复制、无 GPU 的几何回归。`verify:studio-animation` 与 `verify:studio-composition` 通过，后者覆盖 v1 规范化/再次序列化、v1 扩展字段不能改写尺寸语义、未知规则拒绝。最终 `build:check` 9.21 秒完成，copyPublicDir:false，没有修改 r6 数据 release。
+
+同一 PID 39916、5198/r6 映射服务的最终生产代码 Browser：新 v2 构图换姿势后保存和刷新载入，843×474 同位置画布（含选择框）逐像素比较为 0 差异；实际导入本轮修复前保存的 v1 文件，换姿势后保存/刷新载入也为 0 差异。该结果只证明这两个测试旅程的恢复一致性，不代表与用户原图逐像素一致。参考 A 两人五贴纸、参考 B 三人五贴纸均实际生成 PNG 预览，固有尺寸 1280×720，最终控制台 error 为空。
+
+证据 `before-warm.png`、`before-fresh.png`、`final-warm.png`、`final-fresh.png`、`legacy-warm.png`、`legacy-fresh.png`、像素比较 JSON、A/B 导出界面和 build 日志在 `E:/Web_build/GS_Archive_Domain_Work/composition-browser-r6/actor-placement-r1`。直接从 Blob 链接取得 PNG 的 Browser 下载仍等待 8 秒超时，没有新增下载落盘通过声明。
+
+补充核对了薰 001–004 的真实纹理：002 的蓝衬衫、白领及领带与原图一致，摄影脚本亦指定该模型。没有用其他服装掩盖手势差异。薰的举手、原图尺寸/角度、原生相框运行时尺寸、天气/shader/lipsync 和物理设备仍待完成。

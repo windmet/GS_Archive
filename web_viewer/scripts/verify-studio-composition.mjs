@@ -31,6 +31,15 @@ for (const name of ["A", "B"]) {
   assert.deepEqual(parseStudioDocument(fileText), doc);
   assert.deepEqual(parseStudioDocument('\uFEFF' + fileText), doc, 'Accept UTF-8 BOM from desktop editors');
   assert.deepEqual(await readStudioDocumentFile(new File([fileText], 'composition.json')), doc);
+  const legacy = structuredClone(doc);
+  legacy.schemaVersion = 1;
+  // A v1 extension must not silently opt the old coordinates into v2 sizing.
+  legacy.actors.forEach(actor => actor.layoutBasis = 'source-bounds');
+  const upgraded = parseStudioDocument(JSON.stringify(legacy));
+  assert.equal(upgraded.schemaVersion, 2);
+  assert(upgraded.actors.every(actor => actor.layoutBasis === 'pose-bounds'));
+  assert.equal(upgraded.actors[0].x, legacy.actors[0].x);
+  assert.deepEqual(parseStudioDocument(serializeStudioDocument(upgraded)), upgraded);
   const originalOrder = doc.actors.map((row) => row.instanceId);
   moveStudioObject(doc, "actors", originalOrder[0], 1);
   assert.notDeepEqual(
@@ -62,8 +71,9 @@ for (const name of ["A", "B"]) {
   for (const mutate of [
     (d) => (d.actors[0].scale = Infinity),
     (d) => (d.actors[0].x = 3),
+    (d) => (d.actors[0].layoutBasis = 'unknown'),
     (d) => (d.stickers[0].instanceId = d.actors[0].instanceId),
-    (d) => (d.schemaVersion = 2),
+    (d) => (d.schemaVersion = 99),
     (d) => (d.actors[0].modelId = "../texture"),
   ]) {
     const broken = JSON.parse(serialized);
@@ -72,7 +82,7 @@ for (const name of ["A", "B"]) {
   }
 }
 assert.throws(() => parseStudioDocument('{broken'), /有效的 JSON/);
-assert.throws(() => parseStudioDocument('{"schemaVersion":2,"actors":[],"stickers":[]}'), /不支持/);
+assert.throws(() => parseStudioDocument('{"schemaVersion":99,"actors":[],"stickers":[]}'), /不支持/);
 assert.throws(() => parseStudioDocument('雪'.repeat(STUDIO_DOCUMENT_FILE_MAX_BYTES / 2)), /过大/, 'Limit UTF-8 bytes, not JS character count');
 await assert.rejects(readStudioDocumentFile({size:STUDIO_DOCUMENT_FILE_MAX_BYTES + 1, text(){throw Error('must not read oversized files')}}), /过大/);
 assert.deepEqual(

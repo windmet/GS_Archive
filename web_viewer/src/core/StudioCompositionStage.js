@@ -12,6 +12,7 @@ import { decodeSpineAtlasText } from "../../shared/story/SpineAtlasPages.js";
 import { decodeUnitySpineSkeleton } from "../../shared/story/SpineBinary.js";
 import { neckOverlayAnimation } from "./spineNeckOverlay.js";
 import { studioFramePlacement } from "./StudioFramePlacement.mjs";
+import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
 import {
   STUDIO_WIDTH as W,
   STUDIO_HEIGHT as H,
@@ -142,11 +143,12 @@ export class StudioCompositionStage {
   }
   drawSelection() {
     this.outline.clear();
+    const actor = this.actorInstances.get(this.selectedId);
     const object =
-      this.actorInstances.get(this.selectedId)?.spine ||
+      actor?.spine ||
       this.stickerInstances.get(this.selectedId)?.sprite;
     if (object?.visible) {
-      const b = object.getBounds();
+      const b = actor ? studioActorSelectionBounds(object) : object.getBounds();
       this.outline
         .lineStyle(2, 0x50c7a4, 0.9)
         .drawRect(b.x, b.y, b.width, b.height);
@@ -255,14 +257,6 @@ export class StudioCompositionStage {
       this.actorInstances.set(row.instanceId, model);
       this.actorLayer.addChild(spine);
       this.setActorPose(row.instanceId, pose, face);
-      const bounds = spine.getLocalBounds();
-      if (!(bounds.width > 0 && bounds.height > 0))
-        throw Error("模型展示范围无效");
-      model.baseScale = Math.min(
-        (H * 0.9) / bounds.height,
-        (W * 0.7) / bounds.width,
-      );
-      spine.pivot.set(bounds.x + bounds.width / 2, bounds.y + bounds.height);
       this.interactive(spine, row);
       this.setActorTransform(row.instanceId, row);
     } catch (error) {
@@ -363,6 +357,21 @@ export class StudioCompositionStage {
         model.row.poseTime ?? (body.loop ? 0 : body.animation.duration);
     if (face) face.trackTime = model.row.faceTime ?? 0;
   }
+  refreshActorPlacement(model) {
+    if (model.row.layoutBasis === 'pose-bounds') {
+      // Legacy v1 coordinates use the document's final pose, never a previous
+      // pose or a moving preview frame. Recompute on static document changes.
+      if (this.playing) return;
+      const bounds = studioActorPoseBounds(model.spine.skeleton);
+      model.baseScale = Math.min(H * .9 / bounds.height, W * .7 / bounds.width);
+      model.spine.pivot.set(bounds.x + bounds.width / 2, bounds.y + bounds.height);
+    } else {
+      const placement = studioActorPlacement(model.spine.skeleton.data);
+      model.baseScale = placement.baseScale;
+      model.spine.pivot.set(placement.pivotX, placement.pivotY);
+    }
+    model.spine.scale.set(model.baseScale * model.row.scale);
+  }
   updateModel(model, delta) {
     const { spine } = model;
     for (const index of model.neckBones)
@@ -376,6 +385,7 @@ export class StudioCompositionStage {
       if (/^(swet|sweat)\b/i.test(slot.data.name) && !model.flags.sweat)
         slot.color.a = 0;
     }
+    this.refreshActorPlacement(model);
   }
   setActorTransform(id, row) {
     const model = this.actorInstances.get(id);

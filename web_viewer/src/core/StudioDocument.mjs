@@ -1,9 +1,9 @@
 /** JSON-only composition; array order is back-to-front within each layer. */
-export const STUDIO_DOCUMENT_VERSION = 1;
+export const STUDIO_DOCUMENT_VERSION = 2;
 export const STUDIO_LIMITS = { actors: 6, stickers: 32 };
 export function createStudioDocument() {
   return {
-    schemaVersion: 1,
+    schemaVersion: STUDIO_DOCUMENT_VERSION,
     background: { spotId: null, sceneId: null, zoom: 1 },
     actors: [],
     stickers: [],
@@ -27,7 +27,7 @@ const identity = (value) => {
 };
 export function validateStudioDocument(input) {
   if (
-    input?.schemaVersion !== 1 ||
+    ![1, STUDIO_DOCUMENT_VERSION].includes(input?.schemaVersion) ||
     !Array.isArray(input.actors) ||
     !Array.isArray(input.stickers) ||
     input.actors.length > 6 ||
@@ -64,6 +64,8 @@ export function validateStudioDocument(input) {
     zoom: numeric(input.background?.zoom ?? 1, 1, 3, "背景缩放"),
   };
   result.actors = input.actors.map((row) => {
+    const layoutBasis = input.schemaVersion === 1 ? 'pose-bounds' : (row.layoutBasis ?? 'source-bounds');
+    if (!['source-bounds', 'pose-bounds'].includes(layoutBasis)) throw Error('不支持的人物尺寸规则');
     if (
       typeof row.modelId !== "string" ||
       !/^\d{3}[a-z]{3}_\d{3}_\d{2}$/.test(row.modelId)
@@ -73,6 +75,7 @@ export function validateStudioDocument(input) {
       ...instance(row),
       idolId: identity(row.idolId),
       modelId: row.modelId,
+      layoutBasis,
       poseId: identity(row.poseId),
       faceId: identity(row.faceId),
       poseTime:

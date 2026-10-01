@@ -7,13 +7,13 @@ export function studioReference(name, views) {
   doc.background = { spotId: b ? 24 : 14, sceneId: b ? 23 : 27, zoom: 4 / 3 };
   const specs = b
     ? [
-        [5, "005kao_002_00", "weight", "face_trouble", 0.205, 2.03, 2.1],
-        [6, "006tsu_005_00", "hello", "face_joy", 0.94, 2.01, 2.1],
-        [4, "004ter_001_00", "hello", "face_happy", 0.49, 2.02, 2.1],
+        [5, "005kao_002_00", "weight", "face_trouble", 0.266653, 1.999961, 2.061239],
+        [6, "006tsu_005_00", "hello", "face_joy", 0.946039, 2.010002, 2.100141],
+        [4, "004ter_001_00", "hello", "face_happy", 0.470672, 2.019536, 2.094187],
       ]
     : [
-        [38, "038tak_005_00", "wait_loop", "face_serious", 0.335, 2.03, 2.1],
-        [40, "040ren_005_00", "weight", "face_angry", 0.65, 2.03, 2.1],
+        [38, "038tak_005_00", "wait_loop", "face_serious", 0.333948, 2.029984, 2.099590],
+        [40, "040ren_005_00", "weight", "face_angry", 0.672863, 2.025363, 2.077352],
       ];
   doc.actors = specs.map(([idolId, modelId, motion, face, x, y, scale], i) => {
     const view = views.get(String(idolId));
@@ -30,6 +30,7 @@ export function studioReference(name, views) {
       instanceId: `reference-${name}-actor-${i}`,
       idolId,
       modelId,
+      layoutBasis: 'source-bounds',
       poseId: pose.id,
       faceId: expression.id,
       x,
