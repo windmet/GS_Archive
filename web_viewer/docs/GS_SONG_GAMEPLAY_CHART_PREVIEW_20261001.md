@@ -24,7 +24,7 @@
 
 对象数与最大 Combo 计数不同，页面分别标明。此版尚不复刻原游戏判定规则、透视、速度参数、Shaders、原始 note 皮肤或动态播放。tick 每拍比例、offset 单位及音频对齐仍未验证，所以不推算毫秒，不声称与试听同步。
 
-附件仅为研究参考。核对 [pjsekai-scores-rs 官方仓库](https://github.com/Team-Haruki/pjsekai-scores-rs)和 MIT LICENSE 后，它是社区 SUS / JSON 渲染器，而非 SideM 官方工具；本实现不引入该项目、不转换为 SUS，也不根据附件推断资产授权。
+附件仅为研究参考。核对 [pjsekai-scores-rs 项目仓库](https://github.com/Team-Haruki/pjsekai-scores-rs)和 MIT LICENSE 后，它是社区 SUS / JSON 渲染器，而非 SideM 官方工具；本实现不引入该项目、不转换为 SUS，也不根据附件推断资产授权。
 
 ## 验证记录
 
@@ -32,4 +32,19 @@
 
 展示行为验证：`node scripts/verify-song-chart-presentation.mjs` 检查 244 档、滑条几何端点、全部控制点、Flick 尾部、BPM 变化、错误歌曲 / 难度、未知类型、重复源对象和损坏控制点拒绝。另运行歌曲目录来源检查及已有歌曲 Stage 投影回归。
 
-构建、只读模型绑定与 Browser 验收结果在完成后补记。日常构建固定 `.analysis/build-check`，不复制 public 语料；该验收不构成完整媒体包、部署或物理设备验收。
+以上检查均通过；`node scripts/verify-song-catalog.mjs --source-only`、`python scripts/verify-song-masterdata-mappings.py`、`node scripts/verify-song-timelines.mjs` 和 `node --test readmodels/tests/song_stage_projection.test.mjs` 也通过。展示检查覆盖 3,839 条滑条路径、1,585 个 Flick 尾部及各难度合计 36 处 BPM 变化。
+
+只读模型从已提交输入 `0f1ebbd4` 生成，候选路径 `E:/Web_build/GS_Archive_Domain_Work/song-gameplay-readmodels-20261001`，release `17e0ab0b227d6f2bb433f0c1cfaf3934fcccbc2cd420387adc95af9fc4c7a907`。8,750 个模型、76,620,057 解码字节，bootstrap 14,344 字节；`verify_artifacts.mjs` 逐一通过。已绑定主仓库 bootstrap 和路线账本，原有全局 partial / 设备 pending 保持不变。
+
+使用既有独立工作区 `E:/Web_build/GS_Archive_Domain_Work/song-attribute-qa-20261001/web_viewer`；代码 HEAD `e372d658`。`npm run build:check` 与 `npm run verify:build-audit` 通过（progress 模式）。首次截图显示手机前奏空轨较长，补上默认定位首个音符及返回按钮后，复用同一固定构建目录重建并完成复验。两次均 `copyPublicDir:false`，没有 public 语料副本，主工作区构建目录未覆盖。
+
+Browser 插件在本任务不可用，按前端验收技能使用已有 bundled Playwright Chromium；未安装额外依赖。生产代码服务 `http://127.0.0.1:5200/` 映射上述候选及主仓库已有 public / 外部 RAW 资源。真实桌面 1440×1000、手机 390×844 已验证：
+
+- BRAND NEW FIELD：打开前零谱面请求；四档切换、缩放、长轨滚动、首个音符定位与实际完整 SVG 文件下载。
+- Growing Smiles！：剧情解锁；はるかぜバトン：难度差异处理；運命光年：普通曲日期待办；特殊版 DRIVE A LIVE：2022 首次日期及 PASSION；Infinite Octave!：多 BPM 展示。
+- 注入一次 502 后重试成功；有效 JSON 篡改体被 SHA-256 / 字节数拒绝，恢复源文件后重试成功；在 EASY 延迟请求期间切换 HARD，旧请求不覆盖新难度。
+- 手机五轨全部可见且无页面横向溢出；长轨独立滚动、首屏即见音符。桌面及手机截图已人工查看。
+
+Browser receipt 中零非预期错误、零警告、零非预期 HTTP 失败；仅一次预期注入 502。脚本、截图、下载文件、HTTP 记录与 `gameplay-browser-receipt.json` 均在 `E:/Web_build/GS_Archive_Domain_Work/song-attribute-browser-20261001`，与此前属性批次的独立文件名并存。
+
+谱面 JSON 使用窄范围 `text eol=lf`，避免 Windows checkout 换行转换破坏 descriptor 的 SHA-256。`npm run verify:cutover-routes` progress 检查通过；全局迁移、原游戏完整一致性、真实物理设备及部署均未获本次验收。
