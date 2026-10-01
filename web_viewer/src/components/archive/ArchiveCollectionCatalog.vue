@@ -1,5 +1,5 @@
 <template>
-  <article class="domain-page" data-archive-scroll-container>
+  <article class="domain-page collection-page" data-archive-scroll-container>
     <h2>藏品馆</h2>
     <p class="domain-intro">
       收录游戏内的道具与称号，查阅说明、已知来源和用途。
@@ -24,8 +24,8 @@
     <p v-if="errorScope === 'catalog'" role="alert" class="domain-error">
       {{ error }}<button type="button" @click="load">重试</button>
     </p>
-    <div v-if="rows.length" class="domain-layout">
-      <section class="domain-panel" aria-label="资料目录">
+    <div v-if="rows.length" class="collection-layout" :class="{'has-detail':detailOpen && !mobile}">
+      <section class="collection-directory" aria-label="资料目录">
         <div class="domain-tools">
           <label
             >搜索<input
@@ -56,7 +56,7 @@
           </label>
         </div>
         <p class="domain-count">{{ filtered.length }} 条资料</p>
-        <div class="domain-list">
+        <div class="collection-cards" :class="{'is-honors':kind === 'honors'}">
           <button
             v-for="row in visible"
             :key="row.id"
@@ -64,7 +64,7 @@
             :aria-pressed="String(row.id) === selectedId"
             @click="select(row)"
           >
-            <span class="domain-symbol">
+            <span class="collection-card-art">
               <img
                 v-if="
                   row.image?.url && !failedThumbnails.has(`${kind}:${row.id}`)
@@ -93,13 +93,12 @@
                 :size="21"
               />
             </span>
-            <span class="domain-list-copy">
+            <span class="collection-card-copy">
               <strong>{{ row.nameJa || row.title || row.name }}</strong>
               <small
                 >{{ kind === "items" ? "道具" : "称号" }} · {{ row.id }}</small
               >
             </span>
-            <ChevronRight :size="16" />
           </button>
         </div>
         <p v-if="!filtered.length" class="domain-muted">没有匹配的资料。</p>
@@ -113,43 +112,25 @@
           </button>
         </nav>
       </section>
-      <div class="domain-detail" ref="detailElement">
-        <p v-if="detailBusy" role="status" class="domain-muted">正在读取所选藏品…</p>
-        <p v-else-if="errorScope === 'detail'" role="alert" class="domain-error">
-          {{ error }}<button type="button" @click="load">重试</button>
-        </p>
-        <template v-if="detail?.entry">
-          <CollectionEntryDetails :detail="detail" :kind="kind" />
-          <section class="domain-panel">
-            <h3>已知来源与用途</h3>
-            <ArchiveRewardTable
-              :rows="detail.sources"
-              sources
-              @open-event="emit('open-event', $event)"
-            />
-          </section>
-        </template>
-        <p v-else-if="!detailBusy && !error" class="domain-muted">选择资料查看详情。</p>
-      </div>
-    </div>
+      <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :busy="catalogBusy || detailBusy" :error="errorScope === 'detail' ? error : ''" :modal="mobile" @close="detailOpen=false" @retry="load" @open-event="emit('open-event',$event)" />
+  </div>
   </article>
 </template>
 <script setup>
 import {
   computed,
-  nextTick,
   onBeforeUnmount,
   ref,
   shallowRef,
   watch,
 } from "vue";
-import { Box, ChevronRight, Medal } from "@lucide/vue";
+import { Box, Medal } from "@lucide/vue";
 import {
   itemBrowseGroups,
   itemBrowseGroup,
 } from "./DomainPresentation.mjs";
-import ArchiveRewardTable from "./ArchiveRewardTable.vue";
-import CollectionEntryDetails from "./CollectionEntryDetails.vue";
+import CollectionDetailPanel from "./CollectionDetailPanel.vue";
+import "../../styles/archive-collection.css";
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import { createCollectionCatalogSession } from "../../../readmodels/runtime/CollectionCatalogSession.mjs";
 import "../../styles/archive-domains.css";
@@ -171,7 +152,6 @@ const kind = ref(props.entity.startsWith("honor:") ? "honors" : "items"),
   errorScope = ref(""),
   page = ref(0),
   category = ref(""),
-  detailElement = ref(null),
   failedThumbnails = shallowRef(new Set());
 const types = computed(() =>
   [...new Set(rows.value.map((row) => row.honorType))].sort((a, b) => a - b),
@@ -201,8 +181,12 @@ const session = createCollectionCatalogSession(repository, state => {
   error.value = state.error;
   errorScope.value = state.errorScope;
 });
-onBeforeUnmount(() => session.dispose());
-let pendingKindSelection = "";
+const mediaQuery=window.matchMedia("(max-width:700px)");
+const mobile=ref(mediaQuery.matches),detailOpen=ref(!mobile.value || Boolean(props.entity));
+const resize=()=>{mobile.value=mediaQuery.matches};
+mediaQuery.addEventListener('change',resize);
+onBeforeUnmount(() => { session.dispose();mediaQuery.removeEventListener('change',resize); });
+let pendingKindSelection = "", skipAutoOpenKey = "";
 async function load() {
   const requestedKind = kind.value;
   const type = requestedKind === "honors" ? "honor" : "item";
@@ -212,21 +196,22 @@ async function load() {
   if (!value) return;
   if (pendingKindSelection === requestedKind) {
     pendingKindSelection = "";
+    skipAutoOpenKey = value.entry.key;
     emit("entity", value.entry.key);
   }
   const position = filtered.value.findIndex(row => String(row.id) === String(value.entry.id));
   page.value = position >= 0 ? Math.floor(position / 25) : 0;
-  await nextTick();
-  if (detail.value === value && props.entity && window.matchMedia("(max-width:700px)").matches)
-    detailElement.value?.scrollIntoView({ block: "start" });
+
 }
 function select(row) {
+  detailOpen.value=true;
   emit("entity", `${kind.value === "honors" ? "honor" : "item"}:${row.id}`);
 }
 function switchKind(value) {
   if (kind.value === value) return;
   emit("query", "");
   pendingKindSelection = value;
+  detailOpen.value=!mobile.value;
   kind.value = value;
   category.value = "";
   page.value = 0;
@@ -236,6 +221,8 @@ watch(
   () => props.entity,
   () => {
     if (props.entity) {
+      if (props.entity !== skipAutoOpenKey) detailOpen.value=true;
+      skipAutoOpenKey="";
       const nextKind = props.entity.startsWith("honor:") ? "honors" : "items";
       if (nextKind !== kind.value) { category.value = ""; page.value = 0; }
       kind.value = nextKind;
@@ -251,8 +238,3 @@ watch(
   },
 );
 </script>
-<style scoped>
-@media (min-width:701px) {
-  .domain-list { max-height:clamp(220px,calc(100dvh - 420px),620px);overflow:auto;overscroll-behavior:contain; }
-}
-</style>

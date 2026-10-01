@@ -1,7 +1,7 @@
 <template>
   <section class="domain-panel collection-entry-details">
-    <div class="domain-detail-title"><Medal v-if="kind === 'honors'" /><Box v-else /><h3>{{ detail.entry.nameJa }}</h3></div>
     <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="detail.entry.nameJa" />
+    <div class="domain-detail-title"><h3>{{ detail.entry.nameJa }}</h3></div>
     <p class="domain-description">{{ detail.entry.descriptionText?.plain || '尚未收录说明。' }}</p>
     <dl class="domain-meta">
       <div><dt>种类</dt><dd>{{ kind === 'honors' ? '称号' : '道具' }} · 类别 {{ detail.entry.itemType ?? detail.entry.honorType }}</dd></div>
@@ -13,8 +13,11 @@
   </section>
 </template>
 <script setup>
-import {Box,Medal} from '@lucide/vue'
 import {historicalDate,number} from './DomainPresentation.mjs'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 defineProps({detail:{type:Object,required:true},kind:{type:String,required:true}})
 </script>
+<style scoped>
+.domain-detail-title { display:block; }
+.domain-detail-title h3 { min-width:0;overflow-wrap:anywhere; }
+</style>

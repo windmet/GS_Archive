@@ -157,3 +157,19 @@ Browser 为 PID 39916、5198 的既有生产 bundle / r6 映射服务。390×844
 verify:collection-catalog-session --models composition-readmodels-r6 通过，包含真实 535 道具、1613 称号、目录复用、详情/目录失败重试、混合身份拒绝、快速跨域往返与卸载。verify:domain-navigation、verify:reward-presentation（实际 161 条奖励）通过。最终 build:check 10.85 秒，copyPublicDir:false，复用本 checkout .analysis/build-check，r6 release 未改变。
 
 PID 39916、5198/r6 生产 bundle Browser：1280×900 注入详情 12 秒延迟，535 条目录继续可用，搜索 10402 并改选物理戒指成功，旧详情不覆盖后选资料。桌面详情一次 503 后仍有目录、选择态与原地重试；重试读取初级课程笔记的真实说明及 418 条来源。390×844 同一 503→重试链路通过，类型切换能进入称号目录。故障文件已恢复 rules:[]。证据在 E:/Web_build/GS_Archive_Domain_Work/collection-loading-browser-r1，包括前后加载截图、桌面错误/重试、手机重试、回归与构建日志；注入期间的 HTTP 503 是预期测试事件。该批为读取恢复与交互，不代表所有资料域或实体手机已验收。
+
+## 藏品卡片网格、固定详情栏与活动图片边界（2026-10-01）
+
+输入 HEAD 03bc0300。用户要求吸取 BRMY item 页的卡片布局、桌面右侧固定详情思路，并明确称号图标横向铺满、文字下移。参考图片只用于布局；未复制 BRMY 的分类、任务或奖励文字。道具目录为响应式卡片网格，手机双列；称号目录使用完整原比例横幅、名称和编号放在下方，手机单列。共享藏品详情同样先展示原图再显示名称及原始说明。
+
+桌面将标题与种类导航保留在上方，目录和详情占用剩余可视高度并分别滚动；目录搜索/分类在左侧滚动区顶部固定。详情有关闭按钮，关闭后目录扩大；改选保留现有源绑定读取、取消及重试行为。手机选中藏品后使用底部面板，背景 inert，Esc/关闭按钮收起，Tab 在面板内循环并返回触发条目；尺寸切换移动同一详情内容，卸载恢复背景。面板仅消费既有条目、说明和已知来源，缺失来源仍明确为未收录。
+
+活动页真实复现：44px compact figure 内的图片被共享大图 min-height:80px 撑到 80px。DomainMediaPreview 的 compact 图现在明确 min-height:0、width/height/max-height:100%、object-fit:contain，固定图框不被 flex 压缩。活动报酬卡使用 72px 图框，材料使用 44px；图片重试与卡片/材料入口为并列按钮，不再形成嵌套按钮。compact 图片失败时只保留 44×44 重试按钮，避免小按钮与图标争占空间。活动头部和图库按可用容器宽度调整，不能只用窗口宽度推断内容栏宽度。
+
+回归：verify:collection-catalog-session --models r6（535 道具、1613 称号）、verify:reward-presentation --models r6（410014 的 161 条奖励）、verify:domain-navigation、verify-event-readmodel-navigation 通过。最终 build:check 10.44 秒，copyPublicDir:false，复用 .analysis/build-check；r6 release ff4455d1d133f86c0fa5c2f4c3503642e48e62c22866a6df16a72758677c8fb7 未改变。
+
+PID 39916、5198/r6 生产 bundle Browser：1280×900 左侧目录三列；右侧详情顶部 248.92、底部 876.24，位于 main 的 75.99–900.23 范围内。实际分别滚动目录与详情，右侧顶部不变，目录/详情 scrollTop 独立。关闭、重开、搜索 10701 和手机转换可用。390×844 手机道具双列、详情底部面板；清除搜索仍保持 item:10701 和真实说明、418 条来源。称号 10001001 的原图横向完整展示，名称位于图下，原数据没有来源时仍显示 0 条。320×740 称号图片约 247.46px 宽，文字下移，页面 scrollWidth 与 clientWidth 相等。
+
+活动 410014 在 390px 下的全部 compact 图片测得无容器越界、嵌套 button 为 0；840×900 内容栏约 669px，头部自动单列，图库图片均在 figure 范围内；320px 无横向溢出。实际报酬卡进入 card_detail/012yus_sr07，材料打开原说明快捷查看；称号 30017340 的已知来源回到本活动且保留返回藏品的路线。只对一张报酬卡图片注入一次 503，重试按钮实测 43.99×43.99 CSS px（浏览器小数取整），独立于卡片按钮；重试后真实图片恢复为约 72×72。故障文件恢复 rules:[]，最终无故障旅程控制台 error/warn 为空，临时 viewport 已恢复，保留当前浏览器选择。
+
+证据目录 E:/Web_build/GS_Archive_Domain_Work/collection-layout-browser-r1：before-event-icons.png、event-mobile.png、event-desktop.png、event-narrow-desktop.png、event-image-retry.png、item-desktop-grid.png、item-mobile-cards.png、item-mobile-detail.png、honor-mobile-cards.png、honor-mobile-detail.png、honor-desktop.png、final-console.json、两份回归日志与 build-check.log。这是桌面 Browser 的尺寸/交互证据，不提升为实体触屏或部署验收。既有源数据缺项、原生摄影效果和全站迁移边界继续保留。

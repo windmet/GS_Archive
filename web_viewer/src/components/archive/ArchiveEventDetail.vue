@@ -94,9 +94,9 @@
         <span class="raw-badge">{{ rewardCards.length }} 张</span>
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
-        <button v-for="card in rewardCards" :key="card.card_resource_id" @click="emit('open-card', card)">
+        <div v-for="card in rewardCards" :key="card.card_resource_id" class="event-reward-card">
           <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
-          <div class="reward-copy">
+          <button type="button" class="event-reward-open" @click="emit('open-card',card)"><div class="reward-copy">
             <span>{{ card.rarity }} · {{ idolName(card.character_id) }}</span>
             <strong>{{ card.card_title }}</strong>
             <ul>
@@ -107,15 +107,15 @@
               </li>
             </ul>
           </div>
-          <ChevronRight :size="17" />
-        </button>
+          <ChevronRight :size="17" /></button>
+        </div>
       </div>
       <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
     </section>
 
     <section v-if="view.rewards" class="detail-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
-      <nav v-if="view.rewards.materials?.length" class="domain-tabs" aria-label="活动材料"><button v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" type="button" @click="openQuick(`item:${item.itemId}`)"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/>{{ item.nameJa }}</button></nav>
+      <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
       <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
@@ -243,16 +243,25 @@ function formatDateTime(timestamp) {
 .episode-entry { display: flex; min-width: 0; }
 .episode-entry > button:first-child { flex: 1; min-width: 0; }
 .episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: 5px; color: #157c78; font-size: 13px; }
-.event-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
-.event-media-note{position:absolute;bottom:0;left:0;right:0;padding:7px;background:#fffffff2;font-size:12px;color:#536872}.event-media-archive{padding:14px 24px;border-bottom:1px solid #dfe5e8;font-size:13px}.event-media-archive summary{cursor:pointer}.event-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:12px}
-.event-identity { display: grid; grid-template-columns: minmax(420px, 1.4fr) minmax(280px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
-.event-visual { position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
+.event-detail { container-type:inline-size; height: 100%; overflow-y: auto; background: #f5f7f8; color: #24313a; }
+.event-media-note{position:absolute;bottom:0;left:0;right:0;padding:7px;background:#fffffff2;font-size:12px;color:#536872}.event-media-archive{padding:14px 24px;border-bottom:1px solid #dfe5e8;font-size:13px}.event-media-archive summary{cursor:pointer}.event-media-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;margin-top:12px}
+.event-identity { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
+.event-visual { min-width:0; position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e1e6e8; border-radius: 6px; background: #e9eef0; }
 .event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
 .event-summary { min-width: 0; padding-top: 4px; }.event-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; color: #16857d; font-size: .62rem; font-weight: 800; }.event-kicker small { padding: 3px 5px; border-radius: 3px; background: #eaf7f5; color: #277870; font-size: .53rem; }.event-summary h2 { margin: 11px 0 18px; font-size: 1.18rem; line-height: 1.45; }.event-summary dl { margin: 0; }.event-summary dl div { display: grid; grid-template-columns: 70px minmax(0,1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: .66rem; }.event-summary dt { color: #849097; }.event-summary dd { margin: 0; color: #36474f; font-variant-numeric: tabular-nums; }
 .story-band { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #d7e6e4; background: #eaf6f4; }.story-band > div { min-width: 0; }.story-band > div > span { color: #147d76; font-size: .58rem; font-weight: 800; }.story-band h3 { margin: 7px 0 5px; font-size: .88rem; }.story-band p { max-width: 800px; margin: 0; color: #405159; font-size: .68rem; line-height: 1.75; white-space: pre-line; }.story-actions { display: grid; flex: 0 0 auto; gap: 7px; min-width: 174px; }.story-actions > button,.story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 13px; border: 1px solid #158f87; border-radius: 6px; background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: .68rem; text-decoration: none; }.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: #166f69; }.story-actions > a span { display: flex; flex-direction: column; gap: 2px; }.story-actions > a strong { font-size: .64rem; }.story-actions > a small { color: #63817e; font-size: .52rem; }
 .detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 12px; }.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }.section-heading h3 { margin: 0; font-size: .86rem; }.section-heading p { margin: 4px 0 0; color: #849097; font-size: .59rem; }.raw-badge,.derived-badge { flex: 0 0 auto; padding: 4px 7px; border-radius: 4px; font-size: .58rem; font-weight: 700; }.raw-badge { background: #e5f6f3; color: #177970; }.derived-badge { background: #fff2d6; color: #8b6413; }
 .episode-section { background: #f8fafb; }.episode-count { color: #6f7e85; font-size: .59rem; font-weight: 700; }.episode-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid #dfe5e7; border-left: 1px solid #dfe5e7; }.episode-list button { display: grid; grid-template-columns: 32px minmax(0,1fr) auto 28px; align-items: center; gap: 9px; min-height: 58px; padding: 8px 10px; border: 0; border-right: 1px solid #dfe5e7; border-bottom: 1px solid #dfe5e7; background: #fff; color: #29383f; cursor: pointer; font: inherit; text-align: left; }.episode-list button:hover { background: #eff9f7; }.episode-list button:disabled { cursor: not-allowed; opacity: .55; }.episode-number { color: #17877f; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .62rem; font-weight: 800; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { overflow: hidden; color: #929ca1; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .48rem; text-overflow: ellipsis; white-space: nowrap; }.episode-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; color: #7d898f; font-size: .5rem; }.episode-list button > svg { color: #168a82; }
-.reward-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }.reward-grid > button { display: grid; grid-template-columns: 72px minmax(0,1fr) 18px; align-items: center; gap: 10px; min-width: 0; min-height: 106px; padding: 8px; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; color: #28363e; cursor: pointer; font: inherit; text-align: left; }.reward-grid > button:hover { border-color: #69beb7; background: #f4fbfa; }.reward-grid > button > img { width: 72px; aspect-ratio: 1; border-radius: 4px; object-fit: contain; }.reward-copy { min-width: 0; }.reward-copy > span { color: #168078; font-size: .55rem; font-weight: 700; }.reward-copy strong { display: block; overflow: hidden; margin: 4px 0 6px; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }.reward-copy ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }.reward-copy li { display: flex; align-items: flex-start; gap: 4px; color: #69767e; font-size: .54rem; line-height: 1.35; }.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: #248980; }.empty-copy { margin: 0; color: #7b878e; font-size: .66rem; }
+.reward-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px; }
+.event-reward-card { display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:10px;min-width:0;min-height:106px;padding:10px;border:1px solid #dfe5e7;border-radius:8px;background:#fff; }
+.event-reward-open { display:grid;grid-template-columns:minmax(0,1fr) 18px;gap:8px;align-items:center;min-width:0;min-height:84px;padding:0;border:0;background:transparent;color:#28363e;cursor:pointer;font:inherit;text-align:left; }
+.event-reward-card:hover { border-color:#69beb7;background:#f4fbfa; }
+.event-reward-card :deep(.domain-media-compact) { width:72px;height:72px;min-width:0;margin:0; }
+.event-materials { display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px; }
+.event-material { display:flex;align-items:center;gap:10px;min-width:0;max-width:100%;padding:10px;border:1px solid #d3e2ed;border-radius:8px;background:#fff; }
+.event-material :deep(.domain-media-compact) { margin:0; }
+.event-material>button { min-width:0;min-height:44px;border:0;padding:0 4px;background:transparent;color:#36506b;cursor:pointer;font:inherit;text-align:left;overflow-wrap:anywhere; }
+.reward-copy { min-width: 0; }.reward-copy > span { color: #168078; font-size: .55rem; font-weight: 700; }.reward-copy strong { display: block; overflow: hidden; margin: 4px 0 6px; font-size: .66rem; text-overflow: ellipsis; white-space: nowrap; }.reward-copy ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }.reward-copy li { display: flex; align-items: flex-start; gap: 4px; color: #69767e; font-size: .54rem; line-height: 1.35; }.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: #248980; }.empty-copy { margin: 0; color: #7b878e; font-size: .66rem; }
 .cast-layout { display: grid; grid-template-columns: 1fr auto; gap: 18px; }
 .idol-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 7px; }
 .idol-list.has-story-visuals { grid-template-columns: repeat(auto-fit,minmax(190px,1fr)); }
@@ -265,4 +274,6 @@ function formatDateTime(timestamp) {
 @media (max-width: 760px) { .event-identity { grid-template-columns: 1fr; gap: 18px; padding: 16px; }.story-band { align-items: stretch; flex-direction: column; gap: 14px; padding: 18px 16px; }.detail-section { padding: 18px 16px; }.cast-layout { grid-template-columns: 1fr; }.unit-list { min-width: 0; }.evidence-section dl { grid-template-columns: 1fr; } }
 @media (max-width: 620px) { .episode-list { grid-template-columns: 1fr; }.episode-list button { grid-template-columns: 28px minmax(0,1fr) 26px; }.episode-stats { display: none; } }
 @media (max-width: 520px) { .reward-grid { grid-template-columns: 1fr; }.event-summary h2 { font-size: 1rem; } }
+@container(max-width:800px) { .event-identity { grid-template-columns:minmax(0,1fr);gap:18px; }.reward-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@container(max-width:520px) { .reward-grid { grid-template-columns:minmax(0,1fr); }.event-media-grid { grid-template-columns:minmax(0,1fr); } }
 </style>

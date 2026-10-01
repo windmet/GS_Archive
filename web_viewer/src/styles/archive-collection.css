@@ -1,0 +1,54 @@
+.collection-layout { display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start; }
+.collection-layout.has-detail { grid-template-columns:minmax(0,1.45fr) minmax(340px,1fr); }
+.collection-directory { min-width:0; }
+.collection-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,160px),1fr));gap:14px; }
+.collection-cards>button { display:flex;flex-direction:column;align-items:stretch;gap:12px;min-width:0;padding:16px;border:1px solid #dce7ef;border-radius:12px;background:#fff;text-align:left;color:#213b54;line-height:1.55; }
+.collection-cards>button:hover { border-color:#88c7b5;background:#f6fcf9; }
+.collection-cards>button[aria-pressed=true] { border-color:#19896e;box-shadow:inset 0 0 0 1px #19896e;background:#e8f7f1; }
+.collection-card-art { display:grid;place-items:center;align-self:center;width:100%;height:88px;color:#248978; }
+.collection-card-art img { display:block;width:72px;height:72px;max-width:100%;min-height:0;object-fit:contain; }
+.collection-card-art svg { width:44px;height:44px; }
+.collection-card-copy { min-width:0; }
+.collection-card-copy strong { display:block;font-size:15px;overflow-wrap:anywhere; }
+.collection-card-copy small { display:block;color:#647b8d;font-size:12px;margin-top:6px; }
+.collection-cards.is-honors { grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr)); }
+.collection-cards.is-honors .collection-card-art { height:auto;min-height:64px; }
+.collection-cards.is-honors .collection-card-art img { width:100%;height:auto;max-height:none; }
+.collection-inspector-host { position:sticky;top:0;align-self:start;min-width:0; }
+.collection-inspector { max-height:calc(100dvh - var(--archive-topbar,76px) - 48px);overflow:auto;overscroll-behavior:contain;min-width:0;border:1px solid #dce7ef;border-radius:14px;background:#fff;color:#213b54;font-size:14px; }
+.collection-inspector *, .collection-sheet-backdrop { box-sizing:border-box; }
+.collection-inspector-header { position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;background:#fff;border-bottom:1px solid #e5edf2; }
+.collection-inspector .collection-inspector-header h2 { margin:0;font-size:18px;line-height:1.5; }
+.collection-inspector button,.collection-inspector select { min-height:44px;font:inherit;cursor:pointer; }
+.collection-inspector-header button { display:flex;align-items:center;gap:6px;flex:none;padding:8px 12px;border:1px solid #d3e2e8;border-radius:8px;background:#fff;color:#466476; }
+.collection-inspector button:focus-visible,.collection-inspector select:focus-visible { outline:3px solid #048a6d;outline-offset:2px; }
+.collection-inspector-body { padding:20px; }
+.collection-inspector-body>.domain-panel { border:0;padding:0;border-radius:0; }
+.collection-inspector-body>.domain-panel+.domain-panel { margin-top:24px;padding-top:24px;border-top:1px solid #e5edf2; }
+.collection-inspector .domain-media-preview img { min-height:0;max-height:160px; }
+.collection-inspector.is-honors .domain-media-preview:not(.domain-media-compact) img { width:100%;height:auto;max-height:none; }
+.collection-sheet-backdrop { position:fixed;inset:0;z-index:3000;display:flex;align-items:flex-end;justify-content:center;background:#152b436b;padding-top:40px; }
+.collection-inspector.is-sheet { width:100%;height:min(84dvh,900px);max-height:100%;border-radius:20px 20px 0 0;box-shadow:0 -12px 50px #102a4026;padding-bottom:env(safe-area-inset-bottom); }
+@media(min-width:701px) {
+  .collection-page { display:flex;flex-direction:column;overflow:hidden; }
+  .collection-page>h2,.collection-page>.domain-intro,.collection-page>.domain-tabs { flex:none; }
+  .collection-layout { flex:1;min-height:0;overflow:hidden; }
+  .collection-directory { height:100%;min-height:0;overflow:auto;padding:2px 8px 8px 2px;overscroll-behavior:contain; }
+  .collection-directory .domain-tools { position:sticky;top:0;z-index:1;background:#f1f7fc;padding-bottom:10px;margin-bottom:6px; }
+  .collection-inspector-host { position:static;height:100%;min-height:0; }
+  .collection-inspector { height:100%;max-height:100%; }
+}
+@media(max-width:1000px) and (min-width:701px) {
+  .collection-layout.has-detail { grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:16px; }
+  .collection-cards { grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr)); }
+}
+@media(max-width:700px) {
+  .collection-layout { display:block; }
+  .collection-cards { grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+  .collection-cards>button { padding:12px;gap:8px; }
+  .collection-card-art { height:76px; }.collection-card-art img { width:64px;height:64px; }
+  .collection-card-copy strong { font-size:14px; }.collection-card-copy small { font-size:11px; }
+  .collection-cards.is-honors { grid-template-columns:minmax(0,1fr); }
+  .collection-cards.is-honors>button { padding:16px; }
+  .collection-inspector-body { padding:16px; }
+}
