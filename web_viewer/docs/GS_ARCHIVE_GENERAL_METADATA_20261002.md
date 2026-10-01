@@ -51,7 +51,7 @@
 
 ## 验收
 
-- `node scripts/audit-unnamed-costumes.py`：92 套未命名来源审计，输出小型 JSON 到 `.analysis/archive-general-localization`，不改源资源。
+- `python scripts/audit-unnamed-costumes.py`：92 套未命名来源审计，输出小型 JSON 到 `.analysis/archive-general-localization`，不改源资源。
 - `node scripts/verify-archive-general-texts.mjs`：2091 个源文绑定、普通/中心技能全覆盖、所有数值与未解析参数保持、日文/改变源文/未命名服装回退、98 个来源身份绑定、安全体力分段、占位期合同通过。
 - `node scripts/verify-archive-inline-presentation.mjs`：通过；修正旧回归只依赖未解析 level 的假设，改为同时验证真实原始 description_template。实际发布 level 的数字已被前批修复，不为满足测试重新引入占位符。
 - `npm run verify:studio-composition`：通过，构图保存/载入与 source ID 合同不变。
