@@ -149,3 +149,11 @@ ArchiveRewardTable 同时用于活动奖励和藏品已知来源，保留原顺�
 Browser 为 PID 39916、5198 的既有生产 bundle / r6 映射服务。390×844 实际核对首条 100 PT、フィジカルバッジ、数量 40，打开 item:10401 的原始日文说明与持有上限 999,999；关闭返回相同活动地址和焦点。真实排名共有 12 条，第一名称号 honor:30017340 可快捷查看并进入藏品馆，已知来源指回本活动。重复奖励的每 10,000 PT、起点 200,000 PT、上限 9,999,999 PT、数量 100,000 在 320×740 下保持数字完整、条目无横向溢出。分页第二页的 25,000 PT 卡片“楽しく弾んで”实际进入卡片详情；13,400 PT 贴纸实际进入摄影资料 stickers:162。840×900 的道具详情 336px 窄来源栏改为上下排列，1280×900 和 1440×900 验证桌面奖励布局。最终构建的手机道具/称号旅程控制台新增 error 为空，临时 viewport 已恢复。
 
 证据位于 E:/Web_build/GS_Archive_Domain_Work/collection-rewards-browser-r1：before-mobile.png、mobile-rewards.png、mobile-quick-view.png、narrow-repeated.png、desktop-rewards.png、desktop-quick-view.png、desktop-narrow-sources.png、reward-regression.log、build-check.log。该证据属于桌面 Browser 的尺寸测试，不代表实体手机触屏、原生全屏或完整媒体发布验收。
+
+## 藏品目录与详情读取隔离（2026-10-01）
+
+输入 HEAD 5ac7c6c5。Browser 注入 item:10701 对应详情页 15 秒延迟，复现改选后整个目录与搜索框消失。新增 CollectionCatalogSession 将目录与详情加载/错误分开；同域保留已校验目录，改选及详情重试不重复读取整目录。详情开始读取即清空上一件内容，选择态绑定请求实体；未知实体不回退冒充第一件。类型切换丢弃当前目录引用，旧目录/详情请求由 abort + revision 阻止回写；离开页面释放状态。桌面目录列表改为有界滚动，避免选到列表下方时右侧详情已在视口外。
+
+verify:collection-catalog-session --models composition-readmodels-r6 通过，包含真实 535 道具、1613 称号、目录复用、详情/目录失败重试、混合身份拒绝、快速跨域往返与卸载。verify:domain-navigation、verify:reward-presentation（实际 161 条奖励）通过。最终 build:check 10.85 秒，copyPublicDir:false，复用本 checkout .analysis/build-check，r6 release 未改变。
+
+PID 39916、5198/r6 生产 bundle Browser：1280×900 注入详情 12 秒延迟，535 条目录继续可用，搜索 10402 并改选物理戒指成功，旧详情不覆盖后选资料。桌面详情一次 503 后仍有目录、选择态与原地重试；重试读取初级课程笔记的真实说明及 418 条来源。390×844 同一 503→重试链路通过，类型切换能进入称号目录。故障文件已恢复 rules:[]。证据在 E:/Web_build/GS_Archive_Domain_Work/collection-loading-browser-r1，包括前后加载截图、桌面错误/重试、手机重试、回归与构建日志；注入期间的 HTTP 503 是预期测试事件。该批为读取恢复与交互，不代表所有资料域或实体手机已验收。

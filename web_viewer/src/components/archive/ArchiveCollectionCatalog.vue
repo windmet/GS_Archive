@@ -20,11 +20,11 @@
         <Medal :size="18" />称号
       </button>
     </nav>
-    <p v-if="busy" role="status" class="domain-muted">正在读取藏品馆…</p>
-    <p v-if="error" role="alert" class="domain-error">
+    <p v-if="catalogBusy" role="status" class="domain-muted">正在读取藏品目录…</p>
+    <p v-if="errorScope === 'catalog'" role="alert" class="domain-error">
       {{ error }}<button type="button" @click="load">重试</button>
     </p>
-    <div v-if="!busy && rows.length" class="domain-layout">
+    <div v-if="rows.length" class="domain-layout">
       <section class="domain-panel" aria-label="资料目录">
         <div class="domain-tools">
           <label
@@ -114,6 +114,10 @@
         </nav>
       </section>
       <div class="domain-detail" ref="detailElement">
+        <p v-if="detailBusy" role="status" class="domain-muted">正在读取所选藏品…</p>
+        <p v-else-if="errorScope === 'detail'" role="alert" class="domain-error">
+          {{ error }}<button type="button" @click="load">重试</button>
+        </p>
         <template v-if="detail?.entry">
           <CollectionEntryDetails :detail="detail" :kind="kind" />
           <section class="domain-panel">
@@ -125,7 +129,7 @@
             />
           </section>
         </template>
-        <p v-else-if="!busy" class="domain-muted">选择资料查看详情。</p>
+        <p v-else-if="!detailBusy && !error" class="domain-muted">选择资料查看详情。</p>
       </div>
     </div>
   </article>
@@ -147,6 +151,7 @@ import {
 import ArchiveRewardTable from "./ArchiveRewardTable.vue";
 import CollectionEntryDetails from "./CollectionEntryDetails.vue";
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
+import { createCollectionCatalogSession } from "../../../readmodels/runtime/CollectionCatalogSession.mjs";
 import "../../styles/archive-domains.css";
 const props = defineProps({
   client: Object,
@@ -159,8 +164,11 @@ const emit = defineEmits(["query", "entity", "open-event"]),
 const kind = ref(props.entity.startsWith("honor:") ? "honors" : "items"),
   rows = shallowRef([]),
   detail = shallowRef(null),
-  busy = ref(false),
+  catalogBusy = ref(false),
+  detailBusy = ref(false),
+  selectedId = ref(""),
   error = ref(""),
+  errorScope = ref(""),
   page = ref(0),
   category = ref(""),
   detailElement = ref(null),
@@ -183,68 +191,34 @@ const filtered = computed(() => {
   );
 });
 const pages = computed(() => Math.ceil(filtered.value.length / 25)),
-  visible = computed(() =>
-    filtered.value.slice(page.value * 25, (page.value + 1) * 25),
-  ),
-  selectedId = computed(() => String(detail.value?.entry?.id || ""));
-let controller = null,
-  request = 0;
-function begin() {
-  controller?.abort();
-  controller = new AbortController();
-  busy.value = true;
-  error.value = "";
-  return { id: ++request, options: { signal: controller.signal } };
-}
-function fail(cause, id, options) {
-  if (id === request && !options.signal.aborted) {
-    console.error("[ArchiveDomains]", cause);
-    error.value = "资料暂时无法读取，请重试。";
-  }
-}
-onBeforeUnmount(() => {
-  request++;
-  controller?.abort();
+  visible = computed(() => filtered.value.slice(page.value * 25, (page.value + 1) * 25));
+const session = createCollectionCatalogSession(repository, state => {
+  rows.value = state.rows;
+  detail.value = state.detail;
+  selectedId.value = state.selectedId;
+  catalogBusy.value = state.catalogBusy;
+  detailBusy.value = state.detailBusy;
+  error.value = state.error;
+  errorScope.value = state.errorScope;
 });
-
+onBeforeUnmount(() => session.dispose());
 let pendingKindSelection = "";
 async function load() {
-  const { id, options } = begin();
-  rows.value = [];
-  detail.value = null;
-  try {
-    const catalog = await repository.catalog(kind.value, options);
-    if (id !== request) return;
-    rows.value = catalog;
-    const [type, key] = props.entity.split(":"),
-      compatible = type === (kind.value === "honors" ? "honor" : "item"),
-      selected =
-        compatible && key ? catalog.find((row) => row.id === key) : catalog[0];
-    if (!selected) throw Error("Unknown collection entity");
-    const value = await repository.detail(kind.value, selected, options);
-    if (id !== request) return;
-    detail.value = value;
-    if (pendingKindSelection === kind.value) {
-      pendingKindSelection = "";
-      emit(
-        "entity",
-        `${kind.value === "honors" ? "honor" : "item"}:${selected.id}`,
-      );
-    }
-    const position = filtered.value.findIndex((row) => row.id === selected.id);
-    page.value = position >= 0 ? Math.floor(position / 25) : 0;
-    await nextTick();
-    if (
-      id === request &&
-      props.entity &&
-      window.matchMedia("(max-width:700px)").matches
-    )
-      detailElement.value?.scrollIntoView({ block: "start" });
-  } catch (cause) {
-    fail(cause, id, options);
-  } finally {
-    if (id === request) busy.value = false;
+  const requestedKind = kind.value;
+  const type = requestedKind === "honors" ? "honor" : "item";
+  const key = props.entity.startsWith(`${type}:`) ? props.entity : "";
+  if (!await session.open(requestedKind, key)) return;
+  const value = detail.value;
+  if (!value) return;
+  if (pendingKindSelection === requestedKind) {
+    pendingKindSelection = "";
+    emit("entity", value.entry.key);
   }
+  const position = filtered.value.findIndex(row => String(row.id) === String(value.entry.id));
+  page.value = position >= 0 ? Math.floor(position / 25) : 0;
+  await nextTick();
+  if (detail.value === value && props.entity && window.matchMedia("(max-width:700px)").matches)
+    detailElement.value?.scrollIntoView({ block: "start" });
 }
 function select(row) {
   emit("entity", `${kind.value === "honors" ? "honor" : "item"}:${row.id}`);
@@ -261,8 +235,11 @@ function switchKind(value) {
 watch(
   () => props.entity,
   () => {
-    if (props.entity)
-      kind.value = props.entity.startsWith("honor:") ? "honors" : "items";
+    if (props.entity) {
+      const nextKind = props.entity.startsWith("honor:") ? "honors" : "items";
+      if (nextKind !== kind.value) { category.value = ""; page.value = 0; }
+      kind.value = nextKind;
+    }
     load();
   },
   { immediate: true },
@@ -274,3 +251,8 @@ watch(
   },
 );
 </script>
+<style scoped>
+@media (min-width:701px) {
+  .domain-list { max-height:clamp(220px,calc(100dvh - 420px),620px);overflow:auto;overscroll-behavior:contain; }
+}
+</style>
