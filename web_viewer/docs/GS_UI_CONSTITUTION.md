@@ -1,0 +1,91 @@
+# GS Archive UI Foundation
+
+2026-10-03。输入 HEAD `89f61110`；上一轮主门户/UI 审计截止 `89278976`。本轮先迁移 Portal、StoryDiscovery、Collection 目录与 CollectionDetailPanel，后续各域按相同角色逐步迁移。Chibi、Reader 正文与 Player HUD 不在本轮迁移范围。
+
+## 基础语法与页面性格
+
+基础定义见 [GS_UI_TOKENS.css](../src/styles/GS_UI_TOKENS.css)。该文件只声明变量，不全局重置 `h1`、按钮或输入；组件选择适合自己的角色。新 UI 先选择角色，再选择尺度。现有数值不因不在尺度中就自动成为缺陷。
+
+| 页面 | 应保持的性格 | 本轮接入方式 |
+| --- | --- | --- |
+| Portal | 游戏门户、品牌层级、非对称入口轮廓 | 入口文字、分组节奏；品牌标题独立 alias |
+| 资料目录 | 搜索和筛选优先、密集可扫读 | 控件、结果行、metadata；手机切换触摸尺度 |
+| Reader | 连续阅读、舒适行高、主题完整 | 保留阅读专用 token，另域迁移 |
+| Player / Studio / Chart | 沉浸式工具、画面和操作优先 | 保留 HUD / viewport 规则，另域迁移 |
+
+## Typography、spacing、control
+
+| 角色 | 默认值 | 用途 |
+| --- | --- | --- |
+| caption | 11px | 次要状态、小标记；不用作主操作名称 |
+| meta | 12px | 数量、来源、辅助字段、紧凑标签 |
+| ui | 13px | 桌面按钮、搜索与筛选 |
+| body | 14px | 目录主要文字与详情正文 |
+| subtitle | 16px | 重要入口标签、小节中的主要内容 |
+| section | 18px | 详情中的章节标题 |
+| title | 22px | 实体标题、普通页面标题 |
+| portal | 26px / 窄屏23px | 已有门户品牌标题；不覆盖资料页标题 |
+
+正文400；metadata400/500；操作标签600；section700；品牌800。目录卡片名称可用600/700表达扫描层级，不能把所有字段加粗。字体保留 Portal 的 SC→JP 与目录的 JP→SC 回退顺序，弹窗应显式选择字体，不依赖 Teleport 外的祖先。
+
+默认间距使用 `2 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40px`。图标几何、图片尺寸、断点、sticky offset、安全区不属于 spacing 角色。门户90/82px大入口、非对称10/20px角、藏品图像与四列格子都有内容理由，可以保留。文字基线微调也可以保留，但应注释理由。
+
+桌面控件 compact32、normal36、toolbar40；手机或 coarse pointer 的直接操作命中区至少44×44px（文字按钮可更宽）。触摸搜索/表单输入字号至少16px。大入口和目录卡片由其内容高度决定，不能按普通按钮统一压缩。全站旧 `.domain-page` 的44px规则暂不修改，仅迁移试点的局部规则。
+
+圆角 control6、field8、panel12、surface16、pill；品牌轮廓允许局部变体。浮层沿用现有 surface shadow；不为普通目录卡片增加阴影和上浮。反馈动效只服务状态变化，默认120ms，不引入新入场/循环动画；已有 reduced-motion 规则继续生效。
+
+## 页面信息顺序
+
+默认顺序：页面身份 → 搜索/主要操作 → 一级筛选 → 可选二级筛选 → 结果数量/状态 → 内容 → 来源与技术资料。
+
+- 顶栏承担页面身份，不在内容区重复一个同名大标题。
+- StoryDiscovery 手机筛选是 inline disclosure，展开状态不等同于 modal sheet；折叠后仍保留所选条件。
+- Collection 手机将当前结果数量放在种类 tab，保留紧凑入口；这是同一信息角色的响应式位置变化。
+- 实体名称与可读说明在前，原文/编号/资源键随后；未知来源直接说尚未收录，不推断获取方式。
+- 已有中文/原文检索、实体身份、语言切换与历史数据边界继续使用现有解析层，CSS 迁移不另建身份映射。
+
+## Surface 合同
+
+| 角色 | 现有对应 | 尺寸与行为 |
+| --- | --- | --- |
+| Popover | 藏品 hover/focus 说明 | 锚定内容、不改目录布局；不能承载必须操作的完整详情 |
+| Dialog S | 简单设置候选 | token420px；本轮未切换现有设置窗口，需实际比较 |
+| Dialog M | Collection 详情 | 580px；桌面最大84dvh，手机底部78dvh；保持当前密度待选择 |
+| Dialog L | Terminal 素材选择 | 720px；header固定、body滚动、原生dialog |
+| Side Drawer | Solo、活动藏品快捷查看 | 480px；长名单与原上下文并存；两个消费者布局各有明确用途 |
+| Mobile Sheet | Collection 详情、Solo | 分别78/85dvh；不是统一高度，确保内容与关闭操作可达 |
+| Fullscreen Tool | 摄影、谱面、舞台 | 自己的 viewport / HUD 合同，不套详情窗口宽度 |
+
+窗口标题和实体名称是不同角色；不得用“所有h2一样大”替代合同。现存 Collection 窗口标题17、Terminal20暂保留，详情密度对照选定后再迁移 surface-title。header/body/section spacing 应按密度有命名依据；只在存在动作时加footer，不能创造空白固定操作区。
+
+共同操作合同：打开后焦点进入窗口；Escape和背景点击关闭；Tab不得逃到背景；关闭后恢复trigger焦点；滚动内容不能带动背景。关闭按钮至少44px。安全区变量放root，Teleport/native dialog在自己的surface上接入；桌面零 inset 的Browser不能证明真机刘海验收。
+
+本轮另批修复 native dialog 内搜索输入的 Escape：阻止浏览器先清空 search query，使第一次 Escape 关闭最内层窗口，并恢复原有打开控件焦点；嵌套的外层窗口保持打开。URL刷新直接恢复的详情没有实际点击trigger，关闭后焦点回退仍待后续行为批处理。
+
+现有状态差异必须按用途保留：
+
+- Collection详情 `entity` 在URL中，关闭清除entity，保留搜索筛选；刷新明确entity应恢复详情。
+- CollectionQuickView是活动页临时状态，关闭留在活动页；“完整查看”才进入详情URL。
+- Solo选择即时生效并关闭，查询/unit暂存在组件内，不写URL。
+- StoryDiscovery的query及父级domain/section/availability/sort等在URL；series/idols/unit/language/page等模块状态在Reader往返保留，刷新重置。完整URL化是后续行为批，不在样式批中悄悄承诺。
+
+## Loading / Empty / Error
+
+加载使用当前资料域状态，失败保留重试入口；搜索零结果与尚未收录数据分别表达。保留已加载内容的可操作性与现有请求身份保护；不得把源码/构建完成当成真实媒体准备完成。当前原始资料可折叠，未知出处不补假badge或假说明。
+
+## 首批迁移与验收
+
+| Before | After | Why |
+| --- | --- | --- |
+| 门户 core padding15、section gap9、copy gap5，各自决定 | 16/8/4语义间距；品牌/大入口保持 | 重复决定可复用，门户轮廓保留 |
+| Story行gap13/padding9×14、series文字11 | 12/8×12；操作标签meta12/600 | 目录节奏一致，辅助信息与可点操作分开 |
+| 手机藏品search38px/12px，tab/select/chips32–36px | 搜索16px、直接操作触摸尺度44px | 提高真实操作可达性；验证增加高度后的内容空间 |
+| 详情Teleported后依赖外部祖先的字体/标题样式 | surface显式字体与正文/章节/metadata角色 | 同一组件不因挂载位置改变文字层级 |
+
+密度探索见 [详情对照页](prototypes/gs-ui-surfaces/index.html)：Compact、Balanced、Reading-heavy三个可操作版本，使用真实GS长名称/缺说明/未知来源数据。选择前保持生产详情密度；不得把原型页导入App或把多个变体塞入生产运行时。
+
+回归使用当前真实corpus：535道具、1613称号（附件1616与当前数据不同），长道具`303398`、长称号`30025116`、长故事`1_3_10012_01.json`、中文/原名以及0/1/49检索。320px覆盖与真实200% Browser zoom、真机覆盖分别记录；窄viewport不冒充zoom或真机。
+
+日常代码验证使用 `npm run build:check`，固定 `.analysis/build-check`，不复制public。Browser必须核实代码bundle、资源映射与真实旅程；截图/小日志保存在本checkout `.analysis/ui-foundation-20261003`。详细结果见 [本轮验收](GS_UI_FOUNDATION_ACCEPTANCE_20261003.md)。每批显式stage、commit/push，保留其他窗口工作。
+
+后续顺序：①用户选择详情密度后迁移Dialog M；②Story/Collection控制条再比较实际密度，必要时探索；③按域迁移人物/歌曲/活动目录；④单独规划QuickView/Solo安全区与行为差异、完整URL筛选恢复。每域必须重新看真实内容，不能靠批量px替换完成迁移。
