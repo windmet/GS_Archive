@@ -16,6 +16,14 @@ bad(v=>{const e=v.entries.find(e=>/\d/.test(e.source));e.translation=e.source.re
 bad(v=>{v.entries[0].decision='uncertain';v.entries[0].notes=[]})
 assert.throws(()=>validateGeneralReturn(batch,returned,units.filter(u=>u.key!==batch.rows[0].key)))
 assert.deepEqual(protectedTokens('8秒 <value> [stamina]'),protectedTokens('每 8 秒 <value> [stamina]'))
+// Honor imports must obey the same canonical idol names as item imports.
+const honorRow=units.find(u=>u.kind==='honor'&&u.source.replaceAll(' ','')==='天ヶ瀬冬馬担当')
+assert(honorRow)
+const honorBatch={schema:'GS-GENERAL-BATCH-V1',batch_id:'G-honors-001',locale:'zh-CN',rows:[honorRow],source_digest:hash(JSON.stringify([honorRow]))}
+const honorReturn={schema:'GS-GENERAL-RETURN-V1',batch_id:honorBatch.batch_id,source_digest:honorBatch.source_digest,entries:[{key:honorRow.key,source_hash:honorRow.sourceHash,source:honorRow.source,translation:'天濑冬马担当',decision:'translated',notes:[]}]}
+assert.equal(validateGeneralReturn(honorBatch,honorReturn,units).length,1)
+honorReturn.entries[0].translation='天之濑冬马担当'
+assert.throws(()=>validateGeneralReturn(honorBatch,honorReturn,units),/must use 天濑冬马/)
 for(const [name,badge]of [['ゴーゴーゼリー',''],['ゴーゴーゼリーSP','SP'],['ゴーゴーゼリーDX','DX'],['彩光の欠片 N','N'],['彩光の欠片 SR','SR'],['プラチナガシャ10回チケット','10×'],['プラチナガシャ1回チケット','1×'],['未知 SP 名称','']])assert.equal(collectionItemVariant(name),badge)
 let value=null;const preferences=new PlayerPreferencesRepository({storage:{getItem:()=>value,setItem:(_,v)=>{value=v}}})
 const prior=preferences.update({producer_name:'windmet',story_content_mode:'bilingual',auto_enabled:true,volumes:{voice:0.4}})

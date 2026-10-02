@@ -67,7 +67,7 @@ export function validateGeneralReturn(batch, value, units) {
     assert.deepEqual(protectedTokens(entry.translation),protectedTokens(row.source),`Number/placeholder drift ${entry.key}`)
     if(['skill','center-skill'].includes(row.kind) && row.field==='description')assert.deepEqual(entry.translation.match(/\d+(?:\.\d+)?/g),row.source.match(/\d+(?:\.\d+)?/g),'Skill number order changed')
     assert(!/<(?:script|iframe|img)\b|javascript:/i.test(entry.translation),'Unsafe markup')
-    if(row.kind==='item')validateItemIdolNames(row.source,entry.translation,entry.decision)
+    if(['item','honor'].includes(row.kind))validateItemIdolNames(row.source,entry.translation,entry.decision)
     return {...entry,kind:row.kind,field:row.field,references:row.references,status:'draft'}
   })
   return entries
