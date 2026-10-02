@@ -5,7 +5,7 @@
     </button>
     <label>
       <span>{{ label }}</span>
-      <select :value="selectedIdol" @change="emit('select', $event.target.value)">
+      <select :value="selectedIdol" :aria-label="label" @change="emit('select', $event.target.value)">
         <option v-if="allowAll" value="">全部偶像</option>
         <option v-for="idol in idols" :key="idol.idol_code" :value="idol.idol_code">
           {{ idol.display_name }}{{ idol.unit_name ? ` · ${idol.unit_name}` : '' }}

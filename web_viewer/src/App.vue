@@ -197,6 +197,8 @@
         v-if="view === 'song_detail' && currentSongPresentation"
         :song="currentSongPresentation"
         :idol-directory="archiveBootstrap.idols"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         @open-chart="openChartLab"
         @open-song="openSong"
         @open-unit="openSongUnit"
@@ -1249,8 +1251,13 @@ const filteredCardRows = computed(() => filteredCards.value.map(card => ({
 
 const currentCard = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.card : null)
-const currentCardOwnerReference = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.ownerReference : null)
+const currentCardOwnerReference = computed(() => {
+  const reference = cardReadModelDetail.value?.id === currentCardId.value
+    ? cardReadModelDetail.value.ownerReference : null
+  return reference?.actionable && reference.idolCode
+    ? { ...reference, displayName: idolDisplayName(reference.idolCode, reference.displayName) }
+    : reference
+})
 const currentCardAssetStatus = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.assetStatus : null)
 const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
@@ -1504,8 +1511,8 @@ function idolTranslatedName(id) {
   })?.name || ''
 }
 
-function idolDisplayName(id) {
-  const sourceName = idolSourceName(id)
+function idolDisplayName(id, fallbackSourceName = '') {
+  const sourceName = idolSourceName(id, fallbackSourceName)
   return uiLocale.value === 'ja-JP' ? sourceName : idolTranslatedName(id) || sourceName
 }
 

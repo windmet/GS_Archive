@@ -34,7 +34,7 @@
         >
           <option value="">空 / 静音</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.displayName }}
+            {{ idolLabel(entry) }}
           </option>
         </select>
         <small>
@@ -93,6 +93,7 @@ import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
+  idolName: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['open-stage', 'request-play'])
 
@@ -108,6 +109,7 @@ let loadGeneration = 0
 let disposed = false
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
+function idolLabel(entry) { return (entry?.idol_code && props.idolName(entry.idol_code, entry.displayName)) || entry?.displayName || '姓名待确认' }
 const selectedArrangement = computed(() => arrangements.value
   .find(entry => entry.id === selectedArrangementId.value) || null)
 const activeStagePositions = computed(() => session.activePerformerSlots.value
@@ -121,7 +123,7 @@ const activeSingerEntries = computed(() => {
     if (!idolCode) continue
     if (!byIdol.has(idolCode)) byIdol.set(idolCode, {
       idolCode,
-      name: props.audioExperiment.solo_tracks?.[idolCode]?.displayName || '姓名待确认',
+      name: idolLabel(props.audioExperiment.solo_tracks?.[idolCode]),
       slots: [],
       stagePositions: [],
     })

@@ -5,7 +5,7 @@
     <div class="song-modes" role="group" aria-label="试听模式" data-vocal-setting-selector>
       <button v-for="item in listeningModes" :key="item.id" type="button" :aria-pressed="mode === item.id" @click="mode = item.id">{{ item.label }}</button>
     </div>
-    <button v-if="hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${currentSoloTrack?.displayName || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
+    <button v-if="hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
     <div class="experimental-controls">
       <label v-if="mode === 'unit'">
         组合
@@ -29,6 +29,7 @@
       v-if="mode === 'lineup'"
       ref="lineupPlayer"
       :audio-experiment="audioExperiment"
+      :idol-name="idolName"
       @request-play="emit('request-play')"
       @open-stage="emit('open-stage', $event)"
     />
@@ -84,7 +85,7 @@
         <label>组合<select v-model="soloUnit"><option value="">全部组合</option><option v-for="unit in soloUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
       </div>
       <p role="status">{{ filteredSoloEntries.length }} 位偶像 · 选择后回到播放条</p>
-      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="mode === 'solo' && selectedIdolCode === entry.idol_code" @click="selectSolo(entry.idol_code)"><strong>{{ entry.displayName }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}</small></button></div>
+      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="mode === 'solo' && selectedIdolCode === entry.idol_code" @click="selectSolo(entry.idol_code)"><strong>{{ soloDisplayName(entry) }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}</small></button></div>
       <p v-if="!filteredSoloEntries.length">没有匹配的偶像，请调整搜索或组合。</p>
     </ArchiveTerminalDialog>
   </section>
@@ -104,6 +105,8 @@ const props = defineProps({
   song: { type: Object, required: true },
   audioExperiment: { type: Object, default: null },
   idolDirectory: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' },
+  idolSearch: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['open-stage', 'request-play'])
 const lineupPlayer = ref(null)
@@ -113,6 +116,7 @@ const mode = ref('single')
 const soloOpen = ref(false), soloQuery = ref(''), soloUnit = ref('')
 const soloTitleId = useId()
 const soloDirectory = computed(() => new Map(props.idolDirectory.map(idol => [idol.id, idol])))
+function soloDisplayName(entry) { return (entry?.idol_code && props.idolName(entry.idol_code, entry.displayName)) || entry?.displayName || '' }
 const soloUnits = computed(() => [...new Map(soloEntries.value.map(entry => {
   const idol = soloDirectory.value.get(entry.idol_code)
   return [idol?.unitCode, { id: idol?.unitCode, name: idol?.unitName }]
@@ -120,7 +124,7 @@ const soloUnits = computed(() => [...new Map(soloEntries.value.map(entry => {
 const filteredSoloEntries = computed(() => soloEntries.value.filter(entry => {
   const idol = soloDirectory.value.get(entry.idol_code)
   return (!soloUnit.value || idol?.unitCode === soloUnit.value) &&
-    (!soloQuery.value.trim() || `${entry.displayName} ${idol?.kana || ''} ${idol?.unitName || ''}`.toLowerCase().includes(soloQuery.value.trim().toLowerCase()))
+    (!soloQuery.value.trim() || [props.idolSearch(entry.idol_code, entry.displayName), soloDisplayName(entry), entry.displayName, idol?.kana || '', idol?.unitName || ''].join(' ').toLowerCase().includes(soloQuery.value.trim().toLowerCase()))
 }))
 const listeningModes = computed(() => [
   ...(hasVocalSetting('all_stars') ? [{ id: 'all_stars', label: '全员合唱' }] : []),

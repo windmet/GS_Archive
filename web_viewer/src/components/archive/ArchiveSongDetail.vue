@@ -20,7 +20,7 @@
     </header>
     <div class="song-detail-body">
       <div class="song-listen-column">
-      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" @open-stage="openStage" />
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @open-stage="openStage" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" />
       <button v-if="song.stageCandidate" class="stage-open-button" type="button" @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : 'Chibi 舞台演出' }} →</button>
       </div>
@@ -46,10 +46,10 @@
           <ul class="chip-list"><li><button :disabled="!song.unit.actionable" :data-archive-focus-id="`song-unit:${song.unit.id}`" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
         </div>
         <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
-        <details v-if="song.performers.length > 5" class="song-subsection" @toggle="performersOpen = $event.target.open"><summary>演唱成员（{{ song.performers.length }}）</summary><ul v-if="performersOpen" class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul></details>
+        <details v-if="song.performers.length > 5" class="song-subsection" @toggle="performersOpen = $event.target.open"><summary>演唱成员（{{ song.performers.length }}）</summary><ul v-if="performersOpen" class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" @open="emit('open-idol', $event)" /></li></ul></details>
         <div v-else-if="song.performers.length" class="song-subsection">
           <h4>演唱成员</h4><p v-if="song.performerNote && song.performerNote !== '按已确认的演唱组合列出成员。'" class="song-block-note">{{ song.performerNote }}</p>
-          <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
+          <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
       <details class="song-block" @toggle="audioArchiveOpen = $event.target.open">
@@ -95,10 +95,16 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
-defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] } })
+const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart'])
 const songPlayer = ref(null)
 const performersOpen = ref(false), audioArchiveOpen = ref(false)
+function performerReference(reference) {
+  return reference?.actionable && reference.idolCode
+    ? { ...reference, displayName: props.idolName(reference.idolCode, reference.displayName) || reference.displayName }
+    : reference
+}
 function openStage(target) { songPlayer.value?.pause(); emit('open-stage', target) }
 function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 </script>
