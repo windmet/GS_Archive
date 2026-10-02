@@ -425,3 +425,29 @@ Study 对照继续使用第二录屏与已验证的音频起点偏移。新增�
 原始 `steqmg_fumen` 另确认只有一个 tempo conductor：tick=0、164 BPM、4/4；bundle／TextAsset pathID／payload SHA256 保存在 `source-tempo-witness.json`。仅凭 MeasureAnimTime=1.5 与 BPM 推测 `1.5 × BPM / 60` 会得到 4.1；再乘 raw speed=0.8，20012 主段会在约 17.457s 完成、进入持姿循环，与录屏 17.8／18.6s 仍伸手相矛盾。**这个缺四倍倍率的假设被排除，没有接入全库**。更小的相位差、原生 baseTimeScale 公式和录像版本仍未确定。
 
 实际 Browser：复用 5198 的既有 build-check bundle／public 映射，Study S.E.M 编队定位 18200ms，1440×900 定格为向左伸手，与录屏 18.2s 的方向一致。证据 `motion-phase-witness/browser-desktop-018.200.png`；不是服装、灯光、比例或全曲逐帧通过声明。Android lib 的段表和 metadata 为受保护输入、没有可直接可信映射的方法体；iOS UnityFramework 既有 cryptid=1 边界未突破，不把元数据名称当原生公式。完整动作／光效与最初门禁／PR 工作继续待验收。
+
+### Penlight 原生数组、配对与控制器绑定闭合（2026-10-03）
+
+本批输入 HEAD：5caf8be3。复用同一 Android XAPK 的 `typed-penlight-animations.json`（SHA256 `914834607a291c3795486d814d43dbea45710b0b6fe07b78044bc17f54c6c376`），不改前端、CSV 或媒体包。新增 `audit-chibi-penlight-bindings.py`，消费原始 MonoBehaviour 字节、typed descendant identities 和原生 AnimatorController 数据；输出 `take-reference/verified-penlight-bindings.json`，状态 `verified_native_penlight_bindings_not_command_mapping`。
+
+两个 `LiveObjectPenlight` custom tail 均恰好是：32 字节 common header、SpriteRenderer PPtr 数组、Animator PPtr 数组、一个 int32，无剩余字节。header 的 GameObject／script PPtr、enabled／padding、空名长度与 typed common fields 一致，custom component 原始长度和 SHA256 另检查。全部 82／29 个 SpriteRenderer 与同序号 Animator 指向同一个 descendant GameObject；每个引用是本文件真实 typed component，拒绝外部／重复／越界指针，并覆盖全部 descendant Animators。各一个 Shadow Sprite 明确在数组之外，不能把它算成会动画的观众棒。字段名 `_sprites`／`_animators`／`_frontMiddleObjCount` 由既有 iOS metadata 字段顺序旁证；这是结构验证，不声称 Android custom typetree 已完整解码或原生方法体已恢复。
+
+两个末尾 int32 分别为 **39／20**。第一种布局的 Front 19 + Middle 20 与 39 一致；第二种布局的 Front 10 + Middle 9 共 19，数组下标 19 已是 `Root/Back/02/Penlight`，末尾数仍为 20。输出严格保留原始 20，没有按可见组名重算，也没有判定原生循环使用 `<` 或 `<=`。这会影响之后的颜色分配边界，尚不可凭名字实现。
+
+Controller 的 `m_TOS`、state NameID／PathID／FullPathID、单节点 ClipID、`m_AnimationClips` PPtr 以及 typed clip 身份逐项闭合：Beat1–3 对应 1244–1246；Yeah1–3 对应 1251–1253；Wiper1–4 对应 1247–1250。十个状态 speed=1、cycleOffset=0、无速度参数、无 transition／mirror；前两组中的 Beat 循环、Yeah 不循环，Wiper 循环，与 clip 的 native loop 标志一致。输出保存状态实际绑定，不用文件名顺序猜测。**仍没有证明 CSV type 1／2／3 到 Beat／Wiper／Yeah 的数字顺序、animId=0 的随机选择规则或 animSpeed 换算。**
+
+小型 fixture `scripts/fixtures/chibi-penlight-bindings.json` 为实际消费字段的精确投影（125,969 B），保留原始字节、PPtr、路径、Sprite geometry／pivot／颜色及控制器字段，省略未消费的 transforms、curve streams 和其他 controller 字段；没有合成值或纹理。完整原生输入与 fixture 的 binding 输出逐项相同。`verify-chibi-penlight-bindings.py` 的 18 种故意污染全部拒绝：hash、额外尾部、数组长度／分界、外部／未知／重复／交换指针、状态 speed／参数／loop／name、clip 索引／引用、缺状态／controller、重复 prefab。无参数的媒体无关回归已加入 Source Gate，**尚未声称 GitHub CI 已运行**。
+
+另交叉消费上一批 streamed clip fixture：两份 fixture 的 XAPK／Unity data／完整 typed 输入哈希一致，绑定状态的十个名称、clip 文件／pathID／原始 SHA256、duration／loop 与独立曲线解码结果逐项一致。传入完整证据时也检查它的实际字节 SHA256；关联、曲线与输入来源没有仅凭同名拼接。
+
+实际验证命令：
+
+```powershell
+python -X utf8 scripts/audit-chibi-penlight-bindings.py --input-file .analysis/engineering-validation-20261002/take-reference/typed-penlight-animations.json --output-file .analysis/engineering-validation-20261002/take-reference/verified-penlight-bindings.json
+python -X utf8 scripts/verify-chibi-penlight-bindings.py .analysis/engineering-validation-20261002/take-reference/typed-penlight-animations.json
+python -X utf8 scripts/verify-chibi-penlight-bindings.py
+python -X utf8 scripts/verify-chibi-streamed-animation.py
+python -m py_compile scripts/audit-chibi-penlight-bindings.py scripts/verify-chibi-penlight-bindings.py
+```
+
+全部通过；纯独立工具按构建政策不运行 Vite，不产生新的 Browser 画面验收声明。原生 camera／舞台投影、CSV 动画与颜色算法、观众棒素材接入和录屏视觉验收继续待完成，不能把本次资源关联门禁视为全舞台或 master PR 验收。

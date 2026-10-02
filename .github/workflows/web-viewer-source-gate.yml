@@ -126,6 +126,9 @@ jobs:
       - name: Verify native chibi streamed animation decoding
         run: python scripts/verify-chibi-streamed-animation.py
 
+      - name: Verify native chibi Penlight object and controller bindings
+        run: python scripts/verify-chibi-penlight-bindings.py
+
       - name: Verify bounded chibi ImageObject source timelines
         run: npm run verify:chibi-image-objects
 
