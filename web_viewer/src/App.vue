@@ -835,7 +835,7 @@ const legacyZeroReadModelDetail = ref(null)
 const legacyEpisodeReadModelDetail = ref(null)
 const legacyAliasStatus = ref('')
 let pendingLegacyAliasNavigation = 0
-const mobileIdolOptions = archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idol.name, color: idol.color }))
+const mobileIdolOptions = computed(() => archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idolDisplayName(idol.id), color: idol.color })))
 const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []).map(unit => ({
   unit_code: unit.id, unit_name: unit.name, unit_color: unit.color,
 })))
