@@ -82,13 +82,14 @@
         :title="categoryHeaderText"
         :filter-placeholder="categoryFilterPlaceholder"
         :idols="filteredIdols"
+        :idol-name="idolDisplayName"
         :unit-options="idolUnitOptions"
         :current-unit="currentIdolUnitFilter"
         :idols-before-unit-filter="searchMatchedIdols.length"
         @back="goArchiveBack"
         @select="openIdol"
         @select-unit="updateArchiveFilter('currentIdolUnitFilter', $event)"
-        @open-units="openUnitCatalog"
+        @open-unit="openArchiveUnit"
       />
 
       <ArchiveCardList
@@ -418,6 +419,7 @@
 
       <ArchiveUnitDetail
         v-if="view === 'unit_detail'"
+        :idol-name="idolDisplayName"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
         :identity="bootstrapIdolDictionary"
@@ -1028,6 +1030,7 @@ const idolUnitOptions = computed(() => {
     id: String(unit.unit_id),
     code: unit.unit_code,
     name: unit.unit_name,
+    color: unitReadModelCatalog.value?.find(row => row.id === String(unit.unit_id))?.catalog.unit.unit_color || '',
     count: counts.get(String(unit.unit_id)) || 0,
   })).filter(unit => unit.count)
 })
@@ -1050,14 +1053,14 @@ const categoryHeaderText = computed(() => {
   if (currentCategoryId.value === 'cards') return '卡片档案'
   if (currentCategoryId.value === 'idol_chat') return '短信聊天'
   if (currentCategoryId.value === 'idol_phone') return '电话聊天'
-  return '偶像档案'
+  return '偶像与组合档案'
 })
 
 const categoryFilterPlaceholder = computed(() => {
   if (currentCategoryId.value === 'cards') return 'Search card idol...'
   if (currentCategoryId.value === 'idol_chat') return 'Search chat...'
   if (currentCategoryId.value === 'idol_phone') return 'Search phone...'
-  return 'Search idol...'
+  return '搜索偶像姓名或组合…'
 })
 
 // Episode Zero units.
@@ -1223,6 +1226,7 @@ const currentCards = computed(() => (cardReadModelCatalog.value || [])
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
 watch(view,nextView=>{
+  if (nextView === 'idols') void loadUnitCatalog().catch(error=>console.warn('Unit display metadata unavailable',error));
   if (['cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
     void loadArchiveNames('cards').catch(error=>console.warn('Card name translations unavailable',error));
   }

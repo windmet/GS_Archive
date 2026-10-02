@@ -129,6 +129,7 @@ const props = defineProps({
   unit: { type: Object, default: null },
   members: { type: Array, default: () => [] },
   identity: { type: Object, default: null },
+  idolName: { type: Function, default: () => '' },
   manifest: { type: Object, default: null },
   stories: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
@@ -139,13 +140,13 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards', 'open-song'])
-const memberReferences = computed(() => props.members.map(member => ({
-  member,
-  reference: buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`),
-})))
+const memberReferences = computed(() => props.members.map(member => {
+  const reference = buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`)
+  return { member, reference: reference.actionable ? {...reference, displayName: props.idolName(reference.idolCode) || reference.displayName} : reference }
+}))
 
 function matchingMemberNames(event) {
-  const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
+  const names = new Map(props.members.map(member => [member.idol_code, props.idolName(member.idol_code) || member.display_name]))
   return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || '姓名待确认').join('、')
 }
 
