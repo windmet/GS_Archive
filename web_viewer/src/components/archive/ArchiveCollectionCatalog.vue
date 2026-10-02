@@ -31,7 +31,7 @@
     <ArchiveFloatingTooltip :anchor="tooltipAnchor" :id="tooltipId" @dismiss="hideTooltip">
       <template v-if="tooltipRow"><strong>{{ entryName(tooltipRow) }}</strong><span v-if="entryName(tooltipRow)!==tooltipRow.nameJa" lang="ja" class="collection-original">{{ tooltipRow.nameJa }}</span><span>{{ summary(tooltipRow)?.description?archiveText('item',summary(tooltipRow).description,'description'):itemBrowseGroup(tooltipRow.itemType).label }}</span><small>编号 {{ tooltipRow.id }} · 点击查看来源</small></template>
     </ArchiveFloatingTooltip>
-    <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="detailOpen=false" @retry="load" @open-event="emit('open-event',$event)" />
+    <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="detailOpen=false" @retry="load" @open-event="emit('open-event',$event)" @open-gasha="detailOpen=false;emit('open-gasha',$event)" />
   </article>
 </template>
 <script setup>
@@ -49,7 +49,7 @@ import {createCollectionCatalogSession} from '../../../readmodels/runtime/Collec
 import '../../styles/archive-domains.css'
 import '../../styles/archive-collection.css'
 const props=defineProps({client:Object,bootstrap:Object,entity:{type:String,default:''},query:{type:String,default:''}})
-const emit=defineEmits(['query','entity','open-event'])
+const emit=defineEmits(['query','entity','open-event','open-gasha'])
 const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=ref(props.entity.startsWith('honor:')?'honors':'items'),rows=shallowRef([]),detail=shallowRef(null),catalogBusy=ref(false),detailBusy=ref(false),selectedId=ref(''),error=ref(''),errorScope=ref('')
 const page=ref(0),category=ref(''),idol=ref(''),unit=ref(''),attribute=ref(''),detailOpen=ref(Boolean(props.entity)),failedThumbnails=shallowRef(new Set())

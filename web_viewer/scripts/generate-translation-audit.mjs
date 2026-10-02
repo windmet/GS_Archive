@@ -6,6 +6,7 @@ import {loadStudioIndexes,loadStudioDocument,sha256} from './lib/ai-studio-sourc
 import {validateStoryTranslationOverlay} from '../src/localization/story/TranslationRepository.js'
 import {normalizeEntitySourceText,validateEntityTranslationOverlay} from '../src/localization/story/EntityTranslationRepository.js'
 import {IDOL_ID_TO_NAME} from '../src/utils/IdolNameMap.js'
+import {sourceHash} from './lib/gasha-ticket-evidence.mjs'
 import zh from '../src/localization/ui/locales/zh-CN.js'
 import ja from '../src/localization/ui/locales/ja-JP.js'
 
@@ -57,7 +58,14 @@ for(const type of ['idol','npc']) {
  }
 }
 const pending=[{id:'home-dialogue',label:'首页对话',total:null,status:'excluded',note:'需按人物语气和上下文细翻，未纳入通用初译且未单独计数；P 名字替换不计翻译。'},{id:'hardcoded-ui',label:'尚未提取的界面文案 / 活动与歌曲专名',total:null,status:'unmeasured',note:'语言开关切换已接入的名称与说明；硬编码导航、偶像详细资料和文案尚未全量本地化，不计作已翻译。'},{id:'image-text',label:'图片内文字、歌词与未进入 Reader 的原始文本',total:null,status:'unmeasured',note:'本审计不覆盖这些原始资源；不能由已有目录数量推断翻译完成。'}]
-const summary={schemaVersion:1,sourceDigest:corpusHash(units),scope:'当前通用资料字段 + 当前 Reader 可审计文本单元；不是所有 RAW 或图片内嵌文字',general:{unique:units.length,references:units.reduce((n,u)=>n+u.references.length,0),batches:batches.length},reader:{documents:documents.length,units:allUnits.size,overlays:[...overlays.values()].filter(Boolean).length},groups:[...groups.values()],pending}
+const gashaEvidence=read('public/data/editorial/gasha-ticket-evidence.json'),gashaGroup=group('gasha','卡池名称（含道具补录）')
+for(const row of gashaEvidence.rows){
+ assert.equal(row.source_hash,sourceHash(row.source_name),'Gasha name source changed')
+ const ticket=row.tickets.find(t=>t.id===row.translation_item_id),revision=ticket?revisions.get(`metadata:v1:item:name:${sourceHash(ticket.source_name)}`):null
+ gashaGroup.total++;gashaGroup[row.status]++
+ details.push({key:`metadata:v1:gasha:name:${row.source_hash}`,kind:'gasha',field:'name',source:row.source_name,sourceHash:row.source_hash,translation:row.translation,status:row.status,batch:revision?.batch_id||null,references:[...row.matched_ids.map(id=>({kind:'gasha',id,field:'display_name'})),...row.tickets.map(t=>({kind:'item',id:t.id,field:'nameJa'}))],notes:[row.matched_ids.length?'已有公告名称与道具名称对应。':'道具主数据补录名称；日期和卡片范围未确认。',...(row.matched_ids.length>1?['同名 STAGE 券无法区分两次公告。']:[])],translator:'从用户道具译文提取（待校对）',decision:'translated'})
+}
+const summary={schemaVersion:1,sourceDigest:corpusHash(units),scope:'当前通用资料字段 + 卡池名称与道具关联补录 + 当前 Reader 可审计文本单元；不是所有 RAW 或图片内嵌文字',general:{unique:units.length,references:units.reduce((n,u)=>n+u.references.length,0),batches:batches.length},gasha:{...gashaEvidence.summary,catalog_records:gashaEvidence.summary.existing_primary+gashaEvidence.summary.supplemental_groups,translation_names:gashaEvidence.rows.length},reader:{documents:documents.length,units:allUnits.size,overlays:[...overlays.values()].filter(Boolean).length},groups:[...groups.values()],pending}
 const out=path.join(root,'config/translation-audit');fs.mkdirSync(out,{recursive:true})
 for(const kind of new Set(details.map(d=>d.kind)))fs.writeFileSync(path.join(out,`general-${kind}.json`),JSON.stringify(details.filter(d=>d.kind===kind))+'\n')
 for(const [file,value]of [['summary',summary],['stories',documents]])fs.writeFileSync(path.join(out,`${file}.json`),JSON.stringify(value)+'\n')

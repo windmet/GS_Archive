@@ -25,7 +25,7 @@
             <img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" />
             <span>
               <small>关联卡池</small>
-              <strong>{{ collection.gasha.display_name }}</strong>
+              <strong>{{ gashaText(collection.gasha.display_name) }}</strong>
               <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} 张推定关联卡</em>
             </span>
             <ChevronRight :size="18" />
@@ -142,6 +142,7 @@ import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRout
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { useReaderTitles } from './useReaderTitles.js'
+import {gashaText} from './useArchiveGashaText.js'
 
 const props = defineProps({
   readerSource: { type:Object, default:()=>({}) },

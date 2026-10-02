@@ -4,6 +4,7 @@ import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {parseJsonStrict} from './strict-json.mjs'
 import {archiveGeneralTextCorpus} from './archive-general-text-corpus.mjs'
+import {validateItemIdolNames} from './item-idol-name-policy.mjs'
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
@@ -66,6 +67,7 @@ export function validateGeneralReturn(batch, value, units) {
     assert.deepEqual(protectedTokens(entry.translation),protectedTokens(row.source),`Number/placeholder drift ${entry.key}`)
     if(['skill','center-skill'].includes(row.kind) && row.field==='description')assert.deepEqual(entry.translation.match(/\d+(?:\.\d+)?/g),row.source.match(/\d+(?:\.\d+)?/g),'Skill number order changed')
     assert(!/<(?:script|iframe|img)\b|javascript:/i.test(entry.translation),'Unsafe markup')
+    if(row.kind==='item')validateItemIdolNames(row.source,entry.translation,entry.decision)
     return {...entry,kind:row.kind,field:row.field,references:row.references,status:'draft'}
   })
   return entries

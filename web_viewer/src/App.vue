@@ -157,6 +157,7 @@
         :total-gashas="gashaCatalog.length"
         :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || 0"
         :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || 0"
+        :supplement-count="gashaReadModelCatalog?.summary?.ticket_supplement_count || 0"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -166,6 +167,7 @@
         :gasha="currentGasha"
         :idol-name="idolDisplayName"
         @open-card="openGashaCard"
+        @open-item="openCollectionEntity"
       />
 
       <ArchiveSongCatalog
@@ -211,7 +213,7 @@
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :query="filterQuery"
-        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" />
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
 
@@ -1242,6 +1244,7 @@ const filteredGashas = computed(() => gashaCatalogFunctions.value?.filterGashaCa
   query: filterQuery.value,
   category: currentGashaCategory.value,
   idolSearchText: idolEntitySearchText,
+  nameSearchText: source => `${source} ${gashaCatalogFunctions.value?.translatedGashaName(source) || ''}`,
 }) || [])
 const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
   ? gashaReadModelDetail.value.gasha
@@ -1378,7 +1381,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
   if (view.value === 'mobile_archive') return 'Mobile 通信'
   if (view.value === 'gashas') return '卡池档案'
-  if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
+  if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value) || '卡池详情'
   if (view.value === 'song_catalog') return '歌曲档案'
   if (view.value === 'song_detail') return currentSong.value?.title || '歌曲详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -1425,7 +1428,7 @@ const archiveBreadcrumbs = computed(() => {
       id: currentCardId.value,
     },
     gasha_detail: {
-      title: currentGasha.value?.display_name,
+      title: gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value),
       id: currentGashaId.value,
     },
     event_detail: {
@@ -3945,8 +3948,9 @@ async function loadGashaCatalog() {
   if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
   if (!gashaCatalogPromise) {
     gashaCatalogPromise = (async () => {
-      const [functions, index] = await Promise.all([
+      const [functions, tickets, index] = await Promise.all([
         import('./data/gashaCatalog.js'),
+        import('./data/gashaTicketCatalog.js'),
         readModelClient.load(archiveBootstrap.domains.gashas),
       ])
       const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
@@ -3955,8 +3959,8 @@ async function loadGashaCatalog() {
         new Set(rows.map(row => String(row.id))).size !== rows.length ||
         rows.some(row => row.phase !== 'primary' || !row.detail))
         throw new Error('Gasha catalog count or identity mismatch')
-      const catalog = { rows, summary: index.summary || {} }
-      gashaCatalogFunctions.value = functions
+      const catalog = tickets.supplementGashaCatalog(rows,index.summary || {})
+      gashaCatalogFunctions.value = {...functions,...tickets}
       gashaReadModelCatalog.value = catalog
       return catalog
     })().catch(error => { gashaCatalogPromise = null; throw error })
@@ -3967,10 +3971,12 @@ async function loadGashaCatalog() {
 async function loadGashaDetail(id) {
   const row = (await loadGashaCatalog()).rows.find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable gasha: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  if(row.source_type==='item-masterdata')return {id,gasha:row}
+  const detail = await readModelClient.load(row.detail, { expectedId: id, validate: data => {
     if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
       throw new Error('Gasha detail identity or shape mismatch')
   } })
+  return {...detail,gasha:gashaCatalogFunctions.value.attachGashaTickets(detail.gasha)}
 }
 
 async function loadCardCatalog() {

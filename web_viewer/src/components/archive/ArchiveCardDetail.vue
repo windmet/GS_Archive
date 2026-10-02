@@ -313,6 +313,7 @@ import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
 import {archiveText} from './useArchiveCardText.js'
+import {gashaText} from './useArchiveGashaText.js'
 const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
@@ -466,7 +467,7 @@ const relationItems = computed(() => {
       id: `gasha-${props.gashaRelation.announcement_id}`,
       kind: 'gasha',
       label: '卡池 Pickup',
-      title: props.gashaRelation.title || '卡池名称待确认',
+      title: gashaText(props.gashaRelation.title) || '卡池名称待确认',
       meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '已核对关联' : '推定关联，获得方式待确认'}`,
       evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
       evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
