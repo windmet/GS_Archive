@@ -1,0 +1,61 @@
+/* GS Archive foundation: variables only. Each surface opts into semantic roles. */
+:root {
+  --gs-font-portal: Inter, "Noto Sans SC", "Noto Sans JP", system-ui, sans-serif;
+  --gs-font-directory: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif;
+
+  --gs-text-caption: 11px;
+  --gs-text-meta: 12px;
+  --gs-text-ui: 13px;
+  --gs-text-body: 14px;
+  --gs-text-subtitle: 16px;
+  --gs-text-section: 18px;
+  --gs-text-title: 22px;
+  /* Existing portal masthead, independent of directory and entity titles. */
+  --gs-text-portal: 26px;
+  --gs-weight-regular: 400;
+  --gs-weight-medium: 500;
+  --gs-weight-semibold: 600;
+  --gs-weight-bold: 700;
+  --gs-weight-heavy: 800;
+
+  --gs-space-1: 2px;
+  --gs-space-2: 4px;
+  --gs-space-3: 8px;
+  --gs-space-4: 12px;
+  --gs-space-5: 16px;
+  --gs-space-6: 20px;
+  --gs-space-7: 24px;
+  --gs-space-8: 32px;
+  --gs-space-9: 40px;
+
+  --gs-control-compact: 32px;
+  --gs-control-normal: 36px;
+  --gs-control-toolbar: 40px;
+  --gs-control-touch: 44px;
+  --gs-radius-control: 6px;
+  --gs-radius-field: 8px;
+  --gs-radius-panel: 12px;
+  --gs-radius-surface: 16px;
+  --gs-radius-pill: 999px;
+
+  --gs-surface-settings-width: 420px;
+  --gs-surface-detail-width: 580px;
+  --gs-surface-selector-width: 720px;
+  --gs-surface-drawer-width: 480px;
+  --gs-shadow-surface: 0 20px 70px #00152d55;
+  --gs-focus-ring: 3px;
+  --gs-focus-offset: 3px;
+  --gs-motion-feedback: 120ms;
+
+  /* Scope survives Teleport/native dialog. Consumer palettes may override aliases. */
+  --gs-color-ink: #152b43;
+  --gs-color-muted: #60758a;
+  --gs-color-accent: #00a876;
+  --gs-color-accent-bright: #00c992;
+  --gs-color-line: #d3dfe9;
+  --gs-color-paper: #f1f5fb;
+  --gs-safe-top: env(safe-area-inset-top, 0px);
+  --gs-safe-right: env(safe-area-inset-right, 0px);
+  --gs-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --gs-safe-left: env(safe-area-inset-left, 0px);
+}
