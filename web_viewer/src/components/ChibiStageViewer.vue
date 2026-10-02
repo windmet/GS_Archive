@@ -1165,6 +1165,20 @@ function cameraStateAt(milliseconds) {
     state.y = yTween ? sampleCameraTween(yTween, eventTime) : state.y
     state.rotation = rotationTween ? sampleCameraTween(rotationTween, eventTime) : state.rotation
 
+    if (event.reset) {
+      // Camera's authored erase command restores the wide shot. Cancel the
+      // previous focus/tweens so later shots start from this reset, even on seek.
+      const duration = Math.max(0, Number(event.resetDuration) || 0)
+      zoomTween = { from: state.zoom, to: 1, start: eventTime, duration }
+      xTween = { from: state.x, to: 0, start: eventTime, duration }
+      yTween = { from: state.y, to: 360, start: eventTime, duration }
+      rotationTween = { from: state.rotation, to: 0, start: eventTime, duration }
+      state.focusSlot = null
+      state.stagePosition = null
+      state.eventTime = eventTime
+      continue
+    }
+
     if (event.focusSlot !== null && event.focusSlot !== undefined) {
       state.focusSlot = Number(event.focusSlot) > 0 ? Number(event.focusSlot) : null
       state.stagePosition = state.focusSlot

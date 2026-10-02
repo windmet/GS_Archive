@@ -35,6 +35,7 @@ from live_chibi_object_commands import field_map, parse_object_layer
 from live_chibi_color_commands import parse_color_layer
 from live_chibi_body_colors import body_color_events
 from live_chibi_image_colors import image_color_events
+from live_chibi_camera_controls import camera_controls
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -534,6 +535,7 @@ def read_choreography_scripts(
             object_fields = field_map(header)
             body_color_rows = [header]
             image_color_rows = [header]
+            camera_rows = [header]
             for row in reader:
                 if not row:
                     continue
@@ -564,6 +566,7 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Camera" and len(row) >= 10:
+                    camera_rows.append(row)
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
@@ -807,7 +810,11 @@ def read_choreography_scripts(
             )
         for event in events:
             event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
-        for event in camera_events:
+        controls = camera_controls(camera_rows)
+        if [event['time'] for event in camera_events] != [control['time'] for control in controls]:
+            raise ValueError('Camera events and named controls differ')
+        for event, control in zip(camera_events, controls):
+            event.update(control)
             focus_slot = event.get("focusSlot")
             event["stagePosition"] = (
                 stage_position_map.get(focus_slot) if focus_slot and focus_slot > 0 else None

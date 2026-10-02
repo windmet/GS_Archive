@@ -451,3 +451,17 @@ python -m py_compile scripts/audit-chibi-penlight-bindings.py scripts/verify-chi
 ```
 
 全部通过；纯独立工具按构建政策不运行 Vite，不产生新的 Browser 画面验收声明。原生 camera／舞台投影、CSV 动画与颜色算法、观众棒素材接入和录屏视觉验收继续待完成，不能把本次资源关联门禁视为全舞台或 master PR 验收。
+
+### Study 广角镜头退场控制遗漏修复（2026-10-03）
+
+输入 HEAD：fcd0a5e6。此前完整 [Source Gate 37070990646](https://github.com/windmet/GS_Archive/actions/runs/37070990646) 已在此 HEAD 成功，112 个步骤成功、无失败，包含原生 Penlight 绑定／streamed 回归。这是此前代码的 source gate，不能外推为下面新改动或全舞台验收。
+
+Study 32.1 秒的 RAW Camera 命令 `value101=1/value102=1` 被旧主生成器丢弃，导出成全空参数。采样器继承前段 1.25 倍镜头，随后 32.2 秒的新镜头继续放大。音频配准录屏在该转场后回到广角，证据新增 `study-reference/transition32-witness/` 六帧及来源 receipt。32.2 秒附近录屏仍在上一歌词／手势，32.5 秒已经切到 ABCDEFG 与举手；这是边界附近约数百毫秒的相位差，不能依据 32.174 秒单帧宣称整段歌词／手势错位，亦没有全局偏移 CSV。
+
+新增 `live_chibi_camera_controls.py` 按命名字段读取退场与时长；主生成器和 `prepare-live-chibi-camera-controls.py` 共享解析。独立刷新只补 `cameraEvents.reset/resetDuration`，核对原事件时间身份、不改其它字段，并检查读取后原 index 未被其他窗口写入。118 编排、8145 个 Camera 事件中，83 编排有 973 次退场；Take 01／02 无此控制。RAW 与输出身份／哈希保存于 `camera-controls-refresh.json`。published 媒体索引仍为本地派生产物，不把它作为受跟踪 source 输入；可用该工具复现更新。
+
+实际 ChibiStageViewer 采样器为退场创建回到 zoom=1、X=0、Y=360、rotation=0 的过渡，并取消原 focus。倒退 seek 从事件重新计算；旧索引没有 reset 字段仍走旧路径。保留原先近似的 easeOutCubic，不声称这次恢复了 Unity 原生镜头投影或 easing 方法体。fixture 是三首实际 Camera 原行／已解析参数与 TextAsset identity；Python 回归覆盖重排字段、注释陷阱、非法 flag／时长／时间，Node 执行实际 SFC sampler 覆盖复位、中断 focus／pan／rotation、倒退重进及两首 Take 未改变结果。主生成器直接读完整 Study RAW 与刷新输出全部 Camera 事件相同。
+
+本地 `npm run verify:engineering`、上述两项回归、Python 编译和 `npm run build:check` 通过；build-check 不复制 public。Browser 复用 5198 build-check／public 映射：1440×900、S.E.M 2/3/4 编队在 32.2 秒为 zoom=1、X=0、Y=360，倒退 30 秒后重进结果相同；32.5 秒为 zoom≈1.0521，广角后的新镜头开始推进。390×844 同一暂停时点，舞台与控制台上下排列，截图 `browser-desktop-032.500.png` 与 `browser-mobile-032.200.png`。这些是模拟视口，未验收真实手机；console 无 error，但仍有既有 SpineBase tint accessor 的弃用警告。
+
+剩余差异明确保留：Spotlight 旧近似绘制残留中央／台前光斑，录屏单人聚光束更鲜明；粉色前景 call 棒未接线；动作相位、角色比例／遮罩／stage wash 尚未全曲逐帧验收。这里修复的是确切被丢弃的 Camera 退场，不把剩余视觉差异归为已通过。

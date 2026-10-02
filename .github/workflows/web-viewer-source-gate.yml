@@ -123,6 +123,9 @@ jobs:
       - name: Verify Take backmonitor aperture coverage
         run: npm run verify:chibi-backmonitor-registration
 
+      - name: Verify authored chibi Camera erase controls and reset sampling
+        run: python scripts/verify-live-chibi-camera-controls.py && node scripts/verify-chibi-camera-reset.mjs
+
       - name: Verify native chibi streamed animation decoding
         run: python scripts/verify-chibi-streamed-animation.py
 
