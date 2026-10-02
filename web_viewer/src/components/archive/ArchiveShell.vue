@@ -5,9 +5,9 @@
         <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM<br />Archive</span>
       </div>
-      <nav class="archive-nav">
+      <nav class="archive-nav" aria-label="档案栏目">
         <button
-          v-for="item in navigation"
+          v-for="item in navigation.filter(entry => entry.id === 'home')"
           :key="item.id"
           :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
           :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
@@ -16,6 +16,12 @@
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
           <span>{{ item.label }}</span>
         </button>
+        <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" role="group" :aria-labelledby="`nav-${group.id}`">
+          <h2 :id="`nav-${group.id}`">{{ group.label }} <small>{{ group.english }}</small></h2>
+          <button v-for="item in group.items" :key="item.id" :class="{ active: activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') }" :aria-current="activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') ? 'page' : undefined" @click="emit('navigate', item.id)">
+            <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
+          </button>
+        </div>
       </nav>
     </aside>
 
@@ -94,6 +100,7 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
+import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ref, watch } from 'vue'
 
 const props = defineProps({
@@ -115,6 +122,7 @@ const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
+const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, items: group.items.map(item => ({ ...item, icon: iconBySection[item.id] })) }))
 const mobileNavigation = [
   { id: 'home', label: '首页', icon: Home },
   { id: 'portal', label: '资料馆', icon: LayoutGrid },
@@ -162,7 +170,8 @@ const mobileNavigation = [
   min-width: 0;
 }
 .archive-brand {
-  height: 76px;
+  height: 64px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -173,14 +182,18 @@ const mobileNavigation = [
   line-height: 1.05;
 }
 .archive-brand img { width: 34px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
-.archive-nav { display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+.archive-nav {display:flex;flex-direction:column;gap:0;padding:6px;min-height:0;overflow-y:auto;}
+.archive-nav-group {padding-top:8px;}
+.archive-nav-group h2 {display:flex;align-items:center;gap:6px;margin:0;padding:2px 12px 5px;color:#8096a4;font-size:10px;font-weight:650;line-height:14px;}
+.archive-nav-group h2 small {font-size:8px;letter-spacing:.06em;color:#657b89;}
 .archive-nav button {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 46px;
+  min-height: 36px;
+  flex-shrink: 0;
   padding: 0 14px;
   border: 0;
   border-radius: 4px;
@@ -188,7 +201,7 @@ const mobileNavigation = [
   color: #aeb8c0;
   cursor: pointer;
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 13px;
   text-align: left;
 }
 .archive-nav button:hover { background: #222f3a; color: #fff; }

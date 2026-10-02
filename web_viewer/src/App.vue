@@ -25,6 +25,7 @@
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :idol-name="idolDisplayName"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
         @save-preferred="savePreferredIdol"

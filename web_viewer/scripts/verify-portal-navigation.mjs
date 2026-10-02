@@ -5,6 +5,10 @@ import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPort
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
+import { ARCHIVE_NAVIGATION_GROUPS } from '../src/core/archiveNavigationGroups.js'
+
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [4, 4, 3])
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
   '?home_idol=003hok&home_cue=voice&home_costume=model',
