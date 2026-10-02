@@ -465,3 +465,5 @@ Study 32.1 秒的 RAW Camera 命令 `value101=1/value102=1` 被旧主生成器�
 本地 `npm run verify:engineering`、上述两项回归、Python 编译和 `npm run build:check` 通过；build-check 不复制 public。Browser 复用 5198 build-check／public 映射：1440×900、S.E.M 2/3/4 编队在 32.2 秒为 zoom=1、X=0、Y=360，倒退 30 秒后重进结果相同；32.5 秒为 zoom≈1.0521，广角后的新镜头开始推进。390×844 同一暂停时点，舞台与控制台上下排列，截图 `browser-desktop-032.500.png` 与 `browser-mobile-032.200.png`。这些是模拟视口，未验收真实手机；console 无 error，但仍有既有 SpineBase tint accessor 的弃用警告。
 
 剩余差异明确保留：Spotlight 旧近似绘制残留中央／台前光斑，录屏单人聚光束更鲜明；粉色前景 call 棒未接线；动作相位、角色比例／遮罩／stage wash 尚未全曲逐帧验收。这里修复的是确切被丢弃的 Camera 退场，不把剩余视觉差异归为已通过。
+
+提交 `2800eae307c43f961a9ea9178df0946892508e92` 已推送；完整 [Source Gate 37072347273](https://github.com/windmet/GS_Archive/actions/runs/37072347273) 在此确切代码 revision **成功，113 个步骤成功、无失败**，包含新增 Camera 控制／实际 SFC sampler 回归、已有 Penlight 回归与 source-only 编译。之后的验收记录提交是文档更新，不借此宣称全媒体发布、真实手机、全曲光效或最初 master PR 目标完成。
