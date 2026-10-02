@@ -52,7 +52,7 @@
     "audit:resources": "node scripts/generate-resource-audit.mjs",
     "prebuild": "node scripts/generate-translation-audit.mjs && node scripts/generate-resource-audit.mjs",
     "audit:resources:r2": "node scripts/generate-resource-audit.mjs --refresh-r2",
-    "verify:general-translation-workflow": "node scripts/verify-general-translation-workflow.mjs && node scripts/verify-resource-audit.mjs",
+    "verify:general-translation-workflow": "node scripts/verify-general-translation-workflow.mjs && node scripts/verify-general-translation-markdown.mjs && node scripts/verify-resource-audit.mjs",
     "verify:translation-studio": "node scripts/verify-ai-studio-batches.mjs",
     "generate:reading": "node scripts/generate-reading-documents.mjs",
     "verify:reading": "node scripts/verify-reading-catalog.mjs && node scripts/verify-reading-progress.mjs && node scripts/verify-reading-documents.mjs && node scripts/verify-reading-visual-identity.mjs && node scripts/verify-reading-repository.mjs && node scripts/verify-reading-navigation.mjs && node scripts/verify-reading-playback.mjs && node scripts/verify-reading-branch-tabs.mjs && node scripts/verify-reading-render.mjs && node scripts/verify-reader-controls.mjs && node scripts/verify-reader-loading.mjs && node scripts/verify-reader-viewport.mjs && node scripts/verify-reader-titles.mjs && node scripts/generate-reader-titles.mjs --check && npm run verify:reading-typography && npm run verify:reading-theme && npm run verify:reading-speaker-avatars",
