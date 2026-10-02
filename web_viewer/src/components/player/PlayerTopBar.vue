@@ -175,7 +175,6 @@ const progressPercent = computed(() => {
   .language-full { display: none; }
   .language-short { display: inline; }
   .lang-btn { min-width: 44px; padding-inline: 10px; }
-  .bar-center { top: 48px; }
   .episode-badge { display: none; }
 }
 
