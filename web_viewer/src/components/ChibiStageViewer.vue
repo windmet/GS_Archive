@@ -2998,7 +2998,7 @@ function formatTime(milliseconds) {
 
 .stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; min-height: 0; max-width: 1600px; margin: 0 auto; padding: 18px; box-sizing: border-box; }
 .performance-shell { display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #0b1726; box-sizing: border-box; }
-.performance-screen { position: relative; width: min(100%, calc(clamp(180px, 100svh - 260px, 620px) * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; }
+.performance-screen { position: relative; width: min(100%, calc(clamp(180px, 100svh - 260px, 620px) * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; container-type: inline-size; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
 .chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
@@ -3018,18 +3018,21 @@ function formatTime(milliseconds) {
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: 18px;
-  max-width: min(820px, calc(100% - 80px));
-  padding: 2px 10px 4px;
+  bottom: 3%;
+  width: 94%;
+  padding: 0;
   color: #fff;
-  font-size: clamp(15px, 1.7vw, 24px);
+  /* cqw follows the actual letterboxed canvas, including short landscape screens. */
+  font-size: clamp(8px, 2cqw, 24px);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   text-align: center;
   -webkit-font-smoothing: antialiased;
-  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.96);
+  -webkit-text-stroke: 0.07em rgba(0, 0, 0, 0.96);
   paint-order: stroke fill;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0.06em 0.12em rgba(0, 0, 0, 0.9);
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -3138,7 +3141,6 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
   .performance-hud small { grid-column: 1; }
   .performance-hud strong { font-size: 14px; }
   .position-rail { gap: 2px; padding: 8px 4px; }
-  .stage-lyric { bottom: 10px; max-width: calc(100% - 20px); font-size: 14px; }
   .position-marker small { max-width: 58px; }
   .transport { grid-template-columns: 38px 44px minmax(0, 1fr); gap: 6px 10px; padding: 8px 12px; }
   .transport button, .transport .primary-transport { width: 38px; height: 38px; }

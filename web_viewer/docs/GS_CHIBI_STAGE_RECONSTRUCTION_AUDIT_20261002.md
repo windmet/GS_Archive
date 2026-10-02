@@ -207,3 +207,11 @@ Take a StuMp! 的 C.FIRST Logo 来源已定位为 21.3s `ImageObject_create` 的
 后续顺序：ANYWHERE 多层染色 → 地面/观众灯及吊灯 → 相机和深度投影对照 → Take a StuMp! 的 ImageObject/角色染色 → Study 与 Take 跨曲目验收。三首均需补首次加载、暂停 seek、连续播放、切歌与多视口验收；上述两首本轮只建立对照基线，没有宣称已完整复刻。
 
 本地截图：`chibi-pilot-desktop.png`、`chibi-pilot-mobile.png`、`chibi-pilot-landscape.png`、`chibi-study-baseline.png`、`chibi-take-stump-baseline.png`，位于 `.analysis/engineering-validation-20261002`，不提交图片。
+
+## 2026-10-03：字幕随画布缩放
+
+输入 HEAD `68b2cebe`。字幕字号改用 `.performance-screen` 的 container query 宽度，`clamp(8px, 2cqw, 24px)`；底部留白为画布高度的 3%，文字区为画布宽度的 94%。描边和阴影也随字体缩放。移除手机固定 14px 覆盖，避免短横屏的小画布沿用整屏字号。保留完整歌词，允许必要换行，不改歌词时间轴、原文或角色布局。
+
+实际 Browser 使用既有 5198 服务与 `.analysis/build-check` 代码、原资源映射，验证歌曲下拉切换与暂停拖动：ANYWHERE 10s、Study Equal Magic! 85s、Take a StuMp! 01 8s 的长歌词均完整显示为一行。桌面 1280×900 的画布约 885×498，字体约 17.7px；390×844 画布约 357×201；360×800 画布约 327×184；844×390 横屏画布约 321×180。三个小画布字体为 8px，字幕顶部约位于画布高度的 91.7%～92.2%，均在画布边界内，未遮挡当前帧人物。截图 `chibi-lyrics-desktop/mobile/landscape.png`、`chibi-lyrics-study-mobile.png`、`chibi-lyrics-take-mobile.png` 位于原证据目录。
+
+`npm run build:check`（12.17s，未复制 public）、`verify:chibi-particles`、`verify:live-chibi-singer-slots`、`verify:song-lyrics` 通过；Browser 未观察到 error，保留既有 Pixi/Spine 弃用警告。此为桌面浏览器模拟视口验收，未代替真实手机可读性、无障碍文字放大或全部 118 份歌词逐句验收；舞台复刻差异仍按上一节保持待修复。
