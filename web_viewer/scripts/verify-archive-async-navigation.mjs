@@ -1,5 +1,6 @@
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { ownsArchiveSource } from '../src/core/archiveRoute.js'
+import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -49,7 +50,7 @@ function setup() {
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
-    captureDetailSource: () => {}, ownsArchiveSource,
+    captureDetailSource: () => {}, ownsArchiveSource, normalizeEventBrowseState,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
     stageHandoff: { value: null },
     episodeQueue: useEpisodeQueue(),
@@ -402,4 +403,13 @@ for (const response of [
   assert.equal(t.state.view.value, 'portal')
   assert.equal(t.context.cardReadModelDetail.value, null, 'late voice owner must not publish after navigation')
 }
-console.log('Archive async navigation: preparation, races, filters, failures and card voice leaf restoration passed')
+{
+  const t = setup()
+  await t.restore({ view: 'event_catalog', query: 'Cafe', eventBrowse: { kind: 'tour', sort: 'oldest', page: 2 } })
+  assert.equal(t.state.view.value, 'event_catalog')
+  assert.equal(t.state.filterQuery.value, 'Cafe')
+  assert.deepEqual(t.state.currentEventBrowseState.value, { kind: 'tour', sort: 'oldest', page: 2 }, 'route hydration owns event kind/sort/page together')
+  await t.restore({ view: 'event_catalog' })
+  assert.deepEqual(t.state.currentEventBrowseState.value, { kind: '', sort: 'newest', page: 0 }, 'legacy event URL starts from defaults')
+}
+console.log('Archive async navigation: preparation, races, filters, failures, card voice leaf and independent event catalog browse restoration passed')

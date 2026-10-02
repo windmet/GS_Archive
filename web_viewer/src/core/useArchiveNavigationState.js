@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { ownsArchiveSource } from './archiveRoute.js'
+import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 
 // Own URL-facing state; consumers receive the original refs, never copies.
 // Resource payloads, playback queues and async loading are feature-owned.
@@ -45,6 +46,7 @@ export function useArchiveNavigationState() {
   const stageTargetId = ref('')
   const currentSongScope = ref('all')
   const currentEventId = ref('')
+  const currentEventBrowseState = ref(normalizeEventBrowseState())
   const currentEntityKey = ref('')
   const currentCollectionState = ref({kind:'items',category:'',idol:'',unit:'',attribute:'',page:0})
   const currentPhotoIdol = ref('')
@@ -110,6 +112,7 @@ export function useArchiveNavigationState() {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
       ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value,collection:currentCollectionState.value} : {}),
+      ...(view.value === 'event_catalog' ? {eventBrowse:currentEventBrowseState.value} : {}),
       ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
@@ -212,6 +215,7 @@ export function useArchiveNavigationState() {
     stageTargetId,
     currentSongScope,
     currentEventId,
+    currentEventBrowseState,
     currentGashaId,
     currentGashaCategory,
     currentCardRarity,

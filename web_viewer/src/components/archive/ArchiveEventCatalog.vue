@@ -1,13 +1,13 @@
 <template>
-  <article class="event-catalog" data-archive-scroll-container>
-    <div class="catalog-summary"><div><strong>{{ rows.length }}</strong><span>历史活动</span></div><div><strong>{{ storyCount }}</strong><span>关联剧情</span></div><div><strong>{{ reprintCount }}</strong><span>复刻活动</span></div></div>
+  <article class="event-catalog" data-archive-scroll-container :aria-busy="busy">
+    <div class="catalog-summary"><div><strong>{{ ready ? rows.length : '—' }}</strong><span>历史活动</span></div><div><strong>{{ ready ? storyCount : '—' }}</strong><span>关联剧情</span></div><div><strong>{{ ready ? reprintCount : '—' }}</strong><span>复刻活动</span></div></div>
     <p v-if="busy" role="status">正在读取活动一览…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load">重试</button></p>
     <div class="catalog-filter">
       <label>搜索<input :value="query" placeholder="活动名称或编号" @input="emit('query',$event.target.value)" /></label>
       <label>活动形式<select v-model="eventKind"><option value="">全部</option><option v-for="(label,id) in eventKindLabels" :key="id" :value="id">{{ label }}</option></select></label>
       <label>排序<select v-model="sort"><option value="newest">最新优先</option><option value="oldest">最早优先</option></select></label>
-      <span>{{ filtered.length }} 条结果</span>
+      <span>{{ ready ? `${filtered.length} 条结果` : busy ? '正在读取…' : '结果暂不可用' }}</span>
     </div>
     <div class="event-grid">
       <button v-for="row in visible" :key="row.id" type="button" class="event-item" :data-archive-focus-id="`event:${row.id}`" @click="select(row)">
@@ -30,10 +30,13 @@ import {eventKindLabels,historicalDate} from './DomainPresentation.mjs'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {eventResources} from '../../data/eventResourceGraph.js'
 import EventResourceImage from './EventResourceImage.vue'
-const props=defineProps({client:Object,bootstrap:Object,query:{type:String,default:''}})
-const emit=defineEmits(['query','open-event'])
+const props=defineProps({client:Object,bootstrap:Object,query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'',sort:'newest',page:0})}})
+const emit=defineEmits(['query','browse','ready','open-event'])
 const repository=new DomainRepository(props.client,props.bootstrap)
-const rows=shallowRef([]),busy=ref(false),error=ref(''),page=ref(0),eventKind=ref(''),sort=ref('newest')
+const rows=shallowRef([]),busy=ref(false),error=ref('')
+function filterModel(key){return computed({get:()=>props.browseState[key] ?? (key==='page'?0:key==='sort'?'newest':''),set:value=>emit('browse',{...props.browseState,[key]:value,...(key==='page'?{}:{page:0})})})}
+const page=filterModel('page'),eventKind=filterModel('kind'),sort=filterModel('sort')
+const ready=computed(()=>!busy.value&&!error.value)
 const storyCount=computed(()=>rows.value.filter(row=>row.resources?.storyAvailable).length)
 const reprintCount=computed(()=>rows.value.filter(row=>row.isReprint).length)
 const filtered=computed(()=>{
@@ -47,13 +50,21 @@ onBeforeUnmount(()=>{request++;controller?.abort()})
 async function load(){
   controller?.abort();controller=new AbortController()
   const id=++request,options={signal:controller.signal}
+  let loaded=false
   busy.value=true;error.value='';rows.value=[]
-  try{const value=await repository.catalog('events',options);if(id===request)rows.value=value.map(row=>({...row,resources:eventResources(row)}))}
+  try{
+    const value=await repository.catalog('events',options)
+    if(id!==request||options.signal.aborted)return
+    rows.value=value.map(row=>({...row,resources:eventResources(row)}))
+    const lastPage=Math.max(0,pages.value-1)
+    if(page.value>lastPage)page.value=lastPage
+    loaded=true
+  }
   catch(cause){if(id===request&&!options.signal.aborted){console.error('[ArchiveEvents]',cause);error.value='活动资料暂时无法读取，请重试。'}}
-  finally{if(id===request)busy.value=false}
+  finally{if(id===request){busy.value=false;if(loaded)emit('ready')}}
 }
 function select(row){emit('open-event',{event_id:row.id})}
-watch(()=>[props.query,eventKind.value,sort.value],()=>{page.value=0})
+watch(()=>[ready.value,page.value,pages.value],([isReady,current,total])=>{if(isReady&&current>Math.max(0,total-1))page.value=Math.max(0,total-1)})
 load()
 </script>
 <style scoped>

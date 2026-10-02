@@ -1,6 +1,8 @@
 import { normalizeCollectionRoute } from './CollectionRouteState.js'
+import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 const ROUTE_QUERY_KEYS = [
   'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
+  'event_kind','event_sort','event_page',
   'portal_from',
   'from',
   'reading',
@@ -334,6 +336,7 @@ export function normalizeArchiveRoute(input = {}) {
     song: clean(input.song),
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
+    ...(view==='event_catalog' ? {eventBrowse:normalizeEventBrowseState(input.eventBrowse)} : {}),
     ...(view==='collection_catalog' ? normalizeCollectionRoute(input) : {}),
     ...(['photo_catalog','picture_studio'].includes(view) ? {
       photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
@@ -606,6 +609,7 @@ export function readArchiveRoute(input = null) {
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
+    eventBrowse: { kind:params.get('event_kind'), sort:params.get('event_sort'), page:params.get('event_page') },
     entity: params.get('entity'),
     collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
     photoIdol: params.get('photo_idol'),
@@ -632,6 +636,12 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'event_catalog') {
+    const browse = normalized.eventBrowse
+    if (browse.kind) url.searchParams.set('event_kind', browse.kind)
+    if (browse.sort !== 'newest') url.searchParams.set('event_sort', browse.sort)
+    if (browse.page) url.searchParams.set('event_page', String(browse.page))
+  }
   if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
   if (normalized.view === 'collection_catalog') {
     const c = normalized.collection

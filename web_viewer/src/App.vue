@@ -224,7 +224,7 @@
       />
 
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
-        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
+        :browse-state="currentEventBrowseState" @query="updateEventCatalogQuery" @browse="updateEventBrowse" @ready="onEventCatalogReady" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
         @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
@@ -594,6 +594,7 @@ import {
   readArchiveRoute,
   writeArchiveRoute,
 } from './core/archiveRoute.js'
+import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
 import {
   buildArchiveViewContext,
   captureArchiveViewState,
@@ -778,6 +779,7 @@ const {
   stageTargetId,
   currentSongScope,
   currentEventId,
+  currentEventBrowseState,
   currentEntityKey,
   currentCollectionState,
   currentPhotoIdol,
@@ -933,6 +935,7 @@ let archiveRouteReady = false
 let pendingPreReadyRoute = null
 let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
+let pendingEventCatalogRestore = null
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
   state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
@@ -1543,6 +1546,8 @@ function captureActiveArchiveView() {
 function adoptArchiveViewContext({ restore = true } = {}) {
   activeArchiveViewContext = buildArchiveViewContext(window.location.href, window.history.state)
   const revision = ++archiveViewRestoreRevision
+  pendingEventCatalogRestore = restore && view.value==='event_catalog'
+    ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   if (!restore) return
   nextTick(() => {
     if (revision !== archiveViewRestoreRevision || navigation.isDisposed()) return
@@ -1736,6 +1741,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCharacterId.value = validRouteIdol ? (route.idol || '') : ''
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
+    currentEventBrowseState.value = normalizeEventBrowseState(route.eventBrowse)
     currentEntityKey.value = route.entity || ''
     currentCollectionState.value = route.collection || {kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
     currentPhotoIdol.value = route.photoIdol || ''
@@ -1900,6 +1906,7 @@ function navigateArchiveSection(section) {
 }
 
 function openDomainCatalog(section) {
+  currentEventBrowseState.value=normalizeEventBrowseState()
   currentCollectionState.value={kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
@@ -1916,6 +1923,25 @@ function updateCollectionBrowse(next) {
   if(next.kind!==currentCollectionState.value.kind){currentEntityKey.value='';filterQuery.value=''}
   currentCollectionState.value=next
   syncArchiveRoute({replace:true})
+}
+function updateEventBrowse(next) {
+  currentEventBrowseState.value=normalizeEventBrowseState(next)
+  syncArchiveRoute({replace:true,restoreView:false})
+}
+function updateEventCatalogQuery(query) {
+  updateArchiveFilter('filterQuery',query)
+  currentEventBrowseState.value={...currentEventBrowseState.value,page:0}
+  syncArchiveRoute({replace:true,restoreView:false})
+}
+async function onEventCatalogReady() {
+  const pending=pendingEventCatalogRestore
+  pendingEventCatalogRestore=null
+  if(!pending)return
+  await nextTick()
+  if(view.value!=='event_catalog'||pending.context!==activeArchiveViewContext||pending.revision!==archiveViewRestoreRevision||pending.navigationRevision!==navigation.getRevision()||navigation.isDisposed())return
+  return restoreArchiveViewState(pending.context).catch(error=>{
+    console.error('[ArchiveNavigation] Failed to restore event directory position:',error)
+  })
 }
 function selectPhotoIdol(id) {
   if (!/^\d{1,4}$/.test(String(id))) return
