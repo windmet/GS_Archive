@@ -101,6 +101,26 @@ assert.equal(archiveSectionForRoute({ view: 'work_archive', storyType: 'work', i
 assert.equal(archiveSectionForRoute({ view: 'idol_story_archive', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'mobile_archive', idol: '001tom', mobileMode: 'phone' }), 'interactions')
 
+// Hierarchy links go to the archive portal; original-source Back remains a
+// separate context, even when the current detail was opened from another domain.
+for (const route of [
+  filteredCards,
+  sourcedCard,
+  { view: 'event_catalog', query: 'Cafe', eventScope: 'fixed_unit_event' },
+  { view: 'event_detail', event: '410018', parentView: 'card_detail', sourceRoute: cardsSource },
+  { view: 'song_catalog', query: 'Jupiter' },
+  { view: 'song_detail', song: 'brndnf', parentView: 'unit_detail', unit: '01jup', sourceRoute: cardsSource },
+]) {
+  const before = structuredClone(route)
+  const currentUrl = buildArchiveUrl('http://localhost/', route)
+  const root = buildArchiveBreadcrumbs(route)[0]
+  assert.equal(root.label, '资料馆')
+  const rootUrl = buildArchiveUrl(currentUrl, root.route)
+  assert.equal(rootUrl.search, '?view=portal', `${route.view}: archive root must not open game home or carry detail state`)
+  assert.deepEqual(route, before, `${route.view}: building the hierarchy must not change original-source Back`)
+  assert.deepEqual(readArchiveRoute(currentUrl), normalizeArchiveRoute(before), `${route.view}: original URL retains its source and filters`)
+}
+
 const idolBreadcrumbs = buildArchiveBreadcrumbs(
   { view: 'idol_detail', idol: '001tom', parentView: 'home' },
   { title: '天道 輝', id: '001tom' },

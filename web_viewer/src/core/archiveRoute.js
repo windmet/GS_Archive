@@ -430,7 +430,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   const route = normalizeArchiveRoute(inputRoute)
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
-  const home = { label: '资料馆', route: { view: 'home' } }
+  const home = { label: '资料馆', route: { view: 'portal' } }
   if(route.view==='picture_studio')return [home,{label:'摄影资料',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
   if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[route.view]}]
   const current = (fallback, id = '') => ({
