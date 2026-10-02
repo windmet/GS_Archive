@@ -98,4 +98,6 @@
 
 日常代码验证使用 `npm run build:check`，固定 `.analysis/build-check`，不复制public。Browser必须核实代码bundle、资源映射与真实旅程；截图/小日志保存在本checkout `.analysis/ui-foundation-20261003`。详细结果见 [本轮验收](GS_UI_FOUNDATION_ACCEPTANCE_20261003.md)。每批显式stage、commit/push，保留其他窗口工作。
 
-卡池/摄影的目录角色、空/错状态与控件连续性已实测迁移，见[该批验收](GS_UI_GASHA_PHOTO_ACCEPTANCE_20261003.md)。后续：①用户选择详情密度后迁移Dialog M；②按域迁移实体详情；③单独规划QuickView/Solo安全区与行为差异、Story等剩余完整URL筛选恢复。每域必须重新看真实内容，不能靠批量px替换完成迁移。
+卡池/摄影的目录角色、空/错状态与控件连续性已实测迁移，见[该批验收](GS_UI_GASHA_PHOTO_ACCEPTANCE_20261003.md)。卡池/歌曲实体详情的文字、实际内容宽度、触摸操作和声部姓名一致性见[实体详情验收](GS_UI_ENTITY_DETAIL_ACCEPTANCE_20261003.md)。完整实体名称在详情头部保留，避免Shell窄屏省略号成为唯一身份表示；它与目录中的重复页面标题有不同阅读职责。
+
+后续按以下顺序推进：歌曲折叠音频归档的返回状态 → 卡片详情（优先实看侧栏仍在的761–820px窗口与技能select）→ 人物/组合详情 → 活动详情 → QuickView/Solo安全区及行为差异、Story等剩余完整URL筛选恢复。后续页面问题目前是源码候选，须再看Browser，不能由入口或本批实体推定已验收。Dialog M继续等待用户选择密度，独立于这些实体域的迁移。每域必须重新看真实内容，不能靠批量px替换完成迁移。
