@@ -147,7 +147,7 @@ const primaryNavigation = [
   height: 100%;
   background: #fff;
   color: var(--archive-ink);
-  font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif;
+  font-family: var(--gs-font-directory);
 }
 .archive-shell.has-inspector { --archive-inspector: min(340px, 28vw); }
 .archive-shell.is-home { --archive-topbar: 0px; }
@@ -250,11 +250,11 @@ const primaryNavigation = [
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 36px;
+  height: var(--gs-control-normal);
   min-width: 0;
-  padding: 0 11px;
+  padding: 0 var(--gs-space-4);
   border: 1px solid #d7dde2;
-  border-radius: 6px;
+  border-radius: var(--gs-radius-control);
   color: #8a949e;
   background: #fff;
 }
@@ -264,12 +264,14 @@ const primaryNavigation = [
 .archive-search input {
   min-width: 0;
   width: 100%;
+  height: 100%;
   border: 0;
   outline: 0;
   background: transparent;
   color: var(--archive-ink);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: var(--gs-text-ui);
+  font-weight: var(--gs-weight-regular);
 }
 .archive-content { grid-column: 2; min-width: 0; min-height: 0; overflow: hidden; background: #fff; }
 .archive-content :deep(.list-screen), .archive-content :deep(.home-screen) { height: 100%; }
@@ -319,7 +321,8 @@ const primaryNavigation = [
   .archive-topbar:has(.archive-back) .archive-mobile-brand { grid-column: 2; }
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
   .archive-topbar h1 { font-size: 1.15rem; }
-  .archive-search { grid-row: 2; grid-column: 2; height: 36px; }
+  .archive-search { grid-row: 2; grid-column: 2; height: var(--gs-control-touch); }
+  .archive-search input { font-size: var(--gs-text-subtitle); }
   .archive-header-actions { display:contents; }
   .archive-header-actions :deep(.archive-language-switch) { grid-row:1; grid-column:2; justify-self:end; }
   .archive-topbar .archive-mobile-brand { display:none; }
@@ -391,7 +394,8 @@ const primaryNavigation = [
 .archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
 .archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
 @media (pointer: coarse) {
-  .archive-search input { font-size: 16px; }
+  .archive-search { height: var(--gs-control-touch); }
+  .archive-search input { font-size: var(--gs-text-subtitle); }
 }
 </style>
 
@@ -409,7 +413,8 @@ const primaryNavigation = [
 <style scoped>
 @media(max-width:760px) {
  .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader) { --archive-topbar:calc(48px + var(--archive-safe-top)); }
- .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader):has(.archive-search.is-open) { --archive-topbar:calc(92px + var(--archive-safe-top)); }
+ /* Search is an in-flow row: 44px hit area plus 8px separation below it. */
+ .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader):has(.archive-search.is-open) { --archive-topbar:calc(48px + var(--gs-control-touch) + var(--gs-space-3) + var(--archive-safe-top)); }
  .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 48px;grid-template-rows:48px;gap:0;padding:var(--archive-safe-top) max(10px,var(--archive-safe-right)) 0 max(10px,var(--archive-safe-left));}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) {grid-template-columns:44px minmax(0,1fr) 48px;}
  .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
@@ -420,7 +425,7 @@ const primaryNavigation = [
  .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:4;grid-row:1;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) :deep(.archive-language-switch) {grid-column:3;}
  .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
- .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:36px;width:100%;margin-bottom:8px;}
+ .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:var(--gs-control-touch);width:100%;margin-bottom:var(--gs-space-3);}
  .is-compact-mobile .archive-search.is-open {display:flex;}
 }
 </style>
