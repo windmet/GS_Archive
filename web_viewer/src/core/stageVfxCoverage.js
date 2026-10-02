@@ -34,6 +34,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       imageObject: imageObjectEvents.length,
       objectLayer: song.objectLayerEvents?.length || 0,
       characterLight: song.characterLightEvents?.length || 0,
+      bodyColor: song.bodyColorEvents?.length || 0,
       wholeScreenColorLayer: song.wholeScreenColorLayerEvents?.length || 0,
       spotlight: song.spotlightEvents?.length || 0,
       pinspotlight: song.pinspotlightEvents?.length || 0,

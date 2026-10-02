@@ -68,6 +68,7 @@
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
     :data-character-light="currentCharacterLight.color"
+    :data-body-colors="appliedBodyColors"
   >
     <header class="stage-header">
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
@@ -387,6 +388,7 @@
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
+import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -584,7 +586,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
 }))
 const stageVfxApproximateCount = computed(() => {
   const events = stageVfxCoverage.value?.sourceEvents
-  return events ? events.characterLight + events.spotlight + events.pinspotlight + events.laserlight : 0
+  return events ? events.characterLight + events.bodyColor + events.spotlight + events.pinspotlight + events.laserlight : 0
 })
 const activePositions = computed(() => {
   if (isSpecialSingle.value) return []
@@ -719,6 +721,8 @@ const currentColorPlanes = computed(() => colorLayersAt(selectedSong.value?.whol
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
 const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
+const currentBodyColors = computed(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
   if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
   const camera = currentCameraState.value
@@ -1399,6 +1403,7 @@ function applyStageLighting() {
   if (!lightingEnabled.value) {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
     for (const runtime of runtimes.values()) runtime.spine.tint = 0xffffff
+    appliedBodyColors.value = ''
     return
   }
   const screen = currentWholeScreenColor.value
@@ -1451,7 +1456,11 @@ function applyStageLighting() {
           ? mixRgb(character.color, spotlightDimColor, spotlightDim)
           : character.color
     }
+    runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
   }
+  appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
+    .map(([position, runtime]) =>
+    `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
 }
 
 function spotlightStatesAt(milliseconds) {

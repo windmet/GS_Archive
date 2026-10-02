@@ -283,3 +283,27 @@ Browser 使用既有 5198 生产代码预览和资源映射：第一版 22s C.FI
 最终代码构建 `build:check` 14.49s、copyPublicDir:false；当前 96 项 Source Gate 最终通过。首次 `verify:build-audit` 因共享窗口提交后 HEAD 变化失败，保留原失败记录，在 HEAD `abeccf24` 重建后此项复验通过。日志 `chibi-take-logo-source-gates.log`、汇总 `chibi-take-logo-source-gate-final.json`、最终构建/补验 `chibi-take-logo-build-final.log`、`chibi-take-logo-build-audit-final.log`。最终 bundle 首载 Take 02，再定位 26s，图片开关实际 1→0→1，原 S.E.M Logo 恢复；未观察到 console error，既有 Pixi/Spine 弃用告警保留。这些是本地源码门禁及模拟视口验收，未声称 GitHub CI 或媒体发布通过。
 
 角色明暗、地面/观众灯、吊灯、真实设备、相机与完整录像对齐仍未关闭，本轮没有把找到 Sprite 或门禁通过当成整首舞台已完整复刻。
+
+
+## 2026-10-03：逐人身体染色接线与 RAW 全索引复核
+
+输入 HEAD：`9a639371`。保留其他窗口的门户、摄影、故事与主题改动。上一轮推进已落地共用落脚点与 Take ImageObject；本轮继续修复录屏中独唱者明亮、其他角色变暗的缺口。
+
+- 原始命令是 `Livechara_body_color`，不是已接线的 `Livechara_Foot_Color`。按命名字段读取 time、value1（performer slot）、value2（RGB）、value3（0–1000 混色强度）、value4（渐变毫秒）；退场使用 value101/value102。保留负时间初始化，注释命令不执行，无映射目标或非法值报错。
+- 使用既有 `stagePositionMap` 转为左到右舞台位置。Take 两版原始 1 号 performer 在中央 3 号位；第一版 22.15 秒解除中央暗色、25.8 秒解除最右暗色，第二版分别在 22.2 秒解除左侧 2 号位、25.8 秒解除右侧 4 号位。不能直接把原始编号当屏幕顺序。
+- 对全部 118 个已索引 TextAsset 做有界刷新，得到 **1,188 条命令、15 个含逐人染色的曲目／版本**。刷新只改 choreography 的 bodyColorEvents、相应统计和 schemaVersion（13）；其他字段保持完全相同。随后独立经完整 `read_choreography_scripts` 重读同一批 RAW，118 个 performer map 与全部新事件一致。Take 两版各 69 条原始命令及 CAB/pathId/hash 收入源码 fixture。
+- 共用舞台时钟每次重建独立 tint 轨道；渐变被新事件打断时从当前采样颜色继续，hide 淡回白色。与已有灯光颜色相乘，不改变 Spine 透明度。灯光开关关闭时恢复白色，切歌采用新曲事件。此处采用线性 RGB tint 近似，仍不等于原 Unity 材质或局部脚部着色的完整复刻。
+
+Browser：已核实本地 5198 属于固定 build-check 生产代码预览，使用现有资源映射。实际测试桌面 1280×800、竖屏 390×844、横屏 844×390：Take01 中央与最右独唱高亮、Take02 右侧独唱高亮、倒退到 21.3 秒渐变起点、21.4 秒中间态、灯光关／开、切到 Study 后没有 Take Logo／逐人轨道残留。最终构建中连续从 22 秒播放到 1:36，暂停后倒退到 26 秒和 22.4 秒，独唱明暗状态准确重建；浏览器无 error 日志。再检查 FLASH LIGHT 四人编排 17 秒，中央较亮而其他角色有独立 tint，和旧版整体灯光同时合成；该镜头包含原时间轴横向摄像机裁切，不将画面外角色当成丢失资源。
+
+FLASH LIGHT 是第 12 个已查看落脚画面的曲目／版本条目，当前可见角色足点位于台面内；这只证明该帧的台面关系，不证明所有曲目、全曲镜头或原作人物比例已验收。
+
+验证：新增 Python 命名字段／异常拒绝与两版 RAW fixture 回归，Node 独立目标位置／渐变中断／hide／倒退／旧包空字段／颜色合成回归；本地 published-assets 复核 1188 条与 15 个曲目。源码门禁共 97 项；首轮 96 项通过，build-audit 因其他窗口的 src/App.vue 在初次构建后变化而拒绝。重新 `build:check`（14.56 秒、copyPublicDir:false）后 build-audit 通过，原失败日志保留。相关 engineering 回归也已重跑。该门禁快照绑定当时的 dirty HEAD `9a639371`；之后其他窗口提交了 `f0de1db4` 并继续修改故事 UI，因此不能将它当作共享分支当前 HEAD 的干净发布门禁。没有全库资源复制，没有 GitHub CI、设备或线上媒体验收声明。
+
+小型证据均在 `.analysis/engineering-validation-20261002/`：
+
+- `body-colors-raw-receipt.json`、`body-colors-choreography-candidate.json`、`body-colors-choreography-before.json`：RAW 来源绑定、候选与回填前元数据。
+- `chibi-body-colors-source-gate-final.json`、`chibi-body-colors-build-final.log`、`chibi-body-colors-build-audit-final.log`：最终验证及保留的首次失败。
+- `chibi-take-body-central-desktop.png`、`chibi-take-body-right-mobile.png`、`chibi-take02-body-right-centre-landscape.png`、`chibi-flash-body-ground-desktop.png`：实际可见画面。
+
+当前仅刷新本地 choreography JSON；正式媒体包／R2 仍需带上这些事件再验证。`Image_color`、Stagelight、Penlight_unit_color、Searchlight/NewSuspensionlight、原作完整舞台材质／投影与其他尚未查看的背景仍未收口。尤其 Take 背景比录屏亮，不能因角色高亮已正确而标记整个灯光复刻完成。
