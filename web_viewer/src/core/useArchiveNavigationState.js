@@ -46,6 +46,7 @@ export function useArchiveNavigationState() {
   const currentSongScope = ref('all')
   const currentEventId = ref('')
   const currentEntityKey = ref('')
+  const currentCollectionState = ref({kind:'items',category:'',idol:'',unit:'',attribute:'',page:0})
   const currentPhotoIdol = ref('')
   const currentPhotoEntity = ref('')
   const currentGashaId = ref('')
@@ -108,7 +109,7 @@ export function useArchiveNavigationState() {
     return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
-      ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value} : {}),
+      ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value,collection:currentCollectionState.value} : {}),
       ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
@@ -168,6 +169,7 @@ export function useArchiveNavigationState() {
 
   return {
     currentEntityKey,
+    currentCollectionState,
     currentPhotoIdol,
     currentPhotoEntity,
     view,

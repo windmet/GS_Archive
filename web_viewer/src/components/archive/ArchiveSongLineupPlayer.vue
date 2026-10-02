@@ -51,7 +51,7 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
+    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value || session.starting.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
     <details><summary>音轨平衡</summary><div class="lineup-gains">
       <label>
@@ -201,7 +201,7 @@ async function reloadSession() {
 }
 
 async function togglePlayback() {
-  if (session.playing.value) session.pause()
+  if (session.playing.value || session.starting.value) session.pause()
   else { emit('request-play'); await session.play() }
 }
 

@@ -104,6 +104,7 @@ export class StudioCompositionStage {
       alphaMode: spine ? PIXI.ALPHA_MODES.PMA : PIXI.ALPHA_MODES.UNPACK,
       createBaseTexture: (image) => new PIXI.BaseTexture(image),
       createTexture: (base) => new PIXI.Texture(base),
+      releaseFailedBase: (base) => base.destroy(),
     });
   }
   render() {

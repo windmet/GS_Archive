@@ -27,7 +27,7 @@ try {
   const escapedHtml = await renderToString(createSSRApp(InlineText, { text: '<script>alert(1)</script>', locale: 'zh-CN' }))
   assert(escapedHtml.includes('&lt;script&gt;') && !escapedHtml.includes('<script>'), 'Other text is escaped, not executed')
   const producerOnlyHtml = await renderToString(createSSRApp(ControlBar,{producerOnly:true,mode:'bilingual'}))
-  assert.ok(producerOnlyHtml.includes('Producer 显示名') && !producerOnlyHtml.includes('正文语言') && !producerOnlyHtml.includes('阅读主题') && !producerOnlyHtml.includes('篇内查找'),'desktop Producer panel does not duplicate inline reading controls')
+  assert.ok(producerOnlyHtml.includes('P 名字') && !producerOnlyHtml.includes('正文语言') && !producerOnlyHtml.includes('阅读主题') && !producerOnlyHtml.includes('篇内查找'),'desktop Producer panel does not duplicate inline reading controls')
   const branchDoc = JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_03_d.json',import.meta.url)))
   const fork = branchDoc.controls.find(control => control.fork).fork
   const compact = value => value.replace(/\s+/g, '')
@@ -118,10 +118,11 @@ try {
   assert.ok(!fallbackHtml.includes('aria-label="简介语言"'),'unbound directory synopsis has no translation controls')
   const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')
   const eventHtml = await renderToString(createSSRApp(Event, {
-    event: { event_id: 'test', event_code: 'test', title: 'Event', exists: true },
+    view: {identity:{id:'test',eventCode:'test',title:'Event',kind:'theater'},period:{},media:{},provenance:{detailTable:113},rewards:{cards:[],general:[]},cast:[],cards:[],story:{entry:{event_id:'test',event_code:'test',title:'Event',exists:true}},
     episodes: [{ id: 'a', file: 'episodes/a.json', label: 'Ready' }, { id: 'b', file: 'episodes/b.json', label: 'Branch' }],
     readingEntries: [{ document_id: 'a', source_file: 'episodes/a.json', status: 'ready' },
       { document_id: 'b', source_file: 'episodes/b.json', status: 'unsupported' }],
+    },
   }))
   assert.ok(eventHtml.includes('aria-label="阅读 Ready"'))
   assert.ok(!eventHtml.includes('class="event-logo"'), 'promotional banner must not gain a duplicate late-loading logo')
@@ -158,7 +159,7 @@ try {
   const html = await renderToString(createSSRApp(Reader, {
     state: { status: 'ready', entries: [], document }, documentId: document.document_id, mode: 'original', anchor: '',
   }))
-  assert.equal(html.split('播放完整剧情（实验）').length - 1, 1)
+  assert.equal(html.split('播放完整剧情').length - 1, 1)
   assert.ok(!html.includes('从这里演出') && !html.includes('记住此处'))
   assert.ok(!html.includes('role="search"'), 'search starts collapsed')
   for (const row of document.rows) assert.ok(html.includes(`id="reading-${row.anchor.row_id}"`), 'all source row anchors survive')

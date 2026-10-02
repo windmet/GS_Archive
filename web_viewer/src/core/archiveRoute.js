@@ -1,4 +1,6 @@
+import { normalizeCollectionRoute } from './CollectionRouteState.js'
 const ROUTE_QUERY_KEYS = [
+  'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'portal_from',
   'from',
   'reading',
@@ -332,7 +334,7 @@ export function normalizeArchiveRoute(input = {}) {
     song: clean(input.song),
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
-    ...(view==='collection_catalog' ? {entity:/^(item|honor):\d+$/.test(input.entity || '') ? input.entity : ''} : {}),
+    ...(view==='collection_catalog' ? normalizeCollectionRoute(input) : {}),
     ...(['photo_catalog','picture_studio'].includes(view) ? {
       photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
       photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
@@ -605,6 +607,7 @@ export function readArchiveRoute(input = null) {
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
     entity: params.get('entity'),
+    collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
     photoIdol: params.get('photo_idol'),
     photoEntity: params.get('photo'),
     gasha: clean(params.get('gasha')),
@@ -630,6 +633,11 @@ export function buildArchiveUrl(input, route) {
 
   url.searchParams.set('view', normalized.view)
   if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
+  if (normalized.view === 'collection_catalog') {
+    const c = normalized.collection
+    url.searchParams.set('collection_kind', c.kind)
+    for (const key of ['category','idol','unit','attribute','page']) if(c[key]) url.searchParams.set(`collection_${key}`, String(c[key]))
+  }
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
   if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)

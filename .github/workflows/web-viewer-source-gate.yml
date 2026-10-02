@@ -10,6 +10,7 @@ on:
     branches:
       - master
       - codex/gs-architecture-rebuild
+      - codex/event-resource-navigation-20261002
     paths:
       - ".github/workflows/web-viewer-source-gate.yml"
       - "data_pipeline/**"
@@ -55,6 +56,10 @@ jobs:
 
       - name: Verify read-model tools and assembler rejection contracts
         run: npm run test:source --prefix readmodels
+      - name: Verify engineering lifecycle, stage intent and collection route regressions
+        run: npm run verify:engineering
+      - name: Verify expanded editorial and translation contracts (source only)
+        run: npm run verify:editorial-source
 
       - name: Validate route progress ledger against public routes
         run: npm run verify:cutover-routes

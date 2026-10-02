@@ -277,7 +277,9 @@
     "verify:external-publication-off": "node scripts/verify-external-publication-off.mjs",
     "export:song-chart-png": "node scripts/export-song-chart-png.mjs",
     "verify:song-chart-png": "node scripts/verify-song-chart-png.mjs",
-    "verify:song-chart-png:browser": "node scripts/verify-song-chart-png-browser.mjs"
+    "verify:song-chart-png:browser": "node scripts/verify-song-chart-png-browser.mjs",
+    "verify:engineering": "node --experimental-vm-modules scripts/verify-engineering-lifecycle.mjs && node scripts/verify-stage-intent.mjs && node scripts/verify-collection-route.mjs",
+    "verify:editorial-source": "node scripts/verify-event-resource-graph.mjs --source-only && node scripts/verify-gasha-ticket-evidence.mjs && npm run verify:general-translation-workflow && npm run verify:reviewed-b001 && npm run verify:b002-draft"
   },
   "dependencies": {
     "@lucide/vue": "^1.24.0",

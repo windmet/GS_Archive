@@ -20,14 +20,14 @@
       </div>
     </div>
     <div v-if="state.view==='list'" class="dense-results">
-      <button v-for="entry in visible" :key="entry.id" class="result-row" :class="`domain-${entry.domain}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">
+      <button v-for="entry in visible" :key="entry.id" :data-archive-focus-id="`story:${entry.id}`" class="result-row" :class="`domain-${entry.domain}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">
         <span class="row-visual"><img v-if="cover(entry)" :src="cover(entry)" alt="" width="64" height="36" loading="lazy" /><BookOpen v-else :size="22" /></span>
         <span class="row-copy"><span class="row-heading"><small>{{ entry.eventScopeLabel||entry.domainLabel }}</small><strong><template v-for="(part,i) in titleParts(entry.title)" :key="i"><mark v-if="part.hit">{{ part.text }}</mark><template v-else>{{ part.text }}</template></template></strong></span><span class="row-description" :title="description(entry)">{{ description(entry) }}</span></span>
         <span class="row-cast" :aria-label="castNames(entry)"><img v-for="code in cast(entry).slice(0,4)" :key="code" :src="getCharaIconUrl(code)" :alt="idolName(code)" :title="idolName(code)" width="24" height="24" loading="lazy" /><small v-if="cast(entry).length>4">+{{ cast(entry).length-4 }}</small></span>
         <span class="row-language" :class="language(entry)">{{ languageLabel(entry) }}</span><span class="read-action">{{ entry.exists?'阅读':'未收录' }}<ArrowRight :size="15" /></span>
       </button>
     </div>
-    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ entry.sectionLabel }} {{ entry.episodeLabel }}</small></td><td><button :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ entry.title }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${entry.title}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
+    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ entry.sectionLabel }} {{ entry.episodeLabel }}</small></td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ entry.title }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${entry.title}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
     <p v-if="!filtered.length" class="empty-results">没有符合条件的剧情。</p>
     <nav class="result-pagination" aria-label="检索结果分页"><button :disabled="page===1" @click="page--">上一页</button><span>{{ page }} / {{ pages }}</span><button :disabled="page===pages" @click="page++">下一页</button></nav>
   </section>

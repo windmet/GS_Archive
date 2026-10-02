@@ -10,7 +10,7 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const cards = [...buildCardMap(read('../public/data/masterdata/card_index.json')).values()]
 const translations=read('../public/translations/zh-CN/archive-general/cards.json').entries
 const titleSearchText=source=>`${source} ${archiveGeneralText(translations,'card',source,'title')}`
-assert.deepEqual(filterArchiveCards(cards,{query:'映在眼眸中的远方',titleSearchText}).map(card=>card.resource_id),['001tom_ssr01'])
+assert.deepEqual(filterArchiveCards(cards,{query:archiveGeneralText(translations,'card','瞳に映るその先に','title'),titleSearchText}).map(card=>card.resource_id),['001tom_ssr01'])
 assert.deepEqual(filterArchiveCards(cards,{query:'瞳に映るその先に',titleSearchText}).map(card=>card.resource_id),['001tom_ssr01'])
 const manifest = read('../public/data/archive_manifest.json')
 const gasha = read('../public/data/masterdata/gasha_index.json')

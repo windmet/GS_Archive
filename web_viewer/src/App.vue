@@ -214,8 +214,8 @@
 
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
-      <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :query="filterQuery"
-        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
+      <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
+        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
 
@@ -767,6 +767,7 @@ const {
   currentSongScope,
   currentEventId,
   currentEntityKey,
+  currentCollectionState,
   currentPhotoIdol,
   currentPhotoEntity,
   currentGashaId,
@@ -1717,6 +1718,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
     currentEntityKey.value = route.entity || ''
+    currentCollectionState.value = route.collection || {kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
     currentPhotoIdol.value = route.photoIdol || ''
     currentPhotoEntity.value = route.photoEntity || ''
     eventParentView.value = route.parentView || ''
@@ -1879,15 +1881,22 @@ function navigateArchiveSection(section) {
 }
 
 function openDomainCatalog(section) {
+  currentCollectionState.value={kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
   commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
 }
 function openCollectionEntity(key) {
+  if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
   if (!/^(item|honor):\d+$/.test(key || '')) return
-  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value=''}
+  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value='';currentCollectionState.value={kind:key.startsWith('honor:')?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}}
   currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
   commitView('collection_catalog')
+}
+function updateCollectionBrowse(next) {
+  if(next.kind!==currentCollectionState.value.kind){currentEntityKey.value='';filterQuery.value=''}
+  currentCollectionState.value=next
+  syncArchiveRoute({replace:true})
 }
 function selectPhotoIdol(id) {
   if (!/^\d{1,4}$/.test(String(id))) return

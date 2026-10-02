@@ -6,6 +6,7 @@ import path from 'node:path'
 import {createArchiveAssetResolver} from './lib/archive-assets.mjs'
 import {eventResources,storyEventResources} from '../src/data/eventResourceGraph.js'
 const root=fileURLToPath(new URL('../',import.meta.url)),assets=createArchiveAssetResolver()
+const sourceOnly=process.argv.includes('--source-only')
 const json=async relative=>JSON.parse(await readFile(path.join(root,relative),'utf8'))
 const graph=await json('public/data/editorial/event-resource-graph.json')
 const events=(await json('public/data/masterdata/domains/event_supplement_index.json')).entries
@@ -25,6 +26,8 @@ for(const event of graph.events){
   assert.equal(event.endAt,raw.term.closeAt)
   assert.ok(event.hero,`Missing hero ${event.id}`)
   for(const binding of [event.hero,event.thumbnail,event.storyCover,...(event.exchangeRewards?.cards || []).map(card=>card.image)].filter(Boolean)){
+    assert.match(binding.sha256,/^[a-f0-9]{64}$/);assert(binding.width>0&&binding.height>0)
+    if(sourceOnly)continue
     const file=binding.url.startsWith('/assets/domain-images/')?assets.domainImagePath(binding.url.slice('/assets/domain-images/'.length)):path.join(root,'public',binding.url)
     const bytes=await readFile(file)
     assert.equal(createHash('sha256').update(bytes).digest('hex'),binding.sha256)
@@ -81,4 +84,4 @@ assert.equal(reprint.heroRole,'original-announcement')
 assert.equal(reprint.hero.url,original.hero.url)
 assert.notEqual(reprint.thumbnail.url,original.thumbnail.url)
 assert.notEqual(reprint.startAt,original.startAt)
-console.log(`Event resource graph: ${events.length} identities, ${graph.summary.heroes} verified heroes, ${graph.summary.thumbnails} verified thumbnails; no temporal gasha joins; stale identities and dates rejected`)
+console.log(`Event resource graph: ${events.length} identities; ${sourceOnly?'source-bound descriptors; media bytes not checked':'hero and thumbnail bytes/dimensions verified'}; no temporal gasha joins; stale identities and dates rejected`)

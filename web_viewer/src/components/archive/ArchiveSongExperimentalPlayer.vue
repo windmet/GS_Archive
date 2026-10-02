@@ -185,7 +185,7 @@ const syncLabel = computed(() => {
 })
 const transportCurrentTime = computed(() => mode.value === 'solo' ? soloSession.currentTime.value : currentTime.value)
 const transportDuration = computed(() => mode.value === 'solo' ? soloSession.duration.value : duration.value)
-const transportPlaying = computed(() => mode.value === 'solo' ? soloSession.playing.value : isPlaying.value)
+const transportPlaying = computed(() => mode.value === 'solo' ? soloSession.playing.value || soloSession.starting.value : isPlaying.value)
 const transportReady = computed(() => mode.value === 'solo'
   ? soloSession.ready.value
   : Boolean(currentSingleTrack.value?.url))
@@ -210,7 +210,7 @@ async function togglePlayback() {
   if (!transportPlaying.value) emit('request-play')
   audioError.value = ''
   if (mode.value === 'solo') {
-    if (soloSession.playing.value) soloSession.pause()
+    if (soloSession.playing.value || soloSession.starting.value) soloSession.pause()
     else if (!await soloSession.play()) audioError.value = soloSession.error.value
     return
   }

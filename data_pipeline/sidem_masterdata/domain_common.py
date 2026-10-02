@@ -75,4 +75,3 @@ def term_info(term: dict | None) -> dict | None:
 
 def envelope(kind: str, data: Any, source: dict, **extra: Any) -> dict:
     return {'schemaVersion': 1, 'kind': kind, 'source': source, **extra, **data}
-
