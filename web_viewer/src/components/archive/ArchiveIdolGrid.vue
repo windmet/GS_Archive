@@ -90,5 +90,7 @@ button:focus-visible,select:focus-visible{outline:2px solid #168b83;outline-offs
  .unit-rail{padding-inline:10px;scrollbar-width:none;}.idol-sections{padding:10px;gap:12px;}.idol-unit-section{padding:10px;}
  .idol-unit-heading{gap:7px;}.idol-unit-heading>img{width:54px;height:28px;}.idol-unit-heading strong{font-size:12px;}.idol-unit-heading button{font-size:11px;}
  .idol-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;}.idol-card{min-height:60px;padding:5px;gap:6px;}.idol-avatar{--idol-avatar-override-size:38px;}.idol-name{font-size:12px;}
+ .is-roster .idol-card:only-child{grid-column:1/-1;}
+ .is-roster .idol-name{white-space:normal;overflow-wrap:anywhere;}
 }
 </style>

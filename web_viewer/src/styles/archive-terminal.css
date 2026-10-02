@@ -115,7 +115,7 @@
 .terminal-wallpaper-grid strong { font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .terminal-wallpaper-grid small { font-size: 10px; color: var(--terminal-muted); line-height: 1.5; }
 @media (hover: hover) and (pointer: fine) { .terminal-app:hover .terminal-app-face { transform: translateY(-2px); } .terminal-mode:hover { border-color: var(--mode-color); } }
-@media (min-width: 901px) and (max-width: 1150px) { .terminal-scroll { padding: 18px; } .terminal-panel { width: 47%; min-width: 340px; padding-inline: 20px; } .terminal-art-caption strong { font-size: 23px; } }
+@media (min-width: 901px) and (max-width: 1150px) { .terminal-scroll { padding: max(18px, var(--terminal-safe-top)) max(18px, var(--terminal-safe-right)) 18px max(18px, var(--terminal-safe-left)); } .terminal-panel { width: 47%; min-width: 340px; padding-inline: 20px; } .terminal-art-caption strong { font-size: 23px; } }
 @media (min-width: 901px) and (orientation: landscape), (min-width: 1101px) {
   /* Reserve a readable art window beside the work panel; avoid hiding faces behind it. */
   .has-wallpaper .terminal-backdrop picture { padding-left: min(480px, 40%); }
