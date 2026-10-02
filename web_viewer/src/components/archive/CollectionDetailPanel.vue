@@ -49,3 +49,26 @@ function cycleFocus(event){
   else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first?.focus()}
 }
 </script>
+<style scoped>
+.collection-inspector {
+  font-family: var(--gs-font-directory, Inter, 'Noto Sans JP', 'Noto Sans SC', system-ui, sans-serif);
+  font-size: var(--gs-text-body, 14px);
+  font-weight: var(--gs-weight-regular, 400);
+}
+.collection-inspector-header h2 { font-weight: var(--gs-weight-bold, 700); }
+.collection-inspector-body :deep(.domain-panel > h3) {
+  font-size: var(--gs-text-section, 18px);
+  font-weight: var(--gs-weight-bold, 700);
+}
+.collection-inspector-body :deep(.collection-entry-details .domain-detail-title h3) {
+  font-size: var(--gs-text-title, 22px);
+  font-weight: var(--gs-weight-bold, 700);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.collection-inspector-body :deep(.domain-description) { font-size: var(--gs-text-body, 14px); }
+.collection-inspector-body :deep(.domain-meta),
+.collection-inspector-body :deep(.collection-source-meta),
+.collection-inspector-body :deep(.collection-original),
+.collection-inspector-body :deep(.domain-media-preview figcaption) { font-size: var(--gs-text-meta, 12px); }
+</style>

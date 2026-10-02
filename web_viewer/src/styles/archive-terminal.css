@@ -102,7 +102,15 @@
 .terminal-picker-actions > label { width: 100%; min-height: 36px; font-size: 13px; display: flex; align-items: center; gap: 6px; }
 .terminal-picker-summary { width: 100%; margin: 0; font-size: 14px; font-weight: 700; line-height: 1.5; }
 .terminal-picker-summary small { display: block; font-size: 11px; font-weight: 400; color: var(--terminal-muted); }
-.terminal-dialog { --dialog-block-gap: max(24px, var(--terminal-safe-top), var(--terminal-safe-bottom)); --dialog-inline-gap: max(16px, var(--terminal-safe-left), var(--terminal-safe-right)); color: var(--terminal-ink); font-family: var(--terminal-font); background: #f7faff; border: 1px solid #c8dce7; border-top: 4px solid var(--terminal-green-bright); border-radius: 10px; padding: 0; width: min(720px, calc(100% - var(--dialog-inline-gap) - var(--dialog-inline-gap))); max-height: calc(100% - var(--dialog-block-gap) - var(--dialog-block-gap)); overflow: hidden; box-shadow: 0 20px 70px #10273750; }
+.terminal-dialog {
+  --terminal-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
+  --terminal-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
+  --terminal-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
+  --terminal-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
+  --terminal-font: var(--gs-font-portal, Inter, 'Noto Sans SC', 'Noto Sans JP', system-ui, sans-serif);
+  --terminal-ink: var(--gs-color-ink, #152b43);
+  --terminal-green-bright: var(--gs-color-accent-bright, #00c992);
+  --dialog-block-gap: max(24px, var(--terminal-safe-top), var(--terminal-safe-bottom)); --dialog-inline-gap: max(16px, var(--terminal-safe-left), var(--terminal-safe-right)); color: var(--terminal-ink); font-family: var(--terminal-font); background: #f7faff; border: 1px solid #c8dce7; border-top: 4px solid var(--terminal-green-bright); border-radius: 10px; padding: 0; width: min(var(--gs-surface-selector-width, 720px), calc(100% - var(--dialog-inline-gap) - var(--dialog-inline-gap))); max-height: calc(100% - var(--dialog-block-gap) - var(--dialog-block-gap)); overflow: hidden; box-shadow: 0 20px 70px #10273750; }
 .terminal-dialog[open] { display: flex; flex-direction: column; }
 .terminal-dialog::backdrop { background: #10243980; }
 .terminal-dialog-header { display: flex; align-items: center; gap: 16px; padding: 12px 18px; background: #fff; border-bottom: 1px solid #d5e3ec; flex: 0 0 auto; }
