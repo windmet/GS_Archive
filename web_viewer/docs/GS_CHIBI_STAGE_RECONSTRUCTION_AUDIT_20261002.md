@@ -487,3 +487,15 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 下一轮证据线索：直接解析 metadata 的 MethodDefinition／ParameterDefinition，并通过 byvalTypeIndex 关联 TypeDefinition，Spotlight 与 Pinspotlight 的 `Show` 都接收 `System.Int32 targetCharaIndex`、`UnityEngine.Vector3 scriptPos`、`System.Single moveDuration`。这证明 scriptPos 为三维向量，**未证明 CSV 具体哪一列对应 Y 或 duration**。现有派生索引 1,414 条 show、547 条自由灯中，争议列（目前名为 duration）分别有 505 个 10000、40 个 99999、一个 0、一个 1；多数非零目标的该列为 0。这是离场坐标解释的重要候选，仍应精确重读 RAW 并对照录屏。方法类型、metadata／索引 SHA、统计与证据边界保存在 `study-reference/spotlight-coordinate-candidate.json`；本轮未据此修改字段映射。
 
 提交 `2800eae307c43f961a9ea9178df0946892508e92` 已推送；完整 [Source Gate 37072347273](https://github.com/windmet/GS_Archive/actions/runs/37072347273) 在此确切代码 revision **成功，113 个步骤成功、无失败**，包含新增 Camera 控制／实际 SFC sampler 回归、已有 Penlight 回归与 source-only 编译。之后的验收记录提交是文档更新，不借此宣称全媒体发布、真实手机、全曲光效或最初 master PR 目标完成。
+
+## 2026-10-03：Study 未关联聚光的虚构台前坐标清理
+
+复查 118 份精确索引到 RAW 的编排 TextAsset，逐条以 time＋lamp id 对齐 Spotlight：共 2,338 条（1,414 show／924 hide）；hide 标记与既有索引一致。547 条 show 没有角色站位关联，其中 value4 为 10000 的 505 条、99999 的 40 条，0／空值各 1 条。原始身份、bundle／TextAsset SHA 与全量统计保存在 `study-reference/spotlight-raw-census.json`；四首精确行和原解析事件保存在 tracked `scripts/fixtures/chibi-spotlight-timeline.json`。没有重写编排索引、卡牌或其他 UI 数据。
+
+最初怀疑 value4 是 Y 而被读成 duration；复核发现部分有角色目标的指令同样使用 10000，且 native `Show(targetCharaIndex, scriptPos, moveDuration)` 类型签名不能证明 CSV 到 Vector3 的具体映射。因此 **不把这一字段改成 Y、不增加臆测退场时长**。仍保留既有 duration；自由位置／移动语义待解，当前不能称为 native 坐标复刻。
+
+实际可确认的问题在渲染端：此前无 stagePosition 的指令一律补 `{x: event.x, y: 180}`，并继续显示先前绑定的 runtime。这在 Study 17.6 秒增加了中央黄色池，32.1 秒把旧灯光移到右侧与 32.15 秒新灯重复叠加。现在仅为已解析角色关联绘制双原生纹理；清除关联的 runtime 当帧隐藏，未关联灯仍参与原有环境状态，几何不臆造。新增 `data-spotlight-unresolved-ids` 保留未解析灯的可观察证据；visible ids/count 只计已安装并显示的 sprite，而不是包含未关联／资源未就绪的指令数。**这是一项明确的降级与去伪影修复，不证明所有 target=0 指令在原客户端都不可见。**
+
+本地验证：新 `verify-chibi-spotlight-targets.mjs` 执行实际 SFC sampler、target resolver 和 synchronizer，覆盖 RAW time/id、字段保留、20.5→32.5 秒旧灯清退、回退重建、开关、原始 hide、资源缺失计数和释放；既有 native prefab／async textures／Camera reset 回归通过。`npm run build:check` 2,778 modules／11.76 秒，通过、无 public corpus copy。
+
+实际 5198 Browser：S.E.M 2/3/4、005_00，1440×900 32.5 秒为灯 3，unresolved 1/2；画面只剩右侧黄色束，与音频对齐录屏该段的单人聚光一致，中央与重复池消失。390×844 同段 canvas CSS 357×201、backing 714×402，document scrollWidth=clientWidth=390；关闭灯效后回退 13.7 秒全隐藏，打开后恢复 20/21/22 三人粉色聚光。切换 Take 01／02 的 40 秒无 Study 残留（两首原 RAW 没有 Spotlight 指令，此处只验切歌清理）；ANYWHERE 11.4 秒为 1/3 两束白灯，旧 2 未关联并隐藏。console error 空。截图 `spotlight-unbound-before-032.500.png`、`spotlight-unbound-after-032.500.png`、`spotlight-unbound-mobile-032.500.png`、`spotlight-unbound-mobile-off.png`、`spotlight-unbound-mobile-013.700.png`、`spotlight-unbound-anywhere-011.400.png`。窄屏模拟不能代替实体手机；Take 的录屏精确光效、Study 动作相位、call 棒、粒子与自由灯光语义仍未完整验收。
