@@ -1,11 +1,11 @@
 <template>
   <section class="story-catalog" data-archive-scroll-container>
-    <div class="catalog-switcher" role="tablist" aria-label="故事浏览方式">
-      <button :class="{ active: mode === 'portal' }" @click="emit('update:mode', 'portal')">
+    <div class="catalog-switcher" role="group" aria-label="故事浏览方式">
+      <button :class="{ active: mode === 'portal' }" :aria-pressed="mode === 'portal'" @click="emit('update:mode', 'portal')">
         <LayoutGrid :size="16" />
         <span>分类入口</span>
       </button>
-      <button :class="{ active: mode === 'search' }" @click="emit('update:mode', 'search')">
+      <button :class="{ active: mode === 'search' }" :aria-pressed="mode === 'search'" @click="emit('update:mode', 'search')">
         <Search :size="16" />
         <span>全部检索</span>
       </button>
@@ -459,10 +459,10 @@ function formatExtraDate(timestamp) {
 .main-domain-collections { padding: 28px max(24px, calc((100% - 1120px) / 2)) 40px; }
 .main-domain-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
 .main-domain-card { display: grid; grid-template-rows: 155px minmax(104px,auto) 38px; overflow: hidden; padding: 0; border: 1px solid #d8e0e2; border-radius: 7px; background: #fff; color: #293840; cursor: pointer; font: inherit; text-align: left; }
-.main-domain-card:hover { border-color: #5db7b0; box-shadow: 0 7px 22px rgba(28,66,66,.11); transform: translateY(-1px); }
+.main-domain-card:hover { border-color: #5db7b0; box-shadow: 0 7px 22px rgba(28,66,66,.11); }
 .main-domain-card:focus-visible { outline: 3px solid rgba(21,151,142,.35); outline-offset: 2px; }
 .main-domain-card:disabled { cursor: not-allowed; opacity: .72; }
-.main-domain-card:disabled:hover { border-color: #d8e0e2; box-shadow: none; transform: none; }
+.main-domain-card:disabled:hover { border-color: #d8e0e2; box-shadow: none; }
 .main-domain-visual { display: grid; place-items: center; overflow: hidden; background: #172126; color: rgba(255,255,255,.5); font-size: 2rem; font-weight: 800; letter-spacing: .08em; }
 .main-domain-visual img { width: 100%; height: 100%; object-fit: cover; }
 .main-domain-copy { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 12px; }
