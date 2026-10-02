@@ -411,3 +411,17 @@ Study 对照继续使用第二录屏与已验证的音频起点偏移。新增�
 直接重读 `song_steqmg.unity3d` 的 `steqmg_live_effect` 命名列：17s 确实给三名 performer 下发 20012、speed=800，注释是“横に手を出して戻す（手のひら上向き）”；不是解析器误读成另一个动作。13–21s 原始行／CAB／pathID／包与 payload SHA256 保存在 `study-reference/raw-motion-segment.json`。实际 body-1 的 14010 和 20012 主段与循环段都是 1.5s（`motion-duration-witness.json`）。iOS metadata 字段默认值另确认 `LiveObjectIdol.MeasureAnimTime=1.5`、`MotionRandomDelayMax≈0.05`，以及 ColorPlaceType None=0、Random=1、Equally=2；字段索引、字节偏移、原始字节及 metadata SHA256 保存在 `native-motion-color-constants.json`。metadata 没有方法体，**不足以确定 get_baseTimeScale／PlayMotionInner 的计算公式或 Android 行为**。当前 speed/1000 换算、动画主段／循环选择与录像版本差异仍需核对，未凭这两个常量全局反转 speed 或偏移 CSV。
 
 本批新增工具没有前端接线，Browser 是对已存在 40ea551a 生产代码预览的诊断，模拟桌面并非真实设备验收；结束恢复默认视口。完整 Study／Take 光效、call 棒、遮罩、舞台装置与全曲动作仍待收口。门禁、master PR 与最初 UI／审计目标也未由此次工具回归自动验收。
+
+### Study 原动作逐相位核对：排除大倍率假设（2026-10-03）
+
+输入 HEAD：9cbd1909。只修改诊断工具与此记录，未改播放器倍率、编排时点或渲染代码；其他窗口的目录接线工作保持独立。
+
+`inspect-live-chibi-motion.mjs --pose` 读取实际 setup 的字符串表和指定 motion 中指定动画序号，输出骨骼世界坐标及当前附件身份。receipt 包含实际消费字节的 setup／motion SHA256、路径、动画序号及诊断 skin；明确标为 `native_pose_samples_not_player_or_render_acceptance`。坐标未经播放器缩放、镜头和服装渲染，不可直接作为画面像素验收。每个时间点新建 Skeleton：回归确实暴露了仅 setToSetupPose 后重复采样时部分原生约束的世界变换残留，因此不复用上一采样骨架。
+
+本地 RAW 回归 `node scripts/verify-chibi-native-pose-samples.mjs` 通过 15 项：body-1／body-2 的 20012 主段伸手、换向、收回，循环段持姿，重复乱序采样一致，来源哈希吻合，以及空参数、非整数身份／动画序号、NaN、Infinity、负值／越界时间和超过 100 次采样拒绝。非法输入不会输出看似成功的 receipt。需要已有 prepared native assets，**没有加入缺少媒体的 Source Gate，也未把它称作 CI／实际渲染验收**。既有时长汇总与 transition CLI 另实际执行通过。纯独立工具按构建政策不机械运行 Vite。
+
+`study-reference/motion-phase-witness/` 新增 16 张音频对齐录屏帧、receipt 和 contact.jpg：7／7.4／8／8.6、15.3／15.7／16.1／16.5、17.2／17.4／17.8／18.2／18.6／19／19.4／19.8 秒。两段独立音频配准仍为 4.7275／4.73175s，差 0.00425s。录屏在 17.4s 尚收手、17.8s 向右伸手、18.2／18.6s 向左伸手、19s 收回，说明上一批 18s 单张差异不能推广成整段动作完全错误。
+
+原始 `steqmg_fumen` 另确认只有一个 tempo conductor：tick=0、164 BPM、4/4；bundle／TextAsset pathID／payload SHA256 保存在 `source-tempo-witness.json`。仅凭 MeasureAnimTime=1.5 与 BPM 推测 `1.5 × BPM / 60` 会得到 4.1；再乘 raw speed=0.8，20012 主段会在约 17.457s 完成、进入持姿循环，与录屏 17.8／18.6s 仍伸手相矛盾。**这个缺四倍倍率的假设被排除，没有接入全库**。更小的相位差、原生 baseTimeScale 公式和录像版本仍未确定。
+
+实际 Browser：复用 5198 的既有 build-check bundle／public 映射，Study S.E.M 编队定位 18200ms，1440×900 定格为向左伸手，与录屏 18.2s 的方向一致。证据 `motion-phase-witness/browser-desktop-018.200.png`；不是服装、灯光、比例或全曲逐帧通过声明。Android lib 的段表和 metadata 为受保护输入、没有可直接可信映射的方法体；iOS UnityFramework 既有 cryptid=1 边界未突破，不把元数据名称当原生公式。完整动作／光效与最初门禁／PR 工作继续待验收。
