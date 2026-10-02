@@ -2,6 +2,8 @@
 
 2026-10-03。输入 HEAD `89f61110`；上一轮主门户/UI 审计截止 `89278976`。本轮先迁移 Portal、StoryDiscovery、Collection 目录与 CollectionDetailPanel，后续各域按相同角色逐步迁移。Chibi、Reader 正文与 Player HUD 不在本轮迁移范围。
 
+第二批目录迁移以`d0b6fc24`为基线，已接入Shell搜索、人物/组合、歌曲和活动目录。具体Before/After、Browser旅程与剩余行为问题见[目录基础验收](GS_UI_DIRECTORY_FOUNDATION_ACCEPTANCE_20261003.md)。人物和歌曲详情本体仍保留原规则，不能因入口已验收就称为详情全域验收。
+
 ## 基础语法与页面性格
 
 基础定义见 [GS_UI_TOKENS.css](../src/styles/GS_UI_TOKENS.css)。该文件只声明变量，不全局重置 `h1`、按钮或输入；组件选择适合自己的角色。新 UI 先选择角色，再选择尺度。现有数值不因不在尺度中就自动成为缺陷。
@@ -88,4 +90,4 @@
 
 日常代码验证使用 `npm run build:check`，固定 `.analysis/build-check`，不复制public。Browser必须核实代码bundle、资源映射与真实旅程；截图/小日志保存在本checkout `.analysis/ui-foundation-20261003`。详细结果见 [本轮验收](GS_UI_FOUNDATION_ACCEPTANCE_20261003.md)。每批显式stage、commit/push，保留其他窗口工作。
 
-后续顺序：①用户选择详情密度后迁移Dialog M；②Story/Collection控制条再比较实际密度，必要时探索；③按域迁移人物/歌曲/活动目录；④单独规划QuickView/Solo安全区与行为差异、完整URL筛选恢复。每域必须重新看真实内容，不能靠批量px替换完成迁移。
+后续：①用户选择详情密度后迁移Dialog M；②继续处理目录审计发现的重复页面身份、加载时未知统计与焦点反馈；③按域迁移卡池/摄影等剩余目录与详情；④单独规划QuickView/Solo安全区与行为差异、完整URL筛选恢复。每域必须重新看真实内容，不能靠批量px替换完成迁移。
