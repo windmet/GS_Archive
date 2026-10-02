@@ -45,3 +45,7 @@ E 盘打包前可用 496,443,641,856 B；实际包 `.deploy/locale-audit-preview
 Downloads 校对 ZIP：244 文件 / 2,091,807 B，60 inputs / 60 maps / 60 templates / 60 旧译对照，另附 plan、glossary、README 和完整流程。没有包含假回传或假批准。本轮旧修复指南同步更新，历史指导原文保留。
 
 播放器菜单补验：从 Reader 的日文模式进入 Player，菜单 UI 由日文切中文后，正文仍为 JP，P 名字仍 windmet，画面仍显示 windmetP。同时修正语言组件外层 label 对第一个按钮可访问名称的意外覆盖，改为普通布局容器，中文按钮恢复自身文字名称。截图 player-locale-menu.png。
+
+最终补修代码 `c6e4ec3548accd8233e293d3043038380a73acf9` 已推送并重新 Browser 验收：Player 两个按钮为「中文 译 / 日本語 原」，中日菜单双向切换，正文 JP / windmet 保留。committed build-check 2,732 模块 / 12.69s，入口 gzip 130,930 B，sourceDirty=false，sourceDigest `313b08c3a7bff06672ec900dc77a315b64308f99a82f3e4990637ad20fd899e6`。这次重建由实际可访问性修复触发。
+
+最终固定地址 [fc8c1bb0](https://fc8c1bb0.gs-archive-preview.pages.dev/?view=archive_status)，同一测试分支；包 `.deploy/locale-audit-preview-c6e4ec35` 为 10,324 文件 / 126,204,941 B。11 个关键文件（额外含 Player JS/CSS）在线 size/hash 均与 manifest 一致，最终 Browser 当前资源页再次显示正确数量、翻译批次与历史边界。截图 online-resource-audit-final.png。前一 d5f0be9e 是同批补修前的完整资料页验收，不冒称重复全部旅程；真实 iPad 和冷缓存边界不变。
