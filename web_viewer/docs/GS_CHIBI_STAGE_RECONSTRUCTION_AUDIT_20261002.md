@@ -499,3 +499,7 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 本地验证：新 `verify-chibi-spotlight-targets.mjs` 执行实际 SFC sampler、target resolver 和 synchronizer，覆盖 RAW time/id、字段保留、20.5→32.5 秒旧灯清退、回退重建、开关、原始 hide、资源缺失计数和释放；既有 native prefab／async textures／Camera reset 回归通过。`npm run build:check` 2,778 modules／11.76 秒，通过、无 public corpus copy。
 
 实际 5198 Browser：S.E.M 2/3/4、005_00，1440×900 32.5 秒为灯 3，unresolved 1/2；画面只剩右侧黄色束，与音频对齐录屏该段的单人聚光一致，中央与重复池消失。390×844 同段 canvas CSS 357×201、backing 714×402，document scrollWidth=clientWidth=390；关闭灯效后回退 13.7 秒全隐藏，打开后恢复 20/21/22 三人粉色聚光。切换 Take 01／02 的 40 秒无 Study 残留（两首原 RAW 没有 Spotlight 指令，此处只验切歌清理）；ANYWHERE 11.4 秒为 1/3 两束白灯，旧 2 未关联并隐藏。console error 空。截图 `spotlight-unbound-before-032.500.png`、`spotlight-unbound-after-032.500.png`、`spotlight-unbound-mobile-032.500.png`、`spotlight-unbound-mobile-off.png`、`spotlight-unbound-mobile-013.700.png`、`spotlight-unbound-anywhere-011.400.png`。窄屏模拟不能代替实体手机；Take 的录屏精确光效、Study 动作相位、call 棒、粒子与自由灯光语义仍未完整验收。
+
+本批代码 `bb35d2ad1219d27bce468b035602a424e4c5a3ce` 的完整 Source Gate 已终态 success，114 个成功步骤、无失败；[run 37076345523](https://github.com/windmet/GS_Archive/actions/runs/37076345523)。新增 target 清退回归与原生双纹理绑定／异步释放在门禁同一步执行。此结论绑定该代码提交；后续文档提交不扩大视觉验收范围。
+
+下一层证据：`study-reference/spotlight-type-contracts.json` 精确记录同一 iOS metadata 的类型契约，确认 `SpotlightBackground` 独立于灯束，持有 `_spriteRenderer`、`_maskSystem`、`_targetAlpha`，提供 showingCount、SetColor、UpdateIfNeeded、Show／Hide／Clear。这说明后续环境压暗／遮罩应从原生背景组件链路继续查，不能用当前角色 tint 近似冒充原生背景遮罩；metadata 不包含可验证的 native 方法体，具体公式仍未证明。
