@@ -1,5 +1,14 @@
 import { ArtifactWriter, assert, entityKey, pick, stripEvidence, jsonBytes } from './common.mjs';
 
+/** Directory identity comes from the same confirmed mapping and idol references as song detail. */
+export function projectSongPerformance(song, view) {
+  return {
+    scope: song.performance_mapping?.performer_scope || '',
+    unitName: song.performance_mapping?.confirmed_unit?.unit_name || '',
+    performers: (view?.performers || []).map(entry => pick(entry, ['id', 'displayName'])),
+  };
+}
+
 /** Pure-projection output consumes existing checkout selectors; it never reinterprets RAW commands. */
 export async function writeReadModels(root, release, product, provenance = {}) {
   const writer = new ArtifactWriter(root, release);
@@ -85,6 +94,7 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       experimental: product.experimental?.[song.song_code] || null });
     if (song.variant_kind !== 'primary') continue;
     songRows.push({ ...pick(song, ['song_code','title','kana','credits','song_id','audio_form','jacket_url','variant_kind']),
+      performance: projectSongPerformance(song, product.songViews?.[song.song_code]),
       movies: (song.movies || []).map(m => pick(m, ['kind'])),
       variants: (song.variants || []).map(v => pick(v, ['song_code','title','archive_status'])), detail: descriptor });
   }

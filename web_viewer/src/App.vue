@@ -8,7 +8,7 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
-      :compact-mobile="view === 'story_catalog' || view === 'story_collection'"
+      :compact-mobile="view === 'story_catalog' || view === 'story_collection' || view === 'song_catalog'"
       :immersive-tool="view === 'song_detail'"
       :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
@@ -175,6 +175,8 @@
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
         :catalog="songReadModelCatalog"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :status="songReadModelStatus"
         :scope="currentSongScope"
         :query="filterQuery"
