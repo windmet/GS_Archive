@@ -114,6 +114,8 @@ jobs:
 
       - name: Verify independently addressed chibi performer colors
         run: npm run verify:chibi-body-colors
+      - name: Verify authored chibi image color timelines
+        run: npm run verify:chibi-image-colors
 
       - name: Verify chibi ground registration across viewport sizes
         run: npm run verify:chibi-stage-coordinates

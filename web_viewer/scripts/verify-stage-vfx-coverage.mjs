@@ -9,6 +9,8 @@ const indexes = {
   imageLayers: json('image-layers/index.json'),
   objectLayers: json('object-layers/index.json'),
   stageEffects: json('stage-effects/index.json'),
+  stageBackgrounds: json('stage-backgrounds/index.json'),
+  imageObjects: json('image-objects/index.json'),
 }
 const coverages = songs.map(song => buildStageVfxCoverage(song, indexes))
 assert.equal(coverages.length, 118)

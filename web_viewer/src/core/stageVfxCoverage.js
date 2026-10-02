@@ -19,6 +19,11 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const imageObjectAssets = uniqueAssets(imageObjectEvents, 'asset')
   const pinspotlightAssets = uniqueAssets(song.pinspotlightEvents, 'asset')
   const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
+  const unresolvedImageColors = (song.imageColorEvents || []).filter(event => event.unresolvedReason)
+  const imageColorAssets = uniqueAssets((song.imageColorEvents || []).filter(event => !event.unresolvedReason), 'asset')
+  const staticAssets = indexes.stageBackgrounds?.songs?.[song.songCode]?.layers || []
+  const imageColorMissing = imageColorAssets.filter(asset => !staticAssets.includes(asset)
+    && !indexes.imageLayers?.assets?.[asset] && !indexes.imageObjects?.assets?.[asset])
   const missingMedia = [
     ...backmonitorAssets.filter(asset => !indexes.backmonitor?.assets?.[asset]),
     ...imageAssets.filter(asset => !indexes.imageLayers?.assets?.[asset]),
@@ -35,6 +40,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       objectLayer: song.objectLayerEvents?.length || 0,
       characterLight: song.characterLightEvents?.length || 0,
       bodyColor: song.bodyColorEvents?.length || 0,
+      imageColor: song.imageColorEvents?.length || 0,
       wholeScreenColorLayer: song.wholeScreenColorLayerEvents?.length || 0,
       spotlight: song.spotlightEvents?.length || 0,
       pinspotlight: song.pinspotlightEvents?.length || 0,
@@ -49,7 +55,9 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectOther,
     missingMedia,
     unresolvedColorPlanes,
-    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length
+    unresolvedImageColors,
+    imageColorMissing,
+    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length
       ? 'partial'
       : 'source_mapped_unverified',
   }

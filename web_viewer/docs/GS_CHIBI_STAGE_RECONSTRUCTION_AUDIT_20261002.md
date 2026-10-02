@@ -307,3 +307,19 @@ FLASH LIGHT 是第 12 个已查看落脚画面的曲目／版本条目，当前�
 - `chibi-take-body-central-desktop.png`、`chibi-take-body-right-mobile.png`、`chibi-take02-body-right-centre-landscape.png`、`chibi-flash-body-ground-desktop.png`：实际可见画面。
 
 当前仅刷新本地 choreography JSON；正式媒体包／R2 仍需带上这些事件再验证。`Image_color`、Stagelight、Penlight_unit_color、Searchlight/NewSuspensionlight、原作完整舞台材质／投影与其他尚未查看的背景仍未收口。尤其 Take 背景比录屏亮，不能因角色高亮已正确而标记整个灯光复刻完成。
+
+## 2026-10-03：图片组件染色与其余舞台首轮检查
+
+本轮新增精确 `Image_color` 接线：重读全部 118 个已索引 RAW TextAsset，共 2,177 条、15 个曲目／版本。只刷新 imageColorEvents、相应统计和 schemaVersion（14），其余编排字段保持相同。Take 两版各 115 条收入小型源码 fixture，命名列重排、时间、渐变中断、隐藏及倒退均验证。源中保留 4 条异常（ominut 三条七位 RGB、plmask 一条目标／颜色／强度异常），不截短或猜测修复，审计显式标为未解析。
+
+对于含此命令的十种静态背景，从已索引 bundle 的 Sprite→PPtr→Texture2D 导出 30 张原始透明画布（共 22,539,828 B）；保持 1900×1060 尺寸、中心 pivot 与层序，逐层复合与原背景的 RGBA 像素十组全部一致。运行时可分别染色；With...STORY 的三层确有不同颜色，不能给扁平背景套一个平均色。已有动态 Image_layer 同样按资源名寻址，Take Logo 未被场景色误染。可选组件缺失时回退原合成背景，异色需求显式提示，避免误称完整支持。静态舞台开关覆盖新组件；切歌释放纹理并拒绝旧加载回写。
+
+本地资源安装了新事件及这些组件，RAW 不改。素材仍由 E 盘 public 映射提供，源码提交不包含 PNG 或完整媒体发布；正式打包需要先刷新 Image_color，再导出独立组件并纳入媒体清单。
+
+Browser 首轮站位覆盖累计 **59 个非特殊歌曲／版本条目**：此前 12 个，本轮 Tone's Destiny、With...STORY，再逐一选择其余 45 个并定位 20 秒。覆盖 54 个有 Spine 人物的静态背景及 5 个完全动态背景；drv999 社长 2D 不纳入 Spine 足点结论。45 张新画面保存在 ground-<code>-20s.png，九张 contact sheet 全部目视复核，未再见这一批可见足点普遍越出台沿。Study 的三人分别在三块平台台面内。此为指定帧检查，不等于 59 首全曲或原作比例通过；MOON NIGHT 的上缘裁切、Multiple Entertainment Show 的底部足点／歌词关系、数首横向镜头裁切及部分阴影偏移仍需原片比对。最后 15 条批量截图操作超时重置了工具，但其中 14 张已写出；核对文件后补拍末项，丢失的文本诊断未补造，结果明确记录恢复边界。
+
+染色旅程实际覆盖桌面 1280×800、手机 390×844、横屏 844×390：Take01 22.4 秒青色、26 秒红色，Take02 26 秒品红；灯光关／开与倒退恢复，With...STORY 独立颜色、Tone's Destiny 灰色、切回 Study 没有前曲 Logo 或 tint 残留。最终重建后 Take 三层静态开关实际关／开，保存 chibi-take-components-off/final.png；组件诊断为 3、冲突 false。模拟视口不是实际设备测试。
+
+本地 98 项 Source Gate 命令快照首轮 97 项通过，唯一 archive-assets 初次因 OS 选择的 10080 端口被 Node fetch 拒绝（bad port），重跑该项实际 30 条 HTTP fixture 通过，保留首次日志。汇总 chibi-image-colors-source-gate-final.json 不将此快照写成 GitHub CI。之后共享窗口更新 HEAD，最终 build:check（copyPublicDir:false）与 build-audit、Image_color、body color、1178 站位／118 编排和 VFX coverage 补验通过；最新构建与其他窗口并行提交绑定 89278976。日志 chibi-image-colors-build-close.log；无全库复制。光束、粒子、观众棒、屏幕几何与完整 Unity 材质仍未整体验收。
+
+用户随后提供 Take 01/02 本地完整录屏，共 328.37 秒、2340×1080。只读采样确认中间含选曲和加载，不能直接按总时长平分为歌曲起点。舞台透明屏幕开口两版均 [726,300,1160,542]（434×242）；现有 272×144 视频按 920/1000×2 投影为 500.48×264.96，而原共用偏移给出上边 307.52，开口顶端确有约 7.52 个设计像素没覆盖。此为新一轮屏幕配准的可复现问题，尚未在本批改写为已解决。

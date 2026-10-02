@@ -123,7 +123,19 @@ export async function fetchLiveChibiStageBackgroundIndex() {
   const response = await fetch(`${LIVE_CHIBI_BASE}/stage-backgrounds/index.json`)
   if (response.status === 404) return null
   if (!response.ok) throw new Error(`舞台背景索引加载失败 (${response.status})`)
-  return response.json()
+  const index = await response.json()
+  try {
+    const components = await withLoadDeadline(async signal => {
+      const result = await fetch(`${LIVE_CHIBI_BASE}/image-components/index.json`, { signal })
+      if (result.status === 404) return null
+      if (!result.ok) throw new Error(`舞台背景组件加载失败 (${result.status})`)
+      return result.json()
+    }, { timeoutMs: 10000, label: '舞台背景组件索引' })
+    if (components) index.components = components
+  } catch (error) {
+    console.warn('[ChibiStage] optional background components unavailable', error)
+  }
+  return index
 }
 
 export async function fetchLiveChibiStageEffectIndex() {

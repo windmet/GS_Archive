@@ -69,6 +69,9 @@
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
     :data-character-light="currentCharacterLight.color"
     :data-body-colors="appliedBodyColors"
+    :data-image-colors="appliedImageColors"
+    :data-background-component-count="backgroundComponentCount"
+    :data-background-tint-conflict="backgroundTintConflict"
   >
     <header class="stage-header">
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
@@ -273,6 +276,8 @@
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
+              <p v-if="stageVfxCoverage.unresolvedImageColors.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedImageColors.length }} 条布景染色指令的原始参数异常，暂未应用。</p>
+              <p v-if="backgroundTintConflict" class="vfx-coverage-gap">当前资源包缺少独立背景组件，无法应用各层不同的染色。</p>
               <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未实现。</p>
               <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
               <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
@@ -389,6 +394,7 @@ import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
 import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
+import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -558,6 +564,10 @@ const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
+const stageBackgroundParts = new Map()
+const appliedImageColors = ref('')
+const backgroundComponentCount = ref(0)
+const backgroundTintConflict = ref(false)
 let wholeScreenColorOverlay = null
 const colorPlaneOverlays = new Map()
 let characterShadowTexture = null
@@ -583,6 +593,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   imageObjects: imageObjectIndex.value,
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
+  stageBackgrounds: stageBackgroundIndex.value,
 }))
 const stageVfxApproximateCount = computed(() => {
   const events = stageVfxCoverage.value?.sourceEvents
@@ -722,6 +733,7 @@ const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
 const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
 const currentBodyColors = computed(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const currentImageColors = computed(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
   if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
@@ -1318,12 +1330,13 @@ function layoutStageBackground() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
-  for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay, ...colorPlaneOverlays.values()]) {
+  for (const sprite of [stageBackgroundSprite, ...[...stageBackgroundParts.values()].map(part => part.sprite), wholeScreenColorOverlay, ...colorPlaneOverlays.values()]) {
     if (!sprite) continue
     sprite.position.set(width * 0.5, height * 0.5)
     sprite.scale.set(viewportScale * environmentScale.value)
   }
   if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
+  for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
 }
 
 function releaseStageBackground() {
@@ -1333,6 +1346,14 @@ function releaseStageBackground() {
   stageBackgroundTexture?.destroy(true)
   stageBackgroundSprite = null
   stageBackgroundTexture = null
+  for (const part of stageBackgroundParts.values()) {
+    part.sprite.removeFromParent()
+    part.sprite.destroy()
+    part.texture.destroy(true)
+  }
+  stageBackgroundParts.clear()
+  backgroundComponentCount.value = 0
+  backgroundTintConflict.value = false
   stageBackgroundSongId.value = ''
   stageBackgroundReady.value = false
 }
@@ -1340,7 +1361,7 @@ function releaseStageBackground() {
 async function syncStageBackground() {
   if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
   const songCode = selectedSong.value.songCode
-  if (stageBackgroundSongId.value === songCode && stageBackgroundSprite) {
+  if (stageBackgroundSongId.value === songCode && (stageBackgroundSprite || stageBackgroundParts.size)) {
     layoutStageBackground()
     return
   }
@@ -1349,6 +1370,36 @@ async function syncStageBackground() {
   const entry = stageBackgroundIndex.value.songs?.[songCode]
   if (!entry) return
   const sequence = stageBackgroundSequence
+  const components = stageBackgroundIndex.value.components
+  const componentLayers = components?.songs?.[songCode]?.layers
+  if (componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
+      && componentLayers.every(asset => components.assets?.[asset])) {
+    const results = await Promise.allSettled(componentLayers.map(async asset => ({
+      asset, texture: await loadImageLayerTexture(components.assets[asset].file),
+    })))
+    const loaded = results.filter(result => result.status === 'fulfilled').map(result => result.value)
+    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+      for (const part of loaded) part.texture.destroy(true)
+      return
+    }
+    if (loaded.length === componentLayers.length) {
+      for (const [index, part] of loaded.entries()) {
+        const sprite = markRaw(new PIXI.Sprite(part.texture))
+        sprite.anchor.set(0.5)
+        sprite.zIndex = -20000 + index
+        sprite.visible = staticStageEnabled.value
+        cameraContainer.addChild(sprite)
+        stageBackgroundParts.set(part.asset, { texture: part.texture, sprite })
+      }
+      backgroundComponentCount.value = loaded.length
+      stageBackgroundReady.value = true
+      layoutStageBackground()
+      applyImageColors()
+      return
+    }
+    for (const part of loaded) part.texture.destroy(true)
+    console.warn('[ChibiStage] background component load failed; using original composite')
+  }
   const texture = await loadImageLayerTexture(entry.file)
   if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
     texture.destroy(true)
@@ -1362,6 +1413,30 @@ async function syncStageBackground() {
   cameraContainer.addChild(stageBackgroundSprite)
   stageBackgroundReady.value = true
   layoutStageBackground()
+  applyImageColors()
+}
+
+function applyImageColors() {
+  const colors = lightingEnabled.value ? currentImageColors.value : new Map()
+  const applied = new Map()
+  backgroundTintConflict.value = false
+  if (stageBackgroundSprite) {
+    const entry = stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]
+    const tint = compositeImageTint(entry?.layers, colors)
+    stageBackgroundSprite.tint = tint.color
+    backgroundTintConflict.value = !tint.uniform
+    if (tint.uniform) for (const layer of tint.layers) applied.set(layer.asset, tint.color)
+  }
+  for (const [asset, part] of stageBackgroundParts) {
+    part.sprite.tint = colors.get(asset) ?? 0xffffff
+    applied.set(asset, part.sprite.tint)
+  }
+  for (const runtime of imageLayerRuntimes.values()) {
+    runtime.sprite.tint = colors.get(runtime.state.asset) ?? 0xffffff
+    if (runtime.sprite.visible) applied.set(runtime.state.asset, runtime.sprite.tint)
+  }
+  appliedImageColors.value = [...applied].sort(([a], [b]) => a.localeCompare(b))
+    .map(([asset, tint]) => `${asset}:#${tint.toString(16).padStart(6, '0')}`).join(',')
 }
 
 function ensureWholeScreenColorOverlay() {
@@ -1377,6 +1452,7 @@ function ensureWholeScreenColorOverlay() {
 
 function applyStageLighting() {
   ensureWholeScreenColorOverlay()
+  applyImageColors()
   // Independent color planes share the authored camera/depth space.
   // Sampling rebuilds state on seek; no second clock or previous-song state.
   const planes = currentColorPlanes.value
@@ -2091,6 +2167,7 @@ async function syncImageLayers() {
   visibleImageObjectCount.value = painted.length
   visibleImageObjectAssets.value = painted.map(runtime => runtime.state.asset).sort()
   layoutImageLayers()
+  applyImageColors()
 }
 
 function sampleObjectLayerAlpha(state, milliseconds) {
@@ -2521,6 +2598,7 @@ function applyCameraTransform() {
 
 function applyLayerDebugVisibility() {
   if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
+  for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
   if (backmonitorContainer) backmonitorContainer.visible = backmonitorEnabled.value
   for (const [position, runtime] of runtimes) {
     runtime.spine.visible = charactersEnabled.value
