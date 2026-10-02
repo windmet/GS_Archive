@@ -1,5 +1,5 @@
 <template>
-  <dialog ref="dialog" class="terminal-dialog" :aria-labelledby="titleId" @cancel="emit('close')" @close="restoreFocus" @click="onBackdrop">
+  <dialog ref="dialog" class="terminal-dialog" :aria-labelledby="titleId" @keydown.esc.stop.prevent="emit('close')" @cancel="emit('close')" @close="restoreFocus" @click="onBackdrop">
     <header class="terminal-dialog-header">
       <h2 :id="titleId">{{ title }}</h2>
       <button class="terminal-icon-button" type="button" aria-label="关闭" @click="emit('close')"><X :size="20" /></button>
