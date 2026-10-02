@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { parse, compileScript, compileTemplate } from '@vue/compiler-sfc'
 import * as Vue from 'vue'
@@ -50,7 +51,15 @@ const all = root => [root, ...root.children.flatMap(all)]
 const text = root => root.text + root.children.map(text).join('')
 const hasClass = (item, name) => String(item.props.class || '').split(/\s+/).includes(name)
 const flush = async () => { for (let i = 0; i < 10; i++) { await Promise.resolve(); await Vue.nextTick() } }
-const scenario = JSON.parse(await read('public/data/compiled/001tom_301_2_3_001_01_09_b.json'))
+// The source gate checks out no compiled corpus. Keep the exact real scenario
+// as a bounded fixture, with its byte identity checked against the receipt.
+const scenarioReceipt = JSON.parse(await read('fixtures/localization/communication-001tom-provenance.json'))
+const scenarioBytes = await readFile(new URL('../fixtures/localization/communication-001tom-compiled.json', import.meta.url))
+assert.equal(scenarioBytes.length, scenarioReceipt.byte_length)
+assert.equal(createHash('sha256').update(scenarioBytes).digest('hex'), scenarioReceipt.sha256)
+const scenario = JSON.parse(scenarioBytes.toString('utf8'))
+assert.equal(scenario.scenario_id, scenarioReceipt.scenario_id)
+assert.equal(scenario.total_steps, scenario.steps.length)
 
 export async function verifyChoiceControls() {
   const { descriptor } = parse(await read('src/core/StoryViewer.vue'))
