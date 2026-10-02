@@ -83,3 +83,15 @@ Linux checkout 不含忽略的媒体库，原 speaker-avatar 测试把本地资�
 真实 5198 Browser：360 / 390 / 410px 无 document 横向溢出；表格 DOM 与视图切换器均不存在。390px 页头 + Tabs 96px，收起检索 85–87px（旧版 367px）。硲道夫 45 篇、S.E.M 100 篇，追加 40→80 后进入山下次郎工作剧情再返回仍为 80 / 100。加载更多按钮实际 bottom 608px、导航 top 770px，未被底栏遮挡。1280px 桌面表格 40 行 / 44.64px，第二页缩至手机会改用列表，恢复桌面仍为第二页。
 
 本地完整 92 命令复验中，91 个合同通过；唯一 build-audit 正确拒绝了测试期间继续修改的源码。最终源码重新编译后补验 build-audit，最终 PR CI 另绑定实际提交。没有把旧 bundle 验收作为新源码编译证明。截图与小型证据继续放于 `.analysis/engineering-validation-20261002`，不新增媒体包。
+
+## F07 第二轮：摄影静止与变换工作量
+
+输入 HEAD `147cfca2`。静止摄影改为按变更合并一次 requestAnimationFrame 重绘；只有可见页面的动作预览启动 30fps 私有 ticker，隐藏人物跳过骨骼更新。暂停、页面隐藏和销毁停止 ticker，页面恢复不会擅自启动已暂停的预览。选择、变换、姿势/表情、素材移除、背景缩放、滤镜、窗口变化和导出恢复均发出重绘请求。
+
+构图变更保留文档数值验证；素材/身份/差分/顺序 signature 不变时，只应用有变化的对象变换及背景缩放，不调用全量来源校验/素材重整。身份或预设改变、增删、排序、首次载入、失败重试仍走完整同步；显式定格时刻更新主动结算骨骼，不能依赖静止 ticker 来修正画面。导出仍同步渲染无选框的 framebuffer，再恢复编辑选框。
+
+`verify:engineering` 新增真实 Vue deep-watch 回归：100 次位置编辑只更新目标人物；显式时刻、预设切换、隐藏/显示、排序、删除/撤销、非法服装身份拒绝；受控帧队列验证静止零 tick、变更合并、隐藏/恢复、预览、销毁晚到回调。现有真实 Spine 动作恢复、690 源 bounds、手势、构图文件/导出合同均通过。`build:check` 不复制 public。
+
+5198 最新 bundle 实测：暂停 5 秒前后 render=3/modelUpdate=1/sync=2 保持不变；放大人物 render=4，modelUpdate/sync 不变。参考 A 为 2 人物 + 5 贴纸，预览增加更新；返回定格后另 5 秒 render=694/modelUpdate=1379/sync=3 完全不变。两次方向键微调不增加 sync。390px 仍可编辑，真实导出图 naturalWidth=1280/naturalHeight=720，返回来源后 canvas=0。小型截图 `studio-work-mobile.jpg` 与日志在既有证据目录。控制台无 error，首次 Spine 渲染有一条 SimpleMesh/Spine update 警告栈，保留为观察项，未据此声称零警告。
+
+此轮验证工作次数与功能回归，不代表耗时、电量、GPU heap 或物理双指设备验收；F07 的上述冗余工作已消除，F08/F10 预算和真机边界继续保留。

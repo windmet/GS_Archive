@@ -8,6 +8,7 @@ import {
   moveStudioObject,
   STUDIO_LIMITS,
 } from "../../core/StudioDocument.mjs";
+import { studioResourceSignature, applyStudioDocumentTransforms } from "../../core/StudioDocumentChanges.mjs";
 import { StudioCompositionStage } from "../../core/StudioCompositionStage.js";
 import { studioReference } from "../../core/StudioReferences.mjs";
 import { verifiedStudioPreset } from "../../core/PictureStudioPolicy.mjs";
@@ -53,7 +54,8 @@ export function useStudioComposition(props, canvas) {
     exportVersion = 0,
     documentRequest = 0,
     syncRunning = false,
-    syncNeeded = false;
+    syncNeeded = false,
+    appliedSignature = null;
   function clearExport() {
     exportVersion++;
     if (exportUrl.value) URL.revokeObjectURL(exportUrl.value);
@@ -123,6 +125,7 @@ export function useStudioComposition(props, canvas) {
         syncNeeded = false;
         const version = renderVersion,
           doc = validateStudioDocument(draft.value);
+        stage.app.view.dataset.studioSyncCount = String(Number(stage.app.view.dataset.studioSyncCount || 0) + 1);
         await Promise.all(doc.actors.map((row) => actorView(row.idolId)));
         if (version !== renderVersion) continue;
         validateStudioSources(doc, materials.value, views.value);
@@ -148,15 +151,16 @@ export function useStudioComposition(props, canvas) {
               stage.addActor(row, view.media.models[row.modelId], ...presets),
             );
           else {
-            model.row = row;
             if (
               model.presetKey !==
               JSON.stringify([
                 ...presets.map((p) => p.label),
                 row.poseTime == null,
               ])
-            )
+            ) {
+              model.row = row;
               stage.setActorPose(row.instanceId, ...presets);
+            }
             stage.setActorTransform(row.instanceId, row);
           }
         }
@@ -199,6 +203,7 @@ export function useStudioComposition(props, canvas) {
             ?.resourceId || "",
         );
         stage.select(selectedId.value);
+        appliedSignature = studioResourceSignature(doc);
         error.value = "";
         status.value = `${doc.actors.length} 人物 · ${doc.stickers.length} 贴纸 · 1280 × 720`;
       }
@@ -217,6 +222,18 @@ export function useStudioComposition(props, canvas) {
       renderVersion++;
       clearExport();
       clearDocumentFile();
+      if (stage && !busy.value && !syncRunning && !error.value && appliedSignature) {
+        try {
+          const doc = validateStudioDocument(draft.value);
+          if (studioResourceSignature(doc) === appliedSignature) {
+            applyStudioDocumentTransforms(stage, doc);
+            return;
+          }
+        } catch (cause) {
+          error.value = `画布暂时无法展示：${cause.message}`;
+          return;
+        }
+      }
       void sync();
     },
     { deep: true },

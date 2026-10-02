@@ -15,6 +15,7 @@ import { studioFramePlacement } from "./StudioFramePlacement.mjs";
 import { studioActorPlacement, studioActorPoseBounds, studioActorSelectionBounds } from "./StudioActorPlacement.mjs";
 import { StudioGestures, studioTransformAround, studioTransformPatch, studioSelectionControls, studioSnapMove } from './StudioGestures.mjs';
 import { bindStudioCanvasInput } from './StudioCanvasInput.mjs';
+import { createStudioRenderLoop } from "./StudioRenderLoop.mjs";
 import { studioSkeletonContains, studioStickerContains } from './StudioHitTest.js';
 import {
   STUDIO_WIDTH as W,
@@ -47,11 +48,15 @@ export class StudioCompositionStage {
       height: H,
       resolution: 1,
       antialias: true,
+      autoStart: false,
       backgroundColor: 0xe5eef5,
     });
     this.app.view.setAttribute("aria-label", "摄影画布");
     this.app.view.setAttribute("role", "img");
     this.app.view.tabIndex = 0;
+    this.app.view.dataset.studioRenderCount = "0";
+    this.app.view.dataset.studioModelUpdateCount = "0";
+    this.app.view.dataset.studioSyncCount = "0";
     container.appendChild(this.app.view);
     this.backgroundLayer = new PIXI.Container();
     this.actorLayer = new PIXI.Container();
@@ -67,23 +72,29 @@ export class StudioCompositionStage {
       this.outline,
     );
     this.app.ticker.maxFPS = 30;
-    this.tick = () => {
-      for (const model of this.actorInstances.values())
-        this.updateModel(
-          model,
-          this.playing ? Math.min(0.05, this.app.ticker.deltaMS / 1000) : 0,
-        );
-      this.drawSelection();
-    };
-    this.app.ticker.add(this.tick);
+    this.renderLoop = createStudioRenderLoop({
+      app: this.app,
+      draw: () => { this.recordWork("studioRenderCount"); this.drawSelection(); this.app.renderer.render(this.app.stage); },
+      animate: delta => {
+        this.recordWork("studioRenderCount");
+        for (const model of this.actorInstances.values())
+          if (!model.row.hidden && model.spine.visible) this.updateModel(model, delta);
+        this.drawSelection();
+      },
+    });
     this.visibility = () => {
-      if (document.hidden) { this.input.cancel(false); this.app.stop(); }
-      else this.app.start();
+      if (document.hidden) this.input?.cancel(false);
+      this.renderLoop.setHidden(document.hidden);
     };
+    this.visibility();
     document.addEventListener("visibilitychange", this.visibility);
     this.gestures = new StudioGestures({ getRow: id => this.row(id),
       onTransform: (id, patch) => this.applyInteractiveTransform(id, patch) });
     this.input = bindStudioCanvasInput(this.app.view, this);
+  }
+  recordWork(key) {
+    const data = this.app?.view?.dataset;
+    if (data) data[key] = String(Number(data[key] || 0) + 1);
   }
   owner(key) {
     this.controllers.get(key)?.abort();
@@ -107,16 +118,11 @@ export class StudioCompositionStage {
       releaseFailedBase: (base) => base.destroy(),
     });
   }
-  render() {
-    if (!this.disposed) {
-      this.drawSelection();
-      this.app.renderer.render(this.app.stage);
-    }
-  }
+  render() { if (!this.disposed) this.renderLoop?.invalidate(); }
   select(id) {
     if (id !== this.selectedId) this.input?.cancel(false);
     this.selectedId = id;
-    this.drawSelection();
+    this.render();
   }
   row(id) {
     return this.actorInstances.get(id)?.row || this.stickerInstances.get(id)?.row;
@@ -206,7 +212,7 @@ export class StudioCompositionStage {
     this.render();
     return patch;
   }
-  endInteraction() { this.guides = []; this.onInteraction?.(null); }
+  endInteraction() { this.guides = []; this.onInteraction?.(null); this.render(); }
   adjustSelected({ point, factor = 1, angle = 0 } = {}) {
     const row = this.selectedRow(), center = point || this.selectionControls()?.center;
     if (!row || row.locked || row.hidden || !center || this.gestures.points.size) return false;
@@ -226,6 +232,7 @@ export class StudioCompositionStage {
       });
       for (const texture of model.textures) texture.destroy(true);
       this.actorInstances.delete(id);
+      this.render();
     }
   }
   async addActor(row, binding, pose, face) {
@@ -381,6 +388,7 @@ export class StudioCompositionStage {
       return plan;
     } catch (error) {
       spine.visible = false;
+      this.render();
       throw error;
     }
   }
@@ -409,6 +417,7 @@ export class StudioCompositionStage {
     model.spine.scale.set(model.baseScale * model.row.scale);
   }
   updateModel(model, delta) {
+    this.recordWork("studioModelUpdateCount");
     const { spine } = model;
     for (const index of model.neckBones)
       spine.skeleton.bones[index]?.setToSetupPose();
@@ -426,12 +435,15 @@ export class StudioCompositionStage {
   setActorTransform(id, row) {
     const model = this.actorInstances.get(id);
     if (!model?.baseScale) return;
+    const frameChanged = model.row.poseTime !== row.poseTime || model.row.faceTime !== row.faceTime || model.row.layoutBasis !== row.layoutBasis;
     model.row = row;
     model.spine.visible = !row.hidden;
     this.applyFrame(model);
+    if (frameChanged && !this.playing) this.updateModel(model, 0);
     model.spine.scale.set(model.baseScale * row.scale);
     model.spine.position.set(W * row.x, H * row.y);
     model.spine.rotation = (row.rotation * Math.PI) / 180;
+    this.render();
   }
   removeSticker(id) {
     if (this.gestures?.id === id) this.input.cancel(false);
@@ -442,6 +454,7 @@ export class StudioCompositionStage {
       entry.sprite.destroy({ texture: false, baseTexture: false });
       entry.texture.destroy(true);
       this.stickerInstances.delete(id);
+      this.render();
     }
   }
   async addSticker(row, binding) {
@@ -482,6 +495,7 @@ export class StudioCompositionStage {
     entry.sprite.position.set(W * row.x, H * row.y);
     entry.sprite.scale.set(row.scale);
     entry.sprite.rotation = (row.rotation * Math.PI) / 180;
+    this.render();
   }
   setOrder(actors, stickers) {
     for (const row of actors) {
@@ -503,10 +517,13 @@ export class StudioCompositionStage {
     this.render();
   }
   setBackgroundZoom(zoom = 1) {
+    if (this.backgroundZoom === zoom) return;
+    this.backgroundZoom = zoom;
     for (const entry of this.images.get("background")?.loaded || [])
       entry.sprite.scale.set(
         Math.max(W / entry.texture.width, H / entry.texture.height) * zoom,
       );
+    this.render();
   }
   setPlaying(value) {
     value = !!value;
@@ -516,6 +533,7 @@ export class StudioCompositionStage {
     // reconstructs the document's frame, including face and neck tracks.
     for (const [id, model] of this.actorInstances)
       this.setActorPose(id, model.pose, model.face);
+    this.renderLoop?.setPlaying(value);
     this.render();
   }
   setWebFilter(resourceId = "") {
@@ -524,6 +542,7 @@ export class StudioCompositionStage {
     this.picture.filters = null;
     this.filter?.destroy();
     this.filter = null;
+    this.render();
     if (!resourceId) return;
     const filter = new PIXI.ColorMatrixFilter();
     if (["sepia", "sepia_light"].includes(resourceId)) filter.sepia();
@@ -539,11 +558,13 @@ export class StudioCompositionStage {
     this.picture.filters = [filter];
   }
   clearImages(key) {
+    if (key === "background") this.backgroundZoom = undefined;
     for (const entry of this.images.get(key)?.loaded || []) {
       entry.sprite.destroy({ texture: false, baseTexture: false });
       entry.texture.destroy(true);
     }
     this.images.delete(key);
+    this.render();
   }
   async setImages(key, bindings = []) {
     const signature = JSON.stringify(bindings.map((b) => b?.url));
@@ -581,6 +602,7 @@ export class StudioCompositionStage {
           ? this.backgroundLayer
           : this.frameLayer
         ).addChild(entry.sprite);
+      this.render();
     } catch (error) {
       for (const entry of loaded) {
         entry.sprite.destroy({ texture: false, baseTexture: false });
@@ -621,6 +643,7 @@ export class StudioCompositionStage {
       throw error;
     } finally {
       this.outline.visible = true;
+      this.render();
     }
   }
   destroy() {
@@ -634,7 +657,7 @@ export class StudioCompositionStage {
     for (const id of this.stickerInstances.keys()) this.removeSticker(id);
     for (const key of this.images.keys()) this.clearImages(key);
     this.filter?.destroy();
-    this.app.ticker.remove(this.tick);
+    this.renderLoop.dispose();
     this.app.destroy(true, {
       children: true,
       texture: false,
