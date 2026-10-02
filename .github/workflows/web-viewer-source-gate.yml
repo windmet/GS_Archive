@@ -109,6 +109,9 @@ jobs:
       - name: Verify bounded particle timeline and source identity
         run: npm run verify:chibi-particles
 
+      - name: Verify chibi color plane timelines
+        run: npm run verify:chibi-color-layers
+
       - name: Verify song lyrics and media clock
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 

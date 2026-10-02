@@ -215,3 +215,25 @@ Take a StuMp! 的 C.FIRST Logo 来源已定位为 21.3s `ImageObject_create` 的
 实际 Browser 使用既有 5198 服务与 `.analysis/build-check` 代码、原资源映射，验证歌曲下拉切换与暂停拖动：ANYWHERE 10s、Study Equal Magic! 85s、Take a StuMp! 01 8s 的长歌词均完整显示为一行。桌面 1280×900 的画布约 885×498，字体约 17.7px；390×844 画布约 357×201；360×800 画布约 327×184；844×390 横屏画布约 321×180。三个小画布字体为 8px，字幕顶部约位于画布高度的 91.7%～92.2%，均在画布边界内，未遮挡当前帧人物。截图 `chibi-lyrics-desktop/mobile/landscape.png`、`chibi-lyrics-study-mobile.png`、`chibi-lyrics-take-mobile.png` 位于原证据目录。
 
 `npm run build:check`（12.17s，未复制 public）、`verify:chibi-particles`、`verify:live-chibi-singer-slots`、`verify:song-lyrics` 通过；Browser 未观察到 error，保留既有 Pixi/Spine 弃用警告。此为桌面浏览器模拟视口验收，未代替真实手机可读性、无障碍文字放大或全部 118 份歌词逐句验收；舞台复刻差异仍按上一节保持待修复。
+
+## 2026-10-03：多层遮色接线与取消额外放大
+
+输入 HEAD `1dcb6721`。解析 `Whole_screen_color_2` 的独立 ID、RGB、透明度、渐变时长与深度，控制字段按 CSV 头部 `value101/value102` 取值。兼容旧包没有新数组的情况。各 ID 独立重建时间轴，覆盖中断渐变、退场、倒退 seek 与切歌清理；渲染使用既有相机空间中的独立 Graphics 平面，不合并为一个全屏颜色，也不另设时钟。现有旧格式染色和人物光照逻辑保留。
+
+补录只读取现有 118 份索引精确指定的 RAW TextAsset，不扫描 RAW 全目录、不重建角色与媒体库。33 份编排含此指令，共 975 条；新增 `wholeScreenColorLayerEvents` 与统计，schema 为 12。工具深度比较确认其他字段/数组不变，安装前核对原文件与候选 SHA256，保留原索引备份。候选 SHA256 `1d1ce5c037e3c0bfdff12fe6156b4b2e936b5e418aa36558f6d28fa59ab98e34`。复现：
+
+```powershell
+python -X utf8 scripts/prepare-live-chibi-color-layers.py --output .analysis/engineering-validation-20261002/chibi-colors-candidate.json --receipt .analysis/engineering-validation-20261002/chibi-colors-receipt.json
+npm run verify:chibi-color-layers
+node scripts/verify-chibi-color-layers.mjs --published-assets
+```
+
+来源异常保留：`syksai` 两条 hide 的无效颜色 `#71A4D10` 原值保留，但不参与退场着色；`unmikn` 16.2s hide 缺少 ID，标记 `missing_layer_identity`、暂不应用，覆盖面板显示待确认，不猜测是隐藏某层或全部层。CI 小型 fixture 保存 ANYWHERE 的 60 条原指令与 CAB、字符串 PathID、文本 SHA；RAW 媒体和完整运行索引不提交。
+
+用户重新要求核对舞台大小。移除 `STAGE_BASE_ZOOM=1.1` 和环境 `1.073` 两层默认放大，均回到 1；保留原 CSV 镜头倍率、可选检查滑杆、角色 Y/尺寸函数、背屏定位与各图层注册关系。Take 22s 源镜头仍为约 1.1491×，不再额外乘到约 1.264×。同段 Browser 对照显示两侧人物留出空间、舞台前沿更完整。Study 17.5s（S.E.M 三人）原镜头 1.3×，高低台与完整落脚点可见；15s 的源镜头 1.55× 仍可能裁到中心人物脚部，保留为待匹配原片的近景，不能以参考图未同步为由改写源镜头。参考为 20:9，当前窗口为 16:9，服装也不同，本批不声称像素一致。
+
+真实 Browser 5198：ANYWHERE 0s 三层透明度为 0.7/0.5/0.3，深度 1500/1600/1710；8.6s 为 0.5/0.5/0.15；9.4s 第三层退场；36.5s 后回到 8.6s 恢复同一状态。连续播放从 8.6s 推进超过 38s，暂停、关闭/开启染色、关闭/开启歌词均正确；切到 Study 没有 ANYWHERE 层残留。1280×800、390×844、844×390 实测无横向溢出，横屏操作台在画布/播放条下方、不交叠。未观察到 console error，已有 Pixi/Spine 弃用警告保留。截图 `chibi-framing-take-before/after.png`、`chibi-colors-anywhere-desktop/mobile.png`、`chibi-framing-study-desktop/mobile.png` 位于原 E 盘证据目录。
+
+`build:check`（14.42s、copyPublicDir:false）、Python 编译、published-assets 实际索引比对与当前 **94/94 Source Gate** 命令通过，日志 `chibi-color-source-gates.log`、明细 `chibi-color-source-gate.json`。此为本地源码门禁和模拟视口验收，未声称 GitHub CI、真实设备长稳或完整 Unity 渲染通过。多层 Graphics 的几何/混合及 Unity 3D 深度仍需原片核对；地面/观众灯、吊灯、角色明暗、Logo 生命周期和首帧视频问题仍未关闭。
+
+Take Logo 的精确资源身份现已确认：`song_tkstp1.unity3d`，CAB `CAB-122fef368c526e0aa5ee19d0c345d391`，C.FIRST `_16b` 是 Sprite PathID `-7402552036384742190`（同名 Texture2D 为 `4951555358588418733`）；High×Joker `_8b` 是 Sprite PathID `-6801097922327521876`（Texture2D 为 `-8032899029242260248`）。资源确实存在，但本批尚未接入 `ImageObject_create/show`，不能把找到纹理当成显示链路已完成。

@@ -63,6 +63,7 @@
     :data-lip-sync-frames="lipSyncFrameCount"
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
+    :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
     :data-character-light="currentCharacterLight.color"
   >
     <header class="stage-header">
@@ -265,6 +266,8 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
+              <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
               <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未实现。</p>
               <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
               <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
@@ -379,6 +382,7 @@
 <script setup>
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
+import { colorLayersAt } from '../core/chibiColorLayers.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -489,14 +493,14 @@ const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
-const STAGE_BASE_ZOOM = 1.1
+// Authored Camera zoom is the baseline; do not add a presentation magnification.
+const STAGE_BASE_ZOOM = 1
 // Debug multiplier for the complete camera container. Unlike environmentScale,
 // this keeps stage art, characters, monitor, shadows and effects registered.
 const stageViewScale = ref(1)
-// Enlarge the authored environment as one registered plane while retaining
-// the official full-body character framing. Stage art, monitor movies and
-// fixed image/object layers all use this same factor.
-const environmentScale = ref(1.073)
+// Stage art, monitor movies and fixed effects share an unexpanded environment
+// plane. Keep the optional inspection control separate from source camera zoom.
+const environmentScale = ref(1)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
@@ -544,6 +548,7 @@ let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
 let wholeScreenColorOverlay = null
+const colorPlaneOverlays = new Map()
 let characterShadowTexture = null
 let characterShadowLoad = null
 let resizeObserver = null
@@ -700,6 +705,9 @@ const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.mov
   : '无')
 const currentLyric = computed(() => lyricAt(stageTime.value))
 const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.value))
+const currentColorPlanes = computed(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
+const visibleColorPlanes = computed(() => lightingEnabled.value
+  ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
 const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
 const currentCameraLabel = computed(() => {
   if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
@@ -802,6 +810,8 @@ onBeforeUnmount(() => {
   releaseLaserlights()
   releasePinspotlights()
   releaseStageBackground()
+  for (const plane of colorPlaneOverlays.values()) plane.destroy()
+  colorPlaneOverlays.clear()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
   characterShadowTexture?.destroy(true)
@@ -1292,7 +1302,7 @@ function layoutStageBackground() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
-  for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay]) {
+  for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay, ...colorPlaneOverlays.values()]) {
     if (!sprite) continue
     sprite.position.set(width * 0.5, height * 0.5)
     sprite.scale.set(viewportScale * environmentScale.value)
@@ -1351,6 +1361,29 @@ function ensureWholeScreenColorOverlay() {
 
 function applyStageLighting() {
   ensureWholeScreenColorOverlay()
+  // Independent color planes share the authored camera/depth space.
+  // Sampling rebuilds state on seek; no second clock or previous-song state.
+  const planes = currentColorPlanes.value
+  for (const [id, overlay] of colorPlaneOverlays) {
+    if (planes.has(id)) continue
+    overlay.removeFromParent()
+    overlay.destroy()
+    colorPlaneOverlays.delete(id)
+  }
+  if (cameraContainer) for (const [id, state] of planes) {
+    let overlay = colorPlaneOverlays.get(id)
+    if (!overlay) {
+      overlay = markRaw(new PIXI.Graphics())
+      overlay.beginFill(0xffffff).drawRect(-950, -530, 1900, 1060).endFill()
+      cameraContainer.addChild(overlay)
+      colorPlaneOverlays.set(id, overlay)
+      layoutStageBackground()
+    }
+    overlay.tint = state.color
+    overlay.alpha = state.alpha
+    overlay.zIndex = state.depth
+    overlay.visible = lightingEnabled.value && state.alpha > 0.001
+  }
   if (!lightingEnabled.value) {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
     for (const runtime of runtimes.values()) runtime.spine.tint = 0xffffff

@@ -32,6 +32,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
 from live_chibi_object_commands import field_map, parse_object_layer
+from live_chibi_color_commands import parse_color_layer
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -518,6 +519,7 @@ def read_choreography_scripts(
         object_layer_events = []
         lyric_events = []
         whole_screen_color_events = []
+        whole_screen_color_layer_events = []
         character_light_events = []
         spotlight_events = []
         pinspotlight_events = []
@@ -621,6 +623,9 @@ def read_choreography_scripts(
                         if lyric_event["text"] != raw_text:
                             lyric_event["rawText"] = raw_text
                         lyric_events.append(lyric_event)
+                    continue
+                if row[0] == "Whole_screen_color_2":
+                    whole_screen_color_layer_events.append(parse_color_layer(row, object_fields))
                     continue
                 if row[0] == "Whole_screen_color" and len(row) >= 6:
                     event_time = parse_optional_number(row[1])
@@ -864,6 +869,9 @@ def read_choreography_scripts(
                 "wholeScreenColorEvents": sorted(
                     whole_screen_color_events, key=lambda event: event["time"]
                 ),
+                "wholeScreenColorLayerEvents": sorted(
+                    whole_screen_color_layer_events, key=lambda event: event["time"]
+                ),
                 "characterLightEvents": sorted(
                     character_light_events, key=lambda event: event["time"]
                 ),
@@ -977,7 +985,7 @@ def export_choreography(
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 11,
+        "schemaVersion": 12,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -997,6 +1005,9 @@ def export_choreography(
             "lyricEvents": sum(len(song["lyricEvents"]) for song in songs),
             "wholeScreenColorEvents": sum(
                 len(song["wholeScreenColorEvents"]) for song in songs
+            ),
+            "wholeScreenColorLayerEvents": sum(
+                len(song["wholeScreenColorLayerEvents"]) for song in songs
             ),
             "characterLightEvents": sum(
                 len(song["characterLightEvents"]) for song in songs

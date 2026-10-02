@@ -16,6 +16,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const backmonitorAssets = uniqueAssets(song.backmonitorEvents, 'movie')
   const imageAssets = uniqueAssets(song.imageLayerEvents, 'asset')
   const pinspotlightAssets = uniqueAssets(song.pinspotlightEvents, 'asset')
+  const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
   const missingMedia = [
     ...backmonitorAssets.filter(asset => !indexes.backmonitor?.assets?.[asset]),
     ...imageAssets.filter(asset => !indexes.imageLayers?.assets?.[asset]),
@@ -29,6 +30,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       imageLayer: song.imageLayerEvents?.length || 0,
       objectLayer: song.objectLayerEvents?.length || 0,
       characterLight: song.characterLightEvents?.length || 0,
+      wholeScreenColorLayer: song.wholeScreenColorLayerEvents?.length || 0,
       spotlight: song.spotlightEvents?.length || 0,
       pinspotlight: song.pinspotlightEvents?.length || 0,
       laserlight: song.laserlightEvents?.length || 0,
@@ -41,7 +43,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectMissing,
     objectOther,
     missingMedia,
-    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length
+    unresolvedColorPlanes,
+    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length
       ? 'partial'
       : 'source_mapped_unverified',
   }
