@@ -482,4 +482,8 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 
 **未通过的视觉要求**：32.5s 原生形状使旧自由灯错误更加明显，中央额外黄色束／台前光圈及右侧两束重叠仍存在（`spotlight-native-remaining-032.500.png`）；参考录屏该时刻主要是右台单束。需要继续验证 `Show(targetCharaIndex, scriptPos, moveDuration)` 的 CSV 字段映射、自由坐标与退场，不能凭 10000 数值直接假定 timeout 或补合成 hide。粉色前景 call 棒、激光形状、完整粒子和动作相位也未收口。本轮只证明原生资源链及指定交互，未宣称 Study 全曲验收、真实手机或发布通过。
 
+后续门禁：GitHub Source Gate [37074703317](https://github.com/windmet/GS_Archive/actions/runs/37074703317) 在代码提交 `7361fcd16818441acf133aa6dd0fca142f67c2bc` 完成，结论 success，114 个步骤成功、无失败，含本轮原生绑定及异步生命周期回归。后续文档提交不冒充同一 HEAD 的 CI。
+
+下一轮证据线索：直接解析 metadata 的 MethodDefinition／ParameterDefinition，并通过 byvalTypeIndex 关联 TypeDefinition，Spotlight 与 Pinspotlight 的 `Show` 都接收 `System.Int32 targetCharaIndex`、`UnityEngine.Vector3 scriptPos`、`System.Single moveDuration`。这证明 scriptPos 为三维向量，**未证明 CSV 具体哪一列对应 Y 或 duration**。现有派生索引 1,414 条 show、547 条自由灯中，争议列（目前名为 duration）分别有 505 个 10000、40 个 99999、一个 0、一个 1；多数非零目标的该列为 0。这是离场坐标解释的重要候选，仍应精确重读 RAW 并对照录屏。方法类型、metadata／索引 SHA、统计与证据边界保存在 `study-reference/spotlight-coordinate-candidate.json`；本轮未据此修改字段映射。
+
 提交 `2800eae307c43f961a9ea9178df0946892508e92` 已推送；完整 [Source Gate 37072347273](https://github.com/windmet/GS_Archive/actions/runs/37072347273) 在此确切代码 revision **成功，113 个步骤成功、无失败**，包含新增 Camera 控制／实际 SFC sampler 回归、已有 Penlight 回归与 source-only 编译。之后的验收记录提交是文档更新，不借此宣称全媒体发布、真实手机、全曲光效或最初 master PR 目标完成。
