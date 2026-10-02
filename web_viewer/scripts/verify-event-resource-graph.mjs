@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto'
 import {fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {createArchiveAssetResolver} from './lib/archive-assets.mjs'
+import {editorialSourceHash,EDITORIAL_SOURCE_HASH_FORMAT} from './lib/editorial-source-hash.mjs'
 import {eventResources,storyEventResources} from '../src/data/eventResourceGraph.js'
 const root=fileURLToPath(new URL('../',import.meta.url)),assets=createArchiveAssetResolver()
 const sourceOnly=process.argv.includes('--source-only')
@@ -16,7 +17,11 @@ const exchanges=await json('public/data/editorial/event-exchange-evidence.json')
 const cards=(await json('public/data/masterdata/card_index.json')).cards
 assert.equal(graph.events.length,events.length)
 assert.equal(new Set(graph.events.map(e=>e.id)).size,events.length)
-for(const [source,hash] of Object.entries(graph.sources))assert.equal(createHash('sha256').update(await readFile(path.join(root,source))).digest('hex'),hash,`Stale source ${source}`)
+assert.equal(graph.sourceHashFormat,EDITORIAL_SOURCE_HASH_FORMAT)
+assert.equal(editorialSourceHash(Buffer.from('{"label":"活动"}\r\n')),editorialSourceHash(Buffer.from('{"label":"活动"}\n')))
+assert.notEqual(editorialSourceHash(Buffer.from('{"label":"活动"}\n')),editorialSourceHash(Buffer.from('{"label":"故事"}\n')))
+assert.notEqual(editorialSourceHash(Buffer.from('{"label":"活动"}\n')),editorialSourceHash(Buffer.from('{ "label":"活动"}\n')),'non-newline source bytes remain bound')
+for(const [source,hash] of Object.entries(graph.sources))assert.equal(editorialSourceHash(await readFile(path.join(root,source))),hash,`Stale source ${source}`)
 for(const event of graph.events){
   const raw=events.find(e=>e.eventCode===event.eventCode)
   const legacy=manifest.unit_event_relations.find(e=>String(e.event_code)===event.eventCode)

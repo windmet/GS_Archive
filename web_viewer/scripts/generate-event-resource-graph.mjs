@@ -3,13 +3,14 @@ import {createHash} from 'node:crypto'
 import {fileURLToPath} from 'node:url'
 import path from 'node:path'
 import {createArchiveAssetResolver} from './lib/archive-assets.mjs'
+import {editorialSourceHash,EDITORIAL_SOURCE_HASH_FORMAT} from './lib/editorial-source-hash.mjs'
 
 const root=fileURLToPath(new URL('../',import.meta.url))
 const sources={}
 const assets=createArchiveAssetResolver()
 async function json(relative){
   const bytes=await readFile(path.join(root,relative))
-  sources[relative]=createHash('sha256').update(bytes).digest('hex')
+  sources[relative]=editorialSourceHash(bytes)
   return JSON.parse(bytes)
 }
 async function image(url){
@@ -72,7 +73,7 @@ for(const e of supplements.entries){
     series:story?.officialTitle?.match(/^GROWING (SIGN@L|SELECTION)/)?.[0]||'',
     hero,heroRole:announcement?'announcement':originalAnnouncement?'original-announcement':hero?'background':null,thumbnail})
 }
-const output={schemaVersion:1,sources,roster:idols.idols.filter(idol=>idol.idol_id<=49).map(idol=>({code:idol.idol_code,name:idol.display_name})),summary:{events:events.length,heroes:events.filter(e=>e.hero).length,thumbnails:events.filter(e=>e.thumbnail).length},events}
+const output={schemaVersion:1,sourceHashFormat:EDITORIAL_SOURCE_HASH_FORMAT,sources,roster:idols.idols.filter(idol=>idol.idol_id<=49).map(idol=>({code:idol.idol_code,name:idol.display_name})),summary:{events:events.length,heroes:events.filter(e=>e.hero).length,thumbnails:events.filter(e=>e.thumbnail).length},events}
 const target=path.join(root,'public/data/editorial/event-resource-graph.json')
 await mkdir(path.dirname(target),{recursive:true})
 await writeFile(target,JSON.stringify(output,null,2)+'\n')

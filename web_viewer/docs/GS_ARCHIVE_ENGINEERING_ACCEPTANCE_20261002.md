@@ -59,3 +59,7 @@
 Source Gate 通过代表当前源码 / 版本绑定 / 离线合同通过；`check_cutover_routes --progress` 明示没有 real-device 与全路径 parity 全部通过。仍未完成真实 iPad 静音开关、前后台/耳机切换、长期 heap/GPU 预算、全歌曲/全场景逐媒体穷举、生产发布包和线上部署验收。F05/F06/F07/F08/F09/F10 的上述剩余债务不能改写成“全部架构问题已修复”。
 
 本次提交并新建到 master 的 PR，不直接合并或部署；保留不属于本任务的未跟踪证据和资源。
+
+## GitHub 跨平台补验
+
+PR #46 首轮 Linux Source Gate 在新增 editorial 步骤发现活动关系图的 source SHA 使用 Windows CRLF 字节，Git 检出 LF 后不一致。为编辑性 JSON 来源明确 `sha256-utf8-lf-v1` 哈希格式，只规范 CRLF；任何其他空格、值或字段变化仍使 SHA 失配。生产者 / 验证器共用同一规则并测试 LF、CRLF 等价及其他内容变化拒绝。图片 SHA 和正式 publication blob 的原始字节校验没有改动。此处记录的是实际 CI 失败后修复，不把第一次本地通过当成 Linux 验收。
