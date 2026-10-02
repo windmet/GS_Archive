@@ -120,6 +120,9 @@ jobs:
       - name: Verify chibi ground registration across viewport sizes
         run: npm run verify:chibi-stage-coordinates
 
+      - name: Verify Take backmonitor aperture coverage
+        run: npm run verify:chibi-backmonitor-registration
+
       - name: Verify bounded chibi ImageObject source timelines
         run: npm run verify:chibi-image-objects
 

@@ -43,6 +43,7 @@
     :data-backmonitor-transition-active="backmonitorTransitionActive"
     data-backmonitor-transition-mode="alpha-overlay"
     :data-backmonitor-ready="backmonitorReady"
+    :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
     :data-image-layer-depths="visibleImageLayerDepths.join(',')"
@@ -434,6 +435,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
+import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
@@ -522,10 +524,6 @@ const environmentScale = ref(1)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
-// Backmonitor uses the live-stage content plane rather than the 720 px camera
-// midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
-// using 360 leaves every movie visibly below its screen opening.
-const BACKMONITOR_Y_ORIGIN = 250
 
 let app = null
 let cameraContainer = null
@@ -2443,14 +2441,9 @@ function layoutBackmonitor(state) {
   if (!backmonitorSprite || !app) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const viewportScale = Math.min(width / 1280, height / 720)
-  backmonitorSprite.position.set(
-    width * 0.5 + state.x * viewportScale * environmentScale.value,
-    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale * environmentScale.value,
-  )
-  backmonitorSprite.scale.set(
-    viewportScale * environmentScale.value * state.scale / 1000 * 2,
-  )
+  const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
+  backmonitorSprite.position.set(projected.x, projected.y)
+  backmonitorSprite.scale.set(projected.scale)
   backmonitorSprite.rotation = -state.rotation * Math.PI / 180
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000

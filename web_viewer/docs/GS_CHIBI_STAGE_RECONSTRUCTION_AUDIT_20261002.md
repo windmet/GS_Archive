@@ -323,3 +323,15 @@ Browser 首轮站位覆盖累计 **59 个非特殊歌曲／版本条目**：此�
 本地 98 项 Source Gate 命令快照首轮 97 项通过，唯一 archive-assets 初次因 OS 选择的 10080 端口被 Node fetch 拒绝（bad port），重跑该项实际 30 条 HTTP fixture 通过，保留首次日志。汇总 chibi-image-colors-source-gate-final.json 不将此快照写成 GitHub CI。之后共享窗口更新 HEAD，最终 build:check（copyPublicDir:false）与 build-audit、Image_color、body color、1178 站位／118 编排和 VFX coverage 补验通过；最新构建与其他窗口并行提交绑定 89278976。日志 chibi-image-colors-build-close.log；无全库复制。光束、粒子、观众棒、屏幕几何与完整 Unity 材质仍未整体验收。
 
 用户随后提供 Take 01/02 本地完整录屏，共 328.37 秒、2340×1080。只读采样确认中间含选曲和加载，不能直接按总时长平分为歌曲起点。舞台透明屏幕开口两版均 [726,300,1160,542]（434×242）；现有 272×144 视频按 920/1000×2 投影为 500.48×264.96，而原共用偏移给出上边 307.52，开口顶端确有约 7.52 个设计像素没覆盖。此为新一轮屏幕配准的可复现问题，尚未在本批改写为已解决。
+
+## 2026-10-03：Take 录屏对照与背屏开口配准
+
+输入提交 f647ce4f。原片为用户指定的本地 328.37 秒、2340×1080 MP4；只读抽帧、源 SHA256 和 ffprobe 元数据在 take-reference/source-receipt.json。原片约 48–50 秒与 204–208 秒仍含片头／加载，71 秒为第一版 C.FIRST、231 秒为第二版 S.E.M，只作为对应演出段落的视觉证据，没有宣称音频时钟逐帧对齐。
+
+两版原舞台透明开口相同：1900×1060 完整图的 [726,300,1160,542]，中心 (943,421)。原 Backmonitor 均为 x=-7、y=340、scale=920，所有引用视频 272×144；原画居中后屏幕应在 (-7,-109)，而旧共用 Y origin 250 给出 (-7,-90)，低了 19 个设计像素，虽视频大于开口，顶部仍漏出约 7.52 像素。新增 Take 专属、可追溯的 Y origin 231，保留原缩放和相对动画坐标；其余舞台仍采用原注册值。过场透明／彩色视频复制同一 Sprite transform，随此次调整一起贴合。未改写 CSV 或把观众席当成屏幕的一部分。
+
+专门的几何回归证明两版的视频矩形覆盖整个开口，含 1280×720、869×489、357×201、321×180、800×500，以及环境缩放 1、1.073、0.85；published-assets 逐条核对两版所有屏幕指令与实际视频尺寸。build:check 21.34 秒、无 public 拷贝；build-audit、engineering 与新增回归通过，绑定本批修改中的 f647ce4f。CI 只增加源代码回归，未声明 GitHub CI 已执行。
+
+Browser 最终 bundle：桌面 Take01 22.4 秒、手机 390×844 的 26 秒、横屏 844×390 的 Take02 26 秒实际观察，黑色细缝消失，完整舞台框保留；回到 Study 时配准回落到 legacy-content-plane，未串用 Take 修正。无 console error。截图 chibi-take-screen-after-desktop/mobile.png、chibi-take02-screen-after-landscape.png；修前截图及放大的 top-edge 对照保留。视口结束后重置。这是指定帧／模拟设备检查，不等于真实设备、原相机视野或人物比例完全复刻。
+
+原片同时揭示尚未完成的效果：组合独唱时前景与看台 call 棒同步切换代表色、舞台装饰／地板有明暗与发光，当前仅背景和人物染色不足以表达这一层。精确重读两个 RAW TextAsset，Take01 有 **1,941 条 Stagelight、495 条 Penlight_unit_color**，Take02 有 **1,940 条 Stagelight、495 条 Penlight_unit_color**。原命令含独立编号、强度／时间／颜色集合等字段，完整命名行保留在 take-reference/raw-light-commands.json；当前尚未把这些源命令接到相应材质／观众棒，不能用整体 Image_color 冒充。原片截图中顶部装置、地板 glitter、观众席与粒子仍列为下一轮源语义／资源关联工作。屏幕修正未宣称消除这些缺口。
