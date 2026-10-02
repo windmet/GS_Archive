@@ -5,6 +5,7 @@ import {createPlaybackIntent} from '../src/core/PlaybackIntent.js'
 import {withLoadDeadline} from '../src/core/AsyncLoadBoundary.js'
 import {parseBatchBlobs,publicationGitSnapshot} from './lib/publication-git-snapshot.mjs'
 import {execFileSync} from 'node:child_process'
+import {SkeletonData, BoneData, Skeleton, Animation, RotateTimeline, AnimationState, AnimationStateData} from '@pixi-spine/runtime-3.8'
 const source=fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
 const motionSource=fs.readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8')
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return {promise,resolve,reject}}
@@ -20,10 +21,48 @@ function fixture(boundary='audio'){
     requestAnimationFrame(){frames.add(1);return 1},cancelAnimationFrame(id){frames.delete(id)},updateStage(){},backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,
   }
   vm.createContext(c)
-  for(const name of ['toggleStage','stopStage','applyPlaybackSpeed'])vm.runInContext(source.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0],c)
+  for(const name of ['toggleStage','stopStage','applyPlaybackSpeed','syncMotionPlaybackSpeed'])vm.runInContext(source.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0],c)
   return {c,gate,native,frames,audios,runtime}
 }
 let cases=0
+{
+  const c={};vm.createContext(c)
+  for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
+  function actor(){
+    const data=new SkeletonData();data.bones.push(new BoneData(0,'root',null))
+    for(const [name,a,b] of [['test_3dance',0,10],['test_4loop',20,40]]){
+      const curve=new RotateTimeline(2);curve.boneIndex=0;curve.setFrame(0,0,a);curve.setFrame(1,1,b)
+      data.animations.push(new Animation(name,[curve],1))
+    }
+    const skeleton=new Skeleton(data),state=new AnimationState(new AnimationStateData(data))
+    const runtime={skeletonData:data,spine:{state,skeleton,update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
+    c.playLiveChibiMotion(runtime,data.animations.map(a=>a.name),{reset:true,paused:true})
+    return runtime
+  }
+  for(const time of [0,.2,.95,1.04,1.1,2.25,7.5]){
+    const actual=actor(),reference=actor();reference.spine.state.timeScale=1
+    let elapsed=0
+    while(elapsed<time-1e-9){const dt=Math.min(1/120,time-elapsed);reference.spine.update(dt);elapsed+=dt}
+    reference.spine.update(0);c.seekLiveChibiMotion(actual,time)
+    assert.equal(actual.spine.state.getCurrent(0).animation.name,reference.spine.state.getCurrent(0).animation.name)
+    assert(Math.abs(actual.spine.skeleton.bones[0].rotation-reference.spine.skeleton.bones[0].rotation)<(time>1&&time<1.08?2:.01),`Seek pose must match continuous main→loop playback at ${time}: ${actual.spine.skeleton.bones[0].rotation} vs ${reference.spine.skeleton.bones[0].rotation}`)
+    assert.equal(actual.spine.state.timeScale,0);cases++
+  }
+  const old=actor();old.spine.state.timeScale=1;old.spine.update(2.25)
+  assert.equal(old.spine.state.getCurrent(0).animation.name,'test_3dance','Witness must reproduce old queued-loop failure')
+  assert.throws(()=>c.seekLiveChibiMotion(actor(),NaN),/Invalid motion/);cases++
+}
+{
+  const f=fixture(),p=f.c.toggleStage();await flush();f.runtime.motionSpeedScale=0.5
+  f.native[0].resolve();await p
+  assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,0.5)
+  f.c.playbackSpeed.value=1.5;f.c.applyPlaybackSpeed();assert.equal(f.runtime.spine.state.timeScale,0.75)
+  f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0)
+  f.c.playbackSpeed.value=2;f.c.applyPlaybackSpeed();assert.equal(f.runtime.spine.state.timeScale,0)
+  const resume=f.c.toggleStage();await flush();f.native[1].resolve();await resume
+  assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,1)
+  f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0);cases++
+}
 for(const boundary of ['unlock','preload','slots']){
   const f=fixture(boundary),p=f.c.toggleStage();await flush();assert(f.c.stageStarting.value)
   f.c.stopStage();f.gate.resolve(true);await p

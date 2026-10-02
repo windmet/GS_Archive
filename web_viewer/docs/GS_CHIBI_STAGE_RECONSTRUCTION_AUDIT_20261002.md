@@ -363,3 +363,27 @@ python -X utf8 scripts/audit-chibi-light-resources.py --names $stageLightNames L
 旁证来自本地已解密 iOS metadata 的类字段／方法签名：Pinspotlight 包含 mask／flash renderer，Penlight 有 SetAnimation／SetTransform／SetSpriteDisplayUnitInner，Stagelight 有 AlphaWave／Rainbow／Gradient。此为另一个平台的元数据，无方法体，不能证明 Android 参数语义或完整渲染合同。Stagelight value3／4／5／7、观众棒排列／动画和 AlphaMaskSprite 行为仍需进一步解码；本轮未上线新的近似灯光模型。
 
 Python 回归／编译、现有坐标、Image_color、背屏注册与 `verify:engineering` 通过；最终 `build:check` 14.10 秒、copyPublicDir:false，`verify:build-audit` progress 通过，绑定 dirty HEAD `89f61110`。首次 build-audit 因另一窗口在构建后修改 StoryDiscovery.vue 被拒，保留失败并在最新工作区重建通过，未回退共享工作。日志 `chibi-study-reference-build-final.log`、`chibi-study-reference-build-audit-final.log`。这是本地进度门禁与指定帧验收，不是当前分支干净发布、GitHub CI、全部交互／真实设备或舞台复刻的最终门禁。
+
+
+## 2026-10-03：暂停时钟、循环定位与原生 Penlight 动画证据
+
+本轮从 `6f59dea3` 开始；构建期间其他窗口正常提交到 `d0b6fc24`，保留其 UI／资源审计改动。真实 Browser 在 Study 17.5 秒暂停时，两次画面中的动作继续变化，虽然滑杆始终 17500。Spine 默认自动更新，旧 stopStage 只停 RAF／音频，没有停 AnimationState。现统一暂停、恢复及变速时的 motion timeScale；异步动作加载完成也按当前播放状态设置速度。启动期间只同步动作速度，避免触发 applyPlaybackSpeed 原有的取消准备逻辑。首次尝试的启动回归被 engineering 测试拒绝，已修复且保留失败日志。
+
+另以实际 Spine 3.8 AnimationState 复现：一次大 delta 不会立即切换排队的主动作→循环，因为切换依赖前次 apply 写入的 trackLast。定位现以不大于 1/60 秒的 CPU pose 步进推进，再一次刷新渲染附件，恢复原速度；事件 speed 仍只乘一次。回归以独立 120Hz 连续播放比对 0／0.2／0.95／1.04／1.1／2.25／7.5 秒，包括循环和混合；80ms 混合区因步进分辨率允许 2° 差，其余骨骼旋转误差小于 0.01°。不把这一回归写成所有实际动作逐帧相同，也未给 CSV 统一加减偏移。
+
+只读录像工具另采样歌曲 14.8／15.1／15.5／15.9／17.1／22.3／22.6 秒（`study-reference/clock-witness/`）。14.8／15.1 仍有三束粉色聚光，15.5 已关闭，与 CSV 15.2 秒隐藏相符，不支持把全部视觉时间统一平移两秒。Study 17.5 秒当前手势仍与同时间录屏不完全相同，默认 005_00 与原片服装也不同；此差异继续待查，不能由暂停修复推导整曲动作已验收。
+
+新增资源检查选项 `--animation-controllers`，通过每个 Animator 的真实 PPtr 保留唯一 Controller／AnimationClip 完整 typetree，拒绝把 legacy curve 数组为空解释成无动画。实际 `LiveObjectPenlight_1` 有 Front 19、Middle 20、Back 21、Back2 22，共 82 个 Animator；`_2` 有 10／9／10，共 29 个。另各有 Shadow Sprite。111 个引用都指向 `resources.assets:1349` 的 Penlight 控制器，共十段：Beat1–3（0.833333s）、Yeah1–3（2s）、Wiper1–4（1s）。曲线实际存于 m_MuscleClip.m_Clip.data.m_StreamedClip，包含 6 或 9 个 scalar curves；控制器的 m_TOS 保留真实状态名。原生变换、底端 pivot、SpriteRenderer 层序、动画字流均已保留，但 RAW value3／4／5 到动画类型／编号／速度的映射尚未验证，未接入新近似观众棒。
+
+```powershell
+python -X utf8 scripts/audit-chibi-light-resources.py --names LiveObjectPenlight_1 LiveObjectPenlight_2 --animation-controllers --output-file .analysis/engineering-validation-20261002/take-reference/typed-penlight-animations.json
+```
+
+该证据 JSON 为 852,053 B，实际断言 82／29 个引用、唯一控制器、十个命名 clips 全部通过；Python 编译通过。无录像拷贝、素材包或未知参数强行解码。Android 同来源哈希沿用上一节，iOS metadata 仍只有签名旁证，不能当作方法体证明。
+
+最终本地 `verify:engineering` 通过，stage timing／protocol 为 23 项；`build:check` 13.66 秒、copyPublicDir:false；`verify:build-audit` progress 通过，绑定 dirty HEAD `d0b6fc24`，不是干净发布门禁或 GitHub CI。日志 `chibi-motion-pause-engineering-final.log`、`chibi-motion-pause-build-final.log`、`chibi-motion-pause-build-audit-final.log`。最终 Bundle Browser 证据和剩余视觉差异见本节后续记录。
+
+
+最终 Browser 旅程：复用 PID 62924 的 5198 build-check 生产 bundle／已有 public 资源映射；页面标题／路由正确、内容非空、无框架错误遮罩。1440×900 的 Study S.E.M 编队定位 17.5 秒、32.2 秒；从 32.2 实际播放到 64.7 秒，暂停定格于 65 秒；暂停下改 2× 倍速。17.5 秒暂停、播放后暂停和暂停变速的两次完整截图分别像素完全一致（seek-loop-final-desktop-a/b、final-play-pause-a/b、final-speed-pause-a/b）。390×844 的 Study 17.5 秒舞台／播放区同样像素一致，差异仅在底部控制台的加载点，不属于舞台；截图 final-mobile-pause-a/b。切 Take01 至 22.4 秒，五人中央高亮、背屏贴合及暂停画面实际查看，截图 take-reference/final-motion-pause-a/b；舞台区两次截图一致。没有 console error，已有 Spine tint 弃用 warning 保留。结束重置视口并返回 Study 入口。
+
+上述为交互 Bug 的实际浏览器复验与源动画状态回归，不是录屏所有姿势、光效／观众席、真实手机或全曲一致性验收。Study 指定帧仍有手势、遮罩尺寸、台面亮度／发光、前景粉色棒等差异，下一轮应沿原生参数与角色动作来源继续核对。

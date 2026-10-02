@@ -432,6 +432,28 @@ export async function injectLiveChibiMotion(runtime, motion, { isCurrent = () =>
   return animations
 }
 
+// A single large AnimationState update cannot cross a queued main→loop
+// transition faithfully: trackLast is populated by the preceding apply.
+// Replay CPU pose steps, then refresh render attachments once at the end.
+export function seekLiveChibiMotion(runtime, seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid motion seek time')
+  const { state, skeleton } = runtime.spine
+  const priorSpeed = state.timeScale
+  state.timeScale = 1
+  try {
+    let remaining = seconds
+    while (remaining > 1e-9) {
+      const step = Math.min(remaining, 1 / 60)
+      state.update(step)
+      state.apply(skeleton)
+      remaining -= step
+    }
+    runtime.spine.update(0)
+  } finally {
+    state.timeScale = priorSpeed
+  }
+}
+
 export function playLiveChibiMotion(runtime, animationNames, {
   paused = false,
   reset = false,

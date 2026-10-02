@@ -29,7 +29,25 @@ def identity(reader):
     return {'serializedFile': reader.assets_file.name, 'pathId': str(reader.path_id)}
 
 
-def inspect_prefab(reader):
+def inspect_controller(reader, evidence):
+    key = reader.assets_file.name + ':' + str(reader.path_id)
+    if key not in evidence:
+        controller = reader.read()
+        clips = []
+        for pointer in controller.m_AnimationClips:
+            clip_reader = pointer.deref()
+            raw = clip_reader.get_raw_data()
+            # Keep native streamed curves too: empty legacy curve arrays do not
+            # establish an unanimated clip. Parameter semantics remain unknown.
+            clips.append({**identity(clip_reader), 'bytes': len(raw),
+                'sha256': hashlib.sha256(raw).hexdigest(),
+                'typetree': clip_reader.read_typetree()})
+        evidence[key] = {**identity(reader), 'name': controller.m_Name,
+            'typetree': reader.read_typetree(), 'clips': clips}
+    return key
+
+
+def inspect_prefab(reader, animation_evidence=None):
     game_object = reader.read()
     components, children = [], []
     for link in game_object.m_Component:
@@ -58,7 +76,13 @@ def inspect_prefab(reader):
                           'scale': vector(value.m_LocalScale),
                           'rotation': vector(value.m_LocalRotation)})
             for child in value.m_Children:
-                children.append(inspect_prefab(child.read().m_GameObject.deref()))
+                children.append(inspect_prefab(child.read().m_GameObject.deref(), animation_evidence))
+        elif obj.type.name == 'Animator':
+            if value.m_Controller.m_PathID:
+                controller_reader = value.m_Controller.deref()
+                entry['controller'] = identity(controller_reader)
+                if animation_evidence is not None:
+                    entry['animationEvidenceKey'] = inspect_controller(controller_reader, animation_evidence)
         elif obj.type.name == 'SpriteRenderer':
             entry['color'] = {k: getattr(value.m_Color, k) for k in ('r', 'g', 'b', 'a')}
             entry['sortingOrder'] = value.m_SortingOrder
@@ -89,6 +113,8 @@ def main():
     add_sources_config_argument(parser)
     parser.add_argument('--names', nargs='+', required=True, help='Exact root GameObject names')
     parser.add_argument('--output-file', type=Path, required=True)
+    parser.add_argument('--animation-controllers', action='store_true',
+                        help='Retain unique native AnimatorController and AnimationClip typetrees')
     args = parser.parse_args()
     sources = load_archive_sources(args.sources_config)
     helper_spec = importlib.util.spec_from_file_location('stage_effect_source', ROOT / 'scripts/prepare-live-chibi-stage-effects.py')
@@ -97,7 +123,8 @@ def main():
     data = helper.read_unity_data(helper.find_xapk(None, sources.xapk_file))
     environment = UnityPy.load(data)
     names = set(args.names)
-    prefabs = [inspect_prefab(obj) for obj in environment.objects
+    animation_evidence = {} if args.animation_controllers else None
+    prefabs = [inspect_prefab(obj, animation_evidence) for obj in environment.objects
                if obj.type.name == 'GameObject' and obj.read().m_Name in names]
     missing = sorted(names - {prefab['name'] for prefab in prefabs})
     if missing:
@@ -107,7 +134,7 @@ def main():
     output.write_text(json.dumps({'schemaVersion': 1, 'status': 'typed_resource_evidence_only',
         'source': {'xapk': sources.xapk_file.name, 'xapkSha256': sha256_file(sources.xapk_file),
                    'unityDataSha256': hashlib.sha256(data).hexdigest()},
-        'prefabs': prefabs}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        'prefabs': prefabs, 'animationEvidence': animation_evidence}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({'prefabs': len(prefabs), 'output': str(output)}))
 
 

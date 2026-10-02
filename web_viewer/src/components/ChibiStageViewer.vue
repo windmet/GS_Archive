@@ -429,6 +429,7 @@ import {
   fetchLiveChibiStageEffectIndex,
   injectLiveChibiMotion,
   playLiveChibiMotion,
+  seekLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
@@ -2918,9 +2919,9 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   runtime.motionSpeedScale = speedScale
   playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset })
   if (seekTime !== null && seekTime > event.time) {
-    runtime.spine.update((seekTime - event.time) / 1000 * speedScale)
+    seekLiveChibiMotion(runtime, (seekTime - event.time) / 1000 * speedScale)
   }
-  runtime.spine.state.timeScale = playbackSpeed.value * speedScale
+  runtime.spine.state.timeScale = playing.value ? playbackSpeed.value * speedScale : 0
   layoutRuntime(slot.position, event)
 }
 
@@ -3014,6 +3015,7 @@ async function toggleStage() {
     }
   }
   playing.value = true
+  syncMotionPlaybackSpeed()
   syncBackmonitor(true)
   animationFrame = requestAnimationFrame(updateStage)
   } catch (error) {
@@ -3067,6 +3069,7 @@ function stopStage(reset = false) {
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
   playing.value = false
+  syncMotionPlaybackSpeed()
   stageVocalSession.pause()
   if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value) {
     stageTime.value = stageVocalSession.currentTime.value * 1000
@@ -3093,10 +3096,16 @@ function applyPlaybackSpeed() {
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
+  syncMotionPlaybackSpeed()
+}
+
+function syncMotionPlaybackSpeed() {
   for (const position of activePositions.value) {
     const runtime = runtimes.get(position)
     if (runtime) {
-      runtime.spine.state.timeScale = playbackSpeed.value * (runtime.motionSpeedScale || 1)
+      runtime.spine.state.timeScale = playing.value
+        ? playbackSpeed.value * (runtime.motionSpeedScale || 1)
+        : 0
     }
   }
 }
