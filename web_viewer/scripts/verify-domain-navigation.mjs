@@ -6,9 +6,9 @@ import {rewardCondition,historicalDate,itemBrowseGroup} from '../src/components/
 
 assert.equal(itemBrowseGroup(1).key,'recovery');assert.equal(itemBrowseGroup(18).key,'tickets');assert.equal(itemBrowseGroup(999).key,'other');
 const state=useArchiveNavigationState();
-state.view.value='collection_catalog';state.currentEntityKey.value='honor:30017001';state.filterQuery.value='周年';
+state.view.value='collection_catalog';state.currentCollectionState.value={...state.currentCollectionState.value,kind:'honors'};state.currentEntityKey.value='honor:30017001';state.filterQuery.value='周年';
 const route=readArchiveRoute(buildArchiveUrl('http://localhost/?entity=item:999&photo_idol=2',state.currentArchiveRoute()));
-assert.equal(route.view,'collection_catalog');assert.equal(route.entity,'honor:30017001');assert.equal(route.query,'周年');assert.equal(route.photoIdol,undefined);
+assert.equal(route.view,'collection_catalog');assert.equal(route.collection.kind,'honors');assert.equal(route.entity,'honor:30017001');assert.equal(route.query,'周年');assert.equal(route.photoIdol,undefined);
 assert.equal(readArchiveSourceRoute(buildArchiveSourceQuery(route)).entity,'honor:30017001');
 state.view.value='photo_catalog';state.currentPhotoIdol.value='49';state.currentPhotoEntity.value='faces:14902049';
 const photo=readArchiveRoute(buildArchiveUrl('http://localhost/',state.currentArchiveRoute()));assert.equal(photo.photoIdol,'49');assert.equal(photo.entity,undefined);assert.equal(photo.photoEntity,'faces:14902049');

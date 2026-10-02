@@ -33,7 +33,7 @@
               @change="emit('photo-idol', $event.target.value)"
             >
               <option v-for="idol in actors" :key="idol.id" :value="idol.id">
-                {{ idol.nameJa }}
+                {{ displayIdolName(idol.idolCode) || idol.nameJa }}
               </option>
             </select>
           </label>
@@ -194,6 +194,7 @@ const props = defineProps({
   photoIdol: { type: String, default: "" },
   photoEntity: { type: String, default: "" },
   query: { type: String, default: "" },
+  displayIdolName: { type: Function, default: () => "" },
 });
 const emit = defineEmits([
     "query",
@@ -320,6 +321,7 @@ onBeforeUnmount(() => {
 });
 
 async function load() {
+  const requestedPhotoEntity = props.photoEntity;
   const { id, options } = begin();
   rows.value = [];
   try {
@@ -342,14 +344,25 @@ async function load() {
     actor.value = person.actor;
     materialMedia.value = material.media;
     actorMedia.value = person.media;
+    if (
+      ["faces", "poses"].includes(photoTab.value) &&
+      !props.photoEntity &&
+      photoRows.value[0]
+    ) {
+      photoSelection.value = String(photoRows.value[0].id);
+      emit("photo-entity", `${photoTab.value}:${photoSelection.value}`);
+    }
     const position = filtered.value.findIndex(
       (row) => String(row.id) === photoSelection.value,
     );
     page.value = position >= 0 ? Math.floor(position / 25) : 0;
+    busy.value = false;
     await nextTick();
     if (
       id === request &&
-      props.photoEntity &&
+      !options.signal.aborted &&
+      requestedPhotoEntity &&
+      props.photoEntity === requestedPhotoEntity &&
       window.matchMedia("(max-width:700px)").matches
     )
       detailElement.value?.scrollIntoView({ block: "start" });

@@ -225,7 +225,7 @@
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
         @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
-      <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
+      <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
         @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
 
 
@@ -1922,7 +1922,7 @@ async function openDomainTarget(target){
 }
 function selectPhotoEntity(key) {
   if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
-  currentPhotoEntity.value=key; syncArchiveRoute({replace:true})
+  currentPhotoEntity.value=key; syncArchiveRoute({replace:true,restoreView:false})
 }
 function openPictureStudio(key) {
   if (key) selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
