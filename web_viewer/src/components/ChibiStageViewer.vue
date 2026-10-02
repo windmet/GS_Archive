@@ -1621,7 +1621,7 @@ function syncSpotlights() {
   visibleSpotlightCount.value = active.length
   visibleSpotlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
   for (const [id, runtime] of spotlightRuntimes) {
-    runtime.container.visible = Boolean(states.get(id)?.alpha > 0.001)
+    runtime.container.visible = beamEffectsEnabled.value && Boolean(states.get(id)?.alpha > 0.001)
   }
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
@@ -1769,7 +1769,7 @@ function syncLaserlights() {
   visibleLaserlightCount.value = active.length
   visibleLaserlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
   for (const [id, runtime] of laserlightRuntimes) {
-    runtime.graphics.visible = Boolean(states.get(id)?.alpha > 0.001)
+    runtime.graphics.visible = beamEffectsEnabled.value && Boolean(states.get(id)?.alpha > 0.001)
   }
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution

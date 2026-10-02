@@ -335,3 +335,31 @@ Browser 首轮站位覆盖累计 **59 个非特殊歌曲／版本条目**：此�
 Browser 最终 bundle：桌面 Take01 22.4 秒、手机 390×844 的 26 秒、横屏 844×390 的 Take02 26 秒实际观察，黑色细缝消失，完整舞台框保留；回到 Study 时配准回落到 legacy-content-plane，未串用 Take 修正。无 console error。截图 chibi-take-screen-after-desktop/mobile.png、chibi-take02-screen-after-landscape.png；修前截图及放大的 top-edge 对照保留。视口结束后重置。这是指定帧／模拟设备检查，不等于真实设备、原相机视野或人物比例完全复刻。
 
 原片同时揭示尚未完成的效果：组合独唱时前景与看台 call 棒同步切换代表色、舞台装饰／地板有明暗与发光，当前仅背景和人物染色不足以表达这一层。精确重读两个 RAW TextAsset，Take01 有 **1,941 条 Stagelight、495 条 Penlight_unit_color**，Take02 有 **1,940 条 Stagelight、495 条 Penlight_unit_color**。原命令含独立编号、强度／时间／颜色集合等字段，完整命名行保留在 take-reference/raw-light-commands.json；当前尚未把这些源命令接到相应材质／观众棒，不能用整体 Image_color 冒充。原片截图中顶部装置、地板 glitter、观众席与粒子仍列为下一轮源语义／资源关联工作。屏幕修正未宣称消除这些缺口。
+
+## 2026-10-03：Study 第二录屏目标与光束开关修复
+
+输入 HEAD `89f61110`。用户补充的第二验收目标为本地 `E:/Program Files/yt-dlp/Media/【偶像大师SideM成长之星MV】Study Equal Magic!.mp4`：27,117,494 B、1600×720、114.733 秒，SHA256 `29396c33375c6d4c1e20339cdcd03e0a2dc62de77f211a14bb151b08ec8fde17`。与本地 `steqmg.m4a` 分别取歌曲 10–20 秒、90–100 秒的单声道波形作归一化互相关，录像起点偏移为 4.7275／4.73175 秒，相关度 0.88185／0.81699，两段差 0.00425 秒。初次长段比对因微小录制时钟漂移未达阈值，未沿用其低置信匹配。此证据确定歌曲时间与录像时间的对应，**不证明 CSV 动作时钟或视觉复刻已通过**。
+
+新增只读 `audit-chibi-reference-video.py`：两段分离波形见证均须相关度至少 0.75、起点差不超过 40ms；失败就停止抽帧，不猜片头长度。只在内存解码低采样率音频，输出七张宽 960px 的 JPG 与来源／时间／SHA256 receipt，不复制录像或产生完整媒体包。回归 `verify-chibi-reference-video.py` 使用独立合成信号，实际覆盖增益、噪声、DC 偏移、片头裁去及无效输入拒绝。分析工具需要现有 Python NumPy／SciPy 与本地 ffmpeg／ffprobe，未增加前端依赖。复现命令如下（ffmpeg 路径按实际安装位置指定）：
+
+```powershell
+python -X utf8 scripts/verify-chibi-reference-video.py
+python -X utf8 scripts/audit-chibi-reference-video.py --video "E:/Program Files/yt-dlp/Media/【偶像大师SideM成长之星MV】Study Equal Magic!.mp4" --song-audio public/assets/live-chibi/music/steqmg.m4a --ffmpeg "D:/Program Files/ffmpeg/bin/ffmpeg.exe" --ffprobe "D:/Program Files/ffmpeg/bin/ffprobe.exe" --output-root .analysis/engineering-validation-20261002/study-reference/aligned --times 2.9 13 17.5 32.174 54 75 92
+```
+
+Browser 5198 的 Study 基线使用 S.E.M 三人：2 号位山下次郎、3 号位硲道夫、4 号位舞田类，当前默认 005_00 服装与录屏粉色外套不同，人物比例不按像素一致验收。1440×900 指定帧 13／17.5／32.2／54／75／92 秒与音频配准后的录像比较；滑杆步长为 100ms，32.174 秒需取 32.2 秒，保留 26ms 误差。仍可见聚光与星形遮罩的尺寸／层次不符、观众粉色 call 棒缺失、台面光效与整体亮度不一致。暂停帧动作还需检查异步动作加载和源时钟，未凭不同姿势直接改写 CSV 或加臆测的两秒偏移。第二目标保持 **待完整视觉验收**。
+
+本轮复现并修复实际交互 Bug：在 13 秒关闭“光束灯效”后，诊断计数已归零，但此前建成的 Spotlight 聚光池、Laserlight 斜线仍显示。两处同步函数遗漏开关判断，现将已有渲染对象的 visible 同时约束为开关开启和时间轴状态可见。1440×900 同段关／开可见验证通过：关闭后池／激光消失，开启后恢复；关闭后定位 17.5 秒仍保持隐藏。390×844 再验证关闭状态及恢复，计数与画面一致，无新 console error，已有 Spine tint 弃用警告保留。此开关只控制 Spotlight／Laserlight／Pinspotlight，舞台物件仍由自己的开关控制。截图 `study-reference/beams-off-before.png`、`beams-off-after.png`、`beams-on-after.png`、`beams-off-seek-after.png`、`beams-off-mobile-after.png`、`beams-on-mobile-after.png`；结束已重置视口。模拟窄屏不是实际手机验收。
+
+补充资源证据工具 `audit-chibi-light-resources.py` 精确查验 Android XAPK 内 `resources.assets` 的 22 个 `fx_in_tkstp1_stagelight_*` 和 `LiveObjectPinspotlight`，保留 Transform、Sprite→PPtr→Texture2D、材质／shader 和脚本类名。未知 MonoBehaviour 自定义尾部显式保留 rawHex／SHA256／严格读取失败，不把公共字段当作完整解码。XAPK SHA256 `517b907602c2667b6f1caa7d1df2623d49d082cd27f89e44163765e1ea61bda2`，内部 Unity data SHA256 `d35231c0b00a09f6941f47f7ffedde9e9b35701f5b66d6f432517da860e1a500`；结果 `take-reference/typed-light-prefabs.json`。工具复现：
+
+```powershell
+$stageLightNames = 1..22 | ForEach-Object { "fx_in_tkstp1_stagelight_$_" }
+python -X utf8 scripts/audit-chibi-light-resources.py --names $stageLightNames LiveObjectPinspotlight --output-file .analysis/engineering-validation-20261002/take-reference/typed-light-prefabs.json
+```
+
+确认 Stagelight 根脚本是 `LiveObjectLightSpriteEffect`，子灯片具有不同局部缩放，22 个 prefab 不等于 22 张独立纹理；材质为 `underlight_add`／`Mobile/Particles/Additive`。Pinspotlight 有 **MaskSprite 和 FlashSprite 两个角色**：前者使用 Sprites/Default 并关联 AlphaMaskSprite，后者初始为黑色、采用 TransparentAdd／ohashi/SimpleAdd。现有单 Sprite ADD 加全画布变暗尚未复刻遮罩链，但 ADD 确实是源 Flash 层材质，不能把 additive 本身判为错误。Study 原片确有地面星形光，待修的是投影位置／尺寸／遮罩作用，而非简单删掉星形。
+
+旁证来自本地已解密 iOS metadata 的类字段／方法签名：Pinspotlight 包含 mask／flash renderer，Penlight 有 SetAnimation／SetTransform／SetSpriteDisplayUnitInner，Stagelight 有 AlphaWave／Rainbow／Gradient。此为另一个平台的元数据，无方法体，不能证明 Android 参数语义或完整渲染合同。Stagelight value3／4／5／7、观众棒排列／动画和 AlphaMaskSprite 行为仍需进一步解码；本轮未上线新的近似灯光模型。
+
+Python 回归／编译、现有坐标、Image_color、背屏注册与 `verify:engineering` 通过；最终 `build:check` 14.10 秒、copyPublicDir:false，`verify:build-audit` progress 通过，绑定 dirty HEAD `89f61110`。首次 build-audit 因另一窗口在构建后修改 StoryDiscovery.vue 被拒，保留失败并在最新工作区重建通过，未回退共享工作。日志 `chibi-study-reference-build-final.log`、`chibi-study-reference-build-audit-final.log`。这是本地进度门禁与指定帧验收，不是当前分支干净发布、GitHub CI、全部交互／真实设备或舞台复刻的最终门禁。
