@@ -466,4 +466,20 @@ Study 32.1 秒的 RAW Camera 命令 `value101=1/value102=1` 被旧主生成器�
 
 剩余差异明确保留：Spotlight 旧近似绘制残留中央／台前光斑，录屏单人聚光束更鲜明；粉色前景 call 棒未接线；动作相位、角色比例／遮罩／stage wash 尚未全曲逐帧验收。这里修复的是确切被丢弃的 Camera 退场，不把剩余视觉差异归为已通过。
 
+## 2026-10-03：Spotlight 原生双纹理与绑定接线
+
+输入 HEAD `23d51f1b`；期间其他窗口提交到 `fdd640bb`，保留其卡池／摄影 UI 工作。上一轮为实际 Camera 修复、Browser 与完整 CI 成功，本轮继续排查 Study 灯效。
+
+从同一 XAPK 的 `resources.assets` 精确读取 `LiveObjectSpotlight`（GameObject 11425，script 106552，原始 72 B SHA256 `55038948738eea26551a2ef00be195b70c19cc95d60a93cd37b3598f4ab59cc1`）。iOS metadata 同名类序列化字段只有 `_flashSprites`，基类保留 targetIdol；从原始 PPtr 数组而非树顺序关联 SpriteRenderer 54159／55516、Sprite 2482／2495、Texture2D 791／799。两个 material 均为 `Mobile/Particles/Additive`。证据 `study-reference/typed-spotlight.json` 与小型 tracked fixture `scripts/fixtures/chibi-spotlight-prefab.json` 不含纹理或录像。
+
+原资源是 `Spotlight1`（1024×1024，alpha 0–227）与 `Spotlight2`（512×512，alpha 0–129）；前者为边缘更亮的尖锥，后者为扁平柔光圈。原子节点光束局部 Y≈4.7、PPU=100，地面光圈 scale≈0.6，pivot 均为 0.5。导出工具添加这两张实际纹理及以原始 PPtr 校验的 `spotlight.layers`，保留 native Texture identity／原始 SHA 和导出 PNG SHA。浏览器仍用既有参考校准的 2D 落点投影，局部几何与 additive 接线**不等于 Unity 摄像机或移动语义已经复原**。
+
+`ChibiStageViewer` 删除生成锥形 canvas 和 Graphics 椭圆，消费双原始 Sprite。共享贴图加载器通过 generation 拒绝切歌／卸载后的迟到结果，多个灯共享贴图；单张失败不安装半个灯、不逐帧重复请求，成功的兄弟资源在 release 时释放。没有在这一批更改 Spotlight 事件、自由灯状态、moveDuration 或整体洗色算法；旧 stage-effects 索引缺少新 descriptor 时不再冒充原生灯，需重新运行导出工具。PNG 与本地派生索引未提交；发布资源更新另需实际验收。
+
+本地：native binding／子节点重排／10 种污染拒绝、实际 SFC Sprite factory、共享加载／迟到释放／失败处理、`verify:engineering` 均通过。`build:check` 完整编译 2780 modules，12.01s，固定 `.analysis/build-check`、未复制 public。HTTP 实测 Spotlight1 47,811 B、Spotlight2 6,118 B，响应 SHA 与导出清单一致。CI 新增 portable 原生绑定与异步生命周期 gate；此处尚未宣称它在 GitHub 跑过。
+
+Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访问；按工具恢复流程在同一 IAB 新建 tab 8，实际成功捕获，未改用其他自动化通道。生产 bundle `ChibiStageViewer-DZ9emiMg.js`，Study S.E.M 编队、005_00 衣装、13.7s 三束粉色光在桌面和 390×844 模拟视口可见；关闭后 seek 到 13.9s 保持消失，15.3s 退场计数 0，倒退 13.7s 恢复 3。无 console error，已有 Spine tint 弃用警告保留。结束重置 viewport。截图：`spotlight-native-desktop-013.700.png`、`spotlight-native-mobile-013.700.png`、`spotlight-native-off-mobile.png`。
+
+**未通过的视觉要求**：32.5s 原生形状使旧自由灯错误更加明显，中央额外黄色束／台前光圈及右侧两束重叠仍存在（`spotlight-native-remaining-032.500.png`）；参考录屏该时刻主要是右台单束。需要继续验证 `Show(targetCharaIndex, scriptPos, moveDuration)` 的 CSV 字段映射、自由坐标与退场，不能凭 10000 数值直接假定 timeout 或补合成 hide。粉色前景 call 棒、激光形状、完整粒子和动作相位也未收口。本轮只证明原生资源链及指定交互，未宣称 Study 全曲验收、真实手机或发布通过。
+
 提交 `2800eae307c43f961a9ea9178df0946892508e92` 已推送；完整 [Source Gate 37072347273](https://github.com/windmet/GS_Archive/actions/runs/37072347273) 在此确切代码 revision **成功，113 个步骤成功、无失败**，包含新增 Camera 控制／实际 SFC sampler 回归、已有 Penlight 回归与 source-only 编译。之后的验收记录提交是文档更新，不借此宣称全媒体发布、真实手机、全曲光效或最初 master PR 目标完成。

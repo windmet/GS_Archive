@@ -55,6 +55,7 @@
     :data-particle-layer-frames="particleLayerFrames"
     :data-spotlight-count="visibleSpotlightCount"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
+    :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
     :data-pinspotlight-count="visiblePinspotlightCount"
@@ -436,6 +437,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
+import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
@@ -550,8 +552,18 @@ let objectLayerSongId = ''
 let objectLayerSequence = 0
 const objectLayerRuntimes = new Map()
 const objectLayerLoads = new Map()
-const spotlightRuntimes = new Map()
-let spotlightConeTexture = null
+const spotlightSprites = createSpotlightSpriteStore({
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: createSpotlightRuntime,
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent()
+    runtime.container.destroy({ children: true })
+  },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSpotlights(),
+  onError: error => console.warn('Native Spotlight textures could not be loaded', error),
+})
+const spotlightRuntimes = spotlightSprites.runtimes
 const laserlightRuntimes = new Map()
 const pinspotlightRuntimes = new Map()
 const pinspotlightRuntimeLoads = new Map()
@@ -1583,48 +1595,19 @@ function spotlightStatesAt(milliseconds) {
   return states
 }
 
-function ensureSpotlightConeTexture() {
-  if (spotlightConeTexture) return spotlightConeTexture
-  const canvas = document.createElement('canvas')
-  canvas.width = 256
-  canvas.height = 1024
-  const context = canvas.getContext('2d')
-  const image = context.createImageData(canvas.width, canvas.height)
-  for (let y = 0; y < canvas.height; y += 1) {
-    const vertical = y / (canvas.height - 1)
-    const halfWidth = 0.035 + vertical * 0.465
-    const verticalAlpha = Math.min(1, vertical * 5) * (0.42 + vertical * 0.58)
-    for (let x = 0; x < canvas.width; x += 1) {
-      const distance = Math.abs(x / (canvas.width - 1) - 0.5)
-      const edge = Math.max(0, Math.min(1, (halfWidth - distance) / 0.09))
-      const alpha = Math.round(255 * verticalAlpha * edge * edge * (3 - 2 * edge))
-      const offset = (y * canvas.width + x) * 4
-      image.data[offset] = 255
-      image.data[offset + 1] = 255
-      image.data[offset + 2] = 255
-      image.data[offset + 3] = alpha
-    }
-  }
-  context.putImageData(image, 0, 0)
-  spotlightConeTexture = markRaw(PIXI.Texture.from(canvas))
-  return spotlightConeTexture
-}
-
-function createSpotlightRuntime(id) {
+function createSpotlightRuntime(id, layers, textures) {
   const container = markRaw(new PIXI.Container())
-  const cone = markRaw(new PIXI.Sprite(ensureSpotlightConeTexture()))
-  cone.anchor.set(0.5, 1)
-  cone.blendMode = PIXI.BLEND_MODES.ADD
-  const pool = markRaw(new PIXI.Graphics())
-  pool.beginFill(0xffffff)
-  pool.drawEllipse(0, 0, 135, 28)
-  pool.endFill()
-  pool.blendMode = PIXI.BLEND_MODES.ADD
-  container.addChild(cone, pool)
+  const sprites = layers.map((layer, index) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[index]))
+    sprite.anchor.set(layer.anchorX, layer.anchorY)
+    sprite.position.set(layer.x, layer.y)
+    sprite.scale.set(layer.scaleX, layer.scaleY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    container.addChild(sprite)
+    return sprite
+  })
   cameraContainer.addChild(container)
-  const runtime = markRaw({ id, container, cone, pool })
-  spotlightRuntimes.set(id, runtime)
-  return runtime
+  return markRaw({ id, container, sprites })
 }
 
 function syncSpotlights() {
@@ -1642,34 +1625,23 @@ function syncSpotlights() {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
-    const runtime = spotlightRuntimes.get(state.id) || createSpotlightRuntime(state.id)
+    const runtime = spotlightSprites.ensure(state.id, stageEffectIndex.value?.spotlight, stageEffectIndex.value?.assets)
+    if (!runtime) continue
     const target = state.stagePosition
       ? layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
       : { x: Number(state.x) || 0, y: 180 }
     const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
-    const topY = height * 0.5 - 500 * viewportScale
     runtime.container.position.set(targetX, targetY)
+    runtime.container.scale.set(viewportScale)
     runtime.container.zIndex = Number(state.depth) || 1800
     runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
     runtime.container.visible = true
-    runtime.cone.tint = parseHexColor(state.beamColor, 0xffffff)
-    runtime.cone.width = 310 * viewportScale
-    runtime.cone.height = Math.max(1, targetY - topY)
-    runtime.cone.alpha = 0.16
-    runtime.pool.tint = runtime.cone.tint
-    runtime.pool.scale.set(viewportScale)
-    runtime.pool.alpha = 0.16
+    for (const sprite of runtime.sprites) sprite.tint = parseHexColor(state.beamColor, 0xffffff)
   }
 }
 
 function releaseSpotlights() {
-  for (const runtime of spotlightRuntimes.values()) {
-    runtime.container.removeFromParent()
-    runtime.container.destroy({ children: true })
-  }
-  spotlightRuntimes.clear()
-  spotlightConeTexture?.destroy(true)
-  spotlightConeTexture = null
+  spotlightSprites.release()
   visibleSpotlightCount.value = 0
   visibleSpotlightIds.value = []
 }

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import io
 import json
 import sys
@@ -11,6 +12,7 @@ import zipfile
 from pathlib import Path
 
 import UnityPy
+from live_chibi_spotlight import spotlight_sprite_model
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -51,7 +53,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return lowered in {"laserlight_1", "laserlight_2", "laserlight_3"} or (
+    return lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -66,7 +68,8 @@ def main() -> None:
     sources = load_archive_sources(args.sources_config)
     xapk = find_xapk(args.xapk, sources.xapk_file)
     output_root = args.output_root.resolve()
-    environment = UnityPy.load(read_unity_data(xapk))
+    unity_data = read_unity_data(xapk)
+    environment = UnityPy.load(unity_data)
     output_root.mkdir(parents=True, exist_ok=True)
     assets: dict[str, dict] = {}
     for obj in environment.objects:
@@ -88,12 +91,33 @@ def main() -> None:
             "height": image.height,
             "alphaRange": list(image.getchannel("A").getextrema()),
             "bytes": target.stat().st_size,
+            "source": {"serializedFile": obj.assets_file.name, "pathId": str(obj.path_id),
+                       "sha256": hashlib.sha256(obj.get_raw_data()).hexdigest()},
+            "pngSha256": hashlib.sha256(target.read_bytes()).hexdigest(),
         }
 
+    # Inspect typed bindings before publishing a renderer descriptor; names alone
+    # do not establish that a texture belongs to the Spotlight prefab.
+    import importlib.util
+    audit_spec = importlib.util.spec_from_file_location('light_audit', PROJECT_ROOT / 'scripts/audit-chibi-light-resources.py')
+    audit = importlib.util.module_from_spec(audit_spec)
+    audit_spec.loader.exec_module(audit)
+    roots = [obj for obj in environment.objects
+             if obj.type.name == 'GameObject' and obj.read().m_Name == 'LiveObjectSpotlight']
+    if len(roots) != 1:
+        raise ValueError('Ambiguous native Spotlight prefab')
+    spotlight = spotlight_sprite_model(audit.inspect_prefab(roots[0]))
+    for layer in spotlight['layers']:
+        source = assets[layer['asset']]['source']
+        if (source['serializedFile'], source['pathId']) != (spotlight['serializedFile'], layer['texturePathId']):
+            raise ValueError('Spotlight texture identity mismatch')
+
     index = {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "source": xapk.name,
+        "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
+        "spotlight": spotlight,
     }
     index_target = output_root / "index.json"
     index_target.write_text(

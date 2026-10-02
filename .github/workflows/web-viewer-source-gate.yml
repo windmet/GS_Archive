@@ -132,6 +132,9 @@ jobs:
       - name: Verify native chibi Penlight object and controller bindings
         run: python scripts/verify-chibi-penlight-bindings.py
 
+      - name: Verify native Spotlight sprite bindings and async disposal
+        run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs
+
       - name: Verify bounded chibi ImageObject source timelines
         run: npm run verify:chibi-image-objects
 
