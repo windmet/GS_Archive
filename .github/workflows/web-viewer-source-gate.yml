@@ -133,7 +133,7 @@ jobs:
         run: python scripts/verify-chibi-penlight-bindings.py
 
       - name: Verify native Spotlight sprite bindings and async disposal
-        run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs && node scripts/verify-chibi-spotlight-targets.mjs
+        run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs && node scripts/verify-chibi-spotlight-targets.mjs && python scripts/verify-chibi-spotlight-background.py && node scripts/verify-chibi-spotlight-background.mjs
 
       - name: Verify bounded chibi ImageObject source timelines
         run: npm run verify:chibi-image-objects

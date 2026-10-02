@@ -503,3 +503,17 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 本批代码 `bb35d2ad1219d27bce468b035602a424e4c5a3ce` 的完整 Source Gate 已终态 success，114 个成功步骤、无失败；[run 37076345523](https://github.com/windmet/GS_Archive/actions/runs/37076345523)。新增 target 清退回归与原生双纹理绑定／异步释放在门禁同一步执行。此结论绑定该代码提交；后续文档提交不扩大视觉验收范围。
 
 下一层证据：`study-reference/spotlight-type-contracts.json` 精确记录同一 iOS metadata 的类型契约，确认 `SpotlightBackground` 独立于灯束，持有 `_spriteRenderer`、`_maskSystem`、`_targetAlpha`，提供 showingCount、SetColor、UpdateIfNeeded、Show／Hide／Clear。这说明后续环境压暗／遮罩应从原生背景组件链路继续查，不能用当前角色 tint 近似冒充原生背景遮罩；metadata 不包含可验证的 native 方法体，具体公式仍未证明。
+
+## 2026-10-03：Spotlight 原生背景接线与 Pinspotlight 遮罩边界
+
+继续从实际 Android XAPK 解析 `SpotlightBackground`：resources.assets GameObject 30569、MonoBehaviour 115454（60 B，SHA256 `61c81af21f074073cedab441cad84e4cf29a071668d2191056b342017c1d2c99`）。序列化 PPtr 精确指向 SpriteRenderer 54487 与 SpriteAlphaMaskSystem 109951；MaskedSprite 的 AlphaMaskedSprite 119984 又指向同一系统。Sprite 2064／Texture 573 是 `pinspotlight_back`，128×128 全白不透明；原 Transform scale=(20,20,1)、pivot=(0.5,0.5)、PPU=100、默认 sortingOrder=1900。`_targetAlpha≈0.8` 是 prefab 初值，不替换已解析的编排 environmentOpacity。小型 tracked fixture 与严格导出模型保留上述身份，拒绝错误 PPtr、材质、尺寸、变换和非有限 alpha。stage-effects 索引升级 schema 3，新增 spotlightBackground；12 张原生纹理仍由本地导出，不把整包媒体提交。
+
+同时直接读取原 Material 122 指向的 Shader 970 `Custom/AlphaMaskedSprite`（原始 SHA256 `f3eaafb3e1943b6eec9c36ab2bb63ebfddb1259b54d4a6799ea41f83cdcae1f7`）。实际 GLES3 片段对屏幕遮罩 RGB 做 dot(0.299,0.587,0.114)，乘主纹理与 vertex color alpha，输出预乘 RGB／alpha；native blend 为 One／OneMinusSrcAlpha。原生 Pinspotlight 则有两个同纹理子节点：MaskSprite 用 Sprites/Default，FlashSprite 用 ohashi/SimpleAdd；AlphaMaskSprite 保留 SortingOrderInterval 1000–3000，与背景的专用 mask system 链相关。厂商 [SpriteAlphaMask 文档](https://gcaseres.gitlab.io/unity/documentation/spritealphamask/getting-started/) 也明确区分 AlphaMaskedSprite 与 AlphaMaskSprite、专用材质和相机隐藏 mask layer。完整本地证据为 `study-reference/typed-spotlight-background.json`、`spotlight-background-source-inventory.json` 与 `AlphaMaskedSprite.shader`／对应 typetree；UnityPy 导出的 shader wrapper 只作诊断，未作为可运行 GLSL 发布。mask system 的原始 `ff000000` 未凭字节形状强行解释为 Color32 或枚举。
+
+本轮前端只接线**没有活动 Pinspotlight 遮罩时的 Spotlight 背景**：使用实际白纹理、native 局部 scale 与默认层序，在既有参考校准的舞台／镜头空间绘制正常混合 Sprite。颜色取当前有效编排，退场透明度使用既有 sampler；无状态、关闭灯光、切歌与释放均清理。按指令 time 选取最新环境值，不依赖 Map 的初次插入顺序。原生 Show/Hide 的内部 showingCount、SetSortOrder、相机投影和角色层序公式仍未确定，当前 fade 采样也不是原生方法体复刻。出现 active Pinspotlight 即排除此无孔背景，保留既有 Pinspotlight renderer，防止叠加压暗；**Pinspotlight 的专用孔洞遮罩仍未接入，不能声称本轮复原了 shader／mask system**。角色染色近似没有以背景接线为由改成未知层序。
+
+本地 native background／既有双纹理绑定、实际 SFC seek/hide/toggle、未关联灯清理、共享加载释放、single-layer 迟到加载丢弃以及 `verify:engineering` 均通过。`build:check` 2,779 modules／12.18s，固定 `.analysis/build-check`、copyPublicDir:false。原生资源导出通过；新增 portable 两项回归已并入 Source Gate 的 Spotlight 步骤，尚需确切提交的 CI 终态。
+
+实际 5198 Browser 生产 bundle `ChibiStageViewer-Celd3ZL3.js`：Study S.E.M 2/3/4、005_00，1440×900 的 32.5 秒只见右侧黄束，背景 alpha=0.400；关闭灯光变为 0，再打开／回退到 13.7 秒三束粉光与背景 alpha=0.500。390×844 的 canvas CSS≈357×201，document scrollWidth=clientWidth=390，没有横向溢出。49.4 秒原 hide 结束后 background=0／Spotlight ids 空；4.3 秒 Pinspotlight ids=1,2,3、新背景=0。切 Take01／02 同样背景=0，无 Study 残留；此处仅验清理，不替代两首录屏光效比对。console errors 为空，结束恢复默认视口并保留后续验收 tab。截图 `spotlight-background-032.500.png`、`spotlight-background-off-032.500.png`、`spotlight-background-mobile-013.700.png`。
+
+仍待完整验收：Study 的动作相位、前景 call 棒、粒子、Pinspotlight 原生遮罩、原生背景动态层序与自由灯移动，以及 Take 两半音频精确配准和全曲视觉。窄屏模拟不是实体手机，代码／本地来源检查不是全媒体发布或 master PR 收口。另一个窗口的资料页／审计修改继续保留，本批只提交舞台接线与回归。

@@ -7,6 +7,70 @@ import math
 import struct
 
 
+def spotlight_background_model(prefab):
+    """Resolve the background through both native PPtrs; no guessed mask runtime.
+
+    The opaque-white Sprite is rendered normally only when there are no active
+    Pinspotlight masks. The native masked shader path remains a separate gate.
+    """
+    if prefab['name'] != 'SpotlightBackground':
+        raise ValueError('Unexpected Spotlight background prefab')
+    scripts = [c for c in prefab['components'] if c.get('scriptClass') == 'SpotlightBackground']
+    if len(scripts) != 1:
+        raise ValueError('Ambiguous Spotlight background script')
+    script = scripts[0]
+    raw = bytes.fromhex(script['rawHex'])
+    if len(raw) != 60 or hashlib.sha256(raw).hexdigest() != script['sha256']:
+        raise ValueError('Invalid Spotlight background bytes')
+    renderer_pointer = struct.unpack_from('<iq', raw, 32)
+    system_pointer = struct.unpack_from('<iq', raw, 44)
+    target_alpha = struct.unpack_from('<f', raw, 56)[0]
+    if not math.isfinite(target_alpha) or not 0 <= target_alpha <= 1:
+        raise ValueError('Invalid native target alpha')
+    components = {(0, int(c['pathId'])): (child, c) for child in prefab['children']
+                  for c in child['components']}
+    if renderer_pointer not in components or system_pointer not in components:
+        raise ValueError('Unresolved background PPtr')
+    child, renderer = components[renderer_pointer]
+    _, system = components[system_pointer]
+    if renderer['type'] != 'SpriteRenderer' or system.get('scriptClass') != 'SpriteAlphaMaskSystem':
+        raise ValueError('Invalid background renderer/mask system')
+    if any(c['serializedFile'] != prefab['serializedFile'] for _, c in components.values()):
+        raise ValueError('Cross-file background component')
+    masked = [c for c in child['components'] if c.get('scriptClass') == 'AlphaMaskedSprite']
+    if len(masked) != 1:
+        raise ValueError('Missing background mask binding')
+    mask_raw = bytes.fromhex(masked[0]['rawHex'])
+    if (len(mask_raw) != 44 or hashlib.sha256(mask_raw).hexdigest() != masked[0]['sha256']
+            or struct.unpack_from('<iq', mask_raw, 32) != system_pointer):
+        raise ValueError('Background uses another mask system')
+    transforms = [c for c in child['components'] if c['type'] == 'Transform']
+    if len(transforms) != 1:
+        raise ValueError('Ambiguous background transform')
+    transform = transforms[0]
+    if (transform['position'] != {'x': 0, 'y': 0, 'z': 0}
+            or transform['rotation'] != {'x': 0, 'y': 0, 'z': 0, 'w': 1}
+            or transform['scale'] != {'x': 20, 'y': 20, 'z': 1}):
+        raise ValueError('Unsupported native background transform')
+    sprite = renderer['sprite']
+    if (sprite['name'] != 'pinspotlight_back' or sprite['texture']['name'] != sprite['name']
+            or sprite['rect'] != {'x': 0, 'y': 0, 'width': 128, 'height': 128}
+            or sprite['texture']['width'] != 128 or sprite['texture']['height'] != 128
+            or sprite['pixelsToUnits'] != 100 or sprite['pivot'] != {'x': 0.5, 'y': 0.5}
+            or [m['shader'] for m in renderer['materials']] != ['Custom/AlphaMaskedSprite']):
+        raise ValueError('Unsupported background Sprite/material')
+    return {'status': 'native_unmasked_sprite_only_pinspotlight_mask_pending',
+            'serializedFile': prefab['serializedFile'], 'prefabPathId': prefab['pathId'],
+            'scriptPathId': script['pathId'], 'scriptSha256': script['sha256'],
+            'maskSystemPathId': system['pathId'], 'targetAlpha': target_alpha,
+            'layers': [{'asset': sprite['texture']['name'],
+                        'rendererPathId': renderer['pathId'], 'spritePathId': sprite['pathId'],
+                        'texturePathId': sprite['texture']['pathId'],
+                        'x': 0, 'y': 0, 'scaleX': 20, 'scaleY': 20,
+                        'anchorX': 0.5, 'anchorY': 0.5,
+                        'sortingOrder': renderer['sortingOrder'], 'blend': 'normal'}]}
+
+
 def spotlight_sprite_model(prefab):
     if prefab['name'] != 'LiveObjectSpotlight':
         raise ValueError('Unexpected Spotlight prefab')

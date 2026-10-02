@@ -33,6 +33,7 @@
     :data-image-layers-enabled="imageLayersEnabled"
     :data-object-layers-enabled="objectLayersEnabled"
     :data-lighting-enabled="lightingEnabled"
+    :data-spotlight-background-alpha="spotlightBackgroundAlpha.toFixed(3)"
     :data-beam-effects-enabled="beamEffectsEnabled"
     :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
@@ -437,6 +438,7 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
+import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
@@ -566,6 +568,25 @@ const spotlightSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native Spotlight textures could not be loaded', error),
 })
 const spotlightRuntimes = spotlightSprites.runtimes
+const spotlightBackgroundAlpha = ref(0)
+const spotlightBackgroundSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const layer = layers[0]
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layer.anchorX, layer.anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.NORMAL
+    sprite.zIndex = layer.sortingOrder
+    sprite.visible = false
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite, layer })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSpotlightBackground(),
+  onError: error => console.warn('Native Spotlight background could not be loaded', error),
+})
 const laserlightRuntimes = new Map()
 const pinspotlightRuntimes = new Map()
 const pinspotlightRuntimeLoads = new Map()
@@ -1367,6 +1388,8 @@ function layoutStageBackground() {
 }
 
 function releaseStageBackground() {
+  spotlightBackgroundSprites.release()
+  spotlightBackgroundAlpha.value = 0
   stageBackgroundSequence += 1
   stageBackgroundSprite?.removeFromParent()
   stageBackgroundSprite?.destroy()
@@ -1478,6 +1501,7 @@ function ensureWholeScreenColorOverlay() {
 }
 
 function applyStageLighting() {
+  syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
   applyImageColors()
   // Independent color planes share the authored camera/depth space.
@@ -1564,6 +1588,28 @@ function applyStageLighting() {
   appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
     `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
+}
+
+function syncSpotlightBackground() {
+  spotlightBackgroundAlpha.value = 0
+  const existing = spotlightBackgroundSprites.runtimes.get('background')
+  if (existing) existing.sprite.visible = false
+  if (!app || !cameraContainer) return
+  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value),
+    pinspotlightStatesAt(stageTime.value), lightingEnabled.value)
+  if (!state || state.alpha <= 0.001) return
+  const runtime = spotlightBackgroundSprites.ensure('background',
+    stageEffectIndex.value?.spotlightBackground, stageEffectIndex.value?.assets)
+  if (!runtime) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const fit = Math.min(width / 1280, height / 720) * environmentScale.value
+  runtime.sprite.position.set(width * 0.5, height * 0.5)
+  runtime.sprite.scale.set(runtime.layer.scaleX * fit, runtime.layer.scaleY * fit)
+  runtime.sprite.tint = parseHexColor(state.color, 0x221d23)
+  runtime.sprite.alpha = state.alpha
+  runtime.sprite.visible = true
+  spotlightBackgroundAlpha.value = state.alpha
 }
 
 function spotlightStatesAt(milliseconds) {
