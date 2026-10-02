@@ -1,5 +1,5 @@
 <template>
-  <div class="archive-shell" :class="{ 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
@@ -42,7 +42,7 @@
             @input="emit('update:modelValue', $event.target.value)"
           />
         </label>
-        <ArchiveLanguageSwitch />
+        <ArchiveLanguageSwitch :compact-mobile="compactMobile" />
         </div>
       </template>
     </ArchivePageChrome>
@@ -94,7 +94,7 @@ import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
 defineProps({
-  homeFocus: Boolean, immersiveTool: Boolean,
+  compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
@@ -379,5 +379,18 @@ const mobileNavigation = [
 .is-tool .archive-heading { min-width: 0; }
 .is-tool .archive-topbar h1 { font-size: 16px; }
 .is-tool .archive-header-actions { margin-left:auto; }
+}
+</style>
+
+<style scoped>
+@media(max-width:760px) {
+ .archive-shell.is-compact-mobile { --archive-topbar:calc(52px + var(--archive-safe-top)); }
+ .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) auto;grid-template-rows:52px;gap:6px;padding:var(--archive-safe-top) 10px 0;}
+ .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
+ .is-compact-mobile .archive-topbar h1 {font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+ .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
+ .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
+ .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:3;grid-row:1;}
 }
 </style>

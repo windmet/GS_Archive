@@ -252,7 +252,7 @@
     </div>
 
     <div v-else-if="mode!=='portal'" class="search-view">
-      <StoryDiscovery :entries="searchEntries" :query="searchQuery" @update:query="emit('update:search-query',$event)" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @series-change="emit('update:domain','');emit('clear-section')" @select="emit('select',$event)">
+      <StoryDiscovery :external-filters-active="Boolean(domain || section || availability !== 'all' || sort !== 'domain')" @reset-filters="emit('update:availability','all');emit('update:sort','domain')" :entries="searchEntries" :query="searchQuery" @update:query="emit('update:search-query',$event)" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @series-change="emit('update:domain','');emit('clear-section')" @select="emit('select',$event)">
       <template #filters>
       <div class="catalog-toolbar">
         <label>
@@ -531,4 +531,22 @@ function formatExtraDate(timestamp) {
 </style>
 <style scoped>
 .story-portal{background:#fff}.portal-feature{display:grid;grid-template-columns:minmax(0,2fr) minmax(290px,1fr);gap:28px;padding:24px max(24px,calc((100% - 1120px)/2));background:#f1f6f7;border-bottom:1px solid #e0e8ea}.portal-feature .main-story-band{padding:0;background:none;border:0}.portal-feature .band-heading,.quick-archives .section-heading{min-height:60px;margin-bottom:15px}.portal-feature .band-heading p{font-size:12px;line-height:1.6}.portal-feature .band-heading h2,.portal-section h2,.quick-archives h2{font-size:20px;font-weight:650}.main-chapters{gap:10px}.chapter-entry{aspect-ratio:21/9;min-height:130px;border-radius:10px;box-shadow:0 2px 8px #152f4214}.chapter-entry>img{min-height:0;height:100%;object-fit:cover}.chapter-copy{left:12px;bottom:12px}.chapter-copy strong{font-size:13px}.quick-archives .domain-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick-archives .domain-grid button{min-height:60px;padding:8px;grid-template-columns:28px minmax(0,1fr) 12px;gap:6px;border-radius:8px}.quick-archives .gateway-icon{width:28px;height:28px;border-radius:8px}.quick-archives .domain-grid strong{font-size:12px}.quick-archives .domain-grid small{font-size:10px}.gateway-card_scenarios .gateway-icon{background:#f1eafd;color:#9370b7}.gateway-idol_story .gateway-icon{background:#eaf1fc;color:#608cb6}.gateway-work .gateway-icon{background:#edf4e7;color:#79925d}.gateway-birthday .gateway-icon{background:#fbeef3;color:#b87594}.gateway-extra .gateway-icon{background:#f9f1e5;color:#b18b4e}.portal-section{padding-top:28px;padding-bottom:28px}.unit-grid{display:flex;gap:12px;overflow-x:auto;padding:3px 0 10px;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#a7c9c4 transparent}.unit-grid button{flex:0 0 23%;min-height:0;scroll-snap-align:start;border-radius:9px}.unit-grid img{min-height:0;height:auto;width:100%}.unit-actions{display:flex;align-items:center;gap:7px}.unit-actions button{display:inline-flex;align-items:center;gap:4px;border:1px solid #dce9e7;border-radius:6px;background:#fff;padding:6px;color:#247f77;font-size:12px;cursor:pointer}.unit-actions button:last-child{border:0;margin-left:5px}.catalog-toolbar{position:static;top:auto;z-index:auto;background:#fff;min-height:0;padding:0;border:0;flex-wrap:wrap;gap:12px}.catalog-toolbar label{min-width:120px}.catalog-count{display:none}.catalog-toolbar select{font-size:12px;min-height:34px}.search-view{isolation:isolate}@media(max-width:1100px){.portal-feature{grid-template-columns:1fr}.portal-feature .band-heading,.quick-archives .section-heading{min-height:0}.quick-archives .domain-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.portal-feature .chapter-entry{aspect-ratio:21/8;min-height:120px}}@media(max-width:620px){.portal-feature{padding:18px 12px;gap:18px}.portal-feature .band-heading p{font-size:11px}.main-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-feature .chapter-entry{aspect-ratio:auto;min-height:126px}.chapter-copy{left:9px;right:9px}.chapter-copy strong{font-size:11px}.chapter-entry>svg{display:none}.quick-archives .domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-section{padding:22px 12px}.unit-grid button{flex-basis:76%}.unit-actions{gap:3px}.unit-actions button:last-child{font-size:11px}.catalog-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-toolbar label{min-width:0}}
+</style>
+
+<style scoped>
+.band-actions,.section-heading>button,.unit-actions {flex-shrink:0;white-space:nowrap;}
+.band-actions button,.section-heading>button {white-space:nowrap;flex-shrink:0;}
+@media(max-width:760px) {
+ .catalog-switcher {height:44px;min-height:44px;top:0;padding:0 12px;}
+ .catalog-switcher button {min-height:44px;padding:0 16px;}
+ .story-catalog {padding-bottom:70px;}
+ .main-chapters {grid-template-columns:1fr;}
+ .portal-feature .chapter-entry {aspect-ratio:21/9;min-height:145px;}
+ .chapter-copy {left:14px;right:40px;bottom:14px;}
+ .chapter-copy strong {font-size:15px;}
+ .chapter-copy small,.chapter-copy span {font-size:12px;}
+ .band-heading {gap:8px;}
+ .portal-feature .band-heading p {max-width:220px;}
+ .unit-actions>button:not(:last-child) {display:none;}
+}
 </style>
