@@ -48,6 +48,7 @@
     :data-object-layer-count="visibleObjectLayerCount"
     :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
+    :data-particle-layer-frames="particleLayerFrames"
     :data-spotlight-count="visibleSpotlightCount"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-laserlight-count="visibleLaserlightCount"
@@ -67,7 +68,7 @@
     <header class="stage-header">
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
-      <div>
+      <div class="stage-header-title">
         <h1>{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</h1>
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
@@ -78,18 +79,29 @@
 
     <main class="stage-workspace">
       <section class="performance-shell" :aria-label="isSpecialSingle ? '社长特别演出预览' : '多人舞台预览'">
-        <div class="stage-backdrop" aria-hidden="true"></div>
-        <div class="stage-floor" aria-hidden="true"></div>
-        <div ref="canvasRef" class="stage-canvas"></div>
-
         <div class="performance-hud">
           <span>NOW PLAYING</span>
           <strong>{{ selectedSong?.title || '—' }}</strong>
           <small>{{ isSpecialSingle ? '社长单人剪影 · 特别版音源' : `${activePositions.length} 人${handoffLineup ? '出场' : '编排'} · 当前演唱 ${currentSingerLabel}` }}</small>
         </div>
 
+        <div class="performance-screen">
+        <div class="stage-backdrop" aria-hidden="true"></div>
+        <div class="stage-floor" aria-hidden="true"></div>
+        <div ref="canvasRef" class="stage-canvas"></div>
+
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
           {{ currentLyric.text }}
+        </div>
+
+        <div v-if="booting" class="stage-state stage-state--loading">
+          <GsLoadingIndicator :message="statusText" tone="dark" />
+        </div>
+        <div v-else-if="errorText" class="stage-state error-state">
+          <CircleAlert :size="28" />
+          <strong>{{ isSpecialSingle ? '社长特别演出暂时无法加载' : '多人舞台暂时无法加载' }}</strong>
+          <span>{{ errorText }}</span>
+        </div>
         </div>
 
         <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
@@ -111,15 +123,6 @@
             <span>{{ position }}</span>
             <small>{{ characterForSlot(slotByPosition(position))?.name || '空位' }}</small>
           </div>
-        </div>
-
-        <div v-if="booting" class="stage-state stage-state--loading">
-          <GsLoadingIndicator :message="statusText" tone="dark" />
-        </div>
-        <div v-else-if="errorText" class="stage-state error-state">
-          <CircleAlert :size="28" />
-          <strong>{{ isSpecialSingle ? '社长特别演出暂时无法加载' : '多人舞台暂时无法加载' }}</strong>
-          <span>{{ errorText }}</span>
         </div>
 
         <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
@@ -262,11 +265,11 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
-              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子对象 {{ stageVfxCoverage.objectParticles.length }} 种未复刻。</p>
+              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未实现。</p>
               <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
-              <details v-if="stageVfxCoverage.objectParticles.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
+              <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
                 <summary>查看未支持的对象素材</summary>
-                <code>{{ [...stageVfxCoverage.objectParticles, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
+                <code>{{ [...stageVfxCoverage.objectParticleUnimplemented, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
               </details>
             </div>
 
@@ -413,6 +416,7 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
+import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
@@ -475,6 +479,7 @@ const visibleImageLayerDepths = ref([])
 const visibleObjectLayerCount = ref(0)
 const visibleObjectLayerAssets = ref([])
 const unsupportedObjectLayerAssets = ref([])
+const particleLayerFrames = ref('')
 const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
 const visibleLaserlightCount = ref(0)
@@ -1902,11 +1907,22 @@ function imageLayerStatesAt(milliseconds) {
   return states
 }
 
-function loadImageLayerTexture(relativePath) {
+function loadImageLayerTexture(relativePath, timeoutMs = 0) {
   return new Promise((resolve, reject) => {
     const image = new Image()
-    image.onload = () => resolve(new PIXI.Texture(new PIXI.BaseTexture(image)))
-    image.onerror = () => reject(new Error(`舞台图片加载失败：${relativePath}`))
+    let timer
+    const fail = () => {
+      clearTimeout(timer)
+      image.onload = image.onerror = null
+      image.src = ''
+      reject(new Error(`舞台图片加载失败：${relativePath}`))
+    }
+    image.onload = () => {
+      clearTimeout(timer)
+      resolve(new PIXI.Texture(new PIXI.BaseTexture(image)))
+    }
+    image.onerror = fail
+    if (timeoutMs) timer = setTimeout(fail, timeoutMs)
     image.src = `${LIVE_CHIBI_BASE}/${relativePath}`
   })
 }
@@ -2034,6 +2050,7 @@ function objectLayerStatesAt(milliseconds) {
       tweenFrom: alphaAtEvent,
       tweenTo: event.hide ? 0 : 1,
       eventTime,
+      activatedAt: event.hide ? (previous.activatedAt ?? eventTime) : eventTime,
     })
   }
   for (const state of states.values()) state.alpha = sampleObjectLayerAlpha(state, milliseconds)
@@ -2041,6 +2058,10 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if (entry.particleAnimation) {
+    return { ...await loadChibiParticleLayer(entry.particleAnimation,
+      path => loadImageLayerTexture(path, 10000)), entry }
+  }
   const textures = await Promise.all(entry.textures.map(async metadata => ({
     metadata,
     texture: await loadImageLayerTexture(metadata.file),
@@ -2071,8 +2092,11 @@ async function loadObjectLayerRuntime(entry) {
 }
 
 function destroyObjectLayerRuntime(runtime) {
+  if (!runtime || runtime.destroyed) return
+  runtime.destroyed = true
   runtime?.container?.removeFromParent()
   runtime?.container?.destroy({ children: true })
+  for (const texture of (runtime?.frameTextures || [])) texture.destroy(false)
   for (const texture of (runtime?.textures || [])) texture.destroy(true)
 }
 
@@ -2094,7 +2118,11 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.zIndex = Number(state.depth) || 0
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
+    if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
   }
+  particleLayerFrames.value = [...objectLayerRuntimes.entries()]
+    .filter(([, runtime]) => runtime.particles && runtime.container.visible)
+    .map(([asset, runtime]) => `${asset}:${runtime.particleFrames.join('/')}`).sort().join(',')
 }
 
 function releaseObjectLayers() {
@@ -2109,6 +2137,7 @@ function releaseObjectLayers() {
   visibleObjectLayerCount.value = 0
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
+  particleLayerFrames.value = ''
 }
 
 async function syncObjectLayers() {
@@ -2126,7 +2155,7 @@ async function syncObjectLayers() {
   const unsupportedStates = []
   for (const state of activeStates) {
     const entry = objectLayerIndex.value.assets?.[state.asset]
-    if (entry?.kind === 'sprite' || entry?.kind === 'mixed') supportedStates.push(state)
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation) supportedStates.push(state)
     else unsupportedStates.push(state)
   }
   visibleObjectLayerCount.value = supportedStates.length
@@ -2147,7 +2176,12 @@ async function syncObjectLayers() {
         load = loadObjectLayerRuntime(entry)
         objectLayerLoads.set(state.asset, load)
       }
-      runtime = await load
+      try {
+        runtime = await load
+      } catch (error) {
+        if (objectLayerLoads.get(state.asset) === load) objectLayerLoads.delete(state.asset)
+        throw error
+      }
       const ownsLoad = objectLayerLoads.get(state.asset) === load
       if (ownsLoad) objectLayerLoads.delete(state.asset)
       if (sequence !== objectLayerSequence || objectLayerSongId !== selectedSong.value?.id) {
@@ -2962,17 +2996,20 @@ function formatTime(milliseconds) {
 .header-meta { margin-left: auto; color: var(--muted); font-size: 11px; }
 .lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
 
-.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
-.performance-shell { position: relative; width: 100%; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1726; }
+.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; min-height: 0; max-width: 1600px; margin: 0 auto; padding: 18px; box-sizing: border-box; }
+.performance-shell { display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #0b1726; box-sizing: border-box; }
+.performance-screen { position: relative; width: min(100%, calc(clamp(180px, 100svh - 260px, 620px) * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
 .chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
 .chibi-stage[data-static-stage-enabled="false"] .stage-floor { visibility: hidden; }
 .stage-canvas { position: absolute; z-index: 2; inset: 0; }
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
-.performance-shell::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
+.performance-screen::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
 
-.performance-hud { position: absolute; z-index: 4; top: 24px; left: 28px; display: grid; gap: 5px; padding: 13px 16px; border-left: 2px solid var(--accent); background: rgba(4, 13, 24, 0.64); backdrop-filter: blur(12px); }
+.performance-hud { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 12px 16px; width: 100%; box-sizing: border-box; border-bottom: 1px solid var(--line); background: #102238; }
+.performance-hud strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.performance-hud small { grid-column: 2; }
 .performance-hud span { color: #73bfff; font-size: 9px; font-weight: 750; letter-spacing: 0.16em; }
 .performance-hud strong { font-size: 16px; }
 .performance-hud small { color: var(--muted); font-size: 10px; }
@@ -2981,7 +3018,7 @@ function formatTime(milliseconds) {
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: 180px;
+  bottom: 18px;
   max-width: min(820px, calc(100% - 80px));
   padding: 2px 10px 4px;
   color: #fff;
@@ -2997,7 +3034,7 @@ function formatTime(milliseconds) {
   pointer-events: none;
 }
 
-.position-rail { position: absolute; z-index: 4; left: 50%; bottom: 128px; width: min(720px, calc(100% - 48px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; transform: translateX(-50%); pointer-events: none; }
+.position-rail { width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 10px 12px; box-sizing: border-box; border-top: 1px solid var(--line); pointer-events: none; }
 .position-marker { min-width: 0; display: grid; justify-items: center; gap: 4px; color: rgba(163, 184, 204, 0.3); }
 .position-marker span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid currentColor; border-radius: 50%; font: 700 10px/1 monospace; background: rgba(5, 14, 25, 0.66); }
 .position-marker small { max-width: 110px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
@@ -3012,19 +3049,19 @@ function formatTime(milliseconds) {
 .error-state span { max-width: 420px; color: #b3c1cf; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.transport { position: absolute; z-index: 5; left: 50%; bottom: 28px; width: min(760px, calc(100% - 50px)); min-height: 80px; display: grid; grid-template-columns: 44px 56px minmax(140px, auto) minmax(160px, 1fr); gap: 13px; align-items: center; padding: 0 20px; border: 1px solid rgba(150, 194, 231, 0.3); border-radius: 15px; background: rgba(5, 16, 29, 0.9); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4); transform: translateX(-50%); backdrop-filter: blur(16px); }
+.transport { width: 100%; min-height: 76px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 14px; box-sizing: border-box; border-top: 1px solid var(--line); background: #102238; }
 .transport.disabled { opacity: 0.62; }
 .transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: #dceaf7; background: #142941; border: 1px solid rgba(151, 192, 227, 0.27); border-radius: 9px; cursor: pointer; }
-.transport .primary-transport { width: 56px; height: 56px; border-radius: 50%; border-color: var(--accent); background: rgba(36, 119, 195, 0.56); }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--accent); background: rgba(36, 119, 195, 0.56); }
 .transport button:disabled { cursor: wait; }
 .transport-copy { display: grid; gap: 5px; }
 .transport-copy strong { font-size: 12px; }
 .transport-copy small { color: var(--muted); font: 600 10px/1 monospace; }
 .transport input { width: 100%; accent-color: var(--accent); }
 
-.stage-inspector { min-width: 0; overflow: visible; border-top: 1px solid var(--line); background: linear-gradient(180deg, #142940, #0c1b2d); }
-.inspector-scroll { display: grid; grid-template-columns: minmax(300px, 0.8fr) minmax(460px, 1.25fr) minmax(340px, 0.95fr); align-items: start; height: auto; overflow: visible; }
-.control-section { min-width: 0; height: 100%; padding: 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stage-inspector { min-width: 0; max-height: calc(100svh - 104px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, #142940, #0c1b2d); }
+.inspector-scroll { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; height: auto; }
+.control-section { min-width: 0; padding: 16px; box-sizing: border-box; border-bottom: 1px solid var(--line); }
 .control-section:last-child { border-right: 0; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; color: #a9c4dd; }
 .section-heading > div { display: grid; gap: 4px; }
@@ -3078,31 +3115,51 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
   .stage-header h1 { font-size: 15px; }
   .stage-header p, .header-meta { display: none; }
   .stage-workspace { grid-template-columns: 1fr; overflow: visible; }
-  .performance-shell { min-height: 0; }
-  .stage-inspector { overflow: visible; border-top: 1px solid var(--line); border-left: 0; }
+  .performance-screen { width: 100%; }
+  .stage-inspector { max-height: none; overflow: visible; }
   .inspector-scroll { grid-template-columns: 1fr; height: auto; overflow: visible; }
   .control-section { height: auto; border-right: 0; }
-  .position-rail { bottom: 112px; }
-  .stage-lyric { bottom: 160px; }
-  .transport { bottom: 16px; min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) 1fr; padding: 0 12px; }
+  .transport { min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) minmax(0, 1fr); padding: 10px 12px; }
   .transport button { width: 40px; height: 40px; }
   .transport .primary-transport { width: 50px; height: 50px; }
 }
 
 @media (max-width: 620px) {
-  .stage-header { height: auto; min-height: 108px; padding: 4px 8px; gap: 4px 8px; flex-wrap: wrap; }
-  .stage-header > div:not(.archive-language-switch) { flex: 1; min-width: calc(100% - 60px); }
+  .stage-header { height: 52px; padding: 0 8px; gap: 6px; box-sizing: border-box; }
+  .stage-header-title { flex: 1; min-width: 0; }
+  .stage-header h1 { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stage-header .header-divider { display: none; }
   .stage-header :deep(.archive-language-switch) { margin-left: auto; }
-  .lab-link { margin-left: 0; }
-  .performance-shell { min-height: 390px; aspect-ratio: auto; }
-  .performance-hud { top: 14px; left: 14px; }
-  .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }
-  .stage-lyric { bottom: 150px; }
+  .lab-link { width: 44px; padding: 0; margin: 0; font-size: 0; flex-shrink: 0; }
+  .lab-link::after { content: '1人'; font-size: 12px; }
+  .stage-workspace { padding: 8px; gap: 10px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .performance-hud { grid-template-columns: minmax(0, 1fr); padding: 9px 12px; }
+  .performance-hud span { display: none; }
+  .performance-hud small { grid-column: 1; }
+  .performance-hud strong { font-size: 14px; }
+  .position-rail { gap: 2px; padding: 8px 4px; }
+  .stage-lyric { bottom: 10px; max-width: calc(100% - 20px); font-size: 14px; }
   .position-marker small { max-width: 58px; }
-  .transport { width: calc(100% - 20px); grid-template-columns: 38px 48px 1fr; gap: 8px; }
-  .transport input { grid-column: 1 / -1; margin-bottom: 8px; }
+  .transport { grid-template-columns: 38px 44px minmax(0, 1fr); gap: 6px 10px; padding: 8px 12px; }
+  .transport button, .transport .primary-transport { width: 38px; height: 38px; }
+  .transport input { grid-column: 1 / -1; margin: 0; }
   .slot-controls { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 980px) and (max-height: 500px) and (orientation: landscape) {
+  .stage-header { height: 48px; }
+  .stage-workspace { padding: 6px; gap: 10px; }
+  .performance-screen { width: min(100%, calc(clamp(140px, 100svh - 210px, 290px) * 16 / 9)); }
+  .performance-hud { padding: 6px 12px; }
+  .performance-hud small { display: none; }
+  .performance-hud strong { font-size: 14px; }
+  .position-rail { padding: 4px; gap: 2px; }
+  .position-marker { gap: 2px; }
+  .position-marker span { width: 18px; height: 18px; font-size: 9px; }
+  .position-marker small { font-size: 8px; }
+  .transport { min-height: 48px; grid-template-columns: 38px 38px minmax(110px, auto) minmax(0, 1fr); gap: 8px; padding: 5px 10px; }
+  .transport button, .transport .primary-transport { width: 38px; height: 38px; }
+  .transport input { grid-column: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,6 +8,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const objectIndex = indexes.objectLayers?.assets || {}
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
   const objectParticles = objectAssets.filter(asset => objectIndex[asset]?.kind === 'particle')
+  const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation)
+  const objectParticleUnimplemented = objectParticles.filter(asset => !objectIndex[asset]?.particleAnimation)
   const objectMissing = objectAssets.filter(asset => !objectIndex[asset])
   const objectOther = objectAssets.filter(asset => objectIndex[asset] &&
     !['sprite', 'mixed', 'particle'].includes(objectIndex[asset].kind))
@@ -34,6 +36,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length },
     objectSprites,
     objectParticles,
+    objectParticlePilots,
+    objectParticleUnimplemented,
     objectMissing,
     objectOther,
     missingMedia,

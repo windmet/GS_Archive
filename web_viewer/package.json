@@ -279,7 +279,8 @@
     "verify:song-chart-png": "node scripts/verify-song-chart-png.mjs",
     "verify:song-chart-png:browser": "node scripts/verify-song-chart-png-browser.mjs",
     "verify:engineering": "node --experimental-vm-modules scripts/verify-engineering-lifecycle.mjs && node scripts/verify-stage-intent.mjs && node scripts/verify-collection-route.mjs && node scripts/verify-idol-unit-groups.mjs && node --experimental-vm-modules scripts/verify-studio-work.mjs",
-    "verify:editorial-source": "node scripts/verify-event-resource-graph.mjs --source-only && node scripts/verify-gasha-ticket-evidence.mjs && npm run verify:general-translation-workflow && npm run verify:reviewed-b001 && npm run verify:b002-draft"
+    "verify:editorial-source": "node scripts/verify-event-resource-graph.mjs --source-only && node scripts/verify-gasha-ticket-evidence.mjs && npm run verify:general-translation-workflow && npm run verify:reviewed-b001 && npm run verify:b002-draft",
+    "verify:chibi-particles": "node scripts/verify-chibi-particle-timeline.mjs"
   },
   "dependencies": {
     "@lucide/vue": "^1.24.0",

@@ -106,6 +106,9 @@ jobs:
       - name: Verify displayed stage pixel budget
         run: npm run verify:stage-render-budget
 
+      - name: Verify bounded particle timeline and source identity
+        run: npm run verify:chibi-particles
+
       - name: Verify song lyrics and media clock
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 

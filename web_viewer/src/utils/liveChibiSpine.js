@@ -9,6 +9,7 @@ import {
 } from '@pixi-spine/runtime-3.8'
 import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
+import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -97,7 +98,18 @@ export async function fetchLiveChibiObjectLayerIndex() {
   const response = await fetch(`${LIVE_CHIBI_BASE}/object-layers/index.json`)
   if (response.status === 404) return null
   if (!response.ok) throw new Error(`舞台对象索引加载失败 (${response.status})`)
-  return response.json()
+  const index = await response.json()
+  // Optional pilot resources; older resource packages retain their Sprite path.
+  try {
+    const particles = await withLoadDeadline(async signal => {
+      const result = await fetch(`${LIVE_CHIBI_BASE}/particle-layers/index.json`, { signal })
+      return result.ok ? result.json() : null
+    }, { timeoutMs: 10000, label: '舞台粒子索引' })
+    return attachChibiParticleLayers(index, particles)
+  } catch (error) {
+    console.warn('[ChibiStage] optional particle index unavailable', error)
+    return index
+  }
 }
 
 export async function fetchLiveChibiStageBackgroundIndex() {

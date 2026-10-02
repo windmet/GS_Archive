@@ -147,3 +147,63 @@ python -X utf8 scripts/prepare-live-chibi-object-controls.py --output .analysis/
 本地 Browser 验收：5198 既有生产代码映射服务，1280×800，ANYWHERE 暂停拖动时间轴。33.5s 的五组 spotlight Sprite 可激活；34.5s 窗景控制已退场、五组 Sprite 仍在；36.9s 五组 Sprite 已退场、窗景再次激活；9.5s 全部对象退场；回拖 3s 窗景恢复激活。五人仍就绪，口型资源保持 ready。窗景此轮仍为 unsupported，控制状态验证不等于粒子渲染验收。截图为 `chibi-controls-33500.png` 与 `chibi-controls-3000.png`。
 
 对应回归：三项 Python 控制测试、118 份 VFX coverage、118 份 singer-slot / 2,868 条演唱指令检查均通过，`git diff --check` 通过。此批只有 Python 工具与文档，无前端依赖变化，未重复 Vite 编译。既有 UI Source Gate 的 92/92 不冒用为本批全门禁。
+
+## 后续实现：窗景粒子试点与独立画布
+
+输入 HEAD `77fc0bbb`，本地验收跨至 2026-10-03。仅接入 ANYWHERE 两组窗景的 9 个 RAW 系统。读取 keeper 根变换、局部位置、大小、寿命、系统循环周期、UV 起始帧和带切线的曲线；绑定 bundle SHA、CAB、64 位 PathID、粒子参数树 SHA、shader 参数树 SHA 与纹理文件 SHA。只允许已核实的单粒子 burst、4×4 图集、局部平面 Billboard、Mobile/Particles/Additive；其他模块、随机参数、未知材质与变换直接拒绝。
+
+播放器按编排时间采样，不再用静态图代替这两组粒子，也没有另建粒子时钟。寿命 0.7 秒而系统周期 0.98 秒的系统保留每轮间隙。对象退场仍消费上一批修复的控制字段。加载失败清理成功加载的兄弟纹理，切歌和迟到结果释放保持幂等；可选索引缺失/无效时沿用原对象索引。RAW inventory 的 `kind` 与粒子总量不改写，覆盖状态仍为 partial。
+
+复现：
+
+```powershell
+python -X utf8 scripts/prepare-live-chibi-particle-layers.py --output-root public/assets/live-chibi/particle-layers
+npm run verify:chibi-particles
+node scripts/verify-chibi-particle-timeline.mjs --published-assets
+```
+
+仅生成三张 PNG 与一份参数索引，共 123,038 字节。索引 SHA256：`519288343f6357c8bc75a5972bf02dccbc4673673120abb841b947d25dc6b724`。媒体与运行索引为本地资源，未提交；提交小型参数 fixture、提取器、运行时与回归。此试点使用现有 2D 对象平面，尚未验收 Unity 3D 深度投影、相机 Billboard 行为和全部粒子语义。
+
+画布改为独立 16:9 窗口，歌曲状态、站位标记、播放条在窗口外；桌面操作台在右侧，窄屏在下方。大屏画布高度上限 620px，手机竖屏按同一比例缩放；手机横屏限制画布高度并收紧相邻状态栏，使完整舞台与播放条同时可见。保留当前角色 Y、动作、原编排相机和角色尺寸函数，未针对某首歌曲或设备逐人挪位。
+
+本地 Browser 为既有 5198 服务、固定 `.analysis/build-check` 生产代码与原 public/readmodels 映射；不是独立媒体发布包。实际量测无横向页面溢出，画布与操作台无交叠：
+
+| 视口 | 画布实测，约 | 操作台位置 |
+| --- | --- | --- |
+| 1280×800 | 869×489 | 右侧，与画布独立 |
+| 1920×1080 | 1102×620 | 右侧，画布高度受限 |
+| 390×844 | 357×201 | 播放条下方 |
+| 360×800 | 327×184 | 播放条下方 |
+| 844×390 | 321×180 | 首屏播放条结束于 y=354，下方是操作台 |
+
+ANYWHERE 暂停前后拖动 8s、33.5s、34.5s、36.9s、9.5s：窗景与五组 Sprite 服从各自控制，9.5s 对象全部退场，回到 8s 恢复；8.5s UV 帧与 8s 不同，恢复播放至约 42s 后再次暂停仍正常。切到 Study / Take a StuMp! 后窗景帧诊断清空，没有把 ANYWHERE 窗景套给其他曲目。五人/三人加载与口型资源仍就绪。控制台记录 Pixi/Spine 的已有弃用警告，未观察到本轮资源加载 error；不据此声称真实设备长稳通过。
+
+当前 93 项 Source Gate 命令全部 exit 0，包括新增粒子门禁、engineering、VFX inventory、歌唱站位、翻译/发布合同、build audit。`build:check` 通过，`copyPublicDir:false`；额外 published-assets 检查与 Python 编译通过。门禁明细在 `chibi-source-gate.json`，日志固定复用本工程 E 盘证据目录；源码门禁通过不等于下述原作视觉差异已经解决。
+
+## 原作录屏参考：漏接指令与尚未验收的差异
+
+用户提供 ANYWHERE 四张、Study Equal Magic! 两张、Take a StuMp! 三张参考图，均约 1920×864（20:9）。右下角为录屏钟表，不作为歌曲时间。当前窗口为 16:9；对照时先匹配歌词/动作，再检查相机与投影，不能把不同取景和不同服装直接判为资源缺失。没有完整录像文件，Study 的两张动作尚未确定精确编排时刻。
+
+| 参考锚点 | 精确编排锚点 | 当前结论 |
+| --- | --- | --- |
+| ANYWHERE「宿る My Soul…」 | 9.45s 起 | 原编排有前两位白色 Spotlight；光束仍含现有 Graphics 近似，整体背景/舞台染色和观众蓝灯缺项 |
+| ANYWHERE「今、超えて頂上…」 | 36.3s 起 | 窗景已进入试点；星点、灯具与舞台面颜色尚未完整还原；人物/舞台投影关系需独立对照 |
+| Study Equal Magic! 三人高低台 | `steqmg_live_effect`，2/3/4 号位 | Browser 已选 S.E.M 三人建立 15s 基线，高低台可见；源 Sprite overlight 可激活，粉色舞台组合未完成原作验收 |
+| Take a StuMp!「まだまだ通過点さ」 | 01 / 02 均 4.4s 起 | 仅此歌词不能区分版本 |
+| Take a StuMp!「C.FIRST!…」「High×Joker!…」 | **01** 版 21.3s / 25.2s 起 | Browser 22s / 26s 词句与演唱位可定位；组合 Logo、角色明暗、场地灯海存在漏接，不是背屏视频全部缺失 |
+
+重新读取这三份索引精确指定的 RAW TextAsset，并对照生成器分支，发现以下未被当前导出器消费的真实指令。此前 census 的 42,263 / 4,379 只统计精确名称 `Suspensionlight` / `Penlight`，**不含这些新格式族，不能代表全部漏接量**：
+
+| 编排 | 未消费指令与实际行数 | 需要补的链路 |
+| --- | --- | --- |
+| ANYWHERE | `Whole_screen_color_2` 60、`Stagelight` 128、`Penlight_unit` 43；另有 `Suspensionlight_2/3/4/5` | 多 ID / 深度染色、地面灯、观众灯和吊灯新格式 |
+| Study Equal Magic! | `Suspensionlight_2/3/4/5` | 粉色聚光周围的完整舞台灯具；已有 Sprite 不代表灯具全接完 |
+| Take a StuMp! 01 | `ImageObject_create` 16、`ImageObject_show` 8、`Image_color` 115、`Livechara_body_color` 69、`Stagelight` 1,941、`Penlight_unit_color` 495；另有 `Searchlight_*` 与 `NewSuspensionlight_*` | 组合 Logo 对象、按角色染色、舞台图层染色、搜索灯/吊灯和按区块着色的观众灯 |
+
+Take a StuMp! 的 C.FIRST Logo 来源已定位为 21.3s `ImageObject_create` 的 `stage_tkstp1_fx_in_imageobject_16b`，25.2s 控制其退场，同时创建 `stage_tkstp1_fx_in_imageobject_8b`；对应 `ImageObject_show` 也在 21.3s / 25.2s。需要解析资源身份、显示生命周期与坐标，不能把 Logo 烘焙进背屏视频或借用通用图替代。
+
+证据 `chibi-reference-command-samples.json` 保留三份 TextAsset 的 CAB、PathID、文本 SHA、头部、命令计数与 Backmonitor 原行。首屏暂停时背屏曾出现白/黑占位，而实际播放后的画面可以显示；还需检查首帧、seek 完成和 ready 信号，不能先断言视频资源不存在。当前人物/镜头取景也未与完整录屏逐段同步，因此保持待验收，不擅自改已稳定的站位或 Y 基线。
+
+后续顺序：ANYWHERE 多层染色 → 地面/观众灯及吊灯 → 相机和深度投影对照 → Take a StuMp! 的 ImageObject/角色染色 → Study 与 Take 跨曲目验收。三首均需补首次加载、暂停 seek、连续播放、切歌与多视口验收；上述两首本轮只建立对照基线，没有宣称已完整复刻。
+
+本地截图：`chibi-pilot-desktop.png`、`chibi-pilot-mobile.png`、`chibi-pilot-landscape.png`、`chibi-study-baseline.png`、`chibi-take-stump-baseline.png`，位于 `.analysis/engineering-validation-20261002`，不提交图片。
