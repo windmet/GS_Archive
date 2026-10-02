@@ -201,7 +201,10 @@ const primaryNavigation = [
   font-size: 13px;
   text-align: left;
 }
-.archive-nav button:hover { background: #222f3a; color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .archive-nav button:hover { background: #222f3a; color: #fff; }
+}
+.archive-nav button:active { background: #2a3742; color: #fff; }
 .archive-nav button.active { background: #2a3742; color: #fff; }
 .archive-nav button.active::before {
   content: "";
@@ -349,6 +352,7 @@ const primaryNavigation = [
     cursor: pointer;
   }
   .archive-mobile-nav button.active { color: var(--archive-accent); }
+  .archive-mobile-nav button:active { background: var(--archive-accent-soft); }
   .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
   .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
 }
@@ -386,6 +390,9 @@ const primaryNavigation = [
 .archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
 .archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
 .archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
+@media (pointer: coarse) {
+  .archive-search input { font-size: 16px; }
+}
 </style>
 
 <style scoped>

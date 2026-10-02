@@ -18,7 +18,6 @@
         <p v-if="wallpaper.notice.value" class="terminal-notice" role="status">{{ wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
         <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
-        <ProducerNameSetting v-if="!selectionOnly && step === 'mode'" class="welcome-producer" />
         <h2 v-if="!selectionOnly && step === 'mode'" class="welcome-section-title">下次打开哪里？</h2>
         <div v-if="!selectionOnly && step === 'mode'" class="terminal-mode-list">
           <button class="terminal-mode mode-portal" type="button" @click="emit('choose-portal')">
@@ -49,6 +48,7 @@
           </div>
         </div>
         <footer v-if="!selectionOnly && step === 'mode'" class="terminal-welcome-footer">
+          <ProducerNameSetting />
           <ArchivePreferredIdolSlot :idols="preferredIdols.length ? preferredIdols : idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferences.preferredIdol || ''" id-prefix="welcome" @save="emit('save-preferred', $event)" />
           <button class="terminal-text-button" type="button" @click="emit('choose-later')">{{ canCancel ? '暂不更改，返回来源页' : '先浏览资料馆，下次直接打开' }}</button>
           <details class="terminal-reset"><summary>更多设置</summary><button type="button" class="terminal-text-button" @click="emit('clear-preferences')">重置启动与“我的偶像”设置</button><small>不删除收藏、阅读位置或卡面壁纸。</small></details>
@@ -101,6 +101,5 @@ function chooseIdol() {
 </script>
 
 <style scoped>
-.welcome-producer { margin: 18px 0; }
 .welcome-section-title { font-size: 16px; margin: 20px 0 10px; color: #244558; }
 </style>

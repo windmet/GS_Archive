@@ -13,6 +13,8 @@ defineProps({ compactMobile: { type: Boolean, default: true } })
 .archive-language-switch { display:inline-flex; flex:none; align-items:center; gap:2px; padding:3px; border:1px solid #cbdedc; border-radius:9px; background:#f5faf9; color:#234f54; }
 .archive-language-switch button { display:inline-flex; align-items:center; gap:4px; min-height:32px; padding:4px 8px; border:0; border-radius:6px; background:transparent; color:inherit; font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
 .archive-language-switch button[aria-pressed=true] { color:#fff; background:#177f78; }
+.archive-language-switch button:active { background:#d8ede8; }
+.archive-language-switch button[aria-pressed=true]:active { background:#116a64; }
 .archive-language-switch .locale-note { font-size:10px; opacity:.75; }
 .archive-language-switch .locale-short { display:none; }
 .archive-language-switch .locale-toggle { display:none; }
