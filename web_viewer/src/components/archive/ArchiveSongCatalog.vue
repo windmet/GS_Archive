@@ -3,14 +3,13 @@
     <header class="song-hero">
       <div>
         <span>SONG ARCHIVE</span>
-        <h2>歌曲档案</h2>
         <p>浏览歌曲作品、演唱成员与不同演出版本；进入歌曲详情查看收录资料和可用试听。</p>
       </div>
       <dl aria-label="歌曲档案统计">
-        <div><dt>歌曲作品</dt><dd>{{ songs.length }}</dd></div>
-        <div><dt>3DMV</dt><dd>{{ summary.three_d_movie_count }}</dd></div>
-        <div><dt>MV LIVE</dt><dd>{{ summary.mvlive_count }}</dd></div>
-        <div><dt>分轨演唱</dt><dd>{{ summary.layered_song_count }}</dd></div>
+        <div><dt>歌曲作品</dt><dd>{{ catalog ? songs.length : '—' }}</dd></div>
+        <div><dt>3DMV</dt><dd>{{ catalog ? summary.three_d_movie_count : '—' }}</dd></div>
+        <div><dt>MV LIVE</dt><dd>{{ catalog ? summary.mvlive_count : '—' }}</dd></div>
+        <div><dt>分轨演唱</dt><dd>{{ catalog ? summary.layered_song_count : '—' }}</dd></div>
       </dl>
     </header>
 
@@ -29,7 +28,7 @@
           @click="activeFilter = filter.id"
         >
           {{ filter.label }}
-          <span>{{ filterCount(filter.id) }}</span>
+          <span>{{ catalog ? filterCount(filter.id) : '—' }}</span>
         </button>
       </div>
       <label class="song-search">
@@ -184,7 +183,6 @@ const filteredSongs = computed(() => {
   color: #fff;
 }
 .song-hero span { color: #56d0c7; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-heavy); }
-.song-hero h2 { margin: 6px 0 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); }
 .song-hero p { margin: var(--gs-space-3) 0 0; color: #aeb9c2; font-size: var(--gs-text-meta); max-width: 520px; font-weight: var(--gs-weight-regular); }
 .song-hero dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
 .song-hero dl div { min-width: 0; padding: 7px 14px; border-left: 1px solid #34414c; }
@@ -222,6 +220,7 @@ const filteredSongs = computed(() => {
   background: #fff;
 }
 .song-search input { min-width: 0; width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: #18212b; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
+.song-search:focus-within { border-color: #158f87; outline: var(--gs-focus-ring) solid #158f87; outline-offset: var(--gs-focus-offset); }
 .song-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .song-grid.empty { display: block; }
 .song-card {
