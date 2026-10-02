@@ -20,7 +20,7 @@ const details=units.map(u=>{
  if(revision)assert.equal(translation,revision.translation,'Revisions not generated into published metadata')
  const status=translation ? revision?.status || 'draft':'missing', g=group(u.kind,labels[u.kind]||u.kind)
  g.total++;g[status]++;if(revision?.decision==='uncertain')g.uncertain++;if(revision?.decision==='keep-source')g.keptSource++
- return {key:u.key,kind:u.kind,field:u.field,source:u.source,sourceHash:u.sourceHash,translation,status,batch:batchByKey.get(u.key),references:u.references,notes:revision?.notes||[],translator:revision?.translator||'项目初译',decision:revision?.decision||null}
+ return {key:u.key,kind:u.kind,field:u.field,source:u.source,sourceHash:u.sourceHash,translation,status,batch:revision?.batch_id||batchByKey.get(u.key),references:u.references,notes:revision?.notes||[],translator:revision?.translator||'项目初译',decision:revision?.decision||null}
 })
 const indexes=await loadStudioIndexes(), overlays=new Map(), documents=[], allUnits=new Set()
 const domainLabels={event:'活动剧情',main:'主线剧情',unit:'组合剧情',work:'工作剧情',birthday:'生日剧情',extra:'额外剧情',card:'卡片剧情',idol:'偶像剧情',mobile:'工作通讯',main_story:'主线剧情',unit_story:'组合剧情',card_scenarios:'卡片剧情',idol_story:'偶像剧情',work_story:'工作剧情',mobile_archive:'工作通讯',event_story:'活动剧情'}

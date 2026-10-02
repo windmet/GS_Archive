@@ -26,7 +26,11 @@ for(const g of audit.groups){assert.equal(g.total,g.draft+g.reviewed+g.final+g.m
 assert.equal(audit.groups.filter(g=>g.id.startsWith('story:')).reduce((n,g)=>n+g.total,0),audit.reader.units)
 assert.equal(audit.groups.find(g=>g.id==='story:main').reviewed,993);assert.equal(audit.groups.find(g=>g.id==='story:main').draft,999)
 assert(stories.every(d=>d.url.startsWith('?view=reader&reading=')))
-loadGeneralRevisions(process.cwd(),units)
+const liveRevisions=loadGeneralRevisions(process.cwd(),units)
+for(const row of details) {
+ const revision=liveRevisions.get(row.key)
+ if(revision)assert.equal(row.batch,revision.batch_id,'Audit must identify the imported revision batch, including compact batches')
+}
 // Tiny, isolated source-bound revision fixture; never write fake approvals into the live overlay.
 const fixture=fs.mkdtempSync(path.resolve('.analysis/general-revision-fixture-'))
 const folder=path.join(fixture,'translation/studio/general/revisions');fs.mkdirSync(folder,{recursive:true})
