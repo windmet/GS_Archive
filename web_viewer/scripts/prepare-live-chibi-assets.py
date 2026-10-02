@@ -31,6 +31,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
+from live_chibi_object_commands import field_map, parse_object_layer
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -524,7 +525,9 @@ def read_choreography_scripts(
         motion_group_events = []
         motion_group_changes = []
         with io.StringIO(payload.decode("utf-8-sig"), newline="") as handle:
-            for row in csv.reader(handle):
+            reader = csv.reader(handle)
+            object_fields = field_map(next(reader))
+            for row in reader:
                 if not row:
                     continue
                 if row[0] == "SwitchSinger" and len(row) >= 7:
@@ -602,30 +605,9 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Object_layer" and len(row) >= 3:
-                    event_time = parse_optional_number(row[1])
-                    asset = row[2].strip()
-                    if event_time is None or not asset:
-                        continue
-                    hide = len(row) > 17 and row[17].strip() == "1"
-                    object_layer_events.append(
-                        {
-                            "time": event_time,
-                            "asset": asset,
-                            "duration": (
-                                parse_number(row[18], 1)
-                                if hide and len(row) > 18
-                                else parse_number(row[3], 1)
-                            ),
-                            "x": parse_optional_number(row[4]),
-                            "y": parse_optional_number(row[5]),
-                            "scale": parse_optional_number(row[6]),
-                            "depth": parse_optional_number(row[7]),
-                            "hide": hide,
-                            "raw19": row[19].strip()
-                            if len(row) > 19 and row[19].strip()
-                            else None,
-                        }
-                    )
+                    event = parse_object_layer(row, object_fields)
+                    if event is not None:
+                        object_layer_events.append(event)
                     continue
                 if row[0] == "Lyric" and len(row) >= 4:
                     event_time = parse_optional_number(row[1])

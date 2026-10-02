@@ -126,3 +126,24 @@ python -X utf8 scripts/audit-live-chibi-stage-command-coverage.py --output .anal
 | chibi-unsupported-command-census.json | `6fae326368c8cded103a97ee6d04dafb3b07fda285935e1e867f3773c6d6e838` |
 
 截图：同目录 `chibi-before-desktop.jpg`、`chibi-before-mobile.jpg`。报告与截图为本地证据，未提交媒体；提交内容为三份研究/验证脚本与本记录。
+
+## 后续实现：对象控制列修复
+
+输入 HEAD `af454929`。窗景试点前发现 RAW CSV 有两种头部布局：旧格式 `value101/value102` 位于列 17/18，扩展格式位于列 19/20。ANYWHERE 使用扩展格式。原解析器固定读列 17/18，把列 19 当诊断/注释，导致本应退场的窗景与 Sprite 对象持续显示。
+
+按明确的 `value101/value102` 字段名读取控制标记与渐隐时长；不把注释中的 `1` 当控制。主生成器共享该解析器，独立刷新工具只读取索引精确指向的 RAW TextAsset，拒绝改变控制字段之外的任何对象事件数据。118 份来源全部定位，91 条事件的 `hide/duration` 发生修正。
+
+实际安装前逐项 deep-equal 验证所有非 `objectLayerEvents` 字段/数组及顶层统计不变；对象事件除 `hide/duration` 外也完全不变。原文件保留为本地证据 `chibi-controls-before.json`。新编排 SHA256：`e809aa8a5a66be9aa7c0cc36eef55722064f365a4deeaf5ec2dd41f9563e51f4`。receipt：`chibi-controls-receipt.json`，含每条变化与原 TextAsset/CAB/PathID/文本 SHA。
+
+复现命令：
+
+```powershell
+python -X utf8 scripts/verify-live-chibi-object-controls.py
+python -X utf8 scripts/prepare-live-chibi-object-controls.py --output .analysis/engineering-validation-20261002/chibi-controls-index.json --receipt .analysis/engineering-validation-20261002/chibi-controls-receipt.json
+```
+
+三项回归通过：旧/扩展头部共享控制含义、注释 `1` 不触发隐藏、缺失/重复控制字段失败。生成主编排时自动使用此修复；独立刷新工具输出需按 receipt 核对输入 SHA 再安装，不重导服装、动作、口型或音频。Source Gate 与 Browser 验收另行记录，不能仅凭数据校验声称视觉效果正确。
+
+本地 Browser 验收：5198 既有生产代码映射服务，1280×800，ANYWHERE 暂停拖动时间轴。33.5s 的五组 spotlight Sprite 可激活；34.5s 窗景控制已退场、五组 Sprite 仍在；36.9s 五组 Sprite 已退场、窗景再次激活；9.5s 全部对象退场；回拖 3s 窗景恢复激活。五人仍就绪，口型资源保持 ready。窗景此轮仍为 unsupported，控制状态验证不等于粒子渲染验收。截图为 `chibi-controls-33500.png` 与 `chibi-controls-3000.png`。
+
+对应回归：三项 Python 控制测试、118 份 VFX coverage、118 份 singer-slot / 2,868 条演唱指令检查均通过，`git diff --check` 通过。此批只有 Python 工具与文档，无前端依赖变化，未重复 Vite 编译。既有 UI Source Gate 的 92/92 不冒用为本批全门禁。
