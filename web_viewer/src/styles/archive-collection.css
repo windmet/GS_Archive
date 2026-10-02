@@ -6,3 +6,40 @@
 .collection-original{color:#627b8a;font-size:12px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;margin:6px 0}
 .archive-floating-tooltip strong{display:block;height:auto;white-space:normal}
 .collection-cards.is-honors strong{height:auto;min-height:1.2em}
+
+/* Attribute icons are a mobile alternative to the full labelled selector. */
+.collection-attribute-dots{display:none}
+.collection-page .domain-tabs small{font-size:11px;color:#648778}
+.collection-card-copy strong{word-break:normal;overflow-wrap:normal}
+@media(max-width:700px){
+ .collection-page{padding:10px 12px calc(24px + env(safe-area-inset-bottom));}
+ .collection-page .domain-tabs{display:flex;flex-wrap:nowrap;gap:3px;padding:3px;background:#e8eff3;border-radius:9px;margin-bottom:8px;}
+ .collection-page .domain-tabs button{flex:1;justify-content:center;min-height:36px;padding:3px 8px;border:0;background:transparent;font-size:13px;border-radius:7px;}
+ .collection-page .domain-tabs button[aria-pressed=true]{background:#fff;box-shadow:0 1px 4px #263e5010;}
+ .collection-page .domain-tabs button svg{width:15px;height:15px;}
+ .collection-page .collection-filters{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;margin:6px 0;}
+ .collection-page .collection-search{min-width:0;display:block;}
+ .collection-page .collection-search>span{display:none;}
+ .collection-page .collection-search input{display:block;width:100%;min-width:0;min-height:38px;font-size:12px;padding:7px 9px;}
+ .collection-page .collection-count,.collection-page .attributes{display:none;}
+ .collection-attribute-dots{display:flex;align-items:center;gap:2px;}
+ .collection-page .collection-attribute-dots button{display:grid;place-items:center;min-height:44px;width:28px;padding:0;border:1px solid transparent;background:transparent;border-radius:7px;color:#8696a0;}
+ .collection-attribute-dots button.physical{color:#bc665b;}.collection-attribute-dots button.intelligent{color:#527fac;}.collection-attribute-dots button.mental{color:#b79928;}
+ .collection-attribute-dots button[aria-pressed=true]{border-color:currentColor;background:#fff;box-shadow:0 1px 5px #233d5015;}
+ .collection-page .collection-chips{overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;margin:6px 0;gap:5px;scrollbar-width:none;}
+ .collection-page .collection-chips button{flex:none;min-height:32px;padding:4px 9px;font-size:11px;}
+ .collection-page .collection-cards{margin-top:10px;}
+ .collection-page .collection-card-copy strong{font-size:11px;text-align:center;}
+ .collection-page .collection-card-art,.collection-page .collection-card-art img{height:50px;}
+ .collection-page.is-honors .collection-filters{grid-template-columns:repeat(2,minmax(0,1fr));}
+ .collection-page.is-honors .collection-search{grid-column:1/-1;}
+ .collection-page.is-honors .collection-filters label:not(.collection-search){min-width:0;font-size:11px;gap:3px;}
+ .collection-page.is-honors .collection-filters select{width:100%;min-width:0;min-height:36px;font-size:11px;padding:5px;}
+ .collection-page .collection-cards.is-honors>button{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:9px;min-height:76px;padding:8px 10px;}
+ .collection-page .collection-cards.is-honors .collection-card-art{height:40px;justify-items:center;}
+ .collection-page .collection-cards.is-honors img{height:auto;max-height:40px;max-width:62px;}
+ .collection-page .collection-cards.is-honors strong{text-align:left;font-size:12px;height:auto;}
+ .collection-page .collection-cards.is-honors .collection-card-copy small{font-size:10px;line-height:1.3;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+ .collection-page .collection-cards.is-honors .collection-badge{font-size:9px;margin-top:3px;}
+ .collection-page .domain-pagination{margin-bottom:16px;}
+}

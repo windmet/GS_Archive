@@ -26,6 +26,8 @@ for(const song of Object.values(catalog.songs))for(const d of song.gameplay.diff
 }
 assert.deepEqual(chartColumnWindow(100,2600,1040,260),[9,10,11,12,13,14])
 const index=JSON.parse(await fs.readFile('config/collection-browse.v1.json'))
+const bootstrap=JSON.parse(await fs.readFile('readmodels/bootstrap.inline.json'))
+assert.equal(index.release,bootstrap.release,'collection source summaries must follow the active readmodel release')
 assert.equal(collectionIdols.length,49)
 let bond50=0,bond100=0,owners=0
 for(const [key,value] of Object.entries(index.entries)){

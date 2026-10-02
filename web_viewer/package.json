@@ -107,7 +107,7 @@
     "verify:archive-domains": "python scripts/verify-archive-domains.py",
     "verify:domain-navigation": "node scripts/verify-domain-navigation.mjs",
     "verify:reward-presentation": "node scripts/verify-reward-presentation.mjs",
-    "verify:collection-catalog-session": "node scripts/verify-collection-catalog-session.mjs",
+    "verify:collection-catalog-session": "node scripts/verify-collection-catalog-session.mjs && node scripts/verify-collection-display-names.mjs",
     "verify:studio-composition": "node scripts/verify-studio-composition.mjs",
     "verify:studio-animation": "node scripts/verify-studio-animation-state.mjs",
     "verify:studio-placement": "node scripts/verify-studio-actor-placement.mjs",

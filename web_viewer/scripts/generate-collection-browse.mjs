@@ -41,5 +41,6 @@ for(const domain of ['items','honors']) {
 }
 const result={schemaVersion:1,release:bootstrap.release,entries}
 const content=JSON.stringify(result)+'\n'
-await fs.writeFile('config/collection-browse.v1.json',content)
+if(process.argv.includes('--check'))assert.equal((await fs.readFile('config/collection-browse.v1.json','utf8')).replace(/\r\n/g,'\n'),content,'Collection browse sidecar differs from verified readmodels')
+else await fs.writeFile('config/collection-browse.v1.json',content)
 console.log(`${Object.keys(entries).length} source-bound collection summaries; ${Buffer.byteLength(content)} B; release ${bootstrap.release}`)
