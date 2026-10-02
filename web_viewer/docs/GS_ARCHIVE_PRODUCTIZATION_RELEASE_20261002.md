@@ -55,3 +55,7 @@ HTTP 于北京时间 04:03:19 通过：六类 WebP 的字节、Content-Type、ET
 线上 Browser 实测：首次引导输入 windmet 后进入门户，重新打开根入口与再次刷新都不重复引导；390×844 壁纸选择器中文及原文搜索返回同两张卡面，截图显示缩略图实际载入，documentWidth=390；选用后桌面刷新仍保持壁纸和中文署名。摄影资料中文地点进入工作台，默认冬马删除→撤销、图层锁定→缩放禁用、隐藏→显示反馈通过，测试后恢复可见和可编辑。摄影背景与立绘实际载入，无常驻中央说明框。证据为 `.analysis/ux-productization-20261001/online-browser-acceptance.json` 及截图 66～68。
 
 线上日志未捕获 error，有一条 Spine 更新调用栈 warning；保留回执，不将其宣称为零警告。完整元数据与 Reader/Player 回归见本地验收文档。Browser 不替代真机方向锁、清缓存性能和全部页面的线上遍历；productionApproved、deviceReviewAccepted 及全部架构迁移状态仍为 false。历史 PR2 验证脚本的断言失败继续列为待单独核对。
+
+## 后续修复部署
+
+最新用户指令允许音频/谱面修复。代码 7c874511，新测试部署 ad42c762；资源与 dataRevision 保持原版本，目标桶仍 7,410,544,554 B。音频 303 条链路、六条完整 hash、线上五槽与 Solo 非零输出通过。长轨改为分段，藏品改为紧凑目录和按需详情。具体构建、Browser、导出和真机边界见 [后续修复报告](GS_ARCHIVE_IPAD_COLLECTION_REPAIR_20261002.md)。
