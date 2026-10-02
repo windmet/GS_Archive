@@ -2,7 +2,7 @@
   <figure class="domain-media-preview" :class="{'domain-media-compact':compact}">
     <img v-if="binding?.url && !failed" :key="attempt" :src="binding.url" :alt="name" @load="loaded=true" @error="failed=true;loaded=false"/>
     <div v-else class="domain-resource-empty" :title="binding?.url ? '图片暂时无法读取' : '图片尚未绑定'"><ImageOff v-if="!compact || !binding?.url" :size="compact?18:28"/><span v-if="!compact">{{ binding?.url ? '图片暂时无法读取' : '图片尚未绑定' }}</span><button v-if="binding?.url" type="button" :aria-label="`重试图片 ${name}`" @click="retry">{{ compact?'重试':'重试图片' }}</button></div>
-    <figcaption v-if="!compact">{{ loaded?'本地图片预览':binding?.url && !failed?'正在读取图片…':'媒体展示待确认' }}{{ effectStatus && effectStatus!=='none'?' · 原配置效果尚未重建':'' }}</figcaption>
+    <figcaption v-if="!compact && binding?.url && !failed && !loaded" role="status">正在读取图片…</figcaption>
   </figure>
 </template>
 <script setup>

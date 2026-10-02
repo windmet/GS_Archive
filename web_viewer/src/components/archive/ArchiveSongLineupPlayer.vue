@@ -3,6 +3,7 @@
     class="lineup-player"
     :data-lineup-ready="session.ready.value"
     :data-loaded-vocals="session.loadedIdolCodes.value.join(',')"
+    :data-output-peak="session.outputPeak.value"
     :data-active-performer-slots="session.activePerformerSlots.value.join(',')"
     :data-active-stage-positions="activeStagePositions.join(',')"
     :data-active-idols="session.activeIdolCodes.value.join(',')"

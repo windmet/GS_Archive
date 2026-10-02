@@ -2765,7 +2765,12 @@ async function toggleStage() {
     stopStage()
     return
   }
-  if (!await preloadSongMotions()) return
+  // Keep resume inside the original tap, before motion/resource awaits.
+  if (stageVocalEnabled.value && stageVocalReady.value && !await stageVocalSession.unlock()) {
+    audioError.value = stageVocalSession.error.value
+    return
+  }
+  if (!await preloadSongMotions()) { stageVocalSession.pause(); return }
   if (stageTime.value >= stageDuration.value) stageTime.value = 0
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()

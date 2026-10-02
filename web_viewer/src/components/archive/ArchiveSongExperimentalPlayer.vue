@@ -39,6 +39,7 @@
       :class="{ 'is-solo': mode === 'solo' }"
       :data-vocal-setting="mode"
       :data-solo-ready="mode === 'solo' ? soloSession.ready.value : undefined"
+      :data-output-peak="mode === 'solo' ? soloSession.outputPeak.value : undefined"
       :data-solo-clock="mode === 'solo' ? 'audio-context-scheduled' : undefined"
     >
       <audio
@@ -259,7 +260,7 @@ function onEnded() {
 }
 
 function onAudioError() {
-  audioError.value = '实验音频资源不可用；请先运行实验音频准备脚本。'
+  audioError.value = '音轨暂时无法读取，请重新选择或稍后重试。'
 }
 
 

@@ -1,4 +1,5 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { claimMusicAudioSession, releaseMusicAudioSession } from '../utils/musicAudioSession.js'
 
 const START_LEAD_SECONDS = 0.05
 
@@ -61,6 +62,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   const lineup = ref([])
   const singerEvents = ref([])
   const loadedIdolCodes = ref([])
+  const outputPeak = ref(0)
 
   let context = null
   let backingBuffer = null
@@ -75,6 +77,8 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   let logicalOffset = 0
   let logicalEpoch = 0
   let continuousVocals = false
+  let analyser = null, samples = null, lastMeterTime = 0
+  const audioSessionOwner = {}
 
   const currentSingerEvent = computed(() => [...singerEvents.value]
     .reverse()
@@ -96,8 +100,20 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     vocalBus = context.createGain()
     backingBus.gain.value = clampGain(backingGain.value)
     vocalBus.gain.value = clampGain(vocalGain.value)
-    backingBus.connect(context.destination)
-    vocalBus.connect(context.destination)
+    if (context.createAnalyser) {
+      analyser = context.createAnalyser()
+      analyser.fftSize = 512
+      samples = new Float32Array(analyser.fftSize)
+      analyser.connect(context.destination)
+    }
+    backingBus.connect(analyser || context.destination)
+    vocalBus.connect(analyser || context.destination)
+    context.onstatechange = () => {
+      if (playing.value && context.state !== 'running') {
+        pause()
+        error.value = '播放已中断，请点击播放继续。'
+      }
+    }
     return context
   }
 
@@ -128,8 +144,10 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     if (playing.value) logicalOffset = logicalTime()
     currentTime.value = logicalOffset
     playing.value = false
+    outputPeak.value = 0
     stopAnimation()
     stopSources()
+    releaseMusicAudioSession(audioSessionOwner)
   }
 
   function release({ resetTime = true } = {}) {
@@ -250,19 +268,40 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
       playing.value = false
       stopAnimation()
       stopSources()
+      releaseMusicAudioSession(audioSessionOwner)
     }
     activeSources = sources
     logicalEpoch = startAt
   }
 
-  function update() {
+  function update(now = 0) {
     if (!playing.value) return
+    if (analyser && now - lastMeterTime > 100) {
+      analyser.getFloatTimeDomainData(samples)
+      outputPeak.value = samples.reduce((peak, value) => Math.max(peak, Math.abs(value)), 0)
+      lastMeterTime = now
+    }
     currentTime.value = logicalTime()
     if (currentTime.value >= duration.value) {
       pause()
       return
     }
     animationFrame = requestAnimationFrame(update)
+  }
+
+  async function unlock() {
+    try {
+      claimMusicAudioSession(audioSessionOwner)
+      const ctx = ensureContext()
+      // WebKit also exposes interrupted; resuming only suspended misses it.
+      if (ctx.state !== 'running') await ctx.resume()
+      if (ctx.state !== 'running') throw new Error('音频播放未恢复，请再点一次播放')
+      return true
+    } catch (playError) {
+      releaseMusicAudioSession(audioSessionOwner)
+      error.value = `无法恢复播放：${playError.message || playError}`
+      return false
+    }
   }
 
   async function play() {
@@ -272,10 +311,13 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
       return false
     }
     if (logicalOffset >= duration.value) logicalOffset = 0
+    const sequence = loadSequence
     try {
-      const ctx = ensureContext()
-      if (ctx.state === 'suspended') await ctx.resume()
-      if (ctx.state !== 'running') throw new Error('AudioContext 尚未进入运行状态')
+      if (!await unlock()) return false
+      if (sequence !== loadSequence || !ready.value || !backingBuffer) {
+        releaseMusicAudioSession(audioSessionOwner)
+        return false
+      }
       createScheduledSources(logicalOffset)
       playing.value = true
       currentTime.value = logicalOffset
@@ -283,6 +325,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
       return true
     } catch (playError) {
       stopSources()
+      releaseMusicAudioSession(audioSessionOwner)
       error.value = `浏览器拒绝播放：${playError.message || playError}`
       playing.value = false
       return false
@@ -323,6 +366,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     release()
     try { backingBus?.disconnect() } catch (_) {}
     try { vocalBus?.disconnect() } catch (_) {}
+    try { analyser?.disconnect() } catch (_) {}
     if (context?.state !== 'closed') void context?.close()
     context = null
   })
@@ -337,8 +381,10 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     error,
     lineup,
     loadedIdolCodes,
+    outputPeak,
     pause,
     play,
+    unlock,
     playbackRate,
     playing,
     ready,

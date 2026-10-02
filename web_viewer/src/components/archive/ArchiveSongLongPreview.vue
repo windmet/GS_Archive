@@ -1,107 +1,129 @@
 <template>
-  <div ref="scroll" class="chart-scroll" :class="{ 'chart-columns': folded }" tabindex="0" role="region" :aria-label="`${title} 长轨谱面`">
-    <svg ref="svg" class="chart-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" :viewBox="`0 0 ${drawingWidth} ${drawingHeight}`" :width="pixelWidth" :height="drawingHeight" role="img" :aria-label="`${title} 谱面`" @pointerdown="seekContinuous">
-      <title>{{ title }} · {{ folded ? '等时长分栏，左至右，每栏上至下' : '长轨，上至下' }}</title>
-      <defs>
-        <template v-for="n in geometry.notes.filter(n => n.held)" :key="n.id"><clipPath v-for="(mesh, i) in n.bodyTriangles" :id="`${uid}-${n.id}-${i}`" :key="i"><polygon :points="mesh.points" /></clipPath></template>
-        <g :id="`${uid}-source`">
-          <rect width="410" :height="geometry.height" fill="#13212e" />
-          <line v-for="x in geometry.lanes" :key="x" :x1="x" :x2="x" y1="0" :y2="geometry.height" stroke="#35485a" />
-          <g v-for="g in geometry.grid" :key="g.tick"><line x1="78" x2="352" :y1="g.y" :y2="g.y" stroke="#30475c" /><text x="8" :y="g.y + 4" fill="#bccbd8" font-size="11">{{ g.tick }}</text></g>
-          <g v-for="(t, i) in geometry.tempos" :key="i"><line x1="78" x2="352" :y1="t.y" :y2="t.y" stroke="#c9a755" stroke-dasharray="3 3" /><text x="358" :y="t.y + 4" fill="#f3ce7b" font-size="10">{{ t.tempo }}</text></g>
-          <g v-for="n in geometry.notes.filter(n => n.held)" :key="`hold:${n.id}`" :data-note-path="n.id"><g v-for="(mesh, i) in n.bodyTriangles" :key="i" :clip-path="`url(#${uid}-${n.id}-${i})`"><image :href="noteRendering.skins[skin].hold_line.url" width="200" height="200" :transform="mesh.matrix" preserveAspectRatio="none" /></g></g>
-          <line v-for="link in geometry.links" :key="link.tick" :data-simultaneous-tick="link.tick" :x1="link.x1" :x2="link.x2" :y1="link.y" :y2="link.y" stroke="#e9faf6" stroke-width="1" opacity=".65" />
-          <g v-for="n in geometry.middleNodes" :key="n.id" :data-hold-middle="n.id" :data-tick="n.tick"><ArchiveSongNoteGlyph role="middle" :skin="skin" :x="n.x" :y="n.y" :width="30" /></g>
-          <g v-for="n in geometry.notes.filter(n => n.held)" :key="`tail:${n.id}`" :data-note-tail="n.id" :data-note-role="n.endRole"><ArchiveSongNoteGlyph :role="n.endRole" :skin="skin" :x="n.endX" :y="n.endY" :width="30" /></g>
-          <g v-for="n in geometry.notes" :key="n.id" :data-note="n.id" :data-note-type="n.type"><ArchiveSongNoteGlyph :role="n.role" :skin="skin" :x="n.x" :y="n.y" :width="30" /></g>
-          <line x1="77" x2="353" :y1="cursorY" :y2="cursorY" stroke="#fff1a2" stroke-width="2" data-chart-cursor="true" />
-        </g>
-      </defs>
+  <div ref="scroll" class="chart-scroll" :class="{'chart-columns':folded}" tabindex="0" role="region" :aria-label="`${title} 长轨谱面`" @wheel.passive="manualScroll" @pointerdown="startPointer" @pointerup="finishPointer" @pointercancel="pointer=null" @keydown="manualKey" @scroll.passive="queueViewport">
+    <div ref="drawing" class="chart-drawing" :style="{width:`${pixelWidth}px`,height:`${drawingHeight}px`}" :data-chart-layout="folded?'columns':'continuous'" :data-mounted-segments="segments.length">
       <template v-if="folded">
-        <rect :width="drawingWidth" :height="drawingHeight" fill="#13212e" />
-        <g v-for="column in columns" :key="column.index" :transform="`translate(${column.index * 434} 0)`">
-          <text x="18" y="22" fill="#d7efee" font-size="14">{{ column.index + 1 }} · {{ formatChartTime(column.fromSeconds) }}–{{ formatChartTime(column.toSeconds) }}</text>
-          <rect x="0" y="32" width="410" :height="column.height + 40" fill="none" :stroke="activeColumn === column.index ? '#6ad7c9' : '#35485a'" stroke-width="2" />
-          <svg x="0" y="32" width="410" :height="column.height + 40" :viewBox="`0 ${column.startY - 20} 410 ${column.height + 40}`" overflow="hidden" :data-chart-column="column.index" @pointerdown.stop="seekColumn($event, column)"><use :href="`#${uid}-source`" /></svg>
-        </g>
+        <div v-for="index in segments" :key="index" class="chart-column" :data-chart-column="index" :style="{left:`${index*panelWidth}px`,width:`${panelWidth}px`}">
+          <div class="column-label">{{ index+1 }} · {{ formatChartTime(columns[index].fromSeconds) }}–{{ formatChartTime(columns[index].toSeconds) }}</div>
+          <ArchiveSongChartSlice v-memo="[geometry,skin,index,scale,panelWidth]" :geometry="geometry" :skin="skin" :from="columns[index].startY-20" :height="columns[index].height+40" :width="panelWidth" />
+          <span v-if="activeColumn===index" class="chart-cursor" :style="{top:`${52+cursorY-columns[index].startY}px`}" data-chart-cursor />
+        </div>
       </template>
-      <use v-else :href="`#${uid}-source`" />
-    </svg>
+      <template v-else>
+        <ArchiveSongChartSlice v-for="tile in segments" :key="tile.id" v-memo="[geometry,skin,tile.id,scale,pixelWidth]" class="chart-tile" :style="{top:`${tile.from}px`}" :geometry="geometry" :skin="skin" :from="tile.from" :height="tile.height" :width="pixelWidth" />
+        <span class="chart-cursor" :style="{top:`${cursorY}px`}" data-chart-cursor />
+      </template>
+    </div>
   </div>
-  <p class="chart-reading-note">{{ folded ? `${columns.length} 个等时长区间 · 从左向右，每栏从上往下；可横向滚动。栏边缘保留少量相邻内容方便衔接。` : '从上往下阅读，可在轨道内滚动。' }} 点击轨道可定位；黄色线为当前位置。</p>
+  <p class="chart-reading-note">{{ folded?'从左向右，每栏从上往下。':'从上往下阅读。' }} 点击定位；黄色线为当前位置。</p>
 </template>
-
 <script setup>
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { buildSongChartGeometry, buildSongChartColumns, songChartColumnAt } from '../../presentation/SongChartPresentation.js'
-import { noteRendering } from '../../presentation/SongNotePresentation.js'
-import { formatChartTime } from '../../presentation/SongChartTiming.js'
-import ArchiveSongNoteGlyph from './ArchiveSongNoteGlyph.vue'
-const props = defineProps({ chart: { type: Object, required: true }, title: String, skin: String, scale: Number, cursor: Number, layout: { type: String, default: 'auto' }, follow: Boolean })
-const emit = defineEmits(['seek'])
-const uid = `long-chart-${getCurrentInstance().uid}`
-const scroll = ref(null), svg = ref(null), viewportWidth = ref(0)
-const geometry = computed(() => buildSongChartGeometry(props.chart, props.scale))
-const columns = computed(() => buildSongChartColumns(props.chart, props.scale))
-const folded = computed(() => props.layout === 'columns' || (props.layout === 'auto' && viewportWidth.value >= 720))
-const activeColumn = computed(() => songChartColumnAt(columns.value, props.cursor))
-const cursorY = computed(() => 42 + props.cursor * props.scale / 1000)
-const drawingWidth = computed(() => folded.value ? columns.value.length * 434 - 24 : 410)
-const drawingHeight = computed(() => folded.value ? Math.ceil(Math.max(...columns.value.map(c => c.height)) + 80) : geometry.value.height)
-const panelWidth = computed(() => viewportWidth.value / Math.max(1, Math.floor(viewportWidth.value / 260)))
-const pixelWidth = computed(() => folded.value ? drawingWidth.value / 434 * panelWidth.value : Math.min(410, viewportWidth.value))
-let resize
-onMounted(() => {
-  resize = new ResizeObserver(entries => { viewportWidth.value = entries[0].contentRect.width })
-  resize.observe(scroll.value)
+import {computed,createVNode,markRaw,nextTick,onBeforeUnmount,onMounted,ref,render} from 'vue'
+import {buildSongChartGeometry,buildSongChartColumns,songChartColumnAt} from '../../presentation/SongChartPresentation.js'
+import {chartTileWindow,chartColumnWindow} from '../../presentation/SongChartViewport.js'
+import {formatChartTime} from '../../presentation/SongChartTiming.js'
+import ArchiveSongChartSlice from './ArchiveSongChartSlice.vue'
+const props=defineProps({chart:Object,title:String,skin:String,scale:Number,cursor:Number,layout:{type:String,default:'auto'},follow:Boolean})
+const emit=defineEmits(['seek'])
+const scroll=ref(null),drawing=ref(null),viewportWidth=ref(410),top=ref(0),left=ref(0),visibleHeight=ref(768)
+const geometry=computed(()=>markRaw(buildSongChartGeometry(props.chart,props.scale)))
+const columns=computed(()=>buildSongChartColumns(props.chart,props.scale))
+const folded=computed(()=>props.layout==='columns'||(props.layout==='auto'&&viewportWidth.value>=720))
+const activeColumn=computed(()=>songChartColumnAt(columns.value,props.cursor))
+const cursorY=computed(()=>42+props.cursor*props.scale/1000)
+const panelWidth=computed(()=>viewportWidth.value/Math.max(1,Math.floor(viewportWidth.value/260)))
+const drawingHeight=computed(()=>folded.value?Math.ceil(Math.max(...columns.value.map(c=>c.height))+80):geometry.value.height)
+const pixelWidth=computed(()=>folded.value?columns.value.length*panelWidth.value:Math.min(410,viewportWidth.value))
+const segments=computed(()=>folded.value?chartColumnWindow(columns.value.length,left.value,viewportWidth.value,panelWidth.value):chartTileWindow(drawingHeight.value,top.value,visibleHeight.value))
+let resize,outer,viewportFrame=0,followFrame=0,manualUntil=0,pointer=null,disposed=false
+function manualScroll(){manualUntil=Infinity}
+function manualKey(event){if(['PageDown','PageUp','ArrowDown','ArrowUp'].includes(event.key))manualScroll()}
+function measure(){
+  viewportFrame=0
+  if(!scroll.value||!drawing.value)return
+  const box=drawing.value.getBoundingClientRect(),inside=scroll.value.getBoundingClientRect()
+  const expanded=scroll.value.scrollHeight<=scroll.value.clientHeight+1
+  const host=expanded&&outer?outer.getBoundingClientRect():inside
+  top.value=Math.max(0,host.top-box.top)
+  visibleHeight.value=Math.max(120,Math.min(innerHeight,host.height))
+  left.value=scroll.value.scrollLeft
+  const width=scroll.value.clientWidth
+  if(Math.abs(width-viewportWidth.value)>1)viewportWidth.value=width
+}
+function queueViewport(){if(!viewportFrame)viewportFrame=requestAnimationFrame(measure)}
+onMounted(()=>{
+  outer=scroll.value.closest('[data-chart-scroll-host]')
+  resize=new ResizeObserver(queueViewport);resize.observe(scroll.value)
+  outer?.addEventListener('scroll',queueViewport,{passive:true})
+  outer?.addEventListener('wheel',manualScroll,{passive:true})
+  queueViewport()
 })
-onBeforeUnmount(() => resize?.disconnect())
-async function scrollToTick() {
-  await nextTick()
-  if (!scroll.value) return
-  if (folded.value) {
-    const left = activeColumn.value * panelWidth.value
-    if (left < scroll.value.scrollLeft || left + panelWidth.value > scroll.value.scrollLeft + scroll.value.clientWidth) scroll.value.scrollLeft = left
+onBeforeUnmount(()=>{disposed=true;resize?.disconnect();cancelAnimationFrame(viewportFrame);cancelAnimationFrame(followFrame);outer?.removeEventListener('scroll',queueViewport);outer?.removeEventListener('wheel',manualScroll)})
+function scrollToTick(force=true){
+  if(force)manualUntil=0
+  if(!scroll.value||!drawing.value||(!force&&performance.now()<manualUntil))return
+  if(folded.value){
+    const x=activeColumn.value*panelWidth.value
+    if(x<scroll.value.scrollLeft||x+panelWidth.value>scroll.value.scrollLeft+scroll.value.clientWidth)scroll.value.scrollLeft=x
   }
-  const column = columns.value[activeColumn.value]
-  const y = folded.value ? 52 + cursorY.value - column.startY : cursorY.value
-  const outer = scroll.value.closest('[data-chart-scroll-host]')
-  if (outer && scroll.value.scrollHeight <= scroll.value.clientHeight + 1) {
-    outer.scrollTop += svg.value.getBoundingClientRect().top - outer.getBoundingClientRect().top + y - 160
-  } else scroll.value.scrollTop = Math.max(0, y - 100)
+  const y=folded.value?52+cursorY.value-columns.value[activeColumn.value].startY:cursorY.value
+  const expanded=outer&&scroll.value.scrollHeight<=scroll.value.clientHeight+1
+  const host=expanded?outer:scroll.value
+  const hostBox=host.getBoundingClientRect(),drawingBox=drawing.value.getBoundingClientRect()
+  const visibleY=drawingBox.top+y-hostBox.top
+  // Never repeatedly recenter a line which is already inside the reading window.
+  if(force||visibleY<60||visibleY>host.clientHeight-130)host.scrollTop=Math.max(0,host.scrollTop+visibleY-100)
+  queueViewport()
 }
-watch([() => props.cursor, () => props.follow], () => { if (props.follow) void scrollToTick() })
-function seekColumn(event, column) {
-  const matrix = event.currentTarget.getScreenCTM()
-  if (!matrix) return
-  const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
-  emit('seek', Math.max(column.from, Math.min(column.to, (local.y - 42) * 1000 / props.scale)))
+import {watch} from 'vue'
+watch(()=>props.cursor,()=>{if(props.follow&&!followFrame)followFrame=requestAnimationFrame(()=>{followFrame=0;if(!disposed)scrollToTick(false)})})
+watch(()=>props.follow,value=>{if(value)scrollToTick(true)})
+watch([folded,()=>props.scale,()=>props.chart],async()=>{await nextTick();if(!disposed)queueViewport()})
+function startPointer(event){pointer=drawing.value?.contains(event.target)?{x:event.clientX,y:event.clientY}:null;manualScroll()}
+function finishPointer(event){
+  if(!pointer||Math.hypot(event.clientX-pointer.x,event.clientY-pointer.y)>8){pointer=null;return}
+  pointer=null
+  const rect=drawing.value.getBoundingClientRect()
+  const index=folded.value?Math.min(columns.value.length-1,Math.max(0,Math.floor((event.clientX-rect.left)/panelWidth.value))):0
+  const y=event.clientY-rect.top
+  const sourceY=folded.value?y-52+columns.value[index].startY:y
+  emit('seek',Math.max(0,Math.min(props.chart.maxTick,(sourceY-42)*1000/props.scale)))
 }
-function seekContinuous(event) {
-  if (folded.value) return
-  const matrix = svg.value.getScreenCTM()
-  if (!matrix) return
-  const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
-  emit('seek', Math.max(0, Math.min(props.chart.maxTick, (local.y - 42) * 1000 / props.scale)))
+function getSourceSvg(){
+  const host=document.createElement('div')
+  render(createVNode(ArchiveSongChartSlice,{geometry:geometry.value,skin:props.skin,from:0,height:geometry.value.height,width:410}),host)
+  const svg=host.querySelector('svg').cloneNode(true)
+  const line=document.createElementNS('http://www.w3.org/2000/svg','line')
+  for(const [key,value] of Object.entries({x1:77,x2:353,y1:cursorY.value,y2:cursorY.value,stroke:'#fff1a2','stroke-width':2}))line.setAttribute(key,value)
+  svg.append(line);render(null,host)
+  return svg
 }
-function getSourceSvg() {
-  const source = svg.value?.cloneNode(true)
-  if (!source) return null
-  for (const child of [...source.children]) if (!['defs', 'title'].includes(child.tagName)) child.remove()
-  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use')
-  use.setAttribute('href', `#${uid}-source`); source.append(use)
-  source.setAttribute('viewBox', `0 0 ${geometry.value.width} ${geometry.value.height}`)
-  source.setAttribute('width', geometry.value.width); source.setAttribute('height', geometry.value.height)
-  return source
+function getSvg(){
+  const svg=getSourceSvg()
+  if(!folded.value)return svg
+  const ns='http://www.w3.org/2000/svg',defs=document.createElementNS(ns,'defs'),source=document.createElementNS(ns,'g')
+  source.id='export-chart-source'
+  for(const child of [...svg.children])source.append(child)
+  defs.append(source);svg.append(defs)
+  svg.setAttribute('viewBox',`0 0 ${columns.value.length*434} ${drawingHeight.value}`);svg.setAttribute('width',columns.value.length*434);svg.setAttribute('height',drawingHeight.value)
+  for(const column of columns.value){
+    const frame=document.createElementNS(ns,'svg');frame.setAttribute('x',column.index*434);frame.setAttribute('y',32);frame.setAttribute('width',410);frame.setAttribute('height',column.height+40);frame.setAttribute('viewBox',`0 ${column.startY-20} 410 ${column.height+40}`)
+    const use=document.createElementNS(ns,'use');use.setAttribute('href','#export-chart-source');frame.append(use);svg.append(frame)
+    const text=document.createElementNS(ns,'text');text.setAttribute('x',column.index*434+18);text.setAttribute('y',22);text.setAttribute('fill','#d7efee');text.textContent=`${column.index+1} · ${formatChartTime(column.fromSeconds)}–${formatChartTime(column.toSeconds)}`;svg.append(text)
+  }
+  return svg
 }
-defineExpose({ getSvg: () => svg.value, getSourceSvg, scrollToTick })
+function getSourceDimensions(){return {width:410,height:geometry.value.height}}
+defineExpose({getSvg,getSourceSvg,getSourceDimensions,scrollToTick})
 </script>
-
 <style scoped>
-.chart-scroll { height: 620px; overflow: auto; background: #13212e; border: 1px solid #35485a; border-radius: 8px; overscroll-behavior: contain; }
-.chart-svg { display: block; margin: 0 auto; cursor: crosshair; }
-.chart-columns .chart-svg { margin: 0; max-width: none; }
-.chart-reading-note { margin: 8px 0 0; font-size: .73rem; color: #617380; line-height: 1.6; }
-.chart-scroll:focus-visible { outline: 3px solid #1d938a; outline-offset: 2px; }
-@media (max-width: 560px) { .chart-scroll { height: 460px; } }
+.chart-scroll{height:620px;overflow:auto;background:#13212e;border:1px solid #35485a;border-radius:8px;overscroll-behavior:contain;overflow-anchor:none;touch-action:pan-x pan-y}
+.chart-drawing{position:relative;margin:0 auto;cursor:crosshair;overflow:hidden}
+.chart-columns .chart-drawing{margin:0}
+.chart-tile,.chart-column{position:absolute;display:block;left:0}
+.chart-column{top:0;border:1px solid #35485a;box-sizing:border-box}
+.column-label{height:32px;line-height:32px;padding:0 12px;color:#d7efee;font-size:12px;white-space:nowrap}
+.chart-cursor{position:absolute;left:18.8%;right:14%;height:2px;background:#fff1a2;pointer-events:none}
+.chart-reading-note{margin:8px 0 0;font-size:.73rem;color:#617380;line-height:1.6}
+.chart-scroll:focus-visible{outline:3px solid #1d938a;outline-offset:2px}
+@media(max-width:560px){.chart-scroll{height:460px}}
 </style>

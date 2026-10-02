@@ -3,7 +3,7 @@ export function createCollectionCatalogSession(repository, onChange) {
   let revision=0, controller=null, disposed=false, catalogDomain='';
   const state={domain:'',rows:[],detail:null,selectedId:'',catalogBusy:false,detailBusy:false,error:'',errorScope:''};
   const publish=values=>{Object.assign(state,values);if(!disposed)onChange({...state})};
-  async function open(domain,key='') {
+  async function open(domain,key='',{selectDefault=true}={}) {
     if(disposed)return false;
     controller?.abort();controller=new AbortController();
     const run=++revision,options={signal:controller.signal};
@@ -24,6 +24,7 @@ export function createCollectionCatalogSession(repository, onChange) {
       const type=domain==='items'?'item':'honor';
       const match=key?new RegExp(`^${type}:(\\d+)$`).exec(key):null;
       if(key && !match)throw Error('Invalid collection identity');
+      if(!key && !selectDefault){publish({detailBusy:false});return true}
       const selected=key?state.rows.find(row=>String(row.id)===match[1]):state.rows[0];
       if(!selected) {
         if(!key){publish({detailBusy:false});return true}

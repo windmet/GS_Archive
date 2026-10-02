@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
 import { validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
@@ -55,22 +55,22 @@ const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayo
 const settingsOpen = ref(false), infoOpen = ref(false), settingsButton = ref(null), longPreview = ref(null)
 const settingsPanel = ref(null), settingsPosition = ref({ left: '12px', top: '12px' })
 const editingTick = ref(false), tickDraft = ref(''), tickInput = ref(null), tickButton = ref(null)
-const chart = ref(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
+const chart = shallowRef(null), error = ref(''), loading = ref(false), cursor = ref(0), locateMessage = ref('')
 const exporting = ref(false), exportError = ref(''), audio = ref(null), audioError = ref(''), starting = ref(false)
 const exportFormat = ref('svg'), exportProgress = ref(0)
 const playbackRate = ref(1), volume = ref(1), clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null })
 const activeDifficulty = computed(() => props.difficulties.find(d => d.type === selected.value))
 const timing = computed(() => chart.value ? buildSongChartTiming(chart.value) : null)
-const safeCursor = computed(() => Math.max(0, Number(cursor.value) || 0))
+const safeCursor = computed(() => Math.min(chart.value?.maxTick || 0, Math.max(0, Number(cursor.value) || 0)))
 const safeSpeed = computed(() => Math.max(1, Math.min(30, Number(speed.value) || 10)))
 const span = computed(() => songTrackSpanForSpeed(safeSpeed.value))
-const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(safeCursor.value) || 0))
+const currentSeconds = computed(() => Math.max(0, timing.value?.tickToSeconds(Math.max(0, Number(cursor.value) || 0)) || 0))
 const totalSeconds = computed(() => Math.max(timing.value?.duration || 0, clockSnapshot.value.duration || props.audioTrack?.source?.duration_seconds || 0))
 const playing = computed(() => ['playing','waiting'].includes(clockSnapshot.value.phase) || (clockSnapshot.value.phase === 'seeking' && !audio.value?.paused))
 const endpoints = computed(() => chart.value ? songNoteEndpoints(chart.value) : [])
 const previousNote = computed(() => endpoints.value.filter(n => n.tick < safeCursor.value - .001).at(-1))
 const nextNote = computed(() => endpoints.value.find(n => n.tick > safeCursor.value + .001))
-let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0
+let controller, generation = 0, frame = 0, playGeneration = 0, pendingSeconds = 0, lastPaint = 0
 const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
@@ -127,10 +127,12 @@ function step(direction) {
 }
 function stopPlayback() { playGeneration++; starting.value = false; if (frame) cancelAnimationFrame(frame); frame = 0; audio.value?.pause() }
 defineExpose({ pause: stopPlayback })
-function updatePlayback() {
+function updatePlayback(now = 0) {
   const element = audio.value
   if (!element || element.paused || !timing.value) { frame = 0; return }
-  cursor.value = timing.value.secondsToTick(element.currentTime)
+  // The audio remains the clock; a 30 Hz visual cursor avoids invalidating the
+  // chart/toolbars at the iPad's 120 Hz display rate.
+  if (now - lastPaint >= 33) { cursor.value = timing.value.secondsToTick(element.currentTime); lastPaint = now }
   pendingSeconds = element.currentTime
   frame = requestAnimationFrame(updatePlayback)
 }
@@ -203,16 +205,16 @@ async function cancelTick(restoreFocus = false) {
   if (restoreFocus) { await nextTick(); tickButton.value?.focus({ preventScroll: true }) }
 }
 async function download(format = 'svg') {
-  const svg = format === 'png' ? longPreview.value?.getSourceSvg() : longPreview.value?.getSvg()
-  if (exporting.value || !svg || !chart.value) return
+  if (exporting.value || !longPreview.value || !chart.value) return
   const fileName = `${props.songCode}-${activeDifficulty.value.label}.${format}`, current = generation
   exporting.value = true; exportError.value = ''; exportFormat.value = format; exportProgress.value = 0
   const check = () => { if (current !== generation) throw new Error('谱面已切换，请重新导出') }
   try {
     if (format === 'png') {
-      const box = svg.getAttribute('viewBox').split(/\s+/).map(Number)
-      assertBrowserSongChartPng(box[2], box[3])
+      const box = longPreview.value.getSourceDimensions()
+      assertBrowserSongChartPng(box.width, box.height)
     }
+    const svg = format === 'png' ? longPreview.value.getSourceSvg() : longPreview.value.getSvg()
     const content = await embedSongChartImages(svg)
     check()
     const blob = format === 'png' ? await exportSongChartPng(content, { check, onProgress: n => { exportProgress.value = n } }) : new Blob([content], { type: 'image/svg+xml;charset=utf-8' })
