@@ -517,3 +517,5 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 实际 5198 Browser 生产 bundle `ChibiStageViewer-Celd3ZL3.js`：Study S.E.M 2/3/4、005_00，1440×900 的 32.5 秒只见右侧黄束，背景 alpha=0.400；关闭灯光变为 0，再打开／回退到 13.7 秒三束粉光与背景 alpha=0.500。390×844 的 canvas CSS≈357×201，document scrollWidth=clientWidth=390，没有横向溢出。49.4 秒原 hide 结束后 background=0／Spotlight ids 空；4.3 秒 Pinspotlight ids=1,2,3、新背景=0。切 Take01／02 同样背景=0，无 Study 残留；此处仅验清理，不替代两首录屏光效比对。console errors 为空，结束恢复默认视口并保留后续验收 tab。截图 `spotlight-background-032.500.png`、`spotlight-background-off-032.500.png`、`spotlight-background-mobile-013.700.png`。
 
 仍待完整验收：Study 的动作相位、前景 call 棒、粒子、Pinspotlight 原生遮罩、原生背景动态层序与自由灯移动，以及 Take 两半音频精确配准和全曲视觉。窄屏模拟不是实体手机，代码／本地来源检查不是全媒体发布或 master PR 收口。另一个窗口的资料页／审计修改继续保留，本批只提交舞台接线与回归。
+
+本批代码提交 `4bcc37d72d9efa3cbcb75c7192a383838c5032b9` 的完整 [Source Gate 37078486828](https://github.com/windmet/GS_Archive/actions/runs/37078486828) 已终态 success，114 个步骤成功、无失败，包含新增背景 PPtr 与实际 SFC／single-layer 异步释放回归。HTTP 复核 schema 3 与 renderer script 115454，`pinspotlight_back.png` 为 294 B，响应 SHA256 `1391fa34295e4eb7ae8070c7c90f8aa7a06cd1920cabed8c885ee95c4b2f2c14` 与派生索引一致。此 CI 绑定该确切代码提交，后续文档提交不冒充同一 revision 的门禁。
