@@ -33,6 +33,7 @@
         </div>
       </template>
       <template #actions>
+        <div class="archive-header-actions">
         <label v-if="searchable" class="archive-search">
           <Search :size="17" aria-hidden="true" />
           <input
@@ -41,6 +42,8 @@
             @input="emit('update:modelValue', $event.target.value)"
           />
         </label>
+        <ArchiveLanguageSwitch />
+        </div>
       </template>
     </ArchivePageChrome>
 
@@ -86,6 +89,7 @@ import {
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 
@@ -236,6 +240,8 @@ const mobileNavigation = [
   background: #fff;
 }
 .archive-search:focus-within { border-color: #34b9b0; box-shadow: 0 0 0 2px rgba(24,167,157,0.12); }
+.archive-header-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; }
+.archive-header-actions .archive-search { flex:1; }
 .archive-search input {
   min-width: 0;
   width: 100%;
@@ -294,6 +300,9 @@ const mobileNavigation = [
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
   .archive-topbar h1 { font-size: 1.15rem; }
   .archive-search { grid-row: 2; grid-column: 2; height: 36px; }
+  .archive-header-actions { display:contents; }
+  .archive-header-actions :deep(.archive-language-switch) { grid-row:1; grid-column:2; justify-self:end; }
+  .archive-topbar .archive-mobile-brand { display:none; }
   .archive-topbar:not(:has(.archive-search)) .archive-heading { grid-column: 1 / -1; }
   .archive-content { grid-column: 1; grid-row: 2; padding-bottom: 0; }
   .archive-inspector { display: none; }
@@ -369,5 +378,6 @@ const mobileNavigation = [
 .is-tool .archive-mobile-brand, .is-tool .archive-heading :deep(.archive-breadcrumb) { display: none; }
 .is-tool .archive-heading { min-width: 0; }
 .is-tool .archive-topbar h1 { font-size: 16px; }
+.is-tool .archive-header-actions { margin-left:auto; }
 }
 </style>

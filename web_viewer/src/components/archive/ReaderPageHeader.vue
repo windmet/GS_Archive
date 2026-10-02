@@ -2,11 +2,13 @@
   <div class="reader-top">
     <ArchivePageChrome class="reader-heading-row" back-class="reader-back" @back="emit('back')">
       <template #title><span class="reader-section-title"><slot /></span></template>
+    <template #actions><ArchiveLanguageSwitch /></template>
     </ArchivePageChrome>
   </div>
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 const emit = defineEmits(['back'])
 </script>

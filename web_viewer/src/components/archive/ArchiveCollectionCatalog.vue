@@ -18,10 +18,11 @@
       </nav>
       <nav v-if="kind==='items'" class="collection-chips attributes" aria-label="道具属性"><button v-for="entry in attributes" :key="entry.id" type="button" :class="entry.id" :aria-pressed="attribute===entry.id" @click="attribute=entry.id">{{ entry.label }}</button></nav>
       <div class="collection-cards" :class="{'is-honors':kind==='honors'}">
-        <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :aria-pressed="detailOpen&&String(row.id)===selectedId" @click="select(row)">
+        <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :title="row.nameJa" :aria-pressed="detailOpen&&String(row.id)===selectedId" @click="select(row)">
+          <span v-if="kind==='items' && collectionItemVariant(row.nameJa)" class="collection-variant">{{ collectionItemVariant(row.nameJa) }}</span>
           <span class="collection-card-art"><img v-if="row.image?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="kind==='honors'?Medal:Box" v-else :size="25" /></span>
           <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small>{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ honorIdol(row)?.name || honorLabels[honorGroup(row)] }}</span></template></span>
-          <span v-if="kind==='items'" class="collection-tooltip" role="tooltip"><strong>{{ entryName(row) }}</strong><span>{{ summary(row)?.description?archiveText('item',summary(row).description,'description'):itemBrowseGroup(row.itemType).label }}</span><small>编号 {{ row.id }} · 点击查看来源</small></span>
+          <span v-if="kind==='items'" class="collection-tooltip" role="tooltip"><strong>{{ entryName(row) }}</strong><span v-if="entryName(row)!==row.nameJa" lang="ja" class="collection-original">{{ row.nameJa }}</span><span>{{ summary(row)?.description?archiveText('item',summary(row).description,'description'):itemBrowseGroup(row.itemType).label }}</span><small>编号 {{ row.id }} · 点击查看来源</small></span>
         </button>
       </div>
       <p v-if="!filtered.length">没有匹配的藏品。</p>
@@ -33,6 +34,7 @@
 <script setup>
 import {computed,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
 import {Box,Medal} from '@lucide/vue'
+import {collectionItemVariant} from '../../presentation/CollectionItemVariant.mjs'
 import {itemBrowseGroups,itemBrowseGroup} from './DomainPresentation.mjs'
 import {collectionIdols,collectionSummary,honorIdol,honorGroup,honorSourceLabel,itemAttribute} from '../../presentation/CollectionBrowse.js'
 import {UNIT_CODE_TO_NAME} from '../../utils/UnitNameMap.js'

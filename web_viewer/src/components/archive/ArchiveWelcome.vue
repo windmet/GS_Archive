@@ -6,6 +6,7 @@
         <header class="terminal-header">
           <button v-if="canCancel" class="terminal-icon-button" type="button" aria-label="返回来源页" @click="emit('cancel')"><ArrowLeft :size="20" /></button>
           <span class="terminal-brand">SideM <b>ARCHIVE</b></span>
+          <ArchiveLanguageSwitch />
           <button class="terminal-icon-button" type="button" aria-label="更换 SSR 卡面壁纸" title="SSR 卡面壁纸" @click="wallpaperOpen = true"><Images :size="20" /></button>
         </header>
         <div class="terminal-heading">
@@ -59,6 +60,7 @@
   </section>
 </template>
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ChevronRight, Images, LayoutGrid, Shuffle, Sparkles } from '@lucide/vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'

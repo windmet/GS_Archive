@@ -40,6 +40,7 @@
     <div class="scene-shade" aria-hidden="true"></div>
 
     <header class="home-masthead">
+          <ArchiveLanguageSwitch class="home-language-switch" />
       <div class="idol-heading">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
         <h2>{{ activeIdol.name }}</h2>
@@ -267,6 +268,7 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   Check,
@@ -678,3 +680,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped src="../../styles/archive-home-day.css"></style>
+
+<style scoped>
+.home-language-switch { pointer-events:auto; }
+.home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
+@media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
+</style>

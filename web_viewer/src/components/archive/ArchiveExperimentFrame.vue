@@ -1,10 +1,11 @@
 <template>
   <section class="experiment-frame" :aria-label="title">
-    <header><button type="button" @click="$emit('back')"><ArrowLeft :size="18" />{{ backLabel }}</button><h1>{{ title }}</h1><span>实验室</span></header>
+    <header><button type="button" @click="$emit('back')"><ArrowLeft :size="18" />{{ backLabel }}</button><h1>{{ title }}</h1><span>实验室</span><ArchiveLanguageSwitch /></header>
     <main><slot /></main>
   </section>
 </template>
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { ArrowLeft } from '@lucide/vue'
 defineProps({ title: String, backLabel: { type: String, default: '返回来源页' } })
 defineEmits(['back'])

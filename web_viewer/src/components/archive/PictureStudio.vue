@@ -2,6 +2,7 @@
   <div ref="studioShell" class="studio-shell" :class="{ 'is-focused': focused }">
   <article class="domain-page studio-page" :class="{ 'is-focused': focused, 'has-drawer': focused && menuOpen }" data-archive-scroll-container>
     <header class="studio-focus-bar">
+      <ArchiveLanguageSwitch class="studio-header-language" />
       <button v-if="standalone" type="button" title="返回打开摄影工作台的页面" aria-label="返回来源页" @click="emit('back')"><ArrowLeft :size="18" />返回</button>
       <button v-else-if="focused" type="button" @click="leaveFocus">退出专注编辑</button>
       <button v-if="!focused" type="button" @click="enterFocus">专注编辑</button>
@@ -19,6 +20,7 @@
     </div>
     <aside id="studio-focus-menu" ref="drawerHost" v-show="focused && menuOpen" class="studio-focus-drawer" :data-tab="drawerTab" aria-label="摄影工作台菜单">
       <div class="studio-drawer-heading"><strong>摄影菜单</strong><button type="button" @click="closeMenu">收起菜单</button></div>
+      <ArchiveLanguageSwitch class="studio-menu-language" />
       <nav aria-label="摄影菜单分区" class="studio-drawer-tabs">
         <button v-for="tab in drawerTabs" :key="tab.id" type="button" :aria-pressed="drawerTab === tab.id" @click="drawerTab = tab.id">{{ tab.label }}</button>
       </nav>
@@ -445,6 +447,7 @@
   </div>
 </template>
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, nextTick, onMounted, onScopeDispose, ref, shallowRef, watch } from "vue";
 import {
   Download,

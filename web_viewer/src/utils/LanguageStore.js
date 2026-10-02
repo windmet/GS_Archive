@@ -14,6 +14,13 @@ export function saveProducerName(value) {
   producerName.value = producerPreferences.update({ producer_name: value }).producer_name
 }
 
+// Update only the shared locale; retain story mode, addressing and playback.
+export function saveArchiveLocale(locale) {
+  const saved = producerPreferences.update({ui_locale: locale})
+  setUiLocale(saved.ui_locale)
+  return saved.ui_locale
+}
+
 export const storyLanguagePreferences = computed(() => ({
   story_content_mode: storyContentMode.value,
   story_translation_locale: storyTranslationLocale.value,

@@ -9,7 +9,8 @@ export function validateReaderTitles(value) {
   }
   return value
 }
-export function readerTitle(index, entry, source) {
+export function readerTitle(index, entry, source, locale = 'zh-CN') {
+  if (locale === 'ja-JP') return source
   const binding = index?.documents?.[entry?.document_id]
   const title = binding && index.titles[binding.title]
   return binding?.revision === entry?.sha256 && title?.source === source ? title.text : source

@@ -7,6 +7,7 @@
           <button v-if="canGoBack" class="terminal-icon-button" type="button" aria-label="返回来源页" @click="emit('back')"><ArrowLeft :size="20" /></button>
           <span class="terminal-brand">SideM <b>ARCHIVE</b></span>
           <div class="terminal-control-strip">
+          <ArchiveLanguageSwitch />
             <button class="terminal-icon-button terminal-labelled-control" type="button" aria-label="打开首页" title="首页" @click="emit('open-home')"><Sparkles :size="19" /><span>首页</span></button>
             <button class="terminal-icon-button terminal-labelled-control" type="button" aria-label="更换 SSR 卡面壁纸" title="SSR 卡面壁纸" @click="wallpaperOpen = true"><Images :size="19" /><span>壁纸</span></button>
             <button class="terminal-icon-button terminal-labelled-control" type="button" aria-label="启动设置" title="启动设置" @click="emit('settings')"><Settings2 :size="19" /><span>设置</span></button>
@@ -39,6 +40,7 @@
   </section>
 </template>
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { producerName } from '../../utils/LanguageStore.js'

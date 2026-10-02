@@ -189,7 +189,7 @@
         </label>
         <label class="menu-setting">
           <span>{{ uiText('player.settings.uiLanguage') }}</span>
-          <select :value="uiLocale" @change="saveUiLocale"><option value="zh-CN">简体中文</option><option value="ja-JP">日本語</option></select>
+          <ArchiveLanguageSwitch />
         </label>
         <label class="menu-setting"><span>{{ uiText('player.settings.producerName') }}</span><input class="producer-name-input" :value="producerName" type="text" autocomplete="off" :placeholder="uiText('player.settings.producerNamePlaceholder')" @input="saveProducerName($event.target.value)" /></label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
@@ -224,6 +224,7 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from '../components/archive/ArchiveLanguageSwitch.vue'
 import { setStoryRuntimePaused, transferOverlayPause } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerSession } from '../composables/PlayerSession.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
@@ -816,11 +817,6 @@ function saveSkipMode() {
   const saved = preferencesRepository.update({ skip_mode: skipMode.value })
   skipMode.value = saved.skip_mode
   if (skipEnabled.value) playbackController?.setSkip(true, skipMode.value)
-}
-
-function saveUiLocale(event) {
-  const saved = preferencesRepository.update({ ui_locale: event.target.value })
-  setStoryLanguagePreferences(saved)
 }
 
 function stopPlaybackModes(reason = 'manual-navigation') {

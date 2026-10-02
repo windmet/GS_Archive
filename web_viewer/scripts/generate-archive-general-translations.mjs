@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
+import {sourceUnits,loadGeneralRevisions} from './lib/general-translation-batches.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
 import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../translation/studio/general/photo-drafts.mjs';
@@ -65,6 +66,10 @@ for (const row of corpus) {
   if (translation) ((entries[row.kind] ||= {})[row.field] ||= {})[row.source] = translation;
   else missing.push(row);
 }
+// Reviewed/source-bound batch returns take precedence over generated drafts.
+// Regeneration cannot silently erase imported Gemini revisions.
+const revisions = loadGeneralRevisions(root,sourceUnits(root));
+for (const revision of revisions.values()) ((entries[revision.kind] ||= {})[revision.field] ||= {})[revision.source] = revision.translation;
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',
   scope: 'metadata-only', excluded: ['dialogue','unit-story','work-communication','home-dialogue'], entries}, null, 2) + '\n');

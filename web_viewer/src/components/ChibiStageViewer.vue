@@ -72,6 +72,7 @@
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
       <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
+      <ArchiveLanguageSwitch />
       <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
     </header>
 
@@ -373,6 +374,7 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -3052,7 +3054,11 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 }
 
 @media (max-width: 620px) {
-  .lab-link { margin-left: auto; }
+  .stage-header { height: auto; min-height: 108px; padding: 4px 8px; gap: 4px 8px; flex-wrap: wrap; }
+  .stage-header > div:not(.archive-language-switch) { flex: 1; min-width: calc(100% - 60px); }
+  .stage-header .header-divider { display: none; }
+  .stage-header :deep(.archive-language-switch) { margin-left: auto; }
+  .lab-link { margin-left: 0; }
   .performance-shell { min-height: 390px; aspect-ratio: auto; }
   .performance-hud { top: 14px; left: 14px; }
   .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }

@@ -7,6 +7,7 @@ for (const id of Object.keys(index.documents)) {
   const entry = manifest.entries.find(item=>item.document_id===id)
   const translated = index.titles[index.documents[id].title]
   assert.equal(readerTitle(index,entry,entry.title),translated.text)
+  assert.equal(readerTitle(index,entry,entry.title,'ja-JP'),entry.title,'Japanese metadata uses the source heading without changing story reading mode')
   assert.equal(readerTitle(index,{...entry,sha256:'sha256:'+'0'.repeat(64)},entry.title),entry.title,'new document revision does not reuse stale metadata')
   assert.equal(readerTitle(index,entry,'different source'),'different source','same ID cannot translate a different title')
 }

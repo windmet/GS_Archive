@@ -710,6 +710,11 @@
 .is-focused .studio-focus-bar { height: 60px; box-sizing: border-box; }
 .is-focused .studio-canvas { top: 112px; width: min(100%, calc((var(--studio-screen-height) - 124px) * 1.777778)); height: min(calc(var(--studio-screen-height) - 124px), calc(var(--studio-screen-width) * .5625)); }
 .studio-focus-drawer { top: 116px; }
+.studio-menu-language { display: none !important; }
+@media (max-width: 370px) {
+  .studio-header-language { display: none !important; }
+  .studio-menu-language { display: inline-flex !important; margin-block: 8px; }
+}
 @media (min-width: 901px) {
   .studio-page.has-drawer .studio-canvas { right: 390px; width: min(calc(100% - 390px), calc((var(--studio-screen-height) - 124px) * 1.777778)); height: min(calc(var(--studio-screen-height) - 124px), calc((var(--studio-screen-width) - 390px) * .5625)); }
 }

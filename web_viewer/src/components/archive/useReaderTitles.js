@@ -1,5 +1,6 @@
 import { computed, onMounted, shallowRef } from 'vue'
 import { readerTitle, validateReaderTitles } from '../../presentation/ReaderTitle.js'
+import { uiLocale } from '../../utils/LanguageStore.js'
 const index = shallowRef(null)
 let request
 function load() {
@@ -11,7 +12,7 @@ function load() {
 }
 export function useReaderTitles() {
   onMounted(load)
-  return (entry, source) => readerTitle(index.value, entry, source)
+  return (entry, source) => readerTitle(index.value, entry, source, uiLocale.value)
 }
 export function useReaderTitle(entry, source) {
   const display = useReaderTitles()

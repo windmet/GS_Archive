@@ -1,7 +1,7 @@
 <template>
   <section class="domain-panel collection-entry-details">
     <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="name" />
-    <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3></div>
+    <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3><p v-if="name !== detail.entry.nameJa" lang="ja" class="collection-original">{{ detail.entry.nameJa }}</p></div>
     <p class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
       <div><dt>种类</dt><dd>{{ kind === 'honors' ? '称号' : itemBrowseGroup(detail.entry.itemType).label }}</dd></div>

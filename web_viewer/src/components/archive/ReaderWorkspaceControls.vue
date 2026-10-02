@@ -1,6 +1,7 @@
 <template>
   <div class="reader-workspace-controls">
     <header class="reader-compact-header">
+      <ArchiveLanguageSwitch />
       <button class="icon-button" aria-label="返回来源目录" title="返回来源目录" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
       <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}{{ title || '剧情阅读' }}</span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
       <button class="desktop-search icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
@@ -38,6 +39,7 @@
   </div>
 </template>
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Search, Settings2, UserRound, X } from '@lucide/vue'
 import ReaderControlBar from './ReaderControlBar.vue'
@@ -131,4 +133,9 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
   .reader-sheet { width:100%; max-height:80dvh; max-width:100%; margin:0; inset:auto 0 0; border-radius:20px 20px 0 0; border-bottom:0; }
   .reader-sheet-content { padding:8px max(16px,var(--archive-safe-right)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,var(--archive-safe-left)); }
 }
+</style>
+
+<style scoped>
+.reader-compact-header { flex-wrap:wrap; }
+.reader-compact-header :deep(.archive-language-switch) { order:5; margin-left:auto; }
 </style>
