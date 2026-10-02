@@ -10,7 +10,6 @@
         <span>全部检索</span>
       </button>
     </div>
-
     <div v-if="mode === 'portal' && domain === 'main'" class="main-domain-landing">
       <header class="main-domain-hero">
         <div>
@@ -182,6 +181,7 @@
     </div>
 
     <div v-else-if="mode === 'portal'" class="story-portal">
+      <div class="portal-feature">
       <section class="main-story-band">
         <div class="band-heading">
           <div>
@@ -214,26 +214,34 @@
         </div>
       </section>
 
+      <section class="quick-archives" aria-labelledby="quick-archives-title">
+        <div class="section-heading"><div><span>STORY ARCHIVE</span><h2 id="quick-archives-title">更多故事</h2></div></div>
+        <div class="domain-grid">
+          <button v-for="gateway in secondaryGateways" :key="gateway.id" :class="`gateway-${gateway.id}`" @click="openGateway(gateway)">
+            <span class="gateway-icon"><component :is="gateway.icon" :size="19" /></span>
+            <span><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}</small></span>
+            <ArrowRight :size="14" />
+          </button>
+        </div>
+      </section>
+      </div>
+
       <section class="portal-section event-section">
         <div class="section-heading">
           <div><span>EVENT STORY</span><h2>活动剧情</h2></div>
           <button @click="browse('event')">查看全部 <ArrowRight :size="15" /></button>
         </div>
-        <div class="event-strip">
-          <button v-for="(entry, index) in featuredEvents" :key="entry.id" @click="emit('select', entry)">
-            <img :src="eventBanner(entry)" :alt="entry.title" :loading="index < 3 ? 'eager' : 'lazy'"
-              :decoding="index < 3 ? 'auto' : 'async'" width="940" height="510" />
-            <span><small>{{ entry.eventScopeLabel || entry.domainLabel }}</small><strong>{{ presentProducerAddressingText(entry.title) }}</strong></span>
-          </button>
+        <div class="reading-card-grid">
+          <EventStoryCard v-for="entry in featuredEvents" :key="entry.id" :entry="entry" :idol-name="idolName" @read="emit('select',$event)" @event="emit('open-event',$event)" />
         </div>
       </section>
 
       <section class="portal-section unit-section">
         <div class="section-heading">
           <div><span>UNIT EPISODE ZERO</span><h2>组合前传</h2></div>
-          <button @click="browse('unit_story')">查看全部 <ArrowRight :size="15" /></button>
+          <div class="unit-actions"><button aria-label="上一组组合前传" @click="scrollUnits(-1)"><ChevronLeft :size="17" /></button><button aria-label="下一组组合前传" @click="scrollUnits(1)"><ChevronRight :size="17" /></button><button @click="browse('unit_story')">查看全部（{{ unitGateways.length }}） <ArrowRight :size="15" /></button></div>
         </div>
-        <div class="unit-grid">
+        <div ref="unitTrack" class="unit-grid" aria-label="组合前传横向列表">
           <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
             <img :src="unitVisual(unit.id)" :alt="unit.label" loading="lazy" decoding="async" width="446" height="150" />
             <span>{{ unit.entries.length }} 篇</span>
@@ -241,19 +249,11 @@
         </div>
       </section>
 
-      <section class="portal-section archive-section">
-        <div class="section-heading"><div><span>STORY ARCHIVE</span><h2>更多故事</h2></div></div>
-        <div class="domain-grid">
-          <button v-for="gateway in secondaryGateways" :key="gateway.id" @click="openGateway(gateway)">
-            <span class="gateway-icon"><component :is="gateway.icon" :size="20" /></span>
-            <span><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}</small></span>
-            <ArrowRight :size="16" />
-          </button>
-        </div>
-      </section>
     </div>
 
-    <div v-else class="search-view">
+    <div v-else-if="mode!=='portal'" class="search-view">
+      <StoryDiscovery :entries="searchEntries" :query="searchQuery" @update:query="emit('update:search-query',$event)" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @series-change="emit('update:domain','');emit('clear-section')" @select="emit('select',$event)">
+      <template #filters>
       <div class="catalog-toolbar">
         <label>
           <span>故事分类</span>
@@ -282,6 +282,7 @@
         <label>
           <span>排序</span>
           <select :value="sort" @change="emit('update:sort', $event.target.value)">
+            <option value="latest">最新优先</option>
             <option value="domain">故事分类</option><option value="title">标题</option><option value="resource">资源 ID</option><option value="steps_desc">步骤数</option>
           </select>
         </label>
@@ -290,71 +291,10 @@
         </button>
         <span class="catalog-count">{{ filteredTotal }} 条结果</span>
       </div>
+      </template>
+      </StoryDiscovery>
 
-      <p v-if="!entries.length" class="empty-state">没有符合当前条件的故事</p>
 
-      <div v-if="domain === 'event' && entries.length" class="event-entity-grid">
-        <button
-          v-for="(entry, index) in entries"
-          :key="entry.id"
-          :data-archive-focus-id="`event:${entry.id}`"
-          @click="emit('select', entry)"
-        >
-          <span class="event-entity-visual">
-            <img :src="eventBanner(entry)" :alt="entry.masterEvent?.name || entry.title"
-              :loading="index < 2 ? 'eager' : 'lazy'"
-              :decoding="index < 2 ? 'auto' : 'async'"
-              :fetchpriority="index === 0 ? 'high' : 'auto'" width="940" height="510" />
-            <span>{{ entry.eventScopeLabel || '活动剧情' }}</span>
-          </span>
-          <span class="event-entity-copy">
-            <small>{{ eventTypeLabel(entry) }} · {{ formatEventDate(entry) }}</small>
-            <strong>{{ presentProducerAddressingText(entry.masterEvent?.name || entry.title) }}</strong>
-            <span>{{ entry.preplaySynopsis?.text || '查看活动剧情与关联资料。' }}</span>
-          </span>
-          <span class="event-reward-icons">
-            <img
-              v-for="cardId in entry.rewardCardIds?.slice(0, 3)"
-              :key="cardId"
-              :src="getCardIconUrl(cardId, true)"
-              alt="活动报酬卡"
-              loading="lazy" decoding="async" fetchpriority="low" width="30" height="30"
-            />
-            <small v-if="!entry.rewardCardIds?.length">无卡片报酬记录</small>
-          </span>
-          <ArrowRight :size="17" />
-        </button>
-      </div>
-
-      <div v-else-if="domain !== 'event'" class="story-list">
-        <button
-          v-for="entry in entries"
-          :key="entry.id"
-          class="story-row"
-          :data-archive-focus-id="`story:${entry.id}`"
-          :class="{ missing: !entry.exists && !entry.eventRelation, event: entry.eventRelation }"
-          :disabled="!entry.exists && !entry.eventRelation"
-          @click="emit('select', entry)"
-        >
-          <span class="story-play" aria-hidden="true">
-            <CalendarRange v-if="entry.eventRelation" :size="18" />
-            <BookOpen v-else-if="entry.exists" :size="18" />
-            <FileWarning v-else :size="18" />
-          </span>
-          <span class="story-domain">{{ entry.eventScopeLabel || entry.domainLabel }}</span>
-          <span class="story-main">
-            <small class="story-hierarchy">{{ hierarchyLabel(entry) }}</small>
-            <strong>{{ presentProducerAddressingText(entry.title) }}</strong>
-            <span v-if="entry.preplaySynopsis?.text" class="story-synopsis">{{ entry.preplaySynopsis.text }}</span>
-          </span>
-          <span class="story-stats">{{ entry.exists ? '已收录' : '暂未收录' }}</span>
-          <ArrowRight class="row-arrow" :size="17" />
-        </button>
-      </div>
-
-      <button v-if="entries.length < filteredTotal" class="load-more" @click="emit('load-more')">
-        <ChevronDown :size="17" /><span>显示更多</span>
-      </button>
     </div>
     <ArchiveTechnicalDetails :key="`${mode}:${domain}:${section}`" :evidence="mode === 'portal' ? { mainDomain, extraDomain, birthdayDomain } : { entries, filteredTotal }" />
   </section>
@@ -362,15 +302,21 @@
 
 <script setup>
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
-import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
-import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import { ArrowRight, BookOpen, Briefcase, Cake, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, CreditCard, FileWarning, Languages, LayoutGrid, Search, Sparkles, UserRound, X } from '@lucide/vue'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import EventStoryCard from './EventStoryCard.vue'
+import StoryDiscovery from './StoryDiscovery.vue'
 
 const props = defineProps({
+  idolName:{type:Function,default:()=>''},
+  idolSearch:{type:Function,default:()=>''},
   entries: { type: Array, default: () => [] }, allEntries: { type: Array, default: () => [] },
+  searchEntries: { type: Array, default: () => [] },
+  idolDirectory: { type: Array, default: () => [] },
+  searchQuery: {type:String,default:''},
   domainOptions: { type: Array, default: () => [] }, domain: { type: String, default: '' },
   section: { type: String, default: '' }, mode: { type: String, default: 'portal' },
   eventScopeOptions: { type: Array, default: () => [] }, eventScope: { type: String, default: 'all' },
@@ -384,7 +330,9 @@ const props = defineProps({
   extraDomain: { type: Object, default: null },
   birthdayDomain: { type: Object, default: null },
 })
-const emit = defineEmits(['select', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort'])
+const emit = defineEmits(['select', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
+const unitTrack=ref(null)
+function scrollUnits(direction){const track=unitTrack.value;if(track)track.scrollBy({left:direction*track.clientWidth*.8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -414,8 +362,9 @@ const birthdayCards = computed(() => {
   }))
 })
 const secondaryGateways = [
+  { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
   { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
-  { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' }, { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
+  { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' },
   { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
   { id: 'extra', label: '额外剧情', icon: Sparkles },
   { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
@@ -440,17 +389,6 @@ function openGateway(gateway) {
   else browse(gateway.id)
 }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
-function eventBanner(entry) { return `/assets/events/banners/image_home_announce_event_${entry.eventRelation?.event_code || entry.sectionId}_01.png` }
-function eventTypeLabel(entry) {
-  return ({ theater: 'THEATER', tour: 'TOUR', carnival: '315 CARNIVAL' })[entry.masterEvent?.event_type_label] || 'EVENT'
-}
-function formatEventDate(entry) {
-  const timestamp = Number(entry.masterEvent?.start_at || entry.releaseAt || 0)
-  if (!timestamp) return '日期未记录'
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Asia/Tokyo',
-  }).format(new Date(timestamp * 1000))
-}
 function unitVisual(id) {
   const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
@@ -466,7 +404,7 @@ function formatExtraDate(timestamp) {
 
 <style scoped>
 .story-catalog { height: 100%; overflow-y: auto; overflow-x: hidden; background: #f5f7f8; color: #26343c; }
-.catalog-switcher { position: sticky; top: 0; z-index: 4; display: flex; justify-content: center; gap: 2px; padding: 8px 16px; border-bottom: 1px solid #e0e5e7; background: rgba(255,255,255,.96); }
+.catalog-switcher { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; gap: 2px; padding: 8px 16px; border-bottom: 1px solid #e0e5e7; background: #fff; }
 .catalog-switcher button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 120px; height: 34px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718089; cursor: pointer; font: inherit; font-size: .7rem; }
 .catalog-switcher button.active { border-color: #15978e; color: #126f69; font-weight: 800; }
 .extra-domain-landing { min-height: calc(100% - 51px); background: #f7f9fa; }
@@ -553,12 +491,6 @@ function formatExtraDate(timestamp) {
 .chapter-entry > svg { position: absolute; z-index: 2; right: 15px; bottom: 19px; }
 .portal-section { padding: 24px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e3e7e9; }
 .section-heading > button { display: inline-flex; align-items: center; gap: 5px; border: 0; background: transparent; color: #167e77; cursor: pointer; font: inherit; font-size: .66rem; }
-.event-strip { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
-.event-strip button { overflow: hidden; padding: 0; border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; cursor: pointer; text-align: left; }
-.event-strip img { display: block; width: 100%; height: auto; aspect-ratio: 940/510; object-fit: contain; background: #eef2f3; }
-.event-strip button > span { display: flex; flex-direction: column; gap: 3px; padding: 9px 10px 11px; }
-.event-strip small { color: #168a82; font-size: .56rem; }
-.event-strip strong { overflow: hidden; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
 .unit-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
 .unit-grid button { position: relative; overflow: hidden; min-height: 82px; padding: 0; border: 1px solid #dfe4e6; border-radius: 6px; background: #f7f9fa; cursor: pointer; }
 .unit-grid img { display: block; width: 100%; height: 100%; min-height: 82px; object-fit: contain; }
@@ -588,7 +520,15 @@ function formatExtraDate(timestamp) {
 .story-synopsis { display: -webkit-box; overflow: hidden; color: #69777f; font-size: .63rem; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: pre-line; }.story-resource { color: #99a2a7; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .55rem; }
 .story-stats { display: flex; flex-direction: column; gap: 3px; color: #73808a; font-size: .6rem; text-align: right; }.row-arrow { color: #819097; }
 .empty-state { margin: 32px 0; color: #7a858e; font-size: .75rem; text-align: center; }.load-more { display: flex; align-items: center; justify-content: center; gap: 6px; width: calc(100% - 32px); min-height: 38px; margin: 0 16px 20px; border: 1px solid #d4dcdf; border-radius: 6px; background: #fff; color: #4f5c65; cursor: pointer; font: inherit; font-size: .69rem; }
-@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid, .birthday-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero, .birthday-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl, .birthday-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 850px) { .main-domain-hero { align-items: start; flex-direction: column; }.main-domain-hero dl { width: 100%; }.main-domain-grid, .extra-card-grid, .birthday-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.extra-domain-hero, .birthday-domain-hero { align-items: stretch; flex-direction: column; }.extra-domain-hero dl, .birthday-domain-hero dl { min-width: 0; width: 100%; }.event-strip { grid-template-columns: repeat(3,minmax(0,1fr)); }.unit-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.domain-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 980px) { .event-entity-grid { grid-template-columns: 1fr; } }
-@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero, .birthday-domain-hero { padding: 22px 12px; }.extra-domain-section, .birthday-domain-section { padding: 18px 10px 30px; }.extra-card-grid, .birthday-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div, .birthday-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }.event-strip button { flex: 0 0 78%; scroll-snap-align: start; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
+@media (max-width: 620px) { .main-domain-hero, .main-domain-collections, .main-story-band, .portal-section { padding: 18px 12px; }.main-domain-hero { gap: 18px; }.main-domain-hero h2 { font-size: 1.3rem; }.main-domain-hero dl { min-width: 0; }.main-domain-hero dl > div { padding: 9px; }.main-domain-grid { grid-template-columns: 1fr; }.main-domain-card { grid-template-rows: 136px minmax(92px,auto) 38px; }.extra-domain-hero, .birthday-domain-hero { padding: 22px 12px; }.extra-domain-section, .birthday-domain-section { padding: 18px 10px 30px; }.extra-card-grid, .birthday-card-grid { grid-template-columns: 1fr; }.extra-domain-hero dl div, .birthday-domain-hero dl div { padding: 10px 6px; }.band-heading { align-items: start; }.band-actions { align-items: end; flex-direction: column; gap: 5px; }.main-chapters { grid-template-columns: 1fr; }.event-strip { grid-template-columns: repeat(2,minmax(0,1fr)); }.event-strip button { min-height:90px;grid-template-columns:minmax(52px,35%) minmax(0,1fr); }.event-strip strong{font-size:12px}.event-strip small{font-size:10px}.event-strip button > .event-story-copy { padding:4px 0 4px 7px; }.unit-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }.catalog-toolbar { top: 51px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); padding: 8px 10px; }.catalog-toolbar label { min-width: 0; }.catalog-count { justify-self: end; margin: 0; }.story-list { padding: 9px; }.story-row { grid-template-columns: 25px 64px minmax(0,1fr) 16px; gap: 7px; }.story-stats { grid-column: 3; flex-direction: row; gap: 8px; text-align: left; }.row-arrow { grid-column: 4; grid-row: 1 / span 2; }.story-synopsis { -webkit-line-clamp: 3; }.event-entity-grid { padding: 9px; }.event-entity-grid > button { grid-template-columns: 116px minmax(0,1fr) 16px; min-height: 92px; padding-right: 8px; }.event-reward-icons { display: none; }.event-entity-copy > strong { white-space: normal; }.event-entity-copy > span { -webkit-line-clamp: 1; } }
+
+.reading-card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.search-reading-grid{padding:20px 24px}
+@media(min-width:1550px){.reading-card-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:950px){.reading-card-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.reading-card-grid{grid-template-columns:1fr}.search-reading-grid{padding:14px 12px}}
+</style>
+<style scoped>
+.story-portal{background:#fff}.portal-feature{display:grid;grid-template-columns:minmax(0,2fr) minmax(290px,1fr);gap:28px;padding:24px max(24px,calc((100% - 1120px)/2));background:#f1f6f7;border-bottom:1px solid #e0e8ea}.portal-feature .main-story-band{padding:0;background:none;border:0}.portal-feature .band-heading,.quick-archives .section-heading{min-height:60px;margin-bottom:15px}.portal-feature .band-heading p{font-size:12px;line-height:1.6}.portal-feature .band-heading h2,.portal-section h2,.quick-archives h2{font-size:20px;font-weight:650}.main-chapters{gap:10px}.chapter-entry{aspect-ratio:21/9;min-height:130px;border-radius:10px;box-shadow:0 2px 8px #152f4214}.chapter-entry>img{min-height:0;height:100%;object-fit:cover}.chapter-copy{left:12px;bottom:12px}.chapter-copy strong{font-size:13px}.quick-archives .domain-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick-archives .domain-grid button{min-height:60px;padding:8px;grid-template-columns:28px minmax(0,1fr) 12px;gap:6px;border-radius:8px}.quick-archives .gateway-icon{width:28px;height:28px;border-radius:8px}.quick-archives .domain-grid strong{font-size:12px}.quick-archives .domain-grid small{font-size:10px}.gateway-card_scenarios .gateway-icon{background:#f1eafd;color:#9370b7}.gateway-idol_story .gateway-icon{background:#eaf1fc;color:#608cb6}.gateway-work .gateway-icon{background:#edf4e7;color:#79925d}.gateway-birthday .gateway-icon{background:#fbeef3;color:#b87594}.gateway-extra .gateway-icon{background:#f9f1e5;color:#b18b4e}.portal-section{padding-top:28px;padding-bottom:28px}.unit-grid{display:flex;gap:12px;overflow-x:auto;padding:3px 0 10px;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#a7c9c4 transparent}.unit-grid button{flex:0 0 23%;min-height:0;scroll-snap-align:start;border-radius:9px}.unit-grid img{min-height:0;height:auto;width:100%}.unit-actions{display:flex;align-items:center;gap:7px}.unit-actions button{display:inline-flex;align-items:center;gap:4px;border:1px solid #dce9e7;border-radius:6px;background:#fff;padding:6px;color:#247f77;font-size:12px;cursor:pointer}.unit-actions button:last-child{border:0;margin-left:5px}.catalog-toolbar{position:static;top:auto;z-index:auto;background:#fff;min-height:0;padding:0;border:0;flex-wrap:wrap;gap:12px}.catalog-toolbar label{min-width:120px}.catalog-count{display:none}.catalog-toolbar select{font-size:12px;min-height:34px}.search-view{isolation:isolate}@media(max-width:1100px){.portal-feature{grid-template-columns:1fr}.portal-feature .band-heading,.quick-archives .section-heading{min-height:0}.quick-archives .domain-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.portal-feature .chapter-entry{aspect-ratio:21/8;min-height:120px}}@media(max-width:620px){.portal-feature{padding:18px 12px;gap:18px}.portal-feature .band-heading p{font-size:11px}.main-chapters{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-feature .chapter-entry{aspect-ratio:auto;min-height:126px}.chapter-copy{left:9px;right:9px}.chapter-copy strong{font-size:11px}.chapter-entry>svg{display:none}.quick-archives .domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.portal-section{padding:22px 12px}.unit-grid button{flex-basis:76%}.unit-actions{gap:3px}.unit-actions button:last-child{font-size:11px}.catalog-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-toolbar label{min-width:0}}
 </style>

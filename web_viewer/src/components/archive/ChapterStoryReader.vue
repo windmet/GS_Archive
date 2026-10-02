@@ -1,6 +1,7 @@
 <template>
   <div class="reader-workspace reader-container" :data-theme="readerTheme">
     <ReaderWorkspaceControls ref="controls" :title="title" :segments="chapter.segments" :document-id="documentId" :active-document-id="visibleDocumentId || documentId" :chapter-navigation="chapterNavigation" :mode="mode" allow-unlinked @back="emit('back')" @chapter="emit('chapter', $event)" @select="select" @mode="emit('mode', $event)">
+      <template v-if="relatedEvent" #context><button class="reader-event-link" @click="emit('open-event')">查看本期活动档案 →</button></template>
       <template #search>
         <form role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
           <label>篇内查找<input v-model="query" type="search" placeholder="查找已载入正文、全部分支或说话人" /></label>
@@ -30,8 +31,8 @@ import ChapterReadingSegment from './ChapterReadingSegment.vue'
 import { readerTheme } from '../../presentation/ReaderTheme.js'
 import '../../presentation/reader-theme.css'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-const props = defineProps({ chapter: Object, chapterNavigation: {type:Object,default:null}, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
-const emit = defineEmits(['chapter', 'select', 'mode', 'back', 'retry', 'play', 'locate', 'refresh'])
+const props = defineProps({ relatedEvent:String,chapter: Object, chapterNavigation: {type:Object,default:null}, documentId: String, anchor: String, mode: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
+const emit = defineEmits(['open-event','chapter', 'select', 'mode', 'back', 'retry', 'play', 'locate', 'refresh'])
 const root = ref(null), sections = ref([]), query = ref(''), controls = ref(null), visibleDocumentId = ref(props.documentId)
 const loadedCount = computed(() => props.chapter.segments.filter(segment => !['idle','loading'].includes(segment.status)).length)
 const readableCount = computed(() => props.chapter.segments.filter(segment => segment.status === 'ready').length)

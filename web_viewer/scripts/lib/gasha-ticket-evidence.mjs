@@ -51,3 +51,12 @@ export function buildGashaTicketEvidence(items,index,translations,aliases={}) {
  const excluded=items.filter(item=>/ガシャ.*セレクション/u.test(item.nameJa)&&item.nameJa.includes('チケット')).map(item=>({id:String(item.id),source_name:item.nameJa,reason:'选择券未指明具体抽取卡池，不建立卡池记录。'}))
  return {schema_version:1,rows,unresolved,excluded_tickets:excluded,summary:{existing_primary:primary.length,ticket_groups:rows.length,matched_groups:rows.filter(r=>r.matched_ids.length===1).length,ambiguous_groups:rows.filter(r=>r.matched_ids.length>1).length,supplemental_groups:rows.filter(r=>!r.matched_ids.length).length,tickets:rows.reduce((n,r)=>n+r.tickets.length,0),unlinked_selection_tickets:excluded.length}}
 }
+
+export function applyGashaTicketReview(evidence,revisions){
+ for(const row of evidence.rows){
+  const ticket=row.tickets.find(ticket=>ticket.id===row.translation_item_id)
+  const revision=ticket&&revisions.get(`metadata:v1:item:name:${sourceHash(ticket.source_name)}`)
+  if(revision?.status==='reviewed'&&!evidence.unresolved.some(issue=>issue.id===row.id))row.status='reviewed'
+ }
+ return evidence
+}

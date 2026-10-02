@@ -4,9 +4,9 @@
       <div class="event-visual">
         <template v-if="bannerBinding?.url && !bannerFailed">
           <img class="event-banner" :src="bannerBinding.url" :alt="view.identity.title" @error="bannerFailed=true" />
-          <small v-if="!view.media.banner?.url && view.media.logo?.url" class="event-media-note">活动横幅未收录，此处展示本活动标志。</small>
+          <small v-if="resources?.heroRole==='original-announcement'" class="event-media-note">原活动宣传图 · 复刻时间见本页记录</small>
         </template>
-        <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动横幅尚未收录</small></p>
+        <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动图片暂不可用</small></p>
       </div>
       <div class="event-summary">
         <div class="event-kicker">
@@ -15,10 +15,12 @@
           <small>{{ scopeLabel }}</small>
         </div>
         <h2>{{ view.identity.title }}</h2>
+        <ArchiveSourceLink v-if="exchangeRewards" :url="exchangeRewards.source.url" :label="exchangeRewards.source.title" />
         <dl>
           <div><dt>活动开始</dt><dd>{{ formatDateTime(view.period.startAt) }}</dd></div>
           <div><dt>活动结束</dt><dd>{{ formatDateTime(view.period.endAt) }}</dd></div>
           <div><dt>展示结束</dt><dd>{{ formatDateTime(view.period.displayEndAt) }}</dd></div>
+          <div v-if="view.period.exchangeEndAt>0&&view.period.exchangeEndAt<4102412400"><dt>兑换结束</dt><dd>{{ formatDateTime(view.period.exchangeEndAt) }}</dd></div>
           <div><dt>活动形式</dt><dd>{{ eventTypeLabel }}</dd></div>
 
         </dl>
@@ -27,9 +29,9 @@
 
     <details class="event-media-archive">
       <summary>活动视觉资料</summary>
-      <div class="event-media-grid"><DomainMediaPreview v-for="role in ['logo','background','resultBackground']" :key="role" :binding="view.media[role]" :name="({logo:'活动标志',background:'活动背景',resultBackground:'结算背景'})[role]"/></div>
+      <div class="event-media-grid"><DomainMediaPreview v-for="role in ['banner','logo','background','resultBackground']" :key="role" :binding="view.media[role]" :name="({banner:'剧情入口横幅',logo:'活动标志',background:'活动背景',resultBackground:'结算背景'})[role]"/></div>
     </details>
-    <section class="story-band" aria-labelledby="event-synopsis-title">
+    <section v-if="event.exists || view.seasonalCampaign || view.identity.kind!=='collection'" class="story-band" aria-labelledby="event-synopsis-title">
       <div>
         <span>故事简介</span>
         <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
@@ -37,7 +39,8 @@
       </div>
       <div class="story-actions">
         <button v-if="view.seasonalCampaign" @click="emit('open-seasonal',view.seasonalCampaign.id)"><BookOpen :size="17"/>阅读季节企划</button>
-        <button v-else :disabled="!event.exists" @click="emit('play')">
+        <button v-else-if="firstReading" @click="emit('read',firstReading.document_id)"><BookOpen :size="17" />阅读本期活动剧情（共 {{ episodes.length }} 话）</button>
+        <button v-if="!view.seasonalCampaign" :disabled="!event.exists" @click="emit('play')">
           <Play :size="17" fill="currentColor" />
           <span>{{ event.exists ? '播放活动剧情' : '缺少剧情文件' }}</span>
         </button>
@@ -89,16 +92,16 @@
       <div class="section-heading">
         <div>
           <h3 id="event-rewards-title">活动报酬卡</h3>
-          <p>通过阅读剧情或累计活动点数获得的报酬卡。</p>
+          <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
         </div>
-        <span class="raw-badge">{{ rewardCards.length }} 张</span>
+        <span class="raw-badge">{{ rewardCards.length + (exchangeRewards?.cards.length || 0) }} 张</span>
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
         <div v-for="card in rewardCards" :key="card.card_resource_id" class="event-reward-card">
           <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
           <button type="button" class="event-reward-open" @click="emit('open-card',card)"><div class="reward-copy">
-            <span>{{ card.rarity }} · {{ idolName(card.character_id) }}</span>
-            <strong>{{ card.card_title }}</strong>
+            <span>{{ card.rarity }} · {{ displayIdolName(card.character_id) || idolName(card.character_id) }}</span>
+            <strong>{{ cardTitle(card.card_title) }}</strong>
             <ul>
               <li v-for="method in card.methods" :key="method.key">
                 <BookOpen v-if="method.kind === 'story'" :size="13" />
@@ -110,17 +113,31 @@
           <ChevronRight :size="17" /></button>
         </div>
       </div>
-      <p v-else class="empty-copy">尚未收录此活动的卡片报酬信息。</p>
+      <div v-if="exchangeRewards" class="exchange-rewards">
+        <p class="exchange-source">兑换归属与数量据 Wikiwiki 补录，卡片身份与资源对应客户端资料。</p>
+        <div class="reward-grid">
+          <div v-for="card in exchangeRewards.cards" :key="card.card_resource_id" class="event-reward-card">
+            <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
+            <button type="button" class="event-reward-open" @click="emit('open-card',card)">
+              <div class="reward-copy"><span>{{ card.rarity }} · {{ displayIdolName(card.character_id) || card.character_name }}</span><strong>{{ cardTitle(card.card_title) }}</strong>
+                <ul><li>{{ card.cost.nameJa }} × {{ card.cost.amount }}</li><li>限兑 {{ card.exchangeLimit }} 次 · Wiki 补录</li></ul>
+              </div><ChevronRight :size="17" />
+            </button>
+          </div>
+        </div>
+        <details v-if="exchangeRewards.exchangeRows?.length" class="wiki-exchange-table"><summary>完整兑换清单 · {{ exchangeRewards.exchangeRows.length }} 条（Wikiwiki）</summary><p><ArchiveSourceLink :url="exchangeRewards.source.url" label="核对本期兑换表" /></p><div class="exchange-table-scroll"><table><thead><tr><th>兑换报酬（原文）</th><th>所需道具</th><th>限兑次数</th></tr></thead><tbody><tr v-for="(row,index) in exchangeRewards.exchangeRows" :key="index"><td>{{ row.label }}</td><td>{{ row.cost }}</td><td>{{ row.limit }}</td></tr></tbody></table></div></details>
+      </div>
+      <p v-if="!rewardCards.length&&!exchangeRewards" class="empty-copy">{{ view.identity.kind==='collection' ? '尚未收录兑换商店的卡片明细。' : '尚未收录此活动的卡片报酬信息。' }}</p>
     </section>
 
     <section v-if="view.rewards" class="detail-section" aria-labelledby="event-general-rewards">
-      <div class="section-heading"><div><h3 id="event-general-rewards">奖励明细与藏品</h3><p>历史客户端配置。兑换商店明细与实时排行榜尚未收录。</p></div></div>
+      <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p>{{ exchangeRewards ? '通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。' : '历史客户端配置。兑换商店明细与实时排行榜尚未收录。' }}</p></div></div>
       <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
       <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
-    <section class="detail-section" aria-labelledby="event-cast-title">
+    <section v-if="castReferences.length||units.length" class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
         <div class="idol-list" :class="{ 'has-story-visuals': hasStoryVisuals }">
@@ -171,6 +188,9 @@
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
 import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
+const cardTitle=source=>cardText('card',source,'title')
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveRewardTable from './ArchiveRewardTable.vue'
@@ -178,11 +198,13 @@ import DomainMediaPreview from './DomainMediaPreview.vue'
 import '../../styles/archive-domains.css'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import {eventResources} from '../../data/eventResourceGraph.js'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
 const quickEntity=ref('')
 function openQuick(key){if(/^(item|honor):\d+$/.test(key))quickEntity.value=key}
 const props = defineProps({
+  displayIdolName:{type:Function,default:()=>''},
   client: Object,
   bootstrap: Object,
   view: {type:Object,default:null},
@@ -193,12 +215,15 @@ const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open
 const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
+const firstReading=computed(()=>readingByFile.value.get(props.view?.episodes?.[0]?.file))
 
 const event=computed(()=>props.view?.story.entry)
 const story=computed(()=>props.view?.story)
 const episodes=computed(()=>props.view?.episodes || [])
 const units=computed(()=>props.view?.units || [])
-const bannerBinding=computed(()=>props.view?.media.banner?.url?props.view.media.banner:props.view?.media.logo)
+const resources=computed(()=>eventResources(props.view?.identity))
+const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
+const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
 const castReferences=computed(()=>(props.view?.castReferences || []).map(entry=>({idol:props.view.cast.find(idol=>idol.idol_code===entry.idol_code),reference:entry.reference})))
 const hasStoryVisuals=computed(()=>castReferences.value.some(entry=>entry.reference.imageCandidates[0]?.kind==='event_story_visual'))
 const eventTypeLabel=computed(()=>({theater:'THEATER 累计 PT',tour:'TOUR 累计 PT',collection:'315 CARNIVAL',valentine:'VALENTINE',whiteday:'WHITEDAY'}[props.view?.identity.kind] || '活动剧情'))
@@ -239,6 +264,8 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
+.wiki-exchange-table{margin-top:18px;font-size:12px;color:#526b73}.wiki-exchange-table summary{cursor:pointer;color:#1b7a73;padding:10px 0}.exchange-table-scroll{overflow:auto}.wiki-exchange-table table{width:100%;border-collapse:collapse;text-align:left}.wiki-exchange-table th,.wiki-exchange-table td{padding:9px 10px;border-bottom:1px solid #e5ecee;min-width:90px;line-height:1.5}.wiki-exchange-table th{background:#f2f7f7;color:#497271}.wiki-exchange-table td:first-child{min-width:200px}
+.exchange-source{margin:0 0 14px;color:#69767e;font-size:12px;line-height:1.65}.exchange-source a{color:#147d76}
 .event-banner-unavailable{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;margin:0;padding:20px;text-align:center;color:#57738a;gap:12px}.event-banner-unavailable small{font-size:13px}.event-related-history{margin-top:20px}.event-related-history h3{font-size:16px}
 .episode-entry { display: flex; min-width: 0; }
 .episode-entry > button:first-child { flex: 1; min-width: 0; }

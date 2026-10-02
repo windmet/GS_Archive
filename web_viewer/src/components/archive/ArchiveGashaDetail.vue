@@ -18,15 +18,7 @@
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
           <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         </dl>
-        <a
-          v-if="gasha.name_source?.source_url"
-          :href="gasha.name_source.source_url"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <ExternalLink :size="15" />
-          {{ gasha.name_source.source_label || '名称核对来源' }}
-        </a>
+        <ArchiveSourceLink :url="gasha.name_source?.source_url" :label="gasha.name_source?.source_label || '名称核对来源'" />
       </div>
     </div>
 
@@ -59,7 +51,7 @@
           <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'Raw · client_master_data table 173' }}</dd></div>
           <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
           <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`Curated · ${gasha.name_source?.source_label || 'wiki / banner 核对'}` }}</dd></div>
-          <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>道具译文提取 · 初译，待校对</dd></div>
+          <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>道具译文提取 · {{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
           <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
           <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
         </dl>
@@ -70,8 +62,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ExternalLink } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {gashaText} from './useArchiveGashaText.js'

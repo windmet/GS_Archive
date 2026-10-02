@@ -1,7 +1,8 @@
 <template>
-  <ChapterStoryReader v-if="chapter" :chapter="chapter" :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
+  <ChapterStoryReader v-if="chapter" :related-event="relatedEvent" @open-event="emit('open-event')" :chapter="chapter" :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
   <div v-else class="reader-workspace reader-container" :data-theme="readerTheme">
     <ReaderWorkspaceControls ref="controls" :title="title" :subtitle="episodeLabel" :segments="segmentEntries.map(entry => ({documentId:entry.document_id,label:entry.episode_label,status:entry.status}))" :document-id="documentId" :active-document-id="documentId" :chapter-navigation="chapterNavigation" :mode="mode" :searchable="state.status === 'ready'" @back="emit('back')" @chapter="emit('chapter', $event)" @select="emit('select', $event.documentId)" @mode="emit('mode', $event)">
+      <template v-if="relatedEvent" #context><button class="reader-event-link" @click="emit('open-event')">查看本期活动档案 →</button></template>
       <template #search>
         <form id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
           <label>篇内查找<input v-model="searchQuery" type="search" placeholder="查找本段正文、全部分支或说话人" /></label>
@@ -53,8 +54,8 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 
-const props = defineProps({ state: { type: Object, required: true }, chapter: { type: Object, default: null }, chapterNavigation: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
-const emit = defineEmits(['chapter', 'select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
+const props = defineProps({ relatedEvent:String,state: { type: Object, required: true }, chapter: { type: Object, default: null }, chapterNavigation: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
+const emit = defineEmits(['open-event','chapter', 'select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
 const searchQuery = ref('')
 const controls = ref(null)
 function closeSearch() { searchQuery.value = ''; controls.value?.closePanel() }

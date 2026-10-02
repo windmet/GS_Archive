@@ -7,6 +7,7 @@
       <button class="desktop-search icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
       <button class="desktop-settings icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
     </header>
+    <div v-if="$slots.context" class="reader-context"><slot name="context" /></div>
     <div class="reader-desktop-toolbar">
       <nav class="compact-episodes" aria-label="本话快速定位">
         <button v-for="segment in segments" :key="segment.episodeKey || segment.documentId" :aria-current="(segment.documentId || segment.episodeKey) === activeDocumentId ? 'location' : undefined" :disabled="!segment.documentId && !allowUnlinked" :title="segmentLabel(segment)" @click="emit('select', segment)">{{ segmentLabel(segment) }}</button>

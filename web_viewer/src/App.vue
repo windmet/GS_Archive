@@ -19,6 +19,7 @@
       @back="goArchiveBack"
     >
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :chapter-navigation="readingChapterNavigation" @chapter="selectReaderChapter" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
+        :related-event="currentEventId" @open-event="openEventDetail({event_id:currentEventId},'reader')"
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
@@ -201,6 +202,7 @@
         :client="readModelClient" :bootstrap="archiveBootstrap"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         @read="openEventReader"
+        :display-idol-name="idolDisplayName"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
@@ -269,6 +271,11 @@
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
         :all-entries="storyCatalogEntries"
+        :search-entries="filteredStoryCatalog"
+        :idol-directory="archiveBootstrap.idols"
+        :search-query="filterQuery" @update:search-query="updateArchiveFilter('filterQuery',$event)"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
         :section="currentStorySection"
@@ -287,11 +294,12 @@
         :extra-domain="extraStoryDomain"
         :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
+        @open-event="openEventDetail($event,'story_catalog')"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
-        @open-idol-story="openIdolStoryArchive()"
+        @open-idol-story="openIdolStoryArchive($event)"
         @load-more="storyVisibleLimit += 80"
         @clear-section="updateArchiveFilter('currentStorySection', '')"
         @update:mode="setStoryMode"
@@ -521,6 +529,7 @@
 
 <script setup>
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
+import {storyEventResources} from './data/eventResourceGraph.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
@@ -1100,13 +1109,11 @@ const filteredStoryCatalog = computed(() => {
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
     (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
-    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
-    (!query || entry.searchText.includes(query) || entry.characters.some(characterId => (
-      idolEntitySearchText(characterId).includes(query)
-    ))),
+    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)),
   )
   const sorted = [...entries]
-  if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
+  if (currentStorySort.value === 'latest') sorted.sort((a,b)=>b.releaseAt-a.releaseAt)
+  else if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
   else if (currentStorySort.value === 'resource') sorted.sort((a, b) => a.resourceId.localeCompare(b.resourceId))
   else if (currentStorySort.value === 'steps_desc') sorted.sort((a, b) => (b.summary?.step_count || 0) - (a.summary?.step_count || 0))
   else sorted.sort((a, b) => a.domainOrder - b.domainOrder || a.resourceId.localeCompare(b.resourceId))
@@ -1398,7 +1405,7 @@ const archiveTitle = computed(() => {
   return 'SideM Archive'
 })
 
-const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value) || (view.value === 'story_catalog' && currentStoryMode.value === 'search'))
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value))
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
@@ -1962,7 +1969,7 @@ function playChapterReadingSegment({ documentId, rowId }) {
 function closeStoryReader() {
   // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
   if (detailSourceRoute.value && (!currentEventId.value ||
-      readArchiveSourceRoute(detailSourceRoute.value).view === 'event_detail')) return restoreDetailSource(openStoryCatalog)
+      ['event_detail','story_catalog'].includes(readArchiveSourceRoute(detailSourceRoute.value).view))) return restoreDetailSource(openStoryCatalog)
   if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
     const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
       story: currentStoryFile.value, workMode: currentWorkMode.value }, { restoring: false })
@@ -3143,7 +3150,11 @@ function openUnitCards() {
 }
 
 function openCatalogStory(entry) {
-  if (entry?.eventRelation) openEventDetail(entry.eventRelation, 'story_catalog')
+  if (entry?.eventRelation) {
+    const resource=storyEventResources(entry)
+    if(resource?.firstReadingId&&resource.storyFile===entry.file)return openStoryReader(resource.firstReadingId,{event:resource.id,parentView:'story_catalog',storyType:'event',story:entry.file})
+    return openStoryDetail(entry)
+  }
   else openStoryDetail(entry)
 }
 

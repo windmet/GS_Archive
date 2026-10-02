@@ -51,6 +51,7 @@ assert.equal(readArchiveRoute('http://localhost/?view=chibi_stage&song=brndnf&st
 assert.equal(buildArchiveUrl('http://localhost/?stage=stale', { view: 'song_detail', song: 'brndnf' }).searchParams.has('stage'), false)
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', {view:'story_catalog',storyMode:'search',sort:'latest'})).sort,'latest')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')
 assert.equal(episodePlayer.scenario, 'episodes/1_4_001_00_b.json')
 assert.equal(episodePlayer.startStep, 1)

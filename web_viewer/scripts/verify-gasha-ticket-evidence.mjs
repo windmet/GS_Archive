@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import {buildGashaTicketEvidence,ticketGashaName,sourceHash,normalizeGashaName} from './lib/gasha-ticket-evidence.mjs'
+import {buildGashaTicketEvidence,applyGashaTicketReview,ticketGashaName,sourceHash,normalizeGashaName} from './lib/gasha-ticket-evidence.mjs'
 import {supplementGashaCatalog,attachGashaTickets,gashaTicketLinks,translatedGashaName,gashaTicketPeriodLabel} from '../src/data/gashaTicketCatalog.js'
 import {filterGashaCatalog,buildGashaCategoryOptions} from '../src/data/gashaCatalog.js'
 import {validateItemIdolNames} from './lib/item-idol-name-policy.mjs'
 import {sourceUnits,loadGeneralRevisions,protectedTokens} from './lib/general-translation-batches.mjs'
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'))
 const items=read('public/data/masterdata/domains/item_catalog.json').entries,index=read('public/data/masterdata/gasha_index.json'),overlay=read('public/data/editorial/gasha-ticket-evidence.json'),translations=read('public/translations/zh-CN/archive-general/items.json').entries
-assert.deepEqual(overlay,buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json')),'Regenerate stale ticket evidence')
+const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()))
+assert.deepEqual(overlay,applyGashaTicketReview(buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json')),revisions),'Regenerate stale ticket evidence')
 assert.equal(overlay.unresolved.length,0)
 const before=JSON.stringify(index),base=index.gashas.filter(g=>g.phase==='primary'),catalog=supplementGashaCatalog(base,index.meta)
 assert.equal(catalog.rows.length,82);assert.equal(new Set(catalog.rows.map(r=>r.id)).size,82)
@@ -51,7 +52,6 @@ assert.equal(gashaTicketPeriodLabel(null),'')
 for(const pool of base)assert.equal(attachGashaTickets(pool).tickets.length,pool.category==='stage_step_up'?8:overlay.rows.find(r=>r.matched_ids.includes(String(pool.id))).tickets.length)
 const stale={...base[0],display_name:base[0].display_name+'changed'};assert.equal(attachGashaTickets(stale),stale)
 assert(filterGashaCatalog(catalog.rows,{query:'幻影的Masquerade',nameSearchText:source=>source+' '+translatedGashaName(source)}).some(row=>row.source_type==='item-masterdata'))
-const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()))
 assert.equal([...revisions.values()].filter(e=>e.kind==='item').length,857)
 for(const e of revisions.values())if(e.kind==='item')validateItemIdolNames(e.source,e.translation,e.decision)
 assert.throws(()=>validateItemIdolNames('大河 タケルの感謝のきもち','大河猛的心意'))
@@ -60,5 +60,10 @@ assert.throws(()=>validateItemIdolNames('キリオの贈り物','桐绪的礼物
 assert.throws(()=>validateItemIdolNames('天ヶ瀬 冬馬の贈り物','天之濑冬马的礼物'))
 assert.equal([...revisions.values()].filter(e=>e.kind==='costume'&&e.status==='reviewed').length,496)
 const audit=read('config/translation-audit/general-gasha.json')
-assert.equal(audit.length,81);assert(audit.every(r=>r.status==='draft'&&r.references.length&&r.sourceHash===sourceHash(r.source)))
+assert.equal(audit.length,81)
+for(const row of audit){
+ const evidence=overlay.rows.find(pool=>pool.source_hash===row.sourceHash)
+ assert(evidence&&row.status===evidence.status&&row.references.length&&row.sourceHash===sourceHash(row.source))
+ if(row.status==='reviewed')assert.equal(revisions.get(`metadata:v1:item:name:${sourceHash(evidence.tickets.find(ticket=>ticket.id===evidence.translation_item_id).source_name)}`).status,'reviewed')
+}
 console.log('PASS: 857 item fields, fixed idol names, 273 tickets, 81 pool names / 82 catalog records, 25 supplements; exact source and hashes, unresolved STAGE identity, no fabricated dates/cards, bilingual search and bidirectional reachable links.')
