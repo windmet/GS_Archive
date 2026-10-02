@@ -5,10 +5,12 @@ This directory imports the executable core of the user-supplied
 checkout's existing pure selectors. The copied kit's synthetic tests cover the
 artifact writer, client, assembler and optional media helpers.
 
-`bootstrap.inline.json` is the verified local 2026-10-01 song-attribute candidate's
-14,344-byte bootstrap (release `d8c744d57396f790627a3fefc33eed67457eb5dca316e31c8ff78cf60c429934`).
-The candidate includes the current checkout's Reader locators and adds source-backed
-Physical / Intelli / Mental / ALL attributes to song detail projections. Its 8,750 model files were byte-verified locally;
+`bootstrap.inline.json` is the verified local 2026-10-02 song-discovery candidate's
+14,344-byte bootstrap (release `d30e1e94cc6a1089a9e7ecbf6111ff63be0bfdc714293c2ebca319976fde364a`).
+The candidate preserves the current checkout's Reader locators, song attributes and gameplay detail,
+and adds confirmed unit names, performer scope and bounded idol identities to all 60 song directory rows.
+These fields match the existing song-detail presentation; configurable formations do not acquire a guessed singer.
+Its 8,750 model files were byte-verified locally;
 this does not grant full current-build route parity or physical-device acceptance.
 The bounded song Browser checks and remaining metadata todos are recorded in
 [the closeout](../docs/GS_HONOR_SONG_CLOSEOUT_20261001.md).

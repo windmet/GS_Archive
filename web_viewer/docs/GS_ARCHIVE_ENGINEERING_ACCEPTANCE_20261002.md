@@ -95,3 +95,13 @@ Linux checkout 不含忽略的媒体库，原 speaker-avatar 测试把本地资�
 5198 最新 bundle 实测：暂停 5 秒前后 render=3/modelUpdate=1/sync=2 保持不变；放大人物 render=4，modelUpdate/sync 不变。参考 A 为 2 人物 + 5 贴纸，预览增加更新；返回定格后另 5 秒 render=694/modelUpdate=1379/sync=3 完全不变。两次方向键微调不增加 sync。390px 仍可编辑，真实导出图 naturalWidth=1280/naturalHeight=720，返回来源后 canvas=0。小型截图 `studio-work-mobile.jpg` 与日志在既有证据目录。控制台无 error，首次 Spine 渲染有一条 SimpleMesh/Spine update 警告栈，保留为观察项，未据此声称零警告。
 
 此轮验证工作次数与功能回归，不代表耗时、电量、GPU heap 或物理双指设备验收；F07 的上述冗余工作已消除，F08/F10 预算和真机边界继续保留。
+
+## 手机歌曲档案
+
+源码基线 `726818d5`，歌曲布局与 producer 提交 `2b11b278`。手机隐藏重复概览，筛选单行横滑，歌曲行高 72px、封面 52px；演唱组合/成员先于制作信息，手机隐藏读音与 credits，箭头固定右侧居中。桌面保留概览与双列目录。歌曲目录与故事目录共用紧凑手机页头。
+
+旧 bounded song rows 没有演唱身份；producer 现在投影既有 song-detail 的确认组合、编成 scope 与偶像 ID/displayName，搜索复用固定译名与原名别名。自由编成不冒充全员合唱，未确认特别演出不猜组合。新候选 `E:/Web_build/GS_Archive_Domain_Work/song-discovery-readmodels-20261002` 的 release 为 `d30e1e94cc6a1089a9e7ecbf6111ff63be0bfdc714293c2ebca319976fde364a`，bootstrap 14,344 字节，8,750 小型模型文件、总 decoded 76,645,309 字节；无媒体复制。全文件 byte verifier 和全部 60 首的现有 selector 一致性通过。索引合同 46/46，歌曲关联回归通过；三处旧 UI/migration fixture 更新为现有入口，未降低身份检查。
+
+第一次构建正确拒绝旧 routes ledger release，更新版本绑定与历史验收边界后 `build:check` 成功。现有自建 5198 映射服务只切换到已验证候选，仍使用原 public/外挂媒体。390×844 实测首屏完整 7 行，页头 52px，筛选 44px，卡片 72px；360/410px 均 document 无横向溢出、胶囊仅一行。六类筛选结果分别 60/11/1/3/2/1；硲道夫与硲 道夫均得到 4 首，详情返回恢复 query 与 4 条结果；全局语言切换正确显示混合编成的固定译名或日文原名。1280px 概览仍显示、双列列表保留。歌曲验收旅程无新增控制台 warning/error；13:13 切换旧 bundle 时的分块错误和既有摄影 warning 保留，不称全历史零错误。
+
+截图 `song-mobile-390.jpg`、生成/字节/来源一致性/构建日志保留在既有 `.analysis/engineering-validation-20261002`。这是本地生产代码 Browser 和 source acceptance，未转化为物理触屏或线上部署验收。
