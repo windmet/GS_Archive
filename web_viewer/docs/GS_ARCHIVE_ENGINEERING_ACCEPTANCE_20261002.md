@@ -65,3 +65,5 @@ Source Gate 通过代表当前源码 / 版本绑定 / 离线合同通过；`chec
 PR #46 首轮 Linux Source Gate 在新增 editorial 步骤发现活动关系图的 source SHA 使用 Windows CRLF 字节，Git 检出 LF 后不一致。为编辑性 JSON 来源明确 `sha256-utf8-lf-v1` 哈希格式，只规范 CRLF；任何其他空格、值或字段变化仍使 SHA 失配。生产者 / 验证器共用同一规则并测试 LF、CRLF 等价及其他内容变化拒绝。图片 SHA 和正式 publication blob 的原始字节校验没有改动。此处记录的是实际 CI 失败后修复，不把第一次本地通过当成 Linux 验收。
 
 后续 CI 还发现新 checkout 没有 `.analysis`（测试现在自行建立小型隔离 fixture），以及旧 Reader / Studio 的 compiled 来源摘要曾绑定 CRLF，而 publication 明确发布 LF。正文/译文/审批收据均未重写：共享 `ReadingSourceBytes` 仅提供原始字节及 LF/CRLF 两个精确传输变体，Reader→ADV 与 Studio 复核共同检查原摘要；非换行空格变化、键名/值变化均被新回归拒绝。正式 publication verifier 仍检查实际 LF artifact、Git index/HEAD 和原始 SHA。此兼容修复同时防止正式 LF 文件在历史正文入口被误拒。
+
+Linux checkout 不含忽略的媒体库，原 speaker-avatar 测试把本地资源验收混进 Source Gate。现默认仍严格核对 25 个 NPC 的 masterdata / 真实正文身份及排除规则；显式 --local-media 另检查 25 张 PNG 的签名和 148×148 尺寸，本地通过。源码模式明确输出未验收图像字节，历史 HTTP / Browser 验收边界保留。

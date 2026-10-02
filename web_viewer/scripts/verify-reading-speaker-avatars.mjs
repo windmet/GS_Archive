@@ -1,12 +1,22 @@
 import assert from 'node:assert/strict'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { READING_NPC_ICON_CODES, readingSpeakerAvatarEntity } from '../src/presentation/ReadingSpeakerAvatar.js'
 import { readingAvatarEntity } from '../shared/reading/ReadingDocument.js'
 
 const read = path => JSON.parse(readFileSync(new URL(`../${path}`, import.meta.url)))
+const localMedia = process.argv.includes('--local-media')
+const speakers = read('public/data/masterdata/speaker_dictionary.json').speakers
 assert.equal(READING_NPC_ICON_CODES.length, 25)
 for (const code of READING_NPC_ICON_CODES) {
-  assert.ok(existsSync(new URL(`../public/assets/idols/icons/image_chara_icon_${code}.png`, import.meta.url)))
+  // 241sub is evidenced by the published Nyankee dialogue below. The other
+  // identities are independently bound to the masterdata NPC dictionary.
+  if (code !== '241sub') assert.equal(speakers[code]?.npc_code, code)
+  if (localMedia) {
+    const png = readFileSync(new URL(`../public/assets/idols/icons/image_chara_icon_${code}.png`, import.meta.url))
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a', `${code}: PNG signature`)
+    assert.equal(png.readUInt32BE(16), 148, `${code}: published width`)
+    assert.equal(png.readUInt32BE(20), 148, `${code}: published height`)
+  }
   const row = {kind:'dialogue',speaker:{kind:'npc',entityType:'npc',entityId:code,sourceName:'Named speaker'}}
   assert.equal(readingSpeakerAvatarEntity(row), code)
   for (const kind of ['unknown','none','producer']) assert.equal(readingSpeakerAvatarEntity({...row,speaker:{...row.speaker,kind}}), null)
@@ -47,4 +57,5 @@ for (const id of ['1_4_001_03_d','1_4_001_03_e','1_4_001_03_f','1_4_001_03_g','1
     assert.equal(readingSpeakerAvatarEntity({...row,visual:{...row.visual,reason:'speaker-performance-conflict'}}), null)
   }
 }
-console.log('Reader speaker icons verified: 25 audited NPC assets, real Ken/President/Nyankee rows, unknown and generic exclusions, idol visual policy')
+console.log('Reader speaker identity policy verified: 25 audited NPC codes, masterdata and real Ken/President/Nyankee rows, unknown and generic exclusions, idol visual policy')
+console.log(localMedia ? 'Local media verified: 25 published PNG icons, 148x148 each' : 'Source-only gate: local icon bytes require --local-media; no media acceptance claimed')
