@@ -387,3 +387,27 @@ python -X utf8 scripts/audit-chibi-light-resources.py --names LiveObjectPenlight
 最终 Browser 旅程：复用 PID 62924 的 5198 build-check 生产 bundle／已有 public 资源映射；页面标题／路由正确、内容非空、无框架错误遮罩。1440×900 的 Study S.E.M 编队定位 17.5 秒、32.2 秒；从 32.2 实际播放到 64.7 秒，暂停定格于 65 秒；暂停下改 2× 倍速。17.5 秒暂停、播放后暂停和暂停变速的两次完整截图分别像素完全一致（seek-loop-final-desktop-a/b、final-play-pause-a/b、final-speed-pause-a/b）。390×844 的 Study 17.5 秒舞台／播放区同样像素一致，差异仅在底部控制台的加载点，不属于舞台；截图 final-mobile-pause-a/b。切 Take01 至 22.4 秒，五人中央高亮、背屏贴合及暂停画面实际查看，截图 take-reference/final-motion-pause-a/b；舞台区两次截图一致。没有 console error，已有 Spine tint 弃用 warning 保留。结束重置视口并返回 Study 入口。
 
 上述为交互 Bug 的实际浏览器复验与源动画状态回归，不是录屏所有姿势、光效／观众席、真实手机或全曲一致性验收。Study 指定帧仍有手势、遮罩尺寸、台面亮度／发光、前景粉色棒等差异，下一轮应沿原生参数与角色动作来源继续核对。
+
+## 2026-10-03：原生 Penlight 曲线解码与 Study 动作分歧复核
+
+输入 HEAD `40ea551a`；其他窗口的 config/resource-audit.json、六个 archive Vue 文件及未跟踪交接文件均保留。本批仅新增独立 Python 审计／回归工具与此记录，不修改前端、RAW 或发布素材，因此按构建政策不机械重建 Vite。
+
+`audit-chibi-streamed-animation.py` 从上一批通过真实 Animator PPtr 提取的 typetree 解读 uint32 字流。结构与 [AssetStudio 的 StreamedClip／FindBinding 源码](https://github.com/Perfare/AssetStudio/blob/master/AssetStudio/Classes/AnimationClip.cs) 对照：float time、int key count、每键 int curve index 与四个 float 三次多项式系数；Transform attribute 1／3／4 分别绑定位置、缩放、Euler 三个分量。本地十个 clips 的首帧是 float.MinValue（不是负无穷），末帧为正无穷且零键。输出将哨兵转为初始值与显式终止检查，所有 JSON 数字保持有限值。只接受根 Transform、已知绑定及完整 streamed 通道；遇到 dense／constant、未知 customType、legacy curve、事件或对象引用即拒绝部分导出。
+
+实际十段原生动画全部解码，**117 个连续区间端点**与下一原生关键帧相符，最大误差约 1.91×10⁻⁶；常值／阶跃区间单独计数，不强迫跳变连续。Beat1–3 约 0.833333s、Wiper1–4 为 1s 且循环；Yeah1–3 为 2s且不循环。Wiper1 的 0.25s 原生值 x=1.5、y=-0.3、Euler z=-20° 再独立核对。输出 `take-reference/decoded-penlight-curves.json` 保留输入文件 SHA256、同一 Android XAPK／Unity data 来源哈希、每段原始 clip 身份与字流哈希、通道系数及采样范围。这里证明字流和曲线能读通，**不证明 RAW 编号／速度已映射到控制器，更不等于观众棒视觉验收**。
+
+回归包含独立解析解 smoothstep、阶跃与稀疏关键帧；拒绝截断、缺哨兵、时间倒序、重复／越界曲线、非有限系数、非法 uint32、未知绑定及部分通道。故意把实际 Beat1 的常值 x 区间污染为 t³，端点检查确实拒绝。Python 编译、该回归和既有录屏音频配准回归通过。
+
+另将十个 clips 的实际消费字段投影保存为 `scripts/fixtures/chibi-penlight-streamed-clips.json`（19,999 B），包含原字流／绑定／时间及来源身份，未合成值。完整输入与该小型 fixture 解码的十个 clip 输出逐项相同。回归不带参数即可用 fixture，已加入 Source Gate 工作流；这里只新增并本地执行回归，尚未声明 GitHub CI 运行。fixture 不含纹理、录像或完整资源包。
+
+```powershell
+python -X utf8 scripts/audit-chibi-streamed-animation.py --input-file .analysis/engineering-validation-20261002/take-reference/typed-penlight-animations.json --output-file .analysis/engineering-validation-20261002/take-reference/decoded-penlight-curves.json
+python -X utf8 scripts/verify-chibi-streamed-animation.py .analysis/engineering-validation-20261002/take-reference/typed-penlight-animations.json
+python -X utf8 scripts/verify-chibi-streamed-animation.py
+```
+
+Study 对照继续使用第二录屏与已验证的音频起点偏移。新增歌曲时间 17.5／18／18.5／28.4s 四张录屏帧及 receipt（`study-reference/pose-witness/`）。实际 Browser 5198、1440×900 的 S.E.M 编队，从 15.2s 连续播放后暂停在显示 28.4s，再拖动定位到 28.4s；另从 16s 连续播放约两秒后暂停于显示 18s，再定位同一刻。两组可见姿势接近，后者连续播放与定位都仍为向侧面伸手，录屏 18s 则手收于胸前。滑杆以 100ms 显示／定位，不能将连续暂停内部小数时间与截图严格像素等同；这里只排查可见大幅手势分歧，未声称全骨骼相等。截图 `continuous-pose.png`、`seek-pose.png`、`clap-continuous-pose.png`、`clap-seek-pose.png` 保留。上一批暂停冻结仍有效，无新 console error。
+
+直接重读 `song_steqmg.unity3d` 的 `steqmg_live_effect` 命名列：17s 确实给三名 performer 下发 20012、speed=800，注释是“横に手を出して戻す（手のひら上向き）”；不是解析器误读成另一个动作。13–21s 原始行／CAB／pathID／包与 payload SHA256 保存在 `study-reference/raw-motion-segment.json`。实际 body-1 的 14010 和 20012 主段与循环段都是 1.5s（`motion-duration-witness.json`）。iOS metadata 字段默认值另确认 `LiveObjectIdol.MeasureAnimTime=1.5`、`MotionRandomDelayMax≈0.05`，以及 ColorPlaceType None=0、Random=1、Equally=2；字段索引、字节偏移、原始字节及 metadata SHA256 保存在 `native-motion-color-constants.json`。metadata 没有方法体，**不足以确定 get_baseTimeScale／PlayMotionInner 的计算公式或 Android 行为**。当前 speed/1000 换算、动画主段／循环选择与录像版本差异仍需核对，未凭这两个常量全局反转 speed 或偏移 CSV。
+
+本批新增工具没有前端接线，Browser 是对已存在 40ea551a 生产代码预览的诊断，模拟桌面并非真实设备验收；结束恢复默认视口。完整 Study／Take 光效、call 棒、遮罩、舞台装置与全曲动作仍待收口。门禁、master PR 与最初 UI／审计目标也未由此次工具回归自动验收。
