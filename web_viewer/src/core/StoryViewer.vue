@@ -187,10 +187,10 @@
           <span>{{ uiText('player.settings.skipRange') }}</span>
           <select v-model="skipMode" @change="saveSkipMode"><option value="readOnly">{{ uiText('player.settings.readOnly') }}</option><option value="all">{{ uiText('player.settings.all') }}</option></select>
         </label>
-        <label class="menu-setting">
+        <div class="menu-setting">
           <span>{{ uiText('player.settings.uiLanguage') }}</span>
           <ArchiveLanguageSwitch />
-        </label>
+        </div>
         <label class="menu-setting"><span>{{ uiText('player.settings.producerName') }}</span><input class="producer-name-input" :value="producerName" type="text" autocomplete="off" :placeholder="uiText('player.settings.producerNamePlaceholder')" @input="saveProducerName($event.target.value)" /></label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
         <label class="menu-setting"><span>{{ uiText('player.voice.backend') }}</span>

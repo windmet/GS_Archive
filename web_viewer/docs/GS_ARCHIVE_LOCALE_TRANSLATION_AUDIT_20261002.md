@@ -33,3 +33,15 @@
 真实本地生产 bundle Browser：1280×900 道具两行和角标、中日双向搜索、详情原名、刷新保留；390×844 四列网格、资源页清单、主线 reviewed 筛选和 Reader 跳转、摄影原衣装名；320px 摄影菜单及两个舞台页标题/语言键完整；首页切换卡名同时保留 windmetP 台词，Reader 标题中日切换不改正文模式。资源页日中对照 SP 搜索定位 G-items-007。未捕获本批 error；保留既有 Spine update/tint 调用栈 warnings。没有重新声称真实 iPad 扬声器、长稳或冷缓存性能验收通过。
 
 证据目录 `.analysis/general-translation-batches-20261002`：build-check.log、items-desktop.png、items-mobile.png、resource-audit-desktop.png、translation-audit-desktop.png、audit-mobile.png、studio-mobile-ja.png。仅截图和小型 JSON/batch，不是媒体包。测试部署结果补记于文末。
+
+## 提交、测试部署与交付
+
+代码 `4dc731d5d6dd00fb125a412438973fce2862fbff` 已推送。committed build-check 为 2,732 模块 / 10.37s，sourceDirty=false，入口 gzip 130,929 B，sourceDigest `b93cb75bdd30bb983640b5b34e765ce34f7ab4410769ee41b136247099318d79`。来源不变，自动审计再生成没有产生 tracked 差异。
+
+E 盘打包前可用 496,443,641,856 B；实际包 `.deploy/locale-audit-preview-4dc731d5` 为 10,324 文件 / 126,204,943 B。只含代码、readmodel、既有翻译及工作回填，没有 full public 媒体复制。Wrangler 4.146.0 仅部署 `gs-architecture-device-test`，固定地址 [d5f0be9e](https://d5f0be9e.gs-archive-preview.pages.dev/?view=archive_status)，别名 [测试分支](https://gs-architecture-device-test.gs-archive-preview.pages.dev)。productionApproved/deviceReviewAccepted 仍为 false，R2 dataRevision 未改。
+
+线上九个关键文件（HTML、回执、入口、状态页、藏品页、道具校对清单、剧情清单等）均与包 manifest 的 size/SHA 一致。真实 Browser 展示当前资源计数、R2 最近核对时间和默认折叠历史；切换剧情统计出现主线 993 reviewed / 3,483 总量。日文模式中文「果冻」搜索匹配四项，普通/SP/DX 名称和角标完整，最后恢复中文并保留资源审计入口。线上未捕获 warn/error；没有把一次 Browser 创建标签等待超时当作站点失败，复用已实际创建的标签后验收完成。截图 online-resource-audit.png、online-translation-audit.png 与部署回执另存证据目录。
+
+Downloads 校对 ZIP：244 文件 / 2,091,807 B，60 inputs / 60 maps / 60 templates / 60 旧译对照，另附 plan、glossary、README 和完整流程。没有包含假回传或假批准。本轮旧修复指南同步更新，历史指导原文保留。
+
+播放器菜单补验：从 Reader 的日文模式进入 Player，菜单 UI 由日文切中文后，正文仍为 JP，P 名字仍 windmet，画面仍显示 windmetP。同时修正语言组件外层 label 对第一个按钮可访问名称的意外覆盖，改为普通布局容器，中文按钮恢复自身文字名称。截图 player-locale-menu.png。
