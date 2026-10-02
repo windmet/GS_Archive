@@ -40,6 +40,7 @@ for(const row of details) {
  if(revision)assert.equal(row.batch,revision.batch_id,'Audit must identify the imported revision batch, including compact batches')
 }
 // Tiny, isolated source-bound revision fixture; never write fake approvals into the live overlay.
+fs.mkdirSync(path.resolve('.analysis'),{recursive:true})
 const fixture=fs.mkdtempSync(path.resolve('.analysis/general-revision-fixture-'))
 const folder=path.join(fixture,'translation/studio/general/revisions');fs.mkdirSync(folder,{recursive:true})
 const file=path.join(folder,'sample.json')
