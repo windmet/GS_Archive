@@ -8,7 +8,7 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
-      :compact-mobile="view === 'story_catalog' || view === 'story_collection' || view === 'song_catalog'"
+      compact-mobile
       :immersive-tool="view === 'song_detail'"
       :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
@@ -97,6 +97,7 @@
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentCardCharacterName"
         :cards="filteredCardRows"
+        :idol-name="idolDisplayName"
         :rarity-tabs="cardRarityTabs"
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
@@ -814,9 +815,9 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
   unit_name: idol.unitName,
   unit_code: idol.unitCode,
 }])) }
-const bootstrapIdolSwitcher = archiveBootstrap.idols.map(idol => ({
-  idol_code: idol.id, display_name: idol.name, unit_name: idol.unitName,
-}))
+const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
+  idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
+})))
 const mobileIdolReadModelCatalog = ref(null)
 const mobileUnitReadModelCatalog = ref(null)
 const mobileIdolReadModelDetail = ref(null)
@@ -1283,7 +1284,7 @@ const currentSeriesCards = computed(() => {
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
-  return idolSourceName(id) || '全部偶像的卡片'
+  return id ? idolDisplayName(id) : '全部卡片'
 })
 
 const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value

@@ -34,11 +34,13 @@
       </template>
       <template #actions>
         <div class="archive-header-actions">
-        <label v-if="searchable" class="archive-search">
+        <button v-if="searchable" class="archive-search-toggle" type="button" aria-label="搜索目录" :aria-expanded="mobileSearchOpen" @click="mobileSearchOpen = !mobileSearchOpen"><Search :size="19" /></button>
+        <label v-if="searchable" class="archive-search" :class="{ 'is-open': mobileSearchOpen }">
           <Search :size="17" aria-hidden="true" />
           <input
             :value="modelValue"
             :placeholder="searchPlaceholder"
+            aria-label="搜索目录内容"
             @input="emit('update:modelValue', $event.target.value)"
           />
         </label>
@@ -92,8 +94,9 @@ import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
+import { ref, watch } from 'vue'
 
-defineProps({
+const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
@@ -104,6 +107,9 @@ defineProps({
   hasInspector: { type: Boolean, default: false },
   breadcrumbs: { type: Array, default: () => [] },
 })
+const mobileSearchOpen = ref(Boolean(props.modelValue))
+watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
+watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
@@ -264,6 +270,7 @@ const mobileNavigation = [
   background: #fbfcfc;
 }
 .archive-mobile-brand, .archive-mobile-nav { display: none; }
+.archive-search-toggle { display:none; }
 
 @media (max-width: 760px) {
   .archive-shell, .archive-shell.has-inspector {
@@ -384,13 +391,19 @@ const mobileNavigation = [
 
 <style scoped>
 @media(max-width:760px) {
- .archive-shell.is-compact-mobile { --archive-topbar:calc(52px + var(--archive-safe-top)); }
- .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) auto;grid-template-rows:52px;gap:6px;padding:var(--archive-safe-top) 10px 0;}
+ .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader) { --archive-topbar:calc(48px + var(--archive-safe-top)); }
+ .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader):has(.archive-search.is-open) { --archive-topbar:calc(92px + var(--archive-safe-top)); }
+ .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 48px;grid-template-rows:48px;gap:0;padding:var(--archive-safe-top) 10px 0;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) {grid-template-columns:44px minmax(0,1fr) 48px;}
  .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
  .is-compact-mobile .archive-topbar h1 {font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
  .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
  .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
- .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:3;grid-row:1;}
+ .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:4;grid-row:1;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) :deep(.archive-language-switch) {grid-column:3;}
+ .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
+ .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:36px;width:100%;margin-bottom:8px;}
+ .is-compact-mobile .archive-search.is-open {display:flex;}
 }
 </style>

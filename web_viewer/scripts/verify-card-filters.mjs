@@ -61,8 +61,8 @@ assert.deepEqual(filterArchiveCards(fixture, { relationState: 'event_card', even
 assert.equal(JSON.stringify(fixture), before)
 assert.equal(filterArchiveCards(fixture)[0], fixture[0], 'filter must retain source object identity and order')
 const cardHeading = app.match(/const currentCardCharacterName = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
-assert.ok(cardHeading.includes('idolSourceName(id)'), 'card archive heading keeps the master-data idol name')
-assert.equal(cardHeading.includes('idolDisplayName(id)'), false, 'card archive heading does not localize the idol name independently of its switcher')
+assert.ok(cardHeading.includes('idolDisplayName(id)'), 'card heading follows the shared locale by stable idol identity')
+assert.match(app, /const bootstrapIdolSwitcher = computed\([\s\S]*?display_name: idolDisplayName\(idol.id\)/, 'switcher uses the same shared idol display names as its heading')
 const seriesCards = app.match(/const currentSeriesCards = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
 assert.ok(seriesCards.includes('idolSourceName(card.character_id)'), 'card detail series keeps master-data idol names')
 assert.equal(seriesCards.includes('idolDisplayName(card.character_id)'), false, 'card detail series does not mix localized names with source identity')
