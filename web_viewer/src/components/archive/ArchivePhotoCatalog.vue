@@ -1,6 +1,5 @@
 <template>
-  <article class="domain-page" data-archive-scroll-container>
-    <h2>摄影资料</h2>
+  <article class="domain-page photo-page" data-archive-scroll-container :aria-busy="busy">
     <p class="domain-intro">查阅摄影地点、场景和偶像的表情、动作配置。</p>
     <nav class="domain-tabs" aria-label="摄影分类">
       <button
@@ -13,11 +12,11 @@
         {{ tab.label }}
       </button>
     </nav>
-    <p v-if="busy" role="status" class="domain-muted">正在读取摄影资料…</p>
+    <p v-if="busy" role="status" class="domain-muted">正在读取{{ loadingActorName ? `${loadingActorName}的` : '' }}摄影资料…</p>
     <p v-if="error" role="alert" class="domain-error">
       {{ error }}<button type="button" @click="load">重试</button>
     </p>
-    <div v-if="!busy && rows.length" class="domain-layout">
+    <div class="domain-layout">
       <section class="domain-panel" aria-label="资料目录">
         <div class="domain-tools">
           <label
@@ -38,12 +37,13 @@
             </select>
           </label>
         </div>
-        <p class="domain-count">{{ filtered.length }} 条资料</p>
+        <p class="domain-count">{{ activeDataReady ? `${filtered.length} 条资料` : busy ? '正在读取…' : error ? '结果暂不可用' : '— 条资料' }}</p>
         <div class="domain-list">
           <button
             v-for="row in visible"
             :key="row.id"
             type="button"
+            :data-archive-focus-id="`photo:${photoTab}:${row.id}`"
             :aria-pressed="String(row.id) === selectedId"
             @click="select(row)"
           >
@@ -72,7 +72,7 @@
             <ChevronRight :size="16" />
           </button>
         </div>
-        <p v-if="!filtered.length" class="domain-muted">没有匹配的资料。</p>
+        <p v-if="activeDataReady && !filtered.length" class="domain-muted">没有匹配的资料。</p>
         <nav v-if="pages > 1" class="domain-pagination" aria-label="目录分页">
           <button type="button" :disabled="page === 0" @click="page--">
             上一页
@@ -89,12 +89,13 @@
           <button
             type="button"
             class="domain-action"
+            :data-archive-focus-id="`photo-studio:${photoTab}:${photoEntry.id}`"
             @click="emit('open-studio', `${photoTab}:${photoEntry.id}`)"
           >
             <Camera :size="18" />在摄影工作台打开
           </button>
           <DomainMediaPreview
-            v-if="photoTab !== 'filters' && !busy"
+            v-if="photoTab !== 'filters'"
             :binding="photoBinding?.image"
             :effect-status="photoBinding?.effectStatus"
             :name="photoName(photoEntry)"
@@ -167,7 +168,7 @@
             </p>
           </div>
         </section>
-        <p v-else-if="!busy" class="domain-muted">选择资料查看详情。</p>
+        <p v-else-if="activeDataReady" class="domain-muted">{{ photoSelection ? '当前资料不在此目录中，请选择有效资料。' : '选择资料查看详情。' }}</p>
       </div>
     </div>
   </article>
@@ -201,19 +202,21 @@ const emit = defineEmits([
     "photo-idol",
     "photo-entity",
     "open-studio",
+    "ready",
   ]),
   repository = new DomainRepository(props.client, props.bootstrap);
-const rows = shallowRef([]),
-  materials = shallowRef(null),
+const materials = shallowRef(null),
   actor = shallowRef(null),
   actors = shallowRef([]),
   materialMedia = shallowRef(null),
   actorMedia = shallowRef(null),
   busy = ref(false),
+  loadingActorId = ref(""),
   error = ref(""),
   page = ref(0),
   photoTab = ref("spots"),
   photoSelection = ref(""),
+  pendingTabSelection = ref(false),
   detailElement = ref(null),
   failedThumbnails = shallowRef(new Set());
 const photoTabs = [
@@ -226,9 +229,20 @@ const photoTabs = [
   { id: "filters", label: "滤镜" },
 ];
 const actorId = computed(() => props.photoIdol || actors.value[0]?.id || "");
+const loadingActorName = computed(() => {
+  const entry = actors.value.find(row => row.id === loadingActorId.value);
+  return entry ? props.displayIdolName(entry.idolCode) || entry.nameJa : loadingActorId.value ? `偶像 ${loadingActorId.value}` : '';
+});
+const actorDataReady = computed(() =>
+  actor.value && actorMedia.value && String(actor.value.idolId) === actorId.value && String(actorMedia.value.idolId) === actorId.value,
+);
+// Shared materials survive reloads; actor presets require the current actor identity.
+const activeDataReady = computed(() =>
+  ["faces", "poses"].includes(photoTab.value) ? Boolean(actorDataReady.value) : Boolean(materials.value),
+);
 const photoRows = computed(() =>
   ["faces", "poses"].includes(photoTab.value)
-    ? actor.value?.[photoTab.value] || []
+    ? actorDataReady.value ? actor.value[photoTab.value] || [] : []
     : materials.value?.[photoTab.value] || [],
 );
 const filtered = computed(() => {
@@ -253,9 +267,9 @@ const pages = computed(() => Math.ceil(filtered.value.length / 25)),
   );
 const photoEntry = computed(
     () =>
-      photoRows.value.find((row) => String(row.id) === photoSelection.value) ||
-      photoRows.value[0] ||
-      null,
+      photoSelection.value
+        ? photoRows.value.find((row) => String(row.id) === photoSelection.value) || null
+        : photoRows.value[0] || null,
   ),
   selectedId = computed(() => String(photoEntry.value?.id || ""));
 function binding(row) {
@@ -301,7 +315,8 @@ function photoName(row) {
   return `${photoTabs.find((tab) => tab.id === photoTab.value)?.label} ${row.id}`;
 }
 let controller = null,
-  request = 0;
+  request = 0,
+  interactionRevision = 0;
 function begin() {
   controller?.abort();
   controller = new AbortController();
@@ -312,7 +327,7 @@ function begin() {
 function fail(cause, id, options) {
   if (id === request && !options.signal.aborted) {
     console.error("[ArchiveDomains]", cause);
-    error.value = "资料暂时无法读取，请重试。";
+    error.value = `${loadingActorName.value ? `${loadingActorName.value}的` : ''}摄影资料暂时无法读取，请重试。`;
   }
 }
 onBeforeUnmount(() => {
@@ -322,14 +337,16 @@ onBeforeUnmount(() => {
 
 async function load() {
   const requestedPhotoEntity = props.photoEntity;
+  const requestedInteraction = interactionRevision;
+  loadingActorId.value = props.photoIdol || actors.value[0]?.id || "";
   const { id, options } = begin();
-  rows.value = [];
   try {
     const catalog = await repository.catalog("photos", options);
-    if (id !== request) return;
+    if (id !== request || options.signal.aborted) return;
     actors.value = catalog.filter((row) => row.id !== "materials");
     const selected = catalog.find((row) => row.id === actorId.value);
     if (!selected) throw Error("Unknown photo idol");
+    loadingActorId.value = selected.id;
     const [material, person] = await Promise.all([
       repository.detail(
         "photos",
@@ -338,18 +355,18 @@ async function load() {
       ),
       repository.detail("photos", selected, options),
     ]);
-    if (id !== request) return;
-    rows.value = catalog;
+    if (id !== request || options.signal.aborted) return;
     materials.value = material.materials;
     actor.value = person.actor;
     materialMedia.value = material.media;
     actorMedia.value = person.media;
     if (
       ["faces", "poses"].includes(photoTab.value) &&
-      !props.photoEntity &&
+      (!props.photoEntity || pendingTabSelection.value) &&
       photoRows.value[0]
     ) {
       photoSelection.value = String(photoRows.value[0].id);
+      pendingTabSelection.value = false;
       emit("photo-entity", `${photoTab.value}:${photoSelection.value}`);
     }
     const position = filtered.value.findIndex(
@@ -361,11 +378,15 @@ async function load() {
     if (
       id === request &&
       !options.signal.aborted &&
+      requestedInteraction === interactionRevision &&
       requestedPhotoEntity &&
       props.photoEntity === requestedPhotoEntity &&
+      photoEntry.value &&
+      `${photoTab.value}:${photoEntry.value.id}` === requestedPhotoEntity &&
       window.matchMedia("(max-width:700px)").matches
     )
       detailElement.value?.scrollIntoView({ block: "start" });
+    if(id === request && !options.signal.aborted)emit("ready");
   } catch (cause) {
     fail(cause, id, options);
   } finally {
@@ -373,17 +394,23 @@ async function load() {
   }
 }
 async function select(row) {
+  if(!photoRows.value.some(entry => String(entry.id) === String(row.id)))return;
+  const tab = photoTab.value, person = actorId.value, revision = ++interactionRevision;
   photoSelection.value = String(row.id);
   emit("photo-entity", `${photoTab.value}:${row.id}`);
   await nextTick();
   if (
-    photoSelection.value === String(row.id) &&
+    revision === interactionRevision && photoTab.value === tab &&
+    (!["faces","poses"].includes(tab) || actorId.value === person) &&
+    photoEntry.value && String(photoEntry.value.id) === String(row.id) &&
     window.matchMedia("(max-width:700px)").matches
   )
     detailElement.value?.scrollIntoView({ block: "start" });
 }
 function applyPhotoSelection(key) {
   const [kind, id] = (key || "").split(":");
+  if(kind !== photoTab.value || id !== photoSelection.value)interactionRevision++;
+  pendingTabSelection.value = false;
   if (photoTabs.some((tab) => tab.id === kind)) {
     photoTab.value = kind;
     photoSelection.value = id;
@@ -392,9 +419,11 @@ function applyPhotoSelection(key) {
   } else photoSelection.value = "";
 }
 function switchPhotoTab(tab) {
+  interactionRevision++;
   photoTab.value = tab;
   page.value = 0;
   photoSelection.value = "";
+  pendingTabSelection.value = !photoRows.value[0];
   if (photoRows.value[0])
     emit("photo-entity", `${tab}:${photoRows.value[0].id}`);
 }
@@ -403,7 +432,37 @@ watch(() => props.photoIdol, load, { immediate: true });
 watch(
   () => props.query,
   () => {
+    interactionRevision++;
     page.value = 0;
   },
 );
 </script>
+<style scoped>
+.photo-page{font-family:var(--gs-font-directory);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);min-width:0;}
+.photo-page .domain-intro{margin-bottom:var(--gs-space-6);}
+.photo-page button,.photo-page input,.photo-page select{font:inherit;min-height:var(--gs-control-touch);font-size:var(--gs-text-ui);}
+.photo-page button{font-weight:var(--gs-weight-semibold);}
+.photo-page .domain-tabs{gap:var(--gs-space-3);margin-bottom:var(--gs-space-5);}
+.photo-page .domain-tabs button{gap:var(--gs-space-3);border-radius:var(--gs-radius-field);}
+.photo-page .domain-tools{gap:var(--gs-space-4);margin-bottom:var(--gs-space-5);}
+.photo-page .domain-tools label{min-width:0;flex:1 1 140px;gap:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
+.photo-page .domain-tools input,.photo-page .domain-tools select{padding:var(--gs-space-3) var(--gs-space-4);border-radius:var(--gs-radius-field);font-weight:var(--gs-weight-regular);}
+.photo-page .domain-count{margin-bottom:var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium);}
+.photo-page .domain-list>button{gap:var(--gs-space-4);border-radius:var(--gs-radius-control);}
+.photo-page .domain-list>button:hover{background:#fff;}
+.photo-page .domain-list>button[aria-pressed=true]{background:#e5f6f1;}
+.photo-page .domain-list>button:active:not([aria-pressed=true]){background:#f1faf7;}
+.photo-page .domain-list strong{font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);}
+.photo-page .domain-list small{margin-top:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);}
+.photo-page .domain-pagination{gap:var(--gs-space-4);margin-top:var(--gs-space-5);font-size:var(--gs-text-ui);}
+.photo-page .domain-detail h3{font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);}
+.photo-page .domain-detail>.domain-panel>h3:first-child{font-size:var(--gs-text-title);overflow-wrap:anywhere;}
+.photo-page .domain-detail details>summary{font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer;}
+.photo-page .domain-meta{font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);}
+.photo-page .domain-action{gap:var(--gs-space-3);border-radius:var(--gs-radius-field);}
+@media(hover:hover) and (pointer:fine){.photo-page .domain-list>button:hover:not([aria-pressed=true]){background:#f1faf7;}}
+@media(max-width:760px), (pointer:coarse){
+ .photo-page .domain-tools input,.photo-page .domain-tools select{font-size:var(--gs-text-subtitle);}
+ .photo-page .domain-detail details>summary{min-height:var(--gs-control-touch);padding-block:var(--gs-space-4);}
+}
+</style>

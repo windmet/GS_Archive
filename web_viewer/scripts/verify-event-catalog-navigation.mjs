@@ -121,7 +121,7 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
   const window = { location: { href: buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).href }, history: { state: { sidemArchiveEntryId: 'entry-fixture' } } }
   const context = vm.createContext({
     ...state, window, nextTick: Vue.nextTick, normalizeEventBrowseState, buildArchiveViewContext,
-    archiveRouteReady: true, archiveViewRestoreRevision: 0, activeArchiveViewContext: null, pendingEventCatalogRestore: null,
+    archiveRouteReady: true, archiveViewRestoreRevision: 0, activeArchiveViewContext: null, pendingEventCatalogRestore: null, pendingPhotoCatalogRestore: null,
     loading: { value: false }, console, pendingEventNavigation: 0,
     eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
     navigation: { getRevision: () => revision, invalidate: () => revision++, isDisposed: () => disposed, isRestoring: () => false },

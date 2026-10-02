@@ -233,7 +233,7 @@
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
         @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
-        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
+        @query="updatePhotoCatalogQuery" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @ready="onPhotoCatalogReady" @open-studio="openPictureStudio" />
 
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
@@ -941,6 +941,7 @@ let pendingPreReadyRoute = null
 let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
 let pendingEventCatalogRestore = null
+let pendingPhotoCatalogRestore = null
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
   state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
@@ -1553,6 +1554,8 @@ function adoptArchiveViewContext({ restore = true } = {}) {
   const revision = ++archiveViewRestoreRevision
   pendingEventCatalogRestore = restore && view.value==='event_catalog'
     ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
+  pendingPhotoCatalogRestore = restore && view.value==='photo_catalog'
+    ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   if (!restore) return
   nextTick(() => {
     if (revision !== archiveViewRestoreRevision || navigation.isDisposed()) return
@@ -1952,7 +1955,23 @@ async function onEventCatalogReady() {
 function selectPhotoIdol(id) {
   if (!/^\d{1,4}$/.test(String(id))) return
   if (currentPhotoIdol.value!==String(id) && /^(faces|poses):/.test(currentPhotoEntity.value)) currentPhotoEntity.value=''
-  currentPhotoIdol.value=String(id); syncArchiveRoute()
+  currentPhotoIdol.value=String(id); syncArchiveRoute({restoreView:false})
+}
+
+function updatePhotoCatalogQuery(query) {
+  filterQuery.value=query
+  syncArchiveRoute({replace:true,restoreView:false})
+}
+
+async function onPhotoCatalogReady() {
+  const pending=pendingPhotoCatalogRestore
+  pendingPhotoCatalogRestore=null
+  if(!pending)return
+  await nextTick()
+  if(view.value!=='photo_catalog'||pending.context!==activeArchiveViewContext||pending.revision!==archiveViewRestoreRevision||pending.navigationRevision!==navigation.getRevision()||navigation.isDisposed())return
+  return restoreArchiveViewState(pending.context).catch(error=>{
+    console.error('[ArchiveNavigation] Failed to restore photo directory position:',error)
+  })
 }
 
 async function openDomainTarget(target){
