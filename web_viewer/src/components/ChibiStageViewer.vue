@@ -46,6 +46,8 @@
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
     :data-image-layer-depths="visibleImageLayerDepths.join(',')"
+    :data-image-object-count="visibleImageObjectCount"
+    :data-image-object-assets="visibleImageObjectAssets.join(',')"
     :data-object-layer-count="visibleObjectLayerCount"
     :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
@@ -266,6 +268,7 @@
             <div v-if="stageVfxCoverage" class="vfx-coverage">
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
@@ -408,6 +411,7 @@ import {
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
   fetchLiveChibiImageLayerIndex,
+  fetchLiveChibiImageObjectIndex,
   fetchLiveChibiObjectLayerIndex,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
@@ -422,6 +426,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
+import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
@@ -444,6 +449,9 @@ const lipSyncFrameCount = ref(0)
 const musicIndex = ref(null)
 const backmonitorIndex = ref(null)
 const imageLayerIndex = ref(null)
+const imageObjectIndex = ref(null)
+const visibleImageObjectCount = ref(0)
+const visibleImageObjectAssets = ref([])
 const objectLayerIndex = ref(null)
 const stageBackgroundIndex = ref(null)
 const stageEffectIndex = ref(null)
@@ -570,6 +578,7 @@ const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999'
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
+  imageObjects: imageObjectIndex.value,
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
 }))
@@ -745,6 +754,7 @@ onMounted(async () => {
       musicIndex.value,
       backmonitorIndex.value,
       imageLayerIndex.value,
+      imageObjectIndex.value,
       objectLayerIndex.value,
       stageBackgroundIndex.value,
       stageEffectIndex.value,
@@ -752,6 +762,7 @@ onMounted(async () => {
       fetchLiveChibiMusicIndex(),
       fetchLiveChibiBackmonitorIndex(),
       fetchLiveChibiImageLayerIndex(),
+      fetchLiveChibiImageObjectIndex(),
       fetchLiveChibiObjectLayerIndex(),
       fetchLiveChibiStageBackgroundIndex(),
       fetchLiveChibiStageEffectIndex(),
@@ -1938,6 +1949,11 @@ function imageLayerStatesAt(milliseconds) {
       eventTime: Number(event.time),
     })
   }
+  for (const [id, state] of imageObjectsAt(imageObjectIndex.value?.songs?.[selectedSong.value?.id]?.events, milliseconds)) {
+    states.set(`imageObject:${id}:${state.asset}`, {
+      ...state, imageObject: true, visible: state.alpha > 0,
+    })
+  }
   return states
 }
 
@@ -1967,6 +1983,13 @@ function layoutImageLayers() {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const runtime of imageLayerRuntimes.values()) {
+    if (runtime.state?.imageObject) {
+      const layout = imageObjectLayout(runtime.state, width, height, environmentScale.value)
+      runtime.sprite.position.set(layout.x, layout.y)
+      runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
+      runtime.sprite.rotation = layout.rotation
+      continue
+    }
     runtime.sprite.position.set(width * 0.5, height * 0.5)
     runtime.sprite.scale.set(viewportScale * environmentScale.value)
   }
@@ -1988,10 +2011,12 @@ function releaseImageLayers() {
   visibleImageLayerCount.value = 0
   visibleImageLayerAssets.value = []
   visibleImageLayerDepths.value = []
+  visibleImageObjectCount.value = 0
+  visibleImageObjectAssets.value = []
 }
 
 async function syncImageLayers() {
-  if (!cameraContainer || !selectedSong.value || !imageLayerIndex.value) return
+  if (!cameraContainer || !selectedSong.value || (!imageLayerIndex.value && !imageObjectIndex.value)) return
   if (imageLayerSongId !== selectedSong.value.id) {
     releaseImageLayers()
     imageLayerSongId = selectedSong.value.id
@@ -1999,53 +2024,63 @@ async function syncImageLayers() {
   const sequence = imageLayerSequence
   const states = imageLayerStatesAt(stageTime.value)
   const visibleStates = imageLayersEnabled.value
-    ? [...states.values()].filter(state => state.visible)
+    ? [...states].filter(([, state]) => state.visible)
     : []
-  visibleImageLayerCount.value = visibleStates.length
-  visibleImageLayerAssets.value = visibleStates.map(state => state.asset).sort()
-  visibleImageLayerDepths.value = visibleStates
+  const layers = visibleStates.map(([, state]) => state).filter(state => !state.imageObject)
+  visibleImageLayerCount.value = layers.length
+  visibleImageLayerAssets.value = layers.map(state => state.asset).sort()
+  visibleImageLayerDepths.value = layers
     .map(state => `${state.asset}:${state.depth}`)
     .sort()
 
-  for (const [asset, runtime] of imageLayerRuntimes) {
-    const state = states.get(asset)
+  for (const [key, runtime] of imageLayerRuntimes) {
+    const state = states.get(key)
     runtime.sprite.visible = imageLayersEnabled.value && Boolean(state?.visible)
-    if (state) runtime.sprite.zIndex = Number(state.depth) || 0
+    if (state) {
+      runtime.state = state
+      runtime.sprite.zIndex = Number(state.depth) || 0
+      runtime.sprite.alpha = state.imageObject ? state.alpha : 1
+    }
   }
 
-  await Promise.all(visibleStates.map(async state => {
-    let runtime = imageLayerRuntimes.get(state.asset)
+  await Promise.all(visibleStates.map(async ([key, state]) => {
+    let runtime = imageLayerRuntimes.get(key)
     if (!runtime) {
-      const entry = imageLayerIndex.value.assets?.[state.asset]
+      const entry = (state.imageObject ? imageObjectIndex.value : imageLayerIndex.value)?.assets?.[state.asset]
       if (!entry) {
         console.warn('[ChibiStage] missing image-layer asset', state.asset)
         return
       }
-      let load = imageLayerLoads.get(state.asset)
+      let load = imageLayerLoads.get(key)
       if (!load) {
-        load = loadImageLayerTexture(entry.file)
-        imageLayerLoads.set(state.asset, load)
+        load = loadImageLayerTexture(entry.file, 15000)
+        imageLayerLoads.set(key, load)
       }
       const texture = await load
-      const ownsLoad = imageLayerLoads.get(state.asset) === load
-      if (ownsLoad) imageLayerLoads.delete(state.asset)
+      const ownsLoad = imageLayerLoads.get(key) === load
+      if (ownsLoad) imageLayerLoads.delete(key)
       if (sequence !== imageLayerSequence || imageLayerSongId !== selectedSong.value?.id) {
         if (ownsLoad) texture.destroy(true)
         return
       }
-      runtime = imageLayerRuntimes.get(state.asset)
+      runtime = imageLayerRuntimes.get(key)
       if (!runtime) {
         const sprite = markRaw(new PIXI.Sprite(texture))
-        sprite.anchor.set(0.5)
+        sprite.anchor.set(entry.pivot?.x ?? 0.5, 1 - (entry.pivot?.y ?? 0.5))
         cameraContainer.addChild(sprite)
-        runtime = { texture, sprite }
-        imageLayerRuntimes.set(state.asset, runtime)
+        runtime = { texture, sprite, state }
+        imageLayerRuntimes.set(key, runtime)
       }
     }
-    const current = imageLayerStatesAt(stageTime.value).get(state.asset)
+    const current = imageLayerStatesAt(stageTime.value).get(key)
     runtime.sprite.visible = imageLayersEnabled.value && Boolean(current?.visible)
     runtime.sprite.zIndex = Number(current?.depth) || 0
+    runtime.sprite.alpha = current?.imageObject ? current.alpha : 1
+    if (current) runtime.state = current
   }))
+  const painted = [...imageLayerRuntimes.values()].filter(runtime => runtime.state?.imageObject && runtime.sprite.visible)
+  visibleImageObjectCount.value = painted.length
+  visibleImageObjectAssets.value = painted.map(runtime => runtime.state.asset).sort()
   layoutImageLayers()
 }
 

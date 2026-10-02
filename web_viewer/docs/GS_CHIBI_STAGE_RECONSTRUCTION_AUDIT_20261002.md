@@ -255,3 +255,31 @@ Browser 5198 使用固定 `.analysis/build-check` 和既有资源映射，以 S.
 `build:check` 通过（最终 14.95s、未复制 public），本地当前 95 项源码门禁中的 94 项首次通过；`verify:build-audit` 首次因其他窗口在构建后修改 `src/App.vue` 失败。保留其他窗口的 App/门户/偶像选择器改动后重建，单独复验此门禁通过，未回退共享工作。未观察到 Browser console error；既有 Pixi/Spine 弃用警告保留。本地门禁与模拟视口不代表 GitHub CI、真实设备或完整 Unity 渲染通过。
 
 截图在本工程 E 盘原证据目录：`chibi-study-ground-before/after/mobile/landscape.png`、`chibi-take-ground-before/after.png`、`chibi-anywhere-ground-after/mobile.png`、`chibi-possibilities-ground-after.png`、`chibi-brand-new-ground-after.png`、`chibi-drive-ground-after.png`、`chibi-take02-ground-after/mobile.png`。源码日志 `chibi-common-ground-source-gates.log`，最终构建及补验日志 `chibi-common-ground-build-final.log`、`chibi-common-ground-build-audit-final.log`。本轮只验收落脚点注册，不将不同服装/动作时刻的截图当成像素一致复刻；人物相对大小、灯具、Logo、首帧视频和完整 Unity 投影仍待后续验证。
+
+## 2026-10-03：Take 图片对象试点与追加台面检查
+
+站位修正提交 `ee98190f` 后继续验证，保留同时推进的门户改动。本轮追加 Infinite Octave!、Café Parade!、スマイル・エンゲージ、LEADING YOUR DREAM 的 17s 台面检查，检查人数覆盖二人、三人、五人。落脚点在背景地板内，未见越过台沿；这些曲目没有收到原片对照，不能据此验收原作相机/人物大小或全曲。共检查的背景由 7 种扩至 11 种，其余 44 种仍待视觉核对。
+
+新增独立 `image-objects/index.json` 试点，不改写现有 118 份编排和站位。精确读取已登记的 `tkstp1_live_effect`、`tkstp2_live_effect` RAW TextAsset，保留 CAB、字符串 PathID、bundle/text SHA256。两个版本各有 8 组 Logo、24 条 ImageObject 指令；第二版也引用 `song_tkstp1.unity3d` 的 Sprite。导出按 **Sprite → 指针 → Texture2D** 绑定，拒绝同名纹理猜测；16 张透明 PNG 共 5,157,695 B，保留 1200×800 完整逻辑画布、透明边距、中心 pivot 和输出 SHA256，不烘焙进背屏。
+
+解析 create 的 ID、透明度、X/Y 缩放、旋转、坐标与深度，show 的延迟、淡入、停留、淡出；hide 仍按 `value101/value102` 命名字段取值。source show `value6=999999` 保留为 `rawValue6`，语义未证实，不猜为循环次数。第一版最后一组 Logo 在 50.85s 的显式 hide 早于 nominal show 结束，运行时服从该 hide。独立 ID 时间轴支持中断/倒退，资源加载后重新读取当前时间，切歌清理旧对象并对 pending 加载使用版本检查。图片布景检查开关同时控制 Logo；诊断计数只登记已建成且当前可见的 Sprite。
+
+Logo 与背景共用居中的 1280×720 设计空间：source `(-10,460)` 投影为 `(630,260)`，250/1000 缩放保留为 0.25。资源、坐标、深度与镜头共同缩放，实际位于背屏中部。此为 2D 显示链路，尚未声明完整 Unity ImageObject/3D 投影语义。
+
+复现候选导出及校验：
+
+```powershell
+python -X utf8 scripts/prepare-live-chibi-image-objects.py --output-root .analysis/engineering-validation-20261002/take-image-objects-candidate
+npm run verify:chibi-image-objects
+node scripts/verify-chibi-image-objects.mjs --published-assets
+```
+
+本地只安装 16 张哈希核对过的 PNG 和对应索引到既有 E 盘 public 资源映射；原 RAW 未改。源代码/小型 fixture 提交，完整 PNG/本地 public 不随源码提交；正式资源发布还需纳入媒体清单并验收目标托管，不把本地成功当成线上已发布。旧资源包无试点索引时返回空，保留已有舞台功能。
+
+Browser 使用既有 5198 生产代码预览和资源映射：第一版 22s C.FIRST、26s High×Joker，21.4s 可见淡入；两版共 16 组 Logo 逐组定位，实际 Sprite 资源诊断均为一组，无加载遗漏。52s 无 Logo，倒退恢复前组；第一版从 22s 连续播放到 1:53 后自动结束，Logo 段落退出。切到第二版和 Study 时没有前曲 Logo 残留。桌面 1280×800、390×844 手机、844×390 横屏检查，手机画布约 357×201、横屏约 321×180，Logo 随画布缩放，无页面横向溢出。横屏 seek 会将滑杆滚入视窗，先用播放按钮上的 Control+Home 恢复顶部，再取最终截图；不把滚动中截到局部画布的图片作为布局通过证据。
+
+截图和日志复用原 E 盘证据目录：`chibi-take-logo-cfirst-desktop.png`、`chibi-take-logo-high-desktop/mobile.png`、`chibi-take02-logo-sem-mobile/landscape.png`、`chibi-*-ground-check.png`。CI 新增 RAW 小型 fixture 的解析/命名列校验、生命周期与 ID 替换测试、跨画布布局及两版全部 Logo 的资源合同；默认门禁不依赖 RAW/未提交 PNG，`--published-assets` 另核对实际本地输出。
+
+最终代码构建 `build:check` 14.49s、copyPublicDir:false；当前 96 项 Source Gate 最终通过。首次 `verify:build-audit` 因共享窗口提交后 HEAD 变化失败，保留原失败记录，在 HEAD `abeccf24` 重建后此项复验通过。日志 `chibi-take-logo-source-gates.log`、汇总 `chibi-take-logo-source-gate-final.json`、最终构建/补验 `chibi-take-logo-build-final.log`、`chibi-take-logo-build-audit-final.log`。最终 bundle 首载 Take 02，再定位 26s，图片开关实际 1→0→1，原 S.E.M Logo 恢复；未观察到 console error，既有 Pixi/Spine 弃用告警保留。这些是本地源码门禁及模拟视口验收，未声称 GitHub CI 或媒体发布通过。
+
+角色明暗、地面/观众灯、吊灯、真实设备、相机与完整录像对齐仍未关闭，本轮没有把找到 Sprite 或门禁通过当成整首舞台已完整复刻。

@@ -94,6 +94,13 @@ export async function fetchLiveChibiImageLayerIndex() {
   return response.json()
 }
 
+export async function fetchLiveChibiImageObjectIndex() {
+  const response = await fetch(`${LIVE_CHIBI_BASE}/image-objects/index.json`)
+  if (response.status === 404) return null
+  if (!response.ok) throw new Error(`舞台图片对象索引加载失败 (${response.status})`)
+  return response.json()
+}
+
 export async function fetchLiveChibiObjectLayerIndex() {
   const response = await fetch(`${LIVE_CHIBI_BASE}/object-layers/index.json`)
   if (response.status === 404) return null

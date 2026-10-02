@@ -115,6 +115,9 @@ jobs:
       - name: Verify chibi ground registration across viewport sizes
         run: npm run verify:chibi-stage-coordinates
 
+      - name: Verify bounded chibi ImageObject source timelines
+        run: npm run verify:chibi-image-objects
+
       - name: Verify song lyrics and media clock
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 
