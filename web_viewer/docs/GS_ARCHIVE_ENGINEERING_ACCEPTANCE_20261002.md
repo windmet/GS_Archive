@@ -67,3 +67,5 @@ PR #46 首轮 Linux Source Gate 在新增 editorial 步骤发现活动关系图�
 后续 CI 还发现新 checkout 没有 `.analysis`（测试现在自行建立小型隔离 fixture），以及旧 Reader / Studio 的 compiled 来源摘要曾绑定 CRLF，而 publication 明确发布 LF。正文/译文/审批收据均未重写：共享 `ReadingSourceBytes` 仅提供原始字节及 LF/CRLF 两个精确传输变体，Reader→ADV 与 Studio 复核共同检查原摘要；非换行空格变化、键名/值变化均被新回归拒绝。正式 publication verifier 仍检查实际 LF artifact、Git index/HEAD 和原始 SHA。此兼容修复同时防止正式 LF 文件在历史正文入口被误拒。
 
 Linux checkout 不含忽略的媒体库，原 speaker-avatar 测试把本地资源验收混进 Source Gate。现默认仍严格核对 25 个 NPC 的 masterdata / 真实正文身份及排除规则；显式 --local-media 另检查 25 张 PNG 的签名和 148×148 尺寸，本地通过。源码模式明确输出未验收图像字节，历史 HTTP / Browser 验收边界保留。
+
+构建 CI 暴露唯一漏跟踪的 Reader compiled 来源：冬马生日剧情 1_2_001_12 的父文件。它已经是正式 Reader manifest 的 ready 文档与 authoritative-registry pre-ledger 来源，17 文本行、20 steps、RAW hash 均在原记录；这里只补入该既有 174385 字节文本文件，未新生成剧情、未把 pre-ledger 改为 release owner。其历史 CRLF 来源摘要继续由精确换行传输兼容验证；全 2801 Reader 来源仅此一份缺 Git 跟踪。
