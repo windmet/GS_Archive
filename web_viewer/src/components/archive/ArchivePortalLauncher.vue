@@ -15,7 +15,7 @@
           </div>
         </header>
         <div class="terminal-heading"><span class="terminal-kicker">GROWING STARS</span><h1 id="portal-title" tabindex="-1" ref="heading">资料馆</h1></div>
-        <p v-if="loadingSection" class="terminal-notice" role="status">{{ loadingSection }}</p>
+        <p v-if="loadingSection" class="terminal-notice" role="status">{{ loadingSection }}<button v-if="retrySection" class="terminal-text-button" type="button" @click="emit('navigate', retrySection)">重试卡池目录</button></p>
         <p v-if="preferenceNotice || wallpaper.notice.value" class="terminal-notice" role="status">{{ preferenceNotice || wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
         <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
@@ -73,7 +73,7 @@ import ArchiveWallpaperPicker from './terminal/ArchiveWallpaperPicker.vue'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
-const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
+const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
 const personalOpen = ref(false), settingsOpen = ref(false)
 const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWallpaper()

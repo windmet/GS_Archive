@@ -30,7 +30,8 @@
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
         @save-preferred="savePreferredIdol"
-        :loading-section="homeEntryStatus || legacyEntryStatus"
+        :loading-section="gashaReadModelStatus || homeEntryStatus || legacyEntryStatus"
+        :retry-section="gashaReadModelStatus && !loading ? 'gashas' : ''"
         :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
@@ -166,6 +167,10 @@
         :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || 0"
         :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || 0"
         :supplement-count="gashaReadModelCatalog?.summary?.ticket_supplement_count || 0"
+        :loaded="Boolean(gashaReadModelCatalog)"
+        :busy="loading"
+        :status="gashaReadModelStatus"
+        @retry="openGashaCatalog({preserveBrowse:true})"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -440,7 +445,7 @@
         @open-song="openSong"
       />
       <p v-if="!loading && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
-      <p v-if="!loading && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
+      <p v-if="!loading && gashaReadModelStatus && !['portal','gashas'].includes(view)" role="status">{{ gashaReadModelStatus }}</p>
       <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
       <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
       <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
@@ -1882,6 +1887,7 @@ function goHome() {
 }
 
 function navigateArchiveSection(section) {
+  if (section !== 'gashas') gashaReadModelStatus.value = ''
   if (section === 'portal') {
     loading.value = false
     return openArchivePortal()
@@ -2604,23 +2610,24 @@ function openArchiveStatus() {
   })
 }
 
-function openGashaCatalog() {
+function openGashaCatalog({preserveBrowse=false} = {}) {
   const request = ++pendingGashaNavigation
   navigation.invalidate()
   const revision = navigation.getRevision()
-  gashaReadModelStatus.value = '正在读取卡池目录…'
   loading.value = true
-  return prepareArchivePage('gashas', loadGashaCatalog()).then(() => {
+  const pending = prepareArchivePage('gashas', loadGashaCatalog())
+  gashaReadModelStatus.value = '正在读取卡池目录…'
+  return pending.then(() => {
     if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
     gashaReadModelStatus.value = ''
-    if (view.value !== 'portal') detailSourceRoute.value = ''
+    if (!preserveBrowse && view.value !== 'portal') detailSourceRoute.value = ''
     gashaParentView.value = ''
-    filterQuery.value = ''
+    if (!preserveBrowse) filterQuery.value = ''
     currentCategoryId.value = ''
     currentCharacterId.value = ''
     currentCardId.value = ''
     currentGashaId.value = ''
-    currentGashaCategory.value = 'all'
+    if (!preserveBrowse) currentGashaCategory.value = 'all'
     commitView('gashas')
   }).catch(error => {
     if (request !== pendingGashaNavigation || revision !== navigation.getRevision()) return
@@ -4565,7 +4572,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
           if (!intent.isCurrent() || request !== restoreRequest) return
           console.error('[GashaReadModel] Failed to restore gasha route:', error)
           gashaReadModelStatus.value = '卡池资料暂时无法读取，请稍后重试。'
-          route = { view: 'gashas' }
+          route = { ...route, view: 'gashas', gasha: '' }
         }
       }
       if (route.view === 'cards' || route.view === 'card_detail' ||

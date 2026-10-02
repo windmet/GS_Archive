@@ -1,40 +1,41 @@
 <template>
-  <section class="gasha-catalog" data-archive-scroll-container>
+  <section class="gasha-catalog" data-archive-scroll-container :aria-busy="busy">
     <div class="catalog-summary">
       <div>
-        <strong>{{ totalGashas }}</strong>
+        <strong>{{ loaded ? totalGashas : '—' }}</strong>
         <span>卡池记录</span>
       </div>
       <div>
-        <strong>{{ announcementCount }}</strong>
+        <strong>{{ loaded ? announcementCount : '—' }}</strong>
         <span>公告记录</span>
       </div>
       <div>
-        <strong>{{ pickupCount }}</strong>
+        <strong>{{ loaded ? pickupCount : '—' }}</strong>
         <span>新卡关联</span>
       </div>
-      <div><strong>{{ supplementCount }}</strong><span>道具补录</span></div>
+      <div><strong>{{ loaded ? supplementCount : '—' }}</strong><span>道具补录</span></div>
     </div>
 
     <div class="catalog-filter">
-      <div class="category-tabs" role="tablist" aria-label="卡池类型">
+      <div class="category-tabs" role="group" aria-label="卡池类型">
         <button
           v-for="option in categoryOptions"
           :key="option.value"
           :class="{ active: category === option.value }"
           type="button"
-          role="tab"
-          :aria-selected="category === option.value"
+          :aria-pressed="category === option.value"
           @click="emit('update:category', option.value)"
         >
           <span>{{ option.label }}</span>
           <small>{{ option.count }}</small>
         </button>
       </div>
-      <span class="result-count">{{ gashas.length }} / {{ totalGashas }}</span>
+      <span class="result-count">{{ loaded ? `${gashas.length} / ${totalGashas}` : '结果数量尚未读取' }}</span>
     </div>
 
-    <div class="gasha-grid">
+    <p v-if="status || !loaded" class="catalog-status" role="status">{{ status || '正在读取卡池目录…' }}<button v-if="!loaded && !busy" type="button" @click="emit('retry')">重试卡池目录</button></p>
+    <p v-if="loaded && !gashas.length" class="catalog-status" role="status">{{ totalGashas ? '没有匹配的卡池，请调整搜索或类型。' : '尚未收录卡池资料。' }}</p>
+    <div v-if="loaded" class="gasha-grid">
       <button
         v-for="gasha in gashas"
         :key="gasha.id"
@@ -78,8 +79,11 @@ const props = defineProps({
   announcementCount: { type: Number, default: 0 },
   pickupCount: { type: Number, default: 0 },
   supplementCount: { type: Number, default: 0 },
+  loaded: Boolean,
+  busy: Boolean,
+  status: { type: String, default: '' },
 })
-const emit = defineEmits(['select', 'update:category'])
+const emit = defineEmits(['select', 'update:category', 'retry'])
 
 const CATEGORY_LABELS = {
   standard_pickup: '通常招募',
@@ -105,35 +109,47 @@ function formatDate(timestamp) {
 </script>
 
 <style scoped>
-.gasha-catalog { height: 100%; overflow-y: auto; background: #f6f8f9; }
-.catalog-summary { display: flex; gap: 28px; padding: 16px 20px; border-bottom: 1px solid #e3e8eb; background: #fff; }
+.gasha-catalog { height: 100%; overflow-y: auto; background: #f6f8f9; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); }
+.gasha-catalog button { font: inherit; }
+.catalog-summary { display: flex; flex-wrap: wrap; gap: var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 1px solid #e3e8eb; background: #fff; }
 .catalog-summary div { display: flex; align-items: baseline; gap: 7px; }
-.catalog-summary strong { color: #1b7772; font-size: 1rem; font-variant-numeric: tabular-nums; }
-.catalog-summary span { color: #758088; font-size: 0.68rem; }
+.catalog-summary strong { color: #1b7772; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); font-variant-numeric: tabular-nums; }
+.catalog-summary span { color: #758088; font-size: var(--gs-text-meta); }
 .catalog-filter { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #e3e8eb; background: #fff; }
 .category-tabs { display: flex; align-items: center; gap: 3px; min-width: 0; overflow-x: auto; }
-.category-tabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 31px; padding: 5px 9px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #657179; cursor: pointer; font-size: 0.64rem; white-space: nowrap; }
-.category-tabs button:hover { background: #f3f6f7; color: #34454d; }
-.category-tabs button.active { border-color: #aedbd7; background: #eaf7f5; color: #176f69; font-weight: 700; }
-.category-tabs small { color: #929ca1; font-size: 0.55rem; font-variant-numeric: tabular-nums; }
+.category-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid transparent; border-radius: var(--gs-radius-control); background: transparent; color: #657179; cursor: pointer; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
+.category-tabs button.active { border-color: #aedbd7; background: #eaf7f5; color: #176f69; }
+.category-tabs small { color: #929ca1; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); font-variant-numeric: tabular-nums; }
 .category-tabs button.active small { color: #4d8d88; }
-.result-count { flex: 0 0 auto; color: #879299; font-size: 0.61rem; font-variant-numeric: tabular-nums; }
+.result-count { flex: 0 0 auto; color: #879299; font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.catalog-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); margin: 0; padding: var(--gs-space-5) var(--gs-space-6); color: #60758a; font-size: var(--gs-text-body); line-height: 1.6; }
+.catalog-status button { min-height: var(--gs-control-normal); padding: var(--gs-space-2) var(--gs-space-4); border: 1px solid #aedbd7; border-radius: var(--gs-radius-control); background: #fff; color: #176f69; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .gasha-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; padding: 16px 20px 28px; }
 .gasha-item { display: grid; grid-template-columns: 178px minmax(0, 1fr) 20px; align-items: center; gap: 13px; min-width: 0; min-height: 116px; padding: 10px; border: 1px solid #e0e5e8; border-radius: 7px; background: #fff; color: #27343b; cursor: pointer; text-align: left; transition: border-color 0.15s, box-shadow 0.15s; }
-.gasha-item:hover { border-color: #85cbc6; box-shadow: 0 3px 12px rgba(35, 73, 78, 0.08); }
+.gasha-catalog button:focus-visible { outline: var(--gs-focus-ring) solid #00a876; outline-offset: var(--gs-focus-offset); }
+/* The horizontal rail clips an outer ring; keep this control's ring inside. */
+.category-tabs button:focus-visible { outline-offset: calc(-1 * var(--gs-focus-ring)); }
+.category-tabs button:active,.gasha-item:active,.catalog-status button:active { background: #eaf7f5; }
+@media (hover:hover) and (pointer:fine) {
+  .category-tabs button:not(.active):hover:not(:active) { background: #f3f6f7; color: #34454d; }
+  .gasha-item:hover { border-color: #85cbc6; }
+}
 .gasha-item > svg { color: #8a969c; }
 .banner-frame { display: block; width: 178px; aspect-ratio: 940 / 510; overflow: hidden; border: 1px solid #e6e8e9; border-radius: 4px; background: #eef1f2; }
 .banner-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.ticket-banner-label { display:grid;height:100%;place-items:center;color:#607e80;font-size:13px; }
+.ticket-banner-label { display:grid;height:100%;place-items:center;color:#607e80;font-size:var(--gs-text-ui); }
 .gasha-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .gasha-heading { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.gasha-heading strong { overflow: hidden; font-size: 0.78rem; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
+.gasha-heading strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
 .gasha-badges { display: flex; flex-wrap: wrap; gap: 4px; }
-.gasha-badges small { padding: 2px 5px; border-radius: 3px; font-size: 0.56rem; }
+.gasha-badges small { padding: 2px 5px; border-radius: 3px; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
 .type-badge { background: #e7f6f4; color: #187b74; }
 .reprint-badge { background: #fff0db; color: #965f13; }
-.gasha-meta { display: flex; flex-wrap: wrap; gap: 5px 10px; color: #7a858c; font-size: 0.62rem; }
-.gasha-meta code { color: #5d6a72; font-size: 0.62rem; }
+.gasha-meta { display: flex; flex-wrap: wrap; gap: 5px 10px; color: #7a858c; font-size: var(--gs-text-meta); }
+.gasha-meta code { color: #5d6a72; font-size: var(--gs-text-meta); }
+@media (max-width: 760px),(pointer:coarse) {
+  .category-tabs button,.catalog-status button { min-width: var(--gs-control-touch); min-height: var(--gs-control-touch); }
+}
 @media (max-width: 700px) {
   .catalog-summary { gap: 16px; padding: 12px; }
   .catalog-filter { align-items: flex-start; padding: 8px 10px; }
