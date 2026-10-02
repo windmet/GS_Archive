@@ -18,27 +18,31 @@
       </nav>
       <nav v-if="kind==='items'" class="collection-chips attributes" aria-label="道具属性"><button v-for="entry in attributes" :key="entry.id" type="button" :class="entry.id" :aria-pressed="attribute===entry.id" @click="attribute=entry.id">{{ entry.label }}</button></nav>
       <div class="collection-cards" :class="{'is-honors':kind==='honors'}">
-        <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :title="row.nameJa" :aria-pressed="detailOpen&&String(row.id)===selectedId" @click="select(row)">
+        <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :aria-describedby="tooltipRow===row?tooltipId:undefined" :aria-pressed="detailOpen&&String(row.id)===selectedId" @pointerenter="showTooltip(row,$event)" @pointerleave="hideTooltip" @focus="showTooltip(row,$event)" @blur="hideTooltip" @keydown.esc="hideTooltip" @click="select(row)">
           <span v-if="kind==='items' && collectionItemVariant(row.nameJa)" class="collection-variant">{{ collectionItemVariant(row.nameJa) }}</span>
           <span class="collection-card-art"><img v-if="row.image?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="kind==='honors'?Medal:Box" v-else :size="25" /></span>
           <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small>{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ honorIdol(row)?.name || honorLabels[honorGroup(row)] }}</span></template></span>
-          <span v-if="kind==='items'" class="collection-tooltip" role="tooltip"><strong>{{ entryName(row) }}</strong><span v-if="entryName(row)!==row.nameJa" lang="ja" class="collection-original">{{ row.nameJa }}</span><span>{{ summary(row)?.description?archiveText('item',summary(row).description,'description'):itemBrowseGroup(row.itemType).label }}</span><small>编号 {{ row.id }} · 点击查看来源</small></span>
+
         </button>
       </div>
       <p v-if="!filtered.length">没有匹配的藏品。</p>
       <nav v-if="pages>1" class="domain-pagination" aria-label="目录分页"><button type="button" :disabled="page===0" @click="page--">上一页</button><span>{{ page+1 }} / {{ pages }}</span><button type="button" :disabled="page+1>=pages" @click="page++">下一页</button></nav>
     </section>
+    <ArchiveFloatingTooltip :anchor="tooltipAnchor" :id="tooltipId" @dismiss="hideTooltip">
+      <template v-if="tooltipRow"><strong>{{ entryName(tooltipRow) }}</strong><span v-if="entryName(tooltipRow)!==tooltipRow.nameJa" lang="ja" class="collection-original">{{ tooltipRow.nameJa }}</span><span>{{ summary(tooltipRow)?.description?archiveText('item',summary(tooltipRow).description,'description'):itemBrowseGroup(tooltipRow.itemType).label }}</span><small>编号 {{ tooltipRow.id }} · 点击查看来源</small></template>
+    </ArchiveFloatingTooltip>
     <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="detailOpen=false" @retry="load" @open-event="emit('open-event',$event)" />
   </article>
 </template>
 <script setup>
-import {computed,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
+import {computed,getCurrentInstance,nextTick,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
 import {Box,Medal} from '@lucide/vue'
 import {collectionItemVariant} from '../../presentation/CollectionItemVariant.mjs'
 import {itemBrowseGroups,itemBrowseGroup} from './DomainPresentation.mjs'
 import {collectionIdols,collectionSummary,honorIdol,honorGroup,honorSourceLabel,itemAttribute} from '../../presentation/CollectionBrowse.js'
 import {UNIT_CODE_TO_NAME} from '../../utils/UnitNameMap.js'
 import CollectionDetailPanel from './CollectionDetailPanel.vue'
+import ArchiveFloatingTooltip from './ArchiveFloatingTooltip.vue'
 import {archiveText,archiveSearchText} from './useArchiveCollectionText.js'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {createCollectionCatalogSession} from '../../../readmodels/runtime/CollectionCatalogSession.mjs'
@@ -49,6 +53,16 @@ const emit=defineEmits(['query','entity','open-event'])
 const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=ref(props.entity.startsWith('honor:')?'honors':'items'),rows=shallowRef([]),detail=shallowRef(null),catalogBusy=ref(false),detailBusy=ref(false),selectedId=ref(''),error=ref(''),errorScope=ref('')
 const page=ref(0),category=ref(''),idol=ref(''),unit=ref(''),attribute=ref(''),detailOpen=ref(Boolean(props.entity)),failedThumbnails=shallowRef(new Set())
+const tooltipRow=shallowRef(null),tooltipAnchor=shallowRef(null),tooltipId=`collection-tooltip-${getCurrentInstance().uid}`
+function hideTooltip(){tooltipRow.value=null;tooltipAnchor.value=null}
+async function showTooltip(row,event){
+ const anchor=event.currentTarget
+ if(kind.value!=='items'||detailOpen.value)return
+ if(event.type==='pointerenter'&&(event.pointerType==='touch'||!matchMedia('(hover:hover) and (pointer:fine)').matches))return
+ if(event.type==='focus'){await nextTick();if(document.activeElement!==anchor||!anchor.matches(':focus-visible')||detailOpen.value)return}
+ tooltipRow.value=row;tooltipAnchor.value=anchor
+}
+watch(()=>[props.query,category.value,idol.value,unit.value,attribute.value,page.value,kind.value,detailOpen.value],hideTooltip)
 const honorLabels={idol:'偶像称号',event:'活动称号',achievement:'常规成就',other:'其他称号'}
 const groups=computed(()=>kind.value==='items'?itemBrowseGroups:Object.entries(honorLabels).map(([key,label])=>({key,label})))
 const units=Object.entries(UNIT_CODE_TO_NAME).map(([id,name])=>({id,name}))
@@ -75,7 +89,7 @@ async function load(){
  if(pendingKindSelection===requestedKind){pendingKindSelection='';skipAutoOpenKey=value.entry.key;emit('entity',value.entry.key)}
  if(detailOpen.value){const position=filtered.value.findIndex(row=>String(row.id)===String(value.entry.id));if(position>=0)page.value=Math.floor(position/perPage.value)}
 }
-function select(row){detailOpen.value=true;const key=`${kind.value==='honors'?'honor':'item'}:${row.id}`;if(key===props.entity)void load();else emit('entity',key)}
+function select(row){hideTooltip();detailOpen.value=true;const key=`${kind.value==='honors'?'honor':'item'}:${row.id}`;if(key===props.entity)void load();else emit('entity',key)}
 function resetFilters(){category.value='';idol.value='';unit.value='';attribute.value='';page.value=0}
 function switchKind(value){if(kind.value===value)return;emit('query','');pendingKindSelection=value;detailOpen.value=false;kind.value=value;resetFilters();void load()}
 watch(()=>props.entity,()=>{if(props.entity){if(props.entity!==skipAutoOpenKey)detailOpen.value=true;skipAutoOpenKey='';const next=props.entity.startsWith('honor:')?'honors':'items';if(next!==kind.value)resetFilters();kind.value=next}void load()},{immediate:true})
