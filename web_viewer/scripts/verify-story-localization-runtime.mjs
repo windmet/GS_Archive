@@ -22,6 +22,7 @@ import { resolveText } from '../src/utils/TextHelper.js'
 import { playbackPreferencesForReadingMode } from '../src/core/ReaderPlaybackPreferences.js'
 import { playerLanguageStatus } from '../src/presentation/PlayerLanguageStatus.js'
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
+import { verifyChatStampIdentity } from './verify-player-communication-ui.mjs'
 
 const overlayPath = new URL('../fixtures/localization/scenario-overlay-zh-CN.json', import.meta.url)
 const overlay = JSON.parse(await readFile(overlayPath, 'utf8'))
@@ -446,7 +447,9 @@ for (const mode of ['original','translation','bilingual']) {
   assert.equal(playerLanguageStatus(saved,null).compact.includes('*'),false)
 }
 
-console.log('Story localization runtime verification passed')
+await verifyChatStampIdentity()
+
+console.log('Story localization runtime verification passed; actual 001tom text/stamp identity and participant title covered')
 console.log(`  fixture entries: ${Object.keys(overlay.entries).length}`)
 console.log('  repository: ready/missing/invalid/abort/cache covered')
 console.log('  resolver: original/translation/bilingual/stale/legacy covered')

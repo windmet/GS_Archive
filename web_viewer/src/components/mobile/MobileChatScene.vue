@@ -77,7 +77,7 @@ function stepToMessage(step) {
   const stamp = step.stamp || null
   const rawSpeaker = d.speaker || ''
   const display = localization?.resolveDialogue(d) || { text: resolveTextContent(d), view: null }
-  let speaker = cleanSpeaker(stamp?.speaker || display?.speaker || rawSpeaker)
+  let speaker = cleanSpeaker(display?.speaker || stamp?.speaker || rawSpeaker)
   const sourceSpeaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
   const sourceCharaId = step.presentation_context?.primary_chara_id
     || step.presentation_context?.primaryCharaId

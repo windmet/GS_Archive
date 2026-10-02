@@ -154,7 +154,7 @@ assert.match(viewer, /--player-content-top:/, 'mobile scenes must reserve the gl
 assert.match(viewer, /--player-content-bottom:/, 'mobile scenes must reserve the global control dock safe region')
 assert.match(viewer, /communicationCompleted/, 'communication stories need a non-blocking completion state')
 assert.match(viewer, /episodeFinished && !communicationCompleted/, 'blocking completion must remain limited to non-communication stories')
-assert.match(viewer, /:next-disabled="episodeFinished"/, 'completed communication stories must keep the dock while disabling forward advance')
+assert.match(viewer, /:next-disabled="episodeFinished \|\| currentStep\.type === 'choice'"/, 'completion and waiting for a reply must disable forward advance')
 assert.match(dock, /:disabled="nextDisabled"/, 'the shared player dock must expose a disabled completed-state advance control')
 assert.match(zhLocale, /player\.complete\.communication/, 'Chinese UI locale must name non-blocking communication completion')
 assert.match(jaLocale, /player\.complete\.communication/, 'Japanese UI locale must name non-blocking communication completion')

@@ -39,6 +39,8 @@ Product Taste Review 只读提出候选，Browser 确认后再实现。表中“
 | UI-14 / P2 / Browser 840×820 | 活动 Reader 的深夜主题出现亮白活动条，父文字色仍为亮色 | 第七批：背景、边框和链接复用既有 Reader 主题变量 | 阅读主题应覆盖正文上方的活动上下文，不引入新配色 |
 | UI-15 / P2 / Browser AX + 源码 | 故事浏览方式标为 tablist，但按钮没有 tab 或选择状态语义 | 第七批：沿用按钮操作，改为 group 并绑定 aria-pressed | 辅助技术能知道当前模式；原生键盘操作无需新增 tab 模型 |
 | UI-16 / P2 / 源码风险 | 主线目录卡 hover 位移 -1px，活动故事卡位移 -2px；主线无 reduce 分支，触屏 hover 未门控 | 第七批：删除两处位移和不再使用的 transform transition，保留边框/阴影与既有 reduce | 高频资料目录无需移动卡片；触屏粘滞未实测，不声称已复现真机故障 |
+| UI-17 / P2 / Browser 390×844 | 通信等待回复时“下一段”仍可按，实际不推进 | 第八批：等待 choice 时沿用 dock 的 disabled 状态；回复后恢复 | 控件状态应解释下一步，回看仍可用 |
+| UI-18 / P2 / Browser 390×844 | 中文正文的文字消息使用译名，末尾贴图使用原名，标题把同一人列成两名参与者 | 第八批：贴图显示姓名优先使用已有 localization 结果，来源身份继续沿用 stamp/raw | 文字和贴图属于同一人，不改头像、贴图或台词 |
 
 ## 首批验收
 
@@ -71,7 +73,7 @@ Product Taste Review 只读提出候选，Browser 确认后再实现。表中“
 | 偶像目录 | 1440×900、320×740 | 49 人/16 组合、全员、两语言、0/1/49、长名与键盘焦点 | 全偶像和组合详情、真机键盘 |
 | 卡池目录与代表详情 | 1440×900、320×740 | 82 条目录、全员系列 2 条、PRS 49 张推定关联详情 | 全卡池/公告/道具路径及关联来源复核 |
 | 活动目录与代表详情 | 1440×900、320×740 | 59 条、白色情人节 2 条、2023 详情 0 张报酬卡/51 条奖励 | 奖励全部分页、全部活动来源 |
-| 互动入口与通信目录 | 1440×900、320×740 | 入口选偶像、不保存快捷、个人/电话/随机分类、中日文姓名切换 | 通信 Player、随机话题预览、全偶像/Connect 路径 |
+| 互动入口与通信目录、代表 Player | 1440×900、390×844、320×740 | 入口选偶像、不保存快捷、个人/电话/随机分类、中日文姓名、个人通信回复→贴图→完成→同偶像目录返回 | 电话/组合 Player、随机话题预览、全偶像/Connect、完整语音和真机 |
 | 藏品目录与详情弹窗 | 1440×900、320×740 | 道具、1,613 称号、空结果、偶像筛选 2 条、长姓名称号弹窗 | 全藏品详情、来源证明与冷加载错误恢复 |
 | 摄影资料 | 1440×900、390×844、320×740 | 133 个地点、spots:2 详情/刷新定位、表情/动作换偶像与刷新分类、49 人中日姓名、空结果搜索 | 其他摄影分类、编辑器与导出；手机嵌套滚动待真机评价 |
 | 实验室入口 | 1440×900、320×740 | 三项入口与用途说明、删副标题后复查 | 编辑器/谱面运行；舞台归另一窗口 |
@@ -161,6 +163,19 @@ Product Taste Review 只读提出候选，Browser 确认后再实现。表中“
 - 空制作人名称在中文正文仍显示 `プロデューサー`，与既有 resolver、来源回归及 `GS_PLAYER_QA_REPAIR_20260930.md` 的约定一致。本轮不扩写未审文本翻译；自定义制作人名机制保留。
 
 证据：`reader-context-themes.json`、`continuation-reader-event-dark-final-840.jpg`、`continuation-story-mode-after-320.jpg`、Player/菜单短程截图及既有 Reader 查找截图，均在同一小型证据目录。
+
+## 第八批：通信回复等待与贴图姓名
+
+第七批已提交并推送为 `9c463191`。本批输入 HEAD 为该提交，仅修改 StoryViewer 的 dock disabled 条件、MobileChatScene 的显示姓名优先级及对应回归；线程来源与参与者解析没有改动。
+
+- Browser 实际个人通信 `001tom_301_2_3_001_01_09_b.json`：9/11 回复选项出现时 Next disabled、Previous enabled；选择“頑張ってください！”后 10/11 可继续，11/11 出现原贴图并自动进入非阻塞完成状态，可继续回看/返回同一 `001tom` 通信目录。
+- 中文正文中，文字与贴图都显示“天濑冬马”，标题仅一名参与者；切换双语及日文后都使用原姓名，原文正文偏好已恢复。没有把未翻译台词补成中文。
+- `node scripts/verify-player-communication-ui.mjs`：真实 dock 模板和实际子组件在 Vue 内存 renderer 中验证 choice/回复/贴图/完成；真实个人通信 JSON 和实体词典验证两语言的参与者去重、头像/贴图/source 不变。
+- `node scripts/verify-story-localization-runtime.mjs`、`node scripts/verify-story-interaction.mjs` 通过。已有 localization 回归也调用新增的真实贴图身份场景。
+- 旧 `verify-story-player-ui-pr2.mjs` 同步 Next 静态断言，但整份脚本在未修改的 line 93 先失败：Jupiter fixture 的 `unitCode=null`，旧断言预期 `01jup`。隔离导入 `9c463191` 的 resolver/两份名称映射并执行该提交的相同 setup/断言，也得到同一失败；解析源码和失败断言均未变，现有个人 talk 分支明确清空 unitCode。本批没有删除或放宽该断言，新的受影响行为回归通过，旧脚本整体验收保持失败边界。compiled fixture 被 Git 忽略，不能证明历史字节；两次隔离统一使用当前 fixture，SHA-256 `c21f7d720fba981be296b76cae6678feee388ce62c99beb2ba8ed4364883af6f`。
+- 第八/九批共享 `npm run build:check`，21.09s，固定 `.analysis/build-check`、无 public 复制。编译输入包含另一窗口的 chibi 未提交工作，本轮不验收舞台。预览固定代码时间 `2026-10-02T19:23:35.506Z`，原 public 与已验证 read-model 映射不变。
+
+证据：`communication-choice-after-390.jpg`、`communication-complete-after-390.jpg`、`batch8-9-build.log`。截图复核另发现进度条与聊天标题重叠，单列下一批处理，不混入本批行为修正。
 
 ## 下一轮验收顺序
 

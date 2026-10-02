@@ -122,7 +122,7 @@
       :auto-enabled="autoEnabled"
       :skip-enabled="skipEnabled"
       :previous-disabled="isFirstStep"
-      :next-disabled="episodeFinished"
+      :next-disabled="episodeFinished || currentStep.type === 'choice'"
       @previous="goPrev"
       @auto="toggleAuto"
       @skip="toggleSkip"
