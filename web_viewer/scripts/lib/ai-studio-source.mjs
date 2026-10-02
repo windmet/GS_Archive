@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { createStoryTranslationDraft } from '../../src/localization/story/StoryTranslationDraft.js'
 import { identityIssues } from '../audit-reading-diagnostics.mjs'
+import {readingSourceByteVariants} from '../../shared/reading/ReadingSourceBytes.js'
 
 export const projectRoot = fileURLToPath(new URL('../../', import.meta.url))
 export const sha256 = value => `sha256:${createHash('sha256').update(value).digest('hex')}`
@@ -25,12 +26,12 @@ export async function loadStudioIndexes() {
   return { reading, publication, releaseCache: new Map() }
 }
 
-async function releaseRawHash(entry, indexes, compiledHash) {
+async function releaseRawHash(entry, indexes, compiledHashes) {
   const owner = indexes.publication.by_logical_id[entry.logical_id]
     || indexes.publication.by_logical_id[`story:${entry.scenario_id}`]
   assert(owner, `No publication provenance: ${entry.document_id}`)
   const artifactPath = `web_viewer/public/data/compiled/${entry.source_file}`
-  assert(owner.artifacts.some(item => item.path === artifactPath && `sha256:${item.sha256}` === compiledHash),
+  assert(owner.artifacts.some(item => item.path === artifactPath && compiledHashes.includes(`sha256:${item.sha256}`)),
     `Publication artifact drift: ${entry.document_id}`)
   let release = indexes.releaseCache.get(owner.release_id)
   if (!release) {
@@ -51,10 +52,11 @@ export async function loadStudioDocument(entry, indexes) {
   assert.equal(doc.document_id, entry.document_id)
   assert.equal(doc.logical_id, entry.logical_id)
   const compiledBytes = await fs.readFile(safeFile('public/data/compiled', entry.source_file))
-  const compiledHash = sha256(compiledBytes)
-  assert.equal(compiledHash, entry.source_sha256, `Compiled source drift: ${entry.document_id}`)
+  const compiledHashes = readingSourceByteVariants(compiledBytes).map(sha256)
+  assert(compiledHashes.includes(entry.source_sha256), `Compiled source drift: ${entry.document_id}`)
+  const compiledHash = entry.source_sha256 // Retain the original Studio receipt binding.
   const rawHashSource = doc.source?.raw_hash ? 'reader-source' : 'publication-release'
-  const rawHash = doc.source?.raw_hash || await releaseRawHash(entry, indexes, compiledHash)
+  const rawHash = doc.source?.raw_hash || await releaseRawHash(entry, indexes, compiledHashes)
   assert(HASH.test(rawHash), `Invalid RAW hash: ${entry.document_id}`)
   const scenarioId = doc.text_catalog_id || doc.scenario_id
   assert(typeof scenarioId === 'string' && scenarioId, `No translation catalogue: ${entry.document_id}`)

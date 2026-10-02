@@ -1,3 +1,4 @@
+import {readingSourceByteVariants} from '../../shared/reading/ReadingSourceBytes.js'
 // Reading indices are array positions; source step IDs are identity checks only.
 export function readingPlaybackTarget(document, rowId, revision, entry, { fullDocument = false } = {}) {
   if (!entry || document?.document_id !== entry.document_id || revision !== entry.sha256) throw Error('阅读版本已变化，请重新打开本篇正文后再演出。')
@@ -21,8 +22,12 @@ export function readingPlaybackTarget(document, rowId, revision, entry, { fullDo
     endStep: range.end_step_index + 1, initialStep: range.target_step_index + 1,
     async readScenario(response) {
       const bytes = await response.arrayBuffer()
-      const digest = `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')}`
-      if (digest !== document.source.sha256) throw Error('演出来源已更新，与当前正文不一致。请刷新正文后重试。')
+      let matches = false
+      for (const candidate of readingSourceByteVariants(bytes)) {
+        const digest = `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', candidate)), b => b.toString(16).padStart(2, '0')).join('')}`
+        if (digest === document.source.sha256) { matches = true; break }
+      }
+      if (!matches) throw Error('演出来源已更新，与当前正文不一致。请刷新正文后重试。')
       const scenario = JSON.parse(new TextDecoder().decode(bytes))
       const step = row && scenario.steps?.[row.anchor.step_index]
       if (scenario.steps?.length !== document.source.step_count || (!fullDocument && (step?.step_id !== row.anchor.step_id || step?.type === 'synopsis'))) {

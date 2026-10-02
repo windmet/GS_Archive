@@ -50,6 +50,19 @@ const full = readingPlaybackTarget(document, '', entry.sha256, entry, { fullDocu
 assert.equal(full.initialStep, 1, 'full playback includes opening steps before the first dialogue')
 assert.equal(full.endStep, document.source.step_count)
 await full.readScenario(new Response(bytes))
+// A historical CRLF digest must load the exact LF publication without accepting
+// changed source values or unrelated whitespace. Receipts remain untouched.
+const lfSource=Buffer.from(JSON.stringify(JSON.parse(bytes),null,2)+'\n')
+const crlfSource=Buffer.from(lfSource.toString('utf8').replace(/\n/g,'\r\n'))
+for(const bound of [lfSource,crlfSource]) {
+  const doc=structuredClone(document)
+  doc.source.sha256=`sha256:${createHash('sha256').update(bound).digest('hex')}`
+  const alternate=readingPlaybackTarget(doc,'',entry.sha256,entry,{fullDocument:true})
+  await alternate.readScenario(new Response(lfSource))
+  await alternate.readScenario(new Response(crlfSource))
+  await assert.rejects(alternate.readScenario(new Response(lfSource.toString('utf8').replace('steps','wrong'))), /来源已更新/)
+  await assert.rejects(alternate.readScenario(new Response(' '+lfSource.toString('utf8'))), /来源已更新/)
+}
 await assert.rejects(full.readScenario(new Response('{}')), /来源已更新/)
 assert.throws(() => readingPlaybackTarget(document, row.anchor.row_id, 'old', entry), /版本已变化/)
 assert.throws(() => readingPlaybackTarget(document, 'missing-row', entry.sha256, entry), /不能定位/)
