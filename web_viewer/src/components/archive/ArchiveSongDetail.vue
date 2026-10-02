@@ -3,83 +3,104 @@
     <header class="song-detail-hero">
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
-        <span>SONG ARCHIVE</span>
         <h2>{{ song.title }}</h2>
         <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
         <button v-if="song.parentId" class="song-parent-link" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
         <div class="song-detail-badges">
+          <span class="badge badge-layered">属性 · {{ song.attributeLabel || '待确认' }}</span>
           <span v-if="song.special" class="badge badge-special">特殊版本</span>
           <span class="badge badge-layered">{{ song.formLabel }}</span>
         </div>
       </div>
       <dl class="song-detail-stats" aria-label="歌曲档案统计">
-        <div><dt>试听</dt><dd>{{ song.playbackLabel }}</dd></div>
+        <div><dt>试听</dt><dd>{{ song.playbackLabel.replace(' · 实验混音', '') }}</dd></div>
         <div><dt>音频形态</dt><dd>{{ song.formLabel }}</dd></div>
-        <div><dt>开放时间</dt><dd>{{ song.openDate }}</dd></div>
+        <div><dt>首次实装</dt><dd>{{ song.gameplay?.history.firstImplementedOn || song.openDate }}</dd></div>
       </dl>
     </header>
     <div class="song-detail-body">
-      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" :song="song" :audio-experiment="song.playback.experiment" @open-stage="emit('open-stage', $event)" />
-      <ArchiveSongSinglePlayer v-else-if="song.playback.track" :song="song" :track="song.playback.track" />
+      <div class="song-listen-column">
+      <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" @open-stage="openStage" />
+      <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" />
+      <button v-if="song.stageCandidate" class="stage-open-button" type="button" @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : 'Chibi 舞台演出' }} →</button>
+      </div>
+      <div class="song-record-column">
+      <section v-if="song.gameplay" class="song-block song-gameplay">
+        <div class="song-block-heading"><h3>难度与解锁</h3></div>
+        <p class="song-block-note">{{ song.gameplay.releaseCondition.label }}</p>
+        <details class="song-history"><summary>实装与解锁历史</summary>
+          <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">历史来源</a></p>
+          <p class="song-block-note">{{ song.gameplay.history.historicalUnlock }}</p>
+          <p v-if="song.gameplay.history.permanentOn" class="song-block-note">加入普通歌曲：{{ song.gameplay.history.permanentOn }}</p>
+          <p v-else-if="song.gameplay.history.permanentDateStatus === 'pending'" class="song-block-note">加入普通歌曲日期待核实。</p>
+          <p v-if="song.gameplay.wikiLevelStatus === 'resolved_song_page'" class="song-block-note">难度按本地主数据与单曲页核对。</p>
+          <p v-else-if="song.gameplay.wikiLevelStatus === 'conflict_pending'" class="song-block-note">Wiki 与主数据难度不一致，暂按主数据展示；差异待核实。</p>
+        </details>
+        <table class="song-difficulties"><caption>谱面难度与最大 Combo</caption><thead><tr><th scope="col">难度</th><th scope="col">等级</th><th scope="col">最大 Combo</th></tr></thead><tbody><tr v-for="d in song.gameplay.difficulties" :key="d.id"><th scope="row">{{ d.label }}</th><td>{{ d.levelLabel }}</td><td>{{ d.maxCombo }}</td></tr></tbody></table>
+        <button class="stage-open-button" type="button" @click="openChart">打开谱面预览 ↗</button>
+      </section>
       <section class="song-block">
-        <div class="song-block-heading"><span>PERFORMERS</span><h3>演唱者</h3></div>
+        <div class="song-block-heading"><h3>演唱者</h3></div>
         <div v-if="song.unit" class="song-subsection">
           <h4>演唱组合</h4>
           <ul class="chip-list"><li><button :disabled="!song.unit.actionable" :data-archive-focus-id="`song-unit:${song.unit.id}`" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
         </div>
         <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
-        <div v-if="song.performers.length" class="song-subsection">
-          <h4>演唱成员</h4><p v-if="song.performerNote" class="song-block-note">{{ song.performerNote }}</p>
+        <details v-if="song.performers.length > 5" class="song-subsection" @toggle="performersOpen = $event.target.open"><summary>演唱成员（{{ song.performers.length }}）</summary><ul v-if="performersOpen" class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul></details>
+        <div v-else-if="song.performers.length" class="song-subsection">
+          <h4>演唱成员</h4><p v-if="song.performerNote && song.performerNote !== '按已确认的演唱组合列出成员。'" class="song-block-note">{{ song.performerNote }}</p>
           <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <section v-if="song.stageCandidate" class="song-block song-stage-entry">
-        <div class="song-block-heading"><span>STAGE</span><h3>{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '舞台小人' }}</h3></div>
-        <p class="song-block-note">{{ song.stageCandidate.stageKind === 'special_single' ? '特别版使用社长单人 2D 剪影素材；进入后才加载演出，且不会自动播放。' : '进入后才加载舞台资源，演出不会自动播放；不继承上方试听中的演唱选择。' }}</p>
-        <button class="stage-open-button" type="button" @click="emit('open-stage', { songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '打开社长特别演出' : '打开默认舞台编成' }}</button>
-      </section>
-      <section class="song-block">
-        <div class="song-block-heading"><span>AUDIO</span><h3>收录音频</h3></div>
-        <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel }}。</p>
+      <details class="song-block" @toggle="audioArchiveOpen = $event.target.open">
+        <summary>声部与音频归档</summary>
+        <div v-if="audioArchiveOpen">
+        <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel.replace(' · 实验混音', '') }}。</p>
         <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
           <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
           <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="`audio-unit:${entry.id}`" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
           <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="entry.reference" :show-image="false" @open="emit('open-idol', $event)" /></li></ul>
         </div>
-      </section>
+        </div></details>
       <section v-if="song.variants.length" class="song-block">
-        <div class="song-block-heading"><span>VERSIONS</span><h3>关联演出版本</h3></div>
+        <div class="song-block-heading"><h3>关联演出版本</h3></div>
         <div class="variant-list"><button v-for="variant in song.variants" :key="variant.id" @click="emit('open-song', variant.id)"><strong>{{ variant.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
       <section v-if="song.related.length" class="song-block">
-        <div class="song-block-heading"><span>RELATED ARCHIVE</span><h3>关联档案</h3></div>
+        <div class="song-block-heading"><h3>关联档案</h3></div>
         <div class="variant-list"><button v-for="(entry, index) in song.related" :key="index" @click="emit('open-related-story', entry.payload)"><strong>{{ entry.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
       <section v-if="song.movies.length" class="song-block">
-        <div class="song-block-heading"><span>MOVIES</span><h3>影像资料</h3></div>
+        <div class="song-block-heading"><h3>影像资料</h3></div>
         <ul class="movie-list"><li v-for="movie in song.movies" :key="movie.id"><strong>{{ movie.title }}</strong><span>{{ movie.status }}</span></li></ul>
       </section>
       <section v-if="song.links.length" class="song-block">
-        <div class="song-block-heading"><span>RELEASES</span><h3>专辑链接</h3></div>
+        <div class="song-block-heading"><h3>专辑链接</h3></div>
         <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
       </section>
       <section v-if="song.credits.length" class="song-block">
-        <div class="song-block-heading"><span>CREDITS</span><h3>制作信息</h3></div>
+        <div class="song-block-heading"><h3>制作信息</h3></div>
         <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
       </section>
       <ArchiveTechnicalDetails :key="song.id" :evidence="song.technicalEvidence" />
+      </div>
     </div>
   </section>
 </template>
 
 <script setup>
 import { ChevronRight, ExternalLink } from '@lucide/vue'
+import { ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
-defineProps({ song: { type: Object, required: true } })
-const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage'])
+defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] } })
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart'])
+const songPlayer = ref(null)
+const performersOpen = ref(false), audioArchiveOpen = ref(false)
+function openStage(target) { songPlayer.value?.pause(); emit('open-stage', target) }
+function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 </script>
 
 <style scoped>
@@ -130,6 +151,11 @@ const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-s
 }
 .song-block-heading span { color: #2bb3aa; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.05em; }
 .song-block-heading h3 { margin: 4px 0 0; font-size: 0.94rem; }
+.song-difficulties { width: 100%; margin-top: 12px; border-collapse: collapse; font-size: .78rem; }
+.song-difficulties caption { text-align: left; font-size: .75rem; color: #617380; margin-bottom: 8px; }
+.song-difficulties th, .song-difficulties td { text-align: left; padding: 10px; border-bottom: 1px solid #e0e9ed; }
+.song-difficulties thead { background: #f1f7f8; }
+.song-gameplay a { color: #137b75; }
 .song-block-note { margin: 8px 0 0; color: #7a858e; font-size: 0.72rem; }
 .stage-open-button { min-height: 44px; margin-top: 12px; padding: 0 18px; border: 0; border-radius: 22px; background: #168f87; color: #fff; font: inherit; font-size: .78rem; font-weight: 700; cursor: pointer; }
 .stage-open-button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
@@ -226,4 +252,20 @@ const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-s
 .chip-list button { min-height: 44px; }
 .song-block-note { margin-bottom: 10px; line-height: 1.6; }
 .song-detail-stats dd { font-size: .82rem; line-height: 1.5; }
+</style>
+
+<style scoped>
+.song-detail-body { display: grid; grid-template-columns: minmax(300px,.8fr) minmax(0,1.2fr); align-items: start; gap: 20px; }
+.song-listen-column { position: sticky; top: 0; min-width: 0; }
+.song-record-column { display: grid; gap: 16px; min-width: 0; }
+summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #285969; }
+summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::after { content: '⌃'; }
+@media(max-width:1100px) { .song-detail-body { grid-template-columns: 1fr; } .song-listen-column { position: static; } }
+@media(max-width:560px) {
+.song-detail-hero { grid-template-columns: 72px minmax(0,1fr); gap: 12px; padding: 14px; }
+.song-detail-jacket { width: 72px; height: 72px; } .song-detail-title h2 { font-size: 20px; }
+.song-detail-stats { grid-column: 1 / -1; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.song-detail-stats div:nth-child(3) { grid-column: auto; margin: 0; padding-top: 7px; border-top: 0; }
+.song-block { padding: 14px; } .song-detail-body { padding-top: 12px; }
+}
 </style>

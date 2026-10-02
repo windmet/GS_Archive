@@ -72,6 +72,7 @@
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
       <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
+      <ArchiveLanguageSwitch />
       <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
     </header>
 
@@ -128,11 +129,11 @@
           <button
             class="primary-transport"
             type="button"
-            :aria-label="isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
-            :disabled="!stageTransportReady || preloading"
+            :aria-label="stageStarting ? '取消舞台准备' : isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
+            :disabled="!stageStarting && (!stageTransportReady || preloading)"
             @click="toggleStage"
           >
-            <Pause v-if="playing" :size="22" fill="currentColor" />
+            <Pause v-if="playing || stageStarting" :size="22" fill="currentColor" />
             <Play v-else :size="22" fill="currentColor" />
           </button>
           <div class="transport-copy">
@@ -373,6 +374,8 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
+import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -388,6 +391,7 @@ import {
   UsersRound,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import {
   LIVE_CHIBI_BASE,
   applyLiveChibiLipSync,
@@ -701,6 +705,9 @@ const currentCameraLabel = computed(() => {
 })
 
 let stageDisposed = false
+const stageStarting = ref(false)
+const stageIntent = createPlaybackIntent(() => `${selectedSong.value?.id || ''}:${stageBuildSequence}`)
+const stageAudioOwners = new Map()
 onMounted(async () => {
   await nextTick()
   if (stageDisposed) return
@@ -776,6 +783,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   stageDisposed = true
+  stageIntent.dispose()
   stageBuildSequence += 1
   lipSyncSequence += 1
   stopStage()
@@ -911,6 +919,7 @@ async function handleCharacterChange(slot) {
 }
 
 async function loadSlot(slot) {
+  if (playing.value || stageStarting.value) stopStage()
   if (!app || !activePositions.value.includes(slot.position)) return
   const character = characterForSlot(slot)
   const costume = costumeForSlot(slot)
@@ -2668,7 +2677,8 @@ function applyCurrentLipSync() {
   }
 }
 
-async function preloadSongMotions() {
+async function preloadSongMotions(intent) {
+  if (!intent.current()) return false
   if (!selectedSong.value || !stageReady.value) return false
   const songId = selectedSong.value.id
   const targets = activeSlots.value
@@ -2688,20 +2698,23 @@ async function preloadSongMotions() {
   try {
     await Promise.all(targets.map(async ({ runtime }) => {
       await Promise.all(motions.map(async motion => {
-        await injectLiveChibiMotion(runtime, motion)
+        await injectLiveChibiMotion(runtime, motion, { signal:intent.signal, isCurrent: () => intent.current() && runtimes.get(runtime.stagePosition) === runtime })
+        if (!intent.current() || runtimes.get(runtime.stagePosition) !== runtime) return
         completed += 1
         preloadProgress.value = Math.round(completed / total * 100)
       }))
-      runtime.preloadedSongs.add(songId)
+      if (intent.current() && runtimes.get(runtime.stagePosition) === runtime) runtime.preloadedSongs.add(songId)
     }))
+    if (!intent.current()) return false
     songMotionsReady.value = true
     return true
   } catch (error) {
+    if (!intent.current()) return false
     audioError.value = `舞台动作预载失败：${error.message}`
     console.error('[ChibiStage] motion preload failed', error)
     return false
   } finally {
-    preloading.value = false
+    if (intent.current()) preloading.value = false
   }
 }
 
@@ -2710,8 +2723,10 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const motion = motionCatalog.value.get(event.motion)
   if (!runtime || !motion) return
   const sequence = ++slot.motionSequence
-  const animationNames = await injectLiveChibiMotion(runtime, motion)
-  if (sequence !== slot.motionSequence || runtimes.get(slot.position) !== runtime) return
+  const revision = stageIntent.revision()
+  const current = () => !stageDisposed && revision === stageIntent.revision() && sequence === slot.motionSequence && runtimes.get(slot.position) === runtime
+  const animationNames = await injectLiveChibiMotion(runtime, motion, { isCurrent: current })
+  if (!current()) return
   slot.currentMotion = motion.id
   slot.currentMotionSource = event.source || 'script'
   const speedScale = (Number(event.speed) || 1000) / 1000
@@ -2761,22 +2776,36 @@ function resetEventIndices() {
 }
 
 async function toggleStage() {
-  if (playing.value) {
+  if (playing.value || stageStarting.value) {
     stopStage()
     return
   }
-  if (!await preloadSongMotions()) return
+  const intent = stageIntent.begin()
+  const runtimeSnapshot = [...runtimes.entries()]
+  const current = () => intent.current() && !stageDisposed && runtimeSnapshot.every(([position,runtime]) => runtimes.get(position) === runtime)
+  stageStarting.value = true
+  try {
+  // Keep resume inside the original tap, before motion/resource awaits.
+  if (stageVocalEnabled.value && stageVocalReady.value && !await stageVocalSession.unlock()) {
+    if (current()) audioError.value = stageVocalSession.error.value
+    return
+  }
+  if (!current()) return
+  if (!await preloadSongMotions(intent)) { if (current()) stageVocalSession.pause(); return }
+  if (!current()) return
   if (stageTime.value >= stageDuration.value) stageTime.value = 0
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
+  if (!current()) return
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
   if (stageVocalEnabled.value && stageVocalReady.value) {
     stageVocalSession.seek(stageTime.value / 1000)
     if (!await stageVocalSession.play()) {
-      audioError.value = stageVocalSession.error.value
+      if (current()) audioError.value = stageVocalSession.error.value
       return
     }
+    if (!current()) return
     audioError.value = ''
   } else {
     const playbackAudios = stagePlaybackAudios()
@@ -2784,10 +2813,17 @@ async function toggleStage() {
       syncStagePlaybackTime(stageTime.value / 1000)
       playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
       try {
-        await Promise.all(playbackAudios.map(audio => audio.play()))
+        await withLoadDeadline(() => Promise.all(playbackAudios.map(audio => {
+          stageAudioOwners.set(audio,intent)
+          return Promise.resolve(audio.play()).then(() => {
+            if (!current() && stageAudioOwners.get(audio) === intent) { audio.pause(); stageAudioOwners.delete(audio) }
+          })
+        })), { signal:intent.signal, timeoutMs:8000, label:'stage-audio-play' })
+        if (!current()) return
         audioError.value = ''
       } catch (error) {
-        playbackAudios.forEach(audio => audio.pause())
+        if (!current()) return
+        stopStage()
         audioError.value = `歌曲音频无法播放：${error.message}`
         return
       }
@@ -2796,6 +2832,9 @@ async function toggleStage() {
   playing.value = true
   syncBackmonitor(true)
   animationFrame = requestAnimationFrame(updateStage)
+  } catch (error) {
+    if (current()) { stopStage(); audioError.value = `舞台无法开始：${error.message || error}` }
+  } finally { if (intent.current()) stageStarting.value = false }
 }
 
 function updateStage(now) {
@@ -2837,6 +2876,9 @@ function updateStage(now) {
 }
 
 function stopStage(reset = false) {
+  stageIntent.cancel()
+  stageStarting.value = false
+  preloading.value = false
   const wasPlaying = playing.value
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
@@ -2861,6 +2903,7 @@ async function resetStage() {
 }
 
 function applyPlaybackSpeed() {
+  if (stageStarting.value) stopStage()
   stageVocalSession.setPlaybackRate(playbackSpeed.value)
   stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
@@ -3047,7 +3090,11 @@ select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 
 }
 
 @media (max-width: 620px) {
-  .lab-link { margin-left: auto; }
+  .stage-header { height: auto; min-height: 108px; padding: 4px 8px; gap: 4px 8px; flex-wrap: wrap; }
+  .stage-header > div:not(.archive-language-switch) { flex: 1; min-width: calc(100% - 60px); }
+  .stage-header .header-divider { display: none; }
+  .stage-header :deep(.archive-language-switch) { margin-left: auto; }
+  .lab-link { margin-left: 0; }
   .performance-shell { min-height: 390px; aspect-ratio: auto; }
   .performance-hud { top: 14px; left: 14px; }
   .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }

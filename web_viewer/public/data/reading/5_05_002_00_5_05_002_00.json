@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_05_002_00_5_05_002_00",
-  "logical_id": "story-collection:5_05_002_00_5_05_002_00",
+  "logical_id": "story:5_05_002_00_5_05_002_00",
   "scenario_id": "5_05_002_00_5_05_002_00",
   "text_catalog_id": "5_05_002_00_5_05_002_00",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_05_002_00_5_05_002_00.json",
-    "sha256": "sha256:84f261f22807b854af1a2a2c008352b988ca6abaa44f9341f7204e28165317dc",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0fed292e7929cfa0cca372c79632399fa5f53a25641968abc38fb7bfd786d320",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:b6a959e351dc418c89bb110b58d88e3c7cd31e65e13c158e3bf1c070d87df635",
     "aggregate_source": null,
     "step_count": 24,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_05_002_00_5_05_002_00.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "星座と占いとカオマンガイ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8baf09896c9f991b3db8296f9d5cfe2375fea7e10b1b5d88dfbb9054f30a563"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_05_002_00_5_05_002_00:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "女性向け雑誌の星座占いとコラボする\n仕事を受けた、春名、漣、雨彦。\n星座にも占いにも興味を持たない\n漣に対して雨彦が説明を試みる中、\n春名は漣の星座の運勢を教えてみるが……？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b8939c28b6303cce2c2ed80052420dc42e3c12fe7c966b36cdf921e1b87b1e04"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "5_05_002_00_5_05_002_00:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "FES",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000020:title:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 20,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e3bd4b94ccc07076bcf1055f6b600e5c9372f0c31cff6d08c458f7cc3eed545f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "5_05_002_00_5_05_002_00:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "星座と占いとカオマンガイ",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000020:title:001",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 20,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:e8baf09896c9f991b3db8296f9d5cfe2375fea7e10b1b5d88dfbb9054f30a563"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "5_05_002_00_5_05_002_00:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今回のお仕事は、女性向け雑誌の\n星座占いページとのコラボです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e3637744369bc0f88b040d862200b64acd33701365dc0a1a32d622dcf997baa9"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -202,17 +260,28 @@
         "row_id": "5_05_002_00_5_05_002_00:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "皆さんの星座にちなんだ衣装を着て、\nスチール撮影を行います。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:09ff45741fb993936c132f97ecf4d8ce737277b4e56bbde081cbe2e205118fc6"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -239,21 +308,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なんだそれ、つまんなそー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d11bcd15a0d6978e84da5136fd77d2b6eb2f7de67606fe470fd6c676f2f0de46"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -270,7 +350,6 @@
         "stepId": 10
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -279,21 +358,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そんなこと言いなさんな。星占いってのは、文字通り\n星の位置から人の運勢や吉兆を読み解くもんだが……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000071:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 71,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a42b10c22f2fa97011c9e1fd1725aace4bcd4cd2c39811c1dc6222e1de87e140"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -310,7 +400,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -319,21 +408,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 71,
+        "command_end": 71
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "占う人間によって視点が違うから同じ星座や星を\n見ても差が出る。比べてみると、面白いもんだぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000079:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 79,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6b25eff4d20f025837b92539fef2ec28bb62a1fbe089dd23b914c3506e188c41"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -350,7 +450,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -359,21 +458,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 79,
+        "command_end": 79
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、漣の星座はこう書いてあるぜ！\n「今週はラッキーウィーク！」",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000100:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 100,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f5bd0369f15fa6510a96d96e53dd0e2b30b3d1e28a380d6953ab5913e4994181"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -389,30 +499,39 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_05_002_00_5_05_002_00:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 100,
+        "command_end": 100
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わけわかんねーことごちゃごちゃぬかすんじゃねー。\nバァーカ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000107:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 107,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b454eb228c0c96272ddb6140f8b617f234eee55cc7b7147c044f8bdfce649ad9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -429,7 +548,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -438,21 +556,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 107,
+        "command_end": 107
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "「カオマンガイを食べるともっとハッピーに\nなれるでしょう」……だってさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000116:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 116,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7fe15b1623adbe819f811ce2b08016624f3fa934c6853915f2e13b1bb60004cf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -469,7 +598,6 @@
         "stepId": 19
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -478,21 +606,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 116,
+        "command_end": 116
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "カオ…マ……なんだそれ、ウマいのか？\nそれならさっさと用意しやがれ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000124:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 124,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0ef85fa784ae4cfee59d3f029fd48daa082ee7c65a3e76ebb936b0348f8004e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -509,7 +648,6 @@
         "stepId": 20
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -518,21 +656,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 124,
+        "command_end": 124
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はは……この調子で大丈夫かな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000143:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 143,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7a410f3ae3d097dbfcca2612cb115949a8fcdf612d7d7d9dab4c54f27666df43"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -549,7 +698,6 @@
         "stepId": 23
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -558,21 +706,32 @@
         "row_id": "5_05_002_00_5_05_002_00:step-23:text",
         "step_id": 23,
         "step_index": 22,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 143,
+        "command_end": 143
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "牙崎は決めるところは決める奴だ。\n俺たちも負けないよう励むとしよう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_002_00_5_05_002_00:5_05_002_00:cmd-000150:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_002_00_5_05_002_00",
+          "part_id": "5_05_002_00",
+          "file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+          "command_index": 150,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1d175f6fdc23435933c6de36d76b5587950d6e403c1da76a4c8e2e94162dfa0c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -589,7 +748,6 @@
         "stepId": 24
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -598,97 +756,16 @@
         "row_id": "5_05_002_00_5_05_002_00:step-24:text",
         "step_id": 24,
         "step_index": 23,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_002_00",
+        "source_file": "assets/resources/scenariodata/5_05_002_00/scenario_5_05_002_00.json",
+        "command_start": 150,
+        "command_end": 150
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 22,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 23,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "星座と占いとカオマンガイ",
     "episode_label": null

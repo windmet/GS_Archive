@@ -40,6 +40,7 @@
     <div class="scene-shade" aria-hidden="true"></div>
 
     <header class="home-masthead">
+          <ArchiveLanguageSwitch class="home-language-switch" />
       <div class="idol-heading">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
         <h2>{{ activeIdol.name }}</h2>
@@ -66,7 +67,7 @@
           @change="emit('update:selectedCostume', $event.target.value)"
         >
           <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-            {{ costume.name }}
+            {{ archiveText('costume',costume.name) }}
           </option>
         </select>
       </label>
@@ -149,7 +150,7 @@
           @click="selectCostume(costume.modelId)"
         >
           <span><Shirt :size="18" /></span>
-          <small>{{ costume.name }}</small>
+          <small>{{ archiveText('costume',costume.name) }}</small>
         </button>
       </div>
     </aside>
@@ -160,7 +161,7 @@
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
       <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
       <div class="dialogue-meta">
-        <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
+        <span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span>
 
       </div>
       <div class="dialogue-actions">
@@ -201,15 +202,16 @@
           <div class="background-grid">
             <button v-for="background in visibleBackgrounds" :key="background.id" type="button" :aria-pressed="preferences.background === background.id" @click="preferences.background = background.id">
               <img v-if="background.thumbnail" :src="background.thumbnail" alt="" loading="lazy" decoding="async" />
-              <strong>{{ background.label }}</strong>
+              <strong>{{ archiveNamedBackground(background.label) }}</strong>
             </button>
           </div>
           <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
           <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
         </fieldset>
 
+        <ProducerNameSetting />
         <label class="settings-field">
-          <span>首页偶像</span>
+          <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
             <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
           </select>
@@ -219,7 +221,7 @@
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
             <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-              {{ costume.name }}
+              {{ archiveText('costume',costume.name) }}
             </option>
           </select>
         </label>
@@ -266,6 +268,7 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   Check,
@@ -280,9 +283,13 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
+import { archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
+import ProducerNameSetting from './ProducerNameSetting.vue'
+import {archiveText} from './useArchiveCostumeText.js'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {
   loadArchiveHomePreferences,
@@ -350,7 +357,7 @@ const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume =>
 const backgroundEntries = ref([])
 const backgroundReady = ref(false), backgroundLoading = ref(false), backgroundError = ref('')
 const backgroundQuery = ref(''), backgroundLimit = ref(12)
-const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => entry.label.toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
+const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
 watch(backgroundQuery, () => { backgroundLimit.value = 12 })
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
@@ -359,6 +366,7 @@ const selectedBackground = computed(() => resolveHomeBackground(preferences.back
 async function loadBackgroundCatalogue(retry = false) {
   if (backgroundLoading.value || (backgroundReady.value && !retry)) return
   backgroundLoading.value = true; backgroundError.value = ''
+  void loadArchiveNames('photos').catch(error => console.warn('Background names unavailable', error))
   try {
     const catalogue = await loadTerminalManifest('backgrounds', { retry })
     if (homeDisposed) return
@@ -672,3 +680,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped src="../../styles/archive-home-day.css"></style>
+
+<style scoped>
+.home-language-switch { pointer-events:auto; }
+.home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
+@media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
+</style>

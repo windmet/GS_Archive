@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -23,6 +24,27 @@ def fail(message: str) -> None:
 
 def main() -> None:
     sources = load_archive_sources()
+    audit = json.loads((PROJECT_ROOT / 'config/song-attribute-audit.v1.json').read_bytes())
+    if hashlib.sha256(sources.masterdata_decoded_file.read_bytes()).hexdigest() != audit['source']['decodedPbSha256']:
+        fail('song attribute audit belongs to another PB snapshot')
+    schema_path = DATA_PIPELINE_ROOT / 'schema/il2cpp_protobuf_schema.json'
+    schema_bytes = schema_path.read_bytes()
+    if hashlib.sha256(schema_bytes).hexdigest() != audit['source']['schemaSha256']:
+        fail('song attribute schema identity drift')
+    field13 = next(f for f in json.loads(schema_bytes)['models_by_full_name']['Growing.Models.Data.SongData']['fields'] if f['number'] == 13)
+    if field13['name'] != 'IdolType':
+        fail('song field 13 is not IdolType')
+    metadata = (PROJECT_ROOT / '.analysis/sidem_ios_keyfiles/global-metadata.dat').read_bytes()
+    if hashlib.sha256(metadata).hexdigest() != audit['source']['metadataSha256']:
+        fail('song attribute native metadata identity drift')
+    expected_enum = {'None': 0, 'Physical': 1, 'Intelligence': 2, 'Mental': 3, 'All': 4}
+    if {v['name']: v['value'] for v in audit['enum']['members']} != expected_enum:
+        fail('native IdolType enum values mismatch')
+    for member in audit['enum']['members']:
+        evidence = member['rawEvidence']
+        raw = metadata[evidence['defaultValueFileOffset']:evidence['defaultValueFileOffset'] + 4]
+        if raw.hex() != evidence['int32Hex'] or int.from_bytes(raw, 'little', signed=True) != member['value']:
+            fail('song attribute enum receipt differs from native bytes')
     rows = extract_table_rows(
         list(iter_top_records(sources.masterdata_decoded_file.read_bytes())),
         {46},
@@ -83,6 +105,15 @@ def main() -> None:
         if not published:
             fail(f"{code}: missing from song_catalog")
         effective_row = song_rows[-1]
+        attribute_ids = {row.get("13") for row in song_rows}
+        if len(attribute_ids) != 1:
+            fail(f"{code}: conflicting SongData.IdolType across source rows")
+        attribute_id = next(iter(attribute_ids))
+        attribute_keys = {1: "physical", 2: "intelli", 3: "mental", 4: "all"}
+        if attribute_id not in attribute_keys or published.get("attribute") != {
+            "idol_type": attribute_id, "key": attribute_keys[attribute_id]
+        }:
+            fail(f"{code}: song attribute mismatch with table 46 field 13")
         expected_song_data = {
             "on_stage_count": effective_row.get("16"),
             "has_switch_singer": bool(effective_row.get("17", 0)),

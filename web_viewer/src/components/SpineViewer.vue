@@ -5,6 +5,7 @@
       <div class="header-divider" aria-hidden="true"></div>
       <h1>舞台小人实验室</h1>
       <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
+      <ArchiveLanguageSwitch />
       <div class="header-meta">Spine 3.8 · 实验预览</div>
     </header>
 
@@ -193,6 +194,7 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -838,7 +840,7 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
   .lab-header h1 { font-size: 16px; }
   .header-divider { display: none; }
   .header-meta { display: none; }
-  .lab-workspace { inset-top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
+  .lab-workspace { top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
   .stage-shell { min-height: 390px; }
   .inspector { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
   .inspector-scroll { height: auto; overflow: visible; }
@@ -848,6 +850,13 @@ h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacin
   .transport-motion { min-width: 0; flex: 1; }
 }
 
+@media (max-width: 620px) {
+  .lab-header { height: 108px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; padding: 4px 8px; box-sizing: border-box; }
+  .lab-header h1 { white-space: nowrap; font-size: 15px; }
+  .stage-link { justify-self: start; }
+  .lab-header :deep(.archive-language-switch) { justify-self: end; }
+  .lab-workspace { top: 108px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .loading-icon { animation: none; }
 }

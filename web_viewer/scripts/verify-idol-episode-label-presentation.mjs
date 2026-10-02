@@ -10,6 +10,16 @@ assert.equal(presentIdolEpisodeLabel({ sourceName: 'source', kind: 'episode', or
 assert.equal(presentIdolEpisodeLabel({ sourceName: '第1話' }), '第1話')
 assert.equal(presentIdolEpisodeLabel({ sourceName: '不明な表記' }), '不明な表記')
 assert.equal(presentIdolEpisodeLabel({}), '')
+for (const sourceName of ['エピソード8','EPISODE 08']) {
+  assert.equal(presentIdolEpisodeLabel({sourceName,format:'reader'}),'EP 08')
+  assert.equal(presentIdolEpisodeLabel({sourceName,format:'player'}),'EP08')
+  assert.equal(presentIdolEpisodeLabel({sourceName}),'EPISODE 08')
+}
+for (const format of ['full','reader','player']) {
+  assert.equal(presentIdolEpisodeLabel({sourceName:'スモールトーク1',format}),'SMALL TALK 01')
+  assert.equal(presentIdolEpisodeLabel({sourceName:'PROLOGUE',format}),'PROLOGUE')
+  assert.equal(presentIdolEpisodeLabel({sourceName:'Unknown EPISODE 1',format}),'Unknown EPISODE 1')
+}
 
 const raw = read('public/data/masterdata/idol_episode_index.json')
 const index = JSON.parse(raw)

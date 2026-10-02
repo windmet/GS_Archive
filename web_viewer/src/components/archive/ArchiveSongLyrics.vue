@@ -8,7 +8,8 @@
       <template v-else>
         <label v-if="synchronized" class="lyrics-follow"><input v-model="follow" type="checkbox" />自动跟随当前句 <span>点击歌词跳转</span></label>
         <p v-else class="song-lyrics-note">当前音轨暂不支持歌词跟随。</p>
-        <ol ref="listElement" class="song-lyrics-list" aria-label="演出脚本歌词">
+        <button class="lyrics-expand" type="button" :aria-expanded="fullLyrics" @click="fullLyrics = !fullLyrics">{{ fullLyrics ? '收起全文' : '展开全歌词' }}</button>
+        <ol ref="listElement" class="song-lyrics-list" :class="{ 'full-lyrics': fullLyrics }" aria-label="演出脚本歌词">
           <li v-for="line in lines" :key="line.index" :class="{ active: synchronized && activeIndex === line.index }">
             <button v-if="synchronized" type="button" :disabled="!ready"
               :aria-current="activeIndex === line.index ? 'true' : undefined"
@@ -36,7 +37,7 @@ const props = defineProps({
   sourceTimeline: { type: Object, default: null },
 })
 const emit = defineEmits(['seek'])
-const expanded = ref(false)
+const expanded = ref(false), fullLyrics = ref(false)
 const fetchedTimeline = ref(null)
 const timeline = computed(() => props.sourceTimeline || fetchedTimeline.value)
 const loading = ref(false)
@@ -97,4 +98,10 @@ onBeforeUnmount(() => { ++generation })
 .lyrics-follow { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; min-height: 44px; font-size: .76rem; cursor: pointer; }
 .lyrics-follow span { margin-left: auto; color: #71858c; }
 @media (prefers-reduced-motion: reduce) { .song-lyrics summary::before { transition: none; } }
+</style>
+
+<style scoped>
+.song-lyrics-list { max-height: 180px; }
+.song-lyrics-list.full-lyrics { max-height: none; overflow: visible; }
+.lyrics-expand { min-height: 44px; border: 0; background: none; color: #176f69; font: inherit; cursor: pointer; }
 </style>

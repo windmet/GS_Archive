@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_023har_1_8_023_01",
-  "logical_id": "story-collection:1_x_023har_1_8_023_01",
+  "logical_id": "story:1_x_023har_1_8_023_01",
   "scenario_id": "1_x_023har_1_8_023_01",
   "text_catalog_id": "1_x_023har_1_8_023_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_023har_1_8_023_01.json",
-    "sha256": "sha256:8f7b1fb21cfe16f4a8d1eac446bded2e9885952d0e8c76f4e92edd94d50fa3dc",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3148eb3df8131b4664114650ba07a7de37ecfbf5ba2e62add20d1b818f2f995b",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_023har_1_8_023_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "遅い時間にごめんな。\n●●●●プロデューサー、\n誕生日おめでとう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000009:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_8_023_01",
+          "part_id": "1_8_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+          "command_index": 9,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9e6cc46e14c4774532ae03ad60dd61c1051512c6aba7da5fbf1c124b3215194b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_023har_1_8_023_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "talk"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとうございます",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_8_023_01",
+          "part_id": "1_8_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:21b2ba1811e66eef3e01a48e589b379c48c9efa25b3a8354c7e883e04351ba73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "1_x_023har_1_8_023_01:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000011",
+        "option_id": "choice-option:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000011:000",
         "source_label": "talk_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "よかった！本当は日付が\n変わってすぐ送りたかったけど\nバイトで遅くなっちまった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000014:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_8_023_01",
+          "part_id": "1_8_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+          "command_index": 14,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6cc229369b2be40fd56fc9a2d7a12248ffc164d222548e56f148dc3680ce83b5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_023har_1_8_023_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "talk"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "起こしたら悪いかなーって\n思ったんだけど、\nおめでとって言いたくてさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000016:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_8_023_01",
+          "part_id": "1_8_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+          "command_index": 16,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9a66c5f4adea6455e35338e63eca6e9da1579e1951dfc7b87eb70f044a6fc83a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_023har_1_8_023_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "talk"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "明日ってか今日？\n差し入れにドーナツを\n持ってくから楽しみにしてて◎",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000018:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_023har_1_8_023_01",
+          "part_id": "1_8_023_01",
+          "file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+          "command_index": 18,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f94568c14fb4f82e7b9a11fdb158609cbb5f69506bc04f8a05698db51241363d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_023har_1_8_023_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_023_01",
+        "source_file": "assets/resources/scenariodata/1_x_023har/scenario_1_8_023_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "talk"
@@ -237,8 +287,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000011",
+          "option_id": "choice-option:v1:1_x_023har_1_8_023_01:1_8_023_01:cmd-000011:000",
           "source_label": "talk_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "遅い時間にごめんな。",
     "episode_label": null

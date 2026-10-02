@@ -19,6 +19,9 @@ import {
   validateStoryTranslationOverlay,
 } from '../src/localization/story/TranslationRepository.js'
 import { resolveText } from '../src/utils/TextHelper.js'
+import { playbackPreferencesForReadingMode } from '../src/core/ReaderPlaybackPreferences.js'
+import { playerLanguageStatus } from '../src/presentation/PlayerLanguageStatus.js'
+import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 
 const overlayPath = new URL('../fixtures/localization/scenario-overlay-zh-CN.json', import.meta.url)
 const overlay = JSON.parse(await readFile(overlayPath, 'utf8'))
@@ -236,6 +239,19 @@ const unknownSpeaker = resolve({
   preferences: { story_content_mode: 'translation', story_translation_locale: 'zh-CN' },
 })
 assert.equal(unknownSpeaker.speaker.display, '？？？')
+for (const mode of ['translation', 'bilingual']) {
+  const hidden = resolve({
+    speaker: { kind: 'unknown', entityType: 'idol', entityId: '007kei', sourceName: '？？？' },
+    entityNames: { 'zh-CN': { '007kei': '都筑圭' } },
+    preferences: {
+      story_content_mode: mode,
+      story_translation_locale: 'zh-CN',
+      bilingual_primary: 'translation',
+    },
+  })
+  assert.equal(hidden.speaker.display, '？？？')
+  assert.equal(hidden.speaker.entityId, '007kei')
+}
 
 // Legacy adapter: source priority, inline translation, speaker identity and mode migration.
 const legacy = normalizeLegacyDialogue({
@@ -254,15 +270,15 @@ const legacyView = resolveStoryText({
 assert.equal(legacyView.primary.text, '日本語')
 assert.equal(legacyView.secondary.text, '中文')
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'JP'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '日本語',
 })
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'CN'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '中文',
 })
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'BILINGUAL'), {
-  speaker: '<P>',
+  speaker: 'プロデューサー',
   text: '日本語\n中文',
 })
 
@@ -335,7 +351,7 @@ const context = scope.run(() => createStoryLocalization({
     async loadEntity({ entityType, locale, sourceNames }) {
       assert.equal(entityType, 'idol')
       assert.equal(locale, overlay.locale)
-      assert.deepEqual(sourceNames, { '007kei': speaker.sourceName })
+      assert.deepEqual(sourceNames, { '007kei': '都築 圭' }) // Published label spelling; RAW whitespace stays on speaker.
       return { entries: { '007kei': { name: '都筑圭' } } }
     },
     getEntry({ entityType, entityId, locale }) {
@@ -390,7 +406,11 @@ assert.deepEqual(runtimeSentinel, sentinelBefore)
 scope.stop()
 
 const collectedEntityNames = collectScenarioEntitySourceNames(compiledData.value)
-assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': speaker.sourceName })
+assert.deepEqual(collectedEntityNames.get('idol'), { '007kei': '都築 圭' })
+assert.equal(collectScenarioEntitySourceNames({ steps: [
+  { dialogue: { speaker_identity: { kind: 'unknown', entity_type: 'idol', entity_id: '047shu', source_name: '？？？' } } },
+  { dialogue: { speaker_identity: { kind: 'idol', entity_type: 'idol', entity_id: '047shu', source_name: '天峰 秀' } } },
+] }).get('idol')['047shu'], '天峰 秀')
 
 assert.equal(resolveUiText('player.settings.backlog', {}, 'zh-CN'), '剧情回看')
 assert.equal(resolveUiText('player.settings.backlog', {}, 'ja-JP'), 'ログ')
@@ -401,6 +421,30 @@ assert.equal(resolveUiText('unknown.key', {}, 'ja-JP'), 'unknown.key')
 const empty = resolveStoryText()
 assert.equal(empty.primary.text, '')
 assert.equal(empty.speaker.kind, 'none')
+
+// Handoff writes only language fields, preserving the Producer and playback settings.
+const savedValues = new Map()
+const preferencesRepository = new PlayerPreferencesRepository({storage:{
+  getItem:key=>savedValues.get(key) ?? null,
+  setItem:(key,value)=>savedValues.set(key,value),
+}})
+preferencesRepository.update({producer_name:'windmet',auto_enabled:true,volumes:{master:0.3}})
+for (const mode of ['original','translation','bilingual']) {
+  const saved = preferencesRepository.update(playbackPreferencesForReadingMode(mode))
+  assert.equal(saved.story_content_mode,mode)
+  assert.equal(saved.producer_name,'windmet')
+  assert.equal(saved.auto_enabled,true)
+  assert.equal(saved.volumes.master,0.3)
+  const translated = resolve({preferences:saved})
+  assert.equal(playerLanguageStatus(saved,translated).compact.includes('*'),false)
+  for (const unavailable of [null,{...fixtureEntry,source_hash:'stale-source'}]) {
+    const fallback = resolve({preferences:saved,overlayEntry:unavailable})
+    assert.equal(fallback.primary.text,source)
+    assert.equal(playerLanguageStatus(saved,fallback).compact.includes('*'),mode!=='original')
+    if (mode!=='original') assert.match(playerLanguageStatus(saved,fallback).description,/暂无可用译文/)
+  }
+  assert.equal(playerLanguageStatus(saved,null).compact.includes('*'),false)
+}
 
 console.log('Story localization runtime verification passed')
 console.log(`  fixture entries: ${Object.keys(overlay.entries).length}`)

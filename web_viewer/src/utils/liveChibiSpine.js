@@ -8,6 +8,7 @@ import {
   Spine,
 } from '@pixi-spine/runtime-3.8'
 import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -369,13 +370,19 @@ export async function createLiveChibi(character, costume) {
   }
 }
 
-export async function injectLiveChibiMotion(runtime, motion) {
+export async function injectLiveChibiMotion(runtime, motion, { isCurrent = () => true, signal } = {}) {
+  if (runtime.disposed || !isCurrent()) return []
   if (runtime.loadedMotions?.has(motion.id)) {
     return runtime.loadedMotions.get(motion.id)
   }
 
   const motionFile = motion.file.replace('{bodyType}', String(runtime.bodyType))
-  const buffer = await fetchBuffer(motionFile)
+  const buffer = await withLoadDeadline(async owner => {
+    const response = await fetch(`${LIVE_CHIBI_BASE}/${motionFile}`, {signal:owner})
+    if(!response.ok)throw Error(`${motionFile} 加载失败 (${response.status})`)
+    return response.arrayBuffer()
+  }, {signal, timeoutMs:25000, label:'stage-motion'})
+  if (runtime.disposed || !isCurrent()) return []
   // Animation fragments use readStringRef(), whose indexes point into the
   // shared setup skeleton's string table. Without it, attachment keys decode
   // as null and the animation hides entire body parts.
@@ -453,6 +460,7 @@ export function playLiveChibiMotion(runtime, animationNames, {
 
 export function destroyLiveChibi(runtime) {
   if (!runtime) return
+  runtime.disposed = true
   runtime.spine?.removeFromParent()
   runtime.spine?.destroy({ children: true })
   runtime.atlas?.dispose?.()

@@ -13,6 +13,7 @@ export function useArchiveNavigationState() {
   const readingRowId = ref('')
   const readingMode = ref('original')
   const readingRevision = ref('')
+  const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
@@ -44,6 +45,10 @@ export function useArchiveNavigationState() {
   const stageTargetId = ref('')
   const currentSongScope = ref('all')
   const currentEventId = ref('')
+  const currentEntityKey = ref('')
+  const currentCollectionState = ref({kind:'items',category:'',idol:'',unit:'',attribute:'',page:0})
+  const currentPhotoIdol = ref('')
+  const currentPhotoEntity = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
   const currentCardRarity = ref('all')
@@ -61,12 +66,12 @@ export function useArchiveNavigationState() {
       ...playerEntryRoute.value, view: 'player', scenario: currentScenarioFile.value,
       startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
       initialStep: currentScenarioInitialStep.value, voice: currentPreviewCue.value,
-      returnView: returnViewAfterPlayer.value,
+      returnView: returnViewAfterPlayer.value, ...(playMode.value ? { playMode:playMode.value } : {}),
     }
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-        readingMode: readingMode.value, readingRev: readingRevision.value,
+        readingMode: readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
@@ -92,7 +97,7 @@ export function useArchiveNavigationState() {
     const preservesEventContext = view.value === 'event_detail' || returnsToEvent
     const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
     const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
-    const preservesSongContext = view.value === 'song_detail' ||
+    const preservesSongContext = ['song_detail', 'chart_lab'].includes(view.value) ||
       (view.value === 'chibi_stage' && Boolean(currentSongId.value)) ||
       (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
     const preservesArchiveUnit = view.value === 'unit_detail' ||
@@ -104,6 +109,8 @@ export function useArchiveNavigationState() {
     return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
+      ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value,collection:currentCollectionState.value} : {}),
+      ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
@@ -161,6 +168,10 @@ export function useArchiveNavigationState() {
   }
 
   return {
+    currentEntityKey,
+    currentCollectionState,
+    currentPhotoIdol,
+    currentPhotoEntity,
     view,
     playerEntryRoute,
     currentPickTarget,
@@ -169,7 +180,7 @@ export function useArchiveNavigationState() {
     readingDocumentId,
     readingRowId,
     readingMode,
-    readingRevision,
+    readingRevision, readingScope, playMode,
     currentScenarioInitialStep,
     returnViewAfterPlayer,
     storyCollectionParentView,

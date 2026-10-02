@@ -38,7 +38,7 @@
           :value="query"
           type="search"
           aria-label="搜索歌曲"
-          placeholder="搜索曲名或读音"
+          placeholder="搜索曲名、读音或演唱者"
           @input="query = $event.target.value"
         />
       </label>
@@ -59,15 +59,16 @@
         <span v-else class="song-card-code">封面未收录</span>
         <span class="song-card-copy">
           <small>{{ song.kana }}</small>
-          <strong>{{ song.title }}</strong>
+          <strong :title="song.title">{{ song.title }}</strong>
+          <span class="song-performers" :title="performerLabel(song)">{{ performerLabel(song) }}</span>
           <span v-if="song.credits" class="song-credits">{{ song.credits }}</span>
-        </span>
-        <span class="song-badges">
-          <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
-          <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
-          <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
-          <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分轨演唱</span>
-          <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
+          <span class="song-badges">
+            <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
+            <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
+            <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
+            <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分轨演唱</span>
+            <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
+          </span>
         </span>
         <ChevronRight :size="17" aria-hidden="true" />
       </button>
@@ -85,6 +86,8 @@ const props = defineProps({
   status: { type: String, default: '' },
   scope: { type: String, default: 'all' },
   query: { type: String, default: '' },
+  idolName: { type: Function, default: () => '' },
+  idolSearch: { type: Function, default: () => '' },
 })
 const emit = defineEmits(['open', 'retry', 'update:scope', 'update:query'])
 
@@ -113,6 +116,15 @@ const filters = [
   { id: 'oneshot', label: '演出语音' },
   { id: 'special', label: '特殊版本' },
 ]
+
+function performerLabel(song) {
+  const performance = song.performance || {}
+  if (performance.unitName) return performance.unitName
+  if (performance.scope === 'configurable_formation') return '自由编成 · 全组合可选'
+  if (performance.performers?.length) return performance.performers.map(entry => props.idolName(entry.id) || entry.displayName).join('、')
+  if (performance.scope === 'unspecified_special') return '特别演出'
+  return '演唱者待确认'
+}
 
 function hasMovie(song, kind) {
   return (song.movies || []).some(movie => movie.kind === kind)
@@ -145,6 +157,8 @@ const filteredSongs = computed(() => {
       song.title?.toLowerCase().includes(q) ||
       song.kana?.toLowerCase().includes(q) ||
       song.song_code.toLowerCase().includes(q) ||
+      performerLabel(song).toLowerCase().includes(q) ||
+      (song.performance?.performers || []).some(entry => props.idolSearch(entry.id, entry.displayName).toLowerCase().includes(q)) ||
       variants.some(variant => (
         variant.title?.toLowerCase().includes(q) ||
         variant.song_code?.toLowerCase().includes(q)
@@ -211,7 +225,7 @@ const filteredSongs = computed(() => {
 .song-grid.empty { display: block; }
 .song-card {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto auto;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 92px;
@@ -250,7 +264,8 @@ const filteredSongs = computed(() => {
 .song-card-copy small { color: #8a949e; font-size: 0.66rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .song-card-copy strong { font-size: 0.86rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .song-credits { color: #7a858e; font-size: 0.66rem; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
-.song-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.song-performers { color: #596d7c; font-size: .74rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.song-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .badge { padding: 2px 8px; border-radius: 999px; font-size: 0.62rem; font-weight: 700; }
 .badge-movie { background: #fff3e0; color: #b26a00; }
 .badge-layered { background: #e8f0fe; color: #2f5fd0; }
@@ -267,11 +282,23 @@ const filteredSongs = computed(() => {
   .song-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 560px) {
-  .song-catalog { padding: 12px; }
-  .song-hero { padding: 18px; }
-  .song-card { grid-template-columns: 40px minmax(0, 1fr) auto; }
-  .song-card-jacket { width: 40px; height: 40px; }
-  .song-badges { grid-column: 2 / -1; flex-direction: row; align-items: center; }
+@media (max-width: 760px) {
+  .song-catalog { padding: 0 12px calc(76px + env(safe-area-inset-bottom)); }
+  .song-hero { display: none; }
+  .song-toolbar { position: sticky; top: 0; z-index: 2; display: grid; gap: 8px; padding: 8px 0 12px; background: #f7f9fa; }
+  .song-filters { min-width: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .song-filters::-webkit-scrollbar { display: none; }
+  .song-filters button { flex: 0 0 auto; min-height: 44px; white-space: nowrap; }
+  .song-search { min-width: 0; height: 38px; }
+  .song-grid { gap: 6px; }
+  .song-card { grid-template-columns: 52px minmax(0, 1fr) 18px; gap: 10px; height: 72px; min-height: 72px; padding: 8px 10px; border-radius: 10px; }
+  .song-card-jacket, .song-card-code { width: 52px; height: 52px; border-radius: 7px; }
+  .song-card-copy { gap: 2px; }
+  .song-card-copy small, .song-credits { display: none; }
+  .song-card-copy strong { font-size: 15px; line-height: 18px; }
+  .song-performers { font-size: 12px; line-height: 15px; }
+  .song-badges { flex-wrap: nowrap; gap: 3px; }
+  .badge { flex: 0 0 auto; font-size: 10px; line-height: 13px; padding: 0 4px; }
+  .song-card > svg { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
 }
 </style>

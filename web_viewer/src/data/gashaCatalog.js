@@ -3,6 +3,7 @@ const CATEGORY_LABELS = {
   growing_fes: 'GROWING FES',
   stage_step_up: 'STAGE',
   full_roster_series: '全员系列',
+  ticket_named: '道具补录',
 }
 
 export function resolveGashaRelatedCards(gasha, index) {
@@ -24,16 +25,16 @@ export function buildGashaCategoryOptions(index, catalog) {
   const counts = index?.meta?.category_counts || {}
   return [
     { value: 'all', label: '全部', count: catalog.length },
-    ...Object.entries(CATEGORY_LABELS).map(([value, label]) => ({ value, label, count: counts[value] || 0 })),
+    ...Object.entries(CATEGORY_LABELS).filter(([value])=>value!=='ticket_named'||counts[value]>0).map(([value, label]) => ({ value, label, count: counts[value] || 0 })),
   ]
 }
 
-export function filterGashaCatalog(catalog, { query = '', category = 'all', idolSearchText = () => '' } = {}) {
+export function filterGashaCatalog(catalog, { query = '', category = 'all', idolSearchText = () => '', nameSearchText = source => source } = {}) {
   const q = query.trim().toLowerCase()
   return catalog.filter(gasha => {
     if (category !== 'all' && gasha.category !== category) return false
     if (!q) return true
-    return String(gasha.display_name || '').toLowerCase().includes(q) ||
+    return String(nameSearchText(gasha.display_name) || '').toLowerCase().includes(q) ||
       String(gasha.code || '').toLowerCase().includes(q) ||
       [...(gasha.derived_pickup_cards || []), ...(gasha.related_pickup_cards || [])].some(card =>
         String(card.card_title || '').toLowerCase().includes(q) ||

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_044ame_2_1_2_044_22_t01",
-  "logical_id": "story-collection:1_x_044ame_2_1_2_044_22_t01",
+  "logical_id": "story:1_x_044ame_2_1_2_044_22_t01",
   "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
   "text_catalog_id": "1_x_044ame_2_1_2_044_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_044ame_2_1_2_044_22_t01.json",
-    "sha256": "sha256:60c7a240a4e0c3defdba1f251b532d1aba81f5491371568598d128c071f99325",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:784c542c5dd6debf1f046e10bf245b01e5b47038691168747761e4a7674dcb54",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:12dfdb549b1afc25e663117defaf666b34d7d4b6c2326316f2cee7681ff5c07c",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_044ame_2_1_2_044_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:de8977615cad6fbc851a9e1eb7e29f227183302cd54983ca33f2b6c022e8dc76"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "プレゼントの中身を見たぜ。\nいいものをありがとな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e3002b1beda9262ac3ba47717132d70d556952210895690953972d8e0103633e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "喜んでもらえて\n嬉しいです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000011:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 11,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2613d996c200780c08c50fa9f0be13e19e72232447308ebfcf81c75356812ef0"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000011",
+        "option_id": "choice-option:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000011:000",
         "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。さっきの礼も改めて言わせてくれ。\nいい誕生日になった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a1e86275f1a8b8823fba93d2295703dbb6711e692ff4b584706279fdcadb38a0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "北村と古論の誕生日の時には、\n俺もお前さんの力を借りるとするぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ad2f4ee304012610be95ec832c72036e034ba19395f727027ae1633a6bffe407"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "頼りにしてるぜ、プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:26b9ca4c6f8f669486dffc18f71db35ae745685431d0374d3ed9cee1f2ebb036"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "ところでお前さん、今日の帰りは遅くなるのか？\nあの後事務所に戻ったんだろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ccfe3f0d94527b09195d2bb225d65354686e95475940f658fd462af3ce6bd1d4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "そんなに遅くならない\nはずですが……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000022:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 22,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b963bd5d36f14a0491cd5dfccf9b79c3eb610e78ee0e8a3abcae449d8d16937e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,14 +418,14 @@
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-9:option-0",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000022",
+        "option_id": "choice-option:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000022:000",
         "source_label": "phone_select2",
         "target_step_id": 10,
         "target_step_index": 9,
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうかい。今夜はハロウィンで騒がしくなる。\n巻き込まれないうちに、早く帰るといいぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3a6553aeba5435a725c79fed22f1800501ae959375f91d95b4a4e18bd6f60f31"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "騒ぎの中に、本物が紛れ込んでるかもしれないしな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:07dedbc4b503d448995962ccc1bf09ceda6b6b8771754ba5b67e59d79e4c51ea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "なんてな。いつもと違う夜であるのは確かだ。\n気を付けて帰れよ。じゃあな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_044ame_2_1_2_044_22_t01",
+          "part_id": "1_2_044_22_t01",
+          "file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:73574b0ee8967fe76e0ba30823419be0b6686dcbb9170126e3f03abf68883f8d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_2_1_2_044_22_t01:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_044_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame_2/scenario_1_2_044_22_t01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -482,8 +588,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000011",
+          "option_id": "choice-option:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000011:000",
           "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
@@ -497,8 +603,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000022",
+          "option_id": "choice-option:v1:1_x_044ame_2_1_2_044_22_t01:1_2_044_22_t01:cmd-000022:000",
           "source_label": "phone_select2",
           "target_step_id": 10,
           "target_step_index": 9,
@@ -507,68 +613,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサー。",
     "episode_label": null

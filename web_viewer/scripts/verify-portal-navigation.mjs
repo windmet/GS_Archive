@@ -5,6 +5,10 @@ import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPort
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
+import { ARCHIVE_NAVIGATION_GROUPS } from '../src/core/archiveNavigationGroups.js'
+
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [4, 4, 3])
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
   '?home_idol=003hok&home_cue=voice&home_costume=model',
@@ -32,7 +36,9 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 }
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
-assert.equal(ARCHIVE_NAVIGATION.length, 8, 'existing desktop taxonomy remains unchanged')
+assert.deepEqual(ARCHIVE_NAVIGATION.map(item=>item.id),
+  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','photos','experiments','resources'],
+  'desktop taxonomy includes the published event, collection, photo and experiment destinations')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
   const portalSource = buildArchiveSourceQuery({ view: 'portal', portalFrom })

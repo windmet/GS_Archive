@@ -1,13 +1,13 @@
 <template>
-  <div class="archive-shell" :class="{ 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
+  <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
       <div class="archive-brand">
         <img :src="getBrandMarkUrl()" alt="" />
         <span>SideM<br />Archive</span>
       </div>
-      <nav class="archive-nav">
+      <nav class="archive-nav" aria-label="档案栏目">
         <button
-          v-for="item in navigation"
+          v-for="item in navigation.filter(entry => entry.id === 'home')"
           :key="item.id"
           :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
           :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
@@ -16,6 +16,12 @@
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
           <span>{{ item.label }}</span>
         </button>
+        <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" role="group" :aria-labelledby="`nav-${group.id}`">
+          <h2 :id="`nav-${group.id}`">{{ group.label }} <small>{{ group.english }}</small></h2>
+          <button v-for="item in group.items" :key="item.id" :class="{ active: activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') }" :aria-current="activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') ? 'page' : undefined" @click="emit('navigate', item.id)">
+            <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
+          </button>
+        </div>
       </nav>
     </aside>
 
@@ -33,14 +39,19 @@
         </div>
       </template>
       <template #actions>
-        <label v-if="searchable" class="archive-search">
+        <div class="archive-header-actions">
+        <button v-if="searchable" class="archive-search-toggle" type="button" aria-label="搜索目录" :aria-expanded="mobileSearchOpen" @click="mobileSearchOpen = !mobileSearchOpen"><Search :size="19" /></button>
+        <label v-if="searchable" class="archive-search" :class="{ 'is-open': mobileSearchOpen }">
           <Search :size="17" aria-hidden="true" />
           <input
             :value="modelValue"
             :placeholder="searchPlaceholder"
+            aria-label="搜索目录内容"
             @input="emit('update:modelValue', $event.target.value)"
           />
         </label>
+        <ArchiveLanguageSwitch :compact-mobile="compactMobile" />
+        </div>
       </template>
     </ArchivePageChrome>
 
@@ -55,7 +66,7 @@
       <slot name="inspector" />
     </aside>
 
-    <nav class="archive-mobile-nav" aria-label="移动资料馆导航">
+    <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
         v-for="item in mobileNavigation"
         :key="item.id"
@@ -82,14 +93,18 @@ import {
   Search,
   Sparkles,
   Users,
+  CalendarDays, Box, Camera,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
+import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
+import { ref, watch } from 'vue'
 
-defineProps({
-  homeFocus: Boolean,
+const props = defineProps({
+  compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
@@ -99,14 +114,18 @@ defineProps({
   hasInspector: { type: Boolean, default: false },
   breadcrumbs: { type: Array, default: () => [] },
 })
+const mobileSearchOpen = ref(Boolean(props.modelValue))
+watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
+watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen }
+const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
 const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
+const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, items: group.items.map(item => ({ ...item, icon: iconBySection[item.id] })) }))
 const mobileNavigation = [
   { id: 'home', label: '首页', icon: Home },
-  { id: 'portal', label: '门户', icon: LayoutGrid },
+  { id: 'portal', label: '资料馆', icon: LayoutGrid },
 ]
 </script>
 
@@ -151,7 +170,8 @@ const mobileNavigation = [
   min-width: 0;
 }
 .archive-brand {
-  height: 76px;
+  height: 64px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -162,14 +182,18 @@ const mobileNavigation = [
   line-height: 1.05;
 }
 .archive-brand img { width: 34px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
-.archive-nav { display: flex; flex-direction: column; gap: 4px; padding: 6px; }
+.archive-nav {display:flex;flex-direction:column;gap:0;padding:6px;min-height:0;overflow-y:auto;}
+.archive-nav-group {padding-top:8px;}
+.archive-nav-group h2 {display:flex;align-items:center;gap:6px;margin:0;padding:2px 12px 5px;color:#8096a4;font-size:10px;font-weight:650;line-height:14px;}
+.archive-nav-group h2 small {font-size:8px;letter-spacing:.06em;color:#657b89;}
 .archive-nav button {
   position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 46px;
+  min-height: 36px;
+  flex-shrink: 0;
   padding: 0 14px;
   border: 0;
   border-radius: 4px;
@@ -177,7 +201,7 @@ const mobileNavigation = [
   color: #aeb8c0;
   cursor: pointer;
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 13px;
   text-align: left;
 }
 .archive-nav button:hover { background: #222f3a; color: #fff; }
@@ -235,6 +259,8 @@ const mobileNavigation = [
   background: #fff;
 }
 .archive-search:focus-within { border-color: #34b9b0; box-shadow: 0 0 0 2px rgba(24,167,157,0.12); }
+.archive-header-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; }
+.archive-header-actions .archive-search { flex:1; }
 .archive-search input {
   min-width: 0;
   width: 100%;
@@ -257,6 +283,7 @@ const mobileNavigation = [
   background: #fbfcfc;
 }
 .archive-mobile-brand, .archive-mobile-nav { display: none; }
+.archive-search-toggle { display:none; }
 
 @media (max-width: 760px) {
   .archive-shell, .archive-shell.has-inspector {
@@ -268,6 +295,8 @@ const mobileNavigation = [
     grid-template-rows: var(--archive-topbar) minmax(0, 1fr) calc(74px + env(safe-area-inset-bottom, 0px));
   }
   .archive-shell.is-home { --archive-topbar: 0px; }
+  .archive-shell.is-reader { grid-template-rows: minmax(0,1fr); }
+  .archive-shell.is-reader .archive-content, .archive-shell.is-reader .archive-pending-layer { grid-row:1; }
   .archive-sidebar { display: none; }
   .archive-topbar {
     grid-column: 1;
@@ -291,6 +320,9 @@ const mobileNavigation = [
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
   .archive-topbar h1 { font-size: 1.15rem; }
   .archive-search { grid-row: 2; grid-column: 2; height: 36px; }
+  .archive-header-actions { display:contents; }
+  .archive-header-actions :deep(.archive-language-switch) { grid-row:1; grid-column:2; justify-self:end; }
+  .archive-topbar .archive-mobile-brand { display:none; }
   .archive-topbar:not(:has(.archive-search)) .archive-heading { grid-column: 1 / -1; }
   .archive-content { grid-column: 1; grid-row: 2; padding-bottom: 0; }
   .archive-inspector { display: none; }
@@ -330,12 +362,15 @@ const mobileNavigation = [
 .archive-content { grid-row: 2; }
 .archive-pending-layer {
   grid-column: 2; grid-row: 2; z-index: 25;
-  display: flex; align-items: flex-end; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: center;
   min-width: 0; min-height: 0; padding: 18px;
   pointer-events: none;
 }
 .archive-pending-layer :deep(.gs-loading-indicator) {
   max-width: 100%; pointer-events: none;
+  padding: 18px 24px; border-radius: 14px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 8px 32px rgb(22 47 56 / 12%);
   animation: gs-archive-pending-in 120ms ease-out 140ms both;
 }
 .archive-shell.is-home .archive-pending-layer,
@@ -354,4 +389,34 @@ const mobileNavigation = [
 .archive-shell.is-home-focus .archive-sidebar, .archive-shell.is-home-focus .archive-topbar, .archive-shell.is-home-focus .archive-mobile-nav { display: none; }
 .archive-shell.is-home-focus .archive-content { grid-column: 1; grid-row: 1; }
 .archive-shell.is-home-focus .archive-pending-layer { grid-column: 1; grid-row: 1; }
+</style>
+
+<style scoped>
+@media(max-width:760px) {
+.archive-shell.is-tool { --archive-topbar: calc(62px + var(--archive-safe-top)); grid-template-rows: var(--archive-topbar) minmax(0,1fr); }
+.is-tool .archive-topbar { display: flex; padding: var(--archive-safe-top) 12px 0; gap: 12px; }
+.is-tool .archive-mobile-brand, .is-tool .archive-heading :deep(.archive-breadcrumb) { display: none; }
+.is-tool .archive-heading { min-width: 0; }
+.is-tool .archive-topbar h1 { font-size: 16px; }
+.is-tool .archive-header-actions { margin-left:auto; }
+}
+</style>
+
+<style scoped>
+@media(max-width:760px) {
+ .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader) { --archive-topbar:calc(48px + var(--archive-safe-top)); }
+ .archive-shell.is-compact-mobile:not(.is-home):not(.is-portal):not(.is-reader):has(.archive-search.is-open) { --archive-topbar:calc(92px + var(--archive-safe-top)); }
+ .is-compact-mobile .archive-topbar {display:grid;grid-template-columns:44px minmax(0,1fr) 44px 48px;grid-template-rows:48px;gap:0;padding:var(--archive-safe-top) 10px 0;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) {grid-template-columns:44px minmax(0,1fr) 48px;}
+ .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
+ .is-compact-mobile .archive-topbar h1 {font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+ .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
+ .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
+ .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:4;grid-row:1;}
+ .is-compact-mobile .archive-topbar:not(:has(.archive-search)) :deep(.archive-language-switch) {grid-column:3;}
+ .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
+ .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:36px;width:100%;margin-bottom:8px;}
+ .is-compact-mobile .archive-search.is-open {display:flex;}
+}
 </style>

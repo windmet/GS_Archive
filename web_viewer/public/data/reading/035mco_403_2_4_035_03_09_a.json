@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "035mco_403_2_4_035_03_09_a",
-  "logical_id": "story-collection:035mco_403_2_4_035_03_09_a",
+  "logical_id": "story:035mco_403_2_4_035_03_09_a",
   "scenario_id": "035mco_403_2_4_035_03_09_a",
   "text_catalog_id": "035mco_403_2_4_035_03_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "035mco_403_2_4_035_03_09_a.json",
-    "sha256": "sha256:16b4a21d4e7fac59546870466cf684574b45a76018036bcc303fe17b62228561",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:c3aa78c908c666cf311a7920c95b039a891661b3b76ce335cb1a160a4b44585a",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:c8cea790e2714d3527668d04e50555d89f805f0df9e5129b67f404a4223b99fb",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "035mco_403_2_4_035_03_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー。確認したいことがある。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:88d35d2313f30a4f40d2bce96c54439dc1a094b3232327b83356188b4c8c3472"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "次の現場に行く前に、\n事務所に荷物を預けても構わないだろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4d518b501b923bb8038897284de293c31ee691d7e1d2ba0dc24edb22062e21a3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e4511c79dd301bd751212ca916d4ecb6803d0f2fe2fe7f710a166e18d934922"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "035mco_403_2_4_035_03_09_a:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000012",
+        "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000012:000",
         "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとう。では、この後寄らせてもらう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:37537fc6109bf2da365def19ad982d397d57bda53d190c1fc686dcc2b8c22c01"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "先日のバラエティ番組では、我々が楽しく学ぶ姿が\n子供たちにも好評だったと聞いている。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e28dc93d22936c91bd68e0e556027be313f2a066712a375fa323ca9f496161da"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "私自身、あの収録以来、新しい知識を得ることの\n楽しさを再認識しているところだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f977db7b40113d3b34218d71c1fb26b7b5ada7e035dbc1461123073662d06bb6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日も移動のついでに本屋に立ち寄ったのだが、\n気になる参考書が多く、荷物が増えてしまった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bc96e85ff9cac74f534b426eaa455d182bd89556b39f01842e3352339b3b1b3f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "皆さんにいい変化を\n与えていますね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023:choice_short:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 23,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:30a1db5d8b44efce5399163856f1b7e0a439a97ce1cb31565a96fd392b4cecaa"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,14 +418,14 @@
         "row_id": "035mco_403_2_4_035_03_09_a:step-10:option-0",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 23,
+        "command_end": 24
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023",
+        "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023:000",
         "source_label": "phone_select2",
         "target_step_id": 11,
         "target_step_index": 10,
@@ -357,7 +436,18 @@
     {
       "kind": "choice",
       "source_text": "どんな本か\n気になります",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000024:choice_short:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 24,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:43853c94724ee63b0ead5e5698769b77355d203f1de1e60f54934ed0e2f3d0ab"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -384,14 +474,14 @@
         "row_id": "035mco_403_2_4_035_03_09_a:step-10:option-1",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 23,
+        "command_end": 24
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023",
+        "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000024:001",
         "source_label": "phone_select3",
         "target_step_id": 12,
         "target_step_index": 11,
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ。橘君からも、宿題でわからない部分を\n聞かれる機会が心なしか増えたように思う。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f0e70ef8430a2f90060f4e8df9e83f7befae99854d66becd023dc9505e8012cd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "興味があれば、事務所に預けている間に\n自由に読んでくれて構わない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6b1de181405308ca3d6b12e2fd44a52d619fea3b2897d5d88d7243c373b73c28"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "こうして学びの輪が広がっていくのは、\n非常に喜ばしいことだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000036:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 36,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc0c471f2c5faf40dccf78f9065467690e67d62420e571e3a2d19bf0626983c1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "私自身も、今後、より積極的に学び、\nその素晴らしさを伝えていきたい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000038:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 38,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9ca95caea3d0bba8d0b1fc8bd218db0f101813c76ec27735111ed32c94879582"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "そのためにも、まずはこの後の仕事に\n力を尽くそう。では、また事務所で会おう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000040:phone_message:000",
+        "source": {
+          "scenario_id": "035mco_403_2_4_035_03_09_a",
+          "part_id": "2_4_035_03_09_a",
+          "file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+          "command_index": 40,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f30a4788cdbc9d02542d53d8e6028b129405dac7893f7aca944d36dadad3bbd8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "硲 道夫"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "035mco_403_2_4_035_03_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_035_03_09_a",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "command_start": 40,
+        "command_end": 40
       },
       "option": null,
       "presentation": "call"
@@ -607,8 +742,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000012",
+          "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000012:000",
           "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -622,111 +757,83 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023",
+          "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023:000",
           "source_label": "phone_select2",
           "target_step_id": 11,
           "target_step_index": 10,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000023",
+          "option_id": "choice-option:v1:035mco_403_2_4_035_03_09_a:2_4_035_03_09_a:cmd-000024:001",
           "source_label": "phone_select3",
           "target_step_id": 12,
           "target_step_index": 11,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 9,
+        "choice_step_id": 10,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/035mco_403/scenario_2_4_035_03_09_a.json",
+        "raw_sha256": "sha256:d6c7801b8cfe34c8861f17e5e2575f65833a30d98302a0c2fdc298b9bbe1554b",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          23,
+          24
+        ],
+        "join_command": 34,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              10
+            ],
+            "exit_index": 10,
+            "command_indices": [
+              25,
+              26,
+              27,
+              28,
+              33
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              11
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              11
+            ],
+            "exit_index": 11,
+            "command_indices": [
+              29,
+              30,
+              31,
+              32
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              12
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 9,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 9,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー。確認したいことがある。",
     "episode_label": null

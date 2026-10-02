@@ -119,6 +119,25 @@ function cardArtPlugin() {
   }
 }
 
+function domainImagePlugin() {
+  return {
+    name:'sidem-domain-images',
+    configureServer(server) {
+      server.middlewares.use('/assets/domain-images',(req,res,next)=>{
+        let clean
+        try { clean=decodeURIComponent((req.url || '').split('?')[0]) } catch { next(); return }
+        const file=assetResolver.domainImagePath(clean)
+        if (!file || !fs.existsSync(file)) { next(); return }
+        res.setHeader('Content-Type','image/png')
+        res.setHeader('Cache-Control','public, max-age=86400')
+        const stream=fs.createReadStream(file)
+        stream.on('error',()=>{res.statusCode=500;res.end()})
+        stream.pipe(res)
+      })
+    },
+  }
+}
+
 function rawStoryCandidatePlugin() {
   return {
     name: 'sidem-raw-story-candidate',
@@ -402,6 +421,7 @@ export default defineConfig({
     lipsyncStaticPlugin(),
     audioPlugin(),
     cardArtPlugin(),
+    domainImagePlugin(),
     rawStoryCandidatePlugin(),
     rawCardCandidatePlugin(),
     rawBackgroundCandidatePlugin(),

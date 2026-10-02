@@ -3,10 +3,15 @@ import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { filterArchiveCards } from '../src/data/cardFilters.js'
 import { buildCardMap } from '../src/data/archiveSelectors.js'
+import {archiveGeneralText} from '../src/presentation/ArchiveGeneralTextCore.mjs'
 
 const read = path => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'))
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const cards = [...buildCardMap(read('../public/data/masterdata/card_index.json')).values()]
+const translations=read('../public/translations/zh-CN/archive-general/cards.json').entries
+const titleSearchText=source=>`${source} ${archiveGeneralText(translations,'card',source,'title')}`
+assert.deepEqual(filterArchiveCards(cards,{query:archiveGeneralText(translations,'card','瞳に映るその先に','title'),titleSearchText}).map(card=>card.resource_id),['001tom_ssr01'])
+assert.deepEqual(filterArchiveCards(cards,{query:'瞳に映るその先に',titleSearchText}).map(card=>card.resource_id),['001tom_ssr01'])
 const manifest = read('../public/data/archive_manifest.json')
 const gasha = read('../public/data/masterdata/gasha_index.json')
 const context = { assets: manifest.card_assets_by_id, eventRelations: manifest.event_card_relations_by_card, gashaRelations: gasha.relations_by_card }
@@ -56,8 +61,8 @@ assert.deepEqual(filterArchiveCards(fixture, { relationState: 'event_card', even
 assert.equal(JSON.stringify(fixture), before)
 assert.equal(filterArchiveCards(fixture)[0], fixture[0], 'filter must retain source object identity and order')
 const cardHeading = app.match(/const currentCardCharacterName = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
-assert.ok(cardHeading.includes('idolSourceName(id)'), 'card archive heading keeps the master-data idol name')
-assert.equal(cardHeading.includes('idolDisplayName(id)'), false, 'card archive heading does not localize the idol name independently of its switcher')
+assert.ok(cardHeading.includes('idolDisplayName(id)'), 'card heading follows the shared locale by stable idol identity')
+assert.match(app, /const bootstrapIdolSwitcher = computed\([\s\S]*?display_name: idolDisplayName\(idol.id\)/, 'switcher uses the same shared idol display names as its heading')
 const seriesCards = app.match(/const currentSeriesCards = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
 assert.ok(seriesCards.includes('idolSourceName(card.character_id)'), 'card detail series keeps master-data idol names')
 assert.equal(seriesCards.includes('idolDisplayName(card.character_id)'), false, 'card detail series does not mix localized names with source identity')

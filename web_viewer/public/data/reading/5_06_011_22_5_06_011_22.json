@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_06_011_22_5_06_011_22",
-  "logical_id": "story-collection:5_06_011_22_5_06_011_22",
+  "logical_id": "story:5_06_011_22_5_06_011_22",
   "scenario_id": "5_06_011_22_5_06_011_22",
   "text_catalog_id": "5_06_011_22_5_06_011_22",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_06_011_22_5_06_011_22.json",
-    "sha256": "sha256:4e458a90713ff9d68c42412f250a2ff2f27530c7b4b96bf751ebff04f611c194",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:0c615fc7ba3dceae1d255a3b880b0665f09ea979c4567cfc1b2499acff976c32",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:366ff385ef894f0ec5d8a87e20bb6e1bbba0a880e25639d9773de90daebab117",
     "aggregate_source": null,
     "step_count": 28,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_06_011_22_5_06_011_22.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "わくわくを届ける作戦会議",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0908d28920fe431522597fd52cb79724a75009efcac4558be324228fbc01a6b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_06_011_22_5_06_011_22:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "315プロダクションの記念日を祝う、\nスペシャルライブの開催が決定。\nパッションあふれる最高の舞台にすべく、\nアイドルたちは一丸となって新曲や衣装、\nステージ演出を作り上げていく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:128b3bb9304447098f1b4bbc1bb56cf707060803dc9a098e2b19247715e7282b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "同胞団よ！　大いなる闇の宴に向けた\n円卓会議を始めようではないか！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d41477469d74dd863576d76caf08514abd983d90661d43782956c9a06e38b400"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -122,7 +158,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -131,21 +166,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうですね。全員そろいましたし、\nさっそく相談しましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50caa3b2e82cfef0c818783cd5b9784254e3b8a3238b74fb308631d213dd94b3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -162,7 +208,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -171,21 +216,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ライブの当日に動画を撮って、公式チャンネルに\nアップするんだよね？　すっごく楽しそう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4d42e9783981e0fde5650b88f5292ddbe632266dc92aa4d05ec2ebed8d3167da"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -202,7 +258,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -211,21 +266,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん。撮る内容は俺たちが決めて良いそうだけど、\n何かやってみたいことはあるかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000064:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 64,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce21b6ff29fe08047f116722279c50ec35d604542dca5f1f1b1ea2f7983402a2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -242,7 +308,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -251,21 +316,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 64,
+        "command_end": 64
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "動画を見返した時に、ライブ当日のわくわくした\n気持ちを思い出せるようなものがいいですよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000079:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 79,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fa1d7a51a2a709078d426c3098bf15529237fe84e4e1be73b48567d89d3c0aab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -282,7 +358,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -291,21 +366,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 79,
+        "command_end": 79
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうだ！　じゃあ本番前に、みんなの楽屋に\n突撃しちゃうっていうのはどう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000092:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 92,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e2f618cb4c05726047a92491852b5e32681c0bd2a69f54bbd416c80207d13b13"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -322,7 +408,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -331,21 +416,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 92,
+        "command_end": 92
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "少々慌ただしくはなりそうですが、その様子も含め\n臨場感があっていいかもしれませんね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000108:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 108,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:33f47fa11568173483a504214ea6d0c4e08ba99db3a46469037bc5cf47ece474"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -362,7 +458,6 @@
         "stepId": 16
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -371,21 +466,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 108,
+        "command_end": 108
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "試練に挑む悪のシモベたちの姿を、余すことなく\n見せつけようという訳か。クク……悪くない……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000117:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 117,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8664d20d93aad868602f284d2c35f8cf236883b5f77b3447d6200d06027d9dd2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -402,7 +508,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -411,21 +516,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 117,
+        "command_end": 117
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "順番に回っていると時間がかかりますし、\n私たち5人で手分けして訪ねるのはどうでしょう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000129:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 129,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0d6d740465a051dbce11cbb159949bd3d252ad18a9d5ac9d05a2ec446bc30531"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -442,7 +558,6 @@
         "stepId": 20
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -451,21 +566,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 129,
+        "command_end": 129
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それがいいと思うな。誰がどのユニットの\n楽屋に行くか、本番までに分担を考えておこう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000136:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 136,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea7a0b4656e615d48b5e05d4347eb366c3dcf8d2d07c45b8e67ca0804ad9a7f4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -482,7 +608,6 @@
         "stepId": 21
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -491,21 +616,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 136,
+        "command_end": 136
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なら、もふもふえんにはあたしが突撃したいな♪\n衣装を着てる姿、ばっちり撮らなくちゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000154:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 154,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e2d0cff333f4bd867238ec79ff664234867fd5db8f6625c81ba84fe57470221c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -522,7 +658,6 @@
         "stepId": 24
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -531,21 +666,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-24:text",
         "step_id": 24,
         "step_index": 23,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 154,
+        "command_end": 154
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "この前、一緒に衣装のことを相談してたよね。\n確かにいいインタビューができるかも。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000163:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 163,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3a5ee94a6fd0a077fa2f1e5cf64c4ff8ed50b86bdc50bcd1bdbd1d1645179f66"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "030mak",
         "sourceName": "卯月 巻緒"
       },
       "performance": {
@@ -562,7 +708,6 @@
         "stepId": 25
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -571,21 +716,32 @@
         "row_id": "5_06_011_22_5_06_011_22:step-25:text",
         "step_id": 25,
         "step_index": 24,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 163,
+        "command_end": 163
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "では、分担が決まり次第、プロデューサーさんから\nみなさんに企画のことを伝えてもらいましょうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_011_22_5_06_011_22:5_06_011_22:cmd-000194:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_011_22_5_06_011_22",
+          "part_id": "5_06_011_22",
+          "file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+          "command_index": 194,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:124de5a3767ab21d9ac4f66e5ae1775c0b12b904899f125dfe8c0f22a3790a57"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -602,7 +758,6 @@
         "stepId": 28
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -611,97 +766,16 @@
         "row_id": "5_06_011_22_5_06_011_22:step-28:text",
         "step_id": 28,
         "step_index": 27,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_011_22",
+        "source_file": "assets/resources/scenariodata/5_06_011_22/scenario_5_06_011_22.json",
+        "command_start": 194,
+        "command_end": 194
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 23,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 24,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 27,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "315プロダクションの記念日を祝う、",
     "episode_label": null

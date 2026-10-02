@@ -1,8 +1,9 @@
 import { READING_SOURCE_FILE } from './ReadingCatalog.js'
+import { validatedFiniteForks } from '../story/FiniteBranchFlow.js'
 const ID = /^[A-Za-z0-9_-]+$/
 const HASH = /^sha256:[a-f0-9]{64}$/
 const STATUS = new Set(['ready', 'empty', 'unsupported'])
-const KINDS = new Set(['title', 'synopsis', 'narration', 'dialogue', 'caption', 'choice', 'choice_detail', 'stamp'])
+const KINDS = new Set(['title', 'synopsis', 'narration', 'dialogue', 'caption', 'choice', 'choice_detail', 'choice_metadata', 'stamp'])
 const PRESENCE = new Set(['visible', 'hidden', 'offstage', 'silhouette', 'unknown', 'not-applicable'])
 const IDOL = /^[0-9]{3}[a-z]{3}$/
 const record = x => !!x && typeof x === 'object' && !Array.isArray(x)
@@ -68,10 +69,23 @@ export function validateReadingDocument(d, entry) {
     if (r.option !== null) {
       requireValue(record(r.option) && ['resolved', 'unresolved'].includes(r.option.resolution), 'choice resolution')
       requireValue(r.option.target_step_index === null || (Number.isInteger(r.option.target_step_index)
-        && r.option.target_step_index >= 0 && r.option.target_step_index < d.source.step_count), 'choice target')
+        && r.option.target_step_index >= 0 && (r.option.target_step_index < d.source.step_count || (r.option.target_step_index === d.source.step_count && r.option.target_kind === 'end'))), 'choice target')
     }
   }
   requireValue(d.status !== 'empty' || d.rows.length === 0, 'empty status')
+  const forks = d.controls.filter(c => c.fork).map(c => c.fork)
+  if (forks.length) {
+    const steps = Array.from({ length: d.source.step_count }, () => null)
+    for (const row of d.rows) steps[row.anchor.step_index] = { step_id: row.anchor.step_id,
+      type: row.presentation === 'call' ? 'call' : row.presentation === 'talk' ? (row.kind === 'stamp' ? 'talk_stamp' : 'talk') : ['dialogue','narration'].includes(row.kind) ? 'adv' : row.kind === 'caption' ? 'text_time' : row.kind }
+    for (const fork of forks) if (fork.join_index < steps.length && !steps[fork.join_index])
+      steps[fork.join_index] = {step_id:fork.join_step_id,type:fork.join_step_type}
+    for (const fork of forks) for (const branch of fork.branches) for (const [j,i] of branch.step_indices.entries())
+      if (!steps[i] && branch.step_types?.[j]) steps[i]={step_id:branch.step_ids[j],type:branch.step_types[j]}
+    for (const control of d.controls) steps[control.step_index] = { step_id: control.step_id, type: 'choice',
+      options: control.options.map(o => ({ label: o.source_label, target_step_id: o.target_step_id, target_kind:o.target_kind })) }
+    validatedFiniteForks({ steps, reading_control_flow: { version: 1, base_compiled_sha256: d.source.sha256, forks } })
+  }
   requireValue(d.status !== 'ready' || (d.rows.length > 0 && !d.diagnostics.some(x => x.severity === 'unsupported')), 'ready status')
   return d
 }

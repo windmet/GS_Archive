@@ -25,8 +25,8 @@ current-state entry requested by this workflow now exists.
 | Card PR validation | head `3236f71`; complete Source Gate run `31328156404` PASS, including the Card verifier |
 | P2-B long soak | **NOT EXECUTED** |
 
-<!-- authoritative-v2-summary collections=4 standalone=638 artifacts=667 -->
-<!-- publication-ledger-summary releases=4 stable_logical_ids=639 -->
+<!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
+<!-- publication-ledger-summary releases=201 stable_logical_ids=1368 -->
 
 The pre-closeout PR #37 registry drift is closed. Release `002` is now the
 registry and publication-manifest owner; PR-head run `31325277234` and

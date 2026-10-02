@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "037jir_401_2_4_037_01_09_a",
-  "logical_id": "story-collection:037jir_401_2_4_037_01_09_a",
+  "logical_id": "story:037jir_401_2_4_037_01_09_a",
   "scenario_id": "037jir_401_2_4_037_01_09_a",
   "text_catalog_id": "037jir_401_2_4_037_01_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "037jir_401_2_4_037_01_09_a.json",
-    "sha256": "sha256:2c1a29da9f37e978b1d7e9f07c156b8ce5d9caaf077e9b31e2dbde60597c7e77",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:49aff7d94ba80543aca64a6c56aed0eedafba134afe7d57583c0fb7eee774657",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:0b8bfbc1326057aa351c29b238214330b6e5d204aa5314cd4c93f21b174c3cd7",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "037jir_401_2_4_037_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサーちゃん？\nこんな時間にごめんね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ee72847603d9afde7d144c7257a5018b2f4ad6c6672fc6a890140cca7738c959"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "るいとはざまさんが家に来てるんだけど、\nフェスの話になってさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1c8118f80fe7afb8998b4561e5b3c9c1d516a6fb7ef4a7de980cac108ac904e1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "いろいろ話してたらなんか盛り上がっちゃって。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0a334ea6a25071b0c5090e4b5e1879b1be0ddd790946b0139a3332d0929d13b6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "はざまさんが改善点を踏まえてレッスンしようって\n言い出して、るいも賛成してるんだよねぇ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8b0163f27a60a22c1d6266cce5bccf9d0fe36e7c44e96b543f5c7000212f3bca"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "そういうわけで、さっそく明日からって話に\nなったんだけど、レッスンスタジオ空いてるかな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f1c301229430c9e469e4d4d150dd7df1893964b100043fb00495fcb824d2c06f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -227,7 +275,18 @@
     {
       "kind": "choice",
       "source_text": "確認します。\n後で連絡しますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:039f26d43aa4e09985cab3732311375122ee4e1540bec2d962ac636d970563bc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -254,14 +313,14 @@
         "row_id": "037jir_401_2_4_037_01_09_a:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000018",
+        "option_id": "choice-option:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000018:000",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとさん。助かるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6d4b73b843a1a9a9470b3db8b1440db534739e55488b86721e8cab9004f64ed2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "……あれ？　もう飲み物がなくなっちゃったの？\n仕方ないなぁ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:969af352b1cf6e5ea4bf743f4f8f1a7dd7e44b35bc61e2dd03ee83857ff4ad00"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "あ、ごめんね話の途中に。それじゃ\nよろしくね、●●●●プロデューサーちゃん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "037jir_401_2_4_037_01_09_a",
+          "part_id": "2_4_037_01_09_a",
+          "file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c33aea75981469d08dfc6d130bb74af26798e7b31f482bb4d7a266e8e75fa6b4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "037jir",
         "sourceName": "山下 次郎"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "037jir_401_2_4_037_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_037_01_09_a",
+        "source_file": "assets/resources/scenariodata/037jir_401/scenario_2_4_037_01_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -397,8 +483,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000018",
+          "option_id": "choice-option:v1:037jir_401_2_4_037_01_09_a:2_4_037_01_09_a:cmd-000018:000",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
@@ -407,58 +493,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサーちゃん？",
     "episode_label": null

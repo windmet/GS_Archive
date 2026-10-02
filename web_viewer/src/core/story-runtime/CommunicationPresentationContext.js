@@ -13,7 +13,7 @@
  *      when the history path is empty;
  *   5. future explicit presentation_context fields win over inference.
  */
-import { getUnitCodeByCharaId, normalizeUnitCode } from '../../utils/UnitNameMap.js'
+import { getUnitCodeByCharaId, normalizeUnitCode, UNIT_CODE_TO_NAME } from '../../utils/UnitNameMap.js'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 
 const COMMUNICATION_TYPES = new Set(['talk', 'talk_stamp', 'call'])
@@ -63,7 +63,7 @@ function charaIdFromScenario(scenarioId) {
  * @returns {{mode: 'talk'|'call'|null, phase: 'dialogue'|'choice'|'reply', unitCode: string|null, primaryCharaId: string, isGroup: boolean}}
  */
 export function resolveCommunicationContext({ step, stepIndex, historyStack, steps, scenarioId }) {
-  const isGroup = String(scenarioId || '').startsWith('8_2_')
+  let isGroup = String(scenarioId || '').startsWith('8_2_')
   const explicitMode = modeFromStep(step)
   const phase = step?.type === 'choice' ? 'choice' : 'dialogue'
 
@@ -109,5 +109,17 @@ export function resolveCommunicationContext({ step, stepIndex, historyStack, ste
     unitCode = getUnitCodeByCharaId(primaryCharaId) || null
   }
 
-  return { mode, phase, unitCode, primaryCharaId, isGroup }
+  const thread = step?.presentation_context?.thread || source?.presentation_context?.thread || null
+  const proven = thread && thread.provenance?.kind === 'raw-talk-start'
+    && /^sha256:[a-f0-9]{64}$/.test(thread.provenance.raw_sha256 || '')
+  if (proven) {
+    isGroup = thread.kind === 'group'
+    // Thread identity owns chat title/theme; the current speaker never changes it.
+    unitCode = isGroup && UNIT_CODE_TO_NAME[thread.unit_code] ? thread.unit_code : null
+  } else if (mode === 'talk' && !isGroup) {
+    unitCode = null
+  }
+  return { mode, phase, unitCode, primaryCharaId, isGroup,
+    threadId: proven ? thread.id : null, threadTitle: proven && isGroup ? (thread.title || UNIT_CODE_TO_NAME[unitCode] || '') : '',
+    threadProvenance: proven ? thread.provenance : null }
 }

@@ -183,6 +183,7 @@ def split_episodes(scenario: dict[str, Any]) -> dict[str, dict[str, Any]]:
             step["episode_index"] = 0
             for option in step.get("options", []):
                 target = option.get("step_id")
+                if option.get('target_kind') == 'end': continue
                 if target is None:
                     continue
                 target = int(target)
@@ -223,6 +224,8 @@ def split_episodes(scenario: dict[str, Any]) -> dict[str, dict[str, Any]]:
                 "end_step_index": end,
             },
         }
+        from sidem_scenario.control_flow import relocate_control_flow
+        relocate_control_flow(scenario, output[source_id], start, end)
     return output
 
 

@@ -1,0 +1,1453 @@
+{
+  "scenario_id": "1_2_016_02_c",
+  "total_steps": 10,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0
+            }
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 2,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "letter_open",
+          "delay": 5
+        },
+        "se_events": [
+          {
+            "cue": "letter_open",
+            "delay": 5
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_anim",
+          "chara_id": "014hid",
+          "value": "sad"
+        },
+        {
+          "time": 3.5,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4.8,
+          "type": "spine_neck_anim",
+          "chara_id": "015ryu",
+          "value": "neck_yes"
+        },
+        {
+          "time": 5.3,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6.2,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.5,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_shy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7.8,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "014hid",
+      "dialogue": {
+        "speaker": "握野 英雄",
+        "text": "よし、そろそろいいな。招待状を読むか。\n……これは力作だな。",
+        "text_jp": "よし、そろそろいいな。招待状を読むか。\n……これは力作だな。",
+        "text_cn": "",
+        "voice": "c1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1000.json",
+          "frames": 567
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000027:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 27,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:919789812201459dd0c6009dbcaeeb0b0dc1e4b69a35f0b2349087404a372139"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 3,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_shy",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_serious",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_anim",
+          "chara_id": "014hid",
+          "value": "weight",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_think",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "wait_loop",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "ええ。開催場所は誠司さんの家、\n日時は誠司さんの誕生日より前になってますね。",
+        "text_jp": "ええ。開催場所は誠司さんの家、\n日時は誠司さんの誕生日より前になってますね。",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000038:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 38,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:740a9428ca00daae06ba47f1c0226db294df5c540162a47c455b440891726a79"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 4,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_trouble",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.6,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_shy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.6,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "sad"
+        },
+        {
+          "time": 3.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_trouble",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "そっかー。\n誠司さんの誕生日当日は仕事が入ってましたもんね。",
+        "text_jp": "そっかー。\n誠司さんの誕生日当日は仕事が入ってましたもんね。",
+        "text_cn": "",
+        "voice": "c1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1002.json",
+          "frames": 359
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000044:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 44,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:8faea72e31971ffbae2d83626b8da95fe2ca537fbbd91e3c156f5e91e3a25f02"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 5,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3,
+          "type": "spine_anim",
+          "chara_id": "014hid",
+          "value": "wait_loop"
+        },
+        {
+          "time": 4.6,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "持ち物は……誠司さんへのプレゼントと、\n誕生日会の飾りか。",
+        "text_jp": "持ち物は……誠司さんへのプレゼントと、\n誕生日会の飾りか。",
+        "text_cn": "",
+        "voice": "c1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1003.json",
+          "frames": 385
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000053:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 53,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:a4ad55f10c18395ce536e79ab226e84bfc218261d40096e16b6f1c0820e43c7d"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_joy",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 3.6,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_shy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5.7,
+          "type": "spine_neck_anim",
+          "chara_id": "014hid",
+          "value": "neck_question"
+        },
+        {
+          "time": 6.3,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "014hid",
+      "dialogue": {
+        "speaker": "握野 英雄",
+        "text": "信玄が言ってた、ケーキのことも書いてあるな。\n楽しみにしててくれ、だってさ。",
+        "text_jp": "信玄が言ってた、ケーキのことも書いてあるな。\n楽しみにしててくれ、だってさ。",
+        "text_cn": "",
+        "voice": "c1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1004.json",
+          "frames": 399
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000060:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 60,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:e35c8cb0b35192c84aa0210be2d7e6bee2eb87ef88f72ca3ae21c908734b2e84"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 7,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_think",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 0.1,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5.7,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_shy",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5.7,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "sad",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_joy",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6,
+          "type": "spine_neck_anim",
+          "chara_id": "014hid",
+          "value": "neck_question"
+        },
+        {
+          "time": 7,
+          "type": "spine_neck_stop",
+          "chara_id": "014hid",
+          "value": ""
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "そういえば、前に誠司さんにこの辺りの予定を\n聞かれたなー。これのためだったのかな。",
+        "text_jp": "そういえば、前に誠司さんにこの辺りの予定を\n聞かれたなー。これのためだったのかな。",
+        "text_cn": "",
+        "voice": "c1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1005.json",
+          "frames": 472
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000074:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 74,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:0879a7c85589b58cb8b535b31fd9392a8731b9d98eff6de3aaf095813dc4c683"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_shy",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.4,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_default",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "wait_loop",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_anim",
+          "chara_id": "014hid",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "014hid",
+      "dialogue": {
+        "speaker": "握野 英雄",
+        "text": "俺もだ。たぶんあまねちゃんに頼まれたんだろうな。\nプロデューサーも聞かれてただろ？",
+        "text_jp": "俺もだ。たぶんあまねちゃんに頼まれたんだろうな。\nプロデューサーも聞かれてただろ？",
+        "text_cn": "",
+        "voice": "c1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1006.json",
+          "frames": 435
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000084:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 84,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:0507d1ac8b9be6befe31811a3cb2dd3407c0317750fe618c20dcb5cb548dc910"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.2,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "ええ。この日は空けてあります。",
+        "text_jp": "ええ。この日は空けてあります。",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000088:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 88,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:2a5fd9e15607b4a3b55f60fef05fcea2a78883472753237956a9c80ae480efd0"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    },
+    {
+      "step_id": 10,
+      "type": "adv",
+      "state": {
+        "bg": "bg129_restspace_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg129_restspace_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0,
+            "y": 0
+          },
+          "lightAlpha": 1,
+          "colorOffSet": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "colorScale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "colorSaturation": 1
+        },
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "014hid",
+            "model": "014hid_004_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "015ryu",
+            "model": "015ryu_004_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -200,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 3,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "angry"
+        },
+        {
+          "time": 5,
+          "type": "spine_face",
+          "chara_id": "014hid",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 5,
+          "type": "spine_anim",
+          "chara_id": "014hid",
+          "value": "wait_loop"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "じゃあ、ここにいる全員参加ですね。\nそれぞれ返事しときましょうか。",
+        "text_jp": "じゃあ、ここにいる全員参加ですね。\nそれぞれ返事しときましょうか。",
+        "text_cn": "",
+        "voice": "c1008.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/016sei/1_2_016_02/1_2_016_02_c/1_2_016_02_c1008.json",
+          "frames": 347
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_016sei_02_1_2_016_02:1_2_016_02_c:cmd-000094:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_016sei_02_1_2_016_02",
+            "part_id": "1_2_016_02_c",
+            "file": "assets/resources/scenariodata/1_2_016sei_02/scenario_1_2_016_02_c.json",
+            "command_index": 94,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:31bd57c9caaf9d265a11c9c4a0e7d89df378068a3b06770b5a901dc97b6d1e5c"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "c"
+    }
+  ],
+  "jump_points": {},
+  "episodes": [
+    {
+      "episode_index": 0,
+      "episode_no": 1,
+      "part": "c",
+      "source_scenario_id": "1_2_016_02_c",
+      "start_step_index": 0,
+      "start_step_id": 1,
+      "end_step_index": 9,
+      "end_step_id": 10,
+      "step_count": 10
+    }
+  ],
+  "aggregate_source": {
+    "file": "1_2_016sei_02_1_2_016_02.json",
+    "scenario_id": "1_2_016sei_02_1_2_016_02",
+    "start_step_index": 26,
+    "end_step_index": 35
+  }
+}

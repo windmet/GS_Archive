@@ -362,6 +362,10 @@ def _project_option(option: dict[str, Any]) -> dict[str, Any]:
     if option.get("detail_source_text") is not None or option.get("detail_text_ref"):
         output["detail_source_text"] = str(option.get("detail_source_text") or "")
         output["detail_text_ref"] = _clone(_required(option.get("detail_text_ref"), "choice option.detail_text_ref"))
+    if option.get('label') is not None:
+        output['label'] = str(option['label'])
+    if option.get('detail_kind') == 'presentation-marker':
+        output['detail_kind'] = 'presentation-marker'
     return output
 
 
@@ -461,4 +465,9 @@ def compile_authoritative_scenario(
             if isinstance(jump_points, list)
             else [{"jump_id": key, "target_step_id": int(value)} for key, value in jump_points.items()]
         )
+    if compatibility.get('reading_control_flow'):
+        from .control_flow import content_digest
+        flow = _clone(compatibility['reading_control_flow'])
+        flow['base_compiled_sha256'] = content_digest(output)
+        output['reading_control_flow'] = flow
     return output

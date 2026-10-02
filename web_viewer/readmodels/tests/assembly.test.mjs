@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';import os from 'node:os';import path from 'nod
 import {fileURLToPath}from'node:url';import{writeReadModels}from'../lib/projections.mjs';import{jsonBytes,sha256}from'../lib/common.mjs';import{fixture}from'./fixture.mjs';
 import { gzipSync } from 'node:zlib';
 import { auditJson } from '../../scripts/lib/archive-build-audit.mjs';
+import { VALID_VIEWS } from '../../src/core/archiveRoute.js';
 const script=fileURLToPath(new URL('../tools/assemble_pages.mjs',import.meta.url)),release='a'.repeat(64);
 async function setup(){const root=await fs.mkdtemp(path.join(os.tmpdir(),'gs-assembly-test-')),models=path.join(root,'models'),bundle=path.join(root,'bundle');
  await fs.mkdir(models);await writeReadModels(models,release,fixture(),{fixture:true});await fs.writeFile(path.join(models,'BUILD_COMPLETE.json'),jsonBytes({release}));
@@ -15,7 +16,7 @@ async function setup(){const root=await fs.mkdtemp(path.join(os.tmpdir(),'gs-ass
  const budgetText=auditJson(budget);await fs.writeFile(path.join(bundle,'audit/startup-budget.json'),budgetText);
  const acceptance={schema_version:1,auditVersion:1,release,sourceRevision:budget.sourceRevision,sourceDigest:budget.sourceDigest,sourceDirty:false,
    startupBudgetSha256:sha256(budgetText),globalArchiveLoadRemoved:true,allPublicRoutesMigrated:true,deviceReviewAccepted:true,
-   routes:{counts:{routes:32,deviceAccepted:32},unfinished:[]},evidence:['SYNTHETIC TEST, NOT PRODUCTION SIGNOFF']};
+   routes:{counts:{routes:VALID_VIEWS.size,deviceAccepted:VALID_VIEWS.size},unfinished:[]},evidence:['SYNTHETIC TEST, NOT PRODUCTION SIGNOFF']};
  await fs.writeFile(path.join(bundle,'audit/readmodel-cutover.json'),jsonBytes(acceptance));return{root,models,bundle,acceptance};}
 test('Assembler injects verified bootstrap and excludes read models from Functions',async()=>{const x=await setup();try{
  const out=path.join(x.root,'out');execFileSync(process.execPath,[script,'--bundle',x.bundle,'--models',x.models,'--out',out],{stdio:'pipe'});

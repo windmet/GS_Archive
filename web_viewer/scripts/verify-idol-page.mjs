@@ -24,7 +24,10 @@ const ids = [...Object.keys(data.dictionary.by_idol_code), 'missing-id']
 for (const id of ids) {
   const result = [buildIdolProfile(id, data.dictionary, data.manifest), buildIdolStats(id, data), eventsForIdol(id, data.manifest), songsForIdol(id, data.songs)]
   if (baseline) assert.deepEqual(result, baseline(id, data, cardsForCharacter))
-  digest.update(JSON.stringify([id, result]))
+  // The gameplay expansion adds metadata, without changing profile/membership/order.
+  for(const entry of result[3]) assert.equal(entry.song,data.songs.songs[entry.song.song_code], 'new metadata stays on the source object')
+  const legacyProjection = [...result.slice(0,3),result[3].map(entry=>({...entry,song:Object.fromEntries(Object.entries(entry.song).filter(([key])=>!['attribute','gameplay'].includes(key)))}))]
+  digest.update(JSON.stringify([id, legacyProjection]))
 }
 const hash = digest.digest('hex')
 if (!baseline) assert.equal(hash, '0a961f02253cf9f55c142bb3912f0314cc6f5109c64fed9772f47e8b10974642')

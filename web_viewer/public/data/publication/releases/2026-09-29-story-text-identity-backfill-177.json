@@ -1,0 +1,122 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-09-29-story-text-identity-backfill-177",
+  "created_at": "2026-09-29T08:20:48.875Z",
+  "prepared_from_commit": "f5bc5d46911781f210a143861335a120a20c0f01",
+  "transaction_kind": "backfill",
+  "scope": {
+    "kind": "collection",
+    "ids": [
+      "1_4_002_00"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story-collection:1_4_002_00",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_1_4_002_00.unity3d",
+        "sha256": "efb1bd80986f89a4e768f9a2333c5877acb789cf45eb7b922ddf456e1e1afa7d",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_4_002_00_a",
+            "container_path": "assets/resources/scenariodata/1_4_002_00/scenario_1_4_002_00_a.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_1_4_002_00_b",
+            "container_path": "assets/resources/scenariodata/1_4_002_00/scenario_1_4_002_00_b.json",
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_catalog",
+          "key": "1_4_002_00",
+          "evidence": "RAW group candidate supplies text coordinates only; mounted legacy Runtime fields remain unchanged"
+        }
+      ],
+      "transform": {
+        "tool": "backfill-story-text-identities.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/1_4_002_00.json",
+          "url": "/data/compiled/1_4_002_00.json",
+          "bytes": 217526,
+          "sha256": "92fa51c83d18f0f7301d494661cebd1c492a15066e91160cf804418fd5da1578"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_4_002_00_a.json",
+          "url": "/data/compiled/episodes/1_4_002_00_a.json",
+          "bytes": 131286,
+          "sha256": "344e42de3e34af015f4daa41455646aab8d868af40fa7bc78d8d847fc7c88d8d"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/1_4_002_00_b.json",
+          "url": "/data/compiled/episodes/1_4_002_00_b.json",
+          "bytes": 86637,
+          "sha256": "d1bcefb4d6fc7dcebae9457731f27b35a868706a453ff4a23f35a1a88ba1da36"
+        }
+      ],
+      "consumers": [
+        "Story Runtime",
+        "ReadingDocument",
+        "translation preflight"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Identity-only: all non-identity compiled fields deep-equal before and after",
+          "Reader row kind, source text, speaker source name, order, anchors, controls and status unchanged",
+          "RAW bundle, source coordinates, candidate hashes and source hashes verified; strict runtime candidate not mounted"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "not-tested",
+        "tested_url": null,
+        "tested_at": null,
+        "tested_commit": null,
+        "environment": null,
+        "evidence": []
+      },
+      "previous_state": {
+        "kind": "unmanaged-existing",
+        "release_id": null,
+        "artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/1_4_002_00.json",
+            "url": "/data/compiled/1_4_002_00.json",
+            "bytes": 215197,
+            "sha256": "f61a3bb688f8087d4985e567dd3d56032a20333b70f7e8d904a4ec1051081666"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_4_002_00_a.json",
+            "url": "/data/compiled/episodes/1_4_002_00_a.json",
+            "bytes": 130587,
+            "sha256": "756cefb18aea0669b177e4bfec984d99c336cdfb006556010e61e60c66647f82"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/1_4_002_00_b.json",
+            "url": "/data/compiled/episodes/1_4_002_00_b.json",
+            "bytes": 85026,
+            "sha256": "96ac4d19312ce0898959301a6ad15b7f9ed8bb6ad786d40483d3999e710ff3e5"
+          }
+        ],
+        "evidence": [
+          "Git baseline f5bc5d46911781f210a143861335a120a20c0f01"
+        ]
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

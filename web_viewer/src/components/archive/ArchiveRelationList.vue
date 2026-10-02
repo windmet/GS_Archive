@@ -10,7 +10,7 @@
       :type="item.actionable === false ? undefined : 'button'"
       @click="select(item)"
     >
-      <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.imageAlt || ''" loading="lazy" />
+      <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.kind === 'card' ? archiveText('card',item.imageAlt,'title') : item.imageAlt || ''" loading="lazy" />
       <span v-else class="relation-icon" aria-hidden="true">
         <component :is="relationIcon(item.kind)" :size="19" :stroke-width="1.8" />
       </span>
@@ -25,7 +25,7 @@
             {{ item.statusLabel }}
           </small>
         </span>
-        <b>{{ item.title }}</b>
+        <b :title="item.kind === 'card' ? item.title : undefined">{{ item.kind === 'card' ? archiveText('card',item.title,'title') : item.title }}</b>
         <small v-if="item.meta" class="relation-meta">{{ item.meta }}</small>
         <small v-if="showEvidence && item.evidence" class="relation-proof">{{ item.evidence }}</small>
         <code v-if="showEvidence && item.resource">{{ item.resource }}</code>
@@ -40,6 +40,7 @@
 <script setup>
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import {archiveText} from './useArchiveCardTitle.js'
 import { BookOpenText, CalendarRange, ChevronRight, Images, Layers3, Link2, Sparkles, UsersRound } from '@lucide/vue'
 
 const props = defineProps({

@@ -8,6 +8,8 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
+      compact-mobile
+      :immersive-tool="view === 'song_detail'"
       :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
       :searchable="archiveSearchable"
@@ -17,11 +19,13 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
-      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
-        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
+      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :chapter-navigation="readingChapterNavigation" @chapter="selectReaderChapter" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
+        :related-event="currentEventId" @open-event="openEventDetail({event_id:currentEventId},'reader')"
+        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :idol-name="idolDisplayName"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
         @save-preferred="savePreferredIdol"
@@ -45,6 +49,7 @@
         :target-label="idolPickerLabel"
         @cancel="cancelWelcomeOrPicker"
         @choose-later="chooseStartupLater"
+        @choose-portal="choosePortalStartup"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
         @clear-preferences="clearUserPreferences"
@@ -52,7 +57,8 @@
       <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
-        v-model:selected-id="homeSelectedId"
+        :selected-id="homeSelectedId"
+        @update:selected-id="selectHomeIdol"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
         :no-audio="NO_AUDIO"
@@ -67,6 +73,7 @@
         @open-chat="openHomeChat"
       />
 
+      <ArchiveExperiments v-if="view === 'experiments'" @charts="openSongCatalog" @photo="openPictureStudio()" @stage="openChibiStage()" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -75,13 +82,14 @@
         :title="categoryHeaderText"
         :filter-placeholder="categoryFilterPlaceholder"
         :idols="filteredIdols"
+        :idol-name="idolDisplayName"
         :unit-options="idolUnitOptions"
         :current-unit="currentIdolUnitFilter"
         :idols-before-unit-filter="searchMatchedIdols.length"
         @back="goArchiveBack"
         @select="openIdol"
         @select-unit="updateArchiveFilter('currentIdolUnitFilter', $event)"
-        @open-units="openUnitCatalog"
+        @open-unit="openArchiveUnit"
       />
 
       <ArchiveCardList
@@ -91,6 +99,7 @@
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentCardCharacterName"
         :cards="filteredCardRows"
+        :idol-name="idolDisplayName"
         :rarity-tabs="cardRarityTabs"
         :current-rarity="currentCardRarity"
         :current-asset-state="currentCardAssetState"
@@ -109,12 +118,12 @@
       <ArchiveIdolDetail
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
-        :stats="currentIdolStats"
+        :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
-        @open-domain="openIdolDomain"
+        @open-domain="openIdolDomain" @open-honor="openCollectionEntity"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
@@ -153,6 +162,7 @@
         :total-gashas="gashaCatalog.length"
         :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || 0"
         :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || 0"
+        :supplement-count="gashaReadModelCatalog?.summary?.ticket_supplement_count || 0"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -162,11 +172,14 @@
         :gasha="currentGasha"
         :idol-name="idolDisplayName"
         @open-card="openGashaCard"
+        @open-item="openCollectionEntity"
       />
 
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
         :catalog="songReadModelCatalog"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :status="songReadModelStatus"
         :scope="currentSongScope"
         :query="filterQuery"
@@ -180,6 +193,8 @@
       <ArchiveSongDetail
         v-if="view === 'song_detail' && currentSongPresentation"
         :song="currentSongPresentation"
+        :idol-directory="archiveBootstrap.idols"
+        @open-chart="openChartLab"
         @open-song="openSong"
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
@@ -189,26 +204,27 @@
 
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
-        :event="currentEvent"
-        :master-event="currentMasterEvent"
-        :story="currentEventStory"
-        :episodes="currentEventEpisodes"
-        :cards="currentEventCards"
-        :idols="currentEventIdols"
-        :units="currentEventUnits"
-        :projected-cast-references="currentEventProjection?.castReferences || null"
-        :identity="bootstrapIdolDictionary"
-        :manifest="bootstrapMembership"
-        :raw-visual-url="eventStoryIdolRawCandidateUrl"
+        :view="currentEventProjection"
+        :client="readModelClient" :bootstrap="archiveBootstrap"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
-        :reading-entries="readingCatalogEntries"
         @read="openEventReader"
+        :display-idol-name="idolDisplayName"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
+        @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
+        @open-event="openEventDetail($event, 'event_detail')"
       />
+
+      <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @open-event="openEventDetail($event,view)" />
+      <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
+        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
+      <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery"
+        @query="filterQuery=$event; syncArchiveRoute({replace:true})" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @open-studio="openPictureStudio" />
+
 
       <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
@@ -261,6 +277,11 @@
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
         :all-entries="storyCatalogEntries"
+        :search-entries="filteredStoryCatalog"
+        :idol-directory="archiveBootstrap.idols"
+        :search-query="filterQuery" @update:search-query="updateArchiveFilter('filterQuery',$event)"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
         :section="currentStorySection"
@@ -279,11 +300,12 @@
         :extra-domain="extraStoryDomain"
         :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
+        @open-event="openEventDetail($event,'story_catalog')"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
-        @open-idol-story="openIdolStoryArchive()"
+        @open-idol-story="openIdolStoryArchive($event)"
         @load-more="storyVisibleLimit += 80"
         @clear-section="updateArchiveFilter('currentStorySection', '')"
         @update:mode="setStoryMode"
@@ -321,7 +343,7 @@
         :collection="currentStoryCollection"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
-        :reading-entries="readingCatalogEntries"
+        :reading-entries="readingCatalogEntries" :reader-source="currentArchiveRoute()" :load-reading-document="loadSynopsisReadingDocument"
         @read-episode="openCollectionReader"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
@@ -397,6 +419,7 @@
 
       <ArchiveUnitDetail
         v-if="view === 'unit_detail'"
+        :idol-name="idolDisplayName"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
         :identity="bootstrapIdolDictionary"
@@ -422,12 +445,13 @@
       <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
       <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
       <template #pending>
-        <GsLoadingIndicator v-if="routePending" variant="inline" message="正在准备下一页…" />
+        <GsLoadingIndicator v-if="routePending" variant="inline" :message="routePendingMessage" />
       </template>
     </ArchiveShell>
 
     <!-- ====== STORY PLAYER ====== -->
-    <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" class="playback-failure" role="alert">
+    <PlayerSessionShell v-if="playerSessionOpen">
+    <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" ref="playbackFailure" class="playback-failure" role="alert" tabindex="-1">
       <p v-if="playbackError">演出暂时无法载入，请重试或返回。</p>
       <p v-else>当前段落的必要{{ playbackReadiness.reason === 'voice-renderable' ? '语音' : '画面' }}未能准备完成，请重试或返回。</p>
       <details><summary>查看加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
@@ -457,17 +481,30 @@
       :end-step="currentScenarioEndStep"
       :initial-step="currentScenarioInitialStep"
       :has-next-episode="hasNextPlaybackEpisode"
+      :next-target="playbackController.nextTarget.value"
+      :position-label="[playbackController.continuation.value?.currentLabel, presentIdolEpisodeLabel({ sourceName:playbackController.queue.current.value?.label, format:'player' })].filter(Boolean).join(' · ')"
+      :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通讯目录' : '返回来源目录'"
       :transition-pending="loading && Boolean(playbackController.pendingEntry.value)"
+      :recovery-open="Boolean(playbackError || playbackReadiness?.status === 'blocked') && !loading"
       :queue-status="playbackController.queueStatus.value"
+      :queue-snapshot="playbackController.queue.snapshot.value" @select-episode="selectPlayerEpisode"
       :queue-error="playbackController.queueError.value"
       @retry-queue="playbackController.ensureQueue({ retry: true })"
-      :continuous-playback="continuousPlayback"
+      :continuous-playback="playbackController.continuationOverride.value ?? continuousPlayback"
       @back="closePlayer"
       @ready="onPlayerReady"
       @next-episode="playNextEpisode"
-      @update:continuous-playback="continuousPlayback = $event"
+      @update:continuous-playback="playbackController.setContinuous($event)"
     />
 
+    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
+    </PlayerSessionShell>
+
+    <ArchiveExperimentFrame v-if="view === 'chart_lab'" :title="`谱面 · ${currentSongPresentation?.title || '正在读取'}`" :back-label="detailSourceRoute ? '返回来源页' : '返回歌曲'" @back="closeFullScreenExperiment">
+      <ArchiveChartLab v-if="view === 'chart_lab' && currentSongPresentation?.gameplay" :song="currentSongPresentation" />
+      <p v-else-if="view === 'chart_lab'" role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
+    </ArchiveExperimentFrame>
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
     <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
@@ -491,18 +528,21 @@
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
     <GsLoadingIndicator v-if="routePending && !archiveShellVisible" class="archive-route-pending-fallback"
       variant="inline" message="正在准备下一页…" />
-    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage"
+    <LoadingScreen v-if="!playerSessionOpen" :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage"
       :surface="loadingPurpose === 'stage' ? 'stage' : (playbackBuffering || view === 'player' || loadingPurpose === 'story-playback' ? 'player' : 'archive')" />
 
   </div>
 </template>
 
 <script setup>
-import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from './core/PlayerEntryRequest.js'
+import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
+import {storyEventResources} from './data/eventResourceGraph.js'
+import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
+import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
@@ -511,16 +551,21 @@ import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, o
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 import { Preloader } from './utils/Preloader.js'
 import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
+import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterReadingPlan.js'
+import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
+import { readerScopeForViewport } from './core/ReaderViewport.js'
 import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
-import { createReadingSession } from './core/ReadingSession.js'
+import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
+import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import {
@@ -552,6 +597,7 @@ import {
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
+import { playbackPreferencesForReadingMode } from './core/ReaderPlaybackPreferences.js'
 import {
   setStoryLanguagePreferences,
   storyTranslationLocale,
@@ -596,6 +642,12 @@ const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
 const archiveRouteLoaders = {
+  event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
+  collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
+  photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
+  experiments: () => import('./components/archive/ArchiveExperiments.vue'),
+  chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
+  picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
   story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
@@ -624,6 +676,12 @@ const archiveRouteLoaders = {
 }
 const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
 const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
+const ArchiveEventCatalog = defineAsyncComponent(archiveRouteLoaders.event_catalog)
+const ArchiveCollectionCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
+const ArchivePhotoCatalog = defineAsyncComponent(archiveRouteLoaders.photo_catalog)
+const ArchiveExperiments = defineAsyncComponent(archiveRouteLoaders.experiments)
+const ArchiveChartLab = defineAsyncComponent(archiveRouteLoaders.chart_lab)
+const PictureStudio = defineAsyncComponent(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
 const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
 const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
@@ -656,9 +714,22 @@ function prepareArchivePage(routeView, data) {
   return prepareArchiveRoute(archiveRouteLoaders, routeView, data)
 }
 
+const archiveComponentPending = ref(false)
+const routePendingMessage = ref('正在准备下一页…')
+let componentLoadRevision = 0
 function primeArchiveRouteComponent(routeView) {
+  const revision = ++componentLoadRevision
+  const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
+    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'藏品馆',
+    picture_studio:'摄影工作台',photo_catalog:'摄影资料',story_catalog:'故事目录'}
+  routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
+  archiveComponentPending.value = Boolean(load)
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
+    .finally(async () => {
+      await nextTick()
+      if (revision === componentLoadRevision) archiveComponentPending.value = false
+    })
 }
 
 const {
@@ -670,7 +741,7 @@ const {
   readingDocumentId,
   readingRowId,
   readingMode,
-  readingRevision,
+  readingRevision, readingScope, playMode,
   currentScenarioInitialStep,
   returnViewAfterPlayer,
   storyCollectionParentView,
@@ -702,6 +773,10 @@ const {
   stageTargetId,
   currentSongScope,
   currentEventId,
+  currentEntityKey,
+  currentCollectionState,
+  currentPhotoIdol,
+  currentPhotoEntity,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
@@ -743,9 +818,9 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
   unit_name: idol.unitName,
   unit_code: idol.unitCode,
 }])) }
-const bootstrapIdolSwitcher = archiveBootstrap.idols.map(idol => ({
-  idol_code: idol.id, display_name: idol.name, unit_name: idol.unitName,
-}))
+const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
+  idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
+})))
 const mobileIdolReadModelCatalog = ref(null)
 const mobileUnitReadModelCatalog = ref(null)
 const mobileIdolReadModelDetail = ref(null)
@@ -842,7 +917,7 @@ const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') ==
 const loading = ref(initialArchiveStartup.route.view === 'player' || !isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const hardLoading = computed(() => loading.value && (view.value === '__boot__' || loadingPurpose.value !== 'archive-data'))
-const routePending = computed(() => loading.value && !hardLoading.value)
+const routePending = computed(() => archiveComponentPending.value || (loading.value && !hardLoading.value))
 const preloadProgress = ref(0)
 
 // View preferences and history lifecycle (navigation refs are owned above).
@@ -855,13 +930,15 @@ let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
-  state: { view, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
+  state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
   preloadAssets: (plan, progress, options) => Preloader.preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: restorePlaybackDestination, resolveQueue: loadPlayerQueue,
+  resolveReaderSource: resolveReaderContinuationSource,
 })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
   preloadStatus, playbackBuffering, playbackReadiness } = playbackController
+const playerSessionOpen = computed(() => view.value === 'player' || Boolean(playbackController.pendingEntry.value))
 const loadingMessage = computed(() => playbackBuffering.value || view.value === 'player' || loadingPurpose.value === 'story-playback'
   ? '正在准备演出…'
   : loadingPurpose.value === 'stage' ? '正在准备舞台…' : '正在读取资料馆数据…')
@@ -953,6 +1030,7 @@ const idolUnitOptions = computed(() => {
     id: String(unit.unit_id),
     code: unit.unit_code,
     name: unit.unit_name,
+    color: unitReadModelCatalog.value?.find(row => row.id === String(unit.unit_id))?.catalog.unit.unit_color || '',
     count: counts.get(String(unit.unit_id)) || 0,
   })).filter(unit => unit.count)
 })
@@ -975,14 +1053,14 @@ const categoryHeaderText = computed(() => {
   if (currentCategoryId.value === 'cards') return '卡片档案'
   if (currentCategoryId.value === 'idol_chat') return '短信聊天'
   if (currentCategoryId.value === 'idol_phone') return '电话聊天'
-  return '偶像档案'
+  return '偶像与组合档案'
 })
 
 const categoryFilterPlaceholder = computed(() => {
   if (currentCategoryId.value === 'cards') return 'Search card idol...'
   if (currentCategoryId.value === 'idol_chat') return 'Search chat...'
   if (currentCategoryId.value === 'idol_phone') return 'Search phone...'
-  return 'Search idol...'
+  return '搜索偶像姓名或组合…'
 })
 
 // Episode Zero units.
@@ -1040,13 +1118,11 @@ const filteredStoryCatalog = computed(() => {
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
     (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
-    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
-    (!query || entry.searchText.includes(query) || entry.characters.some(characterId => (
-      idolEntitySearchText(characterId).includes(query)
-    ))),
+    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)),
   )
   const sorted = [...entries]
-  if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
+  if (currentStorySort.value === 'latest') sorted.sort((a,b)=>b.releaseAt-a.releaseAt)
+  else if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
   else if (currentStorySort.value === 'resource') sorted.sort((a, b) => a.resourceId.localeCompare(b.resourceId))
   else if (currentStorySort.value === 'steps_desc') sorted.sort((a, b) => (b.summary?.step_count || 0) - (a.summary?.step_count || 0))
   else sorted.sort((a, b) => a.domainOrder - b.domainOrder || a.resourceId.localeCompare(b.resourceId))
@@ -1086,7 +1162,6 @@ const externalStoryNavigationEntries = []
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
 
-const currentEventStory = computed(() => currentEventProjection.value?.story || null)
 const currentEventEpisodes = computed(() => currentEventProjection.value?.episodes || [])
 
 watch(continuousPlayback, enabled => {
@@ -1150,8 +1225,16 @@ const currentCards = computed(() => (cardReadModelCatalog.value || [])
 
 const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
+watch(view,nextView=>{
+  if (nextView === 'idols') void loadUnitCatalog().catch(error=>console.warn('Unit display metadata unavailable',error));
+  if (['cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
+    void loadArchiveNames('cards').catch(error=>console.warn('Card name translations unavailable',error));
+  }
+},{immediate:true});
+
 const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
   query: filterQuery.value,
+  titleSearchText: source=>archiveNamedSearchText('card',source,'title'),
   rarity: currentCardRarity.value,
   assetState: currentCardAssetState.value,
   relationState: currentCardRelationState.value,
@@ -1178,20 +1261,17 @@ const filteredGashas = computed(() => gashaCatalogFunctions.value?.filterGashaCa
   query: filterQuery.value,
   category: currentGashaCategory.value,
   idolSearchText: idolEntitySearchText,
+  nameSearchText: source => `${source} ${gashaCatalogFunctions.value?.translatedGashaName(source) || ''}`,
 }) || [])
 const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
   ? gashaReadModelDetail.value.gasha
   : null)
 const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
   ? eventReadModelDetail.value.view : null)
-const currentEvent = computed(() => currentEventProjection.value?.event || null)
-const currentMasterEvent = computed(() => currentEventProjection.value?.masterEvent || null)
+const currentEvent = computed(() => currentEventProjection.value?.story.entry || null)
 const currentEventExternalResources = computed(() =>
   externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
 )
-const currentEventCards = computed(() => currentEventProjection.value?.cards || [])
-const currentEventIdols = computed(() => currentEventProjection.value?.idols || [])
-const currentEventUnits = computed(() => currentEventProjection.value?.units || [])
 const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 const previousCard = computed(() => currentCardIndex.value > 0
   ? currentCards.value[currentCardIndex.value - 1]
@@ -1209,7 +1289,7 @@ const currentSeriesCards = computed(() => {
 
 const currentCardCharacterName = computed(() => {
   const id = currentCharacterId.value
-  return idolSourceName(id) || 'Cards'
+  return id ? idolDisplayName(id) : '全部卡片'
 })
 
 const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
@@ -1220,7 +1300,20 @@ const currentIdolEvents = computed(() => currentIdolDetail.value?.events || [])
 const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
 
 const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
+const chapterReadingState = ref(null)
+const readerCollectionDetail = shallowRef(null)
+const readingChapterNavigation = computed(() => readerCollectionDetail.value && readerChapterNavigation(
+  readerCollectionDetail.value.view.collection, readerCollectionDetail.value.view.readingEntries,
+  readingDocumentId.value, currentStoryFile.value))
 const readingPlaybackNotice = ref('')
+const pickerPreparing = ref(false)
+let pickerRequest = 0
+const playbackFailure = ref(null)
+watch(() => Boolean(playbackError.value || playbackReadiness.value?.status === 'blocked') && !loading.value, async open => {
+  if (!open) return
+  await nextTick()
+  playbackFailure.value?.querySelector('button')?.focus()
+}, { flush:'post' })
 const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh }) => {
   const descriptor = await entityDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.detail')
   if (fresh) readModelClient.invalidate(descriptor)
@@ -1235,6 +1328,7 @@ const readingRepository = createReadingRepository({ locatorResolver: async (docu
     return { entry: null, entries: [] }
   }
 } })
+function loadSynopsisReadingDocument(entry) { return readingRepository.load(entry.document_id, entry) }
 const readingCatalogEntries = computed(() => {
   if (view.value === 'story_collection' && currentStoryCollection.value)
     return collectionReadModelDetail.value.view.readingEntries
@@ -1248,9 +1342,15 @@ const readingCatalogEntries = computed(() => {
     return idolStoryReadModelDetail.value.view.readingEntries
   return []
 })
+const chapterReadingSession = createChapterReadingSession({ repository: readingRepository, publish: state => {
+  chapterReadingState.value = state
+  const segment = state.segments.find(item => item.documentId === readingDocumentId.value)
+  readingState.value = { status: segment?.status || 'not-generated', document: segment?.document || null,
+    entries: state.segments.map(item => item.entry).filter(Boolean), error: segment?.error || '' }
+} })
 const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
 
-const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
+const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage', 'chart_lab', 'picture_studio'].includes(view.value))
 
 const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.song : null)
@@ -1278,7 +1378,12 @@ const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
+  if (view.value === 'experiments') return '实验室'
   if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'collection_catalog') return '藏品馆'
+  if (view.value === 'photo_catalog') return '摄影资料'
+  if (view.value === 'picture_studio') return '摄影工作台'
+  if (view.value === 'event_catalog') return '活动一览'
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
@@ -1293,7 +1398,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
   if (view.value === 'mobile_archive') return 'Mobile 通信'
   if (view.value === 'gashas') return '卡池档案'
-  if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
+  if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value) || '卡池详情'
   if (view.value === 'song_catalog') return '歌曲档案'
   if (view.value === 'song_detail') return currentSong.value?.title || '歌曲详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
@@ -1303,14 +1408,14 @@ const archiveTitle = computed(() => {
   if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
   if (view.value === 'groups') return groupTitle.value
   if (view.value === 'cards') return currentCardCharacterName.value
-  if (view.value === 'card_detail') return currentCard.value?.title || '卡片详情'
+  if (view.value === 'card_detail') return archiveNamedText('card',currentCard.value?.title,'title') || '卡片详情'
   if (view.value === 'episode_zero_units') return '第零话'
   if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
   if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
   return 'SideM Archive'
 })
 
-const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value) || (view.value === 'story_catalog' && currentStoryMode.value === 'search'))
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value))
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
@@ -1336,11 +1441,11 @@ const archiveBreadcrumbs = computed(() => {
       id: currentArchiveUnitCode.value,
     },
     card_detail: {
-      title: currentCard.value?.title,
+      title: archiveNamedText('card',currentCard.value?.title,'title'),
       id: currentCardId.value,
     },
     gasha_detail: {
-      title: currentGasha.value?.display_name,
+      title: gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value),
       id: currentGashaId.value,
     },
     event_detail: {
@@ -1496,14 +1601,24 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       const destination = playerReturnRoute(route)
       playbackController.reset()
       return playbackController.restore(route.scenario, destination.view,
-        { startStep: route.startStep, endStep: route.endStep, initialStep: route.initialStep },
+        { startStep: route.startStep, endStep: route.endStep, initialStep: route.initialStep, entryIntent: route.playMode },
         [], intent, destination)
     }
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
+      route = { ...route, readingScope:readerScopeForViewport(route) }
+      // Reuse only this mounted collection's verified membership. Keep the
+      // chapter component mounted while changing its plan; never flash through
+      // the generic single-document loading page between two chapters.
+      const reusableDirectory = currentStoryDomain.value === route.storyType && currentStorySection.value === route.storySection
+        ? view.value === 'reader' ? readerCollectionDetail.value : view.value === 'story_collection' ? collectionReadModelDetail.value : null : null
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
       readingMode.value = route.readingMode || 'original'
       readingRevision.value = route.readingRev || ''
+      readingScope.value = route.readingScope || ''
+      chapterReadingSession.close()
+      if (route.readingScope !== 'chapter' || !reusableDirectory) chapterReadingState.value = null
+      readerCollectionDetail.value = reusableDirectory
       currentStoryDomain.value = route.storyType || ''
       currentStorySection.value = route.storySection || ''
       currentEpisodeId.value = route.episode || ''
@@ -1519,7 +1634,23 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       playbackController.reset()
       view.value = 'reader'
       loading.value = false
-      await readingSession.open(route.reading, intent)
+      if (readingScope.value === 'chapter') {
+        if (!reusableDirectory) readingState.value = { status:'loading', document:null, entries:[], error:'' }
+        try {
+          if (!route.storyType || !route.storySection) throw Error('整话阅读缺少正式目录来源')
+          const detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
+          if (!intent.isCurrent()) return
+          const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
+          readerCollectionDetail.value = detail
+          await chapterReadingSession.open(plan, intent)
+        } catch (error) { if (intent.isCurrent()) { chapterReadingState.value = null; readingState.value = {status:'error', document:null, entries:[], error:error.message} } }
+      } else {
+        const directory = !reusableDirectory && route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })
+          .then(detail => { if (intent.isCurrent()) readerCollectionDetail.value = detail })
+          .catch(() => { /* Optional chapter navigation must not block a readable document. */ }) : Promise.resolve()
+        await readingSession.open(route.reading, intent, knownReadingLocator(reusableDirectory, route.reading))
+        await directory
+      }
       if (!intent.isCurrent()) return
       if (route.view === 'player') await openReaderPlayback(route.readingRow, { intent, route })
       else if (readingRevision.value && readingRevision.value !== readingState.value.entries.find(e => e.document_id === route.reading)?.sha256) {
@@ -1595,6 +1726,10 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCharacterId.value = validRouteIdol ? (route.idol || '') : ''
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
+    currentEntityKey.value = route.entity || ''
+    currentCollectionState.value = route.collection || {kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
+    currentPhotoIdol.value = route.photoIdol || ''
+    currentPhotoEntity.value = route.photoEntity || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
@@ -1674,7 +1809,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
-    else if (route.view === 'song_detail' && !currentSong.value) view.value = 'song_catalog'
+    else if (['song_detail', 'chart_lab'].includes(route.view) && !currentSong.value) view.value = 'song_catalog'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
@@ -1735,7 +1870,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','photos','experiments'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -1749,13 +1884,51 @@ function navigateArchiveSection(section) {
     else openIdolPicker('mobile')
   }
   else if (section === 'gashas') openGashaCatalog()
+  else if (section === 'experiments') { filterQuery.value = ''; commitView('experiments') }
   else if (section === 'resources') openArchiveStatus()
+  else if (['events','collections','photos'].includes(section)) openDomainCatalog(section)
+}
+
+function openDomainCatalog(section) {
+  currentCollectionState.value={kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
+  filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
+  currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
+  commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
+}
+function openCollectionEntity(key) {
+  if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
+  if (!/^(item|honor):\d+$/.test(key || '')) return
+  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value='';currentCollectionState.value={kind:key.startsWith('honor:')?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}}
+  currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
+  commitView('collection_catalog')
+}
+function updateCollectionBrowse(next) {
+  if(next.kind!==currentCollectionState.value.kind){currentEntityKey.value='';filterQuery.value=''}
+  currentCollectionState.value=next
+  syncArchiveRoute({replace:true})
+}
+function selectPhotoIdol(id) {
+  if (!/^\d{1,4}$/.test(String(id))) return
+  if (currentPhotoIdol.value!==String(id) && /^(faces|poses):/.test(currentPhotoEntity.value)) currentPhotoEntity.value=''
+  currentPhotoIdol.value=String(id); syncArchiveRoute()
+}
+
+async function openDomainTarget(target){
+  if(target?.view==='card_detail' && /^[a-z0-9_]+$/.test(target.card || ''))return openEventCard({card_resource_id:target.card})
+  if(target?.view==='photo_catalog' && /^(spots|scenes|stickers|frames|filters):\d+$/.test(target.photoEntity || '')){captureDetailSource();currentPhotoIdol.value='';currentPhotoEntity.value=target.photoEntity;currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog')}
+}
+function selectPhotoEntity(key) {
+  if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
+  currentPhotoEntity.value=key; syncArchiveRoute({replace:true})
+}
+function openPictureStudio(key) {
+  if (key) selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
   const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
     sourceRoute: returnSourceRoute || buildArchiveSourceQuery(currentArchiveRoute()) }
-  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value }, { restoring: false })
+  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value, readingScope: source.readingScope ?? context.readingScope ?? '' }, { restoring: false })
   // Publish the requested route immediately, including while text is loading.
   syncArchiveRoute()
   await pending
@@ -1775,13 +1948,46 @@ async function refreshStoryReader() {
 
 function openCollectionReader({ chapter, documentId }) {
   return openStoryReader(documentId, { storyType: currentStoryDomain.value,
-    storySection: currentStorySection.value, story: chapter.story?.file || '' })
+    storySection: currentStorySection.value, story: chapter.story?.file || chapter.file || '', readingScope:'chapter' })
+}
+
+function selectReaderDocument(documentId) {
+  const segment = readingScope.value === 'chapter' && chapterReadingState.value?.segments.find(item => item.documentId === documentId)
+  if (!segment) return openStoryReader(documentId)
+  readingDocumentId.value = documentId; readingRowId.value = ''; readingRevision.value = segment.entry?.sha256 || ''
+  readingState.value = { status:segment.status, document:segment.document, entries:chapterReadingState.value.segments.map(item=>item.entry).filter(Boolean), error:segment.error }
+  syncArchiveRoute({ replace:true })
+}
+async function selectReaderChapter(chapterId) {
+  const target = readingChapterNavigation.value?.chapters.find(chapter => chapter.id === chapterId)
+  if (!target?.documentId || !target.storyFile || chapterId === readingChapterNavigation.value.chapterId) return
+  const context = currentArchiveRoute()
+  const source = readArchiveSourceRoute(context.sourceRoute || '')
+  if (source.view === 'story_collection' && source.storyType === context.storyType && source.storySection === context.storySection)
+    context.sourceRoute = buildArchiveSourceQuery({ ...source, story:target.storyFile })
+  const pending = applyArchiveRoute({ ...context, view:'reader', story:target.storyFile,
+    reading:target.documentId, readingRow:'', readingRev:'' }, { restoring:false })
+  syncArchiveRoute()
+  await pending
+}
+function locateChapterReadingRow({ documentId, rowId, revision }) {
+  const segment = chapterReadingState.value?.segments.find(item => item.documentId === documentId)
+  if (!segment || segment.status !== 'ready' || segment.entry.sha256 !== revision || !segment.document.rows.some(row => row.anchor.row_id === rowId)) return
+  selectReaderDocument(documentId); readingRowId.value = rowId; readingRevision.value = revision; syncArchiveRoute({ replace:true })
+}
+function playChapterReadingSegment({ documentId, rowId }) {
+  selectReaderDocument(documentId)
+  const segment = chapterReadingState.value?.segments.find(item => item.documentId === documentId)
+  if (segment?.status !== 'ready') return
+  readingRowId.value = segment.document.rows.some(row=>row.anchor.row_id===rowId) ? rowId : ''
+  readingRevision.value = segment.entry.sha256
+  return openReaderPlayback(readingRowId.value, { fullDocument:true })
 }
 
 function closeStoryReader() {
   // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
   if (detailSourceRoute.value && (!currentEventId.value ||
-      readArchiveSourceRoute(detailSourceRoute.value).view === 'event_detail')) return restoreDetailSource(openStoryCatalog)
+      ['event_detail','story_catalog'].includes(readArchiveSourceRoute(detailSourceRoute.value).view))) return restoreDetailSource(openStoryCatalog)
   if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
     const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
       story: currentStoryFile.value, workMode: currentWorkMode.value }, { restoring: false })
@@ -1804,7 +2010,7 @@ function closeStoryReader() {
 
 function returnToReader() {
   const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-    readingMode: readingMode.value, readingRev: readingRevision.value,
+    readingMode: readingMode.value, readingRev: readingRevision.value, readingScope:readingScope.value,
     category: currentEventId.value ? currentCategoryId.value : '',
     unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
     parentView: currentEventId.value ? eventParentView.value : '',
@@ -1841,7 +2047,35 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
       const entry = readingState.value.entries.find(e => e.document_id === readingDocumentId.value)
       const revision = route ? route.readingRev : (readingRevision.value || entry?.sha256)
       // An initial index of 1 denotes the full episode; row remains the return location.
-      const target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry,
+      let target
+      if (route && ['segment','chapter'].includes(route.playMode) &&
+          (route.scenario !== readingState.value.document?.source.file || !route.initialStep)) {
+        // A picker URL keeps the original Reader locator while identifying a
+        // different full segment. Validate both identities independently.
+        if (!entry || revision !== entry.sha256) throw Error('阅读版本已变化，请重新打开本篇正文后再演出。')
+        let candidates = readingState.value.entries.filter(item => item.source_file === route.scenario)
+        if (!candidates.length && route.storyType && route.storySection) {
+          const detail=await loadCollectionDetail(route.storyType,route.storySection,{signal:intent.signal,priority:'foreground'})
+          if (!intent.isCurrent()) return false
+          const memberships=detail.view.collection.chapters.filter(chapter=>!chapter.canonicalRelation)
+            .flatMap(chapter=>chapter.episodes.filter(episode=>episode.file === route.scenario && episode.exists !== false))
+          if (memberships.length === 1) candidates=detail.view.readingEntries.filter(item=>item.source_file === route.scenario)
+        }
+        if (candidates.length !== 1 || ![0,1].includes(route.initialStep || 0)) throw Error('选集来源或演出定位不一致。')
+        const selectedEntry = candidates[0]
+        const selectedDocument = selectedEntry.document_id === readingDocumentId.value
+          ? readingState.value.document : (await readingRepository.load(selectedEntry.document_id, selectedEntry)).document
+        if (!intent.isCurrent()) return false
+        target = readingPlaybackTarget(selectedDocument, '', selectedEntry.sha256, selectedEntry, { fullDocument:true })
+        if (route.startStep !== target.startStep || route.endStep !== target.endStep) {
+          const queue = await loadPlayerQueue({ ...route, view:'reader' }, { file:route.scenario, startStep:route.startStep, endStep:route.endStep, signal:intent.signal })
+          if (!intent.isCurrent()) return false
+          const ranges=(Array.isArray(queue) ? queue : queue.episodes || []).filter(item=>item.file === route.scenario && item.exists !== false)
+          if (ranges.length !== 1 || Number(ranges[0].startStep || 1) !== route.startStep || Number(ranges[0].endStep || target.endStep) !== route.endStep || route.startStep < target.startStep || route.endStep > target.endStep) throw Error('选集范围与正式目录不一致。')
+          target.startStep=route.startStep; target.endStep=route.endStep
+        }
+        target.initialStep = route.initialStep
+      } else target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry,
         { fullDocument: route ? route.initialStep === 1 : fullDocument })
       if (route && (route.scenario !== target.file || route.startStep !== target.startStep ||
           route.endStep !== target.endStep || route.initialStep !== target.initialStep)) {
@@ -1852,7 +2086,11 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
       // Pin the requested text version/row even if media preparation subsequently fails.
       if (!route) syncArchiveRoute({ replace: true })
       loadingPurpose.value = 'story-playback'
-      const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route })
+      if (!intent.isCurrent()) return false
+      const languagePreferences = new PlayerPreferencesRepository().update(
+        playbackPreferencesForReadingMode(readingMode.value))
+      setStoryLanguagePreferences(languagePreferences)
+      const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route, lazyQueue: true, entryIntent: route?.playMode || 'segment' })
       if (!loaded && intent.isCurrent()) readingPlaybackNotice.value = playbackError.value
     } catch (error) {
       if (intent.isCurrent()) readingPlaybackNotice.value = error.message
@@ -1891,6 +2129,13 @@ function openRootPortal() {
 
 function chooseStartupLater() {
   if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
+  storeUserPreferences({ onboardingComplete: true })
+  openRootPortal()
+}
+
+function choosePortalStartup() {
+  storeUserPreferences({ homeMode: 'portal', onboardingComplete: true })
+  detailSourceRoute.value = ''
   openRootPortal()
 }
 
@@ -1898,7 +2143,10 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
   const next = {}
-  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) Object.assign(next, { homeMode: rememberStartup ? homeMode : (userPreferences.value.homeMode === 'card' ? 'card' : 'spine'), startupIdol: idolCode, onboardingComplete: true })
+  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) {
+    Object.assign(next, { startupIdol: idolCode, onboardingComplete: true })
+    if (rememberStartup) next.homeMode = homeMode
+  }
   if (setPreferred) next.preferredIdol = idolCode
   if (Object.keys(next).length) storeUserPreferences(next)
   if (view.value === 'idol_picker') {
@@ -1913,6 +2161,12 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
     return
   }
   openGameHome(idolCode)
+}
+
+function selectHomeIdol(idolCode) {
+  if (!archiveHomeIdols.value.some(idol => idol.id === idolCode)) return
+  homeSelectedId.value = idolCode
+  storeUserPreferences({ startupIdol: idolCode })
 }
 
 function savePreferredIdol(idolCode) {
@@ -2022,7 +2276,7 @@ async function closeArchivePortal() {
   }
   if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
   if (route.view === 'idol_story_archive' && route.idol) idolStoryReadModelDetail.value = await loadIdolStoryDetail(route.idol)
-  if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
+  if (['story_collection', 'reader'].includes(route.view) && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
   const pending = applyArchiveRoute(route)
   const expected = navigation.getRevision()
@@ -2106,6 +2360,10 @@ function goArchiveBack() {
   if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
+    event_catalog:goHome,
+    collection_catalog:goHome,
+    photo_catalog:goHome,
+    picture_studio:()=>commitView('photo_catalog'),
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,
@@ -2211,6 +2469,12 @@ function goArchiveBack() {
   }
   const handler = backByView[view.value] || goHome
   handler()
+}
+
+function openChartLab() { captureDetailSource(); filterQuery.value = ''; commitView('chart_lab') }
+function closeFullScreenExperiment() {
+  if (detailSourceRoute.value) return restoreDetailSource(goHome)
+  commitView(view.value === 'chart_lab' ? 'song_detail' : 'photo_catalog')
 }
 
 async function openSpineLab() {
@@ -2904,7 +3168,11 @@ function openUnitCards() {
 }
 
 function openCatalogStory(entry) {
-  if (entry?.eventRelation) openEventDetail(entry.eventRelation, 'story_catalog')
+  if (entry?.eventRelation) {
+    const resource=storyEventResources(entry)
+    if(resource?.firstReadingId&&resource.storyFile===entry.file)return openStoryReader(resource.firstReadingId,{event:resource.id,parentView:'story_catalog',storyType:'event',story:entry.file})
+    return openStoryDetail(entry)
+  }
   else openStoryDetail(entry)
 }
 
@@ -2940,16 +3208,16 @@ function playStoryDetail(entry = currentStory.value) {
 
 function playStoryCollectionChapter(chapter) {
   selectStoryCollectionChapter(chapter, { sync: false })
-  const queue = (chapter?.episodes || []).filter(episode => episode.exists && episode.file)
-  if (queue.length) startEpisodeQueue(queue, 0, 'story_collection')
-  else if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
+  const queue = chapter?.episodes || []
+  if (queue.length && queue[0].exists && queue[0].file) startEpisodeQueue(queue, 0, 'story_collection', { entryIntent:'chapter' })
+  else if (!queue.length && chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection', { entryIntent:'chapter' })
 }
 
 function playStoryCollectionEpisode({ chapter, episode }) {
   selectStoryCollectionChapter(chapter, { sync: false })
-  const queue = (chapter?.episodes || []).filter(candidate => candidate.exists && candidate.file)
+  const queue = chapter?.episodes || []
   const index = queue.findIndex(candidate => candidate.id === episode?.id)
-  if (index >= 0) startEpisodeQueue(queue, index, 'story_collection')
+  if (index >= 0) startEpisodeQueue(queue, index, 'story_collection', { entryIntent:'segment' })
 }
 
 function selectStoryCollectionChapter(chapter, { sync = true } = {}) {
@@ -3125,7 +3393,7 @@ function selectPrimaryIdol(idolCode) {
 }
 
 function selectCardIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
+  if (idolCode !== '' && !archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
   currentCharacterId.value = idolCode
   currentCardId.value = ''
   filterQuery.value = ''
@@ -3148,6 +3416,7 @@ function openIdol(entry) {
 }
 
 function openIdolDomain(domain) {
+  if(domain==='photos' && currentIdolDetail.value?.photo){captureDetailSource();currentPhotoIdol.value=String(currentIdolDetail.value.photo.idolId);currentPhotoEntity.value='';currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog');return}
   if (domain === 'cards') return openPrimaryCards(currentCharacterId.value, { captureSource: true })
   if (domain === 'stories') {
     openIdolStoryArchive(currentCharacterId.value)
@@ -3197,7 +3466,7 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
   if (route.view === 'song_catalog') await ensureSongCatalog()
-  if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
+  if (['song_detail', 'chart_lab'].includes(route.view) && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
   const pending = applyArchiveRoute(route, { restoring: false })
   const revision = navigation.getRevision()
@@ -3371,8 +3640,8 @@ function playCurrentEventEpisode(episode) {
   if (index >= 0) startEpisodeQueue(queue, index, 'event_detail')
 }
 
-function startEpisodeQueue(episodes, index, returnView) {
-  return playbackController.startQueue(episodes, index, returnView)
+function startEpisodeQueue(episodes, index, returnView, options = {}) {
+  return playbackController.startQueue(episodes, index, returnView, { ...options, continuation: returnView === 'story_collection' ? selectCollectionContinuation(currentStoryCollection.value, episodes[index]?.file, episodes[index]) : null })
 }
 
 function playbackEpisodes(returnView) {
@@ -3382,7 +3651,18 @@ function playbackEpisodes(returnView) {
   return []
 }
 
-function playNextEpisode() { return playbackController.next() }
+async function selectPlayerEpisode(request) {
+  const token = ++pickerRequest
+  pickerPreparing.value = true
+  try {
+    const selected = await playbackController.selectEpisode(request)
+    if (token === pickerRequest) request.onComplete?.(selected)
+    return selected
+  }
+  finally { if (token === pickerRequest) pickerPreparing.value = false }
+}
+
+function playNextEpisode(request = {}) { return playbackController.next(request.instance, { chapter: request.chapter === true }) }
 
 async function openEventCard(relation) {
   const revision = navigation.getRevision()
@@ -3537,11 +3817,11 @@ async function restorePlaybackDestination(destination, route) {
 async function loadPlayerQueue(route, request) {
   return withLoadDeadline(async signal => {
     const options = { signal, priority: 'background' }
-    if (route.view === 'story_collection' && route.storyType && route.storySection) {
+    if (['story_collection', 'reader'].includes(route.view) && route.storyType && route.storySection) {
       const detail = await loadCollectionDetail(route.storyType, route.storySection, options)
-      return selectPlayerQueue(detail.view.collection.chapters, request.file, request)
+      return selectCollectionContinuation(detail.view.collection, request.file, { ...request, verifiedWholeFile:route.view === 'reader' })
     }
-    if (route.view === 'event_detail' && route.event) {
+    if (['event_detail', 'reader'].includes(route.view) && route.event) {
       const detail = await loadEventDetail(String(route.event), options)
       return (detail.view.episodes || []).filter(episode => episode.exists !== false && episode.file)
     }
@@ -3549,8 +3829,36 @@ async function loadPlayerQueue(route, request) {
       const detail = await loadIdolStoryDetail(route.idol, options)
       return selectPlayerQueue(detail.view.page.sections, request.file, request)
     }
+    if (route.view === 'reader' && route.reading) {
+      const locator = await readingRepository.locator(route.reading)
+      return locator.entries.map(entry => ({ id: entry.document_id, file: entry.source_file,
+        label: entry.episode_label || entry.title, exists: true }))
+    }
     return []
   }, { signal: request.signal, timeoutMs: 15000, label: 'episode-queue' })
+}
+
+async function resolveReaderContinuationSource(file, returnRoute = currentArchiveRoute()) {
+  const mountedFile = currentScenarioFile.value
+  let entries = (await readingRepository.locator(returnRoute.reading || readingDocumentId.value)).entries
+  if (!entries.some(entry => entry.source_file === file) && returnRoute.storyType && returnRoute.storySection) {
+    const detail = await loadCollectionDetail(returnRoute.storyType, returnRoute.storySection, { priority:'background' })
+    const chapters=detail.view.collection.chapters
+    const owners=chapters.map((chapter,index)=>({chapter,index})).filter(({chapter})=>!chapter.canonicalRelation && chapter.episodes.some(episode=>episode.file === mountedFile))
+    if (owners.length !== 1) throw Error('后续演出缺少唯一正式话目来源')
+    const {chapter,index}=owners[0], adjacent=chapters[index+1]
+    const allowed=chapter.episodes.some(episode=>episode.file === file && episode.exists !== false) ||
+      (!adjacent?.canonicalRelation && adjacent?.exists && adjacent.episodes[0]?.exists && adjacent.episodes[0].file === file)
+    if (!allowed) throw Error('后续演出不是当前话目或相邻话目的明确入口')
+    entries=detail.view.readingEntries
+  }
+  const candidates = entries.filter(entry => entry.source_file === file)
+  if (candidates.length !== 1) throw Error('后续演出缺少唯一正文来源')
+  const documentId = candidates[0].document_id
+  const { entry } = await readingRepository.locator(documentId)
+  const { document } = await readingRepository.load(documentId, entry)
+  if (!document || entry.document_id !== documentId || entry.source_file !== file || entry.sha256 !== candidates[0].sha256 || entry.source_sha256 !== candidates[0].source_sha256) throw Error('后续演出缺少匹配正文来源，请返回目录重新打开。')
+  return readingPlaybackTarget(document, null, entry.sha256, entry, { fullDocument: true }).readScenario
 }
 
 function closePlayer() { return playbackController.close() }
@@ -3669,8 +3977,9 @@ async function loadGashaCatalog() {
   if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
   if (!gashaCatalogPromise) {
     gashaCatalogPromise = (async () => {
-      const [functions, index] = await Promise.all([
+      const [functions, tickets, index] = await Promise.all([
         import('./data/gashaCatalog.js'),
+        import('./data/gashaTicketCatalog.js'),
         readModelClient.load(archiveBootstrap.domains.gashas),
       ])
       const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
@@ -3679,8 +3988,8 @@ async function loadGashaCatalog() {
         new Set(rows.map(row => String(row.id))).size !== rows.length ||
         rows.some(row => row.phase !== 'primary' || !row.detail))
         throw new Error('Gasha catalog count or identity mismatch')
-      const catalog = { rows, summary: index.summary || {} }
-      gashaCatalogFunctions.value = functions
+      const catalog = tickets.supplementGashaCatalog(rows,index.summary || {})
+      gashaCatalogFunctions.value = {...functions,...tickets}
       gashaReadModelCatalog.value = catalog
       return catalog
     })().catch(error => { gashaCatalogPromise = null; throw error })
@@ -3691,10 +4000,12 @@ async function loadGashaCatalog() {
 async function loadGashaDetail(id) {
   const row = (await loadGashaCatalog()).rows.find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable gasha: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  if(row.source_type==='item-masterdata')return {id,gasha:row}
+  const detail = await readModelClient.load(row.detail, { expectedId: id, validate: data => {
     if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
       throw new Error('Gasha detail identity or shape mismatch')
   } })
+  return {...detail,gasha:gashaCatalogFunctions.value.attachGashaTickets(detail.gasha)}
 }
 
 async function loadCardCatalog() {
@@ -3746,16 +4057,24 @@ async function loadEventCatalog() {
 async function loadEventDetail(id, options = {}) {
   const row = (await loadEventCatalog()).find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable event: ${id}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
-    if (String(data.view?.event?.event_id) !== id || !Array.isArray(data.view?.episodes) ||
-      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.idols) ||
+  const detail=await readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
+    if (data.view?.schemaVersion !== 2 || String(data.view?.identity?.id) !== id || !Array.isArray(data.view?.episodes) ||
+      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.cast) ||
       !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
       !Array.isArray(data.view?.readingEntries) ||
-      data.view.castReferences.length !== data.view.idols.length ||
-      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.idols[index].idol_code ||
+      !Array.isArray(data.view?.rewards?.generalPages) || !Number.isSafeInteger(data.view?.rewards?.generalCount) || data.view.rewards.generalCount < 0 ||
+      data.view.castReferences.length !== data.view.cast.length ||
+      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.cast[index].idol_code ||
         entry.reference?.idolCode !== entry.idol_code))
       throw new Error('Event detail identity or shape mismatch')
   } })
+  const pages=await Promise.all(detail.view.rewards.generalPages.map(page=>readModelClient.load(page,{...options,validate:data=>{
+    if(!Array.isArray(data.rows) || data.rows.some(row=>row?.eventId!==detail.view.provenance.eventId))throw Error('Event reward page identity mismatch')
+  }})))
+  const general=pages.flatMap(page=>page.rows)
+  if(general.length!==detail.view.rewards.generalCount || general.some(row=>row.eventId!==detail.view.provenance.eventId))throw Error('Event reward identity mismatch')
+  return {...detail,view:{...detail.view,rewards:{...detail.view.rewards,general}}}
+
 }
 
 async function loadSeasonalCatalog() {
@@ -4075,8 +4394,9 @@ async function loadSongDetail(songCode) {
 }
 
 function isBootstrapRoute(route) {
+  if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['experiments', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
@@ -4313,7 +4633,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
       }
       if (route.view === 'song_catalog') await ensureSongCatalog()
       if (!intent.isCurrent() || request !== restoreRequest) return
-      if (['song_detail', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
+      if (['song_detail', 'chart_lab', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
         try {
           const detail = await loadSongDetail(route.song || 'drvalv')
           if (!intent.isCurrent() || request !== restoreRequest) return
@@ -4322,7 +4642,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
         } catch (error) {
           if (!intent.isCurrent() || request !== restoreRequest) return
           console.error('[SongReadModel] Failed to restore song detail:', error)
-          if (route.view === 'song_detail') {
+          if (['song_detail', 'chart_lab'].includes(route.view)) {
             await ensureSongCatalog()
             if (!intent.isCurrent() || request !== restoreRequest) return
             songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'

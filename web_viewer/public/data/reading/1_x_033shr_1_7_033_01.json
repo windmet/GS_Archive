@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_033shr_1_7_033_01",
-  "logical_id": "story-collection:1_x_033shr_1_7_033_01",
+  "logical_id": "story:1_x_033shr_1_7_033_01",
   "scenario_id": "1_x_033shr_1_7_033_01",
   "text_catalog_id": "1_x_033shr_1_7_033_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_033shr_1_7_033_01.json",
-    "sha256": "sha256:ffd8f454fc571d80fd5b2ad9b24ef5ba27d8e21a2b50ecdbceb1aa1a3fc75ed1",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:6b568770e4e4cb50bf52faef40985ddafdaac7003923d3d8b70aafa9adce5800",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:92c9c40a4bb9fa16172349700a976c38bbe859bd556213783b2120fac5fea5fd",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_033shr_1_7_033_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "なあなあ、●●●●プロデューサー！\n今日、4月22日って何の日か知ってるよな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_033shr_1_7_033_01:1_7_033_01:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_033shr_1_7_033_01",
+          "part_id": "1_7_033_01",
+          "file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d388187bf38eaf01b7e12f38798e42aa6da01aa9fe63e16ca4a6013d2d6964b2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -47,26 +61,35 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_033shr_1_7_033_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_033_01",
+        "source_file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "もちろんですよ！　志狼くんお誕生日、\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_033shr_1_7_033_01:1_7_033_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_033shr_1_7_033_01",
+          "part_id": "1_7_033_01",
+          "file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:acfc643fc8a747d74d19276161b95258b931493d90b331c95e94b7e08c5815df"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -93,21 +116,32 @@
         "row_id": "1_x_033shr_1_7_033_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_033_01",
+        "source_file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ま、オレの●●●●プロデューサーなら、\n誕生日くらい覚えててトーゼンだよな♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_033shr_1_7_033_01:1_7_033_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_033shr_1_7_033_01",
+          "part_id": "1_7_033_01",
+          "file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aa56d8d2c740c4a492b33ef0706b53d92373456165ee135cdf38c74b494a6d91"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -123,30 +157,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_033shr_1_7_033_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_033_01",
+        "source_file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日は盛大に祝ってくれるんだろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_033shr_1_7_033_01:1_7_033_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_033shr_1_7_033_01",
+          "part_id": "1_7_033_01",
+          "file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e65e49b57b40ea92c5129d214caec106f45cd1f07fb48e2df1e46322fa07bc57"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -163,7 +206,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -172,21 +214,32 @@
         "row_id": "1_x_033shr_1_7_033_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_033_01",
+        "source_file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "でっかいケーキをお腹いっぱい食べて、\nプレゼントをいーっぱいもらうんだ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_033shr_1_7_033_01:1_7_033_01:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_033shr_1_7_033_01",
+          "part_id": "1_7_033_01",
+          "file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:87602a4bc99d12eebb15da9d5f0e25c08a051b5420083efc61837787cc561abe"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_033shr_1_7_033_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_033_01",
+        "source_file": "assets/resources/scenariodata/1_x_033shr/scenario_1_7_033_01.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "なあなあ、●●●●プロデューサー！",
     "episode_label": null

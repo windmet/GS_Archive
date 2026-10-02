@@ -331,6 +331,16 @@ let ledgerStoryFiles = 0
 for (const [logicalId, state] of Object.entries(publicationManifest.by_logical_id || {})) {
   if (state.domain !== 'story') continue
   const kind = storyKinds.get(logicalId)
+  // Identity/flow backfills govern legacy artifacts without promoting Runtime.
+  const strictState = (await Promise.all(state.artifacts.map(a => readJson(a.path.replace(/^web_viewer\//u, ''))))).every(s => s.runtime_contract === 'story-runtime-v2')
+  if (!strictState) {
+    for (const artifact of state.artifacts) {
+      const legacy = await readJson(artifact.path.replace(/^web_viewer\//u, ''))
+      assert.ok((legacy.schema_version ?? 1) === 1 || legacy.runtime_contract === 'story-runtime-v2-compat', `${logicalId}: mixed/unregistered runtime promotion`)
+      assert.ok(Array.isArray(legacy.steps))
+    }
+    continue
+  }
   assert.ok(kind, `${logicalId} must appear in the authoritative Story registry`)
   if (kind === 'collection') assert.ok(state.artifacts.length >= 2, `${logicalId} must publish an aggregate and at least one episode`)
   else assert.equal(state.artifacts.length, 1, `${logicalId} must publish one standalone artifact`)

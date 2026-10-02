@@ -38,7 +38,8 @@ test('pending catalogue does not erase pinned ID',()=>assert.equal(resolveHomeBa
 test('missing scene falls back, does not mutate preference',()=>{const pref='bg058_photostudio_in_01';assert.equal(resolveHomeBackground(pref,[],'bg001',true),'bg001');assert.equal(pref,'bg058_photostudio_in_01')})
 test('cue mode explicitly follows source',()=>assert.equal(resolveHomeBackground('cue',[{id:'bg058'}],'bg001'),'bg001'))
 test('card startup selects Home; explicit route wins',()=>{assert.equal(resolveArchiveStartup('/',{homeMode:'card'}).route.view,'home');assert.equal(resolveArchiveStartup('/?view=home&home_idol=040ren',{homeMode:'card'},['040ren']).route.homeIdol,'040ren')})
-test('eight canonical navigation sections unchanged',()=>assert.equal(ARCHIVE_NAVIGATION.length,8))
+test('current published portal navigation retained',()=>assert.deepEqual(ARCHIVE_NAVIGATION.map(section=>section.id),
+ ['home','stories','songs','idols','cards','gashas','interactions','events','collections','photos','experiments','resources']))
 let calls=0
 const fetcher=async()=>{calls++;return{ok:true,text:async()=>JSON.stringify(menu([record]))}}
 await Promise.all([loadTerminalManifest('wallpapers',{retry:true,fetcher}),loadTerminalManifest('wallpapers',{fetcher})]);assert.equal(calls,1);checks++;console.log('PASS catalogue single flight')

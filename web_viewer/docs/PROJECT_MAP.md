@@ -155,7 +155,7 @@ parity 或兼容参考。
 ### `schemas/`、`policies/`
 
 机器契约和治理策略。publication v1 已冻结；publication v2 和 annotation v1
-已激活。当前分支有 4 笔 release record、639 个 stable logical ID；
+已激活。当前分支有 198 笔 release record、1,367 个 stable logical ID；
 `story-collection:1_3_10001_01` 的 current owner 是 repair release
 `2026-08-09-story-1-3-10001-01-002`。
 
@@ -170,11 +170,11 @@ parity 或兼容参考。
 
 - 3,398 个 RAW logical story group、4,939 个有效 part 均有唯一 public 对应；
 - compiled 目录含 10,420 个 JSON artifact，不等于 10,420 篇剧情；
-- strict authoritative Runtime v2 为 4 collections + 638 standalone /
-  667 artifacts；
-- publication ledger 为 4 releases / 639 stable logical IDs；
-<!-- authoritative-v2-summary collections=4 standalone=638 artifacts=667 -->
-<!-- publication-ledger-summary releases=4 stable_logical_ids=639 -->
+- strict authoritative Runtime v2 为 4 collections + 1,174 standalone /
+  1,203 artifacts；
+- publication ledger 为 198 releases / 1,367 stable logical IDs；
+<!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
+<!-- publication-ledger-summary releases=201 stable_logical_ids=1368 -->
 - external GS translation registry 当前有 8 条 exact mapping；
 - tracked PNG 为 186 个；其中 108 个为 grandfathered，
   14 个为 P1 Extra Story 导航视觉，61 个为 P1 Song 的有界 RAW-derived
@@ -186,10 +186,11 @@ parity 或兼容参考。
 当前执行入口是
 `notes/03_audit/CURRENT_ARCHIVE_BASELINE.md` 和
 [`GS_WORK_TEXT_PUBLICATION_20260928.md`](GS_WORK_TEXT_PUBLICATION_20260928.md)。
-本分支已发布 637 份 Work strict-v2 正文，正在完成翻译前身份审计与 Reader
-覆盖收尾；仍有 25,069 条非空文本行缺稳定身份。长/短 stage 双向 timing
+本分支已发布 637 份 Work strict-v2 正文，并完成翻译前文本身份补账：
+Reader 30,121 / 30,121 条非空文本行具有稳定身份，详见[补账收口](GS_STORY_TEXT_IDENTITY_CLOSEOUT_20260929.md)。9 月 29 日迁移 536 份独立正文后的历史审计见[翻译前审计与清理](GS_TRANSLATION_STRICT_V2_PREP_20260929.md)。长/短 stage 双向 timing
 regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在它完成
-前不开始下一个 Event promotion。
+前不开始下一个会改变 Runtime 语义的 Event / collection strict-v2 promotion；
+纯文本身份补账走独立 identity gate，见[试点记录](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)与[收口记录](GS_STORY_TEXT_IDENTITY_CLOSEOUT_20260929.md)。
 
 ### P0：收口当前架构认知
 
@@ -210,6 +211,8 @@ regression 与 P2-B preflight 已完成，真实音频 P2-B 仍待执行。在�
 `spine_lab` 和 `chibi_stage` 保持全屏；它们只继续使用明确的
 `return`/`parent` 返回契约。
 
+9 月 29 日 [聚合编译复审](GS_GROUP_COMPILATION_REPAIR_20260929.md) 已修正候选工具的 RAW part 作用域：188 组 / 1,509 集文本对齐，46 集仍有运行时差异。strict-v2 Runtime 候选未发布；身份补账只从候选提取文本坐标，保留当前正式 Runtime。
+
 ### P2-A：代表性 strict-v2 promotion
 
 Event `1_3_10001_01` 已在 PR #37 完成首次 strict-v2 publication 与 bounded
@@ -224,8 +227,11 @@ PR #37 的 release/annotation 所引用 commit identity 已验证为 `master` �
 
 2–4 小时混合长稳、最后 25% 资源曲线和 quiet endpoint 尚未执行。它仍是
 宣称 Story Runtime `release-accepted` 的必要证据；按当前 authoritative
-baseline，它也是选择下一批代表性 strict-v2 collection 前的明确门禁。它不
-阻塞无关的门户开发或资源关系审计。
+baseline，它也是选择下一批会改变 snapshot、timing、cue、audio、flow 或
+episode 边界的 strict-v2 Runtime promotion 前的明确门禁。它不阻塞通过
+RAW 哈希、身份校验、Runtime stripped deep-equal 和 Reader 行/控制/status
+parity 的 identity-only backfill。用户反馈的长期部署与朋友试用可作为运行信心线索，
+但没有可复核的 2–4 小时采样报告，不能写成 P2-B 正式通过。
 
 ## 6. 禁止默认扫描目录
 

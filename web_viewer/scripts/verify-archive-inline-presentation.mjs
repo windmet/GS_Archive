@@ -8,7 +8,8 @@ const read = path => JSON.parse(readFileSync(new URL(`../public/data/${path}`, i
 const details = read('masterdata/card_detail_index.json')
 let templated = 0
 for (const skill of Object.values(details.skills_by_id)) {
-  for (const level of skill.levels || []) {
+  // Numeric repair may resolve every published level; raw templates still exercise unknown parameters.
+  for (const level of [{description:skill.description_template}, ...(skill.levels || [])]) {
     const output = presentCardSkillDescription(level.description)
     if (/<[^>]+>/.test(level.description)) {
       templated += 1

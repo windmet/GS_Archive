@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "003hok_402_2_4_003_02_09_c",
-  "logical_id": "story-collection:003hok_402_2_4_003_02_09_c",
+  "logical_id": "story:003hok_402_2_4_003_02_09_c",
   "scenario_id": "003hok_402_2_4_003_02_09_c",
   "text_catalog_id": "003hok_402_2_4_003_02_09_c",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "003hok_402_2_4_003_02_09_c.json",
-    "sha256": "sha256:a3e14cadfe89711f4f6d7569760ac853ad8a20fa7962f8398e0eb1bac65474c3",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:517a4b2412cd44b967994261e0fcb628a22ce5eb2f4837597118a37ec0e81a12",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:0372321904e769418fc9f8296401c45152ab41e7cf512c422999be5c96c4ee5f",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "003hok_402_2_4_003_02_09_c.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "お疲れさまです、●●●●プロデューサー。\nお昼、まだでしたよね？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:06b93bf67cb024f9f7c864d0e6e94ada1d017ee754caf13ce9ea93b7a75f79f5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今、レッスンが休憩に入ったので\n3人でたまこやに来ているんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7d59adeb840ecdc9b7d2d91f61fb46e319b4f9f787cb653dd3bd9e88f6e78e76"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "よかったら、プロデューサーの分のお弁当も\n買っていきますよ。どうします？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:afc5a15ae590c94e5f361077c462b7c4d2969bcc2109331c78d3c113691dde8f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "北斗さんのおすすめを\nお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:877031edc835f225a21c465a6ec8ea702a85b91e5479ebd0e6fb98d1afae3a26"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "003hok_402_2_4_003_02_09_c:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014",
+        "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014:000",
         "source_label": "phone_select1",
         "target_step_id": 7,
         "target_step_index": 6,
@@ -192,7 +233,18 @@
     {
       "kind": "choice",
       "source_text": "日替わり弁当を\nお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:787bb424955925557e358c89fa4db643017851741114660c47cff03e97d27822"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -219,14 +271,14 @@
         "row_id": "003hok_402_2_4_003_02_09_c:step-6:option-1",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014",
+        "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000015:001",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "わかりました。\nそれじゃ、俺のオススメを買っていきますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d433f1dbb3de15b304a16cf4ce12de073d96088cab842a36b2cccef28c069269"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日の日替わりですね。\nどんなラインナップか、楽しみにしていてください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb18b8d7a4a4fc5780799509b3e72fc8207cabd4078aaca9510d67d546740ffa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -317,7 +387,18 @@
     {
       "kind": "choice",
       "source_text": "北斗さんは\nもう決まってますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000027:choice_short:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 27,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1896787794005c32de333c7dc8eafb891fcb4d6bfab4675d1a66b5a8db5f98c8"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -344,14 +425,14 @@
         "row_id": "003hok_402_2_4_003_02_09_c:step-10:option-0",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000027",
+        "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000027:000",
         "source_label": "phone_select4",
         "target_step_id": 11,
         "target_step_index": 10,
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "ええ。午後のレッスンも乗り切れるように、\nしっかりしたものにするつもりですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9acc2167e7cfb32cd502fdf0a55348991735716c3974fac7cfb2aa4ff4d68e37"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "それではお弁当を買ったら、持っていきますね。\nではまた後で。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000032:phone_message:000",
+        "source": {
+          "scenario_id": "003hok_402_2_4_003_02_09_c",
+          "part_id": "2_4_003_02_09_c",
+          "file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+          "command_index": 32,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14945abeaa449749bb5bc20b94cfb520c45b081b6b4ed20aa154bb2d28c9b5d3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "003hok_402_2_4_003_02_09_c:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_003_02_09_c",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null,
       "presentation": "call"
@@ -447,22 +546,84 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014",
+          "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014:000",
           "source_label": "phone_select1",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000014",
+          "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000015:001",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "choice",
+        "source_file": "assets/resources/scenariodata/003hok_402/scenario_2_4_003_02_09_c.json",
+        "raw_sha256": "sha256:49f79b70ae6d548066db2780963786b32a275ac0046fdba630942fc4f0b8074b",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 26,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              6,
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              16,
+              17,
+              18,
+              19,
+              20
+            ],
+            "step_types": [
+              "stage",
+              "call"
+            ],
+            "step_ids": [
+              7,
+              8
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              21,
+              22,
+              23,
+              24,
+              25
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          }
+        ]
+      }
     },
     {
       "step_id": 10,
@@ -470,8 +631,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000027",
+          "option_id": "choice-option:v1:003hok_402_2_4_003_02_09_c:2_4_003_02_09_c:cmd-000027:000",
           "source_label": "phone_select4",
           "target_step_id": 11,
           "target_step_index": 10,
@@ -480,73 +641,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れさまです、●●●●プロデューサー。",
     "episode_label": null

@@ -25,7 +25,7 @@
             <img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" />
             <span>
               <small>关联卡池</small>
-              <strong>{{ collection.gasha.display_name }}</strong>
+              <strong>{{ gashaText(collection.gasha.display_name) }}</strong>
               <em>{{ collection.gasha.derived_pickup_cards?.length || 0 }} 张推定关联卡</em>
             </span>
             <ChevronRight :size="18" />
@@ -56,7 +56,7 @@
               <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
               <span class="chapter-identity">
                 <small>{{ chapter.label }}</small>
-                <strong>{{ presentProducerAddressingText(chapter.title) }}</strong>
+                <strong>{{ chapterTitle(chapter) }}</strong>
               </span>
               <span class="chapter-stats">
                 <small>{{ chapter.episodeCount }} 段剧情</small>
@@ -87,15 +87,16 @@
                 <BookOpen :size="17" />
                 <span><strong>Idol Episode</strong><small>{{ chapter.canonicalRelation.sectionName }}</small></span>
               </button>
+              <button v-if="!chapter.canonicalRelation" class="chapter-read" @click="readChapter(chapter)"><BookOpen :size="17" /><span><strong class="desktop-read-label">整话阅读</strong><strong class="mobile-read-label">阅读本话</strong></span></button>
               <button
-                v-else
+                v-if="!chapter.canonicalRelation"
                 class="chapter-play"
                 :disabled="!chapter.exists"
-                :title="chapter.exists ? '使用实验性剧情播放器播放整话' : '剧情文件未实装'"
+                :title="chapter.exists ? '连播本话，逐句播放由 AUTO 或手动控制' : '剧情文件未实装'"
                 @click="emit('play-chapter', chapter)"
               >
                 <Play :size="17" fill="currentColor" />
-                <span><strong>{{ chapter.exists ? '剧情播放器' : '未实装' }}</strong><small>实验功能</small></span>
+                <span><strong>{{ chapter.exists ? '连播本话' : '未实装' }}</strong></span>
               </button>
             </div>
           </div>
@@ -109,29 +110,19 @@
               </div>
               <button @click="emit('open-idol-story', chapter.canonicalRelation)">前往正式章节 <ChevronRight :size="15" /></button>
             </div>
-            <div v-if="chapter.synopsis" class="chapter-synopsis">
-              <span>STORY</span>
-              <strong>{{ presentProducerAddressingText(chapter.synopsis.title || chapter.title) }}</strong>
-              <p>{{ chapter.synopsis.text }}</p>
-            </div>
-            <p v-else-if="!chapter.exists" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
+            <CollectionStorySynopsis class="chapter-synopsis" :key="chapter.id" :entry="chapter.episodes.map(readingEntry).find(Boolean)" :load-document="loadReadingDocument" :fallback="chapter.synopsis" :title="chapter.synopsis?.title || chapter.title" />
+            <p v-if="!chapter.exists && !chapter.synopsis" class="chapter-unavailable">此章节已建档，剧情暂未收录。</p>
 
+            <p v-if="readingStatusNotice" role="status">{{ readingStatusNotice }}</p>
+            <p v-if="!chapter.canonicalRelation" class="entry-help">点击 EP 阅读并定位剧情，▶ 播放演出。连播接续本话各段；逐句播放可开启 AUTO。剧情播放器为实验功能。</p>
             <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
             <div v-if="!chapter.canonicalRelation" class="episode-grid">
               <div v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
-              <button
-                :disabled="!episode.exists"
-                @click="emit('play-episode', { chapter, episode })"
-              >
-                <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
-                <span class="episode-copy">
-                  <strong>{{ episode.label }}</strong>
-                  <small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small>
-                </span>
-                <Play v-if="episode.exists" :size="15" fill="currentColor" />
-                <span v-else class="episode-lock">－</span>
-              </button>
-              <button v-if="readingEntry(episode)" class="episode-reading" :aria-label="`阅读 ${episode.label}`" @click="emit('read-episode', { chapter, documentId: readingEntry(episode).document_id })"><BookOpen :size="16" />阅读</button>
+              <a v-if="readingEntry(episode)" class="episode-reading-main" :href="readingHref(chapter, readingEntry(episode))" :aria-label="`阅读 ${episodeLabel(episode)}`" @click="readEpisode($event, chapter, episode)">
+                <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span><span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音{{ readingEntry(episode).status === 'ready' ? '' : ' · 阅读状态待确认' }}</small></span>
+              </a>
+              <button v-else class="episode-reading-main" @click="readingStatusNotice = '此分段尚未生成阅读正文，演出入口状态独立显示。'"><span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span><span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>正文未生成</small></span></button>
+              <button class="episode-play" :disabled="!episode.exists" :aria-label="`播放 ${episodeLabel(episode)}`" @click.stop="emit('play-episode', { chapter, episode })"><Play :size="18" fill="currentColor" /></button>
               </div>
             </div>
           </div>
@@ -145,21 +136,45 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import CollectionStorySynopsis from './CollectionStorySynopsis.vue'
 import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } from '@lucide/vue'
+import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { useReaderTitles } from './useReaderTitles.js'
+import {gashaText} from './useArchiveGashaText.js'
 
 const props = defineProps({
+  readerSource: { type:Object, default:()=>({}) },
   collection: { type: Object, default: null },
   externalResources: { type: Array, default: () => [] },
   initialChapterId: { type: String, default: '' },
   readingEntries: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
+  loadReadingDocument: Function,
 })
 const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
 const expandedChapterId = ref('')
-const readingByFile = computed(() => new Map(props.readingEntries.filter(e => e.status === 'ready' && e.source_file).map(e => [e.source_file, e])))
+const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
+const readingStatusNotice = ref('')
+const episodeLabel = episode => presentIdolEpisodeLabel({ sourceName: episode.label, kind:episode.kind, ordinal:episode.ordinal })
 const readingEntry = episode => readingByFile.value.get(episode.file)
+
+function readingHref(chapter, entry) {
+  const source = { ...props.readerSource, story: chapter.story?.file || chapter.file || '' }
+  return buildArchiveUrl('http://localhost/', { ...source, view:'reader', reading:entry.document_id, readingScope:'chapter', sourceRoute:buildArchiveSourceQuery(source) }).search
+}
+function readEpisode(event, chapter, episode) {
+  if (event.button || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
+  event.preventDefault(); emit('read-episode', { chapter, documentId:readingEntry(episode).document_id })
+}
+function readChapter(chapter) {
+  const entry = chapter.episodes.map(readingEntry).find(Boolean)
+  if (entry) emit('read-episode', { chapter, documentId:entry.document_id })
+  else readingStatusNotice.value = '本话尚未生成可关联的阅读正文。'
+}
+const displayTitle = useReaderTitles()
+function chapterTitle(chapter) { return presentProducerAddressingText(displayTitle(chapter.episodes.map(readingEntry).find(Boolean),chapter.title)) }
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -203,7 +218,7 @@ function externalResourcesForChapter(chapterId) {
 .collection-visual img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .visual-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: url('/assets/stories/story_background.png') center / cover; color: #16877f; }
 .collection-copy { align-self: center; min-width: 0; }
-.collection-copy > span, .section-heading span, .chapter-synopsis > span { color: #168a82; font-size: .59rem; font-weight: 800; }
+.collection-copy > span, .section-heading span { color: #168a82; font-size: .59rem; font-weight: 800; }
 .collection-copy h2 { margin: 5px 0 10px; font-size: 1.45rem; line-height: 1.35; }
 .collection-copy > p { margin: 0 0 18px; color: #53636b; font-size: .7rem; line-height: 1.75; }
 .collection-copy dl { margin: 0; }
@@ -241,13 +256,20 @@ function externalResourcesForChapter(chapterId) {
 .chapter-play:disabled { border-color: #d3dade; background: #e4e9eb; color: #78858b; cursor: not-allowed; }
 .chapter-panel { padding: 5px 16px 18px 72px; border-top: 1px solid #edf1f2; background: #fbfcfc; }
 .canonical-note { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 16px; margin: 13px 0 5px; padding: 13px 14px; border: 1px solid #ddd4e8; border-radius: 6px; background: #fff; }.canonical-note > div { display: flex; flex-direction: column; gap: 4px; }.canonical-note span { color: #765b98; font-size: .51rem; font-weight: 800; }.canonical-note strong { font-size: .68rem; }.canonical-note p { margin: 0; color: #706579; font-size: .55rem; line-height: 1.55; }.canonical-note button { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 0 10px; border: 1px solid #8065a2; border-radius: 5px; background: #765b98; color: #fff; cursor: pointer; font: inherit; font-size: .57rem; font-weight: 700; white-space: nowrap; }
-.chapter-synopsis { padding: 14px 0 16px; }.chapter-synopsis strong { display: block; margin: 5px 0 6px; font-size: .75rem; }.chapter-synopsis p { max-width: 820px; margin: 0; color: #4b5d65; font-size: .66rem; line-height: 1.75; white-space: pre-line; }
+.chapter-synopsis { margin:16px 0; }
 .chapter-unavailable { margin: 14px 0; color: #78858b; font-size: .65rem; }
 .episode-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: #dfe6e8; }
 .episode-grid button { display: grid; grid-template-columns: 34px minmax(0, 1fr) 18px; align-items: center; gap: 8px; min-height: 54px; padding: 8px 11px; border: 0; background: #fff; color: #2d3d45; cursor: pointer; font: inherit; text-align: left; }
 .episode-grid button:hover:not(:disabled) { background: #edf8f7; }.episode-grid button:disabled { background: #f4f6f7; color: #929da2; cursor: not-allowed; }
 .episode-entry { display: flex; min-width: 0; background: #fff; }
-.episode-entry > button:first-child { flex: 1; min-width: 0; }
+.episode-entry > .episode-reading-main { flex:1; min-width:0; display:grid; grid-template-columns:34px minmax(0,1fr); align-items:center; gap:8px; min-height:54px; padding:8px 11px; border:0; background:#fff; color:#2d3d45; font:inherit; text-align:left; text-decoration:none; box-sizing:border-box; }
+.episode-reading-main:hover { background:#edf8f7; }
+.episode-grid .episode-play { display:flex; justify-content:center; flex:0 0 48px; min-width:44px; min-height:44px; padding:8px; border-left:1px solid #e2ecef; }
+.episode-entry :focus-visible { outline:2px solid #168f98; outline-offset:-2px; }
+.entry-help { font-size:12px; color:#60727e; line-height:1.7; }
+.chapter-read { border:1px solid #cfe1df; color:#14766f; background:#fff; cursor:pointer; }
+.mobile-read-label { display:none; }
+@media(max-width:760px) { .desktop-read-label { display:none; } .mobile-read-label { display:inline; } }
 .episode-grid .episode-reading { display: flex; flex: 0 0 auto; justify-content: center; min-width: 66px; min-height: 44px; border-left: 1px solid #e2ecef; color: #157c78; font-size: 13px; }
 .episode-number { color: #16877f; font-size: .59rem; font-weight: 800; font-variant-numeric: tabular-nums; }.episode-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.episode-copy strong { font-size: .67rem; }.episode-copy small { color: #87949a; font-size: .53rem; }.episode-grid svg { color: #159087; }.episode-lock { text-align: center; }
 @media (max-width: 840px) { .collection-hero { grid-template-columns: 1fr; gap: 18px; }.collection-visual { max-width: 720px; }.chapter-toggle { grid-template-columns: 38px minmax(0, 1fr) 22px; }.chapter-stats { display: none; } }

@@ -20,7 +20,7 @@ const props = defineProps({
   accentColor: { type: String, default: '' },
   ringWidth: { type: Number, default: 2 },
   gap: { type: Number, default: 2 },
-  scale: { type: Number, default: 1.06 },
+  scale: { type: Number, default: 1.12 },
   alt: { type: String, default: '' },
   decorative: { type: Boolean, default: false },
   fallbackText: { type: String, default: '?' },

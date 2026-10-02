@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "047shu_302_2_3_047_02_09_a",
-  "logical_id": "story-collection:047shu_302_2_3_047_02_09_a",
+  "logical_id": "story:047shu_302_2_3_047_02_09_a",
   "scenario_id": "047shu_302_2_3_047_02_09_a",
   "text_catalog_id": "047shu_302_2_3_047_02_09_a",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "047shu_302_2_3_047_02_09_a.json",
-    "sha256": "sha256:89c2e8d0ff5efe87f50fd0c7ce699d3f64ee4d3b0a6097929aedb6102a7d51b5",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:57ef93c807541937a532029af02b40eee31785970591229bf5916d3fc826c9d9",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:72ca28b32dc5927e46a2ed64f30d5b58c94da9e8dbcdc72015105fd249a7ee63",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "047shu_302_2_3_047_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "あ……もしもし、俺だけど。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c34b98c2b97d8009bd859feff16191627d10dfff6117e0c6682af42d7ed54641"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "撮影のあと、なんだかんだ慌ただしくて\nゆっくり話せなかったからさ。電話した。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f04ae388464ead9fcdb94b4a9a5fb9796ce565e8a7c51ff1410c6368ca5432b0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "ねえ、●●●●プロデューサー。\n俺たちのライブはどうだった？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d9e4675d27b23d5e0c92c41e26daa420a1c665f9f00506374f268f87f4b81046"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "素晴らしかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c280090dc25e212a256ffc37132ea9b160cbae6b0afbbee127e6fababdd45e8"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "047shu_302_2_3_047_02_09_a:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000012",
+        "option_id": "choice-option:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000012:000",
         "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "……楽屋に来た人たちの反応でわかってるけど、\nこれも一応聞いておく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:307775e80d00aeebdcf0d5dd0ba94212fede3d7724d598b50cea876def912fbe"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "業界関係者にも、俺たちの凄さ、\nアピールできたでしょ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:68a62c158f83b0331fb6f42cdde5fc155400383922fcf0f75817fcc3e0310b9c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -272,7 +331,18 @@
     {
       "kind": "choice",
       "source_text": "1000点以上でした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:03ccc8d002805cd0c22a322be261b9d23b992375089fc07fe8bda888cb87774c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -299,14 +369,14 @@
         "row_id": "047shu_302_2_3_047_02_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000019",
+        "option_id": "choice-option:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000019:000",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "だろ？　あの映像が公開されたら、\n俺たちのファンが一気に増えるだろうね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4708307d374dea2c0be8104ed44e4c707c8b09b58eefcd08a2d2ffebcb20f681"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "そこから、どんどん知名度を上げて、\n世界中にC.FIRSTを知らしめる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e42cd4189eda6008ae7dcdb98a0d41f001e7cf0331a218ffc4bf23ecb53132cb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日のライブで、また一歩目標に近づけたけど。\n俺たちは世界を変えるその日まで、足を止めない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0bff67f7320a25f1ab2fee4114792d9d082fa0b134888f7ce59b1a54b36fe8f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "……それには、アンタの力が必要だから。\n今後ともよろしく。それじゃ、また事務所で。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "047shu_302_2_3_047_02_09_a",
+          "part_id": "2_3_047_02_09_a",
+          "file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cfa36ac635a32d014e684726fbc25292d5221753e374a84bb86ca18ce2a44878"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "天峰 秀"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "047shu_302_2_3_047_02_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_047_02_09_a",
+        "source_file": "assets/resources/scenariodata/047shu_302/scenario_2_3_047_02_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -482,8 +588,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000012",
+          "option_id": "choice-option:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000012:000",
           "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -497,8 +603,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000019",
+          "option_id": "choice-option:v1:047shu_302_2_3_047_02_09_a:2_3_047_02_09_a:cmd-000019:000",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
@@ -507,68 +613,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "あ……もしもし、俺だけど。",
     "episode_label": null

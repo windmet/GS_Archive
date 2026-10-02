@@ -1,10 +1,14 @@
+import { normalizeCollectionRoute } from './CollectionRouteState.js'
 const ROUTE_QUERY_KEYS = [
+  'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'portal_from',
   'from',
   'reading',
   'reading_row',
   'reading_mode',
   'reading_rev',
+  'reading_scope',
+  'play_mode',
   'at_step',
   'view',
   'pick',
@@ -32,6 +36,9 @@ const ROUTE_QUERY_KEYS = [
   'stage',
   'song_scope',
   'event',
+  'entity',
+  'photo_idol',
+  'photo',
   'gasha',
   'gasha_type',
   'rarity',
@@ -61,10 +68,16 @@ const VALID_VIEWS = new Set([
   'cards',
   'card_detail',
   'event_detail',
+  'event_catalog',
+  'collection_catalog',
+  'photo_catalog',
+  'picture_studio',
   'gashas',
   'gasha_detail',
   'song_catalog',
   'song_detail',
+  'chart_lab',
+  'experiments',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -86,9 +99,9 @@ const VALID_CARD_ASSET_STATES = new Set(['all', 'visible_icon', 'complete_icons'
 const VALID_CARD_RARITIES = new Set(['all', 'N', 'R', 'SR', 'SSR'])
 const VALID_CATEGORIES = new Set(['main_story', 'event', 'idol', 'idol_chat', 'idol_phone', 'cards', 'episode_zero', 'extra'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
-const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
+const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series', 'ticket_named'])
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
-const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
+const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc', 'latest'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_WORK_MODES = new Set(['stories', 'lines'])
 const VALID_PICK_TARGETS = new Set(['home', 'profile', 'work', 'story', 'mobile'])
@@ -121,11 +134,17 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   files: { section: 'category', required: ['group'], fallback: 'home' },
   cards: { section: 'cards', required: [], fallback: 'home' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
-  event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
+  event_detail: { section: 'events', required: ['event'], fallback: 'event_catalog' },
+  event_catalog: { section: 'events', required: [] },
+  collection_catalog: { section: 'collections', required: [] },
+  photo_catalog: { section: 'photos', required: [] },
+  picture_studio: { section: 'photos', required: [], fallback:'photo_catalog' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
   song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
+  chart_lab: { section: 'experiments', required: ['song'], fallback: 'song_catalog' },
+  experiments: { section: 'experiments', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'resources', required: [] },
@@ -139,11 +158,15 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
   { id: 'interactions', label: '互动' },
+  { id: 'events', label: '活动' },
+  { id: 'collections', label: '藏品' },
+  { id: 'photos', label: '摄影' },
+  { id: 'experiments', label: '实验室' },
   { id: 'resources', label: '资源' },
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
-const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage'])
+const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage', 'chart_lab'])
 const MAX_SOURCE_DEPTH = 16
 const MAX_SOURCE_LENGTH = 8192
 
@@ -311,6 +334,10 @@ export function normalizeArchiveRoute(input = {}) {
     song: clean(input.song),
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
+    ...(view==='collection_catalog' ? normalizeCollectionRoute(input) : {}),
+    ...(['photo_catalog','picture_studio'].includes(view) ? {
+      photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
+      photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
@@ -337,9 +364,11 @@ export function normalizeArchiveRoute(input = {}) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
     route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    route.readingScope = input.readingScope === 'chapter' ? 'chapter' : ''
     route.readingRev = /^sha256:[a-f0-9]{64}$/.test(input.readingRev || '') ? input.readingRev : ''
     if (!route.reading) route.view = 'story_catalog'
   }
+  if (route.view === 'player') route.playMode = ['chapter','segment'].includes(input.playMode) ? input.playMode : ''
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') {
     const portalFrom = clean(input.portalFrom)
@@ -402,6 +431,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
   const home = { label: '资料馆', route: { view: 'home' } }
+  if(route.view==='picture_studio')return [home,{label:'摄影资料',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
@@ -466,8 +497,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       home,
       {
         label: '活动',
-        route: breadcrumbRoute(route, 'story_catalog', {
-          storyType: 'event',
+        route: breadcrumbRoute(route, 'event_catalog', {
+          storyType: '',
           storySection: '',
           story: '',
           event: '',
@@ -548,6 +579,8 @@ export function readArchiveRoute(input = null) {
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
     readingRev: params.get('reading_rev'),
+    readingScope: params.get('reading_scope'),
+    playMode: params.get('play_mode'),
     initialStep: params.get('at_step'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
@@ -573,6 +606,10 @@ export function readArchiveRoute(input = null) {
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
+    entity: params.get('entity'),
+    collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
+    photoIdol: params.get('photo_idol'),
+    photoEntity: params.get('photo'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
@@ -595,11 +632,20 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
+  if (normalized.view === 'collection_catalog') {
+    const c = normalized.collection
+    url.searchParams.set('collection_kind', c.kind)
+    for (const key of ['category','idol','unit','attribute','page']) if(c[key]) url.searchParams.set(`collection_${key}`, String(c[key]))
+  }
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
     if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
+    if (normalized.readingScope) url.searchParams.set('reading_scope', normalized.readingScope)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {
       if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
@@ -616,6 +662,7 @@ export function buildArchiveUrl(input, route) {
       return url
     }
   }
+  if (normalized.view === 'player' && normalized.playMode) url.searchParams.set('play_mode', normalized.playMode)
   if (normalized.view === 'player' && normalized.initialStep) url.searchParams.set('at_step', String(normalized.initialStep))
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)

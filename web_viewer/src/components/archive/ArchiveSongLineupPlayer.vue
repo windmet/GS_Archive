@@ -3,14 +3,13 @@
     class="lineup-player"
     :data-lineup-ready="session.ready.value"
     :data-loaded-vocals="session.loadedIdolCodes.value.join(',')"
+    :data-output-peak="session.outputPeak.value"
     :data-active-performer-slots="session.activePerformerSlots.value.join(',')"
     :data-active-stage-positions="activeStagePositions.join(',')"
     :data-active-idols="session.activeIdolCodes.value.join(',')"
     data-clock-mode="audio-context-scheduled"
   >
-    <p class="lineup-note">
-      五个选择位与 Chibi 舞台位置 1–5 完全对应。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
-    </p>
+    <details class="lineup-note"><summary>编成规则</summary><p>五个位置对应舞台位置。空位静音；重复偶像共用声部与演唱区间。</p></details>
 
     <label v-if="arrangements.length > 1" class="arrangement-select">
       演唱切换表
@@ -20,7 +19,7 @@
     </label>
 
     <fieldset class="performer-lineup">
-      <legend>五个舞台位置（与 Chibi 一致）</legend>
+      <legend>自由编成 · 五个舞台位置</legend>
       <label
         v-for="stagePosition in stagePositions"
         :key="stagePosition"
@@ -33,7 +32,7 @@
           :aria-label="`舞台位置 ${stagePosition}${stagePosition === 3 ? '，中心' : ''}`"
           @change="handleStagePositionChange(stagePosition, $event.target.value)"
         >
-          <option value="">空位</option>
+          <option value="">空 / 静音</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
             {{ entry.displayName }}
           </option>
@@ -52,9 +51,9 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
+    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value || session.starting.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
-    <div class="lineup-gains">
+    <details><summary>音轨平衡</summary><div class="lineup-gains">
       <label>
         演唱音量
         <input v-model.number="session.vocalGain.value" type="range" min="0" max="1" step="0.01" aria-label="五槽声部音量" />
@@ -65,9 +64,10 @@
       </label>
     </div>
 
+    </details>
     <div v-if="selectedArrangement?.capabilities?.stage?.kind === 'choreography_candidate'" class="lineup-stage-handoff">
-      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">以当前编成进入舞台</button>
-      <p>{{ stageLineup.some(Boolean) ? '先停止歌曲页试听，再把舞台位置、声部选择和音量带入；舞台从 00:00 暂停开始。' : '至少选择一位偶像后才能进入舞台。' }}</p>
+      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">进入 Chibi 舞台 →</button>
+
     </div>
 
     <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
@@ -94,9 +94,10 @@ import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
 })
-const emit = defineEmits(['open-stage'])
+const emit = defineEmits(['open-stage', 'request-play'])
 
 const session = useSongPerformanceSession()
+defineExpose({ pause: () => session.pause() })
 const slotNumbers = [1, 2, 3, 4, 5]
 const stagePositions = [1, 2, 3, 4, 5]
 const arrangements = ref([])
@@ -200,8 +201,8 @@ async function reloadSession() {
 }
 
 async function togglePlayback() {
-  if (session.playing.value) session.pause()
-  else await session.play()
+  if (session.playing.value || session.starting.value) session.pause()
+  else { emit('request-play'); await session.play() }
 }
 
 function openStageWithLineup() {
@@ -271,4 +272,10 @@ onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
   .performer-lineup { grid-template-columns: 1fr; }
   .lineup-gains { grid-template-columns: 1fr; }
 }
+</style>
+
+<style scoped>
+summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: #245a64; font-size: 13px; }
+.performer-slot select { min-height: 44px; }
+@media(min-width:360px) and (max-width:560px) { .performer-lineup { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 </style>

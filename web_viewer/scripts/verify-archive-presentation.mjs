@@ -23,8 +23,12 @@ const presentations = Object.values(catalog.songs).map(song => buildSongPresenta
 }))
 const byId = Object.fromEntries(presentations.map(song => [song.id, song]))
 assert.equal(byId.brndnf.unit.displayName, 'Jupiter')
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /打开默认舞台编成/)
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /不继承上方试听中的演唱选择/)
+assert.equal(byId.brndnf.attributeLabel, 'Intelli')
+assert.equal(byId.drvalv.attributeLabel, 'ALL')
+assert.ok(presentations.every(song => ['Physical', 'Intelli', 'Mental', 'ALL'].includes(song.attributeLabel)))
+assert.equal(buildSongPresentation({ ...catalog.songs.brndnf, attribute: undefined }, identity).attributeLabel, '待确认')
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /Chibi 舞台演出/)
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /openStage\(\{ songCode: song\.id, choreographyId: song\.stageCandidate\.id \}\)/, 'stage navigation preserves its own source identity')
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
 assert.equal(byId.brndnf.performers[0].reference.imageCandidates[0].kind, 'idol_icon')
@@ -65,7 +69,7 @@ assert.equal(before, JSON.stringify([catalog, identity, manifest, playback, expe
 // Guard rendered text, not keys, URLs or event payloads. Explicit technical slots are exempt.
 // This is a bounded migrated-surface gate, not a claim about every archive page.
 const technicalField = /(?:_(?:id|code)$|^(?:id|code|resourceId|classification_source|_source|raw_category|raw_selector|script_label|evidenceLabel|evidence|resource|cue)$)/
-const namedProjections = new Set(['filterCount', 'tabCount', 'idolName', 'characterName', 'formatDate', 'formatDateTime', 'formatNumber', 'formatDuration', 'formatTime', 'locationLabel', 'unlockText', 'unlockTitle', 'timeWindow', 'shortType', 'voiceSourceLabel', 'scenarioSubtitle'])
+const namedProjections = new Set(['filterCount', 'tabCount', 'idolName', 'displayIdolName', 'characterName', 'formatDate', 'formatDateTime', 'formatNumber', 'formatDuration', 'formatTime', 'locationLabel', 'unlockText', 'unlockTitle', 'timeWindow', 'shortType', 'voiceSourceLabel', 'scenarioSubtitle'])
 function technicalOutput(node) {
   if (!node) return false
   if (node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression') return technicalField.test(node.property.name || node.property.value || '')
@@ -171,7 +175,7 @@ try {
     if (card.voice_candidates?.unmapped_card_only?.length) assert.ok(html.includes(card.voice_candidates.unmapped_card_only[0]))
   }
   const sourceEvent = json('masterdata/event_index.json').events[0]
-  await checkPage('ArchiveEventDetail', { event: { event_id: 'test', event_code: 'test', title: '测试活动', exists: false }, masterEvent: sourceEvent, idols: identity.idols }, ['剧情暂未收录'])
+  await checkPage('ArchiveEventDetail', { view: {identity:{id:'test',eventCode:'test',title:'测试活动',kind:'theater'},period:{},media:{},provenance:{detailTable:113},rewards:{cards:[],general:[]},cast:[],cards:[],story:{entry:{event_id:'test',event_code:'test',title:'测试活动',exists:false}}} }, ['剧情暂未收录'])
   for (const campaign of json('masterdata/seasonal_campaign_index.json').campaigns) await checkPage('ArchiveSeasonalCampaign', { campaign })
   for (const idol of json('masterdata/work_story_index.json').idols) await checkPage('ArchiveWorkStory', { idol })
   const archive = json('masterdata/mobile_archive_index.json')

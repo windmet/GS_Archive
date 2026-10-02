@@ -19,6 +19,8 @@
     <template #rail>
       <MobileChoiceRail
         v-if="context.phase === 'choice'"
+        class="call-choice-rail"
+        reverse-three
         :options="currentChoices"
         @select="$emit('select', $event)"
       />
@@ -110,7 +112,8 @@ const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundColor: '#c4babd',
 } : null)
 
-const replyLabel = 'プロデューサー：'
+const replyLabel = computed(() => `${localization.resolveUnit({ source: '',
+  speaker: { kind: 'producer', source: '<P>' } }).speaker.display}：`)
 </script>
 
 <style scoped>

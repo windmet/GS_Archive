@@ -106,6 +106,7 @@ export function resolveStoryText({
   speaker = null,
   overlayEntry = null,
   entityNames = null,
+  speakerLabelNames = null,
   preferences = null,
   allowStale = false,
 } = {}) {
@@ -143,9 +144,16 @@ export function resolveStoryText({
     normalizedSpeaker.entityId,
     prefs.story_translation_locale,
     normalizedSpeaker.entityType,
-  )
+  ) || (typeof speakerLabelNames === 'function'
+    ? textValue(speakerLabelNames(normalizedSpeaker, prefs.story_translation_locale)) : '')
   const preferTranslatedSpeaker = prefs.story_content_mode === 'translation'
     || (prefs.story_content_mode === 'bilingual' && prefs.bilingual_primary === 'translation')
+  // A Producer nameplate is presentation, not a translation of the source label.
+  // Do not replace fixed forms of address inside dialogue or mutate identity.
+  const producerSpeakerDisplay = normalizedSpeaker.kind === 'producer'
+    ? (prefs.producer_name ? `${prefs.producer_name}P`
+      : (normalizedSpeaker.source === '<P>' ? 'プロデューサー' : normalizedSpeaker.source))
+    : null
 
   return {
     unitId: textValue(textRef?.unit_id) || null,
@@ -154,9 +162,9 @@ export function resolveStoryText({
       entityType: normalizedSpeaker.entityType,
       entityId: normalizedSpeaker.entityId,
       source: normalizedSpeaker.source,
-      display: preferTranslatedSpeaker && translatedSpeaker
+      display: producerSpeakerDisplay ?? (normalizedSpeaker.kind !== 'unknown' && preferTranslatedSpeaker && translatedSpeaker
         ? translatedSpeaker
-        : normalizedSpeaker.source,
+        : normalizedSpeaker.source),
     },
     primary,
     secondary,

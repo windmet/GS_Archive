@@ -15,6 +15,6 @@ export function fixture({ cards = 3, padding = 32, idols = 2 } = {}) {
     songs: [{ song_code:'fixture', song_id:1, title:'Fixture song', kana:'fixture',variant_kind:'primary',audio_form:'layered',jacket_url:'/assets/songs/fixture.png',movies:[],variants:[] }],
     songSummary:{primary_songs:1}, playback:{fixture:{url:'/assets/fixture.m4a'}}, experimental:{},
     gashas:[{id:'gasha-fixture',phase:'primary',display_name:'Fixture gasha',category:'standard_pickup'}],
-    extraDomains:{ events:{records:[{id:'event-fixture',summary:{name:'Fixture event'},view:{story_chapter_id:'event-fixture'}}]} },
+    extraDomains:{ events:{records:[{id:'event-fixture',summary:{name:'Fixture event'},view:{schemaVersion:2,identity:{id:'event-fixture'},rewards:{general:[],cards:[],materials:[]}}}]} },
   };
 }

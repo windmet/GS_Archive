@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_001tom_1_7_001_01",
-  "logical_id": "story-collection:1_x_001tom_1_7_001_01",
+  "logical_id": "story:1_x_001tom_1_7_001_01",
   "scenario_id": "1_x_001tom_1_7_001_01",
   "text_catalog_id": "1_x_001tom_1_7_001_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_001tom_1_7_001_01.json",
-    "sha256": "sha256:591e60d235a604277490e3027d5544b3eec31b8c408afc2258e7fda11f121473",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d6932e3c8a6188747f76183da932b49ed3c66f8c1169b923543ab3d712f98024",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:dc8509e931b0758b8cad470bb1dc875021d2dbd3ae31bdabdf7f7d496ff5651e",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_001tom_1_7_001_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "冬馬さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_001tom_1_7_001_01:1_7_001_01:cmd-000012:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_001tom_1_7_001_01",
+          "part_id": "1_7_001_01",
+          "file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+          "command_index": 12,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ac6b1a42a1218180debd5fbfaf55a1b9aece622e077357378832226896dca50a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_001tom_1_7_001_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_001_01",
+        "source_file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日って……わざわざ覚えてたのかよ。\n●●●●プロデューサーってホント律儀だな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_001tom_1_7_001_01:1_7_001_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_001tom_1_7_001_01",
+          "part_id": "1_7_001_01",
+          "file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c1f1f57fbe02be0ce4db72e8056ea2fe66fab86a26152579a24fbea10f788778"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_001tom_1_7_001_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_001_01",
+        "source_file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "別に、嬉しくないなんて思ってねーよ。\n祝ってくれて、その……ありがとな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_001tom_1_7_001_01:1_7_001_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_001tom_1_7_001_01",
+          "part_id": "1_7_001_01",
+          "file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:467b657db6ec07dafedf1ff3eb4096bacf0437ff04369a1573ab81049b284884"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -125,7 +160,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_001tom_1_7_001_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_001_01",
+        "source_file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あー……と、とにかく！\n誕生日だからってやることは変わらねえ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_001tom_1_7_001_01:1_7_001_01:cmd-000036:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_001tom_1_7_001_01",
+          "part_id": "1_7_001_01",
+          "file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+          "command_index": 36,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:65f17caf78b7448201ca8cbd960ab7d28ef53e64754600ada3a8c5c98d9ae304"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -165,7 +210,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -174,21 +218,32 @@
         "row_id": "1_x_001tom_1_7_001_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_001_01",
+        "source_file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+        "command_start": 36,
+        "command_end": 36
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "俺たちはトップアイドル目指してんだからな。\nほら、早くレッスン行こうぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_001tom_1_7_001_01:1_7_001_01:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_001tom_1_7_001_01",
+          "part_id": "1_7_001_01",
+          "file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9af336b1206ebd98fd107166625fb0e2def442fb27807db164c146d41fcc4a65"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -205,7 +260,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -214,47 +268,16 @@
         "row_id": "1_x_001tom_1_7_001_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_001_01",
+        "source_file": "assets/resources/scenariodata/1_x_001tom/scenario_1_7_001_01.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "冬馬さん、お誕生日おめでとうございます！",
     "episode_label": null

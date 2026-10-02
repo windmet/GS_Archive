@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_00_015_23_5_00_015_23",
-  "logical_id": "story-collection:5_00_015_23_5_00_015_23",
+  "logical_id": "story:5_00_015_23_5_00_015_23",
   "scenario_id": "5_00_015_23_5_00_015_23",
   "text_catalog_id": "5_00_015_23_5_00_015_23",
   "playback": {
@@ -11,23 +11,37 @@
   },
   "source": {
     "file": "5_00_015_23_5_00_015_23.json",
-    "sha256": "sha256:968f536c1cb2386ae244778afb2fc71c30e6c2c06345cb7f88870542911c7139",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:fd0580cc494dc211a69f15ff6292693240caf39a405181582bcb04227b6dde5c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:a3f8579f422a63ad65d4050ec09dee336e0efdbb78de45b618916a79b453845c",
     "aggregate_source": null,
     "step_count": 28,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_00_015_23_5_00_015_23.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "title",
       "source_text": "年末ぶりの再会",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f9aa3f33847174b2761ec597d7a9327c08a62ec256377b6ad165a95d792cbd75"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_00_015_23_5_00_015_23:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "新年を迎えた315プロダクション。\nアイドル達は気持ちも新たに、\nプロデューサーと挨拶を交わす。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34e73cd896f66dd802cdba9d0abbc85b94874a2227efaa28d45e9d9882865b4c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あけましておめでとうございます、\nプロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6b9ff57c97fc88efe0c279cc05f2974860f6d0ef9916f155bee485f4cc0a36e5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -121,30 +157,39 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_015_23_5_00_015_23:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ、あけましておめでとう。\n今年もよろしくな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0db801e7e2a2f6b8ad20711ba7790048aa72e8ed543d87f6523eb43de9b55d87"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -161,7 +206,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -170,21 +214,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん、あけましておめでとー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e7dd6bd026aeb87977ad43a2484cd037b9b3f8a5a125c875da16d42d233fb0ba"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -201,7 +256,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -210,17 +264,28 @@
         "row_id": "5_00_015_23_5_00_015_23:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     },
     {
       "kind": "choice",
       "source_text": "あけましておめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 42,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ab11cfb33245ceec1b91f34b33b3fb44dce553a6967caeb4fcf9b7db9b9755ec"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -247,14 +312,14 @@
         "row_id": "5_00_015_23_5_00_015_23:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 42,
+        "command_end": 43
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
+        "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042:000",
         "source_label": "a1004",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -264,7 +329,18 @@
     {
       "kind": "choice",
       "source_text": "今年もよろしくお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 43,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ab741847666f7669c5dcdcf7883547dfec288784de8da99ea0a6a5b7a4853f12"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -291,14 +367,14 @@
         "row_id": "5_00_015_23_5_00_015_23:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 42,
+        "command_end": 43
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
+        "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:001",
         "source_label": "a1005",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -308,11 +384,22 @@
     {
       "kind": "dialogue",
       "source_text": "はい！\n皆さんは、どんなお正月を過ごしましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f6ffe6678dbb6769212a73fbb5bcd76be2a83fd7009d9a1f9cadc9206227ab2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -329,7 +416,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -338,21 +424,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "正月三が日は掃除をするなって言われてるからな。\n我慢するのが大変だったぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5c420a932a9f5449ac2ac677e4a0dc270fd0bb255546aed5bd14eb9bbd8d47bd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -369,7 +466,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -378,21 +474,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 58,
+        "command_end": 58
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "寝正月、冬の便りに耳澄ませ。\n僕はお正月は、家でゆっくり過ごしてたよー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000065:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 65,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7e3cc9f0864c800dc1ac34742ae4c3e458ed4b07f22a6b9e0c93b0627f455ac"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -409,7 +516,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -418,21 +524,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 65,
+        "command_end": 65
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "古論とプロデューサーはどうだったんだ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000070:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 70,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:002a3090f8d8a6540cff6b3b54523343d9f3a01f4583278d8dec2ee338892a87"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -448,30 +565,39 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_015_23_5_00_015_23:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 70,
+        "command_end": 70
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "私は、初日の出を見に海に行きました。そのあとは、\n家族といつも通りのお正月を過ごしましたよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000075:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 75,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9f75d446adc8ea4fcf9bb0481408c163d20bf7773a73e9cfc60b264e1afddf88"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -488,7 +614,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -497,17 +622,28 @@
         "row_id": "5_00_015_23_5_00_015_23:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 75,
+        "command_end": 75
       },
       "option": null
     },
     {
       "kind": "choice",
       "source_text": "寝正月でした",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 83,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:05d2b584e10cedf032eb42ca5ccb796bf60e90f25405c19f212ba90278404496"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -534,14 +670,14 @@
         "row_id": "5_00_015_23_5_00_015_23:step-17:option-0",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 83,
+        "command_end": 85
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+        "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083:000",
         "source_label": "a2005",
         "target_step_id": 18,
         "target_step_index": 17,
@@ -551,7 +687,18 @@
     {
       "kind": "choice",
       "source_text": "いつもどおりでした",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 84,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6db2598f523372425022ffd96fde6673a7621211fbfb631db446ed90d2875a3c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -578,14 +725,14 @@
         "row_id": "5_00_015_23_5_00_015_23:step-17:option-1",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 83,
+        "command_end": 85
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+        "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:001",
         "source_label": "a2006",
         "target_step_id": 21,
         "target_step_index": 20,
@@ -595,7 +742,18 @@
     {
       "kind": "choice",
       "source_text": "正月三が日、水仕事を我慢してました",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:choice_short:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 85,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b4adabb1c49e4663fc1ddd7466b51586e5d4574af93656fdaee1b991c77ece11"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -622,14 +780,14 @@
         "row_id": "5_00_015_23_5_00_015_23:step-17:option-2",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 83,
+        "command_end": 85
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+        "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:002",
         "source_label": "a2007",
         "target_step_id": 23,
         "target_step_index": 22,
@@ -639,11 +797,22 @@
     {
       "kind": "dialogue",
       "source_text": "僕と一緒だねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000093:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 93,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fafbf796d8d7f57dcd363f1becabe6a51eb44eafa40a2afb2c02cd90cb2d23b3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -659,30 +828,39 @@
         "snapshot": "entry",
         "stepId": 20
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_015_23_5_00_015_23:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 93,
+        "command_end": 93
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "私と同じですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000103:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 103,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:872f627d165a65fae5f4be6e701886cb015afa3c2b1a5df71192ee29e4643371"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -698,30 +876,39 @@
         "snapshot": "entry",
         "stepId": 22
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_015_23_5_00_015_23:step-22:text",
         "step_id": 22,
         "step_index": 21,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 103,
+        "command_end": 103
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "俺と似た正月だな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000113:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 113,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f4d5e13a54dd173000a89674210efdd339107a792893d2e46370e1c6b78530b5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -737,30 +924,39 @@
         "snapshot": "entry",
         "stepId": 24
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_015_23_5_00_015_23:step-24:text",
         "step_id": 24,
         "step_index": 23,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 113,
+        "command_end": 113
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それにしても、こうしてみんなで顔を合わせるのも\n今年初めてだねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000121:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 121,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8dcd18e23015decc2ebf955ccbdef37bf3996a913cef15429199cbe0ee38eda5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -777,7 +973,6 @@
         "stepId": 25
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -786,21 +981,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-25:text",
         "step_id": 25,
         "step_index": 24,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 121,
+        "command_end": 121
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ええ。これが初仕事ですからね。\n今年も皆さんと頑張っていきたいものです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000125:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 125,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a09edaebe422cbf8e400ac1ad7ebf6adc4b2036f6ea42f4fd01df442e1f808b9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -817,7 +1023,6 @@
         "stepId": 26
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -826,21 +1031,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-26:text",
         "step_id": 26,
         "step_index": 25,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 125,
+        "command_end": 125
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ま、新しい一年も俺たちのペースでやっていこうぜ。\n引き続きよろしくな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000131:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 131,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aefe91798d46f7c7334364bd8f8d19eadfb200d681e97baf7d433acb42065b2d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -857,7 +1073,6 @@
         "stepId": 27
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -866,21 +1081,32 @@
         "row_id": "5_00_015_23_5_00_015_23:step-27:text",
         "step_id": 27,
         "step_index": 26,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 131,
+        "command_end": 131
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん。クリスさん、雨彦さん、それから\nプロデューサーさんも。今年もよろしくねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000138:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_015_23_5_00_015_23",
+          "part_id": "5_00_015_23",
+          "file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+          "command_index": 138,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2ee270b9acb4dd35ab9ebd0eb64afd5e536e27e08ff3d161ee7826fabab2186f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -897,7 +1123,6 @@
         "stepId": 28
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -906,10 +1131,10 @@
         "row_id": "5_00_015_23_5_00_015_23:step-28:text",
         "step_id": 28,
         "step_index": 27,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_015_23",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "command_start": 138,
+        "command_end": 138
       },
       "option": null
     }
@@ -921,22 +1146,59 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
+          "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042:000",
           "source_label": "a1004",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000042",
+          "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000043:001",
           "source_label": "a1005",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          42,
+          43
+        ],
+        "join_command": 45,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1004",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              44
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1005",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 17,
@@ -944,169 +1206,141 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+          "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083:000",
           "source_label": "a2005",
           "target_step_id": 18,
           "target_step_index": 17,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+          "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000084:001",
           "source_label": "a2006",
           "target_step_id": 21,
           "target_step_index": 20,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000083",
+          "option_id": "choice-option:v1:5_00_015_23_5_00_015_23:5_00_015_23:cmd-000085:002",
           "source_label": "a2007",
           "target_step_id": 23,
           "target_step_index": 22,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 16,
+        "choice_step_id": 17,
+        "join_index": 24,
+        "join_step_id": 25,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_00_015_23/scenario_5_00_015_23.json",
+        "raw_sha256": "sha256:cfa6be038f9f2593d88b3af4121a5ccc272c0d0b71ca31ab163e9430ae9ca305",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          83,
+          84,
+          85
+        ],
+        "join_command": 116,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a2005",
+            "step_indices": [
+              17,
+              18,
+              19
+            ],
+            "exit_index": 19,
+            "command_indices": [
+              86,
+              87,
+              88,
+              89,
+              90,
+              91,
+              92,
+              93,
+              94,
+              95
+            ],
+            "step_types": [
+              "stage",
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              18,
+              19,
+              20
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "a2006",
+            "step_indices": [
+              20,
+              21
+            ],
+            "exit_index": 21,
+            "command_indices": [
+              96,
+              97,
+              98,
+              99,
+              100,
+              101,
+              102,
+              103,
+              104,
+              105
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              21,
+              22
+            ]
+          },
+          {
+            "option_index": 2,
+            "label": "a2007",
+            "step_indices": [
+              22,
+              23
+            ],
+            "exit_index": 23,
+            "command_indices": [
+              106,
+              107,
+              108,
+              109,
+              110,
+              111,
+              112,
+              113,
+              114,
+              115
+            ],
+            "step_types": [
+              "stage",
+              "adv"
+            ],
+            "step_ids": [
+              23,
+              24
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 16,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 21,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 23,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 24,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 25,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 26,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 27,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "新年を迎えた315プロダクション。",
     "episode_label": null

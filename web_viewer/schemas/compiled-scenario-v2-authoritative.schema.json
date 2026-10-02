@@ -29,10 +29,162 @@
     "resource_manifest": { "type": "object" },
     "episodes": { "type": "array", "items": { "$ref": "#/$defs/episode" } },
     "jump_points": { "type": "array", "items": { "$ref": "#/$defs/jumpPoint" } },
+    "reading_control_flow": { "$ref": "#/$defs/readingControlFlow" },
     "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/step" } }
   },
   "additionalProperties": false,
   "$defs": {
+    "readingControlFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "base_compiled_sha256",
+        "forks"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "base_compiled_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "forks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "choice_index",
+              "choice_step_id",
+              "join_index",
+              "join_step_id",
+              "source_file",
+              "raw_sha256",
+              "branches"
+            ],
+            "properties": {
+              "choice_index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "choice_step_id": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "join_index": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "join_step_id": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1
+              },
+              "join_step_type": {
+                "type": "string"
+              },
+              "source_file": {
+                "type": "string"
+              },
+              "raw_sha256": {
+                "$ref": "#/$defs/sha256"
+              },
+              "raw_hash_format": {
+                "enum": [
+                  "sha256-raw-file-v1",
+                  "sha256-decoded-command-json-v1"
+                ]
+              },
+              "choice_commands": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uniqueItems": true
+              },
+              "join_command": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "branches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "option_index",
+                    "label",
+                    "step_indices",
+                    "exit_index",
+                    "command_indices"
+                  ],
+                  "properties": {
+                    "option_index": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "step_indices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "uniqueItems": true
+                    },
+                    "exit_index": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 0
+                    },
+                    "command_indices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "uniqueItems": true
+                    },
+                    "step_types": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "step_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 1
+                      }
+                    },
+                    "retry": {
+                      "type": "object", "additionalProperties": false,
+                      "required": ["index", "step_id", "target_command", "jump_command", "label"],
+                      "properties": {
+                        "index": { "type": "integer", "minimum": 0 },
+                        "step_id": { "type": "integer", "minimum": 1 },
+                        "target_command": { "type": "integer", "minimum": 0 },
+                        "jump_command": { "type": "integer", "minimum": 0 },
+                        "label": { "type": "string", "minLength": 1 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "canonicalToken": {
       "type": "string",
       "minLength": 1,
@@ -159,20 +311,76 @@
     },
     "choiceOption": {
       "type": "object",
-      "required": ["option_id", "source_text", "text_ref", "target_step_id"],
+      "required": [
+        "option_id",
+        "source_text",
+        "text_ref",
+        "target_step_id"
+      ],
       "properties": {
-        "option_id": { "type": "string", "minLength": 1 },
-        "source_text": { "type": "string" },
-        "text_ref": { "$ref": "#/$defs/textRef" },
-        "detail_source_text": { "type": "string" },
-        "detail_text_ref": { "$ref": "#/$defs/textRef" },
-        "target_step_id": { "type": "integer", "minimum": 1 }
+        "option_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_text": {
+          "type": "string"
+        },
+        "text_ref": {
+          "$ref": "#/$defs/textRef"
+        },
+        "detail_source_text": {
+          "type": "string"
+        },
+        "detail_text_ref": {
+          "$ref": "#/$defs/textRef"
+        },
+        "target_step_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "label": {
+          "type": "string"
+        },
+        "detail_kind": {
+          "const": "presentation-marker"
+        },
+        "target_kind": {
+          "const": "end"
+        }
       },
       "dependentRequired": {
-        "detail_source_text": ["detail_text_ref"],
-        "detail_text_ref": ["detail_source_text"]
+        "detail_source_text": [
+          "detail_text_ref"
+        ],
+        "detail_text_ref": [
+          "detail_source_text"
+        ]
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "target_step_id": {
+                "const": 0
+              }
+            },
+            "required": [
+              "target_step_id"
+            ]
+          },
+          "then": {
+            "required": [
+              "target_kind"
+            ],
+            "properties": {
+              "target_kind": {
+                "const": "end"
+              }
+            }
+          }
+        }
+      ]
     },
     "textUnit": {
       "type": "object",

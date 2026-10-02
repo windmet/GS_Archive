@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { parseArgs, assert, createOutput, jsonBytes, sha256, safeRead } from '../lib/common.mjs';
-import { readCheckout } from '../lib/checkout_adapter.mjs';
+import { INPUTS, readCheckout } from '../lib/checkout_adapter.mjs';
 import { writeReadModels } from '../lib/projections.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['--repo','--out','--data-revision','--media-epoch']);
@@ -17,8 +17,12 @@ const head = execFileSync('git', ['-C', repo, 'rev-parse','HEAD'], { encoding: '
 // generator itself must be committed; public/data is ignored but hashed below.
 const inputPaths = ['web_viewer/readmodels', 'web_viewer/src/data', 'web_viewer/src/presentation',
   'web_viewer/shared/story', 'web_viewer/public/data'];
+const dataInputs = new Set(Object.values(INPUTS).map(name => `web_viewer/public/${name}`));
 const status = execFileSync('git', ['-C', repo, 'status', '--porcelain', '--untracked-files=all', '--', ...inputPaths],
-  { encoding: 'utf8' }).trim();
+  { encoding: 'utf8' }).split(/\r?\n/).filter(line => line.trim() &&
+    // Ignore unrelated new data files only; every consumed input and every
+    // tracked modification still requires a committed baseline.
+    !(line.startsWith('?? web_viewer/public/') && !dataInputs.has(line.slice(3)) && !line.slice(3).startsWith('web_viewer/public/data/masterdata/domains/'))).join('\n');
 assert(!status, `Read-model inputs or generator are uncommitted:\n${status}`);
 // Build is intentionally independent of master. Starting from current compatible product ancestry is required.
 execFileSync('git', ['-C', repo, 'merge-base','--is-ancestor','a6929d4054a8a9ce7da64b3d962c86eedd2cfb27',head]);
@@ -29,7 +33,7 @@ try {
   // Only code that affects projection bytes belongs in the data release.
   // Assembler, audit and verification changes must not rotate immutable URLs.
   const generatorHashes = {};
-  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
+  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/domain_expansion.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
     generatorHashes[relative] = sha256(await safeRead(kit, relative));
   }
   const release = sha256(jsonBytes({ format: 'gs-readmodels-v1', ...provenance, generatorHashes }));

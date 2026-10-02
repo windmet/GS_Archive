@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "038tak_402_2_4_038_02_09_b",
-  "logical_id": "story-collection:038tak_402_2_4_038_02_09_b",
+  "logical_id": "story:038tak_402_2_4_038_02_09_b",
   "scenario_id": "038tak_402_2_4_038_02_09_b",
   "text_catalog_id": "038tak_402_2_4_038_02_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "038tak_402_2_4_038_02_09_b.json",
-    "sha256": "sha256:3da8a4af9fc706b4408551e78479b2d49df687889151a25a80d3d9accd72592e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b414c71298f69212632ff6f7f37b7e3cdbd3f4c291113e1a9785b0015c28976e",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:3c101133f9d234a8975e3500193db635a0c9ba1de5231d7e7c527b5c92beac4f",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "038tak_402_2_4_038_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、お疲れ。\n今、焚き火に使う木を取りに来てる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8fc89b847c07c40966ff062069bd3b310ba0414e3ae94c776151aba0f30d9f62"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "あとどのくらいあれば足りるか、見てもらえるか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:761dc4d5444c50e5eb1baffb9c66e6087be8bea75b2c09c1154dd36b111d2e35"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "一束くらいです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91b8987c0bfa2269edf393d98f9637e75ebdd6c7d0daa6b597a95bacfb3dd9fc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "038tak_402_2_4_038_02_09_b:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000012",
+        "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000012:000",
         "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "わかった。それなら、人手は十分足りそうだ。\n今運ぶから、アンタたちはそっちで待っててくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:02bc37dcb2ca13d37873e4d4aa821c3ce5440772d27796a5e0695ad9efc17215"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -192,7 +233,18 @@
     {
       "kind": "choice",
       "source_text": "忙しなくて\nすみません",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:63db56a190e54906475b7ee571384ecc207a934eac721af4316f207ba689587c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -219,14 +271,14 @@
         "row_id": "038tak_402_2_4_038_02_09_b:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017",
+        "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017:000",
         "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -237,7 +289,18 @@
     {
       "kind": "choice",
       "source_text": "重くないですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:136758c5b175da3e1cbd6b08e190caa7d207cb698754b9d7ef43772f34e5f27e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -264,14 +327,14 @@
         "row_id": "038tak_402_2_4_038_02_09_b:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017",
+        "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000018:001",
         "source_label": "phone_select3",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -282,11 +345,22 @@
     {
       "kind": "dialogue",
       "source_text": "これくらい、どうってことない。\nむしろ運動になっていいくらいだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7011592e818cb7a4c27a1586af363564cb8bd60ce571fcc9ea56382aba69a53f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -302,19 +376,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "それに、せっかくのキャンプ体験だ。\nここまで自分の手で経験してこそ、だろ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:98d5779b80b9ac16258920bd59c6cc06a706ad9d272db89183d0dfc52e169382"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "にしてもこのキャンプ場、何でもそろってるんだな。\n子供も気軽に楽しめそうだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e6b0f6a22439c49a5767d30ce0357a967656596297aee84b7c0510d62663ab2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃ、一旦切る。すぐにそっちに戻る。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "038tak_402_2_4_038_02_09_b",
+          "part_id": "2_4_038_02_09_b",
+          "file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:38fecd02593fa7b07616f00419f1d37ecca0a3ee21b80d7af3d0e3e1a94b434d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "038tak_402_2_4_038_02_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_038_02_09_b",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -447,8 +546,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000012",
+          "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000012:000",
           "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -462,86 +561,62 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017",
+          "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017:000",
           "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000017",
+          "option_id": "choice-option:v1:038tak_402_2_4_038_02_09_b:2_4_038_02_09_b:cmd-000018:001",
           "source_label": "phone_select3",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/038tak_402/scenario_2_4_038_02_09_b.json",
+        "raw_sha256": "sha256:6a10a146ab92fbb711966e5048627e19d1b2bab5da3558af08b3a7c2a2373239",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          17,
+          18
+        ],
+        "join_command": 20,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              19
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、お疲れ。",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_028soi_2_1_2_028_22_t01",
-  "logical_id": "story-collection:1_x_028soi_2_1_2_028_22_t01",
+  "logical_id": "story:1_x_028soi_2_1_2_028_22_t01",
   "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
   "text_catalog_id": "1_x_028soi_2_1_2_028_22_t01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_028soi_2_1_2_028_22_t01.json",
-    "sha256": "sha256:2ab1ab5ba01dfeb8ed85f8c06be909e8ad304b855feec296a24fc78a499334d2",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:57b80e9d781e5b0ff63825c08f05c1e0a82323325caf1ace7e11d8d24d46a092",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:4d0dfa93dcd89b489691521773f37132aa9b770487eb3badcf47981932b84f8b",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_028soi_2_1_2_028_22_t01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん、お疲れ様です。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4ab7dc9f1b7d8329acb1b92e331b3f3cfc2bbc823e9bd2316c7b85cee19c8314"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "お疲れ様です\n荘一郎さん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1a997562bb6be69e93b68654e4b726559407ab3519b9b504052b289577d15af5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000008",
+        "option_id": "choice-option:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000008:000",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日はありがとうございました。\nパーティもケーキも嬉しかったです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2628044b3a4f213dc1e73a16da8e9198948dddb0196b758b9d6549b5d0706702"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさんも、デコレーションの練習や\nスケジュールの調整をしてくださったそうですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e80129c6b56724b54bc130a501a08fe06f22b319c83fa8fd7909e2b3d61e5362"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "お忙しい中、私のために時間を割いてくださって\nありがとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:540ba41d9b79c76950c0bb7e22f4236c6dd202348da3730ccaaad3a2d08e83e5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "私もお祝いできて\nよかったです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7b6f55abeabe958e0759062d988942849d959b518c5b99958ef0303cadd44bf5"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000017",
+        "option_id": "choice-option:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000017:000",
         "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "おかげで、\n思い出に残る誕生日になりました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3ccb09e835af3cfe0e63150afad5cc22fc4cab952d11164b062a7fa370ed56a1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさんの誕生日にも、\n記憶に残るようなケーキを作ります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6749c2677d0478441b512e7237ab66288e1a99c79549c2eb0db2745733445058"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "楽しみにしていてください。\nそれではまた、事務所でお会いしましょう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_028soi_2_1_2_028_22_t01",
+          "part_id": "1_2_028_22_t01",
+          "file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:de67d26f43655f8884b95bb6d5ab5e8e634769a9e7be21c56e2a42ae03f4f2e2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "028soi",
         "sourceName": "東雲 荘一郎"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_028soi_2_1_2_028_22_t01:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_2_028_22_t01",
+        "source_file": "assets/resources/scenariodata/1_x_028soi_2/scenario_1_2_028_22_t01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -402,8 +490,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000008",
+          "option_id": "choice-option:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000008:000",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
@@ -417,8 +505,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000017",
+          "option_id": "choice-option:v1:1_x_028soi_2_1_2_028_22_t01:1_2_028_22_t01:cmd-000017:000",
           "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
@@ -427,58 +515,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "プロデューサーさん、お疲れ様です。",
     "episode_label": null

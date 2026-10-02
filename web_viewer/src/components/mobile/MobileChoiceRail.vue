@@ -1,10 +1,10 @@
 <template>
   <div class="mobile-choice-rail" :class="`rail-count-${countClass}`" role="group" :aria-label="railLabel">
     <button
-      v-for="(opt, i) in options"
+      v-for="{ opt, index: i } in displayedOptions"
       :key="opt.option_id || opt.label || i"
       class="choice-bubble"
-      :class="{ 'is-bilingual': isBilingualOption(opt), 'is-selected': selectedIndex === i }"
+      :class="[`choice-index-${i}`, { 'is-bilingual': isBilingualOption(opt), 'is-selected': selectedIndex === i }]"
       :aria-pressed="selectedIndex === i"
       :disabled="locked && selectedIndex !== i"
       @click="select(opt, i)"
@@ -24,9 +24,14 @@ import { resolveText } from '../../utils/TextHelper.js'
 const props = defineProps({
   options: { type: Array, default: () => [] },
   railLabel: { type: String, default: '回复选项' },
+  reverseThree: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['select'])
+const displayedOptions = computed(() => {
+  const indexed = props.options.map((opt, index) => ({ opt, index }))
+  return props.reverseThree && indexed.length === 3 ? indexed.reverse() : indexed
+})
 
 const localization = useStoryLocalization()
 
@@ -180,6 +185,53 @@ const countClass = computed(() => {
 
 .rail-count-three {
   gap: 10px;
+}
+
+/* Three-answer Call palette, following the archived game screen's option
+   identities: phone_select1 green, phone_select2 teal, phone_select3 blue. */
+.call-choice-rail.rail-count-three .choice-index-0 {
+  --call-choice-fill: #178800;
+  --call-choice-edge: #55ef1c;
+  --call-choice-halo: rgba(85, 239, 28, 0.28);
+}
+
+.call-choice-rail.rail-count-three .choice-index-1 {
+  --call-choice-fill: #008670;
+  --call-choice-edge: #00dfb9;
+  --call-choice-halo: rgba(0, 223, 185, 0.28);
+}
+
+.call-choice-rail.rail-count-three .choice-index-2 {
+  --call-choice-fill: #007dbc;
+  --call-choice-edge: #00c5ff;
+  --call-choice-halo: rgba(0, 197, 255, 0.28);
+}
+
+.call-choice-rail.rail-count-three .choice-bubble {
+  border-color: var(--call-choice-edge);
+  background: var(--call-choice-fill);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 0 0 3px var(--call-choice-halo),
+    0 0 16px var(--call-choice-halo),
+    0 10px 28px rgba(3, 12, 20, 0.34);
+}
+
+.call-choice-rail.rail-count-three .choice-text {
+  --localized-secondary-color: rgba(255, 255, 255, 0.88);
+}
+
+.call-choice-rail.rail-count-three .choice-tail {
+  filter: drop-shadow(3px 1px 0 var(--call-choice-edge));
+}
+
+.call-choice-rail.rail-count-three .choice-bubble.is-selected {
+  box-shadow: 0 0 0 5px var(--call-choice-halo), 0 12px 30px rgba(3, 12, 20, 0.38);
+}
+
+.call-choice-rail.rail-count-three .choice-bubble:focus-visible {
+  box-shadow: 0 0 0 5px #ffffff, 0 0 0 8px var(--call-choice-edge);
 }
 
 .rail-count-many .choice-bubble {

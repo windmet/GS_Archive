@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "043kaz_402_2_4_043_02_09_a",
-  "logical_id": "story-collection:043kaz_402_2_4_043_02_09_a",
+  "logical_id": "story:043kaz_402_2_4_043_02_09_a",
   "scenario_id": "043kaz_402_2_4_043_02_09_a",
   "text_catalog_id": "043kaz_402_2_4_043_02_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "043kaz_402_2_4_043_02_09_a.json",
-    "sha256": "sha256:318c483f3c84b138df0754b763acfe990cb3198295b273d8166db123aff58a0c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:873e71e2991797479d790ea49413fc1977884141714788dfd6baa275b0f982ea",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:f07a2473905de16863d14c2f4957af13462d937b8700a0be44c0640efea8a84a",
     "aggregate_source": null,
     "step_count": 17,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "043kaz_402_2_4_043_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "…●●●●プロデューサー、お疲れ。\n今、時間をもらえるか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0bec79380c4654896f56d1027a17f0eef6508813f4231d1300e7a5a54e8b56b4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6675d6089c919cb09cc4d8d696a0193186f7cc82b9b1af0f491acfdc10f69909"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "043kaz_402_2_4_043_02_09_a:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000008",
+        "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000008:000",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "…先日お化け屋敷で撮影したPRポスターの\nその後が気になってな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c6fc2ee00142a6c8756c169340934e0e5b3ee92494ff2bafbf8769d9e6fcd9e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "…頭の中に思い描いた設定はあっても、\nポスターでは、直接言葉で伝えることはできない。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e3ccbcc4465f85f51619e3069f182f184edc50de2a976a7b935b51d375d8502"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "…おれは、あのお化け屋敷の世界観を、\n表現しきれていただろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3819683665952a7cd15bbc5ff36b70ea59902cb29d7335ef196ce5dc3fb0f71c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "ちゃんと思いが\n伝わってきます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:81acf0792f4aaeade7ec11a18336404e38c3895aaee519b100773b106774c588"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "043kaz_402_2_4_043_02_09_a:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017",
+        "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017:000",
         "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -277,7 +338,18 @@
     {
       "kind": "choice",
       "source_text": "はい、ドラマを\n感じます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:507ea90947365a5c2bc8125c8480d48098c8ad974e5872cd1837c1f6058ecf79"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -304,14 +376,14 @@
         "row_id": "043kaz_402_2_4_043_02_09_a:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 17,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017",
+        "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000018:001",
         "source_label": "phone_select3",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "…プロデューサーの目にそう映っているなら、\n安心だ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9be33a655fedbfb7909d1d1ee896e9054e313cccc06c0c796ae75d899c9b2a4b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "…そうか。プロデューサーと\nしっかりとコンセプトを詰められたおかげだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d48afc6bac8087461a5898b5114b34251e0017af38b7f2a10f71315f718e0f64"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "…お化けが何を経て、どんな想いを持って\nあの場で人間たちに姿を見せるのか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:446cf2c1c7b97c1f2fa4bb59814bdc91dfd61956b6611d3eb55443ab94b7c0ec"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "…撮影前に話を聞いてもらったお陰で、一枚の\n写真の裏にある背景を深めることができた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:572a8e1672ec63d8bb50dca04ecfcaf4eb9528790214371fc1dc7f18701a6c67"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "…自分で考えたことをただ詰め込むだけでは、\nひとりよがりなものになっていたと思う。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2691c20d6fa2fbe9c046c6f57a88807dc83fad0bc91b4bb64b700dcafede3354"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "…正解に辿り着けたのは、プロデューサーからの\n客観的な意見を聞くことができたおかげだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:43542511144afb8f4e01352024315b7ba9e85aab0ccd0a626ffe338dcfa3cd38"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "…おれの話を聞くために、時間を作ってくれたこと、\n感謝している。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000037:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 37,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ed7e72cb77108dc88d4399cad5d784394baeefeacc17db3548f745042977bfaf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null,
       "presentation": "call"
@@ -602,11 +737,22 @@
     {
       "kind": "dialogue",
       "source_text": "…また今回のような機会がある時は、\n相談に乗ってもらえたら嬉しい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000039:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 39,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93d096b448d513c3252807c16888488b8b0545a54dcb00d5e4981138e7c00a15"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -622,19 +768,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null,
       "presentation": "call"
@@ -642,7 +786,18 @@
     {
       "kind": "choice",
       "source_text": "わかりました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000041:choice_short:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 41,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:59c55d4b878df63d50ff372587f8319ae3821c1cf3fe8c6bce31cf184b4a7c34"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -669,14 +824,14 @@
         "row_id": "043kaz_402_2_4_043_02_09_a:step-16:option-0",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000041",
+        "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000041:000",
         "source_label": "phone_select5",
         "target_step_id": 17,
         "target_step_index": 16,
@@ -687,11 +842,22 @@
     {
       "kind": "dialogue",
       "source_text": "…ありがとう。それじゃあ、また連絡する。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000044:phone_message:000",
+        "source": {
+          "scenario_id": "043kaz_402_2_4_043_02_09_a",
+          "part_id": "2_4_043_02_09_a",
+          "file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+          "command_index": 44,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8fc55e5cceabe508c10b0bb31f3039a3dbf9ac307eb5ce0aee2320243dbb487b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -707,19 +873,17 @@
         "snapshot": "entry",
         "stepId": 17
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "043kaz_402_2_4_043_02_09_a:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_043_02_09_a",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null,
       "presentation": "call"
@@ -732,8 +896,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000008",
+          "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000008:000",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
@@ -747,22 +911,79 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017",
+          "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017:000",
           "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000017",
+          "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000018:001",
           "source_label": "phone_select3",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/043kaz_402/scenario_2_4_043_02_09_a.json",
+        "raw_sha256": "sha256:67cc3fbd76f47b819399bcb9fffd0e627643dfa844fde20a7bb86868908bf878",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          17,
+          18
+        ],
+        "join_command": 27,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              19,
+              20,
+              21,
+              22
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              8
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              23,
+              24,
+              25,
+              26
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          }
+        ]
+      }
     },
     {
       "step_id": 16,
@@ -770,8 +991,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000041",
+          "option_id": "choice-option:v1:043kaz_402_2_4_043_02_09_a:2_4_043_02_09_a:cmd-000041:000",
           "source_label": "phone_select5",
           "target_step_id": 17,
           "target_step_index": 16,
@@ -780,108 +1001,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "…●●●●プロデューサー、お疲れ。",
     "episode_label": null

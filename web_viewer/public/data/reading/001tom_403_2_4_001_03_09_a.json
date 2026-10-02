@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "001tom_403_2_4_001_03_09_a",
-  "logical_id": "story-collection:001tom_403_2_4_001_03_09_a",
+  "logical_id": "story:001tom_403_2_4_001_03_09_a",
   "scenario_id": "001tom_403_2_4_001_03_09_a",
   "text_catalog_id": "001tom_403_2_4_001_03_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "001tom_403_2_4_001_03_09_a.json",
-    "sha256": "sha256:a57fe0c6773a3fa1d7ea07c714c88ef8910857565edbc7ea1411e178f8e9d0eb",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:140e47a7fe35801ce7ae584b8d83fae01e96f41af93e7fc72979645c0c6b404c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:d0afef86c3555c168f9ef78e4e5c1537c400eca2b74eeda329ff7965903e041c",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "001tom_403_2_4_001_03_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサー？\n『プラネットシューター』、いよいよ来週公開だな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1989a653baa1c98769ebfddc5953ee9bf8b728f4e9e04ff00efa4132ad1610c1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今、街中で広告が出てるのを見つけてさ。\nそれ見てたら、実感が湧いてきたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2fa5423a9cd0fb0bf615f939f74e0cabec3dde405c00cfacb0e1bd0f690e9104"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "……あのさ、●●●●プロデューサー。\nこの仕事、持ってきてくれてありがとな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc30c4234eb851feaf09cb1e4e299e7e92d7d6ebfd7e4f6bc105e02b834a0e9d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回は映画の声優の他にも、主題歌とそのPV、\n宣伝活動…って、やることが盛りだくさんだったろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:87704e690f31a3f700a5e7c944d51288ea27a6e796566fdd8b19cc94c942728a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "雑誌のインタビューでも、これまでの活動のことを\n結構深く掘り下げてもらったし。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e9f64d388389324b18bdb1d7a2fb58fd5589e73d6704707b9a7b976603474655"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "宣伝カーであちこち回った時は、\nファンの反応を近くで見られた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e2f79755843b69d0dd895bad0533baa1b07c5dd73dd364d6da0b9269a441988b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -267,11 +324,22 @@
     {
       "kind": "dialogue",
       "source_text": "最初に詳細を聞いた時は驚いたけど、\nどれもやれてよかったと思うんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:29f7a526275f9ee610fa6fe206721909621a04bed1a9bbf60e3757451b9f70e3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -287,19 +355,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -307,11 +373,22 @@
     {
       "kind": "dialogue",
       "source_text": "これまでの仕事の経験が役に立ったり、\n改めてファンの存在を感じられる場面が多くてさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e6b6529f61bb7e72db393314ca3b53e43dc8c106d623d52aa2b170aeb150bb4e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -327,19 +404,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -347,11 +422,22 @@
     {
       "kind": "dialogue",
       "source_text": "大変だったけど、充実してたし、\nすげぇ身になる仕事だったと思う。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fbc5c73fbcc0b264fd90d3098f2aed6fb944f05b84f951c46c571eee40dcf5f5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -367,19 +453,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -387,7 +471,18 @@
     {
       "kind": "choice",
       "source_text": "今後も期待しています",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025:choice_short:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 25,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e6b037bd3336bca75d9eab1a13af552579e1682f86c83296984469fdfe4afb49"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -414,14 +509,14 @@
         "row_id": "001tom_403_2_4_001_03_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 25,
+        "command_end": 26
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025",
+        "option_id": "choice-option:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025:000",
         "source_label": "phone_select1",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -432,7 +527,18 @@
     {
       "kind": "choice",
       "source_text": "映画の公開が\n楽しみですね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000026:choice_short:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 26,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:43e409d8d32332cf1818f3047169b78be54dd8653b770b90b3dd14c46ee303bc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -459,14 +565,14 @@
         "row_id": "001tom_403_2_4_001_03_09_a:step-12:option-1",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 25,
+        "command_end": 26
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025",
+        "option_id": "choice-option:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000026:001",
         "source_label": "phone_select2",
         "target_step_id": 14,
         "target_step_index": 13,
@@ -477,11 +583,22 @@
     {
       "kind": "dialogue",
       "source_text": "その期待を上回るくらい、活躍してやるさ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2c4a3af9f3b08738f38dca251669a0f860ad75ff16f0cfaf407415bbd0c89733"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -497,19 +614,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -517,11 +632,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ、そうだな！　実際に映画を見たファンの\n感想を聞くのも楽しみだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7512b67145646a904906e5d6bce658a0b423e246d9b500ad86cce36702768703"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -537,19 +663,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -557,11 +681,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃ、また次の仕事もよろしくな。\nお疲れさま！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000037:phone_message:000",
+        "source": {
+          "scenario_id": "001tom_403_2_4_001_03_09_a",
+          "part_id": "2_4_001_03_09_a",
+          "file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+          "command_index": 37,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7e3b5df895b3ba2c458738e147352addb4237373310559e675df6155d38c1092"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "天ヶ瀬 冬馬"
       },
       "performance": {
@@ -577,19 +712,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "001tom_403_2_4_001_03_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_001_03_09_a",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null,
       "presentation": "call"
@@ -602,111 +735,82 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025",
+          "option_id": "choice-option:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025:000",
           "source_label": "phone_select1",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000025",
+          "option_id": "choice-option:v1:001tom_403_2_4_001_03_09_a:2_4_001_03_09_a:cmd-000026:001",
           "source_label": "phone_select2",
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 11,
+        "choice_step_id": 12,
+        "join_index": 14,
+        "join_step_id": 15,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/001tom_403/scenario_2_4_001_03_09_a.json",
+        "raw_sha256": "sha256:3424bc5bc50b642b2a99cf53e804f0a325855f52d9be04ac9b6010c05b9dd2ef",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          25,
+          26
+        ],
+        "join_command": 35,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              12
+            ],
+            "exit_index": 12,
+            "command_indices": [
+              27,
+              28,
+              29,
+              30
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              13
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              13
+            ],
+            "exit_index": 13,
+            "command_indices": [
+              31,
+              32,
+              33,
+              34
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              14
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサー？",
     "episode_label": null

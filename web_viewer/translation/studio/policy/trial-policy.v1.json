@@ -1,0 +1,293 @@
+{
+  "schema": "GS-TRIAL-POLICY-V1",
+  "editorial_status": "frozen-for-trial",
+  "public_approval": false,
+  "provenance": "GS_Archive_Translation_R3_2deda2ca7a0c.zip/data/trial-policy.proposal.json; local trial selection",
+  "items": [
+    {
+      "key": "producer-chan",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "Producer addressing with explicit ちゃん outside macro",
+      "chosen_rendering": "酱",
+      "required": "Do not add P after producer_name_with_p; forbid body-size nickname 小不点",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "producer-pii",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "花園百々人 explicit ぴぃちゃん",
+      "chosen_rendering": "P酱",
+      "required": "Keep the preceding producer_name marker; P here comes from literal pii",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "w-kantoku",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "蒼井悠介/享介 explicitly addressing Producer as 監督",
+      "chosen_rendering": "监督",
+      "required": "Editorial trial default, not a claim that 教练 is inherently wrong; do not apply to unrelated sports coaches",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "producer-shisho",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "円城寺道流 explicitly addressing Producer as 師匠",
+      "chosen_rendering": "师父",
+      "required": "Literal title; add player name only where original contains name slot",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "name-mayumi",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "マユミくん referring to 049eis",
+      "chosen_rendering": "眉见君",
+      "required": "Keep surname level",
+      "source_form": "マユミくん",
+      "target_entity_id": "049eis",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_g:cmd-000021:dialogue:000",
+          "source_hash": "sha256:d6d7160a5ce401dcf08ddbe0ea9fbbc270daffa8b077d651aca74f5f560a672e"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_h:cmd-000023:dialogue:000",
+          "source_hash": "sha256:4c80b2d1b2dac091d04e6b84d78abf4a1c33595311990f550a5e7229d8b1cdb8"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-nao",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "なおくん referring to 032nao",
+      "chosen_rendering": "直央君",
+      "required": "Masterdata canonical given name 直央 is read なお; do not invent 直",
+      "source_form": "なおくん",
+      "target_entity_id": "032nao",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000194:phone_message:000",
+          "source_hash": "sha256:60a070778ba5f5591b6a81a22622a533810217db48921882a063430815d2b026"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-shiro",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "しろうくん referring to 033shr",
+      "chosen_rendering": "志狼君",
+      "required": "Do not invent 四郎",
+      "source_form": "しろうくん",
+      "target_entity_id": "033shr",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000194:phone_message:000",
+          "source_hash": "sha256:60a070778ba5f5591b6a81a22622a533810217db48921882a063430815d2b026"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-michiru",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "道流さん referring to 039mcr",
+      "chosen_rendering": "道流先生",
+      "required": "Not 道夫",
+      "source_form": "道流さん",
+      "target_entity_id": "039mcr",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_f:cmd-000154:dialogue:000",
+          "source_hash": "sha256:c7f10104ca449f7e0d719fecf7df67721224b087bbf35b5b2567bd0d0be4bda8"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-michio",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "道夫さん referring to 035mco",
+      "chosen_rendering": "道夫先生",
+      "required": "Not 道流",
+      "source_form": "道夫さん",
+      "target_entity_id": "035mco",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000096:dialogue:000",
+          "source_hash": "sha256:8ed8c1e60e577f3b70c44042e5fbdcc380f14336e58b07d26bbc2cbc515b50f1"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000128:dialogue:000",
+          "source_hash": "sha256:0ae29bcb9d4b39fa2395ce9193dd2942138267749676be609bf6ae9ce426ecaf"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000141:dialogue:000",
+          "source_hash": "sha256:15be3bf24efd69969913a11ff17d64d45bdd2dbc95d28d004e11b34716a32163"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-takeru",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "タケル referring to 038tak",
+      "chosen_rendering": "タケル",
+      "required": "Provisional precise proper-name exception; retain suffix translation; never substitute surname 大河",
+      "source_form": "タケル",
+      "target_entity_id": "038tak",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_c:cmd-000057:dialogue:000",
+          "source_hash": "sha256:e6705e2f62bb14394bbe36ffcda17c6f918b9581ac7d5e5b61df1755838fa759"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000061:dialogue:000",
+          "source_hash": "sha256:d371673eac6e704fb2288f362cf7e75f075924543d5af63330a8c974f602d2e6"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000064:dialogue:000",
+          "source_hash": "sha256:d12bcd7b61aea970549bfe49ce0c8acec8c74d391527e02ee589faf54705766e"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000072:dialogue:000",
+          "source_hash": "sha256:b2d04f631cd9ae477dda07292acab8c5ebcedc61e89d9213813ab5324aefa6eb"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_f:cmd-000093:dialogue:000",
+          "source_hash": "sha256:5bda7de40ec23045f2850ad7180e42738c450b096de3d8f2d9ed078e8a417414"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000033:dialogue:000",
+          "source_hash": "sha256:ddb249515f28ac65af8181285c29ce527e1403ca2bdb0f5a566bc736242fcf5c"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000043:dialogue:000",
+          "source_hash": "sha256:f22245af8aa3a6076a76bb80d54c27b95b2d17671f1be23d41b28ad71f72e1fc"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000080:dialogue:000",
+          "source_hash": "sha256:2b07ac2d2d9c5f5cf756bbb4e48cfdb785457a1b62a7c8a61d235f390abcfda2"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-momohito",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "百々人 referring to 048mom",
+      "chosen_rendering": "百百人",
+      "required": "Editorial simplified-Chinese orthography default only, not official-name claim",
+      "source_form": "百々人",
+      "target_entity_id": "048mom",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_e:cmd-000160:mobile_message:000",
+          "source_hash": "sha256:a0be8ca7c2a422e8d6bce0b4ac6bf9cad005b41ba99d2b0351391f59c28a6752"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_f:cmd-000067:dialogue:000",
+          "source_hash": "sha256:a4cffd32d638c5c83cbca6d8907a8a55e50bd321c611e24ef721d62eaafa7212"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:34cc7643b6d1fcdecde7887ea440ff092f8e99400f5ef5057eae34f1de3ddc45"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_e:cmd-000057:dialogue:000",
+          "source_hash": "sha256:fcb3242a0e5280f0ef6726e632f37554ac9a17c351595a8f6999fc2478427e62"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_g:cmd-000086:dialogue:000",
+          "source_hash": "sha256:ea88d91cc46d565fb002bc5728f77e895f6cbb00b621806d84bf968000016f57"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_h:cmd-000072:dialogue:000",
+          "source_hash": "sha256:77d85397cf574fc54d7aa08838d2f125b2faa006f93be22a02e4b38f9121a784"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_j:cmd-000062:dialogue:000",
+          "source_hash": "sha256:34752efd5a53e866b42778e889e37c347d605728d2a955547b0484d7b80dec0d"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "shiki-tchi",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "伊瀬谷四季 explicit person-name＋っち and a direct quote of that same name",
+      "chosen_rendering": "人名＋仔",
+      "required": "Scoped style proposal e.g.史密斯仔/隼人仔/旬仔/英雄仔; do not mechanically apply to all ちゃん, all speakers or dog nickname",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "mister-yamashita",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "舞田類 explicit ミスターやました",
+      "chosen_rendering": "Mr. 山下",
+      "required": "If retaining English, put title before surname",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "arrow-band",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "ARROW・B proper band name",
+      "chosen_rendering": "ARROW・B",
+      "required": "Keep original separator; middle dot is not kana residue",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "giga-thankyou",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "四季 ギガサンキュー and the corresponding quoted reply",
+      "chosen_rendering": "Giga Thank You",
+      "required": "Keep deliberately unusual English and ensuing joke; remove Japanese grammatical suffix, not the joke",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    }
+  ],
+  "global_required": [
+    "每个ID只翻译本条源文意义，不搬句",
+    "保留施受、否定、条件、时态与数量来源",
+    "普通日语语法与感叹词必须中文化",
+    "信息用于理解，不自动补进译文",
+    "未知专名按精确名单保留，不自行造字"
+  ],
+  "global_forbidden": [
+    "未批准的っす/ッス/ほう/ァ残留",
+    "姓名层级无依据转换",
+    "仅因角色印象新增称呼、酒或具体动作",
+    "把false choice按百科资料改对"
+  ],
+  "pending_terms": [
+    "贝独乐/ベーゴマ具体中文称谓",
+    "アヤカシ清掃社项目译名",
+    "ひつじ雲/おぼろ雲专业术语独立核验"
+  ],
+  "proper_name_exceptions": [
+    "タケル"
+  ],
+  "note": "Trial-only editorial choices. No published translation approval."
+}

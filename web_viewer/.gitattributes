@@ -1,0 +1,12 @@
+# Source-bound B002 receipts retain exact bytes, including the supplied CRLF output.
+translation/studio/reviews/B002-main-r31-edited-20261001/* -text
+translation/studio/reviews/B002-main-r31-edited-20261001/output.original.md whitespace=cr-at-eol
+# New policy and episode overlays have stable LF bytes for policy/receipt hashes.
+translation/studio/policy/idol-names.v1.json text eol=lf
+translation/studio/policy/trial-policy.v2.2.json text eol=lf
+translation/studio/policy/translation-r3.2.md text eol=lf
+public/translations/zh-CN/scenarios/1_4_002_00_?.json text eol=lf
+public/translations/zh-CN/scenarios/1_4_002_01_?.json text eol=lf
+
+# Chart descriptor digests require identical served bytes on Windows and Unix.
+public/data/song_charts/*.json text eol=lf linguist-generated=true

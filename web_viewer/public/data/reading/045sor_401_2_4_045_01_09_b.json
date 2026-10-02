@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "045sor_401_2_4_045_01_09_b",
-  "logical_id": "story-collection:045sor_401_2_4_045_01_09_b",
+  "logical_id": "story:045sor_401_2_4_045_01_09_b",
   "scenario_id": "045sor_401_2_4_045_01_09_b",
   "text_catalog_id": "045sor_401_2_4_045_01_09_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "045sor_401_2_4_045_01_09_b.json",
-    "sha256": "sha256:a0db50ac08f47e467e33e667c01401381d99d18927961ba3463a3838d3827592",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:94a2305f21f75d5afd30bd61020d8aca10ff6681b5000ae7267bd8a57172a9ec",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:4d5751e9e3909cd7a724230d804741754e032e6287740dda7d879476b1d92c21",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "045sor_401_2_4_045_01_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん、お疲れさまー。\n今日は仕事の打ち合わせ、ありがとねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c4be8f7c08a6007c9998dbe8196f70bd056fbeeb3c1c466f2935d39b3c41a1a8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "045sor_401_2_4_045_01_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "みんな、お菓子作り楽しみにしてたねー。\n特に英雄さんと春名くんはー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3063fc6c1db26f4bbf2852264887bf924ab21f55a531e7847f76ebf25f24a77"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "045sor_401_2_4_045_01_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "お二人とも甘いものが\nお好きですからね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea2268a90a9d92bb4da6bcaf6642b2f86d15627e559d1fd433bd3fcf0e4e760d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "045sor_401_2_4_045_01_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000010",
+        "option_id": "choice-option:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000010:000",
         "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうだねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14f4cf23b650123fc9d856bd01572795458ca01d19d0f02f8f208e4fe8be88ce"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "045sor_401_2_4_045_01_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "みんながどんなスイーツを作るのか、\n楽しみだなー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2dc65031efeb0d09d6c1fdff5ec3348d6b5639b0f213de4f6782398edd1578d9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "045sor_401_2_4_045_01_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃあ、そろそろ切るねー。\nまた明日ー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "045sor_401_2_4_045_01_09_b",
+          "part_id": "2_4_045_01_09_b",
+          "file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4248deba9e7f6f4538b35e5cb1de19bf291e5365a55c0f40da6f1b648d22577d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "045sor_401_2_4_045_01_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_045_01_09_b",
+        "source_file": "assets/resources/scenariodata/045sor_401/scenario_2_4_045_01_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,8 +336,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000010",
+          "option_id": "choice-option:v1:045sor_401_2_4_045_01_09_b:2_4_045_01_09_b:cmd-000010:000",
           "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
@@ -287,43 +346,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "プロデューサーさん、お疲れさまー。",
     "episode_label": null

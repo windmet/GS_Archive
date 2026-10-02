@@ -3,7 +3,7 @@
     <div class="catalog-summary">
       <div>
         <strong>{{ totalGashas }}</strong>
-        <span>实际卡池</span>
+        <span>卡池记录</span>
       </div>
       <div>
         <strong>{{ announcementCount }}</strong>
@@ -13,6 +13,7 @@
         <strong>{{ pickupCount }}</strong>
         <span>新卡关联</span>
       </div>
+      <div><strong>{{ supplementCount }}</strong><span>道具补录</span></div>
     </div>
 
     <div class="catalog-filter">
@@ -42,11 +43,12 @@
         @click="emit('select', gasha)"
       >
         <span class="banner-frame">
-          <img :src="gasha.banner_url" :alt="gasha.display_name" loading="lazy" decoding="async" width="940" height="510" />
+          <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" loading="lazy" decoding="async" width="940" height="510" />
+          <span v-else class="ticket-banner-label">抽取道具记录</span>
         </span>
         <span class="gasha-copy">
           <span class="gasha-heading">
-            <strong>{{ gasha.display_name }}</strong>
+            <strong :title="gasha.display_name">{{ gashaText(gasha.display_name) }}</strong>
             <span class="gasha-badges">
               <small class="type-badge">{{ categoryLabel(gasha.category) }}</small>
               <small v-if="gasha.is_reprint" class="reprint-badge">复刻</small>
@@ -54,7 +56,8 @@
           </span>
           <span class="gasha-meta">
             <span>{{ formatDate(gasha.start_at) }}</span>
-            <span>{{ pickupCardCount(gasha) }} 张关联卡</span>
+            <span v-if="gasha.source_type!=='item-masterdata'">{{ pickupCardCount(gasha) }} 张关联卡</span>
+            <span v-if="gasha.tickets?.length">{{ gasha.tickets.length }} 种抽取道具</span>
           </span>
         </span>
         <ChevronRight :size="18" />
@@ -65,6 +68,7 @@
 
 <script setup>
 import { ChevronRight } from '@lucide/vue'
+import {gashaText} from './useArchiveGashaText.js'
 
 const props = defineProps({
   gashas: { type: Array, default: () => [] },
@@ -73,6 +77,7 @@ const props = defineProps({
   totalGashas: { type: Number, default: 0 },
   announcementCount: { type: Number, default: 0 },
   pickupCount: { type: Number, default: 0 },
+  supplementCount: { type: Number, default: 0 },
 })
 const emit = defineEmits(['select', 'update:category'])
 
@@ -81,6 +86,7 @@ const CATEGORY_LABELS = {
   growing_fes: 'GROWING FES',
   stage_step_up: 'STAGE',
   full_roster_series: '全员系列',
+  ticket_named: '道具补录',
 }
 
 function categoryLabel(category) {
@@ -118,6 +124,7 @@ function formatDate(timestamp) {
 .gasha-item > svg { color: #8a969c; }
 .banner-frame { display: block; width: 178px; aspect-ratio: 940 / 510; overflow: hidden; border: 1px solid #e6e8e9; border-radius: 4px; background: #eef1f2; }
 .banner-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.ticket-banner-label { display:grid;height:100%;place-items:center;color:#607e80;font-size:13px; }
 .gasha-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .gasha-heading { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .gasha-heading strong { overflow: hidden; font-size: 0.78rem; line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }

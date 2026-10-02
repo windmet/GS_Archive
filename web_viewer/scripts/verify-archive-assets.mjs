@@ -4,16 +4,17 @@ import { createServer as createPortProbe } from 'node:net'
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { createServer } from 'vite'
 import { createArchiveServer } from '../server.js'
 import { createArchiveAssetResolver, loadArchiveAssetRoots, isWithinRoot } from './lib/archive-assets.mjs'
 
 const viewerRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const root = await mkdtemp(path.join(os.tmpdir(), 'sidem-asset-contract-'))
-const keys = ['SIDEM_ARCHIVE_SOURCES_CONFIG', 'SIDEM_AUDIO_ROOT', 'SIDEM_LEGACY_AUDIO_ROOT', 'SIDEM_LIPSYNC_ROOT', 'SIDEM_CARD_ART_ROOT']
+const keys = ['SIDEM_ARCHIVE_SOURCES_CONFIG', 'SIDEM_AUDIO_ROOT', 'SIDEM_LEGACY_AUDIO_ROOT', 'SIDEM_LIPSYNC_ROOT', 'SIDEM_CARD_ART_ROOT','SIDEM_DOMAIN_IMAGE_ROOT']
 const saved = Object.fromEntries(keys.map(key => [key, process.env[key]]))
 async function request(url) {
+  if (process.env.SIDEM_ASSET_FIXTURE_TRACE) console.log('fixture GET',url)
   try { return await fetch(url, { signal: AbortSignal.timeout(15000) }) }
   catch (error) { throw new Error(`HTTP asset fixture request failed: ${url}`, { cause: error }) }
 }
@@ -31,7 +32,7 @@ try {
   const environment = { SIDEM_ARCHIVE_SOURCES_CONFIG: configPath }
   const roots = loadArchiveAssetRoots({ environment })
   assert.equal(roots.audio, path.join(root, 'legacy/GS_Res/Audio'))
-  const overrideNames = { audio: 'SIDEM_AUDIO_ROOT', legacyAudio: 'SIDEM_LEGACY_AUDIO_ROOT', lipsync: 'SIDEM_LIPSYNC_ROOT', cardArt: 'SIDEM_CARD_ART_ROOT' }
+  const overrideNames = { audio: 'SIDEM_AUDIO_ROOT', legacyAudio: 'SIDEM_LEGACY_AUDIO_ROOT', lipsync: 'SIDEM_LIPSYNC_ROOT', cardArt: 'SIDEM_CARD_ART_ROOT',domainImages:'SIDEM_DOMAIN_IMAGE_ROOT' }
   for (const [name, key] of Object.entries(overrideNames)) {
     assert.equal(loadArchiveAssetRoots({ environment: { ...environment, [key]: root } })[name], root)
   }
@@ -49,6 +50,8 @@ try {
   assert.equal(resolver.lipsyncPath('/../outside.json'), null)
   assert.equal(resolver.cardArtPath('/portrait/../outside.png'), null)
   assert.equal(resolver.cardArtPath('/unknown/image_card_portrait_001tom.png'), null)
+  for (const bad of ['../secret.png','image/image_item/../secret.png','image/image_card/secret.png','image/image_honor/test.json','image/image_honor/%2e%2e.png'])
+    assert.equal(resolver.domainImagePath(bad),null)
   assert.equal(isWithinRoot(root, `${root}-neighbor/file`), false)
   assert.equal(isWithinRoot(root, root), false)
 
@@ -79,10 +82,19 @@ try {
   for (const kind of ['portrait', 'landscape']) {
     await asset(`legacy/GS_Res/ALL_PHOTOS/assets/resources/image/image_card/image_card_${kind}/image_card_${kind}_001tom.png`, `/assets/card-art/${kind}/image_card_${kind}_001tom.png`, `${kind} fixture`, 'image/png')
   }
+  await asset('legacy/GS_Res/ALL_PHOTOS/assets/resources/image/image_item/normal_release/image_item_icon_stamina_001.png',
+    '/assets/domain-images/image/image_item/normal_release/image_item_icon_stamina_001.png','domain image fixture','image/png')
 
   for (const key of keys) delete process.env[key]
   process.env.SIDEM_ARCHIVE_SOURCES_CONFIG = configPath
-  vite = await createServer({ root: viewerRoot, configFile: path.join(viewerRoot, 'vite.config.js'), configLoader: 'native', publicDir: false, logLevel: 'error', server: { host: '127.0.0.1', port: 0, watch: null } })
+  // This verifier exercises middleware only; app dependency discovery is unrelated
+  // and competes with these fixture streams for filesystem workers on Windows.
+  // Load the actual middleware after the isolated source environment is set.
+  // Passing include:[] to createServer with configFile would merge (retain) the
+  // configured @pixi/utils optimization, rather than disabling it.
+  const actualConfig=(await import(pathToFileURL(path.join(viewerRoot,'vite.config.js')).href)).default
+  vite = await createServer({ ...actualConfig,root: viewerRoot, configFile:false, publicDir: false, logLevel: 'error',
+    optimizeDeps:{noDiscovery:true,include:[]}, server: { host: '127.0.0.1', port: 0, watch: null,preTransformRequests:false } })
   // Vite 6 treats port 0 as its default port, so select an available port.
   const probe = createPortProbe()
   probe.listen(0, '127.0.0.1')
@@ -90,6 +102,10 @@ try {
   const port = probe.address().port
   await new Promise((resolve, reject) => probe.close(error => error ? reject(error) : resolve()))
   await vite.listen(port)
+  if (process.env.SIDEM_ASSET_FIXTURE_TRACE) vite.httpServer.on('request',(req,res)=>{
+    console.log('fixture received',req.url)
+    res.on('finish',()=>console.log('fixture finished',req.url))
+  })
   production = createArchiveServer({ distDir: path.join(root, 'dist') })
   production.listen(0, '127.0.0.1')
   await once(production, 'listening')

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_003hok_1_7_003_01",
-  "logical_id": "story-collection:1_x_003hok_1_7_003_01",
+  "logical_id": "story:1_x_003hok_1_7_003_01",
   "scenario_id": "1_x_003hok_1_7_003_01",
   "text_catalog_id": "1_x_003hok_1_7_003_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_003hok_1_7_003_01.json",
-    "sha256": "sha256:10b2662436fa557dffe22804bc7482719f8708d6a3c45a0eb0a20bc3a60dfc9f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:884304b127764bf556fce507e6e255cfc8d6e88f92cc83abbb15bcdbf7a9d801",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:acb2e4d5d0efaca472be70c6f3b659f47625c76276d077ecbd26abc58ad89b36",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_003hok_1_7_003_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "北斗さん、今日お誕生日ですよね。\nお誕生日、おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_7_003_01:1_7_003_01:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_7_003_01",
+          "part_id": "1_7_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c62235148c4e6f725e7f74a8a49dd53bc98ad236adaed6a5de95d24d40d72470"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_003hok_1_7_003_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます。\n俺の誕生日を覚えてくれていたんですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_7_003_01:1_7_003_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_7_003_01",
+          "part_id": "1_7_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1148bb635145043612f39c98d90029899346f7076e0f1817e20f6c7c851b1f14"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_003hok_1_7_003_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "まさか直接お祝いしていただけるなんて……。\nふふ、嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_7_003_01:1_7_003_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_7_003_01",
+          "part_id": "1_7_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3d5313e55715b13f69457c91f018e87e54f293ac5b7b957f0db5b32c33cc503b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -125,7 +160,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_003hok_1_7_003_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あなたに祝ってもらえて、\n今日がより特別な日になりましたよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_7_003_01:1_7_003_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_7_003_01",
+          "part_id": "1_7_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:466737c5e1475d7801890857d9d953abebb5d83ddcf0b3254af303c699f1ab26"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -164,30 +209,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_003hok_1_7_003_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これからもよろしくお願いしますね、\n●●●●プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_003hok_1_7_003_01:1_7_003_01:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_003hok_1_7_003_01",
+          "part_id": "1_7_003_01",
+          "file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f50642f29aa0bfc645e91a03de0946614c01a83e0d720285d5266d031316d246"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "003hok",
         "sourceName": "伊集院 北斗"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_003hok_1_7_003_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_003_01",
+        "source_file": "assets/resources/scenariodata/1_x_003hok/scenario_1_7_003_01.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "北斗さん、今日お誕生日ですよね。",
     "episode_label": null

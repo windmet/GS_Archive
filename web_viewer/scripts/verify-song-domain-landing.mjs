@@ -123,7 +123,8 @@ songNavigation.view.value = 'cards'
 assert.equal(songNavigation.currentArchiveRoute().song, '')
 assert.equal(songNavigation.currentArchiveRoute().songScope, 'all')
 assert.match(appComponent, /function openSongRelatedStory\(relation\)/)
-assert.match(appComponent, /songCatalogData\.value = data\.songCatalog/)
+assert.match(appComponent, /songReadModelCatalog\.value = catalog/)
+assert.match(appComponent, /rows\.length !== index\.count/)
 assert.match(appComponent, /else if \(section === 'songs'\) openSongCatalog\(\)/)
 assert.match(appComponent, /song_detail: \(\) => \{[\s\S]*?const parent = songParentView\.value[\s\S]*?commitView\('song_catalog'\)/)
 assert.match(appComponent, /const currentIdolSongs = computed/)
@@ -164,7 +165,7 @@ const recoveryContext = vm.createContext({
   console: { error: () => {} },
 })
 const watcherStart = appComponent.indexOf('watch([view, currentSongId]')
-const watcherEnd = appComponent.indexOf('watch([view, currentCardId]', watcherStart)
+const watcherEnd = appComponent.indexOf('watch([view, currentCharacterId]', watcherStart)
 assert.ok(watcherStart >= 0 && watcherEnd > watcherStart)
 vm.runInContext(appComponent.slice(watcherStart, watcherEnd), recoveryContext)
 recoveryContext.recoverSong(['song_detail', 'brndnf'])
@@ -193,7 +194,7 @@ assert.match(
 
 // Catalog page: filter pills, search, song_id ordering, jacket thumbnail, open emit
 assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分轨演唱[\s\S]*演出语音[\s\S]*特殊版本/)
-assert.match(catalogComponent, /placeholder="搜索曲名或读音"/)
+assert.match(catalogComponent, /placeholder="搜索曲名、读音或演唱者"/)
 assert.match(catalogComponent, /emit\('open', song\.song_code\)/)
 assert.match(catalogComponent, /\.sort\(\(a, b\) => \(a\.song_id \|\| 0\) - \(b\.song_id \|\| 0\)\)/)
 assert.match(catalogComponent, /song\.variant_kind === 'primary'/)
@@ -258,7 +259,7 @@ assert.match(routeSource, /songScope: params\.get\('song_scope'\)/)
 
 // Shell: songs entry on sidebar and mobile nav
 assert.match(shellComponent, /songs: Music/)
-assert.match(shellComponent, /id: 'portal', label: '门户'/)
+assert.match(shellComponent, /id: 'portal', label: '资料馆'/)
 
 // Repository: song catalog and jacket index registered with payload validation
 assert.match(repositorySource, /songCatalog: '\/data\/song_catalog\.json'/)

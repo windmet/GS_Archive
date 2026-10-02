@@ -6,6 +6,7 @@
     <label>
       <span>{{ label }}</span>
       <select :value="selectedIdol" @change="emit('select', $event.target.value)">
+        <option v-if="allowAll" value="">全部偶像</option>
         <option v-for="idol in idols" :key="idol.idol_code" :value="idol.idol_code">
           {{ idol.display_name }}{{ idol.unit_name ? ` · ${idol.unit_name}` : '' }}
         </option>
@@ -25,13 +26,16 @@ const props = defineProps({
   selectedIdol: { type: String, default: '' },
   label: { type: String, default: '偶像' },
   dark: { type: Boolean, default: false },
+  allowAll: {type:Boolean,default:false},
 })
 const emit = defineEmits(['select'])
 
 function move(delta) {
-  const index = props.idols.findIndex(idol => idol.idol_code === props.selectedIdol)
-  if (index < 0 || !props.idols.length) return
-  emit('select', props.idols[(index + delta + props.idols.length) % props.idols.length].idol_code)
+  const codes=props.idols.map(idol=>idol.idol_code)
+  if(props.allowAll) codes.unshift('')
+  const index=codes.indexOf(props.selectedIdol)
+  if(index<0 || !codes.length) return
+  emit('select',codes[(index+delta+codes.length)%codes.length])
 }
 </script>
 

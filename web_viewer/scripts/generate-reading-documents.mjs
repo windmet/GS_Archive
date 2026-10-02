@@ -11,6 +11,10 @@ const hash = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')
 const serialize = value => `${JSON.stringify(value, null, 2)}\n`
 const read = async file => JSON.parse(await fs.readFile(path.join(root, file), 'utf8'))
 const check = process.argv.includes('--check')
+const argument = name => { const i = process.argv.indexOf(name); return i < 0 ? null : process.argv[i + 1] }
+const selected = new Set((argument('--documents') || '').split(',').filter(Boolean))
+const outputRoot = argument('--out') ? path.resolve(argument('--out')) : root
+if (argument('--out') && outputRoot === root) throw Error('Candidate output must differ from checkout')
 const publications = (await read('public/data/authoritative_story_publications.json')).entries
 const catalog = await read('public/data/masterdata/story_catalog.json')
 const knownIdolIds = new Set((await read('public/data/masterdata/idol_unit_dictionary.json')).idols.map(idol => idol.idol_code))
@@ -23,9 +27,16 @@ async function readCompiled(file) {
   return sources.get(file)
 }
 const { candidates: samples, excluded } = await discoverReadingSources({ catalog, publications, readCompiled })
+const previousEntries = selected.size ? new Map((await read('public/data/reading/manifest.json')).entries.map(e => [e.document_id, e])) : null
 const entries = []
 const outputs = []
 for (const sample of samples) {
+  if (selected.size && !selected.has(sample.document_id)) {
+    const prior = previousEntries.get(sample.document_id)
+    if (!prior) throw Error(`Missing prior reading entry: ${sample.document_id}`)
+    entries.push(prior)
+    continue
+  }
   const { bytes, data: compiled } = await readCompiled(sample.file)
   const document = createReadingDocument(compiled, { documentId: sample.document_id,
     logicalId: sample.logical_id, file: sample.file, sha256: hash(bytes), knownIdolIds })
@@ -45,12 +56,13 @@ const byDomain = {}
 for (const entry of entries) { const counts = byDomain[entry.domain] ||= {}; counts[entry.status] = (counts[entry.status] || 0) + 1 }
 outputs.push(['public/data/reading/coverage.json', serialize({ schema_version: 1, by_domain: byDomain, excluded })])
 outputs.push(['public/data/reading/manifest.json', serialize({ schema_version: 1, entries })])
+if (selected.size && [...selected].some(id => !entries.some(e => e.document_id === id))) throw Error('Unknown selected reading document')
 for (const [file, content] of outputs) await emit(file, content)
 const counts = entries.reduce((counts, entry) => ({ ...counts, [entry.status]: (counts[entry.status] || 0) + 1 }), {})
 console.log(`${check ? 'Verified' : 'Generated'} ${entries.length} reading documents: ${JSON.stringify(counts)}`)
 
 async function emit(file, content) {
-  const target = path.join(root, file)
+  const target = path.join(outputRoot, file)
   if (check) {
     if (await fs.readFile(target, 'utf8') !== content) throw Error(`Reading artifact differs from published source: ${file}`)
   } else {

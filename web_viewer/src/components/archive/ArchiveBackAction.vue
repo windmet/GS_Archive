@@ -1,5 +1,5 @@
 <template>
-  <button type="button" class="archive-back-action" :class="{ 'is-pill': pill, 'is-icon-only': iconOnly }" :aria-label="iconOnly ? label : undefined" @click="emit('back')">
+  <button type="button" class="archive-back-action" :class="{ 'is-pill': pill, 'is-icon-only': iconOnly }" :aria-label="label" @click="emit('back')">
     <ArrowLeft :size="18" :stroke-width="1.8" aria-hidden="true" />
     <span v-if="!iconOnly">{{ label }}</span>
   </button>

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "041ryo_402_2_4_041_02_09_b",
-  "logical_id": "story-collection:041ryo_402_2_4_041_02_09_b",
+  "logical_id": "story:041ryo_402_2_4_041_02_09_b",
   "scenario_id": "041ryo_402_2_4_041_02_09_b",
   "text_catalog_id": "041ryo_402_2_4_041_02_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "041ryo_402_2_4_041_02_09_b.json",
-    "sha256": "sha256:05a60dd54d9879ec1fa86469057eadb0feb8ecffe34578fba1ac427e9fa6e41c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:95e55612f85bacc774e297e33a9e68775730ebf705abb80733be1f2bad7338f8",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:6cc0c980306b1bc978257993cec21d0df07b43616dddc28d09c174d8c0355518",
     "aggregate_source": null,
     "step_count": 16,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "041ryo_402_2_4_041_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、お疲れさまです！\n今って、お時間大丈夫ですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ae9e76432c1b90a50565bc4723664037bdf9e7844ca84819ff5c0f674f069dff"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6675d6089c919cb09cc4d8d696a0193186f7cc82b9b1af0f491acfdc10f69909"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "041ryo_402_2_4_041_02_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000010",
+        "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000010:000",
         "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "さっき、読み聞かせに来てくれた子たちと一緒に\n星座にまつわる神話のことを話してたんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cd79254892b74e2c3fceb9aafece7f0b020dce2bbb235ad474af3a91ddc05f7a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "自分が知るお話をしたんですが\n他のものも調べてお話してあげたいと思って……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1276db2784a3dc4584b5510b2d097431f1c28b2454a8dab2986a60eee6938063"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "それで、プロデューサーさんのおすすめのお話が\nあれば聞いてみようと思ったんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:069780ace9e7369f9dc3c21a4659ae77947c9f91855152e8770f3fb2b0b217d4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "さそり座のお話が\nおすすめです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0806f9dbda3b8d0943996bedb5d2eefaa7f66f6c457b49493dfb8a297a8d843"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "041ryo_402_2_4_041_02_09_b:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018",
+        "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018:000",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -277,7 +338,18 @@
     {
       "kind": "choice",
       "source_text": "はくちょう座のお話は\nどうでしょう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2bbc6a4ecb51784c6d9db5f7fa90576029966668c1b69f06a79dd35111bd3c13"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -304,14 +376,14 @@
         "row_id": "041ryo_402_2_4_041_02_09_b:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018",
+        "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000019:001",
         "source_label": "phone_select3",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "なるほど……、確かに面白そうです！\nちょっと調べてみますね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4b059ea53ad238a41ea3ad6212b611522943c157dd38493187485b4a652c6acc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "それにしても、星座の神話って本当に\nたくさんあるんだなあ。すごいですよね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:23a6f350ff832dc762302375be5372a2ea6138bf326a233c747e93babff32e17"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "なんだか、読み聞かせしてる僕のほうが、\nつい夢中になっちゃったりして……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5e28f22c5291edae5ba9753f8c32e66f64d60726b7d7ee770548b92aa9139f11"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "あっ、ごめんごめん！　お話に戻ろっか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8b3000db6863e996ac8161f553b1547aec9b0c6c5bf4d6690a8b27dbd08a005"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "……すみません、プロデューサーさん！　早くお話が\n聞きたいって言われちゃったので、もう切りますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fe1651b2190573da87456f505f03967d36e29b4cdefb7ad2c63af3ae1bcf542a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "教えてくれて、ありがとうございました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "041ryo_402_2_4_041_02_09_b",
+          "part_id": "2_4_041_02_09_b",
+          "file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e3421691f1d21c3b745ddfae29f7f99f3c7b0581fe6a15d4b995fde35f6fec0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "041ryo_402_2_4_041_02_09_b:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_041_02_09_b",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -567,8 +693,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000010",
+          "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000010:000",
           "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
@@ -582,101 +708,62 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018",
+          "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018:000",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000018",
+          "option_id": "choice-option:v1:041ryo_402_2_4_041_02_09_b:2_4_041_02_09_b:cmd-000019:001",
           "source_label": "phone_select3",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/041ryo_402/scenario_2_4_041_02_09_b.json",
+        "raw_sha256": "sha256:946770be9b25ff9e386d9a24c6a9d3739965ba711233ad317c71e8b1b15597c4",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          18,
+          19
+        ],
+        "join_command": 21,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              20
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーさん、お疲れさまです！",
     "episode_label": null

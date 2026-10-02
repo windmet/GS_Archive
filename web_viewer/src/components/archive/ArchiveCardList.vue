@@ -18,6 +18,7 @@
       </div>
       <ArchiveIdolSwitcher
         :idols="idols"
+        allow-all
         :selected-idol="selectedIdol"
         @select="emit('select-idol', $event)"
       />
@@ -30,6 +31,7 @@
           :key="tab.id"
           class="card-rarity-tab"
           :class="{ active: currentRarity === tab.id }"
+          :aria-pressed="currentRarity === tab.id"
           @click="emit('select-rarity', tab.id)"
         >
           <span>{{ tab.label }}</span>
@@ -39,7 +41,7 @@
 
       <label class="asset-filter">
         <span>资源</span>
-        <select :value="currentAssetState" @change="emit('select-asset-state', $event.target.value)">
+        <select aria-label="卡片资源" :value="currentAssetState" @change="emit('select-asset-state', $event.target.value)">
           <option v-for="option in assetStateOptions" :key="option.id" :value="option.id">
             {{ option.label }}
           </option>
@@ -48,7 +50,7 @@
 
       <label class="asset-filter relation-filter">
         <span>关联</span>
-        <select :value="currentRelationState" @change="emit('select-relation-state', $event.target.value)">
+        <select aria-label="卡片关联" :value="currentRelationState" @change="emit('select-relation-state', $event.target.value)">
           <option v-for="option in relationStateOptions" :key="option.id" :value="option.id">
             {{ option.label }}
           </option>
@@ -85,33 +87,37 @@
       >
         <img
           :src="getCardIconUrl(card.resource_id, true)"
-          :alt="card.title || '卡名待确认'"
+          :alt="archiveText('card', card.title, 'title') || '卡名待确认'"
           class="card-thumb"
           loading="lazy" decoding="async"
           @error="fallbackCardIcon($event, card.resource_id)"
         />
-        <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
+        <span class="card-rarity" :data-rarity="card.rarity">{{ card.rarity || 'CARD' }}</span>
         <span class="card-main">
-          <span class="card-title">{{ card.title || '卡名待确认' }}</span>
-          <span class="card-owner-name">{{ card.ownerReference?.displayName || '姓名待确认' }}</span>
+          <span class="card-title" :title="archiveText('card', card.title, 'title')">{{ archiveText('card', card.title, 'title') || '卡名待确认' }}</span>
+          <span class="card-owner-name">{{ idolName(card.character_id) || card.ownerReference?.displayName || '姓名待确认' }}</span>
         </span>
         <span class="card-counts">
-          {{ card.home_voice_count ?? card.home_voice_cues?.length ?? 0 }} 段触摸语音 · {{ card.scenario_count ?? card.scenario_entries?.length ?? 0 }} 篇剧情
+          <span :aria-label="`${card.home_voice_count ?? card.home_voice_cues?.length ?? 0} 段触摸语音`"><Mic :size="12" aria-hidden="true" /> {{ card.home_voice_count ?? card.home_voice_cues?.length ?? 0 }}<span class="count-label"> 段语音</span></span>
+          <span :aria-label="`${card.scenario_count ?? card.scenario_entries?.length ?? 0} 篇剧情`"><BookOpen :size="12" aria-hidden="true" /> {{ card.scenario_count ?? card.scenario_entries?.length ?? 0 }}<span class="count-label"> 篇剧情</span></span>
         </span>
+        <ChevronRight class="card-row-arrow" :size="17" aria-hidden="true" />
       </button>
     </div>
   </section>
 </template>
 
 <script setup>
-import { LayoutGrid, List } from '@lucide/vue'
+import { BookOpen, ChevronRight, LayoutGrid, List, Mic } from '@lucide/vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
+import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 
 defineProps({
   title: { type: String, default: '' },
   cards: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' },
   rarityTabs: { type: Array, default: () => [] },
   currentRarity: { type: String, default: 'all' },
   currentAssetState: { type: String, default: 'all' },
@@ -194,30 +200,50 @@ function fallbackCardIcon(event, resourceId) {
 .card-title { overflow: hidden; color: #222; font-size: 0.9rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .card-owner-name { overflow: hidden; color: #627a80; font-size: 0.72rem; text-overflow: ellipsis; white-space: nowrap; }
 .card-resource { color: #888; font-family: monospace; font-size: 0.72rem; }
-.card-counts { color: #777; font-size: 0.72rem; white-space: nowrap; }
+.card-counts { display:flex;align-items:center;gap:10px;color: #777; font-size: 0.72rem; white-space: nowrap; }
+.card-counts > span {display:inline-flex;align-items:center;gap:3px;}
+.card-row-arrow {display:none;}
 .card-archive-list.layout-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); align-content: start; }
 .layout-grid .card-archive-row { grid-template-columns: 58px minmax(0, 1fr); grid-template-rows: auto auto; min-height: 86px; }
 .layout-grid .card-thumb { grid-row: 1 / 3; width: 58px; height: 58px; }
 .layout-grid .card-rarity { display: none; }
 .layout-grid .card-counts { grid-column: 2; white-space: normal; }
 
-@media (max-width: 560px) {
-  .card-idol-heading { align-items: flex-start; flex-direction: column; gap: 10px; padding: 12px 10px; }
+@media (max-width: 760px) {
+  .card-idol-heading {padding:6px 12px;}
+  .card-idol-copy {display:none;}
   .card-idol-heading :deep(.idol-switcher) { width: 100%; }
-  .embedded-filters { grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; padding: 9px 10px; }
-  .card-rarity-tabs { grid-column: 1 / -1; }
+  .card-idol-heading :deep(.idol-switcher label > span) {display:none;}
+  .card-idol-heading :deep(.idol-switcher select) {min-width:0;height:40px;font-size:13px;}
+  .card-idol-heading :deep(.idol-switcher > button) {width:44px;height:44px;flex-basis:44px;}
+  .embedded-filters {grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:6px;padding:6px 12px 8px;}
+  .card-rarity-tabs {grid-column:1/-1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;gap:5px;}
+  .card-rarity-tabs::-webkit-scrollbar {display:none;}
+  .card-rarity-tab {flex:0 0 auto;min-height:40px;white-space:nowrap;padding:4px 10px;}
   .asset-filter { min-width: 0; }
-  .asset-filter span { display: none; }
-  .asset-filter select { max-width: min(190px, 55vw); }
-  .relation-filter select { max-width: min(150px, 38vw); }
-  .card-archive-row { grid-template-columns: 48px 38px minmax(0, 1fr); gap: 8px; padding: 8px; }
-  .card-thumb { width: 48px; height: 48px; }
-  .card-rarity { min-width: 38px; }
-  .card-counts { grid-column: 3; white-space: normal; }
+  .asset-filter > span { display: none; }
+  .asset-filter select {width:100%;max-width:none;height:40px;padding:0 18px 0 7px;font-size:11px;}
+  .card-layout-toggle {padding:0;gap:0;}
+  .card-layout-toggle button {width:32px;height:40px;}
+  .card-archive-list {gap:6px;padding:8px 12px calc(24px + env(safe-area-inset-bottom));}
+  .card-archive-row {position:relative;grid-template-columns:56px minmax(0,1fr) 18px;grid-template-rows:1fr auto;gap:2px 10px;height:76px;min-height:76px;padding:8px 10px;}
+  .card-thumb {grid-column:1;grid-row:1/3;width:56px;height:56px;}
+  .card-rarity {position:absolute;top:7px;left:9px;min-width:0;height:16px;padding:0 4px;font-size:9px;border-radius:3px;background:#38639b;color:white;}
+  .card-rarity[data-rarity=SSR] {background:#ae7b1e;}
+  .card-rarity[data-rarity=SR] {background:#7556aa;}
+  .card-rarity[data-rarity=N] {background:#547a70;}
+  .card-main {grid-column:2;grid-row:1;gap:2px;align-self:end;}
+  .card-title {font-size:15px;line-height:18px;}
+  .card-owner-name {font-size:12px;line-height:15px;}
+  .card-counts {grid-column:2;grid-row:2;font-size:10px;line-height:14px;gap:8px;}
+  .count-label {display:none;}
+  .card-row-arrow {display:block;grid-column:3;grid-row:1/3;align-self:center;}
   .card-archive-list.layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px; }
-  .layout-grid .card-archive-row { display: flex; flex-direction: column; align-items: stretch; min-width: 0; }
+  .layout-grid .card-archive-row {display:flex;flex-direction:column;align-items:stretch;min-width:0;height:auto;padding:8px;}
   .layout-grid .card-thumb { width: 100%; height: auto; aspect-ratio: 1; }
+  .layout-grid .card-rarity {display:inline-flex;}
   .layout-grid .card-main, .layout-grid .card-counts { width: 100%; }
-  .layout-grid .card-title { line-height: 1.3; white-space: normal; }
+  .layout-grid .card-title {font-size:13px;line-height:1.3;white-space:nowrap;}
+  .layout-grid .card-row-arrow {display:none;}
 }
 </style>

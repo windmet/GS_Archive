@@ -8,8 +8,11 @@ export function loadImageTexture(url, {
   createImage = () => new Image(),
   createBaseTexture = image => PIXI.BaseTexture.from(image),
   createTexture = base => PIXI.Texture.from(base),
+  // Opt in ONLY for a privately created base; default shared ownership is unchanged.
+  releaseFailedBase,
   setTimer = setTimeout, clearTimer = clearTimeout,
   signal, networkTimeoutMs = 25000, textureTimeoutMs = 10000,
+  alphaMode = PIXI.ALPHA_MODES.PMA,
 } = {}) {
   return new Promise((resolve, reject) => {
     const startedAt = performance.now()
@@ -28,6 +31,12 @@ export function loadImageTexture(url, {
       signal?.removeEventListener('abort', onAbort)
       clearDeadline()
       base?.off?.('update', onReady)
+      if (error && base && typeof releaseFailedBase === 'function') {
+        const ownedBase = base
+        base = null
+        try { releaseFailedBase(ownedBase) }
+        catch (cleanupError) { tracePlayer('texture-cleanup-failed', { url, message: String(cleanupError) }) }
+      }
       if (error) reject(error)
       else resolve(value)
     }
@@ -53,7 +62,7 @@ export function loadImageTexture(url, {
       tracePlayer('image-onload', { url, width: image.naturalWidth, height: image.naturalHeight, elapsedMs: Math.round(performance.now() - startedAt) })
       try {
         base = createBaseTexture(image)
-        base.alphaMode = PIXI.ALPHA_MODES.PMA
+        base.alphaMode = alphaMode
         if (base.valid) onReady()
         else {
           base.on('update', onReady)

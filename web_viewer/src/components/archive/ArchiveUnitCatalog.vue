@@ -1,8 +1,8 @@
 <template>
   <section class="unit-catalog" data-archive-scroll-container>
     <div class="unit-grid">
-      <button v-for="entry in entries" :key="entry.unit.unit_code" class="unit-entry" @click="emit('select', entry.unit)">
-        <img :src="getBgUrl(entry.unit.representative_bg)" :alt="entry.unit.unit_name" loading="lazy" />
+      <button v-for="entry in entries" :key="entry.unit.unit_code" class="unit-entry" :class="{'without-background':!entry.unit.representative_bg}" @click="emit('select', entry.unit)">
+        <img v-if="entry.unit.representative_bg" :src="getBgUrl(entry.unit.representative_bg)" :alt="entry.unit.unit_name" loading="lazy" />
         <span class="unit-color" :style="{ backgroundColor: entry.unit.unit_color || '#23a99f' }"></span>
         <span class="unit-copy">
           <img class="unit-logo" :src="getUnitLogoUrl(entry.unit.unit_code)" alt="" loading="lazy" />
@@ -53,6 +53,7 @@ const emit = defineEmits(['select'])
 .member-stack { display: flex; padding-left: 8px; }
 .member-stack > .idol-avatar-shell { margin-left: -8px; box-shadow: 0 0 0 2px #fff; }
 .unit-entry > svg { color: #9aa4ab; }
+.unit-entry.without-background {grid-template-columns:5px minmax(0,1fr) auto auto;padding-left:12px;}
 
 @media (max-width: 850px) {
   .unit-grid { grid-template-columns: 1fr; }
@@ -60,9 +61,12 @@ const emit = defineEmits(['select'])
 
 @media (max-width: 520px) {
   .unit-grid { gap: 8px; padding: 10px; }
-  .unit-entry { grid-template-columns: 72px 4px minmax(0, 1fr) auto; min-height: 74px; padding-right: 9px; }
-  .unit-entry > img { width: 72px; height: 72px; }
+  .unit-entry,.unit-entry.without-background { grid-template-columns: 4px minmax(0, 1fr) auto auto; gap:8px; min-height: 84px; padding:8px; }
+  .unit-entry > img { display:none; }
   .unit-color { height: 44px; }
-  .member-stack { display: none; }
+  .member-stack { display:flex; }
+  .member-stack > .idol-avatar-shell { --idol-avatar-override-size:24px; margin-left:-8px; }
+  .unit-logo { height:26px; }
+  .unit-copy small { font-size:10px; }
 }
 </style>

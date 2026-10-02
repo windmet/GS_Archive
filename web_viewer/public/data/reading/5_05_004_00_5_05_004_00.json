@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_05_004_00_5_05_004_00",
-  "logical_id": "story-collection:5_05_004_00_5_05_004_00",
+  "logical_id": "story:5_05_004_00_5_05_004_00",
   "scenario_id": "5_05_004_00_5_05_004_00",
   "text_catalog_id": "5_05_004_00_5_05_004_00",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_05_004_00_5_05_004_00.json",
-    "sha256": "sha256:53f78bf6dce41dda8b40aafbb81619509d27fab337af0d575ed883f5c0593304",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:9bd8fe1d65260a8b91ec1fe8a27508e40b44382d5a405f6b7ee2d7d7ade36863",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:507ac600897b25d08e32aee2f4fd1ff05a0e770ee0b6e47ea2cc7bc234e3e89e",
     "aggregate_source": null,
     "step_count": 18,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_05_004_00_5_05_004_00.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "アーティスティックに魅力を見せて",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e428c26371df1a9154221c78775aad55d8e33deb4ac6c9d5a9b96c51a9c47c12"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "写真・美術の専門学校から、CM出演を\n依頼された道流、みのり、翔真。\n3人はモデルとして、制作を担当する\n有名アーティストと打ち合わせを\nすることに。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5af07fc73cabd4af1f190e2959fd5e4764a5163bb89be03ae2fce0591290ab4f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,17 +116,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "FES",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000019:title:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 19,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e3bd4b94ccc07076bcf1055f6b600e5c9372f0c31cff6d08c458f7cc3eed545f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -128,17 +164,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-3:heading",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "title",
       "source_text": "アーティスティックに魅力を見せて",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000019:title:001",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 19,
+          "field_kind": "title",
+          "field_ordinal": 1
+        },
+        "source_hash": "sha256:e428c26371df1a9154221c78775aad55d8e33deb4ac6c9d5a9b96c51a9c47c12"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -165,17 +212,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "caption",
       "source_text": "専門学校・インタビュールーム",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000028:time_caption:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 28,
+          "field_kind": "time_caption",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5455700a466c929475645a7f40cdf80891e7b1f1fd4f93ec8b015af1b62b8a3c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -202,21 +260,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-5:caption",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お疲れさま、プロデューサー。みんな揃ったし、\n今回の打ち合わせの詳細を教えてくれるかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42b6e78c65a00eeafdcc36a1d7ff83717883cf6f4648ba5ebc5cd8298d9a61a7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -233,7 +302,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -242,17 +310,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい。事前にお伝えしましたが、今回のお仕事は写真、\n美術の専門学校のCM撮影になります。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:569fd56be371bc33d82104d971dc3513285c0f33186af7be3f5f2cd0d50fd6b6"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -279,17 +358,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "その制作にあたって、皆さんの意見を聞きたいと、\nアーティストさんから連絡が来たんです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:df68de51a40352420a97d4ddd285096cd5570dcb94d4e7494a473b81e50766e2"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -316,17 +406,28 @@
         "row_id": "5_05_004_00_5_05_004_00:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "皆さんの個性を活かした演出にしたいそうですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000051:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 51,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:65f913097e8754c5ce3e2612b4e043f26611b7ad88a03ab4f00fde7ef28213e1"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -353,21 +454,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なるほど、自分たちの意見を……。この打ち合わせが\n急に決まった理由がわかったッスね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000055:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 55,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:619ba6eccd12770988ceb57ddee8bbd0e6889c8630f6f50fe6e5865c5092d876"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -384,7 +496,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -393,21 +504,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アタシたちを知りたいってことなら、\n遠慮なく話させてもらおうじゃないか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000060:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 60,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a6937914e7f900a8540fc84816c45d53ec7e3532dc56f9defc7febcfd235d7fa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -424,7 +546,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -433,21 +554,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 60,
+        "command_end": 60
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうッスね。\nなんでも伝えましょう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000065:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 65,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fd56bcd328b33c550b506455e68794a298aed34d3aed4ef2d14bfdd44e097402"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -464,7 +596,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -473,21 +604,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 65,
+        "command_end": 65
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それにしても、そのアーティストさんって\nこの学校の卒業生だったんだね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000070:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 70,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:119c90bc8702ca669a3ecbeab25f39e300fccf258610f2f56aee03eee7972bff"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -504,7 +646,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -513,21 +654,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 70,
+        "command_end": 70
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "印象に残る写真を撮るって、\n最近話題になってるわよね。よく名前を聞くわ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000075:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 75,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c32fb1129ba75f0681d49d5d73b989267cd9a371d2980b82a2229f03e32ea81f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -544,7 +696,6 @@
         "stepId": 15
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -553,21 +704,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 75,
+        "command_end": 75
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "自分も見たことあるッス！　テレビCMとか、\n街中の広告とかも撮ってる人ッスよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000084:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 84,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:957b5c3a07926c4209188fe2b6a3ad9c214e33c9284533aa4131086a9a3ed705"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -584,7 +746,6 @@
         "stepId": 16
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -593,21 +754,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 84,
+        "command_end": 84
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そんなすごい人にどう演出してもらえるのか、\n楽しみだよ。花の知識も活かせるといいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000090:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 90,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5d7e7da3f003cb960edaefba602e2665eab9425519b5cbd4893ee5ed8184b6d0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -624,7 +796,6 @@
         "stepId": 17
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -633,21 +804,32 @@
         "row_id": "5_05_004_00_5_05_004_00:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 90,
+        "command_end": 90
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ええ、アタシたちのことを知ってもらえるように、\nしっかり話し合いましょ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_05_004_00_5_05_004_00:5_05_004_00:cmd-000102:dialogue:000",
+        "source": {
+          "scenario_id": "5_05_004_00_5_05_004_00",
+          "part_id": "5_05_004_00",
+          "file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+          "command_index": 102,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e64340e2d1b1c291254f3c15e159b2ee81434ac72729cb69803b2318f6e5516d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "華村 翔真"
       },
       "performance": {
@@ -664,7 +846,6 @@
         "stepId": 18
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -673,107 +854,16 @@
         "row_id": "5_05_004_00_5_05_004_00:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_05_004_00",
+        "source_file": "assets/resources/scenariodata/5_05_004_00/scenario_5_05_004_00.json",
+        "command_start": 102,
+        "command_end": 102
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "アーティスティックに魅力を見せて",
     "episode_label": null

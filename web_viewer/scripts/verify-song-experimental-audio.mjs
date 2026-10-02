@@ -87,7 +87,7 @@ if (!Array.isArray(manifest.songs.drvalv.unit_tracks) || manifest.songs.drvalv.u
 }
 
 for (const [label, source, needles] of [
-  ['App', appSource, [':audio-experiments="songExperimentalAudioData?.songs || {}"']],
+  ['App', appSource, [':audio-experiments="stageAudioExperiments"']],
   ['Chibi stage', stageSource, [
     "currentSingerEvent.value?.performerSlots",
     'stagePositionForPerformerSlot',
@@ -108,11 +108,11 @@ for (const [label, source, needles] of [
   ['song detail player', detailPlayerSource, [
     'ArchiveSongLineupPlayer',
     'data-vocal-setting-selector',
-    '编成偶像（五槽合唱）',
-    'Unit（组合单轨）',
-    'Center（中心偶像＋伴奏）',
-    '315 ALL STARS（完整混音候选）',
-    '其他收录音轨',
+    '自由编成 · 5 槽',
+    '组合预设',
+    'soloOpen = true',
+    '全员合唱',
+    '收录音轨',
     "if (mode.value === 'all_stars')",
     "if (mode.value === 'unit')",
     'useSongPerformanceSession()',
@@ -122,9 +122,9 @@ for (const [label, source, needles] of [
     '声部与伴奏已在播放前完整解码',
   ]],
   ['portal lineup player', lineupPlayerSource, [
-    '<option value="">空位</option>',
-    '重复偶像只播放一条声部',
-    '五个选择位与 Chibi 舞台位置 1–5 完全对应',
+    '<option value="">空 / 静音</option>',
+    '重复偶像共用声部与演唱区间',
+    '五个位置对应舞台位置',
     'stagePositionForSlot(slot)',
     'performerSlotForStagePosition(stagePosition)',
     'stageLineup.value[Number(stagePosition) - 1] = idolCode',

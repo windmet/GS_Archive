@@ -1,8 +1,9 @@
 <template>
   <section v-if="gasha" class="gasha-detail" data-archive-scroll-container>
-    <div class="gasha-identity">
+    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'}">
       <div class="gasha-banner">
-        <img :src="gasha.banner_url" :alt="gasha.display_name" />
+        <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
+        <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
       </div>
       <div class="gasha-summary">
         <div class="gasha-kicker">
@@ -10,25 +11,25 @@
           <small class="curated">{{ categoryLabel(gasha.category) }}</small>
           <small v-if="gasha.is_reprint" class="reprint">复刻</small>
         </div>
-        <h2>{{ gasha.display_name }}</h2>
+        <h2>{{ gashaText(gasha.display_name) }}</h2>
+        <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
         <dl>
           <div><dt>开放</dt><dd>{{ formatDateTime(gasha.start_at) }}</dd></div>
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
-          <div><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
+          <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         </dl>
-        <a
-          v-if="gasha.name_source?.source_url"
-          :href="gasha.name_source.source_url"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <ExternalLink :size="15" />
-          {{ gasha.name_source.source_label || '名称核对来源' }}
-        </a>
+        <ArchiveSourceLink :url="gasha.name_source?.source_url" :label="gasha.name_source?.source_label || '名称核对来源'" />
       </div>
     </div>
 
-    <section class="detail-section">
+    <section v-if="gasha.tickets?.length" class="detail-section">
+      <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
+      <p v-if="gasha.ticket_link_ambiguous" class="gasha-original">这些券对应同名卡池，现有道具记录无法区分两次 STAGE 公告。</p>
+      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-original">道具名称证明了此招募记录；开放时间和卡片范围尚未收录。</p>
+      <ul class="ticket-list"><li v-for="ticket in gasha.tickets" :key="ticket.id"><button type="button" @click="emit('open-item',ticket.key)">{{ archiveText('item',ticket.source_name) }}</button><p>{{ archiveText('item',ticket.source_description,'description') }}</p></li></ul>
+    </section>
+
+    <section v-if="gasha.source_type!=='item-masterdata'" class="detail-section">
       <div class="section-heading">
         <div>
           <h3>关联卡片</h3>
@@ -47,9 +48,10 @@
       <section class="detail-section evidence-section">
         <div class="section-heading"><h3>资料来源</h3></div>
         <dl class="evidence-grid">
-          <div><dt>公告</dt><dd>Raw · client_master_data table 173</dd></div>
-          <div><dt>卡片关系</dt><dd>{{ relationEvidence }}</dd></div>
-          <div><dt>名称</dt><dd>Curated · {{ gasha.name_source?.source_label || 'wiki / banner 核对' }}</dd></div>
+          <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'Raw · client_master_data table 173' }}</dd></div>
+          <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
+          <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`Curated · ${gasha.name_source?.source_label || 'wiki / banner 核对'}` }}</dd></div>
+          <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>道具译文提取 · {{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
           <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
           <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
         </dl>
@@ -60,22 +62,26 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ExternalLink } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import {gashaText} from './useArchiveGashaText.js'
+import {archiveText} from './useArchiveCollectionText.js'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
 
 const props = defineProps({
   gasha: { type: Object, default: null },
   idolName: { type: Function, required: true },
 })
-const emit = defineEmits(['open-card'])
+const emit = defineEmits(['open-card','open-item'])
 
 const CATEGORY_LABELS = {
   standard_pickup: '通常招募',
   growing_fes: 'GROWING FES',
   stage_step_up: 'STAGE 招募',
   full_roster_series: '全员系列',
+  ticket_named: '道具补录',
 }
 
 const pickupCards = computed(() => {
@@ -108,7 +114,7 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,
   kind: 'card',
   label: usesRelatedCards.value ? relationBadge.value : '卡池 Pickup',
-  title: card.card_title || '卡名待确认',
+  title: cardText('card',card.card_title,'title') || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
   evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
   evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
@@ -150,6 +156,15 @@ function formatDateTime(timestamp) {
 .gasha-kicker small.curated { background: #e8f7f5; color: #177b74; }
 .gasha-kicker small.reprint { background: #fff0db; color: #965f13; }
 .gasha-summary h2 { margin: 10px 0 20px; font-size: 1.18rem; line-height: 1.45; }
+.gasha-original { color:#71818b;font-size:12px;line-height:1.7;overflow-wrap:anywhere; }
+.ticket-banner-label { display:grid;min-height:120px;place-items:center;color:#607e80; }
+.gasha-identity.ticket-only { grid-template-columns:1fr;gap:12px; }
+.ticket-only .gasha-banner { aspect-ratio:auto; }
+.ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:13px; }
+.ticket-list { list-style:none;padding:0;display:grid;gap:10px; }
+.ticket-list li { border:1px solid #deeaeb;border-radius:7px;padding:12px; }
+.ticket-list button { background:transparent;border:0;color:#157a72;text-align:left;cursor:pointer;font:inherit;line-height:1.6; }
+.ticket-list p { font-size:12px;white-space:pre-wrap;color:#627680;line-height:1.7;margin:6px 0 0; }
 .gasha-summary dl { margin: 0; }
 .gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: 0.68rem; }
 .gasha-summary dt { color: #849097; }
