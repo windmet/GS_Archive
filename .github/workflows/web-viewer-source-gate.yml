@@ -112,6 +112,9 @@ jobs:
       - name: Verify chibi color plane timelines
         run: npm run verify:chibi-color-layers
 
+      - name: Verify chibi ground registration across viewport sizes
+        run: npm run verify:chibi-stage-coordinates
+
       - name: Verify song lyrics and media clock
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 

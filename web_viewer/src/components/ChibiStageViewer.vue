@@ -19,6 +19,7 @@
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
+    :data-ground-registration="chibiGroundRegistration(selectedSong?.songCode).id"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -420,6 +421,7 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
+import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
@@ -504,7 +506,6 @@ const environmentScale = ref(1)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
-const CHARACTER_STAGE_BASELINE_RATIO = 0.82
 // Backmonitor uses the live-stage content plane rather than the 720 px camera
 // midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
 // using 360 leaves every movie visibly below its screen opening.
@@ -1536,8 +1537,7 @@ function syncSpotlights() {
     const target = state.stagePosition
       ? layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
       : { x: Number(state.x) || 0, y: 180 }
-    const targetX = width * 0.5 + target.x * viewportScale
-    const targetY = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale
+    const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
     const topY = height * 0.5 - 500 * viewportScale
     runtime.container.position.set(targetX, targetY)
     runtime.container.zIndex = Number(state.depth) || 1800
@@ -1882,9 +1882,10 @@ async function syncPinspotlights() {
     }
     if (current.stagePosition) {
       const target = layoutCoordinatesForStage(Number(current.stagePosition), stageTime.value)
+      const ground = projectChibiGround(selectedSong.value?.songCode, target, width, height)
       runtime.sprite.position.set(
-        width * 0.5 + target.x * viewportScale,
-        height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale - 135 * viewportScale,
+        ground.x,
+        ground.y - 135 * viewportScale,
       )
       runtime.sprite.scale.set(viewportScale * 0.62)
     } else {
@@ -2507,11 +2508,12 @@ function layoutRuntime(position, motionEvent = null) {
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
   const viewportFit = Math.min(1, height / 620)
-  runtime.spine.x = width * 0.5 + x * viewportScale
+  const ground = projectChibiGround(selectedSong.value?.songCode, coordinates, width, height)
+  runtime.spine.x = ground.x
   // Live CSV Y is a depth coordinate: smaller values stand closer to the
   // camera (and therefore lower on screen). Legacy starts the centre member
   // at Y=170 and the side members at Y=190, matching the official stagger.
-  runtime.spine.y = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - y) * viewportScale
+  runtime.spine.y = ground.y
   // Unity keeps the chibi prefab scale stable across solo, duo and ensemble
   // lives. Formation coordinates and the authored camera provide the framing;
   // scaling characters by active member count made three-person stages about

@@ -237,3 +237,21 @@ node scripts/verify-chibi-color-layers.mjs --published-assets
 `build:check`（14.42s、copyPublicDir:false）、Python 编译、published-assets 实际索引比对与当前 **94/94 Source Gate** 命令通过，日志 `chibi-color-source-gates.log`、明细 `chibi-color-source-gate.json`。此为本地源码门禁和模拟视口验收，未声称 GitHub CI、真实设备长稳或完整 Unity 渲染通过。多层 Graphics 的几何/混合及 Unity 3D 深度仍需原片核对；地面/观众灯、吊灯、角色明暗、Logo 生命周期和首帧视频问题仍未关闭。
 
 Take Logo 的精确资源身份现已确认：`song_tkstp1.unity3d`，CAB `CAB-122fef368c526e0aa5ee19d0c345d391`，C.FIRST `_16b` 是 Sprite PathID `-7402552036384742190`（同名 Texture2D 为 `4951555358588418733`）；High×Joker `_8b` 是 Sprite PathID `-6801097922327521876`（Texture2D 为 `-8032899029242260248`）。资源确实存在，但本批尚未接入 `ImageObject_create/show`，不能把找到纹理当成显示链路已完成。
+
+## 2026-10-03：纠正 Study 的台面中心注册
+
+输入 HEAD `aa0ba5b1`。用户指出三人虽然入镜，却站在台面前沿。上一节只检查完整入镜，未验证台面中心，不能作为 Study 落脚点正确的验收；将 15s 裁脚全归于源镜头的判断也不充分。本轮重新对照两张 S.E.M 参考图和当前背景图，确认人物与台面注册偏移，取消默认放大没有解决这个问题。
+
+`stage-backgrounds/steqmg.png` 为 1900×1060，SHA256 `90cf714d4e81645892edde6b25093980956f3ce0f3ddd7732c404a15a6de6e37`。三个台面中心的图像量测近似值为左 `(600,620)`、中 `(950,750)`、右 `(1300,660)`；CSV 三个位置分别为 `(-350,270)`、`(0,140)`、`(350,230)`。背景居中于 1280×720 后，三组位置对应同一个地面基准 Y=540。原 `0.82×720=590.4` 基准将三组位置统一向前偏移 50.4 个基准像素，叠加镜头倍率后更显著。
+
+新增 `chibiStageCoordinates.js`。用户随后要求核查其他舞台；对照 ANYWHERE 地板分块、Take 前沿及另三种背景后，将校正接入共用设计坐标基准，而不是给 Study 单独加偏移。1280×720 下原基准 590.4 改为 540；不同画布使用 `height/2 + (540-360) × fit`，与居中的背景同源缩放，消除高度比例基准在取整/留边画布上的漂移。角色根节点、脚底阴影和跟随角色的 Spotlight / Pinspotlight 共用投影函数，避免人物挪回去而灯光仍留在台边。保留原 CSV X/Y、位置插值、相机、角色大小和高低台深度差；没有按角色或设备单独加偏移。此注册是参考图与平面背景校准，**不是从 Unity 相机/地面模型提取的 3D 投影**。
+
+回归 `npm run verify:chibi-stage-coordinates` 使用独立台面中心量测点，验证桌面、390/360 竖屏及 844 横屏画布的注册一致性；`node scripts/verify-chibi-stage-coordinates.mjs --published-assets` 另检查本地 118 份编排、1,178 条位置事件跨尺寸一致性。CI 默认仅用小型量测见证，不依赖未提交的完整资源库。55 份背景均为 1900×1060，但这不能证明它们的全部镜头都已视觉验收。
+
+Browser 5198 使用固定 `.analysis/build-check` 和既有资源映射，以 S.E.M 三人暂停在 17.5s 保存修正前/后同镜头证据；修正后三个落脚点均位于台面中部。390×844 和 844×390 复验，未见横向溢出或操作台重叠；15s 源镜头 1.55× 保留，中央脚部在当前画布内可见。Study 连续播放至 1:11 后暂停/倒退定位通过。
+
+追加可见验收：Take 01 4.4s 修正前/后使用同编队，ANYWHERE 36.5s、∞ Possibilities 17.5s、BRAND NEW FIELD 15s、DRIVE A LIVE 15s、Take 02 4.4s 检查台面与脚底；未见落脚点进入台面侧壁或台外。BRAND NEW FIELD 保留源镜头横向取景，左侧人物可能被画布边缘裁切，尚无该曲原片支持其镜头完全一致。ANYWHERE 390×844 的 9.5s 有两个角色聚光池，灯底与人物脚底共同注册；实际播放推进到 1:00，再暂停/倒退恢复。Take 02 390×844 画布约 357×201，无页面横向溢出。当前共检查 7 种背景的指定片段，另外 48 种背景及全曲镜头仍待逐段原片对照，不把 1,178 条坐标检查计为 118 份视觉验收。
+
+`build:check` 通过（最终 14.95s、未复制 public），本地当前 95 项源码门禁中的 94 项首次通过；`verify:build-audit` 首次因其他窗口在构建后修改 `src/App.vue` 失败。保留其他窗口的 App/门户/偶像选择器改动后重建，单独复验此门禁通过，未回退共享工作。未观察到 Browser console error；既有 Pixi/Spine 弃用警告保留。本地门禁与模拟视口不代表 GitHub CI、真实设备或完整 Unity 渲染通过。
+
+截图在本工程 E 盘原证据目录：`chibi-study-ground-before/after/mobile/landscape.png`、`chibi-take-ground-before/after.png`、`chibi-anywhere-ground-after/mobile.png`、`chibi-possibilities-ground-after.png`、`chibi-brand-new-ground-after.png`、`chibi-drive-ground-after.png`、`chibi-take02-ground-after/mobile.png`。源码日志 `chibi-common-ground-source-gates.log`，最终构建及补验日志 `chibi-common-ground-build-final.log`、`chibi-common-ground-build-audit-final.log`。本轮只验收落脚点注册，不将不同服装/动作时刻的截图当成像素一致复刻；人物相对大小、灯具、Logo、首帧视频和完整 Unity 投影仍待后续验证。
