@@ -26,6 +26,7 @@
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
         :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
         @save-preferred="savePreferredIdol"
@@ -40,6 +41,8 @@
       <ArchiveWelcome
         v-if="view === 'welcome' || view === 'idol_picker' || (view === 'home' && !homeSelectedId)"
         :idols="view === 'idol_picker' && currentPickTarget !== 'home' ? archivePickerIdols : archiveHomeIdols"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :preferences="userPreferences"
         :preferred-idols="archivePickerIdols"
         :notice="userPreferenceNotice"

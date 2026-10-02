@@ -14,7 +14,7 @@
             <button class="terminal-icon-button portal-mobile-settings" type="button" aria-label="资料馆设置" @click="settingsOpen = true"><Settings2 :size="20" /></button>
           </div>
         </header>
-        <div class="terminal-heading"><span class="terminal-kicker">GROWING STARS</span><h1 id="portal-title" tabindex="-1" ref="heading">资料馆</h1><p>故事与音乐，偶像与回忆。</p></div>
+        <div class="terminal-heading"><span class="terminal-kicker">GROWING STARS</span><h1 id="portal-title" tabindex="-1" ref="heading">资料馆</h1></div>
         <p v-if="loadingSection" class="terminal-notice" role="status">{{ loadingSection }}</p>
         <p v-if="preferenceNotice || wallpaper.notice.value" class="terminal-notice" role="status">{{ preferenceNotice || wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
@@ -27,7 +27,7 @@
         </button>
         <nav class="portal-sections" aria-label="全部门户入口">
           <section v-for="group in ARCHIVE_NAVIGATION_GROUPS" :key="group.id" class="portal-section" :class="`portal-${group.id}`" :aria-labelledby="`portal-${group.id}`">
-            <h2 :id="`portal-${group.id}`">{{ group.label }}<small>{{ group.english }}</small></h2>
+            <h2 :id="`portal-${group.id}`">{{ group.label }}</h2>
             <div class="portal-section-links">
               <button v-for="item in group.items" :key="item.id" class="portal-entry" type="button" :data-section="item.id" @click="emit('navigate', item.id)">
                 <span class="portal-entry-icon"><component :is="archiveNavigationIcons[item.id]" :size="group.id === 'core' ? 24 : 18" :stroke-width="1.8" aria-hidden="true" /></span>
@@ -44,7 +44,7 @@
     <ArchiveTerminalDialog :open="personalOpen" title="我的工作台" title-id="portal-personal-title" @close="personalOpen = false">
       <ProducerNameSetting />
       <section class="terminal-personal" aria-label="我的偶像快捷入口">
-        <ArchivePreferredIdolSlot :idols="idols" :value="preferredReference?.idolCode || ''" id-prefix="portal" @save="emit('save-preferred', $event)" />
+        <ArchivePreferredIdolSlot :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferredReference?.idolCode || ''" id-prefix="portal" @save="emit('save-preferred', $event)" />
         <nav v-if="preferredReference?.actionable" class="terminal-preferred-actions" aria-label="我的偶像快捷入口">
           <button v-for="action in preferredActions" :key="action.id" type="button" @click="personalOpen = false; emit('open-preferred', action.id)">{{ action.label }}</button>
         </nav>
@@ -73,7 +73,7 @@ import ArchiveWallpaperPicker from './terminal/ArchiveWallpaperPicker.vue'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
-const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
+const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
 const personalOpen = ref(false), settingsOpen = ref(false)
 const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWallpaper()
@@ -95,7 +95,6 @@ onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.p
 .terminal-portal.has-wallpaper .terminal-panel {width:min(780px,70%);}
 .terminal-portal .terminal-heading {padding:18px 0 10px;}
 .terminal-portal .terminal-heading h1 {font-size:26px;margin:4px 0;}
-.terminal-portal .terminal-heading p {margin:0;font-size:12px;}
 .portal-mobile-settings {display:none;}
 .portal-workbench {display:flex;align-items:center;gap:10px;width:100%;min-height:64px;margin-bottom:16px;padding:8px 12px;border:1px solid #dce8e4;border-radius:10px;background:#f7fbfa;color:#32584f;text-align:left;}
 .portal-workbench > span:not(.portal-workbench-empty) {display:grid;gap:4px;flex:1;min-width:0;}
@@ -104,7 +103,6 @@ onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.p
 .portal-workbench-empty {display:grid;place-items:center;width:42px;height:42px;border:1px dashed #afcfc3;border-radius:50%;color:#72a894;}
 .portal-sections {display:grid;gap:20px;}
 .portal-section h2 {display:flex;align-items:center;gap:9px;margin:0 0 9px;font-size:13px;color:#496774;}
-.portal-section h2 small {font-size:9px;font-weight:500;letter-spacing:.1em;color:#8a9ca6;}
 .portal-section-links {display:grid;gap:8px;}
 .portal-core .portal-section-links {grid-template-columns:repeat(2,minmax(0,1fr));}
 .portal-entry {display:flex;align-items:center;gap:12px;min-width:0;border:1px solid #dbe9e6;background:#fff;color:#244650;text-align:left;}
@@ -143,7 +141,7 @@ onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.p
  .portal-workbench {margin-bottom:14px;}
  .terminal-portal .terminal-heading {padding:10px 0 14px;}
  .terminal-portal .terminal-heading h1 {font-size:23px;}
- .terminal-portal .terminal-heading .terminal-kicker,.terminal-portal .terminal-heading p {display:none;}
+ .terminal-portal .terminal-heading .terminal-kicker {display:none;}
  .portal-sections {gap:16px;}
  .portal-core .portal-entry {min-height:82px;padding:10px;gap:9px;}
  .portal-entry-icon {width:32px;height:36px;}

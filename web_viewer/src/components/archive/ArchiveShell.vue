@@ -7,7 +7,7 @@
       </div>
       <nav class="archive-nav" aria-label="档案栏目">
         <button
-          v-for="item in navigation.filter(entry => entry.id === 'home')"
+          v-for="item in primaryNavigation"
           :key="item.id"
           :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
           :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
@@ -17,7 +17,7 @@
           <span>{{ item.label }}</span>
         </button>
         <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" role="group" :aria-labelledby="`nav-${group.id}`">
-          <h2 :id="`nav-${group.id}`">{{ group.label }} <small>{{ group.english }}</small></h2>
+          <h2 :id="`nav-${group.id}`">{{ group.label }}</h2>
           <button v-for="item in group.items" :key="item.id" :class="{ active: activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') }" :aria-current="activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') ? 'page' : undefined" @click="emit('navigate', item.id)">
             <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
           </button>
@@ -68,7 +68,7 @@
 
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
-        v-for="item in mobileNavigation"
+        v-for="item in primaryNavigation"
         :key="item.id"
         :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
         :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
@@ -98,7 +98,6 @@ import {
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
-import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { ref, watch } from 'vue'
@@ -121,9 +120,8 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
-const navigation = ARCHIVE_NAVIGATION.map(item => ({ ...item, icon: iconBySection[item.id] }))
 const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, items: group.items.map(item => ({ ...item, icon: iconBySection[item.id] })) }))
-const mobileNavigation = [
+const primaryNavigation = [
   { id: 'home', label: '首页', icon: Home },
   { id: 'portal', label: '资料馆', icon: LayoutGrid },
 ]
@@ -185,7 +183,6 @@ const mobileNavigation = [
 .archive-nav {display:flex;flex-direction:column;gap:0;padding:6px;min-height:0;overflow-y:auto;}
 .archive-nav-group {padding-top:8px;}
 .archive-nav-group h2 {display:flex;align-items:center;gap:6px;margin:0;padding:2px 12px 5px;color:#8096a4;font-size:10px;font-weight:650;line-height:14px;}
-.archive-nav-group h2 small {font-size:8px;letter-spacing:.06em;color:#657b89;}
 .archive-nav button {
   position: relative;
   display: flex;

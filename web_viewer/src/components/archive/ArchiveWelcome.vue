@@ -40,7 +40,7 @@
         <div v-else class="terminal-selection">
           <button v-if="!selectionOnly" type="button" class="terminal-text-button" @click="step = 'mode'"><ArrowLeft :size="16" />返回模式选择</button>
           <p v-if="!dataReady" role="status">正在准备人物名单…</p>
-          <ArchiveIdolPickerPanel v-model="selectedIdol" :idols="idols" />
+          <ArchiveIdolPickerPanel v-model="selectedIdol" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
           <div class="terminal-picker-actions" aria-label="确认偶像与打开页面">
             <p class="terminal-picker-summary" role="status">{{ selectedName ? `已选：${selectedName}` : '请选择一位偶像' }}<small>{{ selectionOnly ? `打开${targetLabel}` : '确认后将记住此首页，下次直接打开。' }}</small></p>
             <label><input v-model="setPreferred" type="checkbox" /> 也保存为资料馆的“我的偶像”快捷入口</label>
@@ -49,7 +49,7 @@
           </div>
         </div>
         <footer v-if="!selectionOnly && step === 'mode'" class="terminal-welcome-footer">
-          <ArchivePreferredIdolSlot :idols="preferredIdols.length ? preferredIdols : idols" :value="preferences.preferredIdol || ''" id-prefix="welcome" @save="emit('save-preferred', $event)" />
+          <ArchivePreferredIdolSlot :idols="preferredIdols.length ? preferredIdols : idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferences.preferredIdol || ''" id-prefix="welcome" @save="emit('save-preferred', $event)" />
           <button class="terminal-text-button" type="button" @click="emit('choose-later')">{{ canCancel ? '暂不更改，返回来源页' : '先浏览资料馆，下次直接打开' }}</button>
           <details class="terminal-reset"><summary>更多设置</summary><button type="button" class="terminal-text-button" @click="emit('clear-preferences')">重置启动与“我的偶像”设置</button><small>不删除收藏、阅读位置或卡面壁纸。</small></details>
         </footer>
@@ -72,6 +72,7 @@ import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.j
 import '../../styles/archive-terminal.css'
 const props = defineProps({
   idols: { type: Array, default: () => [] }, preferredIdols: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
   preferences: { type: Object, default: () => ({}) }, notice: { type: String, default: '' },
   dataReady: Boolean, selectionOnly: Boolean, canCancel: Boolean,
   targetLabel: { type: String, default: '人物互动首页' },
@@ -81,7 +82,10 @@ const heading = ref(null), step = ref(props.selectionOnly ? 'idol' : 'mode')
 const selectedMode = ref(props.preferences.homeMode === 'card' ? 'card' : 'spine')
 function chooseMode(mode) { selectedMode.value = mode; step.value = 'idol' }
 const selectedIdol = ref(props.preferences.startupIdol || props.preferences.preferredIdol || ''), setPreferred = ref(!props.preferences.preferredIdol), wallpaperOpen = ref(false)
-const selectedName = computed(() => props.idols.find(idol => idol.id === selectedIdol.value)?.name || '')
+const selectedName = computed(() => {
+  const idol = props.idols.find(idol => idol.id === selectedIdol.value)
+  return idol ? props.idolName(idol.id) || idol.name || '' : ''
+})
 const wallpaper = useTerminalWallpaper()
 const backdropFailed = ref(false)
 watch(wallpaper.revision, () => { backdropFailed.value = false })
