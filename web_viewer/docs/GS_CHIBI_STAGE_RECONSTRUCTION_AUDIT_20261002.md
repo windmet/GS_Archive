@@ -628,3 +628,13 @@ Take 本地视频 SHA256 `a20cc0a5cf1f0e090cf2670d9dec1f07e03cab3f93041242b135ea
 5198实际生产bundle Browser：1280×720，01定位22.2／22.4秒截图可见相邻灯交换明暗；26.4秒红色→向后22.2秒青色；02的22.7秒为原生橙色。390×844下canvas约357×201、scrollWidth=clientWidth=390；切Study灯组清零；日志只有既有Spine tint deprecated调用警告，本轮无console error。Browser响应式模拟不等于实体手机。截图在 `.analysis/engineering-validation-20261002/take-reference/lamps-browser-*`。用户已确认地面舞台灯整体正确，作为该部分的已确认基线，不扩展成完整原生等效声明。
 
 下一目标已定位：脚底“星海”是 `fx_in_tkstp1_panel_1` 的四套持续发射、颜色梯度、寿命透明度和原生 _AlphaTex 遮罩粒子；当前仍未消费，静态底图不能替代。之后排查角色高亮上方舞台打光和悬挂星星灯渐变交错。Take地面粒子／噪声、星灯、角色局部配色、全曲、实体设备和最终master PR尚未收口。
+
+### 2026-10-03：Take 动态地板原生输入接线
+
+输入 HEAD `6eae38fd`。静态底图中的星海不能替代 `fx_in_tkstp1_panel_1` 的四组原生 ParticleSystem；01／02 的 Object_layer 均指向同一资源。本轮从 RAW song_tkstp1 与 shaders_and_materials 读取 keeper、有序系统、源 PathID/SHA、三张纹理、发射速率200/50/3/3、容量150/80/7/7、随机颜色梯度、生命周期透明度、尺寸与旋转曲线。原 `Alpha Masked/Particles/Additive` shader 使用世界坐标遮罩，SrcAlpha/One；1525单位遮罩平面与原RGBA纹理限定到脚底的三条台面，不能将矩形云层铺满画面。
+
+新导出器 `prepare-live-chibi-floor.py --evidence-output ...` 生成被忽略的 local public/floor-particles 资源，不复制录像或全量语料。浏览器使用固定244个Sprite池、共享演出时钟，暂停冻结、向后拖动重算；缺纹理和快速切歌释放保留。原生随机种子、NoiseModule和三维速度投影尚未复刻，当前为原生输入驱动的有限二维预览；覆盖审计仍标记partial，不能当作Unity等价或全曲完成。
+
+Python typed-source拒绝用例、Node梯度/生命周期/容量/seek/异步释放、118编排VFX统计、舞台intent与既有粒子回归通过。`build:check` 2781模块、20.84s，固定.analysis/build-check，不含public复制。5198既有映射服务实际Browser验收两版Take：地板可见，开关差分在台面区域有33088个明显变化像素（最大通道差79），上方画面变化0；暂停两张画布逐像素差为0。播放粒子出生/尺寸/透明度持续变化；390×844画布357×201，页面宽390无横向溢出。切Study清理Take粒子，console error为0。证据保留take-reference/floor-02-enabled.png、floor-02-disabled.png、floor-02-paused-a/b.png、floor-mobile.png。
+
+全曲扩展按各曲原资源推广接口，不能照搬Take纹理/遮罩/颜色。118编排资源普查确认Take共享地板仅覆盖tkstp1与tkstp2；其他panel各有独立资源，下一轮逐种审核模块和材质再接线。地面灯已获用户复核；挂星灯交错渐变与独唱上方打光继续待验收。

@@ -55,6 +55,7 @@
     :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
     :data-particle-layer-frames="particleLayerFrames"
+    :data-floor-particle-state="floorParticleState"
     :data-spotlight-count="visibleSpotlightCount"
     :data-stagelight-count="visibleStagelightCount"
     :data-stagelight-colors="appliedStagelightColors"
@@ -385,6 +386,7 @@
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
               <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
+              <div v-if="stageVfxCoverage?.floorParticleStatus !== 'not_loaded' && stageVfxCoverage?.floorParticleStatus"><dt>地面动态</dt><dd>原生渐变与遮罩 · 随机种子为预览，噪声待复刻</dd></div>
               <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位与配色，闪烁曲线仍在核对</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
@@ -451,6 +453,7 @@ import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
+import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
@@ -517,6 +520,7 @@ const visibleObjectLayerCount = ref(0)
 const visibleObjectLayerAssets = ref([])
 const unsupportedObjectLayerAssets = ref([])
 const particleLayerFrames = ref('')
+const floorParticleState = ref('')
 const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
 const unresolvedSpotlightIds = ref([])
@@ -2246,6 +2250,10 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if (entry.floorAnimation) {
+    return { ...await loadChibiFloor(PIXI, entry.floorAnimation,
+      path => loadImageLayerTexture(path, 10000)), entry }
+  }
   if (entry.particleAnimation) {
     return { ...await loadChibiParticleLayer(entry.particleAnimation,
       path => loadImageLayerTexture(path, 10000)), entry }
@@ -2307,7 +2315,10 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
+    if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
   }
+  floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
+    .map(r => r.floorSignature).join(',')
   particleLayerFrames.value = [...objectLayerRuntimes.entries()]
     .filter(([, runtime]) => runtime.particles && runtime.container.visible)
     .map(([asset, runtime]) => `${asset}:${runtime.particleFrames.join('/')}`).sort().join(',')
@@ -2326,6 +2337,7 @@ function releaseObjectLayers() {
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
   particleLayerFrames.value = ''
+  floorParticleState.value = ''
 }
 
 async function syncObjectLayers() {
@@ -2343,7 +2355,7 @@ async function syncObjectLayers() {
   const unsupportedStates = []
   for (const state of activeStates) {
     const entry = objectLayerIndex.value.assets?.[state.asset]
-    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation) supportedStates.push(state)
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation) supportedStates.push(state)
     else unsupportedStates.push(state)
   }
   visibleObjectLayerCount.value = supportedStates.length

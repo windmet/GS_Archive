@@ -8,8 +8,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const objectIndex = indexes.objectLayers?.assets || {}
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
   const objectParticles = objectAssets.filter(asset => objectIndex[asset]?.kind === 'particle')
-  const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation)
-  const objectParticleUnimplemented = objectParticles.filter(asset => !objectIndex[asset]?.particleAnimation)
+  const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation || objectIndex[asset]?.floorAnimation)
+  const objectParticleUnimplemented = objectParticles.filter(asset => !objectIndex[asset]?.particleAnimation && !objectIndex[asset]?.floorAnimation)
   const objectMissing = objectAssets.filter(asset => !objectIndex[asset])
   const objectOther = objectAssets.filter(asset => objectIndex[asset] &&
     !['sprite', 'mixed', 'particle'].includes(objectIndex[asset].kind))
@@ -54,6 +54,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectParticles,
     objectParticlePilots,
     objectParticleUnimplemented,
+    floorParticleStatus: objectAssets.some(asset => objectIndex[asset]?.floorAnimation)
+      ? 'native_inputs_reference_projection_rng_noise_not_unity_equivalent' : 'not_loaded',
     objectMissing,
     objectOther,
     stagelightAssets,

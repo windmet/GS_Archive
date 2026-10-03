@@ -10,6 +10,7 @@ import {
 import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
+import { attachChibiFloor } from '../core/chibiFloorParticles.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -105,18 +106,18 @@ export async function fetchLiveChibiObjectLayerIndex() {
   const response = await fetch(`${LIVE_CHIBI_BASE}/object-layers/index.json`)
   if (response.status === 404) return null
   if (!response.ok) throw new Error(`舞台对象索引加载失败 (${response.status})`)
-  const index = await response.json()
+  let index = await response.json()
   // Optional pilot resources; older resource packages retain their Sprite path.
-  try {
-    const particles = await withLoadDeadline(async signal => {
-      const result = await fetch(`${LIVE_CHIBI_BASE}/particle-layers/index.json`, { signal })
+  const optional = await Promise.allSettled(['particle-layers','floor-particles'].map(path =>
+    withLoadDeadline(async signal => {
+      const result = await fetch(`${LIVE_CHIBI_BASE}/${path}/index.json`, { signal })
       return result.ok ? result.json() : null
-    }, { timeoutMs: 10000, label: '舞台粒子索引' })
-    return attachChibiParticleLayers(index, particles)
-  } catch (error) {
-    console.warn('[ChibiStage] optional particle index unavailable', error)
-    return index
+    }, { timeoutMs: 10000, label: '舞台粒子索引' })))
+  for (const [i,result] of optional.entries()) {
+    if (result.status === 'fulfilled') index = (i === 0 ? attachChibiParticleLayers : attachChibiFloor)(index,result.value)
+    else console.warn('[ChibiStage] optional particle index unavailable', result.reason)
   }
+  return index
 }
 
 export async function fetchLiveChibiStageBackgroundIndex() {
