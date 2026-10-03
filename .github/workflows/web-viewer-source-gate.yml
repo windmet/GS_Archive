@@ -132,6 +132,9 @@ jobs:
       - name: Verify native chibi Penlight object and controller bindings
         run: python scripts/verify-chibi-penlight-bindings.py
 
+      - name: Verify native Penlight hierarchy, tight mesh and render inputs
+        run: python scripts/verify-chibi-penlight-render-inputs.py
+
       - name: Verify native costume shader bindings and premultiplied color formula
         run: python scripts/verify-chibi-costume-shader.py
 

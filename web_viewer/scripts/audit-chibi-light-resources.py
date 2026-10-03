@@ -29,6 +29,12 @@ def identity(reader):
     return {'serializedFile': reader.assets_file.name, 'pathId': str(reader.path_id)}
 
 
+def json_binary(value):
+    if isinstance(value, bytes):
+        return {'bytesHex': value.hex()}
+    raise TypeError(type(value).__name__)
+
+
 def inspect_controller(reader, evidence):
     key = reader.assets_file.name + ':' + str(reader.path_id)
     if key not in evidence:
@@ -47,7 +53,7 @@ def inspect_controller(reader, evidence):
     return key
 
 
-def inspect_prefab(reader, animation_evidence=None):
+def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
     game_object = reader.read()
     components, children = [], []
     for link in game_object.m_Component:
@@ -76,7 +82,7 @@ def inspect_prefab(reader, animation_evidence=None):
                           'scale': vector(value.m_LocalScale),
                           'rotation': vector(value.m_LocalRotation)})
             for child in value.m_Children:
-                children.append(inspect_prefab(child.read().m_GameObject.deref(), animation_evidence))
+                children.append(inspect_prefab(child.read().m_GameObject.deref(), animation_evidence, sprite_evidence))
         elif obj.type.name == 'Animator':
             if value.m_Controller.m_PathID:
                 controller_reader = value.m_Controller.deref()
@@ -89,6 +95,15 @@ def inspect_prefab(reader, animation_evidence=None):
             if value.m_Sprite.m_PathID:
                 sprite_reader = value.m_Sprite.deref()
                 sprite = sprite_reader.read()
+                if sprite_evidence is not None:
+                    key = sprite_reader.assets_file.name + ':' + str(sprite_reader.path_id)
+                    if key not in sprite_evidence:
+                        raw = sprite_reader.get_raw_data()
+                        # Keep the tight mesh, UV transform and texture packing.
+                        # Sprite.image alone crops away the native pivot offset.
+                        sprite_evidence[key] = {**identity(sprite_reader), 'bytes': len(raw),
+                            'sha256': hashlib.sha256(raw).hexdigest(),
+                            'typetree': sprite_reader.read_typetree()}
                 entry['sprite'] = {'name': sprite.m_Name, **identity(sprite_reader),
                     'rect': {k: getattr(sprite.m_Rect, k) for k in ('x', 'y', 'width', 'height')},
                     'pivot': vector(sprite.m_Pivot), 'pixelsToUnits': sprite.m_PixelsToUnits}
@@ -115,6 +130,8 @@ def main():
     parser.add_argument('--output-file', type=Path, required=True)
     parser.add_argument('--animation-controllers', action='store_true',
                         help='Retain unique native AnimatorController and AnimationClip typetrees')
+    parser.add_argument('--sprite-geometry', action='store_true',
+                        help='Retain native Sprite mesh, pivot, texture packing and UV transform')
     args = parser.parse_args()
     sources = load_archive_sources(args.sources_config)
     helper_spec = importlib.util.spec_from_file_location('stage_effect_source', ROOT / 'scripts/prepare-live-chibi-stage-effects.py')
@@ -124,17 +141,22 @@ def main():
     environment = UnityPy.load(data)
     names = set(args.names)
     animation_evidence = {} if args.animation_controllers else None
-    prefabs = [inspect_prefab(obj, animation_evidence) for obj in environment.objects
+    sprite_evidence = {} if args.sprite_geometry else None
+    prefabs = [inspect_prefab(obj, animation_evidence, sprite_evidence) for obj in environment.objects
                if obj.type.name == 'GameObject' and obj.read().m_Name in names]
     missing = sorted(names - {prefab['name'] for prefab in prefabs})
     if missing:
         raise ValueError('Exact built-in prefabs missing: ' + ', '.join(missing))
     output = args.output_file.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps({'schemaVersion': 1, 'status': 'typed_resource_evidence_only',
+    result = {'schemaVersion': 1, 'status': 'typed_resource_evidence_only',
         'source': {'xapk': sources.xapk_file.name, 'xapkSha256': sha256_file(sources.xapk_file),
                    'unityDataSha256': hashlib.sha256(data).hexdigest()},
-        'prefabs': prefabs, 'animationEvidence': animation_evidence}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+        'prefabs': prefabs, 'animationEvidence': animation_evidence}
+    if sprite_evidence is not None:
+        result['spriteEvidence'] = sprite_evidence
+    output.write_text(json.dumps(result, ensure_ascii=False, indent=2,
+        default=json_binary) + '\n', encoding='utf-8')
     print(json.dumps({'prefabs': len(prefabs), 'output': str(output)}))
 
 

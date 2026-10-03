@@ -577,3 +577,25 @@ python -X utf8 scripts/verify-chibi-costume-shader.py
 补充验收：直接读五种body setup和Study实际motion fragment，以实际SFC方法比较2/3/4号位在7000／7030／7100ms的全部bone x/y/rotation/scale，45组均与逐帧连续播放一致，最大浮点差3.553e−15（`study-reference/seek-native-pose-comparison.json`）；它验证原始动作数据在Web两种采样路径一致，不等于原客户端整曲验收。另按SkeletonDataAsset→TextAsset精确PPtr验证五份导出setup payload与RAW逐字节相等，单位证据保存 `skeleton-native-unit-witness.json`。
 
 本批代码 `bcf1978f` 已推送。包含该代码及其它窗口资料页提交的 HEAD `5f2e5e42e88588f1987b2214a3a0a5ce4fd33845` 完整 [Source Gate 37084267260](https://github.com/windmet/GS_Archive/actions/runs/37084267260) 已终态success，115项成功、无失败，含本轮handoff／倒退／取消回归。后续文档revision不冒充相同HEAD门禁。
+
+## 2026-10-03：Penlight 完整原生绘制输入导出
+
+输入 HEAD `02936051`。本批继续处理 Study 第二验收目标的前景 call 棒，补齐之前只有数组／Animator 关联、没有完整绘制输入的缺口。`audit-chibi-light-resources.py --sprite-geometry` 可选保留 Sprite 原始身份、完整 tight mesh、packing／UV transform；默认其它灯光审计输出不变。新 `live_chibi_penlight.py` 将完整 Transform 层级、按自定义数组原序排列的 actor、阴影、Sprite 网格、材质身份与 10 段原生 streamed curves 关联成描述文件。保留 Unity y-up 的三维局部位置、scale、quaternion 和父链，**不提前换算成浏览器像素或把 z 丢掉**。
+
+实际同一 Android XAPK 重抽取：`LiveObjectPenlight_1` 82 个 animator、4 个排组、原分界值39；`LiveObjectPenlight_2` 29 个 animator、3 个排组、原分界值20。第二个数组 index19 已是 Back/02，仍原样保留20，不能把它擅改成 Front+Middle=19。四层棒体父节点 scale 分别约0.20／0.25／0.35／0.42，第一预制体还有 z≈7.06；不能把全部棒体扁平成同一大小的前景条。动画节点本身是 placement 节点的子节点，其初始局部位移为0；摇摆与静态站位应分层组合。
+
+另外明确了两种棒体 Sprite 而非一张统一替代图：`Penlight1` resources.assets:1838 → Texture465，`Penlight2` :1897 → Texture493，均为512×512、PPU100、pivot=(0.5,0)，每个69个顶点／201个三角索引；阴影 :1589 → Texture347，4个顶点／6个索引。它们绑定 `Sprites/Default`。原生棒体 textureRect 只覆盖全图的一部分，textureRectOffset.x>0，UV transform=(100,256,100,0)，显式UV流全0；不能用 `Sprite.image` 的裁切宽度替代原Sprite rect，不能改成中心支点。本轮导出 full Texture2D RGBA PNG，保留实际透明光晕，不绘制假色块；UV transform作为原始字段保存，尚未声称已验证浏览器的UV计算／shader行为。
+
+新可复现工具 `prepare-live-chibi-penlights.py` 在全部数组／mesh／材质／动画验证后导出 `public/assets/live-chibi/penlight/index.json` 与三张按 serializedFile-pathId 命名的PNG。索引约167KiB，资源仅来自绑定的三张纹理，不复制全语料、不提交PNG。索引记录XAPK／Unity data SHA、typed evidence SHA、各Sprite／Texture原始SHA和PNG SHA；状态为 `native_render_inputs_not_csv_or_camera_equivalence`，继续列出未闭合的CSV animation type/id/speed、native颜色分配、相机投影及录屏画面验收。**本批没有激活猜测版Penlight，也没有修改当前ChibiStageViewer画面。**
+
+验证：portable fixture 是完整证据的精确字段投影，约207KiB，包含所有消费的原生层级／mesh／streamed数据。层级与component倒序仍输出相同模型，自定义actor数组原序不变；18项损坏校验拒绝缺几何、非有限向量／顶点／PPU、缺z、错误quaternion、跨文件Transform、packing、纹理PPtr、pivot、vertex格式／长度／index／submesh及错误材质。fixture与完整XAPK重抽取结果、实际导出索引逐项一致；全部三张PNG哈希闭合。独立调用UnityPy MeshHandler比较142个Sprite顶点，最大差0，记录 `take-reference/penlight-mesh-independent-witness.json`。既有Penlight binding／10段streamed clips／Spotlight／背景／Pinspotlight回归通过。实际5198 HTTP的索引字节与三张PNG均与本地导出相同，属于资源服务验收，**不是Browser演出通过**。纯独立Python工具与CI门禁改动按构建政策不重复Vite、不重新声明Browser或实体手机验收；其它窗口的活动UI／译名验证工作保留。
+
+完整本地输入 `take-reference/typed-penlight-export.json`（保留源哈希），前缀目录为 `.analysis/engineering-validation-20261002/`。复现：
+
+```powershell
+python scripts/prepare-live-chibi-penlights.py --evidence-file .analysis/engineering-validation-20261002/take-reference/typed-penlight-export.json
+python scripts/verify-chibi-penlight-render-inputs.py .analysis/engineering-validation-20261002/take-reference/typed-penlight-export.json public/assets/live-chibi/penlight
+python scripts/verify-chibi-penlight-render-inputs.py
+```
+
+下一步仍需从CSV命令到原生animation family／speed／颜色放置及摄影机投影闭合，再接线绘制并以音频配准后的Study录屏检查动作与前景高度；本批不将未消费的资源模型视作舞台完整验收。Study全曲、Foot渐变、粒子、Take两半录屏及最终master PR仍未收口。
