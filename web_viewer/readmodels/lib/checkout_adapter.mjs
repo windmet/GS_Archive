@@ -232,8 +232,11 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
           episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
   };
-  await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
+  const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
+  for (const [resourceId, material] of Object.entries(materialContexts || {})) {
+    if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
+  }
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,

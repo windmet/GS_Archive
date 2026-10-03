@@ -15,6 +15,41 @@ export function domainProductTarget(product,cards,materials){
 }
 const sourceKeys = ['relation','eventId','eventKind','scope','totalPoint','upperRank','lowerRank','offsetPoint','intervalPoint','limitPoint','level','episodeId','sectionId','chapterRelation','amount','cardRarityId','idolId','idolType','sourceTable','sourceRowId','role','groupId','dayCount','sumFanAmount','sourceDomain'];
 
+/** Cards.limitbreak_item_id is an explicit Items foreign key, not an untyped
+ * Product ID or an image number. Keep this relation separate from rewards. */
+export function projectCardLimitbreakMaterials(cards, items, collectionMedia, cardImages = {}) {
+  assert(Array.isArray(cards) && Array.isArray(items), 'Missing card/material projection inputs');
+  assert(new Set(cards.map(card => card.resource_id)).size === cards.length &&
+    cards.every(card => typeof card.resource_id === 'string' && /^[a-z0-9_]+$/.test(card.resource_id)),
+    'Ambiguous card material resource identity');
+  assert(new Set(items.map(item => item.id)).size === items.length &&
+    items.every(item => Number.isInteger(item.id) && item.id > 0 && item.key === `item:${item.id}`),
+    'Item catalog typed identity mismatch');
+  const byId = new Map(items.map(item => [item.id, item]));
+  const materialContexts = {}, usageCardsByItem = {};
+  for (const card of cards) {
+    materialContexts[card.resource_id] = null;
+    const id = card.limitbreak_item_id, embedded = card.limitbreak_item, entry = byId.get(id);
+    if (!Number.isInteger(id) || id <= 0 || !entry || embedded?.id !== id ||
+        typeof entry.resourceId !== 'string' || !entry.resourceId || embedded.resource_id !== entry.resourceId ||
+        typeof entry.nameJa !== 'string' || !entry.nameJa.trim() || embedded.name !== entry.nameJa) continue;
+    const binding = collectionMedia?.[entry.key]?.image;
+    materialContexts[card.resource_id] = {
+      key: entry.key, kind: 'item', id, nameJa: entry.nameJa,
+      description: entry.descriptionText?.plain ?? entry.description ?? '',
+      resourceId: entry.resourceId, referenceStatus: 'resolved-entity',
+      image: binding ? pick(binding, ['url','status','sha256','bytes','width','height','runtimeVerified']) : null,
+    };
+    const image = cardImages[card.resource_id];
+    (usageCardsByItem[entry.key] ||= []).push({
+      ...pick(card, ['resource_id','card_id','character_id','rarity','title']),
+      image: image ? pick(image, ['url','status']) : null,
+      target: { view:'card_detail', card:card.resource_id },
+    });
+  }
+  return { materialContexts, usageCardsByItem };
+}
+
 export function validateMediaPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
     payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB &&
@@ -139,6 +174,9 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
   }));
   assert(legacy.every(record => domains.events.records.some(next => next.id === record.id)), 'Lost existing event routes');
 
+  const materialRelations = projectCardLimitbreakMaterials(data.domainCards,
+    validateDomainPayload(data.domainItems, 'gs-item-catalog').entries, collectionMedia, eventMedia.cardImages);
+
   for (const [domain, key, kind] of [['items','domainItems','item'],['honors','domainHonors','honor']]) {
     const catalog = validateDomainPayload(data[key], `gs-${kind}-catalog`).entries;
     assert(Array.isArray(catalog) && new Set(catalog.map(r => r.id)).size === catalog.length, 'Duplicate collection identity');
@@ -160,7 +198,8 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       });
       assert(collectionMedia[entry.key], `Missing collection media binding: ${entry.key}`);
       return { id:String(entry.id), summary:{...pick(entry,['nameJa','name','displayName','itemType','honorType','effectType','resourceId','hasPrefab']),image:pick(collectionMedia[entry.key].image,['url','status'])},
-        view:{ entry, media:collectionMedia[entry.key], sources:links, sourceCoverage:'partial-client-masterdata' } };
+        view:{ entry, media:collectionMedia[entry.key], sources:links, sourceCoverage:'partial-client-masterdata',
+          ...(kind === 'item' ? { usageCards:materialRelations.usageCardsByItem[entry.key] || [] } : {}) } };
     }));
     domains[domain] = { searchable:true, packed:true, records };
   }
@@ -187,4 +226,5 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       key:honor.view.entry.key,nameJa:honor.view.entry.nameJa,
       sources:honor.view.sources.filter(source=>source.idolId===person.view.actor.idolId).map(source=>pick(source,['idolId','scope','upperRank','lowerRank','event']))}));
   }
+  return materialRelations.materialContexts;
 }
