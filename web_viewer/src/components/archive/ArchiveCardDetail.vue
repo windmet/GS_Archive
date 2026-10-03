@@ -166,16 +166,18 @@
         <h4>关联衣装</h4>
         <div class="costume-list">
           <div v-for="group in visibleCostumes" :key="group.key" class="costume-group">
-            <Shirt :size="20" aria-hidden="true" />
-            <div class="costume-group-content">
+            <div class="costume-group-header">
+              <Shirt :size="20" aria-hidden="true" />
               <h5 class="costume-group-title" :title="group.name">{{ archiveText('costume', group.name) || '衣装名称待确认' }}</h5>
-              <blockquote v-if="group.description" class="costume-flavor">
-                <span class="authored-text">{{ group.description }}</span><span class="reflowed-text">{{ reflowCardCostumeFlavor(group.description) }}</span>
-              </blockquote>
-              <div v-for="costume in group.costumes" :key="costume.key" class="costume-row">
-                <div class="costume-heading">
-                  <strong :title="costume.name">{{ archiveText('costume', costume.name) || '衣装名称待确认' }}</strong>
-                  <span>{{ costume.labels.join(' · ') }}</span>
+            </div>
+            <blockquote v-if="group.description" class="costume-flavor">
+              <span class="authored-text">{{ group.description }}</span><span class="reflowed-text">{{ reflowCardCostumeFlavor(group.description) }}</span>
+            </blockquote>
+            <div class="costume-variants" aria-label="款式用途与状态">
+              <div v-for="costume in group.costumes" :key="costume.key" class="costume-row" role="group" :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'">
+                <strong class="costume-variant-name">{{ group.costumes.length > 1 ? (costume.model_resource_id.endsWith('_01') ? '突破版（+）' : '通常版') : '用途' }}</strong>
+                <div class="costume-conditions">
+                  <span v-for="label in costume.labels" :key="label" class="costume-condition">{{ label }}</span>
                 </div>
               </div>
             </div>
@@ -593,16 +595,17 @@ function openRelation(item) {
 .limitbreak-item-row strong { color: #2d4551; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: #4c5c64; font-size: var(--gs-text-body); line-height: 1.5; }
 .costume-list { display: flex; flex-direction: column; }
-.costume-group { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
+.costume-group { min-width: 0; padding: var(--gs-space-4) 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
 .costume-group:last-child { border-bottom: 0; }
-.costume-group-content { min-width: 0; }
-.costume-group-title { margin: 0 0 var(--gs-space-3); color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-.costume-row { padding: var(--gs-space-1) 0; }
-.costume-flavor { margin: 0 0 var(--gs-space-3); padding-left: var(--gs-space-4); border-left: 2px solid #b9d8d3; white-space: pre-wrap; color: #4d5c64; font-size: var(--gs-text-body); line-height: 1.55; overflow-wrap: anywhere; }
-.costume-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); }
-.costume-heading strong { color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-.costume-heading span { color: #697980; font-size: var(--gs-text-meta); }
-.costume-row small { display: block; margin-top: var(--gs-space-1); color: #849097; font-family: monospace; font-size: var(--gs-text-meta); }
+.costume-group-header { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; }
+.costume-group-header > svg { flex: 0 0 20px; }
+.costume-group-title { min-width: 0; margin: 0; color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.costume-flavor { box-sizing: border-box; margin: var(--gs-space-4) 0; padding: 10px var(--gs-space-4); border-left: 2px solid #71b6aa; border-radius: 0 var(--gs-radius-field) var(--gs-radius-field) 0; background: #f3f8f6; white-space: pre-wrap; color: #4d5c64; font-size: var(--gs-text-ui); line-height: 1.6; overflow-wrap: anywhere; }
+.costume-variants { display: grid; gap: 6px; margin-top: var(--gs-space-3); }
+.costume-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); min-width: 0; }
+.costume-variant-name { color: #40535b; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.costume-conditions { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); min-width: 0; }
+.costume-condition { max-width: 100%; padding: 2px 6px; border-radius: var(--gs-radius-control); background: #eef3f1; color: #58706b; font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
 .release-series { border-top: 1px solid #edf0f2; padding-top: var(--gs-space-4); }
 .release-series-cards { display: flex; gap: var(--gs-space-3); margin-top: var(--gs-space-4); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 1px solid #e1e6e9; border-radius: var(--gs-radius-control); background: #fff; color: #4b5962; cursor: pointer; }

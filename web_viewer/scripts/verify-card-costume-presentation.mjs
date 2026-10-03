@@ -220,9 +220,12 @@ for (const locale of ['zh-CN', 'ja-JP']) {
       rows.forEach((row, index) => {
         const item = expected[i].costumes[index]
         const name = all(row).find(node => node.type === 'strong')
-        assert.equal(text(name), archiveText('costume', item.name))
-        assert.equal(name.props.title, item.name)
-        assert.equal(text(all(row).find(node => node.type === 'span')), item.labels.join(' · '))
+        assert.equal(text(name), expected[i].costumes.length > 1
+          ? (item.model_resource_id.endsWith('_01') ? '突破版（+）' : '通常版') : '用途')
+        assert.equal(row.props.title, item.name, 'full source name remains available without repeating it visually')
+        assert.equal(row.props['aria-label'], archiveText('costume', item.name), 'each variant retains its accessible full name')
+        assert.deepEqual(all(row).filter(node => hasClass(node, 'costume-condition')).map(text), item.labels,
+          'individual usage/state badges retain all actual source labels')
       })
       assert.equal(all(group).filter(item => ['button', 'select', 'input'].includes(item.type)).length, 0,
         'static presentation adds no variant toggle or invented unlock action')
