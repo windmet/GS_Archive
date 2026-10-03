@@ -9,6 +9,8 @@ import { EntityTranslationRepository } from '../src/localization/story/EntityTra
 import { IDOL_ID_TO_NAME } from '../src/utils/IdolNameMap.js'
 import { buildIdolReference } from '../src/presentation/IdolReferencePresentation.js'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
+import { buildIdolProfile, eventsForIdol, songsForIdol } from '../src/data/idolPage.js'
+import { buildUnitCatalog } from '../src/data/unitPage.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const dictionary = JSON.parse(read('public/data/masterdata/idol_unit_dictionary.json'))
@@ -58,7 +60,25 @@ const song = id => buildSongPresentation(catalog[id], dictionary, {
 const drive = song('drvalv'), altessimo = song('tfmvmt')
 const soloCodes = Object.keys(drive.playback.experiment.solo_tracks)
 assert.equal(soloCodes.length, 49)
-const evidenceBefore = JSON.stringify([owner, card, drive, altessimo, experiments])
+const profile = buildIdolProfile('029ass', dictionary, manifest)
+const idolEvents = eventsForIdol(profile.idol_code, manifest)
+const idolSongs = songsForIdol(profile.idol_code, { songs: catalog })
+const unitEntry = buildUnitCatalog(dictionary, { manifest }).find(entry => entry.unit.unit_code === profile.unit_code)
+assert.ok(unitEntry?.members.some(member => member.idol_code === profile.idol_code))
+context.currentCharacterId = ref(profile.idol_code)
+context.idolReadModelDetail = shallowRef({ id: profile.idol_code, view: {
+  profile, stats: {}, events: idolEvents, songs: idolSongs,
+} })
+const idolProjectionStart = app.indexOf('const currentIdolDetail = computed(')
+const idolProjectionEnd = app.indexOf('const readingState = ref(', idolProjectionStart)
+assert.ok(idolProjectionStart >= 0 && idolProjectionEnd > idolProjectionStart)
+const [canonicalProfile, displayedProfileName] = vm.runInContext(
+  `${app.slice(idolProjectionStart, idolProjectionEnd)}\n;[currentIdolProfile, currentIdolDisplayName]`, context)
+assert.match(app, /<ArchiveIdolDetail\b[^>]*:idol-name="idolDisplayName"/,
+  'App forwards the production display callback to the canonical profile consumer')
+const sourceEvidence = () => JSON.stringify([owner, card, drive, altessimo, experiments,
+  dictionary, overlay, manifest, profile, idolEvents, idolSongs, unitEntry])
+const evidenceBefore = sourceEvidence()
 
 // Compile and render the actual SFCs. Setting their existing setup refs supplies
 // user search/selection state without adding a production demo or browser harness.
@@ -76,6 +96,17 @@ function withState(component, values) {
 const render = (component, props) => renderToString(createSSRApp(component, props))
 const elementText = (html, tag) => [...html.matchAll(new RegExp(`<${tag}\\b[^>]*>([^]*?)<\\/${tag}>`, 'g'))]
   .map(match => match[1].trim())
+const decodeHtml = value => value.replace(/&(?:quot|#39|lt|gt|amp);/g, entity => ({
+  '&quot;': '"', '&#39;': "'", '&lt;': '<', '&gt;': '>', '&amp;': '&',
+})[entity])
+const technicalEvidence = (html, entity) => {
+  // Relation lists also include their own source JSON. Select the actual detail
+  // evidence by its canonical entity key rather than counting unrelated blocks.
+  const blocks = elementText(html, 'pre').map(block => JSON.parse(decodeHtml(block)))
+    .filter(block => block && typeof block === 'object' && Object.hasOwn(block, entity))
+  assert.equal(blocks.length, 1, `one production ${entity} detail evidence block`)
+  return blocks[0]
+}
 let checks = 0
 // The native dialog's immediate focus watcher runs during SSR; there is no DOM
 // element or audio playback. Supply only its inert focus origin for these renders.
@@ -87,11 +118,55 @@ try {
   const { default: Welcome } = await server.ssrLoadModule('/src/components/archive/ArchiveWelcome.vue')
   const { default: Card } = await server.ssrLoadModule('/src/components/archive/ArchiveCardDetail.vue')
   const { default: Song } = await server.ssrLoadModule('/src/components/archive/ArchiveSongDetail.vue')
+  const { default: Idol } = await server.ssrLoadModule('/src/components/archive/ArchiveIdolDetail.vue')
+  const { default: Unit } = await server.ssrLoadModule('/src/components/archive/ArchiveUnitDetail.vue')
   const { default: Experimental } = await server.ssrLoadModule('/src/components/archive/ArchiveSongExperimentalPlayer.vue')
   const { default: Lineup } = await server.ssrLoadModule('/src/components/archive/ArchiveSongLineupPlayer.vue')
+  const idolProps = { idol: profile, events: idolEvents, songs: idolSongs }
+  const unitProps = { unit: unitEntry.unit, members: unitEntry.members,
+    identity: dictionary, manifest, cardStats: unitEntry.cardStats, eventRelations: unitEntry.eventRelations }
+  async function verifyEntityDetails(expectedName, nameCallbacks = callbacks) {
+    let idolState, unitState
+    const idolHtml = await render(withState(Idol, state => { idolState = state }), { ...idolProps, ...nameCallbacks })
+    assert.deepEqual(elementText(idolHtml, 'h2').map(decodeHtml), [expectedName])
+    const portrait = idolHtml.match(/<img\b[^>]*src="[^"]*image_chara_icon_029ass\.png"[^>]*>/)?.[0]
+    assert.ok(portrait, 'the production avatar uses the canonical identity resource')
+    assert.equal(decodeHtml(portrait.match(/\balt="([^"]*)"/)?.[1] || ''), expectedName,
+      'the nondecorative avatar follows the displayed name')
+    assert.deepEqual(technicalEvidence(idolHtml, 'idol'), { idol: profile, songs: idolSongs.map(entry => ({
+      song_code: entry.song.song_code, title: entry.song.title, evidenceLabel: entry.evidenceLabel,
+      performance_mapping: entry.song.performance_mapping,
+    })) }, 'translated headings must not overwrite canonical technical evidence')
+    assert.equal(idolState.eventItems.value.length, idolEvents.length)
+    idolState.eventItems.value.forEach((item, index) => assert.equal(item.payload, idolEvents[index],
+      'event navigation retains the canonical payload object'))
+    const unitHtml = await render(withState(Unit, state => { unitState = state }), { ...unitProps, ...nameCallbacks })
+    for (const member of unitEntry.members) {
+      const name = nameCallbacks.idolName?.(member.idol_code, member.display_name) || member.display_name
+      assert.ok(elementText(unitHtml, 'strong').map(decodeHtml).includes(name))
+      const ariaLabels = [...unitHtml.matchAll(/aria-label="([^"]+)"/g)].map(match => decodeHtml(match[1]))
+      assert.ok(ariaLabels.includes(`查看${name}的偶像资料`), 'member action label follows the same display callback')
+      const projected = unitState.memberReferences.value.find(entry => entry.member.idol_code === member.idol_code)
+      assert.equal(projected.member, member, 'member navigation retains the canonical member object')
+      assert.equal(projected.reference.idolCode, member.idol_code)
+    }
+    assert.deepEqual(technicalEvidence(unitHtml, 'unit'), { unit: unitEntry.unit, songs: [], stories: [] })
+    for (const [key, events] of Object.entries({
+      teamEventItems: unitEntry.eventRelations.team_events,
+      attributeEventItems: unitEntry.eventRelations.attribute_event_appearances,
+      mixedEventItems: unitEntry.eventRelations.mixed_unit_appearances,
+    })) {
+      unitState[key].value.forEach((item, index) => assert.equal(item.payload, events[index],
+        'unit relation navigation retains the canonical event object'))
+    }
+    checks += 2
+  }
   for (const currentLocale of ['zh-CN', 'ja-JP']) {
     locale.value = currentLocale
     const displayed = currentLocale === 'zh-CN' ? overlay.entries['029ass'].name : sourceNames['029ass']
+    assert.equal(canonicalProfile.value, profile, 'the leaf profile stays canonical in both languages')
+    assert.equal(displayedProfileName.value, displayed, 'Shell name is a display projection, separate from evidence')
+    await verifyEntityDetails(displayed)
     for (const query of ['阿斯兰', 'アスラン', '别西卜II世']) {
       const html = await render(withState(Picker, { query }), { idols, modelValue: '029ass', ...callbacks })
       assert.match(html, /1 位偶像/)
@@ -116,11 +191,13 @@ try {
     }
     const cardHtml = await render(Card, { card, ownerReference: displayedOwner.value, embedded: true })
     assert.equal(elementText(cardHtml, 'strong').filter(text => text === ownerName).length, 2)
-    assert.equal((cardHtml.match(/data-archive-focus-id="idol-reference:001tom"/g) || []).length, 2)
+    for (const location of ['head', 'relation']) {
+      assert.equal((cardHtml.match(new RegExp(`data-archive-focus-id="card-owner:${card.resource_id}:${location}"`, 'g')) || []).length, 1)
+    }
     const performers = await render(Song, { song: altessimo, ...callbacks })
     for (const code of ['007kei', '008rei']) {
       assert.ok(performers.includes(`aria-label="查看${context.idolDisplayName(code)}的偶像资料"`))
-      assert.ok(performers.includes(`data-archive-focus-id="idol-reference:${code}"`))
+      assert.ok(performers.includes(`data-archive-focus-id="song-performer:${altessimo.id}:${code}"`))
     }
     checks++
     for (const query of ['阿斯兰', 'アスラン', '别西卜II世']) {
@@ -191,9 +268,26 @@ try {
   context.currentCardId.value = 'different-card'
   assert.equal(displayedOwner.value, null, 'a stale owner cannot attach to a new card')
   assert.equal(context.idolDisplayName('999xxx', '原始姓名'), '原始姓名')
-  assert.equal(evidenceBefore, JSON.stringify([owner, card, drive, altessimo, experiments]), 'display never mutates source evidence or media tracks')
+  // Explicit missing-translation fixture: remove only Aslan from a copy of the
+  // real overlay, then run the production repository and callback fallback.
+  const missingNameOverlay = structuredClone(overlay)
+  delete missingNameOverlay.entries[profile.idol_code]
+  const missingNameRepository = new EntityTranslationRepository({
+    fetchImpl: async () => ({ ok: true, status: 200, text: async () => JSON.stringify(missingNameOverlay) }),
+  })
+  await missingNameRepository.loadEntity({ entityType: 'idol', locale: 'zh-CN', sourceNames: IDOL_ID_TO_NAME })
+  locale.value = 'zh-CN'
+  context.entityTranslationRepository = missingNameRepository
+  context.idolEntityTranslationRevision.value++
+  assert.equal(displayedProfileName.value, profile.display_name, 'missing translation falls back to the canonical name')
+  await verifyEntityDetails(profile.display_name)
+  await verifyEntityDetails(profile.display_name, {})
+  context.currentCharacterId.value = '001tom'
+  assert.equal(canonicalProfile.value, null, 'a stale profile cannot supply a different selected identity')
+  assert.equal(displayedProfileName.value, '', 'the stale profile cannot leave a name in the Shell')
+  assert.equal(evidenceBefore, sourceEvidence(), 'display never mutates source evidence or media tracks')
   checks++
-  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup display, bilingual search, 49 track IDs, and source/empty/stale fallbacks. No DOM or playback acceptance is implied.`)
+  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup and idol/unit detail display, bilingual search, 49 track IDs, avatar alt, canonical evidence/payloads, and source/missing-translation/empty/stale fallbacks. No DOM or playback acceptance is implied.`)
 } finally {
   if (previousDocument === undefined) delete globalThis.document
   else globalThis.document = previousDocument

@@ -122,6 +122,7 @@
       <ArchiveIdolDetail
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
+        :idol-name="idolDisplayName"
         :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
@@ -1320,6 +1321,9 @@ const currentCardCharacterName = computed(() => {
 const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
   ? idolReadModelDetail.value.view : null)
 const currentIdolProfile = computed(() => currentIdolDetail.value?.profile || null)
+const currentIdolDisplayName = computed(() => currentIdolProfile.value
+  ? idolDisplayName(currentIdolProfile.value.idol_code, currentIdolProfile.value.display_name)
+  : '')
 const currentIdolStats = computed(() => currentIdolDetail.value?.stats || {})
 const currentIdolEvents = computed(() => currentIdolDetail.value?.events || [])
 const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
@@ -1430,7 +1434,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'unit_catalog') return '组合资料'
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
   if (view.value === 'idols') return categoryHeaderText.value
-  if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
+  if (view.value === 'idol_detail') return currentIdolDisplayName.value || '偶像详情'
   if (view.value === 'groups') return groupTitle.value
   if (view.value === 'cards') return currentCardCharacterName.value
   if (view.value === 'card_detail') return archiveNamedText('card',currentCard.value?.title,'title') || '卡片详情'
@@ -1458,7 +1462,7 @@ const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
   const entityByView = {
     idol_detail: {
-      title: currentIdolProfile.value?.display_name,
+      title: currentIdolDisplayName.value,
       id: currentCharacterId.value,
     },
     unit_detail: {

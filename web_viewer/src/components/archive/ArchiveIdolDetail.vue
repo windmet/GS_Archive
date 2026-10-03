@@ -1,12 +1,12 @@
 <template>
   <article v-if="idol" class="idol-detail" data-archive-scroll-container>
     <header class="idol-profile-header">
-      <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="idol.display_name" />
+      <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="displayedIdolName" />
       <div class="idol-identity">
         <span class="idol-code">偶像档案</span>
-        <h2>{{ idol.display_name }}</h2>
+        <h2>{{ displayedIdolName }}</h2>
         <p>{{ idol.name_fields?.kana || idol.cv || '' }}</p>
-        <button v-if="idol.unit_code" class="idol-unit-link" @click="emit('open-unit', idol)">
+        <button v-if="idol.unit_code" class="idol-unit-link" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" @click="emit('open-unit', idol)">
           <UsersRound :size="15" />
           <span>{{ idol.unit_name }}</span>
           <ChevronRight :size="14" />
@@ -37,7 +37,7 @@
         <span>已收录</span>
       </div>
       <div class="related-grid">
-        <button v-for="item in related" :key="item.id" @click="emit('open-domain', item.id)">
+        <button v-for="item in related" :key="item.id" :data-archive-focus-id="`idol-domain:${idol.idol_code}:${item.id}`" @click="emit('open-domain', item.id)">
           <component :is="item.icon" :size="20" :stroke-width="1.8" />
           <span>
             <strong>{{ item.label }}</strong>
@@ -50,7 +50,7 @@
 
     <section v-if="honors.length" class="idol-related" aria-labelledby="idol-honors-title">
       <div class="section-heading"><h3 id="idol-honors-title">关联排名称号</h3><span>{{ honors.length }} 条 · 已知来源</span></div>
-      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong :title="honor.nameJa">{{ archiveText('honor',honor.nameJa) }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
+      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${honor.key}`" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong :title="honor.nameJa">{{ archiveText('honor',honor.nameJa) }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
       <p class="idol-honor-note">按历史排名配置中的偶像编号关联；未推断持有或其他称号的归属。</p>
     </section>
 
@@ -60,7 +60,7 @@
         <span>{{ songs.length }} 首</span>
       </div>
       <div class="song-links">
-        <button v-for="entry in songs" :key="entry.song.song_code" @click="emit('open-song', entry.song.song_code)">
+        <button v-for="entry in songs" :key="entry.song.song_code" :data-archive-focus-id="`idol-song:${idol.idol_code}:${entry.song.song_code}`" @click="emit('open-song', entry.song.song_code)">
           <img v-if="entry.song.jacket_url" :src="entry.song.jacket_url" :alt="`${entry.song.title} 封面`" />
           <Music v-else :size="20" aria-hidden="true" />
           <span>
@@ -112,9 +112,14 @@ const props = defineProps({
   songs: { type: Array, default: () => [] },
   idols: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
+  idolName: { type: Function, default: () => '' },
 })
 
 const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor'])
+
+const displayedIdolName = computed(() => props.idol
+  ? props.idolName(props.idol.idol_code, props.idol.display_name) || props.idol.display_name
+  : '')
 
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
@@ -169,68 +174,128 @@ function formatDate(timestamp) {
 </script>
 
 <style scoped>
-.idol-detail { height: 100%; overflow-y: auto; padding: 24px; background: #f7f9fa; }
+.idol-detail {
+  container: idol-detail / inline-size;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: var(--gs-space-7);
+  background: #f7f9fa;
+  font-family: var(--gs-font-directory);
+  font-size: var(--gs-text-body);
+  font-weight: var(--gs-weight-regular);
+}
+.idol-detail button { font-family: inherit; font-weight: var(--gs-weight-semibold); }
+.idol-detail :deep(button:focus-visible),
+.idol-detail :deep(select:focus-visible),
+.idol-detail :deep(summary:focus-visible) {
+  outline: var(--gs-focus-ring) solid #16978e;
+  outline-offset: var(--gs-focus-offset);
+}
+.idol-profile-header :deep(button:focus-visible),
+.idol-profile-header :deep(select:focus-visible) { outline-color: #58cec5; }
 .idol-profile-header {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) minmax(0, 360px);
   align-items: center;
-  gap: 22px;
+  gap: var(--gs-space-6);
   min-height: 152px;
-  padding: 24px 28px;
+  padding: var(--gs-space-7);
   border-bottom: 3px solid #2bb8ae;
   background: #17212b;
   color: #fff;
 }
 .idol-portrait { box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
-.idol-identity { min-width: 0; }
-.idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.68rem; }
-.idol-identity h2 { margin: 7px 0 4px; font-size: 1.55rem; letter-spacing: 0; }
-.idol-identity p { margin: 0; color: #aeb9c2; font-size: 0.78rem; }
-.idol-unit-link { display: inline-flex; align-items: center; gap: 6px; min-height: 29px; margin-top: 12px; padding: 0 8px; border: 1px solid #42515d; border-radius: 5px; background: #22303b; color: #dce5e9; cursor: pointer; font: inherit; font-size: 0.68rem; }
-.idol-unit-link:hover { border-color: #58cec5; }
-.idol-color { position: absolute; right: 26px; top: 24px; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
-.profile-switcher { width: min(360px, 38vw); margin-left: auto; margin-right: 34px; }
-.idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 18px; padding: 20px; border: 1px solid #dfe4e8; background: #fff; }
+.idol-identity { min-width: 0; overflow-wrap: anywhere; }
+.idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.idol-identity h2 { margin: var(--gs-space-3) 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.4; letter-spacing: 0; }
+.idol-identity p { margin: 0; color: #aeb9c2; font-size: var(--gs-text-meta); }
+.idol-unit-link { display: inline-flex; align-items: center; gap: var(--gs-space-3); min-height: var(--gs-control-compact); max-width: 100%; margin-top: var(--gs-space-4); padding: 0 var(--gs-space-3); border: 1px solid #42515d; border-radius: var(--gs-radius-control); background: #22303b; color: #dce5e9; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.idol-unit-link span { min-width: 0; }
+.idol-unit-link svg { flex: 0 0 auto; }
+.idol-color { position: absolute; right: var(--gs-space-7); top: var(--gs-space-7); width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
+.profile-switcher { gap: var(--gs-space-3); min-width: 0; margin-right: var(--gs-space-8); }
+.profile-switcher :deep(button) { flex-basis: var(--gs-control-normal); width: var(--gs-control-normal); height: var(--gs-control-normal); border-radius: var(--gs-radius-control); font-family: inherit; }
+.profile-switcher :deep(label) { gap: var(--gs-space-2); }
+.profile-switcher :deep(label span) { font-size: var(--gs-text-meta); }
+.profile-switcher :deep(select) { min-width: 0; height: var(--gs-control-normal); padding: 0 var(--gs-space-8) 0 var(--gs-space-4); border-radius: var(--gs-radius-field); font-family: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { min-width: 0; margin-top: var(--gs-space-6); padding: var(--gs-space-6); border: 1px solid #dfe4e8; background: #fff; }
 .idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
-.idol-facts dl div { min-width: 0; padding: 10px 16px; border-left: 1px solid #e5e9ec; }
+.idol-facts dl div { min-width: 0; padding: var(--gs-space-4) var(--gs-space-5); border-left: 1px solid #e5e9ec; }
 .idol-facts dl div:nth-child(4n + 1) { border-left: 0; }
-.idol-facts dt { color: #7b858e; font-size: 0.67rem; }
-.idol-facts dd { margin: 5px 0 0; overflow-wrap: anywhere; font-size: 0.82rem; font-weight: 650; }
-.section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 12px; }
-.section-heading h3, .idol-notes h3 { margin: 0; font-size: 0.86rem; }
-.section-heading span { color: #7b858e; font-size: 0.67rem; }
-.related-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.idol-facts dt { color: #7b858e; font-size: var(--gs-text-meta); }
+.idol-facts dd { margin: var(--gs-space-2) 0 0; overflow-wrap: anywhere; white-space: pre-line; font-size: var(--gs-text-body); font-weight: var(--gs-weight-medium); }
+.section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-4); }
+.section-heading h3, .idol-notes h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
+.section-heading span { color: #7b858e; font-size: var(--gs-text-meta); }
+.related-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-3); }
 .related-grid button {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--gs-space-3);
+  min-width: 0;
   min-height: 62px;
-  padding: 10px 12px;
+  padding: var(--gs-space-4);
   border: 1px solid #dfe4e8;
-  border-radius: 6px;
+  border-radius: var(--gs-radius-control);
   background: #fff;
   color: #26313a;
   cursor: pointer;
   text-align: left;
 }
-.related-grid button:hover { border-color: #75cbc5; background: #f0fbfa; }
 .related-grid button > svg:first-child { color: #16978e; }
 .related-grid button > svg:last-child { color: #9ca5ad; }
-.related-grid span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.related-grid strong { font-size: 0.78rem; }
-.related-grid small { color: #7b858e; font-size: 0.66rem; }
-.song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #dfe4e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
-.song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
-.song-links img { width: 44px; height: 44px; border-radius: 5px; object-fit: cover; }
+.related-grid span { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
+.related-grid strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.related-grid small { color: #7b858e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-3); }
+.song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid #dfe4e8; border-radius: var(--gs-radius-control); background: #fff; color: #26313a; cursor: pointer; text-align: left; }
+.song-links img { width: 44px; height: 44px; border-radius: var(--gs-radius-control); object-fit: cover; }
 .song-links button > svg:first-child { margin: auto; color: #16978e; }
 .song-links button > svg:last-child { color: #9ca5ad; }
-.song-links span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.song-links strong { overflow: hidden; font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
-.song-links small { color: #7b858e; font-size: 0.64rem; }
-.idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
-.idol-notes p { margin: 8px 0 0; color: #4f5b64; font-size: 0.78rem; line-height: 1.7; }
+.song-links span { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
+.song-links strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.song-links small { color: #7b858e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-7); }
+.idol-notes p { margin: var(--gs-space-3) 0 0; color: #4f5b64; font-size: var(--gs-text-body); line-height: 1.7; overflow-wrap: anywhere; }
+.idol-honor-note { margin: var(--gs-space-4) 0 0; color: #70848a; font-size: var(--gs-text-body); line-height: 1.7; }
+
+.idol-detail :deep(.relation-list) { gap: var(--gs-space-3); }
+.idol-detail :deep(.relation-row) { gap: var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-family: inherit; }
+.idol-detail :deep(.relation-copy) { gap: var(--gs-space-2); }
+.idol-detail :deep(.relation-labels) { gap: var(--gs-space-2); }
+.idol-detail :deep(.relation-labels strong),
+.idol-detail :deep(.relation-labels small),
+.idol-detail :deep(.relation-meta),
+.idol-detail :deep(.relation-proof),
+.idol-detail :deep(.relation-copy code) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.idol-detail :deep(.relation-labels small) { padding: var(--gs-space-1) var(--gs-space-2); }
+.idol-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.idol-detail :deep(.archive-technical) { margin-top: var(--gs-space-5); border-radius: var(--gs-radius-control); }
+.idol-detail :deep(.archive-technical summary) { min-height: var(--gs-control-normal); padding: var(--gs-space-4) var(--gs-space-5); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.idol-detail :deep(.archive-technical-body) { padding: 0 var(--gs-space-5) var(--gs-space-5); font-size: var(--gs-text-meta); }
+.idol-detail :deep(.archive-technical pre) { font-size: var(--gs-text-meta); }
+
+@media (hover: hover) and (pointer: fine) {
+  .idol-unit-link:hover { border-color: #58cec5; }
+  .related-grid button:hover, .song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
+}
+
+/* 104px portrait + 40px gaps + 200px identity + 360px selector + 48px padding = 752px. */
+/* Stack the selector before that identity column becomes narrow; keep both portrait sizes. */
+@container idol-detail (max-width: 800px) {
+  .idol-profile-header { grid-template-columns: 104px minmax(0, 1fr); }
+  .profile-switcher { grid-column: 1 / -1; width: 100%; margin: 0; }
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .idol-unit-link { min-height: var(--gs-control-touch); }
+  .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
+  .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
+  .idol-detail :deep(.archive-technical summary) { min-height: var(--gs-control-touch); }
+}
 
 @media (max-width: 900px) {
   .idol-facts dl, .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -239,22 +304,16 @@ function formatDate(timestamp) {
 }
 
 @media (max-width: 560px) {
-  .idol-profile-header { align-items: flex-start; flex-wrap: wrap; padding: 18px 16px; }
-  .profile-switcher { flex-basis: 100%; width: 100%; margin: 4px 0 0; }
-  .idol-detail { padding: 12px; }
-  .idol-profile-header { gap: 15px; min-height: 124px; padding: 18px; }
+  .idol-detail { padding: var(--gs-space-4); }
+  .idol-profile-header { grid-template-columns: 78px minmax(0, 1fr); align-items: start; gap: var(--gs-space-5); min-height: 124px; padding: var(--gs-space-5); }
   .idol-portrait { --idol-avatar-override-size: 78px; }
-  .idol-identity h2 { font-size: 1.2rem; }
-  .idol-color { right: 16px; top: 16px; }
-  .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: 10px; padding: 14px; }
+  .idol-color { right: var(--gs-space-5); top: var(--gs-space-5); }
+  .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: var(--gs-space-4); padding: var(--gs-space-5); }
   .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .idol-facts dl div { padding: 9px 8px; }
+  .idol-facts dl div { padding: var(--gs-space-3); }
   .related-grid { grid-template-columns: 1fr; }
   .song-links { grid-template-columns: 1fr; }
-  .idol-notes { grid-template-columns: 1fr; gap: 16px; }
+  .idol-notes { grid-template-columns: 1fr; gap: var(--gs-space-5); }
+  .idol-detail :deep(.relation-row) { gap: var(--gs-space-3); padding: var(--gs-space-3); }
 }
-</style>
-
-<style scoped>
-.idol-honor-note{color:#70848a;font-size:12px;line-height:1.7}.idol-related .related-grid button span{min-width:0}.idol-related .related-grid button strong{overflow-wrap:anywhere}
 </style>
