@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { attachChibiFloor,sampleFloorSystem,sampleFloorGradient,loadChibiFloor,updateChibiFloor } from '../src/core/chibiFloorParticles.js'
 import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
+import { CHIBI_FIRE_PROFILE, sampleFireSystem } from '../src/core/chibiFireFlipbook.js'
 const model=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-model.json',import.meta.url)))
 const original={assets:{[model.asset]:{kind:'particle',bundle:model.bundle,particleCount:4}}}
 assert.ok(attachChibiFloor(original,model).assets[model.asset].floorAnimation)
@@ -34,7 +35,7 @@ class Container {constructor(){this.children=[]}addChild(c){this.children.push(c
 class Sprite {constructor(t){this.texture=t;this.anchor=vector();this.position=vector()}}
 class Texture {constructor(baseTexture,rect){this.baseTexture=baseTexture;this.rect=rect}destroy(){}}
 class Rectangle {constructor(...v){this.v=v}}
-const pixi={Container,Sprite,Texture,Rectangle,BLEND_MODES:{ADD:'add'}}
+const pixi={Container,Sprite,Texture,Rectangle,BLEND_MODES:{ADD:'add',NORMAL:'normal'}}
 const runtime=await loadChibiFloor(pixi,model,async()=>({baseTexture:{},destroy(){}}))
 assert.equal(runtime.floorEmitters.reduce((n,e)=>n+e.sprites.length,0),244)
 assert.ok(runtime.container.children[0].mask)
@@ -57,9 +58,10 @@ console.log('Take floor source guards, native gradient/alpha witnesses, bounded 
 const catalog=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-catalog.json',import.meta.url)))
 const indexed={assets:Object.fromEntries(Object.values(catalog.assets).map(m=>[m.asset,{kind:'particle',bundle:m.bundle,particleCount:m.particleCount}]))}
 const attached=attachChibiFloor(indexed,catalog)
-assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,7)
+assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,8)
 assert.equal(catalog.inventory.length,49)
-assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,42)
+assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,41)
+assert.equal(catalog.inventory.filter(r=>r.status==='registered_partial_fire_flipbook_profile').length,1)
 const toy=structuredClone(catalog.assets.fx_in_mtples_panel_1.systems[0])
 toy.rate=1;toy.lifetime={mode:0,scalar:2,minScalar:2,keys:[]};toy.prewarmSeconds=0
 toy.color={colors:[{time:0,r:1,g:1,b:1},{time:1,r:1,g:1,b:1}],alphas:[{time:0,value:1},{time:1,value:1}]}
@@ -68,7 +70,7 @@ toy.alpha=toy.colorOverLife.alphas
 assert.equal(sampleFloorSystem(toy,500,0)[0].color,0xbf0040)
 assert.equal(sampleFloorSystem(toy,500,0)[0].alpha,.25)
 assert.ok(sampleFloorSystem(catalog.assets.fx_in_cgtocc_panel_3.systems[0],0,0).length>100)
-for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset)) {
+for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset && e.profile!==CHIBI_FIRE_PROFILE)) {
  assert.equal(attached.assets[entry.asset].floorAnimation,entry)
  assert.notEqual(entry.mask.texture,model.mask.texture)
  const rt=await loadChibiFloor(pixi,entry,async()=>({baseTexture:{},destroy(){}}))
@@ -92,4 +94,26 @@ for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset
  }
 }
 if(process.argv.includes('--published-assets')) assert.deepEqual(JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/floor-particles/index.json',import.meta.url))),catalog)
-console.log('49 floor objects classified; seven independent native masks, continuous gradients, prewarm, bounded pools and seek witnesses passed')
+const fire=catalog.assets.fx_in_knwonl_panel
+assert.equal(attached.assets[fire.asset].floorAnimation,fire)
+const fireCoverage=buildStageVfxCoverage({id:'fire',objectLayerEvents:[{asset:fire.asset}]},{objectLayers:attached})
+assert.deepEqual(fireCoverage.objectParticlePartial,[fire.asset])
+assert.deepEqual(fireCoverage.objectParticleUnimplemented,[fire.asset])
+const zero=fire.systems.find(s=>s.delay===0),delayed=fire.systems.find(s=>s.delay>0)
+assert.equal(sampleFireSystem(delayed,90,0),null)
+assert.deepEqual([0,260,510,760,1010].map(t=>sampleFireSystem(zero,t,0).frame),[0,1,2,3,0])
+assert.notEqual(sampleFireSystem(zero,300,0).frame,sampleFireSystem(delayed,300,0).frame)
+const flameRuntime=await loadChibiFloor(pixi,fire,async()=>({baseTexture:{},destroy(){}}))
+assert.equal(flameRuntime.floorEmitters.reduce((n,e)=>n+e.sprites.length,0),2)
+assert.equal(flameRuntime.frameTextures.length,16)
+assert.deepEqual(flameRuntime.frameTextures[4].rect.v,[0,512,512,512])
+assert.ok(flameRuntime.floorEmitters.every(e=>e.sprites[0].blendMode==='normal'))
+updateChibiFloor(flameRuntime,300,0);const flameState=flameRuntime.floorSignature
+updateChibiFloor(flameRuntime,800,0);assert.notEqual(flameRuntime.floorSignature,flameState)
+updateChibiFloor(flameRuntime,300,0);assert.equal(flameRuntime.floorSignature,flameState)
+for(const mutate of [m=>m.deferredSystems=[],m=>m.systems[0].blend='add',m=>m.systems[0].tilesY=4,
+ m=>m.systems[0].uv.scalar=1,m=>m.textures[m.mask.texture].file='../wrong.png']) {
+ const bad=structuredClone(fire);mutate(bad)
+ assert.ok(!attachChibiFloor(indexed,{schemaVersion:2,assets:{[bad.asset]:bad}}).assets[bad.asset].floorAnimation)
+}
+console.log('49 floor objects classified; seven complete native floor profiles plus partial masked flame flipbook, source guards, seek and alpha blend passed')

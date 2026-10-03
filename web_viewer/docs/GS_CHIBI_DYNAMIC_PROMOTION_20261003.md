@@ -58,6 +58,16 @@ node scripts/audit-chibi-dynamic-coverage.mjs --output .analysis/engineering-val
 
 ## 下一批
 
+### K.now O.nly 前沿火焰补录
+
+输入 HEAD `dd65541b`。`fx_in_knwonl_panel` 的两个一秒循环 burst 使用原生 4×2 火焰图集、世界坐标 AlphaTex 遮罩、0 / 100ms 启动延迟与普通透明混合（源 shader SrcAlpha / OneMinusSrcAlpha）。不是将整面地板染成橙色，也没有复制 ANYWHERE 的同名纹理。第三个 emitter 带移动速度及 Noise，仍 deferred；此对象明确标为部分实现。目录当前为 49 个候选、7 个完整地面 profile、1 个部分火焰 profile、41 个未接线对象。
+
+Python 原始模块 fixture、Node 原图集帧/透明混合/暂停回退/资源释放回归通过；`python -S scripts/verify-chibi-floor.py` 同样通过。CI 首次运行暴露纯 fixture 校验过早导入 UnityPy，已将 bundle 提取依赖延后到实际提取函数；本地原始 bundle 重新导出成功。此前失败运行 `37095031556` 不能记作通过。
+
+`build:check` 2782 modules / 13.26s，无 public 复制。5198 既有映射服务加载最终 bundle；Browser 1280×720 的完整舞台视图可见贴合前沿的四段火焰带。390×844 画布约357×201，页面宽390无横向溢出，火焰仍在前沿；是模拟窄屏验收。截图 `take-reference/knwonl-fire-final-desktop.png`、`knwonl-fire-final-mobile.png`。噪声火星、三维投影及整曲录屏等效尚未验收。
+
+用户另补 Take 结尾的上方光源及纵轴旋转315标志参考。接下来同时追踪 `NewSuspensionlight` / `Searchlight` 指令和屏幕素材/独立物件，不能把有背景视频视作标志已接入。
+
 Study Equal Magic! 使用 `Suspensionlight` 多个系列与 `fx_in_steqmg_overlight_1/2/3`、共享入射光粒子，而非本批的固定 Stagelight/box panel 模式。Take 上方打光则还有大量 `NewSuspensionlight_*` 与 `Searchlight_*` 新指令。它们是独立消费者缺口，不能按当前注册数视作完成。
 
 继续按 42 个 deferred floor 的真实模块分组，以及 Suspensionlight/新 director 指令逐类实现；已有 Take 地灯的用户确认只适用于该部分。资源上传/生产发布、全曲录屏核对、Study 第二目标及最终 master PR 尚未收口。

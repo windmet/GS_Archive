@@ -35,3 +35,19 @@ for change in [lambda p:p['modules']['InitialModule']['startSpeed'].update(scala
     except ValueError:pass
     else:raise AssertionError('Unimplemented source semantics entered general box profile')
 print('Independent floor source fixture matches catalog; velocity, sphere, burst, noise and random-UV guards passed')
+from live_chibi_fire import fire_model, fire_system, ASSET as FIRE_ASSET
+fire=json.loads((base/'fixtures/chibi-fire-inputs.json').read_text(encoding='utf8'))
+systems,mask,deferred=fire_model(fire)
+flames=published['assets'][FIRE_ASSET]
+assert systems==flames['systems'] and mask==flames['mask']['texture'] and deferred==flames['deferredSystems']
+source=next(p for p in fire['particles'] if p['name']=='fx_in_anwhre_fire_mask')
+for change in [lambda p:p['modules'].update(NoiseModule={}),
+               lambda p:p['modules']['EmissionModule']['m_Bursts'][0].update(probability=.5),
+               lambda p:p['modules']['UVModule'].update(tilesY=4),
+               lambda p:p['main']['startDelay'].update(scalar=.5),
+               lambda p:p['renderer']['materials'][0]['shader'].update(pathId='-4808288818266491244')]:
+    p=copy.deepcopy(source);change(p)
+    try:fire_system(p)
+    except ValueError:pass
+    else:raise AssertionError('Unknown flame semantics accepted')
+print('Two native delayed flame bursts, UV curves and alpha material match; remaining noise sparks stay deferred')

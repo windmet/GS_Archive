@@ -7,12 +7,11 @@ modules are reported, not replaced by Take's parameters or a static texture.
 import importlib.util
 import json
 from pathlib import Path
-import UnityPy
+from live_chibi_fire import ASSET as FIRE_ASSET, PROFILE as FIRE_PROFILE, SHADER_ID, fire_model
 
 ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('take_floor',ROOT/'scripts/prepare-live-chibi-floor.py')
 take=importlib.util.module_from_spec(spec);spec.loader.exec_module(take)
-audit=take.audit
 PROFILE='continuous-masked-box-floor-v1'
 require=take.require
 
@@ -75,6 +74,7 @@ def system(p):
     return result,tex['_AlphaTex']['pathId']
 
 def mask_for(env,identity):
+    audit=take.load_audit()
     matches=[]
     for obj in env.objects:
         if obj.type.name!='MonoBehaviour':continue
@@ -93,6 +93,9 @@ def mask_for(env,identity):
     return matches[0]
 
 def main():
+    import UnityPy
+    from UnityPy.export.ShaderConverter import export_shader
+    audit=take.load_audit()
     parser=audit.argparse.ArgumentParser(description=__doc__);audit.add_sources_config_argument(parser)
     parser.add_argument('--report',type=Path,required=True)
     args=parser.parse_args();sources=audit.load_archive_sources(args.sources_config)
@@ -118,10 +121,23 @@ def main():
         env=envs[bundle]
         try:
             native=audit.inspect_asset(env,asset,entry,True,dep)
-            parsed=[system(p) for p in native['particles']]
-            systems=[s for s,_ in parsed];mask_ids={i for _,i in parsed}
+            deferred=[]
+            if asset==FIRE_ASSET:
+                systems,mask_id,deferred=fire_model(native);mask_ids={mask_id}
+                shader=next(o for o in shared.objects if o.path_id==SHADER_ID)
+                parsed_shader=shader.read_typetree()['m_ParsedForm']
+                blend=parsed_shader['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
+                require([blend[k]['val'] for k in ('srcBlend','destBlend','blendOp')]==[5,10,0],'Flame alpha blend changed')
+                text=export_shader(shader.read())
+                require('texture(_AlphaTex, u_xlat1.xy).w' in text and 'u_xlat0.w = u_xlat0.w * u_xlat7;' in text,
+                        'Flame shader mask contract changed')
+                profile=FIRE_PROFILE
+            else:
+                parsed=[system(p) for p in native['particles']]
+                systems=[s for s,_ in parsed];mask_ids={i for _,i in parsed}
+                require(sum(s['capacity'] for s in systems)<=512,'Object exceeds 512-sprite budget')
+                profile=PROFILE
             require(len(mask_ids)==1,'Multiple masks require separate emitter groups')
-            require(sum(s['capacity'] for s in systems)<=512,'Object exceeds 512-sprite budget')
             mask=mask_for(env,next(iter(mask_ids)));textures={}
             for identity in {s['texture'] for s in systems}|mask_ids:
                 obj=next(o for o in env.objects if str(o.path_id)==identity)
@@ -130,10 +146,14 @@ def main():
                 target=out/filename;image.save(target)
                 textures[identity]={**audit.source_ref(obj),'file':f'floor-particles/{filename}',
                                     'width':image.width,'height':image.height,'pngSha256':audit.file_hash(target)}
-            models[asset]={'profile':PROFILE,'asset':asset,'bundle':bundle,'bundleSha256':audit.file_hash(path),
-                           'keeper':native['keeper'],'particleCount':len(systems),'systems':systems,'mask':mask,'textures':textures,
+            models[asset]={'profile':profile,'asset':asset,'bundle':bundle,'bundleSha256':audit.file_hash(path),
+                           'keeper':native['keeper'],'particleCount':len(native['particles']),'systems':systems,'mask':mask,'textures':textures,
                            'status':'native_inputs_reference_projection_rng_not_unity_equivalent'}
-            record.update(status='registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
+            if deferred:
+                models[asset]['deferredSystems']=deferred
+                record.update(status='registered_partial_fire_flipbook_profile',supportedSystems=2,deferredSystems=deferred,spriteBudget=2)
+            else:
+                record.update(status='registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
         except (ValueError,KeyError) as error:
             record.update(status='deferred',reason=str(error))
         records.append(record)

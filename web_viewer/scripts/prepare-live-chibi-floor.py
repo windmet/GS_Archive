@@ -3,13 +3,16 @@
 import importlib.util
 import json
 from pathlib import Path
-import UnityPy
-from UnityPy.export.ShaderConverter import export_shader
+from functools import lru_cache
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location('floor_audit', ROOT / 'scripts/audit-live-chibi-stage-objects.py')
-audit = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(audit)
+@lru_cache(maxsize=1)
+def load_audit():
+    # Fixture/model verification is stdlib-only; native extraction owns UnityPy.
+    spec = importlib.util.spec_from_file_location('floor_audit', ROOT / 'scripts/audit-live-chibi-stage-objects.py')
+    audit = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(audit)
+    return audit
 ASSET = 'fx_in_tkstp1_panel_1'
 PROFILE = 'take-masked-nebula-reference-v1'
 
@@ -56,6 +59,9 @@ def floor_system(p):
             'speedParameters':compact_curve(i['startSpeed'])}
 
 def extract(sources):
+    import UnityPy
+    from UnityPy.export.ShaderConverter import export_shader
+    audit=load_audit()
     bundle=sources.raw_root/'asset/song_tkstp1.unity3d'; shared=sources.raw_root/'asset/shaders_and_materials.unity3d'
     env=UnityPy.load(str(bundle)); dep=UnityPy.load(str(shared))
     files={o.assets_file.name:o.assets_file for o in dep.objects}
@@ -86,6 +92,7 @@ def extract(sources):
     return evidence,model,env
 
 def main():
+    audit=load_audit()
     parser=audit.argparse.ArgumentParser(description=__doc__)
     audit.add_sources_config_argument(parser)
     parser.add_argument('--evidence-output',type=Path,required=True)

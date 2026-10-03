@@ -1,4 +1,5 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
+import { CHIBI_FIRE_PROFILE, attachChibiFire, sampleFireSystem } from './chibiFireFlipbook.js'
 
 export const CHIBI_FLOOR_PROFILE = 'take-masked-nebula-reference-v1'
 export const CHIBI_BOX_FLOOR_PROFILE = 'continuous-masked-box-floor-v1'
@@ -52,7 +53,8 @@ export function attachChibiFloor(objectIndex, model) {
   if (model?.schemaVersion === 2) {
     let index = objectIndex
     for (const entry of Object.values(model.assets || {})) {
-      index = entry.profile === CHIBI_FLOOR_PROFILE ? attachChibiFloor(index,entry) : attachBoxFloor(index,entry)
+      index = entry.profile === CHIBI_FLOOR_PROFILE ? attachChibiFloor(index,entry)
+        : entry.profile === CHIBI_FIRE_PROFILE ? attachChibiFire(index,entry) : attachBoxFloor(index,entry)
     }
     return index
   }
@@ -140,6 +142,16 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
     container.addChild(mask); content.mask=mask
     const emitters = animation.systems.map(system => {
       let texture = byId.get(system.texture)
+      if (animation.profile === CHIBI_FIRE_PROFILE) {
+        const metadata=animation.textures[system.texture], w=metadata.width/system.tilesX,h=metadata.height/system.tilesY
+        const frames=Array.from({length:system.tilesX*system.tilesY},(_,i)=>{
+          const frame=new PIXI.Texture(texture.baseTexture,new PIXI.Rectangle(i%system.tilesX*w,Math.floor(i/system.tilesX)*h,w,h))
+          frameTextures.push(frame);return frame
+        })
+        const sprite=new PIXI.Sprite(frames[0]);sprite.anchor.set(.5);sprite.zIndex=system.sortingOrder
+        sprite.blendMode=PIXI.BLEND_MODES.NORMAL;sprite.visible=false;content.addChild(sprite)
+        return {system,sprites:[sprite],fireFrames:frames}
+      }
       if (system.frame !== null) {
         const metadata=animation.textures[system.texture], w=metadata.width/4,h=metadata.height/4
         texture=new PIXI.Texture(texture.baseTexture,new PIXI.Rectangle(system.frame%4*w,Math.floor(system.frame/4)*h,w,h))
@@ -162,7 +174,17 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
 
 export function updateChibiFloor(runtime,milliseconds,activatedAt) {
   const signatures=[]
-  for(const {system,sprites} of runtime.floorEmitters) {
+  for(const {system,sprites,fireFrames} of runtime.floorEmitters) {
+    if (fireFrames) {
+      const sample=sampleFireSystem(system,milliseconds,activatedAt),sprite=sprites[0]
+      sprite.visible=Boolean(sample && sample.alpha>.001)
+      if(sample) {
+        sprite.texture=fireFrames[sample.frame];sprite.position.set(sample.x,sample.y)
+        sprite.width=sprite.height=sample.size;sprite.tint=sample.color;sprite.alpha=sample.alpha
+      }
+      signatures.push(`fire:${sample?.frame ?? 'off'}`)
+      continue
+    }
     const samples=sampleFloorSystem(system,milliseconds,activatedAt)
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i], sample=samples[i]; sprite.visible=Boolean(sample && sample.alpha > .001)

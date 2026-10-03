@@ -9,7 +9,9 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
   const objectParticles = objectAssets.filter(asset => objectIndex[asset]?.kind === 'particle')
   const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation || objectIndex[asset]?.floorAnimation)
-  const objectParticleUnimplemented = objectParticles.filter(asset => !objectIndex[asset]?.particleAnimation && !objectIndex[asset]?.floorAnimation)
+  const objectParticlePartial = objectParticles.filter(asset => objectIndex[asset]?.floorAnimation?.deferredSystems?.length)
+  const objectParticleUnimplemented = objectParticles.filter(asset => objectParticlePartial.includes(asset)
+    || !objectIndex[asset]?.particleAnimation && !objectIndex[asset]?.floorAnimation)
   const objectMissing = objectAssets.filter(asset => !objectIndex[asset])
   const objectOther = objectAssets.filter(asset => objectIndex[asset] &&
     !['sprite', 'mixed', 'particle'].includes(objectIndex[asset].kind))
@@ -56,6 +58,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectParticles,
     objectParticlePilots,
     objectParticleUnimplemented,
+    objectParticlePartial,
     floorParticleStatus: objectAssets.some(asset => objectIndex[asset]?.floorAnimation)
       ? 'native_inputs_reference_projection_rng_noise_not_unity_equivalent' : 'not_loaded',
     objectMissing,

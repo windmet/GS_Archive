@@ -31,6 +31,7 @@ const records=songs.map(song=>{
     unresolvedFixedLampAssets:coverage.stagelightUnimplemented,
     floorProfiles:coverage.objectParticles.filter(a=>objects.assets[a]?.floorAnimation).map(a=>({asset:a,profile:objects.assets[a].floorAnimation.profile})),
     unsupportedParticleObjects:coverage.objectParticleUnimplemented,
+    partialParticleObjects:coverage.objectParticlePartial,
     sourceLightingChannels:{spotlight:song.spotlightEvents?.length || 0,pinspotlight:song.pinspotlightEvents?.length || 0,
       laserlight:song.laserlightEvents?.length || 0,wholeScreenColor:song.wholeScreenColorLayerEvents?.length || 0,
       imageColor:song.imageColorEvents?.length || 0},
