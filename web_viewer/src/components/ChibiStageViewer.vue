@@ -468,7 +468,7 @@ import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
-import { sampleSpotbeamParticles } from '../core/chibiSpotbeamParticles.js'
+import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
@@ -2030,7 +2030,8 @@ function syncLaserlights() {
       const layout = laserParticleLayout(state,width,height,environmentScale.value)
       const particles = (spotbeam ? sampleSpotbeamParticles : sampleLaserParticles)(native,state,stageTime.value)
       runtime.container.position.set(layout.x,layout.y)
-      runtime.container.scale.set(spotbeam ? Number(state.width)/1000 : 1,spotbeam ? Number(state.length)/1000 : 1)
+      const scale = spotbeam ? spotbeamParticleScale(state) : { x: 1, y: 1 }
+      runtime.container.scale.set(scale.x,scale.y)
       runtime.container.rotation = spotbeam ? -Number(state.angle)*Math.PI/180 : 0
       runtime.container.zIndex = Number(state.depth) || 1650
       runtime.container.visible = true

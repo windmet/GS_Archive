@@ -27,4 +27,4 @@ Material184 / Shader950 `Mobile/Particles/Additive` / Texture629 `fx_in_ntalon_s
 
 源参数和用户提供的Not Alone青色光带/地面光池参考已对照。CSV颜色覆盖原生初始金色、sweepDuration到脚本defaultDuration的时间换算、根变换覆盖和2D投影仍为录屏指导的消费者解释；尚未恢复原生导演函数体，不能声称逐帧Unity等效。录屏精确时间码未知，不以本地11s等同截图时刻。
 
-此批通用于当前调用类型8/9的Not Alone与ANYWHERE，不把所有灯效硬套为宽光带。类型1/5/6分别仍需恢复Sprite/Animator或其他粒子行为，类型2无当前曲目调用；Take旋转315 Logo、观众荧光棒、其他未支持对象仍独立待办。背屏镂空与定位见[背屏审计](GS_CHIBI_BACKMONITOR_APERTURE_AUDIT_20261003.md)。
+此批通用于当前调用类型8/9的Not Alone与ANYWHERE，不把所有灯效硬套为宽光带。后续[横向投影复核](GS_CHIBI_SPOTBEAM_REFERENCE_ACCEPTANCE_20261003.md)记录新参考图、标定及用户该部分验收；类型5/6已另见[转动激光审计](GS_CHIBI_TURN_LASER_AUDIT_20261003.md)。类型1仍需Sprite/Animator接线，类型2无当前曲目调用；Take旋转315 Logo、观众荧光棒、其他未支持对象仍独立待办。背屏镂空与定位见[背屏审计](GS_CHIBI_BACKMONITOR_APERTURE_AUDIT_20261003.md)。

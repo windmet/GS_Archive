@@ -1,6 +1,15 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 
+// Recording-calibrated projection for the native wide-beam/pool pair. The
+// five opening Not Alone references show the C-group pools across roughly
+// 10–85% of the stage, while the old .5 X scale clustered them at 27–69%.
+// Preserve the director width changes and transform both atlas frames alike.
+// This is a bounded 2D correction, not a recovered Unity director function.
+export function spotbeamParticleScale(state) {
+  return { x: Number(state.width)/1000*1.8, y: Number(state.length)/1000 }
+}
+
 export function sampleSpotbeamParticles(model,state,milliseconds) {
   const elapsed=(milliseconds-state.eventTime)/Math.max(1,Number(state.sweepDuration)||1000)*model.defaultDuration
   if(elapsed<0) return []
