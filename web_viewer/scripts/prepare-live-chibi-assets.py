@@ -706,8 +706,8 @@ def read_choreography_scripts(
                             "time": event_time,
                             "id": parse_number(row[2]),
                             "asset": row[3].strip() or None,
-                            # The client prefab proves column 5 is the position
-                            # tween duration and column 6 is the performer slot.
+                            # Preserve the current CSV duration/target mapping.
+                            # Prefab bindings alone do not prove CSV semantics.
                             "parameter4": parse_optional_number(row[4]),
                             "targetSlot": parse_optional_number(row[6]),
                             "x": parse_optional_number(row[7]),

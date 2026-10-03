@@ -13,6 +13,7 @@ from pathlib import Path
 
 import UnityPy
 from live_chibi_spotlight import spotlight_sprite_model, spotlight_background_model
+from live_chibi_pinspotlight import pinspotlight_sprite_model
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -112,19 +113,25 @@ def main() -> None:
     if len(backgrounds) != 1:
         raise ValueError('Ambiguous native Spotlight background')
     background = spotlight_background_model(audit.inspect_prefab(backgrounds[0]))
-    for model in (spotlight, background):
+    pin_roots = [obj for obj in environment.objects
+                 if obj.type.name == 'GameObject' and obj.read().m_Name == 'LiveObjectPinspotlight']
+    if len(pin_roots) != 1:
+        raise ValueError('Ambiguous native Pinspotlight')
+    pinspotlight = pinspotlight_sprite_model(audit.inspect_prefab(pin_roots[0]))
+    for model in (spotlight, background, pinspotlight):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
             if (source['serializedFile'], source['pathId']) != (model['serializedFile'], layer['texturePathId']):
                 raise ValueError('Spotlight texture identity mismatch')
 
     index = {
-        "schemaVersion": 3,
+        "schemaVersion": 4,
         "source": xapk.name,
         "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
         "spotlight": spotlight,
         "spotlightBackground": background,
+        "pinspotlight": pinspotlight,
     }
     index_target = output_root / "index.json"
     index_target.write_text(

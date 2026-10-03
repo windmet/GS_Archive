@@ -10,8 +10,7 @@ import struct
 def spotlight_background_model(prefab):
     """Resolve the background through both native PPtrs; no guessed mask runtime.
 
-    The opaque-white Sprite is rendered normally only when there are no active
-    Pinspotlight masks. The native masked shader path remains a separate gate.
+    The opaque-white Sprite requires the separately bound Pinspotlight masks.
     """
     if prefab['name'] != 'SpotlightBackground':
         raise ValueError('Unexpected Spotlight background prefab')
@@ -59,7 +58,7 @@ def spotlight_background_model(prefab):
             or sprite['pixelsToUnits'] != 100 or sprite['pivot'] != {'x': 0.5, 'y': 0.5}
             or [m['shader'] for m in renderer['materials']] != ['Custom/AlphaMaskedSprite']):
         raise ValueError('Unsupported background Sprite/material')
-    return {'status': 'native_unmasked_sprite_only_pinspotlight_mask_pending',
+    return {'status': 'native_background_sprite_and_mask_system_bindings',
             'serializedFile': prefab['serializedFile'], 'prefabPathId': prefab['pathId'],
             'scriptPathId': script['pathId'], 'scriptSha256': script['sha256'],
             'maskSystemPathId': system['pathId'], 'targetAlpha': target_alpha,

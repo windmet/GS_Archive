@@ -34,6 +34,7 @@
     :data-object-layers-enabled="objectLayersEnabled"
     :data-lighting-enabled="lightingEnabled"
     :data-spotlight-background-alpha="spotlightBackgroundAlpha.toFixed(3)"
+    :data-pinspotlight-mask-count="pinspotlightMaskCount"
     :data-beam-effects-enabled="beamEffectsEnabled"
     :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
@@ -439,6 +440,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
@@ -569,6 +571,7 @@ const spotlightSprites = createSpotlightSpriteStore({
 })
 const spotlightRuntimes = spotlightSprites.runtimes
 const spotlightBackgroundAlpha = ref(0)
+const pinspotlightMaskCount = ref(0)
 const spotlightBackgroundSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
@@ -588,12 +591,15 @@ const spotlightBackgroundSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native Spotlight background could not be loaded', error),
 })
 const laserlightRuntimes = new Map()
-const pinspotlightRuntimes = new Map()
-const pinspotlightRuntimeLoads = new Map()
-const pinspotlightTextures = new Map()
-const pinspotlightLoads = new Map()
-let pinspotlightEnvironmentOverlay = null
-let pinspotlightLoadSequence = 0
+const pinspotlightSprites = createSpotlightSpriteStore({
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createPinspotlightSprites(PIXI, cameraContainer, id, layers, textures)),
+  destroyRuntime: destroyPinspotlightSprites,
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncPinspotlights().catch(error => console.warn('[ChibiStage] pinspotlight ready sync failed', error)),
+  onError: error => console.warn('Native Pinspotlight textures could not be loaded', error),
+})
+const pinspotlightRuntimes = pinspotlightSprites.runtimes
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
@@ -1390,6 +1396,7 @@ function layoutStageBackground() {
 function releaseStageBackground() {
   spotlightBackgroundSprites.release()
   spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
   stageBackgroundSequence += 1
   stageBackgroundSprite?.removeFromParent()
   stageBackgroundSprite?.destroy()
@@ -1592,12 +1599,25 @@ function applyStageLighting() {
 
 function syncSpotlightBackground() {
   spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
   const existing = spotlightBackgroundSprites.runtimes.get('background')
   if (existing) existing.sprite.visible = false
   if (!app || !cameraContainer) return
-  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value),
-    pinspotlightStatesAt(stageTime.value), lightingEnabled.value)
+  const pins = pinspotlightStatesAt(stageTime.value)
+  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value), pins, lightingEnabled.value)
   if (!state || state.alpha <= 0.001) return
+  const activePins = [...pins.values()].filter(pin => pin.alpha > 0.001 && pin.asset)
+  const filters = []
+  const model = stageEffectIndex.value?.pinspotlight
+  // Never publish a solid background while the required native masks load.
+  for (const pin of activePins) {
+    const desired = pinspotlightModelForAsset(model, stageEffectIndex.value?.assets, pin.asset)
+    if (!desired) return
+    const mask = pinspotlightRuntimes.get(`${pin.id}:${desired.layers[0].asset}`)
+    if (!mask?.maskSprite.visible) return
+    const order = stageEffectIndex.value?.spotlightBackground?.layers[0]?.sortingOrder ?? 1900
+    if (order >= model.sortingInterval[0] && order <= model.sortingInterval[1]) filters.push(mask.filter)
+  }
   const runtime = spotlightBackgroundSprites.ensure('background',
     stageEffectIndex.value?.spotlightBackground, stageEffectIndex.value?.assets)
   if (!runtime) return
@@ -1608,8 +1628,11 @@ function syncSpotlightBackground() {
   runtime.sprite.scale.set(runtime.layer.scaleX * fit, runtime.layer.scaleY * fit)
   runtime.sprite.tint = parseHexColor(state.color, 0x221d23)
   runtime.sprite.alpha = state.alpha
+  runtime.sprite.filters = filters.length ? filters : null
+  runtime.sprite.filterArea = new PIXI.Rectangle(0, 0, width, height)
   runtime.sprite.visible = true
   spotlightBackgroundAlpha.value = state.alpha
+  pinspotlightMaskCount.value = filters.length
 }
 
 function spotlightStatesAt(milliseconds) {
@@ -1912,155 +1935,59 @@ function pinspotlightStatesAt(milliseconds) {
   return states
 }
 
-function ensurePinspotlightEnvironmentOverlay() {
-  if (pinspotlightEnvironmentOverlay || !cameraContainer) return
-  pinspotlightEnvironmentOverlay = markRaw(new PIXI.Graphics())
-  pinspotlightEnvironmentOverlay.beginFill(0xffffff)
-  pinspotlightEnvironmentOverlay.drawRect(-950, -530, 1900, 1060)
-  pinspotlightEnvironmentOverlay.endFill()
-  pinspotlightEnvironmentOverlay.visible = false
-  cameraContainer.addChild(pinspotlightEnvironmentOverlay)
-}
-
-function loadPinspotlightTexture(asset) {
-  const fallbackAsset = stageEffectIndex.value?.assets?.pinspotlight
-  const entry = stageEffectIndex.value?.assets?.[asset] || fallbackAsset
-  if (!entry) return Promise.resolve(null)
-  const cacheKey = stageEffectIndex.value?.assets?.[asset] ? asset : 'pinspotlight'
-  if (pinspotlightTextures.has(cacheKey)) {
-    return Promise.resolve({ texture: pinspotlightTextures.get(cacheKey), cacheKey })
-  }
-  if (!pinspotlightLoads.has(cacheKey)) {
-    pinspotlightLoads.set(cacheKey, loadImageLayerTexture(entry.file).then(texture => {
-      pinspotlightTextures.set(cacheKey, texture)
-      pinspotlightLoads.delete(cacheKey)
-      return { texture, cacheKey }
-    }))
-  }
-  return pinspotlightLoads.get(cacheKey)
-}
-
-function loadPinspotlightRuntime(state, sequence) {
-  const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
-    ? state.asset
-    : 'pinspotlight'
-  const existing = pinspotlightRuntimes.get(state.id)
-  if (existing?.asset === desiredAsset) return Promise.resolve(existing)
-  const pending = pinspotlightRuntimeLoads.get(state.id)
-  if (pending?.asset === desiredAsset) return pending.promise
-
-  const promise = loadPinspotlightTexture(state.asset).then(loaded => {
-    const currentPending = pinspotlightRuntimeLoads.get(state.id)
-    // A later event may reuse the same lamp ID with another texture while
-    // this request is in flight. Only the latest per-ID request may install
-    // a Sprite; otherwise the old mask can reappear after it was hidden.
-    if (currentPending?.promise !== promise) return pinspotlightRuntimes.get(state.id) || null
-    pinspotlightRuntimeLoads.delete(state.id)
-    if (!loaded || sequence !== pinspotlightLoadSequence || !cameraContainer) return null
-    const current = pinspotlightRuntimes.get(state.id)
-    if (current?.asset === loaded.cacheKey) return current
-    current?.sprite.removeFromParent()
-    current?.sprite.destroy()
-    const sprite = markRaw(new PIXI.Sprite(loaded.texture))
-    sprite.anchor.set(0.5)
-    sprite.blendMode = PIXI.BLEND_MODES.ADD
-    cameraContainer.addChild(sprite)
-    const runtime = markRaw({ id: state.id, asset: loaded.cacheKey, sprite })
-    pinspotlightRuntimes.set(state.id, runtime)
-    return runtime
-  })
-  pinspotlightRuntimeLoads.set(state.id, { asset: desiredAsset, promise })
-  return promise
-}
-
 async function syncPinspotlights() {
   if (!app || !cameraContainer) return
-  ensurePinspotlightEnvironmentOverlay()
   const states = pinspotlightStatesAt(stageTime.value)
-  const activeStates = [...states.values()].filter(state => state.alpha > 0.001 && state.asset)
-  const visibleStates = beamEffectsEnabled.value ? activeStates : []
-  visiblePinspotlightCount.value = visibleStates.length
-  visiblePinspotlightIds.value = visibleStates.map(state => state.id).sort((a, b) => a - b)
-
-  const environmentState = lightingEnabled.value
-    ? activeStates.findLast?.(state => state.environmentColor)
-      || [...activeStates].reverse().find(state => state.environmentColor)
-    : null
-  if (pinspotlightEnvironmentOverlay) {
-    pinspotlightEnvironmentOverlay.visible = Boolean(environmentState)
-    if (environmentState) {
-      pinspotlightEnvironmentOverlay.tint = parseHexColor(environmentState.environmentColor, 0x221d23)
-      pinspotlightEnvironmentOverlay.alpha = Math.max(
-        0,
-        Math.min(1, Number(environmentState.environmentOpacity || 0) / 1000),
-      )
-      pinspotlightEnvironmentOverlay.zIndex = Number(environmentState.depth) || 1850
-    }
+  visiblePinspotlightCount.value = 0
+  visiblePinspotlightIds.value = []
+  for (const runtime of pinspotlightRuntimes.values()) {
+    runtime.sprite.visible = false
+    runtime.maskSprite.visible = false
   }
-
-  for (const [id, runtime] of pinspotlightRuntimes) {
-    const state = states.get(id)
-    runtime.sprite.visible = beamEffectsEnabled.value && Boolean(state?.alpha > 0.001)
-  }
-
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
-  const sequence = pinspotlightLoadSequence
-  await Promise.all(visibleStates.map(async state => {
-    let runtime = pinspotlightRuntimes.get(state.id)
-    const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
-      ? state.asset
-      : 'pinspotlight'
-    if (runtime && runtime.asset !== desiredAsset) {
-      runtime.sprite.removeFromParent()
-      runtime.sprite.destroy()
-      pinspotlightRuntimes.delete(state.id)
-      runtime = null
-    }
-    if (!runtime) runtime = await loadPinspotlightRuntime(state, sequence)
-    if (!runtime) return
-    const current = pinspotlightStatesAt(stageTime.value).get(state.id)
-    if (!current || current.alpha <= 0.001) {
-      runtime.sprite.visible = false
-      return
-    }
-    if (current.stagePosition) {
-      const target = layoutCoordinatesForStage(Number(current.stagePosition), stageTime.value)
+  for (const state of states.values()) {
+    if (state.alpha <= 0.001 || !state.asset || (!lightingEnabled.value && !beamEffectsEnabled.value)) continue
+    const model = pinspotlightModelForAsset(stageEffectIndex.value?.pinspotlight, stageEffectIndex.value?.assets, state.asset)
+    if (!model) continue
+    const key = `${state.id}:${model.layers[0].asset}`
+    const runtime = pinspotlightSprites.ensure(key, model, stageEffectIndex.value?.assets)
+    if (!runtime) continue
+    let x, y, scale
+    if (state.stagePosition) {
+      const target = layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
       const ground = projectChibiGround(selectedSong.value?.songCode, target, width, height)
-      runtime.sprite.position.set(
-        ground.x,
-        ground.y - 135 * viewportScale,
-      )
-      runtime.sprite.scale.set(viewportScale * 0.62)
+      x = ground.x
+      y = ground.y - 135 * viewportScale
+      scale = viewportScale * 0.62
     } else {
-      runtime.sprite.position.set(
-        width * 0.5 + Number(current.x || 0) * viewportScale * environmentScale.value,
-        height * 0.5 + (360 - Number(current.y || 0)) * viewportScale * environmentScale.value,
-      )
-      runtime.sprite.scale.set(viewportScale * environmentScale.value * 0.7)
+      x = width * 0.5 + Number(state.x || 0) * viewportScale * environmentScale.value
+      y = height * 0.5 + (360 - Number(state.y || 0)) * viewportScale * environmentScale.value
+      scale = viewportScale * environmentScale.value * 0.7
     }
-    runtime.sprite.tint = parseHexColor(current.beamColor, 0xffffff)
-    runtime.sprite.alpha = Math.max(0, Math.min(1, Number(current.alpha) || 0)) * 0.34
-    runtime.sprite.zIndex = (Number(current.depth) || 1850) + 1
+    for (const sprite of [runtime.maskSprite, runtime.sprite]) {
+      sprite.position.set(x, y)
+      sprite.scale.set(scale)
+      sprite.alpha = Math.max(0, Math.min(1, state.alpha))
+      sprite.zIndex = (Number(state.depth) || 1850) + 1
+    }
+    // Missing colour keeps the serialized flash default; masks stay black.
+    runtime.sprite.tint = parseHexColor(state.beamColor, model.layers[1].initialColor)
+    runtime.maskSprite.visible = lightingEnabled.value
     runtime.sprite.visible = beamEffectsEnabled.value
-  }))
+    if (runtime.sprite.visible) visiblePinspotlightIds.value.push(state.id)
+  }
+  visiblePinspotlightIds.value.sort((a, b) => a - b)
+  visiblePinspotlightCount.value = visiblePinspotlightIds.value.length
+  syncSpotlightBackground()
 }
 
 function releasePinspotlights() {
-  pinspotlightLoadSequence += 1
-  for (const runtime of pinspotlightRuntimes.values()) {
-    runtime.sprite.removeFromParent()
-    runtime.sprite.destroy()
-  }
-  pinspotlightRuntimes.clear()
-  pinspotlightRuntimeLoads.clear()
-  pinspotlightLoads.clear()
-  for (const texture of pinspotlightTextures.values()) texture.destroy(true)
-  pinspotlightTextures.clear()
-  pinspotlightEnvironmentOverlay?.removeFromParent()
-  pinspotlightEnvironmentOverlay?.destroy()
-  pinspotlightEnvironmentOverlay = null
+  const background = spotlightBackgroundSprites.runtimes.get('background')
+  if (background) background.sprite.filters = null
+  pinspotlightSprites.release()
+  pinspotlightMaskCount.value = 0
   visiblePinspotlightCount.value = 0
   visiblePinspotlightIds.value = []
 }

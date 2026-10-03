@@ -519,3 +519,19 @@ Browser：旧 tab 7 的截图接口多次超时，但 DOM／时间轴仍可访�
 仍待完整验收：Study 的动作相位、前景 call 棒、粒子、Pinspotlight 原生遮罩、原生背景动态层序与自由灯移动，以及 Take 两半音频精确配准和全曲视觉。窄屏模拟不是实体手机，代码／本地来源检查不是全媒体发布或 master PR 收口。另一个窗口的资料页／审计修改继续保留，本批只提交舞台接线与回归。
 
 本批代码提交 `4bcc37d72d9efa3cbcb75c7192a383838c5032b9` 的完整 [Source Gate 37078486828](https://github.com/windmet/GS_Archive/actions/runs/37078486828) 已终态 success，114 个步骤成功、无失败，包含新增背景 PPtr 与实际 SFC／single-layer 异步释放回归。HTTP 复核 schema 3 与 renderer script 115454，`pinspotlight_back.png` 为 294 B，响应 SHA256 `1391fa34295e4eb7ae8070c7c90f8aa7a06cd1920cabed8c885ee95c4b2f2c14` 与派生索引一致。此 CI 绑定该确切代码提交，后续文档提交不冒充同一 revision 的门禁。
+
+## 2026-10-03：Study 第二验收目标的 Pinspotlight 双层遮罩接线
+
+输入 HEAD `077e3128`。用户指定同目录的 Study 录屏继续作为第二验收目标，复用已核实音频 offset=4.7275s；本轮仅抽取 4.3、4.8、7 秒的 960px 对齐帧，不复制录屏或 public 全库。其他窗口的 UI／翻译审计工作保留，以下只描述舞台改动。
+
+原生 `LiveObjectPinspotlight` script 109188（80 B，SHA256 `1c8d0159da147d6dcaef37a9b3d8bee250b56a1772f2b1d65df3acf18580d6dc`）的三个 PPtr 分别关联 AlphaMaskSprite 129274、MaskSpriteRenderer 54042、FlashSpriteRenderer 52550。Mask 与 Flash 共享 Sprite 2353／Texture 717；pivot=(0.5,0.5)、PPU=100、512px、局部 Transform 单位矩阵、初始黑色 alpha=1。AlphaMaskSprite 原始 52 B 校验后读取 sorting interval=[1000,3000]，包含背景默认 sortingOrder=1900。严格导出新增 schema 4 的 pinspotlight 双层模型与 portable 精确 fixture；数组顺序不决定角色，错误 PPtr／材质／颜色／Transform 拒绝。
+
+Flash 原材质 TransparentAdd 120 指向 `ohashi/SimpleAdd` Shader 1014，原始 SHA256 `dd6c494ec8ac210c877cb204955473956e766bd80c4dd38356a0574f00eaac5d`。实际 GLES3 输出 texture×vertexColor，混合 SrcAlpha／One；没有旧代码额外乘的 0.34。该常量已移除，Flash 使用加亮混合、Mask 单独隐藏为 filter 输入，不直接涂在舞台上。黑色 Mask 在白色 mask RT 上普通混合得到 product(1−maskAlpha)，背景 shader 用其 RGB luminance 乘背景 alpha。本轮 Pixi 用 atlas-aware SpriteMaskFilter 的反 alpha shader 顺序实现此黑色遮罩的等效背景孔洞，filterArea 限制为实际画布；不声称完整移植原生 mask registry／多相机 RT 架构或所有颜色输入的通用等效。
+
+Pin 与 Spotlight 共用一个背景消费者，按既有事件采样选环境状态；所需 mask 未就绪时不发布实心压暗。双层使用同一投影与 alpha，灯光染色开关控制遮罩、光束开关控制 Flash；同灯号换素材按 id:asset 隔离，旧实例隐藏。共享异步纹理 store 按 generation 清退迟到请求，释放前从背景摘除 filters。缺 beamColor 保留 native 初始黑色而非默认白色；**序列化初值不能证明 PlayEffect 对 CSV NULL 字段的内部行为**。保留现有目标地面减 135×fit、scale=0.62／自由 scale=0.7 的参考近似，未用 prefab 的 identity Transform 冒充已解出原生投影。CSV 注释也纠正为不能仅凭 prefab 证明 duration／target 字段语义。
+
+本地通过：native Pin PPtr／污染拒绝、实际 SFC 双层同步／独立开关／同 id 素材切换／hide／释放，background 实际 SFC 的 pending mask、sorting interval、filter detach／画布范围与共享环境回归，既有 Spotlight prefab／target／异步释放，Python 编译与 `npm run verify:engineering`。`npm run build:check` 2,780 modules／14.98s，固定输出 `.analysis/build-check`、不复制 public。两个新 portable verifier 加入 Source Gate；本段尚不声称新提交 CI 终态。
+
+实际 5198 Browser 新生产 bundle：Study、S.E.M 2/3/4、005_00、暂停 4.8s，背景 alpha=0.700，mask count=3（含原始离屏 id1）而屏内两孔，能透出 ABC 布景及台面。1440×900 与 390×844 的孔洞均跟随镜头和缩放；手机模拟 canvas≈357×201、scrollWidth=clientWidth=390。关闭光束后 Flash=0、mask=3／背景=0.700；再关灯光为 mask=0／背景=0。重开、前进到13.7s变 Spotlight 20/21/22、mask=0／背景=0.500，倒退4.8s恢复两孔。Take 01／02 的40s检查无 Study 遮罩残留。这仅是切歌清理，不能代替 Take 两半录屏光效验收。截图保存 `study-reference/pinspotlight-native-004.800.png`、`pinspotlight-native-007.000.png`、`pinspotlight-mobile-004.800.png`；窄屏模拟不是真实设备测试。
+
+对齐录屏差异账本：4.3s 指令边界附近，录屏仍仅左孔，Web 已开始第二孔；4.8s 两边均有左／中孔，右侧暗；7s 录屏右孔照亮 ABC，Web 同区域可透出，但人物动作相位仍不同。参考的黑色裤装在 Web 同服装编号下呈浅色、角色比例与孔洞范围仍存在差异，不能把“GPU shader 工作”和“录屏完全复刻”混为一谈。下一步继续查动作／Spine 颜色、原生镜头与投影、call 棒、粒子和全曲灯光；尚不具备全舞台或 master PR 收口结论。
