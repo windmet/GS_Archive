@@ -19,6 +19,8 @@ const json = path => JSON.parse(read(path))
 const catalog = json('public/data/song_catalog.json')
 const dictionary = json('public/data/masterdata/idol_unit_dictionary.json')
 const manifest = json('public/data/archive_manifest.json')
+const playback = json('public/data/song_playback_audio.json')
+const experiments = json('public/data/song_experimental_audio.json')
 const translations = json('public/translations/zh-CN/entities/idols.json')
 const node = (type, text = '') => {
   const item = { type, text, props: {}, children: [], parent: null, scrollTop: 0, clientHeight: 400 }
@@ -108,8 +110,8 @@ class MemoryStorage {
 const audioArchive = root => all(root).find(item => item.type === 'details' &&
   item.children.some(child => child.type === 'summary' && text(child) === '声部与音频归档'))
 const keiCard = root => referenceCards(root).find(card => cardLabel(card) === '都筑圭')
-function fixture(code, { transform = song => song, keyed = true } = {}) {
-  const song = transform(buildSongPresentation(catalog.songs[code], dictionary, { manifest }))
+function fixture(code, { transform = song => song, keyed = true, presentation = {} } = {}) {
+  const song = transform(buildSongPresentation(catalog.songs[code], dictionary, { manifest, ...presentation }))
   const original = JSON.stringify(song)
   const root = node('root'), opened = [], units = [], ready = [], component = Vue.ref(null)
   root.focusCalls = []
@@ -144,6 +146,85 @@ async function openAudioArchive(t) {
   section.props.onToggle({ target: { open: true } })
   await flush()
   return section
+}
+
+// Inspect the actual rendered hero rather than source selectors or CSS. Real
+// catalog entries cover ready and unavailable playback, all four attributes,
+// a special version, and the implementation-history date. This host does not
+// decode audio: presence of a playback projection is distinct from media QA.
+function hero(t) {
+  const header = all(t.root).find(item => item.type === 'header')
+  assert.ok(header)
+  assert.equal(all(header).filter(item => item.type === 'dl').length, 0,
+    'the redundant availability/form/date parameter grid is removed')
+  assert.equal(all(header).filter(item => item.type === 'h2').map(text).join(''), t.song.title)
+  assert.equal(text(header).includes(t.song.playbackLabel.replace(' · 实验混音', '')), false,
+    'playback availability is not repeated in the song hero')
+  const forms = all(header).filter(item => hasClass(item, 'badge') && text(item) === t.song.formLabel)
+  assert.equal(forms.length, 1, 'the hero renders the audio form once')
+  assert.equal(JSON.stringify(t.song), t.original, 'hero adaptation preserves projected source evidence')
+  return header
+}
+for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['anwhre', 'Intelligent'], ['cfprde', 'Mental']]) {
+  const t = fixture(code, { presentation: { playbackTrack: playback.songs[code] } }); await flush()
+  const header = hero(t)
+  const badge = all(header).find(item => Object.hasOwn(item.props, 'data-song-attribute'))
+  assert.ok(badge)
+  assert.equal(text(badge), attribute, 'attributes use player-facing names without a repeated prefix')
+  assert.equal(badge.props['data-song-attribute'], t.song.attributeLabel,
+    'the source attribute remains distinct from its local display alias')
+  assert.equal(text(all(header).find(item => hasClass(item, 'song-detail-date'))),
+    `${catalog.songs[code].gameplay.history.firstImplementedOn} 实装`)
+  assert.equal(all(t.root).filter(item => hasClass(item, 'song-playback-unavailable')).length, 0,
+    'a real full-mix playback projection does not show an unavailable status')
+  t.app.unmount()
+}
+{
+  const t = fixture('drvalv', { presentation: { audioExperiment: experiments.songs.drvalv } }); await flush()
+  hero(t)
+  assert.equal(all(t.root).filter(item => hasClass(item, 'song-playback-unavailable')).length, 0,
+    'a real experimental playback projection does not show an unavailable status')
+  t.app.unmount()
+}
+{
+  const t = fixture('drvalv'); await flush()
+  hero(t)
+  const unavailable = all(t.root).filter(item => hasClass(item, 'song-playback-unavailable'))
+  assert.equal(unavailable.length, 1)
+  assert.equal(unavailable[0].props.role, 'status')
+  assert.equal(text(unavailable[0]), '暂未提供试听',
+    'collected audio identities do not imply an available playback projection')
+  assert.equal(t.song.fullMixCollected, true)
+  t.app.unmount()
+}
+{
+  const t = fixture('drv999', { presentation: { playbackTrack: playback.songs.drv999 } }); await flush()
+  const header = hero(t)
+  assert.equal(all(header).filter(item => hasClass(item, 'badge') && text(item) === '特殊版本').length, 1)
+  assert.equal(text(all(header).find(item => hasClass(item, 'song-detail-date'))), '2022-04-01 实装',
+    'the special marker does not replace a recorded implementation date')
+  const parent = all(header).find(item => item.type === 'button')
+  assert.equal(parent.dataset.archiveFocusId, `song-parent:${t.song.parentId}`)
+  t.app.unmount()
+}
+{
+  // All current catalog entries have resolved attributes and gameplay history.
+  // Labeled omissions derived from a real projection exercise fallback paths;
+  // they are not represented as new corpus coverage or historical facts.
+  const t = fixture('drvalv', { transform: song => ({ ...song, attributeLabel: '待确认',
+    gameplay: null, openDate: '2021年10月6日' }) }); await flush()
+  let header = hero(t)
+  let attribute = all(header).find(item => Object.hasOwn(item.props, 'data-song-attribute'))
+  assert.equal(text(attribute), '待确认')
+  assert.equal(attribute.props['data-song-attribute'], '待确认')
+  assert.equal(text(all(header).find(item => hasClass(item, 'song-detail-date'))), '2021年10月6日 实装')
+  for (const [openDate, expected] of [['初始收录', '初始收录'], ['未收录', '实装日期未收录'],
+    ['特殊版本', '实装日期未收录'], ['', '实装日期未收录']]) {
+    t.state.song = { ...t.state.song, openDate }; await flush()
+    header = all(t.root).find(item => item.type === 'header')
+    assert.equal(text(all(header).find(item => hasClass(item, 'song-detail-date'))), expected)
+  }
+  t.app.unmount()
 }
 
 {
@@ -283,4 +364,4 @@ async function openAudioArchive(t) {
   assert.equal(await unmounting, false, 'unmounting during preparation cannot authorize shared restoration')
   assert.equal(await prepare({ focusId: audioFocusId, songId: 'flslgt' }), false)
 }
-console.log('Song detail: actual SFC language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; native events, Browser/layout/focus visibility and App routing acceptance are separate.')
+console.log('Song detail: actual SFC compact hero metadata/form uniqueness, four source attributes, real full-mix/experiment/unavailable projections, source dates and special-version parent passed. Labeled unknown-attribute/date omissions passed. Existing language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; decoded audio, native events, Browser/layout/focus visibility and App routing acceptance are separate.')

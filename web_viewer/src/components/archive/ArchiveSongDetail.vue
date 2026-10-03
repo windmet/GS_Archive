@@ -1,27 +1,23 @@
 <template>
   <section class="song-detail" data-archive-scroll-container>
-    <header class="song-detail-hero">
+    <header class="song-detail-hero" :class="{ 'has-jacket': song.jacketUrl }">
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
         <h2>{{ song.title }}</h2>
-        <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
+        <p class="song-detail-meta"><span v-if="song.kana" class="song-detail-kana">{{ song.kana }}</span><span class="song-detail-date">{{ implementationDateLabel }}</span></p>
         <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
-        <div class="song-detail-badges">
-          <span class="badge badge-layered">属性 · {{ song.attributeLabel || '待确认' }}</span>
-          <span v-if="song.special" class="badge badge-special">特殊版本</span>
-          <span class="badge badge-layered">{{ song.formLabel }}</span>
-        </div>
       </div>
-      <dl class="song-detail-stats" aria-label="歌曲档案统计">
-        <div><dt>试听</dt><dd>{{ song.playbackLabel.replace(' · 实验混音', '') }}</dd></div>
-        <div><dt>音频形态</dt><dd>{{ song.formLabel }}</dd></div>
-        <div><dt>首次实装</dt><dd>{{ song.gameplay?.history.firstImplementedOn || song.openDate }}</dd></div>
-      </dl>
+      <div class="song-detail-badges">
+        <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
+        <span v-if="song.special" class="badge badge-special">特殊版本</span>
+        <span class="badge badge-form">{{ song.formLabel }}</span>
+      </div>
     </header>
     <div class="song-detail-body">
       <div class="song-listen-column">
       <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @open-stage="openStage" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" />
+      <p v-else class="song-block-note song-playback-unavailable" role="status">{{ song.playbackLabel || '暂未提供试听' }}</p>
       <button v-if="song.stageCandidate" class="stage-open-button" type="button" @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : 'Chibi 舞台演出' }} →</button>
       </div>
       <div class="song-record-column">
@@ -90,7 +86,7 @@
 
 <script setup>
 import { ChevronRight, ExternalLink } from '@lucide/vue'
-import { ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
@@ -98,6 +94,13 @@ import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
 const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart', 'ready'])
+const implementationDateLabel = computed(() => {
+  const implementedOn = props.song.gameplay?.history?.firstImplementedOn
+  if (implementedOn) return `${implementedOn} 实装`
+  const fallback = props.song.openDate
+  if (fallback === '初始收录') return fallback
+  return !fallback || ['未收录', '特殊版本'].includes(fallback) ? '实装日期未收录' : `${fallback} 实装`
+})
 const songPlayer = ref(null)
 const performersOpen = ref(false), audioArchiveOpen = ref(false)
 let disposed = false, prepareRevision = 0
@@ -144,21 +147,24 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 
 <style scoped>
 .song-detail { height: 100%; padding: var(--gs-space-7); overflow-y: auto; background: #f7f9fa; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.song-detail-hero { display: grid; grid-template-columns: 172px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-7); padding: var(--gs-space-7) 28px; border-bottom: 3px solid #28b6ac; background: #17212b; color: #fff; }
+.song-detail-hero { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-4) var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 3px solid #28b6ac; background: #17212b; color: #fff; }
+.song-detail-hero.has-jacket { grid-template-columns: 172px minmax(0, 1fr); }
 .song-detail-jacket { width: 172px; height: auto; border-radius: var(--gs-radius-field); display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
 .song-detail-title { min-width: 0; }
-.song-detail-title h2 { margin: var(--gs-space-3) 0 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.4; overflow-wrap: anywhere; }
-.song-detail-kana { margin: var(--gs-space-2) 0 0; color: #aeb9c2; font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.song-detail-title h2 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.song-detail-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-2) var(--gs-space-3); margin: var(--gs-space-2) 0 0; color: #aeb9c2; font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.song-detail-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-parent-link { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: var(--gs-space-2) 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .song-parent-link:hover { text-decoration: underline; }
-.song-detail-badges { display: flex; gap: var(--gs-space-2); flex-wrap: wrap; margin-top: var(--gs-space-4); }
-.badge { padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.badge-layered { background: #e8f0fe; color: #2f5fd0; }
+.song-detail-badges { grid-column: 1 / -1; display: flex; gap: var(--gs-space-2); flex-wrap: wrap; min-width: 0; }
+.badge { padding: var(--gs-space-1) var(--gs-space-3); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.badge-attribute { background: #e7ecef; color: #465863; }
+.badge-attribute[data-song-attribute="Physical"] { background: #ffe9eb; color: #a83247; }
+.badge-attribute[data-song-attribute="Intelli"] { background: #e8f0fe; color: #2f5fd0; }
+.badge-attribute[data-song-attribute="Mental"] { background: #fff4d6; color: #805d14; }
+.badge-attribute[data-song-attribute="ALL"] { background: #f0f3f5; color: #475863; }
+.badge-form { background: #e2f4f0; color: #21685b; }
 .badge-special { background: #f3e8fd; color: #7136a5; }
-.song-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-.song-detail-stats div { box-sizing: border-box; min-width: 0; padding: var(--gs-space-3) var(--gs-space-4); border-left: 1px solid #34414c; }
-.song-detail-stats dt { color: #98a6b1; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); white-space: nowrap; }
-.song-detail-stats dd { margin: var(--gs-space-2) 0 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; }
 .song-detail-body { padding-top: var(--gs-space-6); display: grid; grid-template-columns: minmax(300px,.8fr) minmax(0,1.2fr); align-items: start; gap: var(--gs-space-6); }
 /* The independently styled player keeps its existing inherited 16px base. */
 .song-listen-column { position: sticky; top: 0; min-width: 0; font-size: var(--gs-text-subtitle); }
@@ -214,17 +220,13 @@ summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::a
 .song-detail button:focus-visible, .song-detail a:focus-visible, .song-detail summary:focus-visible { outline: var(--gs-focus-ring) solid #37a9a1; outline-offset: var(--gs-focus-offset); }
 .song-record-column :deep(button.archive-idol-reference:focus-visible), .song-record-column :deep(.archive-technical > summary:focus-visible) { outline: var(--gs-focus-ring) solid #37a9a1; outline-offset: var(--gs-focus-offset); }
 @media (max-width: 1100px) { .song-detail-body { grid-template-columns: 1fr; } .song-listen-column { position: static; } }
-@media (max-width: 980px) { .song-detail-hero { grid-template-columns: 1fr; } }
 @media (max-width: 700px), (pointer: coarse) { .song-parent-link, .link-list a, .song-history a { min-height: var(--gs-control-touch); } }
 @media (max-width: 560px) {
   .song-detail { padding: var(--gs-space-4); }
-  /* Jacket dimensions and the compact media/title split remain unchanged. */
-  .song-detail-hero { grid-template-columns: 72px minmax(0,1fr); gap: var(--gs-space-4); padding: 14px; }
+  .song-detail-hero { gap: var(--gs-space-4); padding: var(--gs-space-4); }
+  .song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0,1fr); }
   .song-detail-jacket { width: 72px; height: 72px; }
-  .song-detail-stats { grid-column: 1 / -1; grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .song-detail-stats div { padding: var(--gs-space-3); }
-  /* Give the full implementation date one row rather than splitting YYYY-MM-DD. */
-  .song-detail-stats div:nth-child(3) { grid-column: 1 / -1; margin-top: var(--gs-space-3); padding-top: var(--gs-space-4); border-top: 1px solid #34414c; border-left: 0; }
+  .song-detail-title h2 { font-size: 20px; }
   .song-block, .song-record-column > .song-block { padding: 14px; }
   .song-detail-body { padding-top: var(--gs-space-4); }
 }
