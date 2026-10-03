@@ -77,7 +77,7 @@ def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
             components.append(entry)
             continue
         value = obj.read()
-        if obj.type.name == 'Transform':
+        if obj.type.name in ('Transform', 'RectTransform'):
             entry.update({'position': vector(value.m_LocalPosition),
                           'scale': vector(value.m_LocalScale),
                           'rotation': vector(value.m_LocalRotation)})

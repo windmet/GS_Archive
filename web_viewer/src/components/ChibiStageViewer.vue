@@ -45,6 +45,10 @@
     :data-backmonitor-transition-active="backmonitorTransitionActive"
     data-backmonitor-transition-mode="alpha-overlay"
     :data-backmonitor-ready="backmonitorReady"
+    :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
+    data-backmonitor-logo-status="unimplemented-native-runtime-sprite-selection-pending"
+    :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
+    data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
@@ -282,6 +286,8 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；运行时换图尚未确认，旋转标志未接入。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
@@ -449,6 +455,7 @@ import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
+import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
@@ -596,6 +603,25 @@ const stagelightSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native stage lamp textures could not be loaded', error),
 })
 let stagelightSongId = ''
+const visibleSuspensionlightIds = ref([])
+let suspensionTrackKey = ''
+let suspensionTrack = null
+let suspensionAbort = null
+const suspensionSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layers[0].anchorX, layers[0].anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSuspensionlights(),
+  onError: error => console.warn('[ChibiStage] suspension texture load failed', error),
+})
 const spotlightBackgroundAlpha = ref(0)
 const pinspotlightMaskCount = ref(0)
 const spotlightBackgroundSprites = createSpotlightSpriteStore({
@@ -902,6 +928,8 @@ onBeforeUnmount(() => {
   releaseObjectLayers()
   releaseSpotlights()
   stagelightSprites.release()
+  suspensionSprites.release()
+  suspensionAbort?.abort()
   releaseLaserlights()
   releasePinspotlights()
   releaseStageBackground()
@@ -1303,7 +1331,7 @@ function backmonitorStateAt(milliseconds) {
     x: 0,
     y: 360,
     scale: 1000,
-    rotation: 0,
+    rawValue6: 0,
     opacity: 1000,
     eventTime: '',
   }
@@ -1314,9 +1342,13 @@ function backmonitorStateAt(milliseconds) {
       state.movie = event.movie
       state.movieTime = eventTime
     }
-    for (const key of ['x', 'y', 'scale', 'rotation', 'opacity']) {
+    for (const key of ['x', 'y', 'scale', 'opacity']) {
       if (event[key] !== null && event[key] !== undefined) state[key] = Number(event[key])
     }
+    // Older prepared indexes named this binary field "rotation". Keep its
+    // original value, but do not tilt the entire movie by the inferred logo flag.
+    const rawValue6 = event.rawValue6 ?? event.rotation
+    if (rawValue6 !== null && rawValue6 !== undefined) state.rawValue6 = rawValue6
     state.transition = event.transition || null
     if (state.transition) state.transitionTime = eventTime
     state.eventTime = eventTime
@@ -1536,6 +1568,7 @@ function ensureWholeScreenColorOverlay() {
 
 function applyStageLighting() {
   syncStagelights()
+  syncSuspensionlights()
   syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
   applyImageColors()
@@ -1790,6 +1823,57 @@ function syncStagelights() {
     colors.push(`${state.id}:#${runtime.sprites[0].tint.toString(16).padStart(6, '0')}`)
   }
   appliedStagelightColors.value = colors.join(',')
+}
+
+function syncSuspensionlights() {
+  if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  const descriptor = stageEffectIndex.value?.newSuspensionlightSongs?.[songId]
+  const key = `${songId}:${descriptor?.file || ''}`
+  if (suspensionTrackKey !== key) {
+    suspensionSprites.release()
+    suspensionAbort?.abort()
+    suspensionTrack = null
+    suspensionTrackKey = key
+    if (descriptor?.file) {
+      const abort = new AbortController()
+      suspensionAbort = abort
+      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Suspension track HTTP ${response.status}`)
+          return response.json()
+        }).then(track => {
+          if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
+          suspensionTrack = track
+          syncSuspensionlights()
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
+        })
+    }
+  }
+  visibleSuspensionlightIds.value = []
+  for (const runtime of suspensionSprites.runtimes.values()) runtime.sprite.visible = false
+  if (!beamEffectsEnabled.value) return
+  const track = suspensionTrack
+  const model = stageEffectIndex.value?.newSuspensionlight
+  if (!track || !model) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  for (const state of newSuspensionlightsAt(track.events, stageTime.value)) {
+    if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
+    const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
+    if (!runtime) continue
+    const layout = suspensionlightLayout(state, width, height, environmentScale.value)
+    runtime.sprite.position.set(layout.x, layout.y)
+    runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
+    runtime.sprite.rotation = layout.rotation
+    runtime.sprite.alpha = state.alpha
+    runtime.sprite.tint = parseHexColor(state.color)
+    runtime.sprite.zIndex = state.depth
+    runtime.sprite.visible = true
+    visibleSuspensionlightIds.value.push(state.id)
+  }
+  visibleSuspensionlightIds.value.sort((a, b) => a - b)
 }
 
 function releaseSpotlights() {
@@ -2496,7 +2580,7 @@ function layoutBackmonitor(state) {
   const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
   backmonitorSprite.position.set(projected.x, projected.y)
   backmonitorSprite.scale.set(projected.scale)
-  backmonitorSprite.rotation = -state.rotation * Math.PI / 180
+  backmonitorSprite.rotation = 0
   backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {

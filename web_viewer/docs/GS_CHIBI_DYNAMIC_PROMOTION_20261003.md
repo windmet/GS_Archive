@@ -66,7 +66,7 @@ Python 原始模块 fixture、Node 原图集帧/透明混合/暂停回退/资源
 
 `build:check` 2782 modules / 13.26s，无 public 复制。5198 既有映射服务加载最终 bundle；Browser 1280×720 的完整舞台视图可见贴合前沿的四段火焰带。390×844 画布约357×201，页面宽390无横向溢出，火焰仍在前沿；是模拟窄屏验收。截图 `take-reference/knwonl-fire-final-desktop.png`、`knwonl-fire-final-mobile.png`。噪声火星、三维投影及整曲录屏等效尚未验收。
 
-用户另补 Take 结尾的上方光源及纵轴旋转315标志参考。[通用层审计](GS_CHIBI_COMMON_LAYER_AUDIT_20261003.md)已定位原生光束Sprite、背屏RotateSprite与streamed旋转clip，并清点118编排的原始指令族。两者仍未接入；不能把有背景视频视作标志已接入。98c2c788的GitHub门禁37096017872通过，仅涵盖此前已实现批次。
+用户另补 Take 结尾的上方光源及纵轴旋转315标志参考。[通用层审计](GS_CHIBI_COMMON_LAYER_AUDIT_20261003.md)已定位原生光束Sprite、背屏RotateSprite与streamed旋转clip，并清点118编排的原始指令族。第二批已有NewSuspensionlight基础显示消费者，Take01/02结尾通过Browser验证；其它控制与旋转标志仍有缺口，不能把有背景视频视作标志已接入。98c2c788的GitHub门禁37096017872通过，仅涵盖此前已实现批次。
 
 Study Equal Magic! 使用 `Suspensionlight` 多个系列与 `fx_in_steqmg_overlight_1/2/3`、共享入射光粒子，而非本批的固定 Stagelight/box panel 模式。Take 上方打光则还有大量 `NewSuspensionlight_*` 与 `Searchlight_*` 新指令。它们是独立消费者缺口，不能按当前注册数视作完成。
 

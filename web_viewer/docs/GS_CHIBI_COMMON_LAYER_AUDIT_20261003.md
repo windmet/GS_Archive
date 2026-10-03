@@ -1,6 +1,6 @@
 # Take 结尾暴露的通用灯光与背屏缺口
 
-2026-10-03，输入 HEAD `98c2c788`，分支 `codex/chibi-stage-reconstruction-20261002`。此批为来源与消费者审计，尚未实现下面的光束或旋转标志，不是新的舞台复刻验收。
+2026-10-03，首批输入 HEAD `98c2c788`，分支 `codex/chibi-stage-reconstruction-20261002`。下文先保留该批来源审计；第二批接线与验收结果见文末。新悬灯已有基础消费者，旋转标志仍未接入。
 
 ## 结论
 
@@ -89,3 +89,27 @@ python scripts/audit-live-chibi-stage-command-coverage.py --output .analysis/eng
 4. 当前 `stageVfxCoverage` 只统计已进入read-model的事件，未穷尽上述原生指令族。因此 `source_mapped_unverified` 不能作为整曲完整门禁；后续门禁需绑定RAW清点，区分“来源没有该指令”和“解析器丢了该指令”。
 
 全曲原生Tween、透视与随机种子、整曲录屏等效、实体设备、资源发布及最终master PR仍未完成。
+
+## 第二批：新悬灯基础接线与背屏字段修正
+
+输入 HEAD `bd2bc538`。`live_chibi_suspensionlight.py` 对原生 MonoBehaviour 字节 SHA、SpriteRenderer / RotateBase PPtr、Shader、Sprite pivot、矩形与预制体变换设置守卫。Sprite2580 / Texture834 使用原生 `ohashi/SimpleAdd` 加法光束、顶端锚点。资源检查器补上 RectTransform 子树遍历；此前仅检查 Transform 会漏背屏与新悬灯的子节点。
+
+`prepare-live-chibi-stage-effects.py` 的 schema 7 保留19个新悬灯轨道、60358条原始指令及每轨 bundle/CAB/pathId/TextAsset SHA。每轨独立 JSON，当前曲目才加载；Take01轨约539KB，不在入场时加载所有曲目的指令。stage-effects 索引约9.18MB、61张原生纹理。高级覆盖栏明确显示未支持的控制数量与背屏标志缺口。
+
+基础消费者按时间及 sourceRow 顺序重算对象实例，支持 create、normal_show、erase与复用ID。颜色、旋转、缩放和 fade 等未知后缀仍留在源轨；遇到未知控制就抑制该实例，不能让错误的静态光束一直亮着。normal_show 的线性包络、重复参数与二维投影目前是录屏指导的预览解释，原生 Tween 曲线和完整方法体仍未闭合。19轨来源接线不是19曲视觉验收。
+
+Take01/02末尾108350ms的五束光已可见；111000ms时公开诊断包含10047/10049/10051/10053/10055。此外690～713是110900ms创建的另一组原始光束，不是额外复制的结尾五束。纹理按舞台画布同比缩放，复用演出时钟；每轨加载有 AbortController 与切歌代次检查，离开销毁资源。
+
+Backmonitor CSV索引7改名为 `rawValue6`，choreography生成器升级schema 15。932行的原值保留，兼容旧索引的rotation字段，但取消把0/1值作为整块视频旋转角度。**它是否就是logo启用参数仍为推断**，此修正不能证明315标志已接线。
+
+旋转标志继续追到原生 Shader `Growing/RotateSprite`：使用 UV3.xy / UV3.z 的透视采样、普通透明混合、Cull Off，不能以整块背屏旋转或仅横向压缩替代。另读取 iOS 2.6.10 的同一默认 Texture463：RGBA32 原图同样是蓝色M标志，排除了 Android ETC 解码导致色差的解释。iOS data.unity3d SHA256 为 `fb28e28793e4f9d21e76dd96be2c776a71382cb607d98acd24f65f20bed8018a`。录屏里的亮色315资源仍需核实 `LoadLogoSpriteIfNeeded / SetLogoSpriteIfNeeded` 的运行时选择，不能给默认贴图染白后宣称复刻完成。
+
+### 第二批验证
+
+纯stdlib新悬灯解析回归、原生预制体守卫、Node包络/后退/擦除/复用ID/未知控制抑制/比例投影回归均通过。published-assets验证实际19轨、60358条及两版Take结尾五束，源fixture逐字段一致。既有固定灯、原生指令清点及118编排VFX覆盖回归通过；111个编排仍为partial。
+
+`npm run build:check` 最终2783 modules / 22.53s，固定 `.analysis/build-check`、没有public复制。5198 PID62924既有映射服务读取最终bundle，未再启动服务或打包完整语料。
+
+实际Browser验收1280×720：Take01/02暂停111000ms出现末尾五束；光束开关关闭后清空、开启恢复；倒退108300ms消失、返回111000ms重现。Take02→Study→Take02快速切歌后最终资源归属正确。390×844模拟窄屏画布约357×201，光束随画布比例变化；不是实体设备验收。console无error，已有PixiSpine tint废弃警告仍存在。最终恢复默认视口。
+
+截图在同一小型证据目录：`take01-ending-new-beams.png`、`take02-ending-new-beams.png`、`take02-ending-new-beams-mobile.png`。iOS原图与身份记录为 `ios-live_backmonitor_movie_logo_m.png`、`ios-logo-comparison.json`。构建及Browser通过仅覆盖本批基础消费者；旧Suspensionlight、Searchlight、NewSuspensionlight未知控制、背屏旋转标志与全曲录屏等效仍待完成。

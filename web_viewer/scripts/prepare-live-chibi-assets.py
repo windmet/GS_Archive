@@ -596,7 +596,7 @@ def read_choreography_scripts(
                             "x": parse_optional_number(row[4]),
                             "y": parse_optional_number(row[5]),
                             "scale": parse_optional_number(row[6]),
-                            "rotation": parse_optional_number(row[7]),
+                            "rawValue6": parse_optional_number(row[7]),
                             "opacity": parse_optional_number(row[8]),
                         }
                     )
@@ -1005,7 +1005,7 @@ def export_choreography(
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 14,
+        "schemaVersion": 15,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
