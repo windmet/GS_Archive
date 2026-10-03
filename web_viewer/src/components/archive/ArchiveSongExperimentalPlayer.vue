@@ -55,7 +55,7 @@
         @error="onAudioError"
       />
 
-      <ArchiveMediaTransport :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
+      <ArchiveMediaTransport music :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
 
       <details v-if="mode === 'solo'"><summary>音轨平衡</summary><div class="experimental-mix-controls">
         <label>
@@ -332,9 +332,12 @@ onBeforeUnmount(() => resetPlayback())
 <style scoped>
 .song-block-heading { display: flex; gap: 8px; align-items: center; }
 .song-block-heading small { font-size: 11px; padding: 3px 6px; border-radius: 4px; color: #60717d; background: #eef4f7; }
-.song-modes { display: flex; flex-wrap: wrap; gap: 5px; padding: 4px; background: #eef5f5; border-radius: 8px; }
+.song-modes { display: flex; flex-wrap: nowrap; gap: var(--gs-space-2); padding: var(--gs-space-2); min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; background: #eef5f5; border-radius: var(--gs-radius-field); }
+.song-modes::-webkit-scrollbar { display: none; }
 .song-modes button, .solo-open { min-height: 44px; padding: 8px 12px; border: 1px solid #c7dcdf; border-radius: 6px; background: white; color: #245a64; font: inherit; font-size: 12px; cursor: pointer; }
-.song-modes button { flex: 1; } .song-modes button[aria-pressed=true] { background: #176f69; color: white; border-color: #176f69; }
+.song-modes button { flex: 0 0 auto; min-height: var(--gs-control-touch); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
+.song-modes button[aria-pressed=true] { background: #176f69; color: white; border-color: #176f69; }
+.song-modes button:focus-visible { outline: var(--gs-focus-ring) solid #007caa; outline-offset: calc(-1 * var(--gs-focus-ring)); }
 .solo-open { width: 100%; margin-top: 12px; text-align: left; }
 summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #245a64; font-size: 13px; }
 button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }

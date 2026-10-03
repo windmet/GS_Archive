@@ -11,7 +11,7 @@
       :aria-label="`${song.title} 完整混音`"
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
-    <ArchiveMediaTransport :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
+    <ArchiveMediaTransport music :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
       <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume" /></label></details>
     </ArchiveMediaTransport>
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>

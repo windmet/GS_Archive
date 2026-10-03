@@ -51,7 +51,7 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value || session.starting.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
+    <ArchiveMediaTransport music :ready="session.ready.value" :playing="session.playing.value || session.starting.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
     <details><summary>音轨平衡</summary><div class="lineup-gains">
       <label>
