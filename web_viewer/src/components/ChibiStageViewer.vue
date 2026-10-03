@@ -468,6 +468,7 @@ import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
+import { sampleSpotbeamParticles } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
@@ -665,9 +666,15 @@ const laserParticleSprites = createSpotlightSpriteStore({
   createRuntime: (id, layers, textures) => {
     const container = markRaw(new PIXI.Container())
     cameraContainer.addChild(container)
-    return markRaw({ container, sprites: [], texture: textures[0] })
+    const texture = textures[0]
+    const frames = layers[0].frames === 2 ? [0,1].map(frame => markRaw(new PIXI.Texture(
+      texture.baseTexture, new PIXI.Rectangle(frame * 512,0,512,512)))) : null
+    return markRaw({ container, sprites: [], texture, frames })
   },
-  destroyRuntime: runtime => { runtime.container.removeFromParent(); runtime.container.destroy({ children: true }) },
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent(); runtime.container.destroy({ children: true })
+    for (const texture of runtime.frames || []) texture.destroy(false)
+  },
   destroyTexture: texture => texture.destroy(true),
   onReady: () => syncLaserlights(),
   onError: error => console.warn('[ChibiStage] native laser texture load failed', error),
@@ -2013,13 +2020,17 @@ function syncLaserlights() {
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
     const native = stageEffectIndex.value?.laserlight?.styles?.[state.style]
+      || stageEffectIndex.value?.spotbeam?.styles?.[state.style]
     if (native) {
+      const spotbeam = native.kind === 'spotbeam'
       const runtime = laserParticleSprites.ensure(`${songId}:${state.id}:${state.style}`,
-        { layers: [{ asset: native.systems[0].asset }] }, stageEffectIndex.value.assets)
+        { layers: [{ asset: native.systems[0].asset, frames: spotbeam ? 2 : 1 }] }, stageEffectIndex.value.assets)
       if (!runtime) continue
       const layout = laserParticleLayout(state,width,height,environmentScale.value)
-      const particles = sampleLaserParticles(native,state,stageTime.value)
+      const particles = (spotbeam ? sampleSpotbeamParticles : sampleLaserParticles)(native,state,stageTime.value)
       runtime.container.position.set(layout.x,layout.y)
+      runtime.container.scale.set(spotbeam ? Number(state.width)/1000 : 1,spotbeam ? Number(state.length)/1000 : 1)
+      runtime.container.rotation = spotbeam ? -Number(state.angle)*Math.PI/180 : 0
       runtime.container.zIndex = Number(state.depth) || 1650
       runtime.container.visible = true
       for (let i = 0; i < Math.max(particles.length,runtime.sprites.length); i++) {
@@ -2034,6 +2045,8 @@ function syncLaserlights() {
         if (!sprite) continue
         sprite.visible = Boolean(sample && sample.alpha > .001)
         if (!sample) continue
+        if (spotbeam) sprite.texture = runtime.frames[sample.frame]
+        sprite.position.set((sample.x || 0) * layout.fit,(sample.y || 0) * layout.fit)
         sprite.anchor.set(sample.anchorX,sample.anchorY)
         sprite.width = sample.width * layout.fit
         sprite.height = sample.length * layout.fit
