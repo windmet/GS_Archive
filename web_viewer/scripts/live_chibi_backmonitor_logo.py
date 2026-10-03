@@ -34,7 +34,10 @@ def logo_model(source):
             'width':1200,'height':800,'localScale':source['transform']['scale']['x'],
             'perspectiveAngle':10,'duration':2,'curve':curve,'clipSource':source['clip']['sha256'],
             'streamSha256':evidence['sha256'],'layers':[{'asset':sprite['name']}],
-            'previewSongs':['tkstp1','tkstp2'],'previewMovie':'live_backmonitor_movie_trhorz_01'}
+            'previewSongs':['tkstp1','tkstp2','drvalv'],'previewMovie':'live_backmonitor_movie_trhorz_01',
+            'previewMovies':{'drvalv':'live_backmonitor_movie_cool_01_2'},
+            # Recording-backed logo-only fade candidate; never movie opacity.
+            'fadeControls':{'drvalv':'raw-value7-ms'}}
 
 def extract_logo_source(environment):
     objects={o.path_id:o for o in environment.objects if o.assets_file.name=='resources.assets'}

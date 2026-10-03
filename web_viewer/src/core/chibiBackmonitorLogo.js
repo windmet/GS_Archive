@@ -1,13 +1,37 @@
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 
 // Native sprite/curve/shader inputs, bounded to the two recording-checked
-// Take endings. Activation, phase reset and perspective geometry remain
+// Take endings and Drive's recorded opening. Activation and geometry remain
 // reference-calibrated until the director/RotateSprite bodies are recovered.
-export function sampleBackmonitorLogo(songCode, state, milliseconds, model) {
-  if (!model?.previewSongs?.includes(songCode) || state.movie !== model.previewMovie
-      || state.rawValue6 !== 1 || state.y >= 4000 || milliseconds < state.movieTime) return null
-  const seconds = (milliseconds - state.movieTime) / 1000 % model.duration
-  return { angle: sampleStreamedCurve(model.curve, seconds), seconds }
+export function logoFadeAt(events, milliseconds) {
+  let alpha=0, target=0, origin=0, movie=null, duration=0, tween=null
+  const sample=time=>tween ? tween.from+(tween.to-tween.from)*Math.max(0,Math.min(1,(time-tween.time)/tween.duration)) : alpha
+  for(const event of events || []) {
+    const time=Number(event.time)
+    if(time>milliseconds)break
+    alpha=sample(time)
+    const control=event.rawValue6 ?? event.rotation
+    const rawDuration=event.rawValue7 ?? event.opacity
+    if(rawDuration!=null)duration=Math.max(0,Number(rawDuration)||0)
+    if(event.movie && event.movie!==movie) {movie=event.movie;origin=time;alpha=0;tween=null;target=0}
+    if(control==null)continue
+    const next=Number(control)===1 ? 1 : 0
+    if(next===target)continue
+    if(next)origin=time
+    target=next
+    tween=duration>0 ? {from:alpha,to:target,time,duration} : null
+    if(!tween)alpha=target
+  }
+  return {alpha:sample(milliseconds),movieTime:origin,movie}
+}
+
+export function sampleBackmonitorLogo(songCode, state, milliseconds, model, events) {
+  const fade=model?.fadeControls?.[songCode]==='raw-value7-ms' && events
+    ? logoFadeAt(events,milliseconds) : {alpha:state.rawValue6===1 ? 1 : 0,movieTime:state.movieTime}
+  if (!model?.previewSongs?.includes(songCode) || state.movie !== (model.previewMovies?.[songCode] || model.previewMovie)
+      || fade.alpha <= .00001 || state.y >= 4000 || milliseconds < fade.movieTime) return null
+  const seconds = (milliseconds - fade.movieTime) / 1000 % model.duration
+  return { angle: sampleStreamedCurve(model.curve, seconds), seconds,alpha:fade.alpha }
 }
 
 export function logoProjectiveQuad(model, angle) {
@@ -45,8 +69,9 @@ export function createBackmonitorLogoMesh(PIXI, parent, texture) {
     precision mediump float;
     varying vec3 vLogoUVQ;
     uniform sampler2D uSampler;
-    void main() { gl_FragColor = texture2D(uSampler,vLogoUVQ.xy/vLogoUVQ.z); }
-    `, {uSampler:texture})
+    uniform float uLogoAlpha;
+    void main() { gl_FragColor = texture2D(uSampler,vLogoUVQ.xy/vLogoUVQ.z) * uLogoAlpha; }
+    `, {uSampler:texture,uLogoAlpha:1})
   const mesh = new PIXI.Mesh(geometry,shader)
   // Parent sits behind the stage art. Logo sits over the movie and under
   // the independent blackout/whiteout transition in that same container.
@@ -57,6 +82,7 @@ export function createBackmonitorLogoMesh(PIXI, parent, texture) {
 }
 
 export function updateBackmonitorLogoMesh(runtime, model, sample, projected) {
+  runtime.shader.uniforms.uLogoAlpha=sample.alpha
   const quad = logoProjectiveQuad(model,sample.angle)
   runtime.geometry.getBuffer('aVertexPosition').update(quad.vertices)
   runtime.geometry.getBuffer('aLogoUVQ').update(quad.uvq)

@@ -71,3 +71,18 @@ for native in volume:
 assert len([m for m in published['assets'].values() if m['profile']==catalog.VOLUME_PROFILE])==12
 assert sum(len(n['particles']) for n in volume)==37
 print('37 native volume emitters across 12 objects match independent fixtures; shape, gravity, burst, animated-UV, speed and noise rejection passed')
+drive=json.loads((base/'fixtures/chibi-floor-directed-box-inputs.json').read_text(encoding='utf8'))
+model=published['assets']['fx_in_drvalv_panel']
+assert model['profile']==catalog.DIRECTED_BOX_PROFILE and len(model['maskGroups'])==2
+parsed=[catalog.directed_box_system(p) if p['modules']['ShapeModule']['type']==5 else catalog.volume_system(p) for p in drive['particles']]
+for (s,mask),expected in zip(parsed,model['systems']):
+    assert {**s,'maskTexture':mask}==expected
+    assert mask in model['maskGroups']
+for change in [lambda p:p['modules']['ShapeModule']['m_Rotation'].update(x=90),
+               lambda p:p['modules']['InitialModule']['startSpeed'].update(scalar=20),
+               lambda p:p['modules'].update(NoiseModule={})]:
+    p=copy.deepcopy(drive['particles'][0]);change(p)
+    try:catalog.directed_box_system(p)
+    except ValueError:pass
+    else:raise AssertionError('Unknown directed box accepted')
+print('Drive native directed boxes, sphere glow emitters and two separate mask identities match; unknown orientation/speed/noise rejected')

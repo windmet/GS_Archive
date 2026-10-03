@@ -51,6 +51,7 @@
     data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
     data-backmonitor-logo-status="take-ending-native-mesh-reference-projection"
     :data-backmonitor-logo-angle="backmonitorLogoAngle"
+    :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
     data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
@@ -89,7 +90,9 @@
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
-    :data-character-light="currentCharacterLight.color"
+    data-foot-light-status="command-uniform-mapping-unresolved"
+    :data-foot-light-height="currentFootLighting.height"
+    :data-foot-light-rate="currentFootLighting.rate"
     :data-body-colors="appliedBodyColors"
     :data-image-colors="appliedImageColors"
     :data-background-component-count="backgroundComponentCount"
@@ -301,7 +304,7 @@
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
               <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
-              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾已接原生旋转标志，其他运行时换图仍待核对。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
@@ -468,6 +471,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
@@ -646,6 +650,7 @@ const suspensionSprites = createSpotlightSpriteStore({
 const spotlightBackgroundAlpha = ref(0)
 const visibleOldSuspensionlightIds = ref([])
 const backmonitorLogoAngle = ref('')
+const backmonitorLogoAlpha = ref(0)
 const backmonitorLogoSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
@@ -894,7 +899,7 @@ const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.valu
 const currentColorPlanes = computed(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
-const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
+const currentFootLighting = computed(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
 const currentBodyColors = computed(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
 const currentImageColors = computed(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
@@ -1117,6 +1122,7 @@ function ensureCharacterShadowTexture() {
 }
 
 function destroyStageRuntime(runtime) {
+  releaseFootLighting(runtime)
   runtime?.releaseShadowFollower?.()
   runtime?.groundShadow?.removeFromParent()
   runtime?.groundShadow?.destroy()
@@ -1463,23 +1469,6 @@ function wholeScreenColorAt(milliseconds) {
   )
 }
 
-function characterLightAt(milliseconds) {
-  return colorTrackAt(
-    selectedSong.value?.characterLightEvents,
-    milliseconds,
-    { color: 0xffffff, alpha: 1, depth: 1250, eventTime: '' },
-    event => ({
-      color: mixRgb(
-        0xffffff,
-        parseHexColor(event.color),
-        Math.max(0, Math.min(1, Number(event.opacity) / 1000)),
-      ),
-      alpha: 1,
-      depth: Number(event.depth ?? 1250),
-    }),
-  )
-}
-
 function lyricAt(milliseconds) {
   const events = selectedSong.value?.lyricEvents || []
   const event = [...events].reverse().find(item => Number(item.time) <= milliseconds)
@@ -1647,7 +1636,10 @@ function applyStageLighting() {
   }
   if (!lightingEnabled.value) {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
-    for (const runtime of runtimes.values()) runtime.spine.tint = 0xffffff
+    for (const runtime of runtimes.values()) {
+      runtime.spine.tint = 0xffffff
+      syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
+    }
     appliedBodyColors.value = ''
     return
   }
@@ -1658,7 +1650,10 @@ function applyStageLighting() {
     wholeScreenColorOverlay.zIndex = screen.depth
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
-  const character = currentCharacterLight.value
+  // Foot_Color is a local height replacement gradient. It must never dim
+  // the entire face/body; body tint remains a separate addressed command.
+  const character = { color: 0xffffff }
+  const foot = currentFootLighting.value
   const spotlightStates = [...spotlightStatesAt(stageTime.value).values()]
     .filter(state => state.alpha > 0.001 && state.beamColor)
   const spotlightPositions = new Set(
@@ -1690,18 +1685,19 @@ function applyStageLighting() {
     // A targeted performer is lit independently from the environment wash.
     // Mixing back toward white reproduces that separation without making the
     // Spine itself translucent beneath the foreground beam sprite.
-    if (pinspotlightStates.length > 0) {
+    if (pinspotlightPositions.size > 0) {
       runtime.spine.tint = pinspotlightPositions.has(position)
         ? mixRgb(character.color, 0xffffff, 0.5)
         : mixRgb(character.color, pinspotlightDimColor, pinspotlightDim)
     } else {
       runtime.spine.tint = spotlightPositions.has(position)
         ? mixRgb(character.color, 0xffffff, 0.5)
-        : spotlightStates.length > 0
+        : spotlightPositions.size > 0
           ? mixRgb(character.color, spotlightDimColor, spotlightDim)
           : character.color
     }
     runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
+    syncFootLighting(PIXI,runtime,foot,true)
   }
   appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
@@ -1958,7 +1954,7 @@ function syncOldSuspensionlights() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
-    stageEffectIndex.value?.oldSuspensionlight)) {
+    stageEffectIndex.value?.oldSuspensionlight,descriptor)) {
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue
@@ -2518,6 +2514,7 @@ async function loadObjectLayerRuntime(entry) {
       (Number(instance.scaleY) || 1) * pixelsToStage,
     )
     sprite.rotation = (Number(instance.rotation) || 0) * Math.PI / 180
+    sprite.skew.set((Number(instance.skewX) || 0) * Math.PI / 180, 0)
     sprite.tint = Number(instance.tint) || 0xffffff
     sprite.alpha = Number.isFinite(Number(instance.alpha)) ? Number(instance.alpha) : 1
     sprite.blendMode = instance.blendMode === 'add' ? PIXI.BLEND_MODES.ADD : PIXI.BLEND_MODES.NORMAL
@@ -2747,7 +2744,8 @@ function syncBackmonitorLogo(state,projected) {
   backmonitorLogoAngle.value = ''
   for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
   const model = stageEffectIndex.value?.backmonitorLogo
-  const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model)
+  const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model,selectedSong.value?.backmonitorEvents)
+  backmonitorLogoAlpha.value = sample?.alpha || 0
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
   const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
   if (!runtime) return

@@ -190,9 +190,10 @@ def main() -> None:
                 target.write_text(json.dumps(old_track,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
                 old_suspension_songs[script.m_Name] = {'file':f'stage-effects/{relative}',
                     'eventCount':len(old_events), 'source':old_track['source'],
-                    # Geometry/timing acceptance starts with Moon. Other tracks
-                    # remain inventoried until their director projection is checked.
-                    'previewEnabled':script.m_Name=='montns_live_effect'}
+                    # Moon and the shared Growing/Drive families are recording
+                    # checked previews; unrelated director planes remain guarded.
+                    'previewEnabled':script.m_Name=='montns_live_effect' or script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')),
+                    'referenceProjection':'stage-rig-v1' if script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')) else 'legacy-half-plane'}
             events = suspensionlight_events(payload)
             if not events: continue
             if script.m_Name in suspension_songs:

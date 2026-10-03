@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { attachChibiFloor,sampleFloorSystem,sampleFloorGradient,loadChibiFloor,updateChibiFloor,CHIBI_VOLUME_FLOOR_PROFILE } from '../src/core/chibiFloorParticles.js'
+import { attachChibiFloor,sampleFloorSystem,sampleFloorGradient,loadChibiFloor,updateChibiFloor,CHIBI_VOLUME_FLOOR_PROFILE,CHIBI_DIRECTED_BOX_FLOOR_PROFILE } from '../src/core/chibiFloorParticles.js'
 import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
 import { CHIBI_FIRE_PROFILE, sampleFireSystem } from '../src/core/chibiFireFlipbook.js'
 const model=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-model.json',import.meta.url)))
@@ -58,9 +58,9 @@ console.log('Take floor source guards, native gradient/alpha witnesses, bounded 
 const catalog=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-catalog.json',import.meta.url)))
 const indexed={assets:Object.fromEntries(Object.values(catalog.assets).map(m=>[m.asset,{kind:'particle',bundle:m.bundle,particleCount:m.particleCount}]))}
 const attached=attachChibiFloor(indexed,catalog)
-assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,20)
+assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,21)
 assert.equal(catalog.inventory.length,49)
-assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,29)
+assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,28)
 assert.equal(catalog.inventory.filter(r=>r.status==='registered_continuous_volume_profile').length,12)
 assert.equal(catalog.inventory.filter(r=>r.status==='registered_partial_fire_flipbook_profile').length,1)
 const toy=structuredClone(catalog.assets.fx_in_mtples_panel_1.systems[0])
@@ -75,7 +75,7 @@ for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset
  assert.equal(attached.assets[entry.asset].floorAnimation,entry)
  assert.notEqual(entry.mask.texture,model.mask.texture)
  const rt=await loadChibiFloor(pixi,entry,async()=>({baseTexture:{},destroy(){}}))
- assert.ok(rt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0)<=(entry.profile===CHIBI_VOLUME_FLOOR_PROFILE ? 2048 : 512))
+ assert.ok(rt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0)<=([CHIBI_VOLUME_FLOOR_PROFILE,CHIBI_DIRECTED_BOX_FLOOR_PROFILE].includes(entry.profile) ? 2048 : 512))
  updateChibiFloor(rt,5000,0); const previous=rt.floorSignature
  updateChibiFloor(rt,5250,0);assert.notEqual(previous,rt.floorSignature)
  updateChibiFloor(rt,5000,0);assert.equal(previous,rt.floorSignature)
@@ -130,4 +130,15 @@ const moonRt=await loadChibiFloor(pixi,moon,async()=>({baseTexture:{},destroy(){
 assert.equal(moonRt.frameTextures.length,32)
 updateChibiFloor(moonRt,5000,0)
 assert.ok(new Set(moonRt.floorEmitters[0].sprites.filter(s=>s.visible).map(s=>s.texture.rect.v.join(','))).size>1)
-console.log('49 floor objects classified; 19 complete native-input profiles plus partial flame, volume motion, per-birth atlas, seek and alpha blend passed')
+const drive=catalog.assets.fx_in_drvalv_panel,box=drive.systems.find(s=>s.directedBox)
+const before=sampleFloorSystem(box,3000,0),after=sampleFloorSystem(box,3100,0)
+const birth=before.find(p=>after.some(q=>q.birth===p.birth)),later=after.find(p=>p.birth===birth.birth)
+assert.equal(later.x,birth.x,'Directed box beam rises vertically from the native rotated shape')
+assert.ok(birth.y-later.y>=20 && birth.y-later.y<=30.00001,'Native speed range 2..3 advances upward by 20..30 design pixels in 100 ms')
+const driveRt=await loadChibiFloor(pixi,drive,async()=>({baseTexture:{},destroy(){}}))
+assert.equal(driveRt.container.children[0].children.length,2,'Left/right particle groups retain separate clipping containers')
+assert.ok(driveRt.container.children[0].children.every(g=>g.mask))
+assert.equal(driveRt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0),400)
+const invalid=structuredClone(drive);invalid.systems[0].maskTexture='wrong'
+assert.ok(!attachChibiFloor(indexed,{schemaVersion:2,assets:{[drive.asset]:invalid}}).assets[drive.asset].floorAnimation)
+console.log('49 floor objects classified; 20 complete native-input profiles plus partial flame, directed box motion, two-mask clipping and seek passed')

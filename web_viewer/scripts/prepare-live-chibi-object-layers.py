@@ -23,6 +23,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
 from live_chibi_texture import sprite_image
+from live_chibi_object_transform import local_matrix, relative_matrix, decompose
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "object-layers"
@@ -59,74 +60,6 @@ def pptr_path_id(value) -> int:
     if isinstance(value, dict):
         return int(value.get("m_PathID", 0))
     return int(getattr(value, "path_id", 0))
-
-
-def quaternion_z(rotation) -> float:
-    x = float(rotation.x)
-    y = float(rotation.y)
-    z = float(rotation.z)
-    w = float(rotation.w)
-    return math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
-
-
-def multiply(left: tuple[float, ...], right: tuple[float, ...]) -> tuple[float, ...]:
-    a, b, c, d, tx, ty = left
-    e, f, g, h, ux, uy = right
-    return (
-        a * e + c * f,
-        b * e + d * f,
-        a * g + c * h,
-        b * g + d * h,
-        a * ux + c * uy + tx,
-        b * ux + d * uy + ty,
-    )
-
-
-def local_matrix(transform) -> tuple[float, ...]:
-    angle = quaternion_z(transform.m_LocalRotation)
-    cosine = math.cos(angle)
-    sine = math.sin(angle)
-    scale_x = float(transform.m_LocalScale.x)
-    scale_y = float(transform.m_LocalScale.y)
-    return (
-        cosine * scale_x,
-        sine * scale_x,
-        -sine * scale_y,
-        cosine * scale_y,
-        float(transform.m_LocalPosition.x),
-        float(transform.m_LocalPosition.y),
-    )
-
-
-def relative_matrix(transform, root_path_id: int) -> tuple[float, ...]:
-    chain = []
-    current = transform
-    while current is not None:
-        go_path_id = current.m_GameObject.path_id
-        if go_path_id == root_path_id:
-            break
-        chain.append(local_matrix(current))
-        father = current.m_Father
-        current = father.read() if father.path_id else None
-    result = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
-    for matrix in reversed(chain):
-        result = multiply(result, matrix)
-    return result
-
-
-def decompose(matrix: tuple[float, ...]) -> dict:
-    a, b, c, d, tx, ty = matrix
-    scale_x = math.hypot(a, b)
-    determinant = a * d - b * c
-    scale_y = determinant / scale_x if scale_x else math.hypot(c, d)
-    rotation = math.degrees(math.atan2(b, a)) if scale_x else 0
-    return {
-        "x": round(tx * 100, 4),
-        "y": round(-ty * 100, 4),
-        "scaleX": round(scale_x, 6),
-        "scaleY": round(scale_y, 6),
-        "rotation": round(-rotation, 4),
-    }
 
 
 def renderer_materials(renderer) -> list[str]:

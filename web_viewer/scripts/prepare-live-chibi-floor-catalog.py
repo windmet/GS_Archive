@@ -14,6 +14,7 @@ spec=importlib.util.spec_from_file_location('take_floor',ROOT/'scripts/prepare-l
 take=importlib.util.module_from_spec(spec);spec.loader.exec_module(take)
 PROFILE='continuous-masked-box-floor-v1'
 VOLUME_PROFILE='continuous-masked-volume-floor-v1'
+DIRECTED_BOX_PROFILE='continuous-masked-directed-box-floor-v1'
 require=take.require
 
 def colors(c):
@@ -102,6 +103,23 @@ def volume_system(p):
                   capacity=i['maxNumParticles'],speedParameters=speed,frameRange=frame,frame=None)
     return result,mask
 
+def directed_box_system(p):
+    """Native box rotated -90 around X; birth velocity points upward in XY."""
+    import copy
+    shape=p['modules']['ShapeModule'];speed=take.compact_curve(p['modules']['InitialModule']['startSpeed'])
+    require(shape['type']==5 and shape['m_Rotation']=={'x':-90,'y':0,'z':0}
+            and not shape['alignToDirection'] and all(shape[k]==0 for k in
+            ('randomDirectionAmount','sphericalDirectionAmount','randomPositionAmount')),
+            'Directed box orientation unsupported')
+    require(speed['mode'] in (0,3) and 0<=speed['minScalar']<=speed['scalar']<=3,
+            'Directed box speed unsupported')
+    native=copy.deepcopy(p)
+    native['modules']['ShapeModule']['m_Rotation']={'x':0,'y':0,'z':0}
+    native['modules']['InitialModule']['startSpeed'].update(minMaxState=0,scalar=0)
+    result,mask=volume_system(native)
+    result.update(shapeType=5,directedBox=True,speedParameters=speed)
+    return result,mask
+
 def mask_for(env,identity):
     audit=take.load_audit()
     matches=[]
@@ -165,11 +183,18 @@ def main():
                 try:
                     parsed=[system(p) for p in native['particles']];profile=PROFILE
                 except (ValueError,KeyError):
-                    parsed=[volume_system(p) for p in native['particles']];profile=VOLUME_PROFILE
+                    parsed=[];profile=VOLUME_PROFILE
+                    for p in native['particles']:
+                        try: parsed.append(volume_system(p))
+                        except (ValueError,KeyError):
+                            parsed.append(directed_box_system(p));profile=DIRECTED_BOX_PROFILE
                 systems=[s for s,_ in parsed];mask_ids={i for _,i in parsed}
-                require(sum(s['capacity'] for s in systems)<=(2048 if profile==VOLUME_PROFILE else 512),'Object exceeds profile sprite budget')
-            require(len(mask_ids)==1,'Multiple masks require separate emitter groups')
-            mask=mask_for(env,next(iter(mask_ids)));textures={}
+                if profile==DIRECTED_BOX_PROFILE:
+                    for s,mask_id in parsed: s['maskTexture']=mask_id
+                require(sum(s['capacity'] for s in systems)<=(2048 if profile in (VOLUME_PROFILE,DIRECTED_BOX_PROFILE) else 512),'Object exceeds profile sprite budget')
+            require(len(mask_ids)==1 or profile==DIRECTED_BOX_PROFILE,'Multiple masks require separate emitter groups')
+            masks={identity:mask_for(env,identity) for identity in sorted(mask_ids)}
+            mask=next(iter(masks.values()));textures={}
             for identity in {s['texture'] for s in systems}|mask_ids:
                 obj=next(o for o in env.objects if str(o.path_id)==identity)
                 require(obj.type.name=='Texture2D','Texture pointer type changed')
@@ -180,11 +205,12 @@ def main():
             models[asset]={'profile':profile,'asset':asset,'bundle':bundle,'bundleSha256':audit.file_hash(path),
                            'keeper':native['keeper'],'particleCount':len(native['particles']),'systems':systems,'mask':mask,'textures':textures,
                            'status':'native_inputs_reference_projection_rng_not_unity_equivalent'}
+            if len(masks)>1:models[asset]['maskGroups']=masks
             if deferred:
                 models[asset]['deferredSystems']=deferred
                 record.update(status='registered_partial_fire_flipbook_profile',supportedSystems=2,deferredSystems=deferred,spriteBudget=2)
             else:
-                record.update(status='registered_continuous_volume_profile' if profile==VOLUME_PROFILE else 'registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
+                record.update(status='registered_directed_box_profile' if profile==DIRECTED_BOX_PROFILE else 'registered_continuous_volume_profile' if profile==VOLUME_PROFILE else 'registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
         except (ValueError,KeyError) as error:
             record.update(status='deferred',reason=str(error))
         records.append(record)

@@ -4,6 +4,7 @@ import { CHIBI_FIRE_PROFILE, attachChibiFire, sampleFireSystem } from './chibiFi
 export const CHIBI_FLOOR_PROFILE = 'take-masked-nebula-reference-v1'
 export const CHIBI_BOX_FLOOR_PROFILE = 'continuous-masked-box-floor-v1'
 export const CHIBI_VOLUME_FLOOR_PROFILE = 'continuous-masked-volume-floor-v1'
+export const CHIBI_DIRECTED_BOX_FLOOR_PROFILE = 'continuous-masked-directed-box-floor-v1'
 const asset = 'fx_in_tkstp1_panel_1'
 const random = (birth, channel, seed) => {
   let n = Math.imul(birth + 1, 0x45d9f3b) ^ Math.imul(channel + 1, 0x27d4eb2d) ^ seed
@@ -40,6 +41,11 @@ export function sampleFloorSystem(system, milliseconds, activatedAt) {
         * (system.colorOverLife ? sampleFloorGradient(system.colorOverLife.colors,fraction,['r','g','b'][channel]) : 1)) << shift), 0)
     const startAlpha = sampleFloorGradient(system.color.alphas, colorPosition)
     let x=(rnd(2)-.5)*system.shape.x, y=(rnd(3)-.5)*system.shape.y
+    if (system.directedBox) {
+      // Rotate native XYZ box coordinates around X by -90 degrees:
+      // its Z extent becomes screen Y, and forward velocity becomes +Y.
+      y=(rnd(7)-.5)*system.shape.z+range(system.speedParameters,rnd(8))*age
+    }
     if (system.shapeType===0) {
       // Uniform sphere volume, projected onto XY. Keep Z in the direction
       // distribution, rather than replacing the sphere with a uniform disk.
@@ -100,7 +106,8 @@ export function attachChibiFloor(objectIndex, model) {
 }
 
 function attachBoxFloor(index, model) {
-  const volume=model?.profile===CHIBI_VOLUME_FLOOR_PROFILE
+  const directed=model?.profile===CHIBI_DIRECTED_BOX_FLOOR_PROFILE
+  const volume=directed || model?.profile===CHIBI_VOLUME_FLOOR_PROFILE
   const original = index?.assets?.[model?.asset]
   const finite = n => typeof n === 'number' && Number.isFinite(n)
   const hash = s => /^[a-f0-9]{64}$/.test(s || '')
@@ -115,10 +122,15 @@ function attachBoxFloor(index, model) {
     && model.textures[id].serializedFile===model.keeper.serializedFile
     && hash(model.textures[id].pngSha256) && /^floor-particles\/[\w.-]+\.png$/.test(model.textures[id].file || '')
     && [model.textures[id].width,model.textures[id].height].every(n=>Number.isInteger(n) && n>0 && n<=4096)
+  const validMask = m => m && texture(m.texture) && [m.x,m.y].every(finite)
+    && [m.width,m.height].every(n=>finite(n) && n>0 && n<=2500)
   if ((!volume && model?.profile !== CHIBI_BOX_FLOOR_PROFILE) || original?.kind !== 'particle'
     || original.bundle !== model.bundle || original.particleCount !== model.particleCount
     || !hash(model.bundleSha256) || typeof model.keeper?.pathId !== 'string'
     || !Array.isArray(model.systems) || !model.systems.length || model.systems.length!==model.particleCount
+    || (model.maskGroups && (!directed || Object.keys(model.maskGroups).length>8
+      || !Object.entries(model.maskGroups).every(([id,m])=>id===m.texture && validMask(m))
+      || !model.systems.every(s=>model.maskGroups[s.maskTexture])))
     || !model.mask || !texture(model.mask.texture) || ![model.mask.x,model.mask.y].every(finite)
     || ![model.mask.width,model.mask.height].every(n=>finite(n) && n>0 && n<=2500)
     || model.systems.reduce((n,s)=>n+s.capacity,0)>(volume ? 2048 : 512)
@@ -136,7 +148,11 @@ function attachBoxFloor(index, model) {
       && s.noiseParameters===null && (volume
         ? [0,5].includes(s.shapeType) && finite(s.radius) && s.radius>0 && s.radius<=10
           && curve(s.speedParameters) && [0,3].includes(s.speedParameters.mode)
-          && Math.max(Math.abs(s.speedParameters.scalar),Math.abs(s.speedParameters.minScalar))<=2
+          && (s.directedBox
+            ? directed && s.shapeType===5 && finite(s.shape.z) && s.shape.z>=0
+              && s.speedParameters.minScalar>=0 && s.speedParameters.scalar>=s.speedParameters.minScalar
+              && s.speedParameters.scalar<=3
+            : Math.max(Math.abs(s.speedParameters.scalar),Math.abs(s.speedParameters.minScalar))<=2)
           && (!s.frameRange || curve(s.frameRange) && [0,3].includes(s.frameRange.mode)
             && [s.frameRange.scalar,s.frameRange.minScalar].every(n=>n>=0 && n<=1))
         : s.speedParameters?.mode===0 && s.speedParameters.scalar===0))) return index
@@ -155,11 +171,18 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
   try {
     content.sortableChildren = true
     container.addChild(content)
-    const mask = new PIXI.Sprite(byId.get(animation.mask.texture))
-    mask.anchor.set(.5); mask.position.set(animation.mask.x,animation.mask.y)
-    mask.width=animation.mask.width; mask.height=animation.mask.height
-    container.addChild(mask); content.mask=mask
+    const groups=new Map()
+    for(const model of Object.values(animation.maskGroups || {default:animation.mask})) {
+      const group=animation.maskGroups ? new PIXI.Container() : content
+      group.sortableChildren=true
+      if(animation.maskGroups)content.addChild(group)
+      const mask = new PIXI.Sprite(byId.get(model.texture))
+      mask.anchor.set(.5); mask.position.set(model.x,model.y)
+      mask.width=model.width; mask.height=model.height
+      container.addChild(mask); group.mask=mask;groups.set(model.texture,group)
+    }
     const emitters = animation.systems.map(system => {
+      const emitterContent=groups.get(system.maskTexture || animation.mask.texture)
       let texture = byId.get(system.texture)
       if (animation.profile === CHIBI_FIRE_PROFILE) {
         const metadata=animation.textures[system.texture], w=metadata.width/system.tilesX,h=metadata.height/system.tilesY
@@ -168,7 +191,7 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
           frameTextures.push(frame);return frame
         })
         const sprite=new PIXI.Sprite(frames[0]);sprite.anchor.set(.5);sprite.zIndex=system.sortingOrder
-        sprite.blendMode=PIXI.BLEND_MODES.NORMAL;sprite.visible=false;content.addChild(sprite)
+        sprite.blendMode=PIXI.BLEND_MODES.NORMAL;sprite.visible=false;emitterContent.addChild(sprite)
         return {system,sprites:[sprite],fireFrames:frames}
       }
       let atlasFrames=null
@@ -186,7 +209,7 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
       }
       const sprites=Array.from({length:system.capacity},()=>{
         const s=new PIXI.Sprite(texture); s.anchor.set(.5); s.blendMode=PIXI.BLEND_MODES.ADD
-        s.zIndex=system.sortingOrder; s.visible=false; content.addChild(s);return s
+        s.zIndex=system.sortingOrder; s.visible=false; emitterContent.addChild(s);return s
       })
       return {system,sprites,atlasFrames}
     })
