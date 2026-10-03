@@ -338,14 +338,44 @@ onBeforeUnmount(() => resetPlayback())
 .solo-open { width: 100%; margin-top: 12px; text-align: left; }
 summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #245a64; font-size: 13px; }
 button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }
-.solo-drawer { position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box; width: min(480px,100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh; border: 0; border-left: 1px solid #bed3db; border-radius: 0; padding: 0; color: #254858; background: white; }
+.solo-drawer {
+  --solo-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
+  --solo-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
+  --solo-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
+  --solo-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
+  --solo-header-safe-top: var(--solo-safe-top);
+  --solo-inline-left: max(var(--gs-space-5), var(--solo-safe-left));
+  --solo-inline-right: max(var(--gs-space-5), var(--solo-safe-right));
+  position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box;
+  width: min(var(--gs-surface-drawer-width),100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh;
+  border: 0; border-left: 1px solid #bed3db; border-radius: 0; padding: 0;
+  font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular);
+  color: #254858; background: white;
+}
 .solo-drawer::backdrop { background: #102b3d88; }
-.solo-drawer :deep(.terminal-dialog-body) { padding: 18px; }
-.solo-filters { display: grid; gap: 12px; }
-.solo-filters label { display: grid; gap: 8px; font-size: 13px; }
-.solo-filters input, .solo-filters select { width: 100%; min-height: 44px; border: 1px solid #afc8ce; padding: 8px 10px; box-sizing: border-box; border-radius: 6px; font: inherit; background: white; color: #254858; }
-.solo-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
-.solo-list button { display: grid; gap: 5px; min-height: 64px; border: 1px solid #cbdee4; padding: 10px; border-radius: 6px; text-align: left; color: #254858; background: #f5fafb; font: inherit; font-size: 13px; cursor: pointer; }
-.solo-list small { color: #657f8a; } .solo-list button[aria-pressed=true] { border-color: #168f87; background: #e4f7f1; }
-@media(max-width:760px) { .solo-drawer { inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 14px 14px 0 0; } }
+.solo-drawer :deep(.terminal-dialog-header) {
+  min-width: 0;
+  padding: calc(var(--gs-space-4) + var(--solo-header-safe-top)) var(--solo-inline-right) var(--gs-space-4) var(--solo-inline-left);
+}
+/* The native window title keeps its established 20px surface role. */
+.solo-drawer :deep(.terminal-dialog-header h2) { min-width: 0; font-size: 20px; overflow-wrap: anywhere; }
+.solo-drawer :deep(.terminal-dialog-body) {
+  min-width: 0;
+  padding: var(--gs-space-5) var(--solo-inline-right) calc(var(--gs-space-5) + var(--solo-safe-bottom)) var(--solo-inline-left);
+}
+.solo-filters { display: grid; gap: var(--gs-space-4); }
+.solo-filters label { display: grid; gap: var(--gs-space-3); font-size: var(--gs-text-ui); }
+.solo-filters input, .solo-filters select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); border: 1px solid #afc8ce; padding: 8px 10px; box-sizing: border-box; border-radius: 6px; font: inherit; background: white; color: #254858; }
+.solo-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--gs-space-3); }
+.solo-list button { display: grid; gap: var(--gs-space-2); min-width: 0; min-height: 64px; border: 1px solid #cbdee4; padding: 10px; border-radius: 6px; text-align: left; color: #254858; background: #f5fafb; font: inherit; cursor: pointer; }
+.solo-list strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
+.solo-list small { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: normal; overflow-wrap: anywhere; color: #657f8a; }
+.solo-list button[aria-pressed=true] { border-color: #168f87; background: #e4f7f1; }
+@media(max-width:760px) {
+  /* Only protect the top inset left uncovered by this 85dvh sheet's 15dvh gap. */
+  .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 14px 14px 0 0; }
+}
+@media(max-width:760px), (pointer:coarse) {
+  .solo-filters input, .solo-filters select { font-size: var(--gs-text-subtitle); }
+}
 </style>
