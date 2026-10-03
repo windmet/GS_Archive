@@ -638,3 +638,11 @@ Take 本地视频 SHA256 `a20cc0a5cf1f0e090cf2670d9dec1f07e03cab3f93041242b135ea
 Python typed-source拒绝用例、Node梯度/生命周期/容量/seek/异步释放、118编排VFX统计、舞台intent与既有粒子回归通过。`build:check` 2781模块、20.84s，固定.analysis/build-check，不含public复制。5198既有映射服务实际Browser验收两版Take：地板可见，开关差分在台面区域有33088个明显变化像素（最大通道差79），上方画面变化0；暂停两张画布逐像素差为0。播放粒子出生/尺寸/透明度持续变化；390×844画布357×201，页面宽390无横向溢出。切Study清理Take粒子，console error为0。证据保留take-reference/floor-02-enabled.png、floor-02-disabled.png、floor-02-paused-a/b.png、floor-mobile.png。
 
 全曲扩展按各曲原资源推广接口，不能照搬Take纹理/遮罩/颜色。118编排资源普查确认Take共享地板仅覆盖tkstp1与tkstp2；其他panel各有独立资源，下一轮逐种审核模块和材质再接线。地面灯已获用户复核；挂星灯交错渐变与独唱上方打光继续待验收。
+
+### 2026-10-03：挂星灯的独立交错渐变
+
+接续地板批次8f0866e7。RAW将16颗挂星灯各自作为独立Stagelight命令，不是地面31灯的renderer数组：Take01奇数组22150ms重启，偶数组先隐藏、22375ms重启；Take02对应22200/22425ms，两曲差50ms。旧colorMode1路径直接恒亮，忽略period，造成星灯开关而无渐变。对照原视频22.2–22.5s逐帧，星灯从暗渐亮再变暗；地面colorMode5起始亮度相反。仅对确认的16颗Take星灯启用录屏指导的连续暗→亮→暗包络，独立命令起点形成交错，保留原颜色、period与hide行为，地面灯公式不改。三角包络仍不是原生Tween/easing方法体，其他灯具不能按名称盲套。
+
+新增两曲原命令fixture，回归覆盖225ms/450ms亮暗交换、补色时间点、隐藏/向后seek、01青色与02橙色、真实50ms差异；既有地面相位与旧异步资源释放通过。build:check 2781模块24.71s，不复制public。5198 Browser 1280×720两相位截图可见左右星灯亮暗交换，02使用橙色；390×844页面宽390无横向溢出、console error0。证据stars-22200-22600.jpg为原录屏，stars-browser-22400.png/22600.png为复刻画面。
+
+全曲展开已重新读取135个带粒子的indexed对象、992个ParticleSystem完整模块树，source范围49个明确bundle（包括共享shader依赖）；账目仍是raw_inventory_not_visual_acceptance。后续按真实模块/材质逐类推广，不把Take灯/地板图硬套全曲。独唱上方光束初查显示Take使用大量NewSuspensionlight_*与Searchlight_*新格式，尚未进入现有Spotlight消费者，继续独立解析，未声称完成。

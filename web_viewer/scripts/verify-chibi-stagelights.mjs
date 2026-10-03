@@ -24,6 +24,21 @@ const pulse = fixture.songs.tkstp1.events.find(e => e.time === 22150)
 assert.equal(pulse.period,450); assert.equal(pulse.interval,225)
 const lamps = t => Array.from({length:31},(_,i)=>sampleStagelight(pulse,t,i,31).alpha)
 assert.deepEqual(lamps(22150).slice(0,4),[1,0,1,0])
+// Hanging stars are individual RAW commands, not the ground renderer array.
+const stars=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-stagelight-stars.json',import.meta.url)))
+for(const [code,track] of Object.entries(stars.songs)) {
+ const sample=(time,id)=>sampleStagelight(stagelightStatesAt(track.events,time).get(id),time)
+ const origin=code==='tkstp1'?22150:22200
+ assert.equal(sample(origin+225,1).alpha,1)
+ assert.equal(sample(origin+225,2).alpha,0)
+ assert.equal(sample(origin+450,1).alpha,0)
+ assert.equal(sample(origin+450,2).alpha,1)
+ assert.ok(Math.abs(sample(origin+250,1).alpha+sample(origin+250,2).alpha-1)<1e-10)
+ assert.equal(sample(origin+250,1).color,code==='tkstp1'?0x00ccbb:0xed8b00)
+ assert.equal(sample(origin+250,2).color,sample(origin+250,1).color)
+ assert.equal(sample(origin+150,2).alpha,0) // hidden until the independent restart
+ assert.equal(sample(origin+225,1).alpha,1) // replay after forward samples
+}
 assert.deepEqual(lamps(22375).slice(0,4),[0,1,0,1])
 for (const delta of [1,55,112.5,224,226,337.5,449,900]) {
  const values=lamps(22150+delta)
@@ -59,6 +74,7 @@ if(process.argv.includes('--published-assets')) {
    assert.equal(index.stagelightSongs[code].events.length,track.allEvents)
    assert.deepEqual(index.stagelightSongs[code].events.filter(e=>e.id===17),track.events)
    assert.deepEqual(index.stagelightSongs[code].source,track.source)
+   assert.deepEqual(index.stagelightSongs[code].events.filter(e=>[1,2].includes(e.id)),stars.songs[code].events)
  }
 }
 console.log('Take 01/02 colors, per-lamp interleaved fades, hide freeze, backward seek, ordered native geometry and stale texture disposal passed')

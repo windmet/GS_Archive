@@ -4,6 +4,10 @@ const clamp = value => Math.max(0, Math.min(1, value))
 const rgb = value => /^#[\da-f]{6}$/i.test(value || '') ? parseInt(value.slice(1), 16) : 0xffffff
 const mix = (a, b, t) => [16, 8, 0].reduce((color, shift) => color |
   (Math.round(((a >> shift) & 255) * (1 - t) + ((b >> shift) & 255) * t) << shift), 0)
+const takeStar = asset => {
+  const match = /^fx_in_tkstp1_stagelight_(\d+)$/.exec(asset || '')
+  return match && Number(match[1]) >= 1 && Number(match[1]) <= 16
+}
 
 function lampAt(state, time, index, count) {
   if (!state) return { color: 0xffffff, alpha: 0 }
@@ -17,6 +21,15 @@ function lampAt(state, time, index, count) {
   let color = rgb(state.color)
   let alpha = 1
   if (state.colorMode === 2) color = mix(state.fromColor, color, clamp(elapsed / period))
+  if (state.colorMode === 1 && takeStar(state.asset)) {
+    // Take authors each hanging star as its own command. Odd/even groups restart
+    // 225 ms apart with a 450 ms period; do not phase all 16 by a shared index.
+    // Recording-guided continuous envelope, not a recovered Unity tween body.
+    const phase = elapsed % period
+    // The reference starts a star dim, then rises and falls. Ground mode 5
+    // starts bright; using that envelope here inverts the visible star phase.
+    alpha = 1 - Math.abs(2 * phase / period - 1)
+  }
   if (state.colorMode === 5) {
     // The interval belongs to successive entries in the native renderer array,
     // not to a shared fade followed by a black hold. Take's 450/225 commands
