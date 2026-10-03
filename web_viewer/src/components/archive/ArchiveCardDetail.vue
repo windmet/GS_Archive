@@ -165,14 +165,19 @@
       <section v-if="visibleCostumes.length" class="card-detail-section">
         <h4>关联衣装</h4>
         <div class="costume-list">
-          <div v-for="costume in visibleCostumes" :key="costume.key" class="costume-row">
-            <Shirt :size="20" />
-            <div>
-              <div class="costume-heading">
-                <strong :title="costume.name">{{ archiveText('costume', costume.name) || '衣装名称待确认' }}</strong>
-                <span>{{ costume.labels.join(' · ') }}</span>
+          <div v-for="group in visibleCostumes" :key="group.key" class="costume-group">
+            <Shirt :size="20" aria-hidden="true" />
+            <div class="costume-group-content">
+              <h5 class="costume-group-title" :title="group.name">{{ archiveText('costume', group.name) || '衣装名称待确认' }}</h5>
+              <blockquote v-if="group.description" class="costume-flavor">
+                <span class="authored-text">{{ group.description }}</span><span class="reflowed-text">{{ reflowCardCostumeFlavor(group.description) }}</span>
+              </blockquote>
+              <div v-for="costume in group.costumes" :key="costume.key" class="costume-row">
+                <div class="costume-heading">
+                  <strong :title="costume.name">{{ archiveText('costume', costume.name) || '衣装名称待确认' }}</strong>
+                  <span>{{ costume.labels.join(' · ') }}</span>
+                </div>
               </div>
-              <p v-if="costume.description">{{ archiveText('costume', costume.description, 'description') }}</p>
             </div>
           </div>
         </div>
@@ -326,7 +331,7 @@ import {
   getCardPortraitUrl,
   isRawCardCandidate,
 } from '../../utils/CardAssetResolver.js'
-import { presentCardAssetRows, presentCardCostumeRelations } from '../../presentation/CardDetailSemantics.js'
+import { presentCardAssetRows, presentCardCostumeGroups, reflowCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
 
 const props = defineProps({
   card: { type: Object, default: null },
@@ -381,7 +386,8 @@ const parameterRows = computed(() => {
   ]
 })
 
-const visibleCostumes = computed(() => presentCardCostumeRelations(props.card?.costume_relations))
+const visibleCostumes = computed(() => presentCardCostumeGroups(props.card?.costume_relations,
+  costume => archiveText('costume', costume.description, 'description')))
 
 function formatDate(timestamp) {
   if (!Number.isFinite(timestamp)) return 'unknown'
@@ -587,13 +593,16 @@ function openRelation(item) {
 .limitbreak-item-row strong { color: #2d4551; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: #4c5c64; font-size: var(--gs-text-body); line-height: 1.5; }
 .costume-list { display: flex; flex-direction: column; }
-.costume-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
-.costume-row:last-child { border-bottom: 0; }
+.costume-group { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
+.costume-group:last-child { border-bottom: 0; }
+.costume-group-content { min-width: 0; }
+.costume-group-title { margin: 0 0 var(--gs-space-3); color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.costume-row { padding: var(--gs-space-1) 0; }
+.costume-flavor { margin: 0 0 var(--gs-space-3); padding-left: var(--gs-space-4); border-left: 2px solid #b9d8d3; white-space: pre-wrap; color: #4d5c64; font-size: var(--gs-text-body); line-height: 1.55; overflow-wrap: anywhere; }
 .costume-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); }
 .costume-heading strong { color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .costume-heading span { color: #697980; font-size: var(--gs-text-meta); }
 .costume-row small { display: block; margin-top: var(--gs-space-1); color: #849097; font-family: monospace; font-size: var(--gs-text-meta); }
-.costume-row p { margin: var(--gs-space-3) 0 0; white-space: pre-wrap; color: #4d5c64; font-size: var(--gs-text-body); line-height: 1.55; }
 .release-series { border-top: 1px solid #edf0f2; padding-top: var(--gs-space-4); }
 .release-series-cards { display: flex; gap: var(--gs-space-3); margin-top: var(--gs-space-4); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 1px solid #e1e6e9; border-radius: var(--gs-radius-control); background: #fff; color: #4b5962; cursor: pointer; }
