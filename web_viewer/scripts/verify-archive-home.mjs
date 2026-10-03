@@ -39,7 +39,51 @@ assert.equal(toma.cues[0].previewStep.state.spines[0].id, '001tom')
 assert.equal(toma.costumes.length, 12)
 assert.equal(toma.costumes[0].name, 'ベーシックウェア')
 assert.equal(toma.costumes[0].modelId, '001tom_002_00')
-assert.equal(idols.flatMap(idol => idol.costumes).length, 601)
+assert.equal(idols.flatMap(idol => idol.costumes).length, 599)
+
+// Actual source scene defaults do not all have the same availability. The
+// unnamed Shu rig is present; Hayato/Eishin source cues reference absent rigs.
+const sceneDefaults = idols.flatMap(idol => idol.costumes).filter(costume => costume.isSceneDefault)
+assert.deepEqual(sceneDefaults.map(costume => costume.modelId), ['047shu_002_00'])
+assert.equal(costumeDictionary.by_model_resource_id['047shu_002_00'].spine_exists, true)
+assert.ok(!costumeDictionary.by_model_resource_id['047shu_002_00'].costume_name)
+for (const [idolCode, modelId] of [['020hay', '020hay_002_00'], ['049eis', '049eis_002_00']]) {
+  const idol = idols.find(idol => idol.id === idolCode)
+  assert.equal(costumeDictionary.by_model_resource_id[modelId], undefined)
+  assert.ok(idol.cues.some(cue => cue.modelId === modelId), 'source cue/model evidence remains intact')
+  assert.ok(!idol.costumes.some(costume => costume.modelId === modelId), 'absent rig is not offered as a selectable costume')
+  assert.ok(idol.costumes.length > 0, 'the actual idol retains known available costumes for the existing render fallback')
+}
+for (const costume of idols.flatMap(idol => idol.costumes)) {
+  assert.equal(costumeDictionary.by_model_resource_id[costume.modelId].spine_exists, true)
+}
+const legacyIdols = buildArchiveHomeState(idolUnit, cardIndex, manifest)
+assert.deepEqual(idols.map(idol => idol.cues), legacyIdols.map(idol => idol.cues),
+  'availability only changes selectable costumes; every cue, text, preview step and original model is preserved')
+assert.deepEqual(archiveHomeStateStats(legacyIdols), stats)
+for (const modelId of ['020hay_002_00', '049eis_002_00']) {
+  assert.ok(legacyIdols.some(idol => idol.costumes.some(costume => costume.modelId === modelId)),
+    'the legacy call without an availability dictionary keeps its source-default behavior')
+}
+
+// Labeled boundary fixture: one real cue/default from the actual Shu source.
+// A missing/false/non-Boolean availability must not promise a selectable rig.
+const shuCard = cardIndex.cards.find(card => card.character_id === '047shu' &&
+  card.home_voice_cues.some(cue => cue.preview?.preview_step?.state.spines?.[0]?.model === '047shu_002_00'))
+const fixtureCards = { by_character: { '047shu': {} }, cards: [shuCard] }
+const fixtureDictionary = value => ({ by_model_resource_id: {
+  '047shu_002_00': { ...costumeDictionary.by_model_resource_id['047shu_002_00'], spine_exists: value },
+} })
+const fixtureHome = dictionary => buildArchiveHomeState(idolUnit, fixtureCards, manifest, dictionary)[0]
+const availableDefault = fixtureHome(fixtureDictionary(true))
+assert.ok(availableDefault.costumes.some(costume => costume.modelId === '047shu_002_00' && costume.isSceneDefault))
+for (const dictionary of [{ by_model_resource_id: {} }, fixtureDictionary(false), fixtureDictionary('true')]) {
+  const unavailableDefault = fixtureHome(dictionary)
+  assert.deepEqual(unavailableDefault.costumes, [])
+  assert.deepEqual(unavailableDefault.cues, availableDefault.cues)
+}
+assert.deepEqual(fixtureHome().cues, availableDefault.cues)
+assert.ok(fixtureHome().costumes.some(costume => costume.modelId === '047shu_002_00'))
 
 const highlights = buildArchiveHomeHighlights(manifest, uiAssets)
 assert.equal(highlights.length, 36)
