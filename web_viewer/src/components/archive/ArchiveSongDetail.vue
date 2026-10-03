@@ -11,16 +11,16 @@
         </div>
         <p class="song-detail-scope">演唱 · {{ song.unit?.displayName || song.scopeLabel }}</p>
         <ul v-if="song.credits.length" class="song-detail-credits" aria-label="歌曲制作信息"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
-        <div class="song-detail-meta">
-          <span class="song-detail-date">{{ implementationDateLabel }}</span>
-          <div class="song-detail-badges">
-            <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
-            <span v-if="song.special" class="badge badge-special">特殊版本</span>
-            <span class="badge badge-form">{{ song.formLabel }}</span>
-          </div>
-        </div>
-        <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
       </div>
+      <div class="song-detail-meta">
+        <div class="song-detail-badges">
+          <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
+          <span v-if="song.special" class="badge badge-special">特殊版本</span>
+          <span class="badge badge-form">{{ song.formLabel }}</span>
+        </div>
+        <span class="song-detail-date">{{ implementationDateLabel }}</span>
+      </div>
+      <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
     </header>
     <div class="song-detail-body">
       <div ref="songListenColumn" class="song-listen-column" :class="{ 'is-sticky-fit': listeningColumnFits }">
@@ -191,15 +191,15 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0, 1fr); }
 .song-detail-ambient { display: block; position: absolute; z-index: 0; inset: -48px; background-size: cover; background-position: center; filter: blur(32px); opacity: .16; pointer-events: none; }
 .song-detail-jacket { position: relative; z-index: 1; width: 72px; height: 72px; border-radius: var(--gs-radius-field); display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
-.song-detail-title, .song-detail-badges { position: relative; z-index: 1; }
+.song-detail-title, .song-detail-meta, .song-parent-link { position: relative; z-index: 1; }
 .song-detail-title { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: var(--gs-space-3); }
 .has-jacket .song-detail-title { min-height: 72px; }
 .song-detail-title h2 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
-.song-detail-kana { margin: var(--gs-space-1) 0 0; color: #c7d7dc; font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
-.song-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); color: #d1dde1; font-size: var(--gs-text-meta); line-height: 1.6; }
-.song-detail-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.song-detail-kana { margin: var(--gs-space-1) 0 0; color: #b7c9cf; font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
+.song-detail-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); padding-top: var(--gs-space-3); border-top: 1px solid rgba(255, 255, 255, .14); color: #d1dde1; font-size: var(--gs-text-meta); line-height: 1.6; }
+.song-detail-date { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-detail-scope, .song-detail-credits { display: none; }
-.song-parent-link { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: var(--gs-space-2) 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.song-parent-link { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; min-height: var(--gs-control-compact); padding: var(--gs-space-2) 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .song-parent-link:hover { text-decoration: underline; }
 .song-detail-badges { display: flex; gap: var(--gs-space-2); flex-wrap: wrap; min-width: 0; }
 .badge { padding: 1px var(--gs-space-3); border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--gs-radius-pill); background: rgba(255, 255, 255, .1); color: #e6eff1; font-size: 11px; line-height: 1.5; font-weight: var(--gs-weight-medium); }
@@ -287,10 +287,10 @@ summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::a
 @media (max-width: 560px) {
   .song-detail { padding: var(--gs-space-4); }
   .song-detail-hero { gap: var(--gs-space-4); padding: var(--gs-space-4); }
-  .song-detail-hero.has-jacket { grid-template-columns: 80px minmax(0,1fr); }
-  .song-detail-jacket { width: 80px; height: 80px; }
-  .has-jacket .song-detail-title { min-height: 80px; gap: var(--gs-space-2); }
-  .song-detail-title h2 { font-size: 18px; }
+  .song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0,1fr); }
+  .song-detail-jacket { width: 72px; height: 72px; }
+  .has-jacket .song-detail-title { min-height: 72px; gap: var(--gs-space-2); }
+  .song-detail-title h2 { font-size: clamp(16px, 5.3cqi, 18px); line-height: 1.3; }
   .song-detail-kana, .song-detail-meta { font-size: 11px; }
   .song-block, .song-record-column > .song-block { padding: 14px; }
   .song-detail-body { padding-top: var(--gs-space-4); }
