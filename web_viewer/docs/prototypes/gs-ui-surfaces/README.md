@@ -1,6 +1,6 @@
 # GS 藏品详情密度原型
 
-直接打开 `index.html`，无需服务器、依赖或网络请求。默认展示同一条长姓名称号，默认编号 1 是 picker 的固定兜底规则，不代表偏好或已选方案。
+直接打开 `index.html`，无需服务器、依赖或网络请求。默认展示同一条长姓名称号，默认编号 1 是 picker 的固定兜底规则。2026-10-03 用户已明确选择 Compact；生产 Dialog M 迁移另批验收，原型不会导入 App。
 
 | Variant | 比较轴 | 适用场景 | 代价 |
 | --- | --- | --- | --- |
@@ -32,4 +32,4 @@
 
 `build-prototype.py` 可从同一输入重新生成单文件 HTML 与数据收据；仅写本目录。`index.template.html` 是源模板，`index.html` 是交付物。生产代码不导入此目录。
 
-验证边界：静态数据身份、输出自包含、picker原样与JavaScript语法核对通过。Browser已分别检查三个版本的1280px/320px布局，并实际执行搜索0/1结果、长名/长说明/多来源/未知来源、语言切换、来源筛选、原始资料展开、关闭/Escape/返回焦点、Tab首尾循环、数字键1/3和R重播；console warning/error为空。遮罩点击仅核对实现，未实际点击；390px原型、真实200% zoom、真机与非零safe-area未覆盖。详见[本轮验收](../../GS_UI_FOUNDATION_ACCEPTANCE_20261003.md)。本原型没有选定或推广任何密度。
+验证边界：静态数据身份、输出自包含、picker原样与JavaScript语法核对通过。Browser已分别检查三个版本的1280px/320px布局，并实际执行搜索0/1结果、长名/长说明/多来源/未知来源、语言切换、来源筛选、原始资料展开、关闭/Escape/返回焦点、Tab首尾循环、数字键1/3和R重播；console warning/error为空。遮罩点击仅核对实现，未实际点击；390px原型、真实200% zoom、真机与非零safe-area未覆盖。详见[本轮验收](../../GS_UI_FOUNDATION_ACCEPTANCE_20261003.md)。上述原型验收时未选定密度；随后用户已明确选择 Compact，尚未完成生产 Dialog M 迁移。

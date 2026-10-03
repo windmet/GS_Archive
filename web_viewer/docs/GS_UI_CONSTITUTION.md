@@ -54,7 +54,7 @@
 | --- | --- | --- |
 | Popover | 藏品 hover/focus 说明 | 锚定内容、不改目录布局；不能承载必须操作的完整详情 |
 | Dialog S | 简单设置候选 | token420px；本轮未切换现有设置窗口，需实际比较 |
-| Dialog M | Collection 详情 | 580px；桌面最大84dvh，手机底部78dvh；保持当前密度待选择 |
+| Dialog M | Collection 详情 | 580px；桌面最大84dvh，手机底部78dvh；用户已选 Compact，待独立生产迁移 |
 | Dialog L | Terminal 素材选择 | 720px；header固定、body滚动、原生dialog |
 | Side Drawer | Solo、活动藏品快捷查看 | 480px；长名单与原上下文并存；两个消费者布局各有明确用途 |
 | Mobile Sheet | Collection 详情、Solo | 分别78/85dvh；不是统一高度，确保内容与关闭操作可达 |
@@ -92,7 +92,7 @@
 | 手机藏品search38px/12px，tab/select/chips32–36px | 搜索16px、直接操作触摸尺度44px | 提高真实操作可达性；验证增加高度后的内容空间 |
 | 详情Teleported后依赖外部祖先的字体/标题样式 | surface显式字体与正文/章节/metadata角色 | 同一组件不因挂载位置改变文字层级 |
 
-密度探索见 [详情对照页](prototypes/gs-ui-surfaces/index.html)：Compact、Balanced、Reading-heavy三个可操作版本，使用真实GS长名称/缺说明/未知来源数据。选择前保持生产详情密度；不得把原型页导入App或把多个变体塞入生产运行时。
+密度探索见 [详情对照页](prototypes/gs-ui-surfaces/index.html)：Compact、Balanced、Reading-heavy三个可操作版本，使用真实GS长名称/缺说明/未知来源数据。用户已明确选择 Compact，后续生产详情按该密度分批迁移；不得把原型页导入App或把多个变体塞入生产运行时。
 
 回归使用当前真实corpus：535道具、1613称号（附件1616与当前数据不同），长道具`303398`、长称号`30025116`、长故事`1_3_10012_01.json`、中文/原名以及0/1/49检索。320px覆盖与真实200% Browser zoom、真机覆盖分别记录；窄viewport不冒充zoom或真机。
 
@@ -106,6 +106,8 @@
 
 活动详情已完成独立批次，见[活动详情验收与后续窗口计划](GS_UI_EVENT_ACCEPTANCE_20261003.md)：实际覆盖长活动名`410012`、五人长姓名`430013`、跨组合`410017`、独立 Wiki 兑换`event:20001`、三人立绘`410011`及季节入口`event:40002`。中文姓名沿用既有展示回调；内容800px以下剧情/章节/人物区折列，520px以下才隐藏章节统计；170px立绘、230px画架与 Wiki 表格局部横滚保留。阅读、报酬卡、组合、同期关联及季节企划返回均按实际原入口验证。59详情来源/SHA核对和代表旅程覆盖仍是不同边界。
 
-下一轮先实看 QuickView/Solo 的手机布局、安全区接入、关闭与背景滚动，再执行消费者局部样式批；保留480px宽、Solo手机85dvh及即时选择合同。QuickView“完整查看”返回和 RewardTable 的 scope/page 恢复分别作为行为批：先确认实际往返与状态，再加入必要的入口/就绪合同，不能把一个行 marker 当成分页恢复。共享 TerminalDialog、Player HUD 与其他窗口工作保持各自范围。Story等剩余完整URL筛选恢复随后推进。
+QuickView/Solo 已完成消费者局部样式批，见[快捷窗 / Solo 验收](GS_UI_SURFACE_ACCEPTANCE_20261003.md)：480px宽、Solo手机85dvh及即时选择合同保留；320px/桌面和受控非零安全区 CSS 已实测，真机仍未覆盖。QuickView“完整查看”返回和 RewardTable 的 scope/page 恢复分别作为行为批：先确认实际往返与状态，再加入必要的入口/就绪合同，不能把一个行 marker 当成分页恢复。共享 TerminalDialog、Player HUD 与其他窗口工作保持各自范围。
 
-Dialog M继续等待用户选择密度，独立于这些实体域的迁移。每域必须重新看真实内容，不能靠批量px替换完成迁移；真机及非零安全区需要单独证据。
+接续优先处理歌曲目录 / 活动报酬的扁平列表，再迁移已选 Compact 的 Dialog M。歌曲名完整换行、减少边框与整项箭头；演唱范围保留完整搜索文本，BPM 不由示例补造。活动阅读条件按真实 episode ID 映射章节，短条件仍保留活动期限定、点数起点、次数和重复条件。
+
+剧情后续分为轻量章节行、消费者内简介折叠、仅主线启用的话级 Tabs 三批；阅读链接、播放队列和来源返回合同分别验证。保留真实对白 / 语音统计，不把整部出演阵容当逐 EP cast。Mobile 通信单独收紧头部与聊天 / 电话列表，弱化说明并核对 P 名替换，内部播放器不在该批范围。每域重新看真实内容；真机和 CSS 安全区样本保持各自验收边界。
