@@ -132,6 +132,9 @@ jobs:
       - name: Verify native chibi Penlight object and controller bindings
         run: python scripts/verify-chibi-penlight-bindings.py
 
+      - name: Verify native costume shader bindings and premultiplied color formula
+        run: python scripts/verify-chibi-costume-shader.py
+
       - name: Verify native Spotlight sprite bindings and async disposal
         run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs && node scripts/verify-chibi-spotlight-targets.mjs && python scripts/verify-chibi-spotlight-background.py && node scripts/verify-chibi-spotlight-background.mjs && python scripts/verify-chibi-pinspotlight-prefab.py && node scripts/verify-chibi-pinspotlight-sprites.mjs
 

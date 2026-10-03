@@ -537,3 +537,23 @@ Pin 与 Spotlight 共用一个背景消费者，按既有事件采样选环境�
 对齐录屏差异账本：4.3s 指令边界附近，录屏仍仅左孔，Web 已开始第二孔；4.8s 两边均有左／中孔，右侧暗；7s 录屏右孔照亮 ABC，Web 同区域可透出，但人物动作相位仍不同。参考黑色裤装在 Web 当前005_00编队中呈浅色；直接查看 `costumes/035mco_005_00/cos.png` 可见裤装原纹理本身浅灰，录屏服装身份／原生分部位颜色机制还需确认，不能据此直接认定为 tint 错误。角色比例与孔洞范围仍存在差异，不能把“GPU shader 工作”和“录屏完全复刻”混为一谈。下一步继续查动作／Spine 颜色、原生镜头与投影、call 棒、粒子和全曲灯光；尚不具备全舞台或 master PR 收口结论。
 
 本批确切代码提交 `ea418ca4d754876347dadb6b24dd39cb286de27f` 的完整 [Source Gate 37080592028](https://github.com/windmet/GS_Archive/actions/runs/37080592028) 已终态 success，114 个步骤成功、无失败，包含 Pinspotlight 两项新 portable 回归。期间其他窗口提交 `39ed7770` 的歌曲返回／展开定位修复，保留其成果；上述 CI 仅绑定 ea418ca4，并非对后续 HEAD 的整体验收。Browser console error 空，结束恢复默认视口、保留 Study 验收入口。
+
+## 2026-10-03：Study 衣装颜色差异的原生 shader 来源契约
+
+输入 HEAD `b8edb7bb`，未修改舞台 renderer、服装索引或其它窗口 UI 工作。新增 `audit-chibi-costume-shader.py`，直接加载 RAW costume 与 shared shader bundle，按实际 Material PPtr 解析 external serialized file 和 live Texture；没有从同名 shader 或 atlas 猜测关联。S.E.M 的 `035mco_005_00`、`036rui_005_00`、`037jir_005_00` 三份 `cos_Material` 均指向 shared `CAB-47338db636fbf628b5ec28a3f5a34103` pathID `-677326362337354521`、`Growing/Skeleton-Gradient`。Shader 原始 SHA256 `31b0f000c2a80d9b60dc62bbc44491f2ea7f47c22a08042b166a16e7c2859d47`，每份 bundle、material、texture 身份及原始 SHA 均保存在 fixture／本地 `study-reference/costume-shader-contract.json`。fixture 只投影实际消费字段与一个 GLES3 subprogram，未附带纹理、完整 Shader binary 或视频。
+
+真实 Normal／GLES3／`_BLEND_ALPHA` 顶点程序将 **native local mesh position.xy** 传到 `vs_COLOR1`；不是纹理 UV、screen Y、变形后屏幕包围盒或角色高度百分比。片段先令 `t=clamp(localY * _RcpHeightCutOff,0,1)`，以 t 插值 Src／Dst 的 RGBA；再以 BodyColor.a 将 texture.rgb 替换混合到 BodyColor.rgb×texture.a，最后以 gradient.a 替换混合到 gradient.rgb×texture.a。输出 texture.a 不受这两次颜色替换影响，最后整份 RGBA 乘 vertexColor；native blend 是 One／OneMinusSrcAlpha。它与当前 `multiplyBodyTint` 的 RGB 乘色不同。源码 token digest 锁定此实际 compiled variant，不能将 additive／multiply／outline 变体的公式混用。
+
+三人材质的 `_RcpHeightCutOff=0.5`，显式颜色默认白色 alpha=1。**舞田类没有保存 `_BodyColor` override**，应区分从 Shader property 继承的白色默认，而不是当作缺失色／黑色；工具保留 override 与 inherited default 的来源。CPU 参考测试证明直接套用这些白色 alpha=1 默认会将 atlas 洗成白色；因此 native 初始化／ChangeBodyColor／ChangeFootColor 的运行期 uniform、局部单位／转换、重置与 tween 仍必须解出，本批没有把静态默认值接进 Web。iOS metadata 方法与 uniform id 字段只是线索，不包含可验的方法体。
+
+对照裤装：`035mco_005_00` 实际 live texture 本身有浅灰裤装和白手套，与参考黑裤差异不能直接归为 bodyColor 指令；Study 已解析 bodyColorEvents 为空。另查 `035mco_004_00` 与 `035mco_005_01`：都只有 comu 模型，没有 cos Texture／atlas／Material。此前“RAW 存在而不在舞台选择器”的候选因此**不能认定为 live 衣装漏录**，也未将交流资源误加到舞台。参考录屏的精确衣装身份仍未闭合。
+
+验证：实际五份 RAW bundle 重抽取成功，三份 live material、两份 comu-only 记录；portable fixture 与完整重抽取 JSON 逐项相同。九个手算像素 witness 覆盖部分替换、gradient RGBA 插值、两端 clamp、透明纹理、vertex alpha 与默认洗白；错误 external／texture PPtr、UV 来源、颜色通道、blend／straight-alpha 与重复 material 均拒绝。Python 编译通过，portable verifier 加入 Source Gate；本段尚未声明新提交的 CI 结果。纯独立工具按构建政策不重复 Vite，不产生新的 Browser 或视频画面通过声明。原生 runtime 配色、Study 衣装／动作相位、call 棒／粒子、投影和 Take 两半录屏配准仍待完成，master PR 尚未收口。
+
+复现命令：
+
+```powershell
+python -X utf8 scripts/audit-chibi-costume-shader.py --raw-asset-root ../RAW/asset --costume 035mco_005_00 --costume 036rui_005_00 --costume 037jir_005_00 --costume 035mco_004_00 --costume 035mco_005_01 --output .analysis/engineering-validation-20261002/study-reference/costume-shader-contract.json
+python -X utf8 scripts/verify-chibi-costume-shader.py .analysis/engineering-validation-20261002/study-reference/costume-shader-contract.json
+python -X utf8 scripts/verify-chibi-costume-shader.py
+```
