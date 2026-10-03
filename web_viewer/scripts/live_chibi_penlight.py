@@ -100,10 +100,13 @@ def penlight_render_model(evidence):
                 raise ValueError('Transform crosses native prefab serialized file')
             position, scale = finite_vector(t['position'], 'xyz'), finite_vector(t['scale'], 'xyz')
             rotation = finite_vector(t['rotation'], 'xyzw')
+            if type(node['activeSelf']) is not bool or type(node['layer']) is not int or not 0 <= node['layer'] <= 31:
+                raise ValueError('Invalid native GameObject visibility/layer')
             if abs(sum(v * v for v in rotation.values()) - 1) > 1e-5:
                 raise ValueError('Invalid native quaternion')
             nodes.append({'route': route, 'parent': parent, 'gameObjectPathId': node['pathId'],
-                'transformPathId': t['pathId'], 'position': position, 'scale': scale, 'rotation': rotation})
+                'transformPathId': t['pathId'], 'position': position, 'scale': scale, 'rotation': rotation,
+                'activeSelf': node['activeSelf'], 'layer': node['layer']})
             for renderer in [c for c in node['components'] if c['type'] == 'SpriteRenderer']:
                 source = renderer['sprite']
                 key = source['serializedFile'] + ':' + source['pathId']
@@ -117,11 +120,18 @@ def penlight_render_model(evidence):
                 if (len(renderer['materials']) != 1
                         or renderer['materials'][0]['shader'] != 'Sprites/Default'):
                     raise ValueError('Unsupported native Penlight material')
+                state = renderer['renderState']
+                if (set(state) != {'Enabled', 'SortingLayerID', 'SortingLayer', 'FlipX', 'FlipY',
+                        'DrawMode', 'MaskInteraction', 'SpriteSortPoint'}
+                        or any(type(state[k]) is not bool for k in ('Enabled', 'FlipX', 'FlipY'))
+                        or any(type(state[k]) is not int or state[k] != 0 for k in (
+                            'SortingLayerID', 'SortingLayer', 'DrawMode', 'MaskInteraction', 'SpriteSortPoint'))):
+                    raise ValueError('Unsupported native SpriteRenderer flags')
                 rid = renderer['serializedFile'] + ':' + renderer['pathId']
                 if rid in renderers:
                     raise ValueError('Duplicate SpriteRenderer identity')
                 renderers[rid] = {'route': route, 'spriteKey': key,
-                    'rendererPathId': renderer['pathId'], 'material': renderer['materials'][0],
+                    'rendererPathId': renderer['pathId'], 'material': renderer['materials'][0], 'renderState': dict(state),
                     'initialColor': finite_vector(renderer['color'], 'rgba'), 'sortingOrder': renderer['sortingOrder']}
                 used_sprites.add(key)
             for child in node['children']:

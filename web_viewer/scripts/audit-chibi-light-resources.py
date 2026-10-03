@@ -90,6 +90,10 @@ def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
                 if animation_evidence is not None:
                     entry['animationEvidenceKey'] = inspect_controller(controller_reader, animation_evidence)
         elif obj.type.name == 'SpriteRenderer':
+            if sprite_evidence is not None:
+                entry['renderState'] = {key: getattr(value, 'm_' + key) for key in (
+                    'Enabled', 'SortingLayerID', 'SortingLayer', 'FlipX', 'FlipY',
+                    'DrawMode', 'MaskInteraction', 'SpriteSortPoint')}
             entry['color'] = {k: getattr(value.m_Color, k) for k in ('r', 'g', 'b', 'a')}
             entry['sortingOrder'] = value.m_SortingOrder
             if value.m_Sprite.m_PathID:
@@ -119,8 +123,11 @@ def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
                 entry['materials'].append({'name': material.m_Name, **identity(material_reader),
                     'shader': shader.m_ParsedForm.m_Name if hasattr(shader, 'm_ParsedForm') else shader.m_Name})
         components.append(entry)
-    return {'name': game_object.m_Name, **identity(reader),
+    node = {'name': game_object.m_Name, **identity(reader),
             'components': components, 'children': children}
+    if sprite_evidence is not None:
+        node.update(activeSelf=game_object.m_IsActive, layer=game_object.m_Layer)
+    return node
 
 
 def main():

@@ -56,6 +56,11 @@ for root in reordered['prefabs']:
     reverse(root)
 assert penlight_render_model(reordered) == model
 
+visibility = copy.deepcopy(source)
+visibility['prefabs'][0]['activeSelf'] = False
+hidden = penlight_render_model(visibility)
+assert next(p for p in hidden['prefabs'] if p['name'] == source['prefabs'][0]['name'])['nodes'][0]['activeSelf'] is False
+
 def transform(e):
     return next(c for c in e['prefabs'][0]['components'] if c['type'] == 'Transform')
 
@@ -74,12 +79,20 @@ def bad_vertex(e):
     struct.pack_into('<f', b, 0, float('nan'))
     v['bytesHex'] = b.hex()
 
+visibility = copy.deepcopy(source)
+renderer(visibility)['renderState'].update(Enabled=False, FlipX=True)
+hidden = penlight_render_model(visibility)
+assert any(not a['renderState']['Enabled'] and a['renderState']['FlipX']
+    for p in hidden['prefabs'] for a in p['actors'])
+
 changes = [
     lambda e: e.pop('spriteEvidence'),
     lambda e: transform(e)['position'].update(x=float('nan')),
     lambda e: transform(e)['scale'].update(z=float('inf')),
     lambda e: transform(e)['rotation'].update(w=0.7),
     lambda e: transform(e)['position'].pop('z'),
+    lambda e: e['prefabs'][0].update(layer=32),
+    lambda e: e['prefabs'][0].update(activeSelf=1),
     lambda e: transform(e).update(serializedFile='other.assets'),
     lambda e: e['prefabs'][0]['components'].append(copy.deepcopy(transform(e))),
     lambda e: geometry(e)['m_RD'].update(settingsRaw=65),
@@ -93,6 +106,8 @@ changes = [
     lambda e: geometry(e)['m_RD']['m_SubMeshes'][0].update(indexCount=198),
     bad_vertex,
     lambda e: renderer(e)['materials'][0].update(shader='ohashi/SimpleAdd'),
+    lambda e: renderer(e)['renderState'].update(MaskInteraction=1),
+    lambda e: renderer(e)['renderState'].update(Enabled=1),
 ]
 for edit in changes:
     invalid = copy.deepcopy(source)
