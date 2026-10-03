@@ -5,16 +5,21 @@
       <div v-if="song.jacketUrl" class="song-detail-ambient" aria-hidden="true" :style="{ backgroundImage: `url(${song.jacketUrl})` }"></div>
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
-        <h2>{{ song.title }}</h2>
-        <p class="song-detail-meta"><span v-if="song.kana" class="song-detail-kana">{{ song.kana }}</span><span class="song-detail-date">{{ implementationDateLabel }}</span></p>
+        <div class="song-detail-heading">
+          <h2>{{ song.title }}</h2>
+          <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
+        </div>
         <p class="song-detail-scope">演唱 · {{ song.unit?.displayName || song.scopeLabel }}</p>
         <ul v-if="song.credits.length" class="song-detail-credits" aria-label="歌曲制作信息"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
+        <div class="song-detail-meta">
+          <span class="song-detail-date">{{ implementationDateLabel }}</span>
+          <div class="song-detail-badges">
+            <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
+            <span v-if="song.special" class="badge badge-special">特殊版本</span>
+            <span class="badge badge-form">{{ song.formLabel }}</span>
+          </div>
+        </div>
         <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
-      </div>
-      <div class="song-detail-badges">
-        <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
-        <span v-if="song.special" class="badge badge-special">特殊版本</span>
-        <span class="badge badge-form">{{ song.formLabel }}</span>
       </div>
     </header>
     <div class="song-detail-body">
@@ -182,27 +187,27 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 
 <style scoped>
 .song-detail { height: 100%; padding: var(--gs-space-7); overflow-y: auto; container: song-detail / inline-size; background: #f7f9fa; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.song-detail-hero { position: relative; isolation: isolate; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-4) var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 3px solid #28b6ac; background: linear-gradient(120deg, #193d45, #182b38 75%); color: #fff; }
+.song-detail-hero { position: relative; isolation: isolate; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: var(--gs-space-4) var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 3px solid #28b6ac; background: linear-gradient(120deg, #193d45, #182b38 75%); color: #fff; }
 .song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0, 1fr); }
-.song-detail-ambient { display: none; position: absolute; z-index: 0; inset: -48px; background-size: cover; background-position: center; filter: blur(44px); opacity: .22; pointer-events: none; }
+.song-detail-ambient { display: block; position: absolute; z-index: 0; inset: -48px; background-size: cover; background-position: center; filter: blur(32px); opacity: .16; pointer-events: none; }
 .song-detail-jacket { position: relative; z-index: 1; width: 72px; height: 72px; border-radius: var(--gs-radius-field); display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
 .song-detail-title, .song-detail-badges { position: relative; z-index: 1; }
-.song-detail-title { min-width: 0; }
+.song-detail-title { min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: var(--gs-space-3); }
+.has-jacket .song-detail-title { min-height: 72px; }
 .song-detail-title h2 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
-.song-detail-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-2) var(--gs-space-3); margin: var(--gs-space-2) 0 0; color: #aeb9c2; font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.song-detail-kana { margin: var(--gs-space-1) 0 0; color: #c7d7dc; font-size: var(--gs-text-meta); line-height: 1.5; overflow-wrap: anywhere; }
+.song-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); color: #d1dde1; font-size: var(--gs-text-meta); line-height: 1.6; }
 .song-detail-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-detail-scope, .song-detail-credits { display: none; }
 .song-parent-link { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: var(--gs-space-2) 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .song-parent-link:hover { text-decoration: underline; }
-.song-detail-badges { grid-column: 1 / -1; display: flex; gap: var(--gs-space-2); flex-wrap: wrap; min-width: 0; }
-.badge { padding: var(--gs-space-1) var(--gs-space-3); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.badge-attribute { background: #e7ecef; color: #465863; }
-.badge-attribute[data-song-attribute="Physical"] { background: #ffe9eb; color: #a83247; }
-.badge-attribute[data-song-attribute="Intelli"] { background: #e8f0fe; color: #2f5fd0; }
-.badge-attribute[data-song-attribute="Mental"] { background: #fff4d6; color: #805d14; }
-.badge-attribute[data-song-attribute="ALL"] { background: #f0f3f5; color: #475863; }
-.badge-form { background: #e2f4f0; color: #21685b; }
-.badge-special { background: #f3e8fd; color: #7136a5; }
+.song-detail-badges { display: flex; gap: var(--gs-space-2); flex-wrap: wrap; min-width: 0; }
+.badge { padding: 1px var(--gs-space-3); border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--gs-radius-pill); background: rgba(255, 255, 255, .1); color: #e6eff1; font-size: 11px; line-height: 1.5; font-weight: var(--gs-weight-medium); }
+.badge-attribute[data-song-attribute="Physical"] { background: rgba(249, 127, 149, .12); color: #ffbdc9; }
+.badge-attribute[data-song-attribute="Intelli"] { background: rgba(132, 176, 255, .12); color: #bad4ff; }
+.badge-attribute[data-song-attribute="Mental"] { background: rgba(255, 219, 132, .12); color: #ffe3a1; }
+.badge-form { background: rgba(116, 218, 203, .12); color: #bcf3e8; }
+.badge-special { background: rgba(215, 164, 255, .12); color: #e4c7ff; }
 .song-detail-body { padding-top: var(--gs-space-6); display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: var(--gs-space-6); }
 /* The independently styled player keeps its existing inherited 16px base. */
 .song-listen-column { min-width: 0; font-size: var(--gs-text-subtitle); }
@@ -261,10 +266,11 @@ summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::a
   .song-detail-hero { border-radius: var(--gs-radius-control); }
   .song-detail-hero.has-jacket { grid-template-columns: 160px minmax(0,1fr); }
   .song-detail-jacket { width: 160px; height: auto; border-radius: 12px; }
-  .song-detail-ambient { display: block; }
+  .has-jacket .song-detail-title { min-height: 160px; }
+  .song-detail-ambient { filter: blur(44px); opacity: .22; }
   .song-detail-title h2 { font-size: 24px; line-height: 1.3; }
-  .song-detail-scope { display: block; margin: var(--gs-space-3) 0 0; color: #d1e3e5; font-size: var(--gs-text-ui); line-height: 1.6; }
-  .song-detail-credits { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-5); margin: var(--gs-space-2) 0 0; padding: 0; list-style: none; color: #c5d8dd; font-size: var(--gs-text-meta); line-height: 1.7; }
+  .song-detail-scope { display: block; margin: 0; color: #d1e3e5; font-size: var(--gs-text-ui); line-height: 1.6; }
+  .song-detail-credits { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-5); margin: 0; padding: 0; list-style: none; color: #c5d8dd; font-size: var(--gs-text-meta); line-height: 1.7; }
   .song-credit-section { display: none; }
 }
 @container song-detail (min-width: 700px) { .song-detail-title h2 { font-size: 28px; } }
@@ -281,9 +287,11 @@ summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::a
 @media (max-width: 560px) {
   .song-detail { padding: var(--gs-space-4); }
   .song-detail-hero { gap: var(--gs-space-4); padding: var(--gs-space-4); }
-  .song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0,1fr); }
-  .song-detail-jacket { width: 72px; height: 72px; }
-  .song-detail-title h2 { font-size: 20px; }
+  .song-detail-hero.has-jacket { grid-template-columns: 80px minmax(0,1fr); }
+  .song-detail-jacket { width: 80px; height: 80px; }
+  .has-jacket .song-detail-title { min-height: 80px; gap: var(--gs-space-2); }
+  .song-detail-title h2 { font-size: 18px; }
+  .song-detail-kana, .song-detail-meta { font-size: 11px; }
   .song-block, .song-record-column > .song-block { padding: 14px; }
   .song-detail-body { padding-top: var(--gs-space-4); }
 }
