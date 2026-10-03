@@ -573,3 +573,7 @@ python -X utf8 scripts/verify-chibi-costume-shader.py
 实际5198生产bundle `ChibiStageViewer-C9ZSZfEW.js`：1280×720，正确S.E.M衣装、3/3就绪，定位7s已保持道夫举手、类向右指；与音频对齐参考7s动作对应。390×844在13.7→7s倒退后仍保留该姿态，canvas CSS≈357×201，document scrollWidth=clientWidth=390。快速Study→Take01→Study期间取消尚在加载的站位，最后Study 3/3就绪、无console error；此处不算Take40s已完成演出或灯光验收。证据 `study-seek-handoff-fixed-007.000.png`、`study-seek-handoff-mobile-007.000.png`，对照 `study-reference-outfits-007.000.png` 与录屏 `song-007.000s.jpg`／`song-006.500s.jpg`。结束恢复默认视口并保留后续验收tab。
 
 同时读到RAW五份 `live_costume_setup_1..5` 的SkeletonDataAsset `scale=0.003333332948386669`（约1/300），TextAsset PPtr可直接读取。这是原生骨架单位线索，不能把当前pixel-space Spine.scale直接设成1/300：原生相机／mesh世界单位到浏览器投影、Foot rate到cutoff仍未闭合，本批未改比例。完整Study还需处理call棒、粒子、投影／灯光范围与全曲动作；Take两半配准和完整门禁／master PR也仍未收口。当前没有全舞台、实体手机或发布通过声明。
+
+补充验收：直接读五种body setup和Study实际motion fragment，以实际SFC方法比较2/3/4号位在7000／7030／7100ms的全部bone x/y/rotation/scale，45组均与逐帧连续播放一致，最大浮点差3.553e−15（`study-reference/seek-native-pose-comparison.json`）；它验证原始动作数据在Web两种采样路径一致，不等于原客户端整曲验收。另按SkeletonDataAsset→TextAsset精确PPtr验证五份导出setup payload与RAW逐字节相等，单位证据保存 `skeleton-native-unit-witness.json`。
+
+本批代码 `bcf1978f` 已推送。包含该代码及其它窗口资料页提交的 HEAD `5f2e5e42e88588f1987b2214a3a0a5ce4fd33845` 完整 [Source Gate 37084267260](https://github.com/windmet/GS_Archive/actions/runs/37084267260) 已终态success，115项成功、无失败，含本轮handoff／倒退／取消回归。后续文档revision不冒充相同HEAD门禁。
