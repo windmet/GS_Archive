@@ -3675,6 +3675,13 @@ function openRelatedCard(card) {
   return openCard(card, { resetContext: true, captureSource: true })
 }
 
+function openCollectionCard(card) {
+  if (!['collection_catalog', 'event_detail'].includes(view.value) ||
+      card?.target?.view !== 'card_detail' || card.target.card !== card.resource_id ||
+      !card.resource_id || !card.character_id) return
+  return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
+}
+
 function goBackFromCards() {
   currentCardId.value = ''
   currentCardRarity.value = 'all'
@@ -3687,13 +3694,6 @@ function openCardScenario(entry) {
   if (entry?.compiled_file) {
     return loadScenario(entry.compiled_file, 'card_detail')
   }
-function openCollectionCard(card) {
-  if (!['collection_catalog', 'event_detail'].includes(view.value) ||
-      card?.target?.view !== 'card_detail' || card.target.card !== card.resource_id ||
-      !card.resource_id || !card.character_id) return
-  return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
-}
-
 }
 
 async function previewCardVoice(cue) {

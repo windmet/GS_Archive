@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { parse, compileScript } from '@vue/compiler-sfc'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const { descriptor, errors } = parse(app, { filename: 'App.vue' })
+assert.deepEqual(errors, [])
+const setupScript = compileScript(descriptor, { id: 'collection-navigation-check' })
+assert.ok(setupScript.scriptSetupAst.some(node => node.type === 'FunctionDeclaration' && node.id?.name === 'openCollectionCard'),
+  'The item-to-card template handler must be declared in setup scope, not nested in another handler')
 const source = app.match(/function openProjectedCollection\([^]*?\n\}/)?.[0]
 assert.ok(source)
 function deferred() {

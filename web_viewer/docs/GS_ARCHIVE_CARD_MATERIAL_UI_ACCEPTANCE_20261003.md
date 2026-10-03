@@ -27,3 +27,7 @@
 候选资料目录：`E:/Web_build/GS_Archive_Domain_Work/card-material-preview-readmodels-20261003`，release `0b0612426eeb7090b52aacc59a09fd6c580646827a5e5a194cf0e9c9d3b44c0b`。生产投影 API 的受保护本地 source snapshot QA，8751 个 JSON 文件、77,220,500 解码字节，完整 artifact 校验通过。它没有复制媒体，也没有发布到 R2。
 
 仓库 `readmodels/bootstrap.inline.json` 保留既有正式 release；5204 的本地验收服务通过明确 `--preview-bootstrap` 将候选 bootstrap 注入所服务的 HTML，并验证 legacy/偶像目录一致。旧数据无这些可选字段时消费者仍可运行。5198 及其他窗口服务未停用。本记录不表示线上数据已切换、不表示完整部署包或实体手机验收。
+
+## 提交作用域修正
+
+分块暂存后的 `f66c2280` 将 `openCollectionCard` 插入了 `openCardScenario` 内部，单纯编译不能发现模板入口不可见。后续独立修正将它恢复到 `<script setup>` 顶层，并在 `verify-collection-readmodel-navigation.mjs` 中使用 Vue 编译器 AST 检查顶层声明。此前 Browser 使用的工作区源码一直包含正确位置；修正后再次通过导航检查。最终 `build:check` 13.60 秒验证正确工作区源码；该记录不把此前错误中间提交当作导航通过的版本。
