@@ -26,7 +26,8 @@ export function createSpotlightSpriteStore({ loadTexture, createRuntime, destroy
   function ensure(id, model, assets) {
     if (runtimes.has(id)) return runtimes.get(id)
     if (pending.has(id) || failed.has(id)) return null
-    if (model?.layers?.length !== layerCount || model.layers.some(layer => !assets?.[layer.asset]?.file)) return null
+    if (!model?.layers?.length || (layerCount !== null && model.layers.length !== layerCount)
+        || model.layers.some(layer => !assets?.[layer.asset]?.file)) return null
     const version = generation
     const promise = Promise.all(model.layers.map(layer => textureFor(layer.asset, assets[layer.asset].file, version)))
       .then(loaded => {

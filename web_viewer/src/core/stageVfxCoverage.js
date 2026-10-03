@@ -18,6 +18,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const imageObjectEvents = indexes.imageObjects?.songs?.[song.id]?.events || []
   const imageObjectAssets = uniqueAssets(imageObjectEvents, 'asset')
   const pinspotlightAssets = uniqueAssets(song.pinspotlightEvents, 'asset')
+  const stagelightEvents = indexes.stageEffects?.stagelightSongs?.[song.songCode]?.events || []
+  const stagelightAssets = uniqueAssets(stagelightEvents, 'asset')
   const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
   const unresolvedImageColors = (song.imageColorEvents || []).filter(event => event.unresolvedReason)
   const imageColorAssets = uniqueAssets((song.imageColorEvents || []).filter(event => !event.unresolvedReason), 'asset')
@@ -45,6 +47,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       spotlight: song.spotlightEvents?.length || 0,
       pinspotlight: song.pinspotlightEvents?.length || 0,
       laserlight: song.laserlightEvents?.length || 0,
+      stagelight: stagelightEvents.length,
     },
     resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length, imageObject: imageObjectAssets.length },
     objectSprites,
@@ -53,6 +56,9 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectParticleUnimplemented,
     objectMissing,
     objectOther,
+    stagelightAssets,
+    // Resource binding / color assignment are separate from native tween parity.
+    stagelightAnimationStatus: stagelightEvents.length ? 'reference_preview_unverified_native_tweens' : 'not_loaded',
     missingMedia,
     unresolvedColorPlanes,
     unresolvedImageColors,

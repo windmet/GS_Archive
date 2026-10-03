@@ -613,3 +613,18 @@ tracked `chibi-camera-video-registration.json` 保存视频身份、取帧配准
 5198实际生产bundle `ChibiStageViewer-TQIHKfAJ.js`，正确S.E.M 2/3/4及102_00／101_00／101_00：1280×720三切镜截图与旧图的可见像素配准，纵移分别+50／-17／+33，相关0.9560／0.9289／0.9674，符合反号修正应有的+49.83／-16.61／+33.22（canvas约819×460）。实际关闭／开启CSV镜头、32.1s重置得到zoom1/x0/y360；390×844的4.8s画面canvas约357×201、document scrollWidth=clientWidth=390，无console error。结束恢复视口。截图与 `camera-y-browser-pixel-witness.json` 保存在既有 `study-reference/`；Browser响应式模拟不等于真实手机。
 
 call棒前景高度的短段观察受到镜头移动影响；`penlight-motion-candidates.json`仅为弱相关候选，不能证明CSV到Beat／Wiper／Yeah或speed映射，未激活猜测版绘制。本批确认两次纵移，不扩展为整曲相机easing／rotation或原生方法体验收。其它窗口资料页／翻译审计工作保留；用户新指出Take地面一排灯变色，作为下一批明确目标，需关联原始对象与指令、对照录屏。全曲舞台、实体手机、资源发布与master PR尚未收口。
+
+
+## 2026-10-03：Take 01/02 原生逐灯配色与交错渐亮渐暗
+
+输入 HEAD `3770316e`；期间其它窗口提交 `467cbb38`，其 UI／译名审计修改保留。此前消费者没有独立 Stagelight 路径，固定地面灯只存在于静态底图。新增从 XAPK 原生 LiveObjectLightSpriteEffect 的有序 SpriteRenderer PPtr 数组解析 22 组／87 张 Sprite，保留 PathID 字符串、源 SHA、原纹理与几何、Additive blend；不是按子节点遍历顺序随意重排。RAW `tkstp1`／`tkstp2` 原 TextAsset 全部 Stagelight 命令分别1941／1940条，原行号、颜色、period、interval、alpha/color mode 和 hide 参数保留。两曲分别使用源配色，不能共用01的颜色表。
+
+首版 colorMode5 把 interval 当成整组亮→暗的共享时间，造成全体同步闪亮。录屏逐帧及用户复核指出相邻灯亮暗交错。修正为按原生有序 renderer 索引延迟 phase，连续亮→暗→亮；450/225命令相邻半周期、偶数与奇数灯交替。**三角渐变包络、alphaMode1 波形与方向换算仍属录屏指导的有限预览，没有还原原生 director 方法体／easing；colorMode3尚未复刻彩虹，不能声明全部光效通过。** hide 时冻结每个灯各自的颜色／亮度再淡出；向后定位重放指令、不使用上一帧残留状态；快速切歌的旧异步资源不会安装。
+
+Take 本地视频 SHA256 `a20cc0a5cf1f0e090cf2670d9dec1f07e03cab3f93041242b135eaec5e5ede78`。菜单期间也播放同曲，未限制搜索的7.01675s相关峰不是舞台起点，撤回其相位依据。两段独立音频10–20／60–70秒 FFT 归一化相关：01偏移49.45275／49.45550秒，02偏移205.15675／205.15950秒，两段差均2.75ms，相关0.510–0.526。22.15–23.05秒（30fps）舞台前沿 contact sheet 可见交错明暗；素材仅保留小型分析帧，未复制原视频。
+
+验证：22/87原生解析、子节点重排不影响顺序、破损PPtr拒绝；两曲颜色、31灯相邻反相／双向连续渐变、逐灯hide冻结、向后定位、迟到纹理销毁通过。真实导出索引比对通过，Spotlight共用纹理store及118曲VFX覆盖回归通过。`build:check` 2780 modules／15.42s，固定 `.analysis/build-check`，无public复制。
+
+5198实际生产bundle Browser：1280×720，01定位22.2／22.4秒截图可见相邻灯交换明暗；26.4秒红色→向后22.2秒青色；02的22.7秒为原生橙色。390×844下canvas约357×201、scrollWidth=clientWidth=390；切Study灯组清零；日志只有既有Spine tint deprecated调用警告，本轮无console error。Browser响应式模拟不等于实体手机。截图在 `.analysis/engineering-validation-20261002/take-reference/lamps-browser-*`。用户已确认地面舞台灯整体正确，作为该部分的已确认基线，不扩展成完整原生等效声明。
+
+下一目标已定位：脚底“星海”是 `fx_in_tkstp1_panel_1` 的四套持续发射、颜色梯度、寿命透明度和原生 _AlphaTex 遮罩粒子；当前仍未消费，静态底图不能替代。之后排查角色高亮上方舞台打光和悬挂星星灯渐变交错。Take地面粒子／噪声、星灯、角色局部配色、全曲、实体设备和最终master PR尚未收口。

@@ -56,6 +56,9 @@
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
     :data-particle-layer-frames="particleLayerFrames"
     :data-spotlight-count="visibleSpotlightCount"
+    :data-stagelight-count="visibleStagelightCount"
+    :data-stagelight-colors="appliedStagelightColors"
+    data-stagelight-animation="reference-preview-not-native-tween-equivalence"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-spotlight-unresolved-ids="unresolvedSpotlightIds.join(',')"
     :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
@@ -382,6 +385,7 @@
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
               <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
+              <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位与配色，闪烁曲线仍在核对</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
@@ -440,6 +444,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { stagelightStatesAt, sampleStagelight, createStagelightRuntime } from '../core/chibiStagelights.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
@@ -570,6 +575,18 @@ const spotlightSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native Spotlight textures could not be loaded', error),
 })
 const spotlightRuntimes = spotlightSprites.runtimes
+const visibleStagelightCount = ref(0)
+const appliedStagelightColors = ref('')
+const stagelightSprites = createSpotlightSpriteStore({
+  layerCount: null,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createStagelightRuntime(PIXI, cameraContainer, layers, textures)),
+  destroyRuntime: runtime => { runtime.container.removeFromParent(); runtime.container.destroy({ children: true }) },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncStagelights(),
+  onError: error => console.warn('Native stage lamp textures could not be loaded', error),
+})
+let stagelightSongId = ''
 const spotlightBackgroundAlpha = ref(0)
 const pinspotlightMaskCount = ref(0)
 const spotlightBackgroundSprites = createSpotlightSpriteStore({
@@ -875,6 +892,7 @@ onBeforeUnmount(() => {
   releaseImageLayers()
   releaseObjectLayers()
   releaseSpotlights()
+  stagelightSprites.release()
   releaseLaserlights()
   releasePinspotlights()
   releaseStageBackground()
@@ -1508,6 +1526,7 @@ function ensureWholeScreenColorOverlay() {
 }
 
 function applyStageLighting() {
+  syncStagelights()
   syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
   applyImageColors()
@@ -1724,6 +1743,44 @@ function syncSpotlights() {
   visibleSpotlightIds.value.sort((a, b) => a - b)
   unresolvedSpotlightIds.value.sort((a, b) => a - b)
   visibleSpotlightCount.value = visibleSpotlightIds.value.length
+}
+
+function syncStagelights() {
+  if (!app || !cameraContainer) return
+  const code = selectedSong.value?.songCode || ''
+  if (stagelightSongId !== code) {
+    stagelightSprites.release()
+    stagelightSongId = code
+  }
+  visibleStagelightCount.value = 0
+  appliedStagelightColors.value = ''
+  for (const runtime of stagelightSprites.runtimes.values()) runtime.container.visible = false
+  if (!lightingEnabled.value) return
+  const track = stageEffectIndex.value?.stagelightSongs?.[code]
+  if (!track) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const fit = Math.min(width / 1280, height / 720) * environmentScale.value
+  const colors = []
+  for (const state of stagelightStatesAt(track.events, stageTime.value).values()) {
+    const model = stageEffectIndex.value.stagelights?.[state.asset]
+    if (!model || (state.hideTime !== undefined && stageTime.value >= state.hideTime + (state.fadeDuration || 1))) continue
+    // Asset belongs in the runtime key: reused lamp IDs must not reuse another prefab.
+    const runtime = stagelightSprites.ensure(`${code}:${state.id}:${state.asset}`, model, stageEffectIndex.value.assets)
+    if (!runtime) continue
+    runtime.container.position.set(width * .5, height * .5)
+    runtime.container.scale.set(fit)
+    runtime.container.zIndex = state.depth ?? 1600
+    runtime.container.visible = true
+    for (const [index, sprite] of runtime.sprites.entries()) {
+      const lamp = sampleStagelight(state, stageTime.value, index, runtime.sprites.length)
+      sprite.tint = lamp.color
+      sprite.alpha = lamp.alpha
+    }
+    visibleStagelightCount.value += 1
+    colors.push(`${state.id}:#${runtime.sprites[0].tint.toString(16).padStart(6, '0')}`)
+  }
+  appliedStagelightColors.value = colors.join(',')
 }
 
 function releaseSpotlights() {

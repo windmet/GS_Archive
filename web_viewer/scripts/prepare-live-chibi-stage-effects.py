@@ -14,6 +14,8 @@ from pathlib import Path
 import UnityPy
 from live_chibi_spotlight import spotlight_sprite_model, spotlight_background_model
 from live_chibi_pinspotlight import pinspotlight_sprite_model
+from live_chibi_stagelight import NAMES as STAGELIGHT_NAMES, TEXTURES as STAGELIGHT_TEXTURES, stagelight_model, stagelight_events
+from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +56,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
+    return name in STAGELIGHT_TEXTURES or lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -118,20 +120,38 @@ def main() -> None:
     if len(pin_roots) != 1:
         raise ValueError('Ambiguous native Pinspotlight')
     pinspotlight = pinspotlight_sprite_model(audit.inspect_prefab(pin_roots[0]))
-    for model in (spotlight, background, pinspotlight):
+    stagelights = {obj.read().m_Name: stagelight_model(audit.inspect_prefab(obj))
+                  for obj in environment.objects
+                  if obj.type.name == 'GameObject' and obj.read().m_Name in STAGELIGHT_NAMES}
+    if set(stagelights) != STAGELIGHT_NAMES:
+        raise ValueError('Incomplete native Take stage lamp set')
+    stagelight_songs = {}
+    for code in ('tkstp1', 'tkstp2'):
+        bundle = sources.raw_root / 'asset' / f'song_{code}.unity3d'
+        scripts = [obj for obj in UnityPy.load(str(bundle)).objects
+                   if obj.type.name == 'TextAsset' and obj.read().m_Name == f'{code}_live_effect']
+        if len(scripts) != 1:
+            raise ValueError('Ambiguous native Take choreography')
+        payload = text_asset_payload(scripts[0].read())
+        stagelight_songs[code] = {'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
+            'textAsset': f'{code}_live_effect', 'sha256': hashlib.sha256(payload).hexdigest()},
+            'events': stagelight_events(payload)}
+    for model in (spotlight, background, pinspotlight, *stagelights.values()):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
             if (source['serializedFile'], source['pathId']) != (model['serializedFile'], layer['texturePathId']):
                 raise ValueError('Spotlight texture identity mismatch')
 
     index = {
-        "schemaVersion": 4,
+        "schemaVersion": 5,
         "source": xapk.name,
         "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
         "spotlight": spotlight,
         "spotlightBackground": background,
         "pinspotlight": pinspotlight,
+        "stagelights": dict(sorted(stagelights.items())),
+        "stagelightSongs": stagelight_songs,
     }
     index_target = output_root / "index.json"
     index_target.write_text(
