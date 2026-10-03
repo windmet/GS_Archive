@@ -18,6 +18,7 @@ from live_chibi_pinspotlight import pinspotlight_sprite_model
 from live_chibi_stagelight import NAMES as STAGELIGHT_NAMES, TEXTURES as STAGELIGHT_TEXTURES, stagelight_model, stagelight_events
 from live_chibi_suspensionlight import ASSET as SUSPENSION_ASSET, suspensionlight_model, suspensionlight_events
 from live_chibi_laser import extract_laser_model
+from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -59,7 +60,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
+    return name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"tex_chara_shadow_2", "laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -133,6 +134,9 @@ def main() -> None:
     particle_audit = importlib.util.module_from_spec(particle_spec)
     particle_spec.loader.exec_module(particle_audit)
     laser, _ = extract_laser_model(environment, particle_audit)
+    character_shadow, _ = extract_character_shadow(environment)
+    if assets[character_shadow['asset']]['source']['pathId'] != character_shadow['texturePathId']:
+        raise ValueError('Wrong native character shadow texture')
     suspension_songs = {}
     stagelights, unsupported_prefabs = {}, {}
     native_names = set()
@@ -213,6 +217,7 @@ def main() -> None:
         "pinspotlight": pinspotlight,
         "newSuspensionlight": suspension,
         "laserlight": laser,
+        "characterShadow": character_shadow,
         "newSuspensionlightSongs": suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

@@ -38,6 +38,7 @@
     :data-beam-effects-enabled="beamEffectsEnabled"
     :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
+    :data-character-shadow-source="stageEffectIndex?.characterShadow?.status || 'native-resource-unavailable'"
     :data-lyrics-enabled="lyricsEnabled"
     :data-backmonitor-movie="currentBackmonitorState.movie || ''"
     :data-backmonitor-event-time="currentBackmonitorState.eventTime"
@@ -143,6 +144,11 @@
             :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
             :data-position-scale="positionDebugState(position).scale"
             :data-position-tween-progress="positionDebugState(position).progress"
+            :data-position-x="positionDebugState(position).x"
+            :data-position-y="positionDebugState(position).y"
+            :data-shadow-x="runtimes.get(position)?.groundShadow?.x?.toFixed(2) || ''"
+            :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
+            :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
           >
             <span>{{ position }}</span>
             <small>{{ characterForSlot(slotByPosition(position))?.name || '空位' }}</small>
@@ -461,7 +467,8 @@ import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNat
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
-import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
+import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
+import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
@@ -1051,7 +1058,9 @@ function songOptionLabel(song) {
 function ensureCharacterShadowTexture() {
   if (characterShadowTexture) return Promise.resolve(characterShadowTexture)
   if (!characterShadowLoad) {
-    const relativePath = manifest.value?.shared?.characterShadow || 'shared/character-shadow.png'
+    const profile = stageEffectIndex.value?.characterShadow
+    const relativePath = stageEffectIndex.value?.assets?.[profile?.asset]?.file
+    if (!relativePath) return Promise.resolve(null)
     characterShadowLoad = loadImageLayerTexture(relativePath).then(texture => {
       characterShadowTexture = texture
       return texture
@@ -1061,6 +1070,7 @@ function ensureCharacterShadowTexture() {
 }
 
 function destroyStageRuntime(runtime) {
+  runtime?.releaseShadowFollower?.()
   runtime?.groundShadow?.removeFromParent()
   runtime?.groundShadow?.destroy()
   destroyLiveChibi(runtime)
@@ -1102,11 +1112,13 @@ async function loadSlot(slot) {
       destroyLiveChibi(runtime)
       return
     }
-    const groundShadow = markRaw(new PIXI.Sprite(shadowTexture))
+    const groundShadow = shadowTexture ? markRaw(new PIXI.Sprite(shadowTexture)) : null
+    if (groundShadow) {
     groundShadow.anchor.set(0.5)
     // The source PNG already tops out at 50% alpha; avoid attenuating it a
     // second time or it disappears against the illuminated stage floor.
     groundShadow.alpha = 1
+    }
     const stageRuntime = markRaw({
       ...runtime,
       groundShadow,
@@ -1117,7 +1129,11 @@ async function loadSlot(slot) {
       stagePosition: slot.position,
     })
     runtimes.set(slot.position, stageRuntime)
-    cameraContainer.addChild(stageRuntime.groundShadow)
+    if (groundShadow) {
+      cameraContainer.addChild(groundShadow)
+      stageRuntime.releaseShadowFollower = installCharacterShadowFollower(stageRuntime.spine,
+        () => syncCharacterShadow(stageRuntime))
+    }
     cameraContainer.addChild(stageRuntime.spine)
     slot.loading = false
     resizeStage()
@@ -1228,7 +1244,10 @@ function positionStateForStage(position, milliseconds) {
 
 function positionDebugState(position) {
   const state = positionStateForStage(position, stageTime.value)
+  const coordinates = layoutCoordinatesForStage(position, stageTime.value)
   return {
+    x: coordinates.x,
+    y: coordinates.y,
     scale: state ? Number(state.scale).toFixed(2) : '',
     progress: state ? Number(state.tweenProgress ?? 1).toFixed(3) : '',
   }
@@ -1240,14 +1259,7 @@ function layoutCoordinatesForStage(position, milliseconds, motionEvent = null) {
     .reverse()
     .find(item => Number(item.time) <= milliseconds)
   const fallbackX = [-460, -230, 0, 230, 460][position - 1]
-  const positionIsNewer = positionState
-    && (!event || Number(positionState.time) > Number(event.time))
-  return {
-    x: Number(positionIsNewer ? positionState.x : (event?.x ?? positionState?.x ?? fallbackX)),
-    y: Number(positionIsNewer ? positionState.y : (event?.y ?? positionState?.y ?? 180)),
-    scale: Number(positionState?.scale ?? 1700),
-    positionState,
-  }
+  return resolveChibiPlacement(positionState, event, fallbackX)
 }
 
 function sampleCameraTween(tween, milliseconds) {
@@ -2814,6 +2826,20 @@ function applyLayerDebugVisibility() {
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer debug sync failed', error))
 }
 
+function syncCharacterShadow(runtime) {
+  const shadow = runtime.groundShadow
+  if (!shadow) return
+  const layout = characterShadowLayout(runtime.spine, stageEffectIndex.value?.characterShadow)
+  shadow.visible = Boolean(layout) && charactersEnabled.value && characterShadowsEnabled.value && runtime.spine.visible
+  if (!layout) return
+  shadow.position.set(layout.x, layout.y)
+  shadow.scale.set(layout.scaleX, layout.scaleY)
+  shadow.zIndex = runtime.spine.zIndex - 1
+  // Spine evaluates its pose during Pixi's transform pass, after the earlier
+  // shadow sibling. Refresh that sibling before rendering to avoid frame lag.
+  if (shadow.parent) shadow.updateTransform()
+}
+
 function layoutRuntime(position, motionEvent = null) {
   const runtime = runtimes.get(position)
   if (!runtime || !app || !canvasRef.value) return
@@ -2845,14 +2871,7 @@ function layoutRuntime(position, motionEvent = null) {
   runtime.spine.zIndex = CHARACTER_DEPTH_BASE
     + Math.round((360 - y) * CHARACTER_DEPTH_Y_FACTOR)
     + position
-  if (runtime.groundShadow) {
-    runtime.groundShadow.position.set(runtime.spine.x, runtime.spine.y + 3 * viewportScale)
-    runtime.groundShadow.scale.set(runtime.spine.scale.x * 2.1, runtime.spine.scale.y * 0.42)
-    runtime.groundShadow.visible = charactersEnabled.value
-      && characterShadowsEnabled.value
-      && runtime.spine.visible
-    runtime.groundShadow.zIndex = runtime.spine.zIndex - 1
-  }
+  syncCharacterShadow(runtime)
   runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
 }
 

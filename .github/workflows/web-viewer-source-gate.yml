@@ -134,6 +134,8 @@ jobs:
 
       - name: Verify Take stage lamp bindings and timeline sampling
         run: python scripts/verify-chibi-stagelight-prefabs.py && node scripts/verify-chibi-stagelights.mjs && python scripts/verify-chibi-suspensionlight-parser.py && node scripts/verify-chibi-suspensionlights.mjs && python scripts/verify-chibi-laser-parser.py && node scripts/verify-chibi-laser-particles.mjs
+      - name: Verify independent formations and native shadow followers
+        run: python scripts/verify-chibi-character-shadow-parser.py && node scripts/verify-chibi-placement-shadows.mjs
 
       - name: Verify native Take floor particles and masked timeline
         run: python scripts/verify-chibi-floor.py && node scripts/verify-chibi-floor.mjs

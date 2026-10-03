@@ -8,6 +8,17 @@ export function chibiGroundRegistration() {
   return { baselineY: 540, id: 'design-space-ground-v1' }
 }
 
+// Independent position commands own formation and off-stage visibility.
+// Motion rows retain legacy x/y fields, but cannot overwrite a formation.
+export function resolveChibiPlacement(positionState, motionEvent, fallbackX) {
+  return {
+    x: Number(positionState?.x ?? motionEvent?.x ?? fallbackX),
+    y: Number(positionState?.y ?? motionEvent?.y ?? 180),
+    scale: Number(positionState?.scale ?? 1700),
+    positionState,
+  }
+}
+
 export function projectChibiGround(songCode, coordinates, width, height) {
   const fit = Math.min(width / 1280, height / 720)
   const registration = chibiGroundRegistration(songCode)
