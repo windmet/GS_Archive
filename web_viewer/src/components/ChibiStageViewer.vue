@@ -2561,7 +2561,8 @@ function applyCameraTransform() {
   cameraContainer.position.set(width * 0.5, height * 0.5)
   cameraContainer.pivot.set(
     width * 0.5 + camera.x * viewportScale,
-    height * 0.5 + (camera.y - 360) * viewportScale,
+    // Authored Camera y is up-positive; Pixi's screen-space y is down-positive.
+    height * 0.5 - (camera.y - 360) * viewportScale,
   )
   cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value)
   cameraContainer.rotation = -camera.rotation * Math.PI / 180

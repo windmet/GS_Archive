@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 // Execute the actual SFC camera sampler, including its tween implementation.
-// This is a source-only timeline test; camera projection/paint need Browser QA.
+// Source-only sampler/projection tests; paint still needs Browser QA.
 const source = readFileSync(new URL('../src/components/ChibiStageViewer.vue', import.meta.url), 'utf8')
 const start = source.indexOf('function sampleCameraTween(')
 const end = source.indexOf('function backmonitorStateAt(', start)
@@ -42,4 +42,43 @@ for (const code of ['tkstp1', 'tkstp2']) {
   const prior = makeSampler({ value: { cameraEvents: old } }, () => ({ x: 100 }))
   for (const time of [0, 20000, 60000, 100000]) assert.deepEqual(upgraded(time), prior(time), code + ' without reset preserves the prior shot')
 }
-console.log('Actual SFC Camera sampler: Study wide-shot reset, interrupted focus/pan/rotation, timed reset, backward seek and legacy entries passed; not native projection acceptance')
+// Execute the actual consumer with Pixi's position/pivot/scale contract.
+// Independent image shifts establish the sign, rather than copying its formula.
+const projectionStart = source.indexOf('function applyCameraTransform()')
+const projectionEnd = source.indexOf('function applyLayerDebugVisibility()', projectionStart)
+assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
+const project = new Function('cameraContainer', 'app', 'cameraEnabled', 'stageViewScale', 'currentCameraState', 'STAGE_BASE_ZOOM',
+  source.slice(projectionStart, projectionEnd) + '; applyCameraTransform()')
+const witness = JSON.parse(readFileSync(new URL('./fixtures/chibi-camera-video-registration.json', import.meta.url), 'utf8'))
+function transform(time, width, height, enabled = true, viewScale = 1, resolution = 1) {
+  const vector = () => ({ x: 0, y: 0, set(x, y = x) { this.x = x; this.y = y } })
+  const container = { position: vector(), pivot: vector(), scale: vector(), rotation: 0 }
+  project(container, { renderer: { width: width * resolution, height: height * resolution, resolution } },
+    { value: enabled }, { value: viewScale }, { value: sample(time) }, 1)
+  return container
+}
+function screenPoint(container, point) {
+  assert.ok(Math.abs(container.rotation) < 1e-12, 'registration shots have no rotation')
+  return { x: container.position.x + (point.x - container.pivot.x) * container.scale.x,
+    y: container.position.y + (point.y - container.pivot.y) * container.scale.y }
+}
+for (const [width, height, resolution] of [[1280, 720, 1], [819, 461, 2], [357, 201, 3], [800, 500, 1]]) {
+  const fit = Math.min(width / 1280, height / 720)
+  for (const shot of witness.observations) {
+    const before = screenPoint(transform(shot.fromMs, width, height, true, 1, resolution), { x: width / 2, y: height / 2 })
+    const after = screenPoint(transform(shot.toMs, width, height, true, 1, resolution), { x: width / 2, y: height / 2 })
+    for (const axis of ['x', 'y']) {
+      const sourceDelta = (after[axis] - before[axis]) / fit
+      const observed = shot[axis === 'x' ? 'imageShiftX' : 'imageShiftY']
+      assert.ok(Math.abs(sourceDelta - observed) <= witness.toleranceSourcePixels,
+        `${shot.fromMs}->${shot.toMs} ${axis}: ${sourceDelta} vs independent recording ${observed}`)
+    }
+  }
+  const neutral = transform(32101, width, height, true, 1, resolution)
+  assert.deepEqual(screenPoint(neutral, { x: width / 2, y: height / 2 }), { x: width / 2, y: height / 2 })
+  const disabled = transform(3300, width, height, false, 1.25, resolution)
+  assert.equal(disabled.scale.x, 1.25)
+  assert.equal(disabled.scale.y, 1.25)
+  assert.deepEqual(screenPoint(disabled, { x: width / 2, y: height / 2 }), { x: width / 2, y: height / 2 })
+}
+console.log('Actual SFC Camera: reset/seek/legacy sampler, two independent recorded pan directions across four viewports/DPRs and disabled centred overview passed; not full native projection acceptance')

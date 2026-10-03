@@ -603,3 +603,13 @@ python scripts/verify-chibi-penlight-render-inputs.py
 本轮代码提交 `42367ffb` 与可见性补丁 `5bc2c4e1` 均已推送。完整 [Source Gate 37086040675](https://github.com/windmet/GS_Archive/actions/runs/37086040675) 已终态success，准确绑定 `5bc2c4e1cc40dc45fcb5194d143d43cf0313ccc7`，116项成功、无失败；包含新原生render-input verifier。其它窗口未提交的活动页／译名回归不属于此HEAD，保留且未纳入本批CI声明。
 
 已从本地Study录屏按既有audio offset=4.7275s截取song time 6.5–8.5s的前景底部100像素、8fps／16帧contact sheet：`study-reference/penlight-front-reference-006500-008500.png`（只作分析裁切，未改源视频）。可以观察到call棒随时间升降、底部留有舞台／歌词上缘，不能用静止的一排长亮棒替代；这一短片只支持可见运动观察，尚不足以证明RAW animation type/id／speed具体换算。未据此直接指定Beat／Wiper／Yeah映射。
+
+## 2026-10-03：录屏证实 Camera 纵向投影反号
+
+输入 HEAD `67de9e38`。Study 同一录屏 SHA256 `29396c33375c6d4c1e20339cdcd03e0a2dc62de77f211a14bb151b08ec8fde17`、audio offset=4.7275s，取 song 3.3／4.8／6.3 秒三张稳定镜头。上部420像素、半尺寸亮度高通后做归一化相关，恢复到源像素：3.3→4.8位移(-312,-52)，相关0.7635；4.8→6.3为(-312,+38)，相关0.6509。原始Camera y=390→350→380、zoom=1.3，独立画面支持Y为up-positive；原Web pivot却预测纵移+52、-39，方向相反。只修正 `applyCameraTransform` 的Y到Pixi down-positive换算，不修改基线、人物或舞台比例。
+
+tracked `chibi-camera-video-registration.json` 保存视频身份、取帧配准方法和独立位移；既有Camera verifier执行实际SFC consumer，覆盖四种canvas／DPR、两个相反方向、重置和关闭相机的中心缩放。实际RAW Camera解析、1178条／118编排坐标一致性、35项动作协议、`verify:engineering`通过。`build:check` 2779 modules／18.35s，固定输出、无public复制。
+
+5198实际生产bundle `ChibiStageViewer-TQIHKfAJ.js`，正确S.E.M 2/3/4及102_00／101_00／101_00：1280×720三切镜截图与旧图的可见像素配准，纵移分别+50／-17／+33，相关0.9560／0.9289／0.9674，符合反号修正应有的+49.83／-16.61／+33.22（canvas约819×460）。实际关闭／开启CSV镜头、32.1s重置得到zoom1/x0/y360；390×844的4.8s画面canvas约357×201、document scrollWidth=clientWidth=390，无console error。结束恢复视口。截图与 `camera-y-browser-pixel-witness.json` 保存在既有 `study-reference/`；Browser响应式模拟不等于真实手机。
+
+call棒前景高度的短段观察受到镜头移动影响；`penlight-motion-candidates.json`仅为弱相关候选，不能证明CSV到Beat／Wiper／Yeah或speed映射，未激活猜测版绘制。本批确认两次纵移，不扩展为整曲相机easing／rotation或原生方法体验收。其它窗口资料页／翻译审计工作保留；用户新指出Take地面一排灯变色，作为下一批明确目标，需关联原始对象与指令、对照录屏。全曲舞台、实体手机、资源发布与master PR尚未收口。
