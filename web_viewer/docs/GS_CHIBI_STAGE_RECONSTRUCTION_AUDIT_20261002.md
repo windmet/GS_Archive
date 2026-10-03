@@ -557,3 +557,7 @@ python -X utf8 scripts/audit-chibi-costume-shader.py --raw-asset-root ../RAW/ass
 python -X utf8 scripts/verify-chibi-costume-shader.py .analysis/engineering-validation-20261002/study-reference/costume-shader-contract.json
 python -X utf8 scripts/verify-chibi-costume-shader.py
 ```
+
+后续门禁：代码 `86909ac23246b1efdf71c7b6c0e72d98e965e927` 的完整 [Source Gate 37082087402](https://github.com/windmet/GS_Archive/actions/runs/37082087402) 已终态 success，115 个成功步骤、无失败，包含新增 portable shader 契约。期间其它窗口的卡片 UI／歌曲验收提交 `0b413ef7`、`81707aa1` 保留；此 CI 绑定 86909ac2，而不是后续文档 revision。
+
+进一步定位了现有消费者偏差：`prepare-live-chibi-assets.py` 把 `Livechara_Foot_Color` 输出为 characterLightEvents，`characterLightAt` 再以 opacity／1000 混白并对整个 Spine 设置 tint。实际 Study RAW `steqmg_live_effect`（song bundle SHA256 `c8ac69f6c08f0dcac5dfd397cb4a72e8409927e1e1f5f5ed3bc784121645f1c8`）有 **29 条 Foot_Color、0 条已解析 Body_Color**，首条 time=-2000、color=#221d23、value2=600、value3=1、value4=1250。原始行、TextAsset 身份／SHA、当前派生事件与 metadata 方法 witness 保存 `study-reference/foot-color-mapping-candidate.json`。第19列的 #cc6b8c 属于原表“コメント”，不是第二个运行期颜色参数。结合原生局部高度渐变 shader 与 `ChangeFootColor(color,rate,transitionDuration)` 方法签名，现有“整身乘色”缺少 Foot 渐变维度，不能作为原生等效；但方法体缺失，**value2 是否直接 rate、除1000、如何换算 cutoff／角色高度仍待证明**。暂未把该列强行重命名成高度或套用新的数值公式。下一批应优先闭合 Foot 命令到 runtime uniform，而不是仅从衣装纹理差异推断换装。
