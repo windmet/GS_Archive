@@ -32,7 +32,7 @@
     <ArchiveFloatingTooltip :anchor="tooltipAnchor" :id="tooltipId" @dismiss="hideTooltip">
       <template v-if="tooltipRow"><strong>{{ entryName(tooltipRow) }}</strong><span v-if="entryName(tooltipRow)!==tooltipRow.nameJa" lang="ja" class="collection-original">{{ tooltipRow.nameJa }}</span><span>{{ summary(tooltipRow)?.description?archiveText('item',summary(tooltipRow).description,'description'):itemBrowseGroup(tooltipRow.itemType).label }}</span><small>编号 {{ tooltipRow.id }} · 点击查看来源</small></template>
     </ArchiveFloatingTooltip>
-    <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="emit('entity','')" @retry="load" @open-event="emit('open-event',$event)" @open-gasha="emit('open-gasha',$event)" />
+    <CollectionDetailPanel v-if="detailOpen" :detail="detail" :kind="kind" :display-idol-name="displayIdolName" :busy="catalogBusy||detailBusy" :error="errorScope==='detail'?error:''" modal @close="emit('entity','')" @retry="load" @open-event="emit('open-event',$event)" @open-gasha="emit('open-gasha',$event)" @open-card="emit('open-card',$event)" />
   </article>
 </template>
 <script setup>
@@ -50,7 +50,7 @@ import {createCollectionCatalogSession} from '../../../readmodels/runtime/Collec
 import '../../styles/archive-domains.css'
 import '../../styles/archive-collection.css'
 const props=defineProps({client:Object,bootstrap:Object,displayIdolName:{type:Function,default:()=>''},entity:{type:String,default:''},query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'items',page:0})}})
-const emit=defineEmits(['query','entity','browse','open-event','open-gasha'])
+const emit=defineEmits(['query','entity','browse','open-event','open-gasha','open-card'])
 const repository=new DomainRepository(props.client,props.bootstrap)
 const kind=computed(()=>props.browseState.kind),rows=shallowRef([]),detail=shallowRef(null),catalogBusy=ref(false),detailBusy=ref(false),selectedId=ref(''),error=ref(''),errorScope=ref('')
 function filterModel(key){return computed({get:()=>props.browseState[key] ?? (key==='page'?0:''),set:value=>emit('browse',{...props.browseState,[key]:value,...(key==='page'?{}:{page:0})})})}

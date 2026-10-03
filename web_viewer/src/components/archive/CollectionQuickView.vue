@@ -6,7 +6,7 @@
         <p v-if="state.busy" role="status" class="domain-muted">正在读取藏品资料…</p>
         <p v-else-if="state.error" role="alert" class="domain-error">{{ state.error }}<button type="button" @click="preview.open(entityKey)">重试</button></p>
         <template v-else-if="state.detail">
-          <CollectionEntryDetails :detail="state.detail" :kind="state.domain" />
+          <CollectionEntryDetails :detail="state.detail" :kind="state.domain" :display-idol-name="displayIdolName" @open-card="emit('open-card',$event)" />
           <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">在藏品馆中查看来源与用途 <ChevronRight :size="16" /></button>
         </template>
       </section>
@@ -20,8 +20,8 @@ import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs
 import {createCollectionPreview} from '../../../readmodels/runtime/CollectionPreview.mjs'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'
 import '../../styles/archive-domains.css'
-const props=defineProps({client:Object,bootstrap:Object,entityKey:{type:String,required:true}})
-const emit=defineEmits(['close','open-entity'])
+const props=defineProps({client:Object,bootstrap:Object,entityKey:{type:String,required:true},displayIdolName:{type:Function,default:()=>''}})
+const emit=defineEmits(['close','open-entity','open-card'])
 const dialog=ref(null),closeButton=ref(null),opener=document.activeElement;
 const background=opener?.closest('#story-viewer'),wasInert=background?.inert;
 const state=shallowRef({busy:true,detail:null,error:''});

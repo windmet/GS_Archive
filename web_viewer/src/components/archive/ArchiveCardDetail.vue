@@ -150,13 +150,34 @@
               </div>
               <p>{{ presentCardSkillDescription(selectedSkill?.description) }}</p>
             </div>
-            <div v-if="card.limitbreak_item?.name" class="limitbreak-item-row">
-              <PackageOpen :size="19" />
-              <div>
-                <small>突破素材</small>
-                <strong :title="card.limitbreak_item.name">{{ archiveText('item', card.limitbreak_item.name) }}</strong>
-                <p>{{ archiveText('item', card.limitbreak_item.description, 'description') }}</p>
-              </div>
+            <div v-if="resolvedLimitbreakMaterial || card.limitbreak_item?.name" class="limitbreak-item-row" :class="{ 'limitbreak-item-resolved': resolvedLimitbreakMaterial }">
+              <template v-if="resolvedLimitbreakMaterial">
+                <button
+                  class="limitbreak-item-open"
+                  type="button"
+                  :data-archive-focus-id="`card-material:${card.resource_id}:${resolvedLimitbreakMaterial.key}`"
+                  @click="emit('open-entity', resolvedLimitbreakMaterial.key)"
+                >
+                  <span class="limitbreak-item-image" aria-hidden="true">
+                    <img v-if="resolvedLimitbreakMaterial.image?.url && !limitbreakImageFailed" :key="`${card.resource_id}:${resolvedLimitbreakMaterial.image.url}`" :src="resolvedLimitbreakMaterial.image.url" alt="" loading="lazy" @error="onLimitbreakImageError" />
+                    <PackageOpen v-else :size="22" />
+                  </span>
+                  <span class="limitbreak-item-copy">
+                    <small>突破素材</small>
+                    <strong :title="resolvedLimitbreakMaterial.nameJa">{{ archiveText('item', resolvedLimitbreakMaterial.nameJa) }}</strong>
+                  </span>
+                  <ChevronRight :size="17" aria-hidden="true" />
+                </button>
+                <p v-if="resolvedLimitbreakMaterial.description">{{ archiveText('item', resolvedLimitbreakMaterial.description, 'description') }}</p>
+              </template>
+              <template v-else>
+                <PackageOpen :size="19" />
+                <div>
+                  <small>突破素材</small>
+                  <strong :title="card.limitbreak_item.name">{{ archiveText('item', card.limitbreak_item.name) }}</strong>
+                  <p>{{ archiveText('item', card.limitbreak_item.description, 'description') }}</p>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -171,7 +192,8 @@
               <h5 class="costume-group-title" :title="group.name">{{ archiveText('costume', group.name) || '衣装名称待确认' }}</h5>
             </div>
             <blockquote v-if="group.description" class="costume-flavor">
-              <span class="authored-text">{{ group.description }}</span><span class="reflowed-text">{{ reflowCardCostumeFlavor(group.description) }}</span>
+              <small v-if="group.flavor.heading" class="costume-setting-heading">{{ group.flavor.heading }}</small>
+              <span class="authored-text">{{ group.flavor.authoredBody }}</span><span class="reflowed-text">{{ group.flavor.reflowedBody }}</span>
             </blockquote>
             <div class="costume-variants" aria-label="款式用途与状态">
               <div v-for="costume in group.costumes" :key="costume.key" class="costume-row" role="group" :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'">
@@ -333,7 +355,7 @@ import {
   getCardPortraitUrl,
   isRawCardCandidate,
 } from '../../utils/CardAssetResolver.js'
-import { presentCardAssetRows, presentCardCostumeGroups, reflowCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
+import { presentCardAssetRows, presentCardCostumeGroups, presentCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
 
 const props = defineProps({
   card: { type: Object, default: null },
@@ -346,6 +368,7 @@ const props = defineProps({
   seriesCards: { type: Array, default: () => [] },
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
+  limitbreakMaterial: { type: Object, default: null },
 })
 const emit = defineEmits([
   'back',
@@ -356,6 +379,7 @@ const emit = defineEmits([
   'open-event',
   'open-gasha',
   'open-idol',
+  'open-entity',
   'update:art-mode',
 ])
 
@@ -389,7 +413,25 @@ const parameterRows = computed(() => {
 })
 
 const visibleCostumes = computed(() => presentCardCostumeGroups(props.card?.costume_relations,
-  costume => archiveText('costume', costume.description, 'description')))
+  costume => archiveText('costume', costume.description, 'description')).map(group => ({
+    ...group, flavor: presentCardCostumeFlavor(group.description, group.sourceDescription),
+  })))
+
+const resolvedLimitbreakMaterial = computed(() => {
+  const item = props.limitbreakMaterial, id = props.card?.limitbreak_item_id
+  // A delayed or unmapped context must never navigate to another card's item.
+  return Number.isInteger(id) && id > 0 && item?.referenceStatus === 'resolved-entity' &&
+    item.kind === 'item' && item.id === id && item.key === `item:${id}` &&
+    typeof item.nameJa === 'string' && item.nameJa.trim()
+    ? item : null
+})
+const limitbreakImageFailed = ref(false)
+watch(() => [props.card?.resource_id, resolvedLimitbreakMaterial.value?.key, resolvedLimitbreakMaterial.value?.image?.url],
+  () => { limitbreakImageFailed.value = false })
+
+function onLimitbreakImageError(event) {
+  if (event.target?.getAttribute('src') === resolvedLimitbreakMaterial.value?.image?.url) limitbreakImageFailed.value = true
+}
 
 function formatDate(timestamp) {
   if (!Number.isFinite(timestamp)) return 'unknown'
@@ -594,6 +636,14 @@ function openRelation(item) {
 .limitbreak-item-row small { display: block; margin-bottom: var(--gs-space-1); color: #78878e; font-family: monospace; font-size: var(--gs-text-meta); }
 .limitbreak-item-row strong { color: #2d4551; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: #4c5c64; font-size: var(--gs-text-body); line-height: 1.5; }
+.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-3); }
+.limitbreak-item-open { box-sizing: border-box; display: grid; grid-template-columns: 44px minmax(0, 1fr) 17px; align-items: center; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid #dce8e5; border-radius: var(--gs-radius-control); background: #f6faf8; color: #4d8d88; text-align: left; cursor: pointer; }
+.limitbreak-item-image { display: grid; place-items: center; width: 44px; height: 44px; }
+.limitbreak-item-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.limitbreak-item-copy { min-width: 0; }
+.limitbreak-item-copy strong { display: block; line-height: 1.5; }
+.limitbreak-item-resolved p { margin: 0; overflow-wrap: anywhere; }
+@media (hover: hover) and (pointer: fine) { .limitbreak-item-open:hover { border-color: #a7cec4; background: #eff7f3; } }
 .costume-list { display: flex; flex-direction: column; }
 .costume-group { min-width: 0; padding: var(--gs-space-4) 0; border-bottom: 1px solid #edf0f2; color: #58718a; }
 .costume-group:last-child { border-bottom: 0; }
@@ -601,6 +651,7 @@ function openRelation(item) {
 .costume-group-header > svg { flex: 0 0 20px; }
 .costume-group-title { min-width: 0; margin: 0; color: #293b45; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .costume-flavor { box-sizing: border-box; margin: var(--gs-space-4) 0; padding: 10px var(--gs-space-4); border-left: 2px solid #71b6aa; border-radius: 0 var(--gs-radius-field) var(--gs-radius-field) 0; background: #f3f8f6; white-space: pre-wrap; color: #4d5c64; font-size: var(--gs-text-ui); line-height: 1.6; overflow-wrap: anywhere; }
+.costume-setting-heading { display: block; margin-bottom: var(--gs-space-2); color: #6b7b77; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); line-height: 1.5; }
 .costume-variants { display: grid; gap: 6px; margin-top: var(--gs-space-3); }
 .costume-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); min-width: 0; }
 .costume-variant-name { color: #40535b; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }

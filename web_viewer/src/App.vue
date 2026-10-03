@@ -142,6 +142,7 @@
         :card="currentCard"
         :owner-reference="currentCardOwnerReference"
         :asset-status="currentCardAssetStatus"
+        :limitbreak-material="currentCardLimitbreakMaterial"
         :art-mode="cardArtMode"
         :previous-card="previousCard"
         :next-card="nextCard"
@@ -156,6 +157,7 @@
         @open-event="openCardEvent"
         @open-gasha="openCardGasha"
         @open-idol="openCardIdol"
+        @open-entity="openCollectionEntity"
         @update:art-mode="cardArtMode = $event"
       />
 
@@ -226,6 +228,7 @@
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
+        @open-collection-card="openCollectionCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
         @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
@@ -235,7 +238,7 @@
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
         :browse-state="currentEventBrowseState" @query="updateEventCatalogQuery" @browse="updateEventBrowse" @ready="onEventCatalogReady" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
-        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
+        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-card="openCollectionCard" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
         @query="updatePhotoCatalogQuery" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @ready="onPhotoCatalogReady" @open-studio="openPictureStudio" />
 
@@ -1281,6 +1284,8 @@ const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id ==
 const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
   ? cardReadModelDetail.value.gashaRelation : null)
 const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || [])
+const currentCardLimitbreakMaterial = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+  ? cardReadModelDetail.value.limitbreakMaterial || null : null)
 const gashaCategoryOptions = computed(() => gashaCatalogFunctions.value?.buildGashaCategoryOptions(
   { meta: gashaReadModelCatalog.value?.summary }, gashaCatalog.value) || [])
 const filteredGashas = computed(() => gashaCatalogFunctions.value?.filterGashaCatalog(gashaCatalog.value, {
@@ -3682,6 +3687,13 @@ function openCardScenario(entry) {
   if (entry?.compiled_file) {
     return loadScenario(entry.compiled_file, 'card_detail')
   }
+function openCollectionCard(card) {
+  if (!['collection_catalog', 'event_detail'].includes(view.value) ||
+      card?.target?.view !== 'card_detail' || card.target.card !== card.resource_id ||
+      !card.resource_id || !card.character_id) return
+  return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
+}
+
 }
 
 async function previewCardVoice(cue) {

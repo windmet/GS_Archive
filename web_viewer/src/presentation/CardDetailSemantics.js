@@ -74,16 +74,37 @@ export function presentCardCostumeGroups(relations = [], descriptionFor = costum
   return groups
 }
 
-// These are the setting headers present in the source costume flavors and
-// their Chinese overlay. A short line or missing full stop is not a heading.
-const COSTUME_SETTING_HEADING = /^(?:[^\s:：]+座[:：](?:火|地|水|風|土|风)(?:のエレメント|元素)|(?:クラス|职业)[:：][^\r\n]+)$/u
+// The complete shown-costume corpus has these six setting headers. Match the
+// source first line and its existing overlay, never infer headings from prose.
+const COSTUME_SETTING_HEADINGS = [
+  ['おひつじ座：火のエレメント', '白羊座：火元素'],
+  ['おうし座：地のエレメント', '金牛座：土元素'],
+  ['さそり座：水のエレメント', '天蝎座：水元素'],
+  ['クラス：エリミネイトシューター', '职业：绝杀射手'],
+  ['クラス：トキシックアサシン', '职业：毒杀刺客'],
+  ['クラス：スターディーウォーリアー', '职业：坚毅战士'],
+]
+const settingHeaderPair = heading => COSTUME_SETTING_HEADINGS.find(pair => pair.includes(heading))
 const COSTUME_QUOTED_PARAGRAPH = /^(?:「[^」]+」|『[^』]+』|“[^”]+”|‘[^’]+’|"[^"]+")(?=\n|$)/u
+
+/** A source-confirmed setting line has its own visual role. Keep all remaining
+ * authored text byte-for-byte, including the locale's real paragraph breaks. */
+export function presentCardCostumeFlavor(value, sourceValue = value) {
+  const authored = String(value ?? '')
+  const firstLine = /^([^\r\n]+)(\r\n|\r|\n)/u.exec(authored)
+  const sourceHeading = String(sourceValue ?? '').split(/\r\n|\r|\n/u)[0]
+  const pair = settingHeaderPair(sourceHeading)
+  const heading = firstLine && pair?.includes(firstLine[1]) ? firstLine[1] : ''
+  const separator = heading ? firstLine[2] : ''
+  const authoredBody = heading ? authored.slice(firstLine[0].length) : authored
+  return { heading, separator, authoredBody, reflowedBody: reflowCardCostumeFlavor(authoredBody) }
+}
 
 /** Mobile presentation only; callers retain the unmodified desktop flavor. */
 export function reflowCardCostumeFlavor(value) {
   return String(value ?? '').replace(/\r\n?/g, '\n').split(/\n[\t ]*\n/).map(paragraph => {
     const lines = paragraph.split('\n')
-    const heading = COSTUME_SETTING_HEADING.test(lines[0]) ? lines.shift() : ''
+    const heading = settingHeaderPair(lines[0]) ? lines.shift() : ''
     const body = [], prose = []
     const finishProse = () => {
       if (prose.length) body.push(reflowArchiveText(prose.splice(0).join('\n')))

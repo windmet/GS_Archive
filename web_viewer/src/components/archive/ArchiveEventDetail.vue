@@ -166,7 +166,7 @@
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
 
-    <CollectionQuickView v-if="quickEntity" :client="client" :bootstrap="bootstrap" :entity-key="quickEntity" @close="quickEntity=''" @open-entity="emit('open-entity',$event)" />
+    <CollectionQuickView v-if="quickEntity" :client="client" :bootstrap="bootstrap" :entity-key="quickEntity" :display-idol-name="displayIdolName" @close="quickEntity=''" @open-entity="emit('open-entity',$event)" @open-card="emit('open-collection-card',$event)" />
 
     <ArchiveTechnicalDetails :key="event.event_id" :evidence="view.provenance">
       <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
@@ -213,7 +213,7 @@ const props = defineProps({
   externalResources: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
 })
-const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
 const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
