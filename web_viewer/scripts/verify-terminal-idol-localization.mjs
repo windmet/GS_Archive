@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
 import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -11,6 +12,7 @@ import { buildIdolReference } from '../src/presentation/IdolReferencePresentatio
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { buildIdolProfile, eventsForIdol, songsForIdol } from '../src/data/idolPage.js'
 import { buildUnitCatalog } from '../src/data/unitPage.js'
+import { readCheckout } from '../readmodels/lib/checkout_adapter.mjs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const dictionary = JSON.parse(read('public/data/masterdata/idol_unit_dictionary.json'))
@@ -76,8 +78,25 @@ const [canonicalProfile, displayedProfileName] = vm.runInContext(
   `${app.slice(idolProjectionStart, idolProjectionEnd)}\n;[currentIdolProfile, currentIdolDisplayName]`, context)
 assert.match(app, /<ArchiveIdolDetail\b[^>]*:idol-name="idolDisplayName"/,
   'App forwards the production display callback to the canonical profile consumer')
+assert.match(app, /<ArchiveEventDetail\b[^>]*:display-idol-name="idolDisplayName"/,
+  'App forwards the production display callback to the event consumer')
+// Use the real offline producer instead of reimplementing event/reward joins.
+// These source renders do not imply acceptance of pinned read-model or media bytes.
+const { product: eventProduct } = await readCheckout(fileURLToPath(new URL('../', import.meta.url)),
+  { dataRevision: 'localization-test', mediaEpoch: 'localization-test' })
+const derivedCards = view => view.cards.filter(card =>
+  !view.rewards.cards.some(reward => reward.card_resource_id === card.card_resource_id))
+const usableEvent = record => record.view.castReferences.some(entry => entry.idol_code === profile.idol_code) &&
+  derivedCards(record.view).length > 0 && record.view.episodes.length > 1 &&
+  record.view.readingEntries.some(entry => entry.status === 'ready' && entry.source_file === record.view.episodes[0].file)
+const preferredEvent = eventProduct.extraDomains.events.records.find(record => record.id === '430013')
+const eventRecord = preferredEvent && usableEvent(preferredEvent) ? preferredEvent :
+  eventProduct.extraDomains.events.records.find(usableEvent)
+assert.ok(eventRecord, 'a real event has Aslan, derived cards and a ready first episode')
+const eventView = eventRecord.view
+console.log(`Event localization source fixture: ${eventRecord.id} / ${eventView.identity.title}; ${eventView.castReferences.length} cast references, ${derivedCards(eventView).length} derived cards`)
 const sourceEvidence = () => JSON.stringify([owner, card, drive, altessimo, experiments,
-  dictionary, overlay, manifest, profile, idolEvents, idolSongs, unitEntry])
+  dictionary, overlay, manifest, profile, idolEvents, idolSongs, unitEntry, eventView])
 const evidenceBefore = sourceEvidence()
 
 // Compile and render the actual SFCs. Setting their existing setup refs supplies
@@ -120,6 +139,7 @@ try {
   const { default: Song } = await server.ssrLoadModule('/src/components/archive/ArchiveSongDetail.vue')
   const { default: Idol } = await server.ssrLoadModule('/src/components/archive/ArchiveIdolDetail.vue')
   const { default: Unit } = await server.ssrLoadModule('/src/components/archive/ArchiveUnitDetail.vue')
+  const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')
   const { default: Experimental } = await server.ssrLoadModule('/src/components/archive/ArchiveSongExperimentalPlayer.vue')
   const { default: Lineup } = await server.ssrLoadModule('/src/components/archive/ArchiveSongLineupPlayer.vue')
   const idolProps = { idol: profile, events: idolEvents, songs: idolSongs }
@@ -161,12 +181,77 @@ try {
     }
     checks += 2
   }
+  async function verifyEventDetails({ sourceOnly = false, missingName = false } = {}) {
+    let eventState
+    const nameCalls = []
+    const displayIdolName = (code, rawFallback) => {
+      nameCalls.push([code, rawFallback])
+      return context.idolDisplayName(code, rawFallback)
+    }
+    const eventName = (code, raw) => sourceOnly || locale.value === 'ja-JP' || (missingName && code === profile.idol_code)
+      ? raw : overlay.entries[code]?.name || raw
+    const html = await render(withState(Event, state => { eventState = state }), {
+      view: eventView, ...(sourceOnly ? {} : { displayIdolName }),
+    })
+    const labels = [...html.matchAll(/aria-label="([^"]+)"/g)].map(match => decodeHtml(match[1]))
+    const names = elementText(html, 'strong').map(decodeHtml)
+    assert.equal(eventState.castReferences.value.length, eventView.castReferences.length)
+    eventView.castReferences.forEach((entry, index) => {
+      const projected = eventState.castReferences.value[index]
+      const rawIdol = eventView.cast.find(idol => idol.idol_code === entry.idol_code)
+      const displayed = eventName(entry.idol_code, entry.reference.displayName)
+      if (!sourceOnly) assert.ok(nameCalls.some(([code, raw]) => code === entry.idol_code && raw === entry.reference.displayName),
+        'cast supplies the canonical raw name to the existing callback')
+      assert.equal(projected.idol, rawIdol, 'cast navigation retains the canonical idol object and order')
+      assert.equal(projected.reference.displayName, displayed)
+      for (const key of Object.keys(entry.reference).filter(key => key !== 'displayName')) {
+        assert.equal(projected.reference[key], entry.reference[key], `cast reference preserves ${key}`)
+      }
+      assert.ok(names.includes(displayed), 'actual cast copy follows the displayed name')
+      if (entry.reference.actionable) assert.ok(labels.includes(`查看${displayed}的偶像资料`))
+      const firstImage = entry.reference.imageCandidates[0]?.url
+      if (firstImage) assert.ok([...html.matchAll(/\bsrc="([^"]+)"/g)].some(match => decodeHtml(match[1]) === firstImage),
+        'the actual cast image uses the canonical first resource candidate')
+    })
+    const cards = derivedCards(eventView)
+    assert.equal(eventState.derivedRelationItems.value.length, cards.length)
+    const metas = [...html.matchAll(/<small\b[^>]*class="[^"]*\brelation-meta\b[^"]*"[^>]*>([^]*?)<\/small>/g)]
+      .map(match => decodeHtml(match[1].trim()))
+    cards.forEach((card, index) => {
+      const item = eventState.derivedRelationItems.value[index]
+      const meta = `${eventName(card.character_id, card.character_name)} · ${card.rarity}`
+      if (!sourceOnly) assert.ok(nameCalls.some(([code, raw]) => code === card.character_id && raw === card.character_name),
+        'derived metadata supplies the canonical raw name to the existing callback')
+      assert.equal(item.payload, card, 'derived-card navigation retains the canonical card object')
+      assert.equal(item.meta, meta)
+      assert.ok(metas.includes(meta), 'the actual derived-card metadata follows the displayed name')
+      assert.equal(item.id, `event-derived-card:${eventView.identity.id}:${card.card_resource_id}`)
+      assert.ok(html.includes(`data-archive-focus-id="relation:${item.id}"`))
+      assert.equal(item.title, card.card_title)
+      assert.equal(item.evidence, card.relation_type)
+      assert.equal(item.resource, card.card_resource_id)
+      assert.equal(item.evidenceTone, 'derived', 'localizing a name does not promote evidence')
+    })
+    assert.equal(eventState.rewardCards.value, eventView.rewards.cards)
+    assert.deepEqual(technicalEvidence(html, 'eventId'), eventView.provenance,
+      'the actual source block retains canonical event provenance')
+    const firstEpisode = eventView.episodes[0]
+    const first = eventView.readingEntries.find(entry => entry.status === 'ready' && entry.source_file === firstEpisode.file)
+    assert.equal(eventState.firstReading.value, first, 'overview reading stays bound to the first episode')
+    assert.ok(html.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:overview:${first.document_id}"`))
+    for (const episode of eventView.episodes) {
+      const ready = eventView.readingEntries.some(entry => entry.status === 'ready' && entry.source_file === episode.file)
+      assert.equal(html.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:episode:${episode.id}"`), ready)
+    }
+    checks++
+  }
   for (const currentLocale of ['zh-CN', 'ja-JP']) {
     locale.value = currentLocale
     const displayed = currentLocale === 'zh-CN' ? overlay.entries['029ass'].name : sourceNames['029ass']
     assert.equal(canonicalProfile.value, profile, 'the leaf profile stays canonical in both languages')
     assert.equal(displayedProfileName.value, displayed, 'Shell name is a display projection, separate from evidence')
     await verifyEntityDetails(displayed)
+    await verifyEventDetails()
     for (const query of ['阿斯兰', 'アスラン', '别西卜II世']) {
       const html = await render(withState(Picker, { query }), { idols, modelValue: '029ass', ...callbacks })
       assert.match(html, /1 位偶像/)
@@ -282,12 +367,34 @@ try {
   assert.equal(displayedProfileName.value, profile.display_name, 'missing translation falls back to the canonical name')
   await verifyEntityDetails(profile.display_name)
   await verifyEntityDetails(profile.display_name, {})
+  await verifyEventDetails({ missingName: true })
+  await verifyEventDetails({ sourceOnly: true })
+  // Controlled guard fixture, explicitly copied from the real event: later ready
+  // chapters must not silently replace an unsupported first overview chapter.
+  const unsupportedFirstView = structuredClone(eventView)
+  const firstFile = unsupportedFirstView.episodes[0].file
+  unsupportedFirstView.readingEntries = unsupportedFirstView.readingEntries.map(entry =>
+    entry.source_file === firstFile ? { ...entry, status: 'unsupported' } : entry)
+  assert.ok(unsupportedFirstView.readingEntries.some(entry => entry.status === 'ready'),
+    'the controlled guard fixture retains at least one later ready chapter')
+  let unsupportedFirstState
+  const unsupportedHtml = await render(withState(Event, state => { unsupportedFirstState = state }), {
+    view: unsupportedFirstView, displayIdolName: context.idolDisplayName,
+  })
+  assert.equal(unsupportedFirstState.firstReading.value, undefined)
+  assert.ok(!unsupportedHtml.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:overview:`),
+    'the unsupported first chapter cannot acquire an overview entry from a later chapter')
+  assert.ok(!unsupportedHtml.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:episode:${unsupportedFirstView.episodes[0].id}"`))
+  const laterEpisode = unsupportedFirstView.episodes.find(episode => unsupportedFirstState.readingByFile.value.has(episode.file))
+  assert.ok(unsupportedHtml.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:episode:${laterEpisode.id}"`),
+    'a later ready chapter retains its own reading action')
+  checks++
   context.currentCharacterId.value = '001tom'
   assert.equal(canonicalProfile.value, null, 'a stale profile cannot supply a different selected identity')
   assert.equal(displayedProfileName.value, '', 'the stale profile cannot leave a name in the Shell')
   assert.equal(evidenceBefore, sourceEvidence(), 'display never mutates source evidence or media tracks')
   checks++
-  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup and idol/unit detail display, bilingual search, 49 track IDs, avatar alt, canonical evidence/payloads, and source/missing-translation/empty/stale fallbacks. No DOM or playback acceptance is implied.`)
+  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup and idol/unit/event detail display, bilingual search, 49 track IDs, avatar alt, canonical event resources/rewards/evidence/payloads, first-episode reading guard, and source/missing-translation/empty/stale fallbacks. No DOM, pinned read-model bytes or playback acceptance is implied.`)
 } finally {
   if (previousDocument === undefined) delete globalThis.document
   else globalThis.document = previousDocument
