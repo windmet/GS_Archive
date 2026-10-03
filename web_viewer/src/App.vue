@@ -29,6 +29,12 @@
         :idol-search="idolEntitySearchText"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
+        :desktop-overview="portalData.overview.value"
+        :global-search="portalData.search.value"
+        @search="portalData.updateSearch"
+        @open-result="openPortalResult"
+        @open-stage="openPortalStage"
+        @retry-overview="portalData.refresh"
         @save-preferred="savePreferredIdol"
         :loading-section="gashaReadModelStatus || homeEntryStatus || legacyEntryStatus"
         :retry-section="gashaReadModelStatus && !loading ? 'gashas' : ''"
@@ -558,7 +564,8 @@
 
 <script setup>
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
-import {storyEventResources} from './data/eventResourceGraph.js'
+import {eventResources, storyEventResources} from './data/eventResourceGraph.js'
+import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
@@ -585,6 +592,7 @@ import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
+import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
@@ -1004,6 +1012,21 @@ const idolPickerLabel = computed(() => ({
   story: '个人故事',
   mobile: '通信档案',
 })[currentPickTarget.value] || '首页')
+const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, client: readModelClient,
+  preferredIdol: preferredArchiveIdol,
+  loadCards: async () => { await loadArchiveNames('cards'); return loadCardCatalog() },
+  loadSongs: loadSongCatalog, loadIdol: loadIdolDetail,
+  loadStories: async () => (await loadStoryReadModelCatalog()).map(row => {
+    const resource = row.domain === 'event' ? storyEventResources(row) : null
+    return resource?.storyFile === row.file ? { ...row, image: resource.hero } : row
+  }),
+  loadEvents: async () => (await loadEventCatalog()).map(row => ({ ...row, resources: eventResources(row) })),
+  loadStageManifest: fetchSongTimelineManifest,
+  idolName: idolDisplayName, idolSearch: idolEntitySearchText,
+  cardTitle: source => archiveNamedText('card', source, 'title'),
+  cardSearch: source => archiveNamedSearchText('card', source, 'title'),
+  songTitle: source => source || '',
+})
 const stageBackLabel = computed(() => (
   (detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail') ||
   (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
@@ -3685,6 +3708,46 @@ async function openGashaCard(relation) {
 function openRelatedCard(card) {
   if (!card?.resource_id || !card?.character_id) return
   return openCard(card, { resetContext: true, captureSource: true })
+}
+
+async function openPortalResult(result) {
+  if (view.value !== 'portal' || !result?.target) return
+  const target = result.target, sourceRevision = navigation.getRevision()
+  const stillHere = () => view.value === 'portal' && sourceRevision === navigation.getRevision() && !navigation.isDisposed()
+  try {
+    if (target.domain === 'cards' && target.view === 'card_detail') {
+      const rows = await loadCardCatalog()
+      if (!stillHere()) return
+      const card = rows.find(row => row.resource_id === target.cardId && row.character_id === target.idolCode)
+      if (card) return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
+    } else if (target.domain === 'songs' && target.view === 'song_detail') {
+      const catalog = await loadSongCatalog()
+      if (stillHere() && catalog.songs[target.songCode]) return openSong(target.songCode)
+    } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
+      return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
+    } else if (target.domain === 'stories' && target.view === 'story_detail') {
+      const rows = await loadStoryReadModelCatalog()
+      if (stillHere() && rows.some(row => row.id === target.storyId && row.file === target.file)) return openStoryDetail({ file: target.file }, 'portal')
+    } else if (target.domain === 'events' && target.view === 'event_detail') {
+      const rows = await loadEventCatalog()
+      if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
+    }
+  } catch (error) {
+    if (stillHere()) userPreferenceNotice.value = '该资料暂时无法打开，请重试。'
+  }
+}
+
+async function openPortalStage(target) {
+  if (view.value !== 'portal' || !target?.songCode || !target?.choreographyId) return
+  const sourceRevision = navigation.getRevision()
+  try {
+    const [catalog, manifest] = await Promise.all([loadSongCatalog(), fetchSongTimelineManifest()])
+    if (view.value !== 'portal' || sourceRevision !== navigation.getRevision() || navigation.isDisposed()) return
+    const entry = manifest.songs[target.songCode]?.find(row => row.id === target.choreographyId && ['choreography_candidate', 'special_single'].includes(row.stageKind))
+    if (catalog.songs[target.songCode] && entry) return openChibiStage({ songCode: target.songCode, choreographyId: entry.id })
+  } catch (error) {
+    if (view.value === 'portal' && sourceRevision === navigation.getRevision()) userPreferenceNotice.value = '舞台资料暂时无法打开，请重试。'
+  }
 }
 
 function openCollectionCard(card) {

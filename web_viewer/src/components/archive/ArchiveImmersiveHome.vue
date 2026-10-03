@@ -40,7 +40,6 @@
     <div class="scene-shade" aria-hidden="true"></div>
 
     <header class="home-masthead">
-          <ArchiveLanguageSwitch class="home-language-switch" />
       <div class="idol-heading">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
         <h2>{{ activeIdol.name }}</h2>
@@ -170,6 +169,7 @@
           <Volume2 v-else :size="18" />
         </button>
         <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
+        <ArchiveLanguageSwitch class="home-language-switch" />
       </div>
       <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
@@ -682,7 +682,9 @@ onBeforeUnmount(() => {
 <style scoped src="../../styles/archive-home-day.css"></style>
 
 <style scoped>
-.home-language-switch { pointer-events:auto; }
+.dialogue-actions { min-width:0;flex-wrap:wrap;row-gap:6px; }
+.dialogue-actions > span { flex:none; }
+.home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
 </style>

@@ -7,7 +7,7 @@
       </div>
       <nav class="archive-nav" aria-label="档案栏目">
         <button
-          v-for="item in primaryNavigation"
+          v-for="item in primaryNavigation.filter(item => item.id === 'home')"
           :key="item.id"
           :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
           :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
@@ -16,12 +16,19 @@
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
           <span>{{ item.label }}</span>
         </button>
-        <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" role="group" :aria-labelledby="`nav-${group.id}`">
-          <h2 :id="`nav-${group.id}`">{{ group.label }}</h2>
-          <button v-for="item in group.items" :key="item.id" :class="{ active: activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') }" :aria-current="activeSection === item.id || (activeSection === 'reader' && item.id === 'stories') ? 'page' : undefined" @click="emit('navigate', item.id)">
-            <component :is="item.icon" :size="18" :stroke-width="1.8" /><span>{{ item.label }}</span>
-          </button>
+        <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }" role="group" :aria-labelledby="`nav-${group.id}`">
+          <h2>
+            <button :id="`nav-${group.id}`" type="button" class="archive-nav-group-trigger" :aria-expanded="openNavigationGroup === group.id" :aria-controls="`nav-items-${group.id}`" @click="openNavigationGroup = openNavigationGroup === group.id ? '' : group.id">
+              <component :is="group.icon" :size="19" :stroke-width="1.8" aria-hidden="true" /><span>{{ group.label }}</span><ChevronDown class="archive-nav-chevron" :size="14" aria-hidden="true" />
+            </button>
+          </h2>
+          <div v-show="openNavigationGroup === group.id" :id="`nav-items-${group.id}`" class="archive-nav-group-items">
+            <button v-for="item in group.items" :key="item.id" type="button" :class="{ active: navigationSection === item.id }" :aria-current="navigationSection === item.id ? 'page' : undefined" @click="emit('navigate', item.id)">
+              <component :is="item.icon" :size="16" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
+            </button>
+          </div>
         </div>
+        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆总览</span></button>
       </nav>
     </aside>
 
@@ -93,14 +100,14 @@ import {
   Search,
   Sparkles,
   Users,
-  CalendarDays, Box, Camera,
+  CalendarDays, Box, Camera, ChevronDown,
 } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
-import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
-import { ref, watch } from 'vue'
+import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   compactMobile: Boolean, homeFocus: Boolean, immersiveTool: Boolean,
@@ -120,7 +127,15 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
-const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, items: group.items.map(item => ({ ...item, icon: iconBySection[item.id] })) }))
+const navigationGroups = [
+  { id: 'idol-archive', label: '偶像图鉴', icon: Users, ids: ['idols', 'cards', 'stories', 'songs', 'collections'] },
+  { id: 'operations', label: '运营年表', icon: CalendarDays, ids: ['events', 'gashas', 'interactions'] },
+  { id: 'workshop', label: '视听工坊', icon: Camera, ids: ['photos', 'experiments', 'resources'] },
+].map(group => ({ ...group, items: group.ids.map(id => ({ ...ARCHIVE_NAVIGATION.find(item => item.id === id), icon: iconBySection[id] })) }))
+const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
+const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
+const openNavigationGroup = ref('')
+watch(() => props.activeSection, () => { openNavigationGroup.value = activeNavigationGroup.value }, { immediate: true })
 const primaryNavigation = [
   { id: 'home', label: '首页', icon: Home },
   { id: 'portal', label: '资料馆', icon: LayoutGrid },
@@ -181,8 +196,8 @@ const primaryNavigation = [
 }
 .archive-brand img { width: 34px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
 .archive-nav {display:flex;flex-direction:column;gap:0;padding:6px;min-height:0;overflow-y:auto;}
-.archive-nav-group {padding-top:8px;}
-.archive-nav-group h2 {display:flex;align-items:center;gap:6px;margin:0;padding:2px 12px 5px;color:#8096a4;font-size:10px;font-weight:650;line-height:14px;}
+.archive-nav-group {padding-top:4px;}
+.archive-nav-group h2 {margin:0;padding:0;}
 .archive-nav button {
   position: relative;
   display: flex;
@@ -215,6 +230,16 @@ const primaryNavigation = [
   width: 3px;
   background: #35c2b8;
 }
+.archive-nav .archive-nav-group-trigger {min-height:44px;padding:0 10px;gap:9px;color:#d3dfe6;font-size:13px;font-weight:650;}
+.archive-nav-group-trigger > span {flex:1;min-width:0;}
+.archive-nav .archive-nav-chevron {flex:none;transform:rotate(-90deg);color:#8096a4;}
+.archive-nav-group-trigger[aria-expanded=true] .archive-nav-chevron {transform:none;}
+.archive-nav-group.is-active .archive-nav-group-trigger {color:#5bd4c6;background:#203340;}
+.archive-nav-group-items {padding:4px 0;}
+.archive-nav .archive-nav-group-items button {padding-left:20px;gap:9px;}
+.archive-nav .archive-overview-link {margin-top:12px;border-top:1px solid #30404c;border-radius:0;padding-top:8px;min-height:44px;}
+.archive-nav button:focus-visible {outline:3px solid #35c2b8;outline-offset:-3px;}
+@media(pointer:coarse){.archive-nav button{min-height:44px;}}
 .archive-topbar {
   grid-column: 2 / -1;
   display: grid;

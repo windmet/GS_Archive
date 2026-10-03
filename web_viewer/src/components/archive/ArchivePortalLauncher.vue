@@ -1,7 +1,20 @@
 <template>
-  <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value }" aria-labelledby="portal-title">
+  <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value, 'is-desktop-overview': isDesktop }" aria-labelledby="portal-title">
     <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" @error="backdropFailed = true" />
-    <div class="terminal-scroll" data-archive-scroll-container>
+    <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="preferredReference" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home')" @navigate="emit('navigate', $event)" @edit-personal="personalOpen = true" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')">
+      <template #toolbar>
+        <ArchiveLanguageSwitch :compact-mobile="false" />
+        <button class="portal-overview-control" type="button" aria-label="更换 SSR 卡面壁纸" data-archive-focus-id="portal-wallpaper" @click="wallpaperOpen = true"><Images :size="18" aria-hidden="true" /><span>壁纸</span></button>
+        <button class="portal-overview-control" type="button" aria-label="启动设置" data-archive-focus-id="portal-settings" @click="emit('settings')"><Settings2 :size="18" aria-hidden="true" /><span>设置</span></button>
+      </template>
+      <template #notices>
+        <p v-if="loadingSection" class="terminal-notice" role="status">{{ loadingSection }}<button v-if="retrySection" class="terminal-text-button" type="button" @click="emit('navigate', retrySection)">重试卡池目录</button></p>
+        <p v-if="preferenceNotice || wallpaper.notice.value" class="terminal-notice" role="status">{{ preferenceNotice || wallpaper.notice.value }}</p>
+        <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
+        <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
+      </template>
+    </ArchivePortalOverview>
+    <div v-else class="terminal-scroll" data-archive-scroll-container>
       <div class="terminal-panel">
         <header class="terminal-header">
           <button v-if="canGoBack" class="terminal-icon-button" type="button" aria-label="返回来源页" @click="emit('back')"><ArrowLeft :size="20" /></button>
@@ -40,7 +53,7 @@
         <footer class="terminal-signature">SideM Archive · 非官方资料存档</footer>
       </div>
     </div>
-    <div v-if="wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ archiveNamedText('card', wallpaper.selected.value.label, 'title') }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
+    <div v-if="!isDesktop && wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ archiveNamedText('card', wallpaper.selected.value.label, 'title') }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
     <ArchiveTerminalDialog :open="personalOpen" title="我的工作台" title-id="portal-personal-title" @close="personalOpen = false">
       <ProducerNameSetting />
       <section class="terminal-personal" aria-label="我的偶像快捷入口">
@@ -64,9 +77,10 @@ import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { producerName } from '../../utils/LanguageStore.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAddressing.js'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ChevronRight, Images, Settings2, Sparkles, Users } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import ArchivePortalOverview from './ArchivePortalOverview.vue'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import ArchiveTerminalBackdrop from './terminal/ArchiveTerminalBackdrop.vue'
@@ -75,8 +89,12 @@ import ArchiveWallpaperPicker from './terminal/ArchiveWallpaperPicker.vue'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
-const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
-const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
+const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' }, desktopOverview: { type: Object, default: () => ({}) }, globalSearch: { type: Object, default: () => ({}) } })
+const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred', 'search', 'open-result', 'open-stage', 'retry-overview'])
+const desktopMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 761px)') : null
+const isDesktop = ref(Boolean(desktopMedia?.matches))
+const overview = ref(null)
+function updateDesktop(event) { isDesktop.value = event.matches }
 const producerDisplayName = computed(() => producerName.value ? presentProducerAddressingText(PRODUCER_NAME_WITH_P_TOKEN) : '未设置制作人')
 const personalOpen = ref(false), settingsOpen = ref(false)
 const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWallpaper()
@@ -87,14 +105,27 @@ function entryDescription(id) {
   if (id === 'idols') return `${props.idols.length} 位偶像 · ${new Set(props.idols.map(idol => idol.unitId).filter(Boolean)).size} 个组合`
   return { stories: '主线 · 活动 · 前传', cards: '卡面 · 语音 · 剧情', songs: '演唱成员 · 歌曲试听', gashas: '招募档案 · 卡片关联', events: '活动时间线 · 报酬', interactions: '短信 · 通话 · Connect', collections: '道具 · 称号' }[id] || ''
 }
-onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.preferences.value.wallpaperKey) {
+onMounted(async () => {
+  desktopMedia?.addEventListener('change', updateDesktop)
+  await nextTick()
+  if (isDesktop.value) overview.value?.focusHeading()
+  else heading.value?.focus({ preventScroll: true })
+  if (wallpaper.preferences.value.wallpaperKey) {
   wallpaper.load()
   void loadArchiveNames('cards').catch(error => console.warn('Wallpaper card names unavailable', error))
 } })
+onBeforeUnmount(() => desktopMedia?.removeEventListener('change', updateDesktop))
 </script>
 
 <style scoped>
 .terminal-portal {--gs-text-portal:26px;}
+.terminal-portal.is-desktop-overview {background:#f5f8f3;}
+.terminal-portal.is-desktop-overview :deep(.terminal-backdrop) {opacity:.08;}
+.portal-overview-control {display:flex;align-items:center;gap:var(--gs-space-3);min-height:44px;padding:var(--gs-space-3) var(--gs-space-4);border:1px solid #d1e0d7;border-radius:var(--gs-radius-field);background:#ffffffed;color:#486f5c;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);}
+.portal-overview-control:active {background:#e6f2ea;}
+.terminal-portal.is-desktop-overview :deep(.archive-language-switch button) {min-height:44px;font-size:var(--gs-text-ui);}
+.terminal-portal.is-desktop-overview .terminal-notice {font-size:var(--gs-text-body);}
+.terminal-portal.is-desktop-overview .terminal-text-button {min-height:44px;font-size:var(--gs-text-ui);}
 .terminal-portal .terminal-panel {width:min(860px,100%);min-width:0;padding:var(--gs-space-6) var(--gs-space-7);}
 .terminal-portal.has-wallpaper .terminal-panel {width:min(780px,70%);}
 .terminal-portal .terminal-brand {font-weight:var(--gs-weight-heavy);}
