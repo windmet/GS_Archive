@@ -1,6 +1,8 @@
 <template>
   <div
+    ref="stageRoot"
     class="chibi-stage"
+    :class="{ 'is-pure': pureMode }"
     :data-stage-ready="stageReady"
     :data-song-id="selectedSong?.id || ''"
     :data-stage-kind="isSpecialSingle ? 'special_single' : 'choreography_candidate'"
@@ -102,22 +104,28 @@
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <div class="stage-header-title">
-        <h1>{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</h1>
+        <h1><span class="stage-title-full">{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</span><span class="stage-title-compact">{{ isSpecialSingle ? '特别演出' : '舞台小人' }}</span></h1>
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
-      <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
       <ArchiveLanguageSwitch />
-      <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
+      <button class="stage-icon-action" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
+      <button class="stage-icon-action" type="button" aria-label="打开舞台检查器" @click="inspectorOpen = true"><Settings2 :size="19" /></button>
     </header>
 
     <main class="stage-workspace">
       <section class="performance-shell" :aria-label="isSpecialSingle ? '社长特别演出预览' : '多人舞台预览'">
+        <div class="performance-viewport">
         <div class="performance-hud">
-          <span>NOW PLAYING</span>
-          <strong>{{ selectedSong?.title || '—' }}</strong>
-          <small>{{ isSpecialSingle ? '社长单人剪影 · 特别版音源' : `${activePositions.length} 人${handoffLineup ? '出场' : '编排'} · 当前演唱 ${currentSingerLabel}` }}</small>
+          <div class="performance-identity"><strong :title="selectedSong ? songOptionLabel(selectedSong) : ''">{{ selectedSong ? songOptionLabel(selectedSong) : '—' }}</strong><small>{{ isSpecialSingle ? '社长特别演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</small></div>
+          <div class="performance-actions">
+            <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
+            <button class="stage-icon-action" type="button" aria-label="进入纯净模式" title="纯净模式 · H" @click="togglePureMode"><EyeOff :size="19" /></button>
+            <button class="stage-icon-action" type="button" :aria-label="fullscreenActive ? '退出全屏' : '进入全屏'" :disabled="fullscreenPending" @click="toggleFullscreen"><Minimize v-if="fullscreenActive" :size="19" /><Maximize v-else :size="19" /></button>
+          </div>
         </div>
 
+        <div class="screen-fit-region">
+        <div class="stage-ambient" aria-hidden="true" :style="stageAmbientImage ? { backgroundImage: `url(${JSON.stringify(stageAmbientImage)})` } : {}"></div>
         <div class="performance-screen">
         <div v-if="!hasAuthoredStage" class="stage-backdrop" aria-hidden="true"></div>
         <div v-if="!hasAuthoredStage" class="stage-floor" aria-hidden="true"></div>
@@ -136,18 +144,30 @@
           <span>{{ errorText }}</span>
         </div>
         </div>
+        </div>
+        </div>
 
+        <p v-if="!isSpecialSingle" class="rail-summary">当前编排 {{ activePositions.length }} 人 · {{ activePositions.join('、') }} 号位</p>
         <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
-          <div
+          <button
             v-for="position in allPositions"
             :key="position"
             class="position-marker"
+            type="button"
+            :disabled="!activePositions.includes(position)"
+            :aria-label="activePositions.includes(position) ? `编辑 ${position} 号位 · ${stageIdolName(characterForSlot(slotByPosition(position))) || '空位'}` : `${position} 号位休息`"
+            :aria-pressed="editingSlot?.position === position"
+            :style="stageIdolStyle(characterForSlot(slotByPosition(position)))"
+            @click="selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''"
             :class="{
               active: activePositions.includes(position),
               loaded: loadedPositions.includes(position),
               singing: currentSingerPositions.includes(position),
+              selected: editingSlot?.position === position,
             }"
             :data-position="position"
+            :data-lineup-position="position"
+            :data-runtime-ready="Boolean(runtimeForPosition(position))"
             :data-motion="slotByPosition(position)?.currentMotion || ''"
             :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
             :data-position-scale="positionDebugState(position).scale"
@@ -158,9 +178,11 @@
             :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
             :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
           >
-            <span>{{ position }}</span>
-            <small>{{ characterForSlot(slotByPosition(position))?.name || '空位' }}</small>
-          </div>
+            <ArchiveIdolAvatar :idol-code="activePositions.includes(position) ? slotByPosition(position)?.characterId || '' : ''" :accent-color="activePositions.includes(position) ? stageIdolColor(characterForSlot(slotByPosition(position))) : ''" :size="40" decorative :fallback-text="String(position)" />
+            <span v-if="!activePositions.includes(position)" class="rest-position" aria-hidden="true">{{ position }} 号位<small>休息</small></span>
+            <span v-if="activePositions.includes(position)" class="position-caption">{{ position }} <span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /><span class="singing-label">演唱</span></span></span>
+            <small v-if="activePositions.includes(position)">{{ stageIdolName(characterForSlot(slotByPosition(position))) || '空位' }}</small>
+          </button>
         </div>
 
         <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
@@ -171,6 +193,7 @@
             class="primary-transport"
             type="button"
             :aria-label="stageStarting ? '取消舞台准备' : isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
+            :title="stageStarting ? '取消舞台准备' : null"
             :disabled="!stageStarting && (!stageTransportReady || preloading)"
             @click="toggleStage"
           >
@@ -178,7 +201,7 @@
             <Play v-else :size="22" fill="currentColor" />
           </button>
           <div class="transport-copy">
-            <strong>{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
+            <strong aria-live="polite" aria-atomic="true">{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
             <small>{{ formatTime(stageTime) }} / {{ formatTime(stageDuration) }}</small>
           </div>
           <input
@@ -194,146 +217,66 @@
       </section>
 
       <aside class="stage-inspector" :aria-label="isSpecialSingle ? '社长特别演出控制台' : '多人舞台控制台'">
-        <div class="inspector-scroll">
-          <section class="control-section song-section">
-            <div class="section-heading">
-              <div>
-                <h2>{{ isSpecialSingle ? '特别演出脚本' : '歌曲编排' }}</h2>
-                <span>{{ songs.length }} 首可选演出</span>
-              </div>
-              <Music2 :size="18" />
-            </div>
-            <select v-model="selectedSongId" :aria-label="isSpecialSingle ? '特别演出与舞台歌曲' : '多人舞台歌曲'" @change="handleSongChange">
-              <option v-for="song in songs" :key="song.id" :value="song.id">
-                {{ songOptionLabel(song) }} · {{ song.songCode === 'drv999' ? '社长单人 2D' : `${song.positions.join('/')} 号位` }}
-              </option>
-            </select>
-            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
-              <legend>{{ stageVocalLegend }}</legend>
-              <label class="camera-toggle">
-                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
-                <span>{{ stageVocalToggleLabel }}</span>
-              </label>
-              <template v-if="stageVocalEnabled">
-                <label class="range-control">
-                  <span>声部</span>
-                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
-                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
-                </label>
-                <label class="range-control">
-                  <span>伴奏</span>
-                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
-                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
-                </label>
-                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
-              </template>
-              <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
-              <small v-if="handoffLineup">已接入歌曲页编成；空位不出场，舞台从 00:00 暂停开始。刷新后使用舞台默认编队。</small>
-            </fieldset>
+        <nav class="mobile-panel-tabs" aria-label="舞台控制分类">
+          <button type="button" :disabled="isSpecialSingle" :aria-pressed="panelTab === 'lineup' && !isSpecialSingle" :aria-controls="`${inspectorTitleId}-lineup`" @click="panelTab = 'lineup'">编队</button>
+          <button type="button" :aria-pressed="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :aria-controls="`${inspectorTitleId}-song`" @click="panelTab = 'song'">曲目</button>
+          <button type="button" :aria-pressed="panelTab === 'viewing'" :aria-controls="`${inspectorTitleId}-viewing`" @click="panelTab = 'viewing'">画面</button>
+        </nav>
+        <div class="inspector-scroll" :class="{ 'is-song-panel': panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup') }">
+          <section v-show="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :id="`${inspectorTitleId}-song`" class="control-section panel-section song-section">
+            <ChibiSongPicker :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
+              <template #current-actions><button v-if="stageVocalAvailable" class="stage-audio-action" type="button" :class="{ enabled: stageVocalEnabled }" aria-label="演唱音源设置" :title="stageVocalEnabled ? stageVocalToggleLabel : '原曲音源 · 可切换编成声部'" @click="vocalSettingsOpen = true"><Music2 :size="18" /></button></template>
+            </ChibiSongPicker>
           </section>
 
-          <section v-if="!isSpecialSingle" class="control-section lineup-section">
+          <section v-if="!isSpecialSingle" v-show="panelTab === 'lineup'" :id="`${inspectorTitleId}-lineup`" class="control-section panel-section lineup-section">
             <div class="section-heading">
               <div>
                 <h2>演出编队</h2>
-                <span>站位按舞台从左到右编号</span>
               </div>
               <UsersRound :size="18" />
             </div>
 
-            <article
-              v-for="slot in lineup"
-              :key="slot.position"
-              class="lineup-card"
-              :class="{ inactive: !activePositions.includes(slot.position), singing: currentSingerPositions.includes(slot.position) }"
-              :data-lineup-position="slot.position"
-              :data-runtime-ready="Boolean(runtimeForPosition(slot.position))"
-            >
-              <div class="slot-number">
-                <span>{{ slot.position }}</span>
-                <small>{{ activePositions.includes(slot.position) ? (slot.loading ? '加载中' : '出演') : '休息' }}</small>
-              </div>
-              <div class="slot-controls">
-                <select
-                  v-model="slot.characterId"
-                  :aria-label="`${slot.position}号位角色`"
-                  :disabled="!activePositions.includes(slot.position)"
-                  @change="handleCharacterChange(slot)"
-                >
-                  <option value="" disabled>空位</option>
-                  <option v-for="character in characters" :key="character.id" :value="character.id">
-                    {{ character.name }}
-                  </option>
-                </select>
-                <select
-                  v-model="slot.costumeId"
-                  :aria-label="`${slot.position}号位服装`"
-                  :disabled="!activePositions.includes(slot.position)"
-                  @change="loadSlot(slot)"
-                >
-                  <option v-for="costume in costumesForSlot(slot)" :key="costume.id" :value="costume.id">
-                    {{ costume.label }}
-                  </option>
-                </select>
-              </div>
-              <Mic2 v-if="currentSingerPositions.includes(slot.position)" class="singing-icon" :size="17" />
-            </article>
-
-            <button class="rebuild-button" type="button" :disabled="booting" @click="rebuildStage">
-              <RefreshCw :size="16" />重新构建当前编队
-            </button>
+            <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
+            <small class="lineup-note">{{ originalStageLineup ? '原曲成员按脚本槽位排列，可调整' : '点击舞台下方头像选择出演成员' }}</small>
+            <div v-if="editingSlot" class="slot-editor">
+              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
+                <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
+                <span class="slot-editor-copy"><small>{{ editingSlot.position }} 号位 · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</small><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronDown :size="17" />
+              </button>
+              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><option v-for="costume in costumesForSlot(editingSlot)" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></select></label>
+            </div>
+            <button v-if="editingSlot" class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
+            <div v-if="sharedQuickCostumes.length" class="common-costume-actions"><h3>共通套服</h3><div class="uniform-quick-actions"><button v-for="costume in sharedQuickCostumes" :key="costume.id" type="button" :disabled="booting" @click="applySharedCostume(costume.id)">{{ stageCostumeLabel(costume) }}</button></div></div>
+            <p v-if="costumeNotice" class="costume-notice" role="status">{{ costumeNotice }}</p>
           </section>
 
-          <details class="advanced-controls">
-            <summary>高级控制与演出信息</summary>
-          <section class="control-section playback-section">
-            <div class="song-facts">
-              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
-              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
-              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
-              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
-              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
-              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ selectedVocalSettingFact }}</span>
+          <section v-show="panelTab === 'viewing'" :id="`${inspectorTitleId}-viewing`" class="control-section panel-section viewing-section" aria-label="观看设置">
+            <div class="viewing-toggles">
+            <label class="camera-toggle"><input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" /><span>演出镜头</span></label>
+            <label class="camera-toggle"><input v-model="lyricsEnabled" type="checkbox" /><span>显示歌词</span></label>
             </div>
-              <small v-if="isSoloChoreography">
-                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
-              </small>
-            <div v-if="stageVfxCoverage" class="vfx-coverage">
-              <h3>效果覆盖 · 来源统计</h3>
-              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
-              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
-              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
-              <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
-              <p v-if="stageVfxCoverage.unresolvedImageColors.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedImageColors.length }} 条布景染色指令的原始参数异常，暂未应用。</p>
-              <p v-if="backgroundTintConflict" class="vfx-coverage-gap">当前资源包缺少独立背景组件，无法应用各层不同的染色。</p>
-              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未完整实现。</p>
-              <p v-if="stageVfxCoverage.objectParticlePartial.length">其中 {{ stageVfxCoverage.objectParticlePartial.length }} 种只接入了部分粒子，剩余子效果仍待复刻。</p>
-              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
-              <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
-                <summary>查看未支持的对象素材</summary>
-                <code>{{ [...stageVfxCoverage.objectParticleUnimplemented, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
-              </details>
-            </div>
+            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
+            <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
+            <div class="viewing-actions"><button type="button" @click="togglePureMode"><EyeOff :size="16" />纯净观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
+          </section>
+          <p v-if="audioError" class="audio-error" role="alert">{{ audioError }}</p>
+          <p v-if="panelNotice || fullscreenNoticeText" class="panel-notice" role="status">{{ panelNotice || fullscreenNoticeText }} <a v-if="snapshotUrl" :href="snapshotUrl" :download="snapshotFilename">保存 PNG</a></p>
+        </div>
+      </aside>
+    </main>
 
+    <ChibiIdolPicker :open="pickerPosition !== null" :position="pickerPosition || 0" :characters="characters" :idol-directory="idolDirectory" :selected-idol-code="slotByPosition(pickerPosition)?.characterId || ''" :idol-name="idolName" :idol-search="idolSearch" @close="pickerPosition = null" @select="selectStageIdol" />
+    <ArchiveTerminalDialog class="stage-dev-dialog" :open="inspectorOpen" title="舞台检查器" :title-id="inspectorTitleId" @close="inspectorOpen = false">
+          <div class="inspector-tools"><button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button><button class="rebuild-button" type="button" :disabled="booting" @click="rebuildStage"><RefreshCw :size="16" />重新加载编队</button></div>
+
+          <section class="control-section playback-section">
             <div class="section-heading">
               <div>
                 <h2>播放参数</h2>
                 <span>{{ isSpecialSingle ? '歌曲与 2D 舞台对象共用同一时钟' : '歌曲、动作、口型共用同一时钟' }}</span>
               </div>
             </div>
-            <label class="range-control">
-              <span>速度</span>
-              <input v-model.number="playbackSpeed" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" />
-              <output>{{ playbackSpeed.toFixed(2) }}×</output>
-            </label>
-            <label class="camera-toggle">
-              <input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" />
-              <span>启用 CSV 角色镜头</span>
-            </label>
             <fieldset class="layer-debug-controls">
               <legend>图层调试</legend>
               <label>
@@ -368,24 +311,7 @@
                 <input v-model="characterShadowsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>人物阴影</span>
               </label>
-              <label>
-                <input v-model="lyricsEnabled" type="checkbox" />
-                <span>歌词</span>
-              </label>
             </fieldset>
-            <label class="range-control view-scale-control">
-              <span>总览</span>
-              <input
-                v-model.number="stageViewScale"
-                aria-label="整体视图缩放"
-                type="range"
-                min="0.5"
-                max="1.5"
-                step="0.01"
-                @input="applyCameraTransform"
-              />
-              <output>{{ stageViewScale.toFixed(2) }}×</output>
-            </label>
             <label class="range-control environment-scale-control">
               <span>环境</span>
               <input
@@ -399,9 +325,12 @@
               />
               <output>{{ environmentScale.toFixed(3) }}×</output>
             </label>
+          </section>
+          <details class="control-section runtime-details">
+            <summary>引擎运行时数据</summary>
             <dl class="runtime-summary">
               <div><dt>演出主体</dt><dd>{{ isSpecialSingle ? '社长单人剪影' : (activePositions.join(' / ') || '—') }}</dd></div>
-              <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '齋藤孝司' : currentSingerLabel }}</dd></div>
+              <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '社长' : currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ isSpecialSingle ? '2D 对象按需载入' : (preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入')) }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
               <div v-if="!isSpecialSingle"><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
@@ -416,26 +345,103 @@
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
-          </section>
+            <p class="technical-note">均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</p>
           </details>
-          <p v-if="audioError" class="audio-error" role="alert">{{ audioError }}</p>
-        </div>
-      </aside>
-    </main>
+          <section class="control-section statistics-section">
+            <div class="song-facts">
+              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
+              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
+              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
+              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
+              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
+              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
+              <span>{{ selectedVocalSettingFact }}</span>
+            </div>
+              <small v-if="isSoloChoreography">
+                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
+              </small>
+            <div v-if="stageVfxCoverage" class="vfx-coverage">
+              <h3>效果覆盖 · 来源统计</h3>
+              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
+              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
+              <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
+              <p v-if="stageVfxCoverage.unresolvedImageColors.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedImageColors.length }} 条布景染色指令的原始参数异常，暂未应用。</p>
+              <p v-if="backgroundTintConflict" class="vfx-coverage-gap">当前资源包缺少独立背景组件，无法应用各层不同的染色。</p>
+              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未完整实现。</p>
+              <p v-if="stageVfxCoverage.objectParticlePartial.length">其中 {{ stageVfxCoverage.objectParticlePartial.length }} 种只接入了部分粒子，剩余子效果仍待复刻。</p>
+              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
+              <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
+                <summary>查看未支持的对象素材</summary>
+                <code>{{ [...stageVfxCoverage.objectParticleUnimplemented, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
+              </details>
+            </div>
+
+          </section>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-audio-dialog" :open="vocalSettingsOpen" title="演唱音源" :title-id="vocalTitleId" @close="vocalSettingsOpen = false">
+            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
+              <legend>{{ stageVocalLegend }}</legend>
+              <label class="camera-toggle">
+                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
+                <span>{{ stageVocalToggleLabel }}</span>
+              </label>
+              <details v-if="stageVocalEnabled" class="mix-details"><summary>声部与伴奏音量</summary>
+                <label class="range-control">
+                  <span>声部</span>
+                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
+                </label>
+                <label class="range-control">
+                  <span>伴奏</span>
+                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
+                </label>
+                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
+              </details>
+              <small v-if="handoffLineup">歌曲页编成 · 刷新后恢复默认编队</small>
+            </fieldset>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-help-dialog" :open="helpOpen" title="观看与操作" :title-id="helpTitleId" @close="helpOpen = false">
+      <p>选择演出曲目，点击头像槽位编辑偶像与衣装。原曲成员使用已收录名单，按当前脚本槽位排列。</p>
+      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>H</kbd></dt><dd>显示 / 隐藏界面</dd></div><div><dt><kbd>F</kbd></dt><dd>进入 / 退出全屏</dd></div></dl>
+      <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
+    </ArchiveTerminalDialog>
+    <button v-if="pureMode" ref="pureExitButton" class="pure-exit" type="button" @click="togglePureMode">显示控制 <kbd>H</kbd></button>
   </div>
 </template>
 
 <script setup>
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
+import ArchiveIdolAvatar from './archive/ArchiveIdolAvatar.vue'
+import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
+import ChibiIdolPicker from './ChibiIdolPicker.vue'
+import ChibiSongPicker from './ChibiSongPicker.vue'
+import '../styles/archive-terminal.css'
+import { normalizeIdolAccentColor } from '../presentation/idolAccentColor.js'
+import { buildOriginalStageLineup, planStageCostumeSync, universalStageCostumes, stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
+import { archiveText } from './archive/useArchiveCostumeText.js'
+import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
 import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
-import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
+import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive, useId } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
+  CircleHelp,
+  Camera,
+  ChevronDown,
+  EyeOff,
+  Maximize,
+  Minimize,
+  Settings2,
+  Shuffle,
   LoaderCircle,
   Mic2,
   Music2,
@@ -498,7 +504,21 @@ const props = defineProps({
   stageSongCode: { type: String, default: '' },
   stageHandoff: { type: Object, default: null },
   backLabel: { type: String, default: '返回资料馆' },
+  idolDirectory: { type: Array, default: () => [] },
+  songDirectory: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' },
+  idolSearch: { type: Function, default: () => '' },
+  originalPerformers: { type: Array, default: () => [] },
 })
+const stageRoot = ref(null), selectedPosition = ref(3), pickerPosition = ref(null)
+const panelTab = ref('lineup')
+const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref(false), pureMode = ref(false), pureExitButton = ref(null)
+const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId()
+const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
+const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
+const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，可使用纯净模式观看。' : '')
+const snapshotUrl = ref(''), snapshotFilename = ref('')
+let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
@@ -775,6 +795,16 @@ const activePositions = computed(() => {
 })
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
+const editingSlot = computed(() => activeSlots.value.find(slot => slot.position === selectedPosition.value) || activeSlots.value[0] || null)
+const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, props.originalPerformers, characters.value, props.idolDirectory))
+const sharedQuickCostumes = computed(() => universalStageCostumes(characters.value, props.idolDirectory))
+const costumeSyncPlan = computed(() => editingSlot.value ? planStageCostumeSync(
+  lineup.value, characters.value, activePositions.value, editingSlot.value.characterId, editingSlot.value.costumeId,
+) : null)
+const stageAmbientImage = computed(() => {
+  const file = stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]?.file
+  return file && staticStageEnabled.value ? `${LIVE_CHIBI_BASE}/${file}` : ''
+})
 const stageReady = computed(() => Boolean(selectedSong.value)
   && !errorText.value
   && (isSpecialSingle.value || (activePositions.value.length > 0
@@ -916,6 +946,7 @@ const stageStarting = ref(false)
 const stageIntent = createPlaybackIntent(() => `${selectedSong.value?.id || ''}:${stageBuildSequence}`)
 const stageAudioOwners = new Map()
 onMounted(async () => {
+  window.addEventListener('keydown', handleStageShortcut)
   await nextTick()
   if (stageDisposed) return
   try {
@@ -991,6 +1022,8 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleStageShortcut)
+  if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value)
   stageDisposed = true
   stageIntent.dispose()
   stageBuildSequence += 1
@@ -1080,6 +1113,139 @@ function characterForSlot(slot) {
   return characters.value.find(character => character.id === slot.characterId) || null
 }
 
+function stageIdolName(character) {
+  return character ? props.idolName(character.id, character.name) || character.name || '' : ''
+}
+function stageIdolColor(character) {
+  return normalizeIdolAccentColor(props.idolDirectory.find(idol => idol.id === character?.id)?.color) || '#82969e'
+}
+function stageIdolStyle(character) {
+  return { '--idol-accent': stageIdolColor(character) }
+}
+function stageCostumeLabel(costume) { return archiveText('costume', sourceStageCostumeLabel(costume)) }
+async function selectStageIdol(id) {
+  const slot = slotByPosition(pickerPosition.value)
+  pickerPosition.value = null
+  if (!slot || booting.value || !activePositions.value.includes(slot.position) || !characters.value.some(character => character.id === id) || slot.characterId === id) return
+  slot.characterId = id
+  await handleCharacterChange(slot)
+}
+async function applyStageLineup(nextLineup) {
+  if (booting.value || isSpecialSingle.value || !selectedSong.value || !nextLineup) return
+  costumeNotice.value = ''
+  const songId = selectedSong.value.id
+  const reloadVocals = stageVocalEnabled.value
+  stopStage(true)
+  if (reloadVocals) releaseStageVocalAudio()
+  handoffLineup.value = null
+  for (const slot of lineup.value) {
+    const id = nextLineup[slot.position - 1]
+    if (!id) continue
+    const character = characters.value.find(item => item.id === id)
+    if (!character) return
+    slot.characterId = id
+    slot.costumeId = character.defaultCostume || character.costumes?.[0]?.id || ''
+  }
+  await rebuildStage()
+  if (!stageDisposed && selectedSong.value?.id === songId && reloadVocals) await loadStageVocalAudio()
+}
+async function applyOriginalLineup() {
+  await applyStageLineup(originalStageLineup.value)
+}
+async function randomizeLineup() {
+  const candidates = [...characters.value]
+  for (let index = candidates.length - 1; index > 0; index--) {
+    const other = Math.floor(Math.random() * (index + 1))
+    ;[candidates[index], candidates[other]] = [candidates[other], candidates[index]]
+  }
+  const nextLineup = Array(5).fill('')
+  ;(selectedSong.value?.positions || []).forEach((position, index) => { nextLineup[position - 1] = candidates[index]?.id || '' })
+  await applyStageLineup(nextLineup)
+}
+async function syncEditingCostume() {
+  if (booting.value || editingSlot.value?.loading || !costumeSyncPlan.value) return
+  const plan = costumeSyncPlan.value
+  const songId = selectedSong.value?.id
+  for (const assignment of plan.matched) {
+    const slot = slotByPosition(assignment.position)
+    if (slot?.characterId !== assignment.idolCode) return
+  }
+  for (const assignment of plan.matched) slotByPosition(assignment.position).costumeId = assignment.costumeId
+  await rebuildStage()
+  if (stageDisposed || selectedSong.value?.id !== songId) return
+  const names = plan.unmatched.map(item => stageIdolName(characters.value.find(character => character.id === item.idolCode)) || item.idolCode)
+  costumeNotice.value = `已为 ${plan.matched.length} 位出演成员应用衣装` + (names.length ? `；${names.join('、')}无此衣装，保留原样。` : '。')
+}
+async function applySharedCostume(id) {
+  const costume = sharedQuickCostumes.value.find(item => item.id === id)
+  if (booting.value || !costume || activeSlots.value.some(slot => !costume.costumeIdsByIdol?.[slot.characterId])) return
+  const songId = selectedSong.value?.id
+  for (const slot of activeSlots.value) slot.costumeId = costume.costumeIdsByIdol[slot.characterId]
+  await rebuildStage()
+  if (!stageDisposed && selectedSong.value?.id === songId) costumeNotice.value = `已为 ${activeSlots.value.length} 位出演成员换为${stageCostumeLabel(costume)}。`
+}
+async function togglePureMode() {
+  if (!pureMode.value) {
+    pureReturnFocus = document.activeElement
+    inspectorOpen.value = false
+    helpOpen.value = false
+    vocalSettingsOpen.value = false
+    pickerPosition.value = null
+  }
+  pureMode.value = !pureMode.value
+  await nextTick()
+  if (pureMode.value) pureExitButton.value?.focus({ preventScroll: true })
+  else if (pureReturnFocus?.isConnected) { pureReturnFocus.focus({ preventScroll: true }); pureReturnFocus = null }
+}
+async function toggleFullscreen() {
+  if (fullscreenActive.value) await leaveFullscreen()
+  else await enterFullscreen(stageRoot.value)
+}
+async function exportStageSnapshot() {
+  if (!app || !stageReady.value || snapshotBusy.value) return
+  snapshotBusy.value = true
+  panelNotice.value = ''
+  const filename = `smgs-${selectedSong.value.songCode}-${Math.round(stageTime.value)}.png`
+  try {
+    // Repaint and read the same renderer viewport; extracting app.stage would
+    // instead include off-screen object bounds and change the exported frame.
+    app.renderer.render(app.stage)
+    const canvas = app.renderer.extract.canvas()
+    const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('empty-snapshot')), 'image/png'))
+    if (stageDisposed) return
+    if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value)
+    const url = URL.createObjectURL(blob)
+    snapshotUrl.value = url
+    snapshotFilename.value = filename
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    panelNotice.value = `舞台截图已准备 · ${canvas.width} × ${canvas.height}`
+  } catch {
+    if (!stageDisposed) panelNotice.value = '当前画面暂时无法导出，请等待舞台加载完成后重试。'
+  } finally {
+    snapshotBusy.value = false
+  }
+}
+function handleStageShortcut(event) {
+  if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || document.querySelector('dialog[open]')) return
+  const target = event.target
+  if (target?.closest?.('input, select, textarea, [contenteditable="true"]')) return
+  const key = event.key.toLowerCase()
+  // Preserve native Space activation on focused controls in the regular UI.
+  if (key === ' ' && target?.closest?.('button') && !pureMode.value) return
+  if (key === 'h' || (key === 'escape' && pureMode.value)) { event.preventDefault(); void togglePureMode() }
+  else if (key === 'f') { event.preventDefault(); void toggleFullscreen() }
+  else if (key === ' ' && (stageStarting.value || (stageTransportReady.value && !preloading.value))) { event.preventDefault(); void toggleStage() }
+  else if (['arrowleft', 'arrowright'].includes(key) && stageTransportReady.value && !preloading.value && !shortcutSeeking) {
+    event.preventDefault()
+    stageTime.value = Math.max(0, Math.min(stageDuration.value, stageTime.value + (key === 'arrowleft' ? -5000 : 5000)))
+    shortcutSeeking = true
+    seekStage().catch(() => { panelNotice.value = '舞台跳转未完成，请重试。' }).finally(() => { shortcutSeeking = false })
+  }
+}
+
 function costumesForSlot(slot) {
   return characterForSlot(slot)?.costumes || []
 }
@@ -1091,9 +1257,10 @@ function costumeForSlot(slot) {
 function songOptionLabel(song) {
   const fallback = song?.title || song?.id || ''
   const setting = song?.vocalSetting
+  const soloVersion = { solo: 'Solo', solo_multi: 'Solo Multi', solo_single: 'Solo Single' }[song?.variant] || song?.variant
   if (!setting) {
     if (!/^solo(?:_|$)/.test(song?.variant || '')) return fallback
-    return `${song.title} · 中心一人演出（raw: ${song.variant}）`
+    return `${song.title} · 中心一人（${soloVersion}）`
   }
   const suffix = song.variant ? ` · ${song.variant}` : ''
   const baseTitle = suffix && fallback.endsWith(suffix)
@@ -1102,8 +1269,8 @@ function songOptionLabel(song) {
   if (setting.mode === 'formation-or-all-stars') {
     return `${baseTitle} · 编成偶像 / 315 ALL STARS`
   }
-  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}（raw: ${song.variant}）`
-  if (setting.mode === 'center') return `${baseTitle} · Center（中心一人 / raw: ${song.variant}）`
+  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}`
+  if (setting.mode === 'center') return `${baseTitle} · 中心一人（${soloVersion}）`
   return fallback
 }
 
@@ -2986,6 +3153,13 @@ function resizeStage() {
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
 }
 
+async function selectStageScript(id) {
+  if (booting.value || id === selectedSongId.value || !songs.value.some(song => song.id === id)) return
+  costumeNotice.value = ''
+  selectedSongId.value = id
+  await handleSongChange()
+}
+
 async function handleSongChange() {
   const buildSequence = ++stageBuildSequence
   if (selectedSong.value) emit('target-change', {
@@ -3446,47 +3620,61 @@ function formatTime(milliseconds) {
 </script>
 
 <style scoped>
-.advanced-controls > summary { min-height: 44px; padding: 14px 18px; box-sizing: border-box; cursor: pointer; font-weight: 600; }
-.advanced-controls > summary:focus-visible { outline: 2px solid #168f87; outline-offset: -2px; }
 .chibi-stage {
-  --ink: #07111f;
-  --panel: #102238;
-  --line: rgba(167, 197, 228, 0.18);
-  --text: #edf5fc;
-  --muted: #8ca2b8;
-  --accent: #41a5ff;
+  --ink: #f1f7f7;
+  --panel: #ffffff;
+  --line: #d4e2e2;
+  --text: #243c45;
+  --muted: #657a80;
+  --accent: #33a8a5;
+  --stage-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
+  --stage-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
+  --stage-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
+  --stage-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
+  --stage-header-height: calc(60px + var(--stage-safe-top));
   position: fixed;
   inset: 0;
   z-index: 100;
-  overflow-x: hidden;
-  overflow-y: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   color: var(--text);
   background: var(--ink);
   font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
 }
 
 .stage-header {
-  position: sticky;
+  position: relative;
   z-index: 5;
   top: 0;
-  height: 66px;
+  height: var(--stage-header-height);
+  min-height: var(--stage-header-height);
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0 22px;
+  padding: var(--stage-safe-top) max(22px, var(--stage-safe-right)) 0 max(22px, var(--stage-safe-left));
+  box-sizing: border-box;
   border-bottom: 1px solid var(--line);
-  background: rgba(5, 15, 28, 0.96);
+  background: rgba(255, 255, 255, 0.96);
 }
 .stage-header h1 { margin: 0; font-size: 18px; letter-spacing: 0.02em; }
-.stage-header p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
-.stage-back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
+.stage-title-compact { display: none; }
+.stage-header p { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.stage-back-button { --archive-back-ink: var(--text); --archive-back-hover: #e7f3f0; border-radius: 8px; }
 .header-divider { width: 1px; height: 28px; background: var(--line); }
-.header-meta { margin-left: auto; color: var(--muted); font-size: 11px; }
-.lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
+.lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
 
-.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; min-height: 0; max-width: 1600px; margin: 0 auto; padding: 18px; box-sizing: border-box; }
-.performance-shell { display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #0b1726; box-sizing: border-box; }
-.performance-screen { position: relative; width: min(100%, calc(clamp(180px, 100svh - 260px, 620px) * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; container-type: inline-size; }
+.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 12px; align-items: stretch; width: 100%; min-width: 0; min-height: 0; max-width: 1600px; margin: 0 auto; padding: 12px max(12px, var(--stage-safe-right)) calc(12px + var(--stage-safe-bottom)) max(12px, var(--stage-safe-left)); box-sizing: border-box; overflow: hidden; }
+.performance-shell { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #f0f6f5; box-sizing: border-box; }
+.performance-viewport { position: relative; display: flex; flex: 1 1 0; flex-direction: column; width: 100%; min-width: 0; min-height: 0; container-type: size; }
+.screen-fit-region { position: relative; isolation: isolate; display: grid; flex: 1 1 0; place-items: center; width: 100%; min-width: 0; min-height: 0; overflow: hidden; container-type: size; background: #e5efec; }
+.stage-ambient { display: none; position: absolute; z-index: -1; inset: -28px; background-size: cover; background-position: center; filter: blur(28px) saturate(.65); opacity: .55; pointer-events: none; }
+/* The existing canvas host stays mounted; its observer sees the fitted 16:9 screen. */
+.performance-screen { position: relative; width: min(100cqw, calc(100cqh * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; container-type: inline-size; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
 .chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
@@ -3495,12 +3683,12 @@ function formatTime(milliseconds) {
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 .performance-screen::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
 
-.performance-hud { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; padding: 12px 16px; width: 100%; box-sizing: border-box; border-bottom: 1px solid var(--line); background: #102238; }
-.performance-hud strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.performance-hud small { grid-column: 2; }
-.performance-hud span { color: #73bfff; font-size: 9px; font-weight: 750; letter-spacing: 0.16em; }
+.performance-hud { display: flex; flex: none; align-items: center; gap: 12px; padding: 6px 12px; width: 100%; min-height: 56px; box-sizing: border-box; border-bottom: 1px solid var(--line); background: linear-gradient(110deg, #ffffff, #f4faf8); }
+.performance-identity { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.performance-hud strong { overflow-wrap: anywhere; }
+.performance-actions { display: flex; flex: 0 0 auto; gap: 4px; }
 .performance-hud strong { font-size: 16px; }
-.performance-hud small { color: var(--muted); font-size: 10px; }
+.performance-hud small { color: var(--muted); font-size: 12px; }
 
 .stage-lyric {
   position: absolute;
@@ -3525,14 +3713,19 @@ function formatTime(milliseconds) {
   pointer-events: none;
 }
 
-.position-rail { width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 10px 12px; box-sizing: border-box; border-top: 1px solid var(--line); pointer-events: none; }
-.position-marker { min-width: 0; display: grid; justify-items: center; gap: 4px; color: rgba(163, 184, 204, 0.3); }
-.position-marker span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid currentColor; border-radius: 50%; font: 700 10px/1 monospace; background: rgba(5, 14, 25, 0.66); }
-.position-marker small { max-width: 110px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-.position-marker.active { color: #9eb7ce; }
-.position-marker.loaded span { color: #ddecf9; border-color: rgba(103, 179, 241, 0.64); }
-.position-marker.singing { color: #83c8ff; }
-.position-marker.singing span { color: white; border-color: #61b7ff; background: rgba(28, 112, 187, 0.7); box-shadow: 0 0 20px rgba(65, 165, 255, 0.48); }
+.rail-summary { flex: none; width: 100%; margin: 0; padding: 4px 8px 0; box-sizing: border-box; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.position-rail { flex: none; width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 6px 8px; box-sizing: border-box; }
+.position-marker { min-width: 0; min-height: 44px; display: grid; align-content: start; justify-items: center; gap: 3px; padding: 4px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #52757c; cursor: pointer; }
+.position-marker .position-caption { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 4px; max-width: 100%; min-height: 16px; font-size: 11px; line-height: 1.4; }
+.position-marker small { max-width: 100%; color: var(--text); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.position-marker.selected { border-color: var(--accent); background: #e6f4f0; }
+.position-marker.singing { border-color: var(--idol-accent, var(--accent)); background: color-mix(in srgb, var(--idol-accent, var(--accent)) 10%, #ffffff); }
+.position-marker.singing .position-caption { color: #243c45; }
+.position-marker:disabled { align-content: center; color: var(--muted); background: transparent; cursor: default; }
+.position-marker:disabled small { color: var(--muted); }
+.rest-position { display: none; }
+.singing-status { display: inline-flex; align-items: center; gap: 3px; color: var(--idol-accent, var(--accent)); }
+.singing-label { display: none; font-size: 10px; }
 
 .stage-state { position: absolute; z-index: 6; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #cbd9e7; background: rgba(5, 13, 23, 0.58); backdrop-filter: blur(5px); }
 .loading-icon { animation: spin 1s linear infinite; }
@@ -3540,116 +3733,223 @@ function formatTime(milliseconds) {
 .error-state span { max-width: 420px; color: #b3c1cf; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.transport { width: 100%; min-height: 76px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 14px; box-sizing: border-box; border-top: 1px solid var(--line); background: #102238; }
+.transport { flex: none; width: 100%; min-height: 68px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 12px; box-sizing: border-box; border-top: 1px solid var(--line); background: linear-gradient(110deg, #ffffff, #f4faf8); }
 .transport.disabled { opacity: 0.62; }
-.transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: #dceaf7; background: #142941; border: 1px solid rgba(151, 192, 227, 0.27); border-radius: 9px; cursor: pointer; }
-.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--accent); background: rgba(36, 119, 195, 0.56); }
+.transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: #314d57; background: #ffffff; border: 1px solid #c6ddda; border-radius: 9px; cursor: pointer; }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--accent); background: #247e7c; color: white; }
 .transport button:disabled { cursor: wait; }
 .transport-copy { display: grid; gap: 5px; }
 .transport-copy strong { font-size: 12px; }
-.transport-copy small { color: var(--muted); font: 600 10px/1 monospace; }
-.transport input { width: 100%; accent-color: var(--accent); }
+.transport-copy small { color: var(--muted); font: 600 12px/1 monospace; }
+.transport input { width: 100%; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--accent); }
 
-.stage-inspector { min-width: 0; max-height: calc(100svh - 104px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, #142940, #0c1b2d); }
-.inspector-scroll { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; height: auto; }
-.control-section { min-width: 0; padding: 16px; box-sizing: border-box; border-bottom: 1px solid var(--line); }
+.stage-inspector { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, #ffffff, #f4faf8); }
+.inspector-scroll { flex: 1 1 0; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.mobile-panel-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: none; gap: 4px; padding: 4px; border-bottom: 1px solid var(--line); background: #eaf3f0; }
+.mobile-panel-tabs button { min-width: 0; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 7px; color: #526e73; background: transparent; font-size: 13px; font-weight: 600; cursor: pointer; }
+.mobile-panel-tabs button[aria-pressed="true"] { color: #075d56; background: #ffffff; }
+.inspector-scroll.is-song-panel { display: flex; flex-direction: column; overflow: hidden; }
+.song-section { flex: 1; height: 100%; min-height: 0; }
+.control-section { min-width: 0; padding: 10px 12px; box-sizing: border-box; border-bottom: 1px solid var(--line); }
 .control-section:last-child { border-right: 0; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; color: #a9c4dd; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 24px; margin-bottom: 8px; color: #587678; }
 .section-heading > div { display: grid; gap: 4px; }
-.section-heading h2 { margin: 0; color: #d9e7f3; font-size: 12px; letter-spacing: 0.06em; }
-.section-heading span { color: var(--muted); font-size: 10px; }
-select { width: 100%; height: 39px; padding: 0 10px; color: #edf5fc; background: #0e2034; border: 1px solid rgba(158, 192, 222, 0.28); border-radius: 7px; outline: none; font: 500 12px/1 inherit; }
-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 255, 0.12); }
+.section-heading h2 { margin: 0; color: #243c45; font-size: 14px; }
+.section-heading h2 small { margin-left: 4px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.section-heading span { color: var(--muted); font-size: 12px; }
+select { width: 100%; min-width: 0; height: 44px; padding: 0 10px; color: #243c45; background: #ffffff; border: 1px solid var(--line); border-radius: 7px; font-family: inherit; font-size: 13px; }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .song-facts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-.song-facts span { padding: 5px 7px; color: #9eb4c8; background: rgba(4, 14, 25, 0.42); border-radius: 5px; font-size: 9px; }
-.stage-vocal-controls { display: grid; gap: 10px; margin: 13px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(65, 165, 255, 0.3); border-radius: 9px; background: rgba(18, 67, 108, 0.16); }
-.stage-vocal-controls legend { padding: 0 5px; color: #8ecbff; font-size: 10px; letter-spacing: 0.06em; }
-.stage-vocal-controls small { color: var(--muted); font-size: 9px; line-height: 1.5; }
+.song-facts span { padding: 5px 7px; color: #587678; background: #edf5f2; border-radius: 5px; font-size: 12px; }
+.stage-audio-action { display: inline-grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 7px; color: #3f7772; background: #edf6f3; cursor: pointer; }
+.stage-audio-action.enabled { border-color: var(--accent); color: #075d56; background: #daf0e9; }
+.stage-audio-dialog { max-width: 400px; }
+.stage-vocal-controls { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; border: 0; }
+.stage-vocal-controls legend { padding: 0; color: var(--muted); font-size: 12px; }
+.stage-vocal-controls small { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .vfx-coverage { display: grid; gap: 6px; margin-top: 14px; padding: 10px 12px; border: 1px solid rgba(232, 179, 99, .32); border-radius: 9px; background: rgba(100, 68, 33, .14); }
 .vfx-coverage h3, .vfx-coverage p { margin: 0; }
-.vfx-coverage h3 { color: #f1d0a1; font-size: 12px; }
-.vfx-coverage p, .vfx-coverage summary, .vfx-coverage code { color: #c8d5df; font-size: 12px; line-height: 1.55; }
-.vfx-coverage .vfx-coverage-gap { color: #ffbd9d; }
+.vfx-coverage h3 { color: #79562b; font-size: 12px; }
+.vfx-coverage p, .vfx-coverage summary, .vfx-coverage code { color: #586a71; font-size: 12px; line-height: 1.55; }
+.vfx-coverage .vfx-coverage-gap { color: #994a20; }
 .vfx-coverage summary { cursor: pointer; }
 .vfx-coverage code { display: block; overflow-wrap: anywhere; margin-top: 5px; }
 
-.lineup-section { display: grid; gap: 9px; }
-.lineup-card { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 9px; align-items: center; padding: 9px; border: 1px solid rgba(151, 185, 215, 0.17); border-radius: 9px; background: rgba(5, 16, 29, 0.34); transition: opacity 160ms ease, border-color 160ms ease; }
-.lineup-card.inactive { opacity: 0.38; }
-.lineup-card.singing { border-color: rgba(73, 171, 255, 0.52); background: rgba(27, 101, 166, 0.18); }
-.slot-number { display: grid; justify-items: center; gap: 4px; }
-.slot-number span { display: grid; place-items: center; width: 30px; height: 30px; color: #e3effa; border: 1px solid rgba(119, 180, 230, 0.5); border-radius: 50%; font: 700 11px/1 monospace; }
-.slot-number small { color: var(--muted); font-size: 8px; }
-.slot-controls { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 7px; }
-.slot-controls select { height: 35px; min-width: 0; }
-.singing-icon { color: #6ebcff; }
-.rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #e6f3ff; background: rgba(30, 112, 185, 0.38); border: 1px solid rgba(66, 163, 246, 0.52); border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
+.lineup-section { display: grid; gap: 8px; }
+.lineup-section .section-heading { margin-bottom: 0; }
+.singing-icon { color: var(--idol-accent, #258e81); }
+.rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
 
 .playback-section { display: grid; gap: 13px; }
-.range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: #c9d9e8; font-size: 11px; }
+.range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: #45616a; font-size: 11px; }
 .range-control input { width: 100%; accent-color: var(--accent); }
 .range-control output { text-align: right; font: 650 11px/1 monospace; }
-.camera-toggle { display: flex; gap: 8px; align-items: center; color: #c9d9e8; font-size: 11px; }
+.camera-toggle { display: flex; min-height: 44px; gap: 8px; align-items: center; color: #365860; font-size: 13px; }
 .camera-toggle input { margin: 0; accent-color: var(--accent); }
 .layer-debug-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(111, 174, 229, 0.22); border-radius: 10px; }
-.layer-debug-controls legend { padding: 0 5px; color: #8ebfe9; font-size: 10px; letter-spacing: 0.08em; }
-.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; color: #c9d9e8; font-size: 11px; }
+.layer-debug-controls legend { padding: 0 5px; color: #38796f; font-size: 10px; letter-spacing: 0.08em; }
+.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; min-height: 44px; color: #45616a; font-size: 11px; }
 .layer-debug-controls input { margin: 0; accent-color: var(--accent); }
 .runtime-summary { display: grid; gap: 8px; margin: 0; }
+.runtime-details > summary { min-height: 44px; display: list-item; align-content: center; color: #365860; font-size: 13px; line-height: 1.6; cursor: pointer; }
+.runtime-details .runtime-summary { margin-top: 8px; }
 .runtime-summary div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 10px; }
 .runtime-summary dt { color: var(--muted); }
-.runtime-summary dd { margin: 0; color: #d8e6f2; }
-.audio-error { color: #ff9d9d; font-size: 10px; }
+.runtime-summary dd { margin: 0; color: #365860; }
+.audio-error { color: #a73737; font-size: 10px; }
 
+.stage-header-title { flex: 1; min-width: 0; }
+.stage-icon-action { display: inline-grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; color: #365860; border: 1px solid var(--line); border-radius: 8px; background: #ffffff; cursor: pointer; }
+.stage-icon-action:disabled { opacity: .4; cursor: default; }
+.chibi-stage button:focus-visible, .chibi-stage summary:focus-visible, .chibi-stage input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chibi-stage button { font-family: inherit; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.chibi-stage button:not(:disabled):active { background-color: #ddf0ec; }
+.mix-details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #3f7772; font-size: 12px; }
+.mix-details .range-control { min-height: 44px; }
+.lineup-actions { display: flex; gap: 8px; }
+.lineup-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 7px; background: #33a8a512; color: #365860; font-size: 13px; cursor: pointer; }
+.lineup-actions button:disabled { opacity: .4; cursor: default; }
+.lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.slot-editor { display: grid; gap: 8px; min-width: 0; }
+.idol-change-action { display: flex; width: 100%; align-items: center; gap: 10px; min-height: 54px; padding: 4px 8px; color: var(--text); background: #f6fbfa; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; text-align: left; }
+.slot-editor-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.idol-change-action strong { font-size: 14px; overflow-wrap: anywhere; }
+.idol-change-action small { font-size: 12px; color: var(--muted); }
+.costume-control { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.costume-sync-action { justify-self: start; min-height: 44px; padding: 0 8px; border: 0; border-radius: 6px; color: #236d67; background: transparent; cursor: pointer; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.costume-sync-action:disabled { opacity: .4; cursor: default; }
+.common-costume-actions { padding-top: 8px; border-top: 1px solid var(--line); }
+.common-costume-actions h3 { margin: 0 0 6px; color: var(--muted); font-size: 12px; font-weight: 500; }
+.uniform-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.uniform-quick-actions button { min-width: 0; min-height: 44px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; color: #236d67; background: #edf8f4; cursor: pointer; font-size: 12px; }
+.uniform-quick-actions button:disabled { opacity: .4; cursor: default; }
+.costume-notice { margin: 0; color: #4c716e; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.viewing-section { display: grid; gap: 4px; }
+.viewing-toggles, .viewing-actions { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.viewing-range { min-height: 44px; font-size: 12px; }
+.viewing-range input { min-height: 44px; margin: 0; }
+.viewing-actions { gap: 8px; }
+.viewing-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 10px; color: #365860; background: #edf6f3; border: 1px solid var(--line); border-radius: 7px; cursor: pointer; font-size: 13px; }
+.panel-notice, .audio-error { padding: 0 12px; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.panel-notice a { display: inline-flex; align-items: center; min-height: 44px; color: #236d67; text-underline-offset: 3px; }
+.stage-dev-dialog { width: min(600px, calc(100vw - 24px)); color: #243c45; color-scheme: light; background: #ffffff; border-color: #315253; font-family: inherit; }
+.stage-dev-dialog :deep(.terminal-dialog-header) { color: #243c45; background: #f4faf8; border-color: #315253; }
+.stage-dev-dialog :deep(.terminal-dialog-header h2) { font-size: 18px; }
+.stage-dev-dialog :deep(.terminal-icon-button) { color: #365860; background: #e7f3f0; }
+.stage-dev-dialog :deep(.terminal-dialog-body) { padding: 12px; scrollbar-width: thin; }
+.stage-dev-dialog .range-control { min-height: 44px; }
+.stage-dev-dialog .range-control input { min-height: 44px; margin: 0; }
+.inspector-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.inspector-tools .lab-link { margin: 0; }
+.inspector-tools .rebuild-button { min-height: 44px; margin: 0; }
+.technical-note, .stage-help-dialog p { color: #526e73; font-size: 13px; line-height: 1.7; }
+.shortcut-list { display: grid; gap: 12px; font-size: 13px; }
+.shortcut-list > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; }
+.shortcut-list dd { margin: 0; }
+kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
+.pure-exit { position: fixed; z-index: 8; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; opacity: .35; }
+.pure-exit:focus-visible { opacity: 1; }
+.is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .rail-summary, .is-pure .position-rail, .is-pure .transport { display: none; }
+.is-pure { grid-template-rows: minmax(0, 1fr); }
+.is-pure .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); max-width: none; min-height: 0; height: 100%; padding: 0; }
+.is-pure .performance-shell { height: 100%; min-height: 0; border: 0; border-radius: 0; background: transparent; }
+.is-pure .performance-viewport { flex: 1 1 0; }
+@media (hover: hover) and (pointer: fine) {
+  .stage-icon-action:hover, .lineup-actions button:not(:disabled):hover, .idol-change-action:not(:disabled):hover { background: #ddf0ec; }
+  .position-marker:not(:disabled):hover { border-color: var(--accent); }
+  .pure-exit:hover { opacity: 1; }
+}
+
+/* Tabs keep one control task visible while the stage remains in place. */
+@media (min-width: 981px) {
+  .stage-ambient { display: block; }
+  .position-marker.active { border-color: color-mix(in srgb, var(--idol-accent, var(--accent)) 25%, #e2ebe7); background: color-mix(in srgb, var(--idol-accent, var(--accent)) 6%, #ffffff); }
+  .position-marker.selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .position-marker.singing { border-color: var(--idol-accent, var(--accent)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--idol-accent, var(--accent)) 20%, transparent); }
+  .position-marker:disabled { min-height: 76px; border-color: #dfe8e4; background: #eaf0ed; }
+  .position-marker:disabled :deep(.idol-avatar-shell) { display: none; }
+  .rest-position { display: grid; gap: 6px; font-size: 12px; line-height: 1.4; }
+  .rest-position small { color: var(--muted); }
+  .singing-label { display: inline; }
+}
 @media (max-width: 980px) {
-  .stage-header { height: 58px; padding: 0 13px; }
+  .stage-header { padding-right: max(12px, var(--stage-safe-right)); padding-left: max(12px, var(--stage-safe-left)); gap: 8px; }
   .stage-header h1 { font-size: 15px; }
-  .stage-header p, .header-meta { display: none; }
-  .stage-workspace { grid-template-columns: 1fr; overflow: visible; }
-  .performance-screen { width: 100%; }
-  .stage-inspector { max-height: none; overflow: visible; }
-  .inspector-scroll { grid-template-columns: 1fr; height: auto; overflow: visible; }
-  .control-section { height: auto; border-right: 0; }
-  .transport { min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) minmax(0, 1fr); padding: 10px 12px; }
-  .transport button { width: 40px; height: 40px; }
-  .transport .primary-transport { width: 50px; height: 50px; }
+  .stage-header p { display: none; }
+  .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 8px; padding: 6px max(6px, var(--stage-safe-right)) calc(6px + var(--stage-safe-bottom)) max(6px, var(--stage-safe-left)); }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 240px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  .mobile-panel-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: none; gap: 4px; padding: 4px; border-bottom: 1px solid var(--line); background: #eaf3f0; }
+  .mobile-panel-tabs button { min-width: 0; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 7px; color: #526e73; background: transparent; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .mobile-panel-tabs button[aria-pressed="true"] { color: #075d56; background: #ffffff; }
+  .mobile-panel-tabs button:disabled { color: #71858a; cursor: default; }
+  .control-section { padding: 10px 12px; }
+  .transport { grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); padding: 6px 8px; }
+  select { font-size: 16px; }
+  .is-pure .stage-workspace { grid-template-rows: minmax(0, 1fr); padding: 0; }
+  .is-pure .performance-shell { height: 100%; }
 }
 
 @media (max-width: 620px) {
-  .stage-header { height: 52px; padding: 0 8px; gap: 6px; box-sizing: border-box; }
+  .stage-header { padding-right: max(8px, var(--stage-safe-right)); padding-left: max(8px, var(--stage-safe-left)); gap: 4px; }
   .stage-header-title { flex: 1; min-width: 0; }
   .stage-header h1 { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stage-title-full { display: none; }
+  .stage-title-compact { display: inline; }
   .stage-header .header-divider { display: none; }
   .stage-header :deep(.archive-language-switch) { margin-left: auto; }
   .lab-link { width: 44px; padding: 0; margin: 0; font-size: 0; flex-shrink: 0; }
   .lab-link::after { content: '1人'; font-size: 12px; }
-  .stage-workspace { padding: 8px; gap: 10px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
-  .performance-hud { grid-template-columns: minmax(0, 1fr); padding: 9px 12px; }
-  .performance-hud span { display: none; }
-  .performance-hud small { grid-column: 1; }
-  .performance-hud strong { font-size: 14px; }
-  .position-rail { gap: 2px; padding: 8px 4px; }
-  .position-marker small { max-width: 58px; }
-  .transport { grid-template-columns: 38px 44px minmax(0, 1fr); gap: 6px 10px; padding: 8px 12px; }
-  .transport button, .transport .primary-transport { width: 38px; height: 38px; }
-  .transport input { grid-column: 1 / -1; margin: 0; }
-  .slot-controls { grid-template-columns: 1fr; }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 180px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; gap: 4px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
+  .performance-identity { display: grid; gap: 2px; padding: 4px 6px; border-radius: 6px; background: rgba(244, 250, 248, .86); }
+  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .performance-actions { pointer-events: auto; }
+  .position-rail { gap: 2px; padding: 6px 4px; }
+  .position-marker { gap: 1px; padding: 3px 1px; }
+  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 36px; }
+  .position-marker .position-caption { gap: 0 2px; min-height: 14px; font-size: 10px; }
+  .position-marker small { font-size: 11px; line-height: 1.25; }
+  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 6px; padding: 6px 8px; }
+  .transport button, .transport .primary-transport { width: 44px; height: 44px; }
+  .transport-copy { position: relative; gap: 0; }
+  .transport-copy strong { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .transport-copy small { white-space: nowrap; }
+  .transport input { grid-column: auto; margin: 0; }
 }
 
 @media (max-width: 980px) and (max-height: 500px) and (orientation: landscape) {
-  .stage-header { height: 48px; }
-  .stage-workspace { padding: 6px; gap: 10px; }
-  .performance-screen { width: min(100%, calc(clamp(140px, 100svh - 210px, 290px) * 16 / 9)); }
-  .performance-hud { padding: 6px 12px; }
-  .performance-hud small { display: none; }
-  .performance-hud strong { font-size: 14px; }
-  .position-rail { padding: 4px; gap: 2px; }
-  .position-marker { gap: 2px; }
-  .position-marker span { width: 18px; height: 18px; font-size: 9px; }
-  .position-marker small { font-size: 8px; }
-  .transport { min-height: 48px; grid-template-columns: 38px 38px minmax(110px, auto) minmax(0, 1fr); gap: 8px; padding: 5px 10px; }
-  .transport button, .transport .primary-transport { width: 38px; height: 38px; }
+  .chibi-stage { --stage-header-height: calc(52px + var(--stage-safe-top)); }
+  .stage-title-full { display: none; }
+  .stage-title-compact { display: inline; }
+  .stage-workspace { grid-template-columns: minmax(0, 1fr) minmax(240px, 32%); grid-template-rows: minmax(0, 1fr); gap: 6px; }
+  .performance-shell { height: 100%; }
+  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 8px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
+  .performance-identity { display: grid; gap: 2px; flex: 1; min-width: 0; padding: 4px 6px; border-radius: 6px; background: rgba(244, 250, 248, .86); font-size: 12px; }
+  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .performance-actions { pointer-events: auto; }
+  .position-rail { padding: 4px; gap: 4px; }
+  .position-marker { grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-items: start; gap: 0 4px; min-height: 48px; padding: 3px; }
+  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 32px; grid-row: 1 / 3; }
+  .position-marker .position-caption { justify-content: flex-start; font-size: 10px; }
+  .position-marker small { font-size: 11px; }
+  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 6px; padding: 5px 8px; }
+  .transport button, .transport .primary-transport { width: 44px; height: 44px; }
+  .transport-copy { position: relative; gap: 0; }
+  .transport-copy strong { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .transport-copy small { white-space: nowrap; }
   .transport input { grid-column: auto; }
+  .is-pure .performance-shell { height: 100%; }
+}
+/* On very short phones, one lower-panel scroller keeps every control reachable. */
+@media (max-width: 620px) and (max-height: 650px) and (orientation: portrait) {
+  .inspector-scroll.is-song-panel { overflow-y: auto; }
+  .song-section { flex: none; height: auto; }
+  .song-section :deep(.chibi-song-picker) { flex: none; height: auto; }
+  .song-section :deep(.song-library), .song-section :deep(.song-list) { flex: none; }
+  .song-section :deep(.song-list) { overflow-y: visible; }
+}
+@media (pointer: coarse) {
+  select { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

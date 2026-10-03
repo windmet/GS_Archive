@@ -15,7 +15,7 @@
         <div ref="canvasRef" class="stage-canvas"></div>
 
         <div v-if="loading" class="stage-state stage-state--loading">
-          <GsLoadingIndicator :message="statusText" tone="dark" />
+          <GsLoadingIndicator :message="statusText" tone="light" />
         </div>
         <div v-else-if="errorText" class="stage-state error-state">
           <CircleAlert :size="26" />
@@ -56,7 +56,7 @@
               <span>角色</span>
               <select v-model="selectedCharacterId" @change="loadSelectedCharacter">
                 <option v-for="character in characters" :key="character.id" :value="character.id">
-                  {{ character.name }} · {{ character.id }}
+                  {{ spineIdolName(character) }}
                 </option>
               </select>
             </label>
@@ -64,7 +64,7 @@
               <span>服装</span>
               <select v-model="selectedCostumeId" @change="loadSelectedCharacter">
                 <option v-for="costume in costumes" :key="costume.id" :value="costume.id">
-                  {{ costume.label }}
+                  {{ spineCostumeLabel(costume) }}
                 </option>
               </select>
             </label>
@@ -221,9 +221,18 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
+import { stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
+import { archiveText } from './archive/useArchiveCostumeText.js'
 
-defineProps({ backLabel: { type: String, default: '返回资料馆' } })
+const props = defineProps({
+  backLabel: { type: String, default: '返回资料馆' },
+  idolName: { type: Function, default: (_id, fallback) => fallback || '' },
+})
 const emit = defineEmits(['back', 'open-stage'])
+function spineIdolName(character) {
+  return character ? props.idolName(character.id, character.name) || character.name || '姓名待确认' : ''
+}
+function spineCostumeLabel(costume) { return archiveText('costume', sourceStageCostumeLabel(costume)) }
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
@@ -394,7 +403,7 @@ async function loadSelectedCharacter() {
   songMotionsReady.value = false
   runtimeDiagnostics.value = null
   errorText.value = ''
-  statusText.value = `正在组合 ${character.name} 的骨架与服装…`
+  statusText.value = `正在组合 ${spineIdolName(character)} 的骨架与服装…`
   destroyLiveChibi(runtime)
   runtime = null
 
@@ -727,13 +736,13 @@ function stopChoreography(reset = false) {
 
 <style scoped>
 .chibi-lab {
-  --ink: #08111f;
-  --panel: #132235;
-  --panel-deep: #0e1a2a;
-  --line: rgba(172, 197, 224, 0.18);
-  --text: #f2f6fb;
-  --muted: #91a4ba;
-  --accent: #3c9cff;
+  --ink: #f1f7f7;
+  --panel: #ffffff;
+  --panel-deep: #f4faf8;
+  --line: #d4e2e2;
+  --text: #243c45;
+  --muted: #657a80;
+  --accent: #33a8a5;
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -752,15 +761,14 @@ function stopChoreography(reset = false) {
   gap: 18px;
   padding: 0 22px;
   border-bottom: 1px solid var(--line);
-  background: rgba(7, 17, 31, 0.96);
+  background: rgba(255, 255, 255, 0.96);
 }
 
 .lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
-.stage-link { min-height: 44px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
-.stage-link:hover { background: rgba(38, 130, 218, 0.36); }
+.stage-link { min-height: 44px; padding: 0 13px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
 .header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
 .header-divider { width: 1px; height: 26px; background: var(--line); }
-.back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
+.back-button { --archive-back-ink: var(--text); --archive-back-hover: #e7f3f0; border-radius: 8px; }
 
 .lab-workspace { position: absolute; inset: 62px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
 .stage-shell { position: relative; min-width: 0; overflow: hidden; background: #101a26; }
@@ -769,71 +777,74 @@ function stopChoreography(reset = false) {
 .stage-canvas { position: absolute; inset: 0; z-index: 1; }
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 
-.stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: #c8d6e6; font-size: 13px; background: rgba(7, 14, 24, 0.46); backdrop-filter: blur(4px); }
+.stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: var(--text); font-size: 13px; background: rgba(244, 250, 248, 0.92); backdrop-filter: blur(4px); }
 .loading-icon { animation: spin 1s linear infinite; }
-.error-state { text-align: center; color: #ffc9c9; }
-.error-state span { max-width: 420px; color: #aebbc9; line-height: 1.6; }
+.error-state { text-align: center; color: #a34444; }
+.error-state span { max-width: 420px; color: var(--muted); line-height: 1.6; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 82px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; border: 1px solid rgba(170, 199, 231, 0.28); border-radius: 15px; background: rgba(8, 18, 32, 0.9); box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38); backdrop-filter: blur(16px); }
+.transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 82px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; border: 1px solid #c6ddda; border-radius: 15px; background: rgba(255, 255, 255, 0.94); box-shadow: 0 18px 55px rgba(28, 63, 68, 0.18); backdrop-filter: blur(16px); }
 .transport.disabled { pointer-events: none; opacity: 0.55; }
-.transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 58px; color: #dce8f4; background: #142438; border: 1px solid rgba(173, 202, 232, 0.28); border-radius: 8px; cursor: pointer; }
-.transport button:hover, .playback-buttons button:hover { border-color: rgba(79, 164, 255, 0.75); background: #192e47; }
-.transport .primary-transport { width: 58px; height: 58px; border-radius: 50%; color: white; border-color: var(--accent); background: rgba(34, 107, 181, 0.52); }
+.transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 58px; color: #314d57; background: #ffffff; border: 1px solid #c6ddda; border-radius: 8px; cursor: pointer; }
+.transport .primary-transport { width: 58px; height: 58px; border-radius: 50%; color: white; border-color: var(--accent); background: #247e7c; }
 .transport-divider { width: 1px; height: 38px; background: var(--line); }
 .transport-motion { min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
 .transport-motion span { font-size: 15px; font-weight: 650; }
 .transport-motion small { color: var(--muted); font-size: 11px; }
 
-.inspector { min-width: 0; background: linear-gradient(180deg, #17283c, #101e2f); border-left: 1px solid var(--line); overflow: hidden; }
-.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-color: rgba(134, 162, 192, 0.38) transparent; }
+.inspector { min-width: 0; background: linear-gradient(180deg, var(--panel), var(--panel-deep)); border-left: 1px solid var(--line); overflow: hidden; }
+.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-color: #b0c8c4 transparent; }
 .control-section, .resource-section { padding: 22px 22px 20px; border-bottom: 1px solid var(--line); }
 .selection-section { display: grid; gap: 15px; }
 .selection-section label { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 12px; align-items: center; }
-.selection-section label > span, .range-control > span { color: #d8e3ef; font-size: 13px; }
-select { width: 100%; color: #edf4fb; background: #122033; border: 1px solid rgba(170, 199, 229, 0.3); border-radius: 7px; font: 500 13px/1.2 inherit; outline: none; }
+.selection-section label > span, .range-control > span { color: var(--text); font-size: 13px; }
+select { width: 100%; color: var(--text); background: #ffffff; border: 1px solid var(--line); border-radius: 7px; font: 500 13px/1.2 inherit; outline: none; }
 .selection-section select { height: 42px; padding: 0 12px; }
-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(60, 156, 255, 0.12); }
-h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacing: 0.05em; }
+select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px #33a8a51f; }
+h2 { margin: 0; color: var(--text); font-size: 12px; font-weight: 650; letter-spacing: 0.05em; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
 .section-heading > div { display: flex; flex-direction: column; gap: 5px; }
 .section-heading span { color: var(--muted); font-size: 11px; }
-.text-button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; color: #bcd0e4; background: transparent; border: 0; border-radius: 6px; font: 600 11px/1 inherit; cursor: pointer; }
-.text-button:hover { background: rgba(255, 255, 255, 0.06); }
+.text-button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; color: #236d67; background: transparent; border: 0; border-radius: 6px; font: 600 11px/1 inherit; cursor: pointer; }
 .motion-select { height: 208px; padding: 5px; overflow-y: auto; }
-.motion-select option { padding: 10px 9px; border-radius: 5px; color: #bdcddd; }
-.motion-select option:checked { color: #fff; background: linear-gradient(#174b78, #174b78); }
-.choreography-section { display: grid; gap: 15px; background: rgba(30, 74, 116, 0.14); }
-.singer-status { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 48px; padding: 9px 11px; color: #9db0c4; background: rgba(7, 17, 31, 0.42); border: 1px solid rgba(157, 176, 196, 0.16); border-radius: 8px; }
+.motion-select option { padding: 10px 9px; border-radius: 5px; color: var(--text); }
+.motion-select option:checked { color: #075d56; background: linear-gradient(#e4f3ef, #e4f3ef); }
+.choreography-section { display: grid; gap: 15px; background: #edf6f3; }
+.singer-status { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 48px; padding: 9px 11px; color: var(--muted); background: #ffffff; border: 1px solid var(--line); border-radius: 8px; }
 .singer-status > div { display: grid; gap: 4px; }
 .singer-status span { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; }
-.singer-status strong { color: #dce8f4; font-size: 12px; }
-.singer-status small { color: #8296aa; font-size: 10px; }
-.singer-status.singing { color: #7fc0ff; background: rgba(38, 116, 190, 0.18); border-color: rgba(74, 160, 242, 0.42); }
-.singer-status.singing strong, .singer-status.singing small { color: #dff1ff; }
+.singer-status strong { color: var(--text); font-size: 12px; }
+.singer-status small { color: var(--muted); font-size: 10px; }
+.singer-status.singing { color: #236d67; background: #e4f3ef; border-color: #88c7bc; }
+.singer-status.singing strong, .singer-status.singing small { color: #075d56; }
 .lip-sync-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
 .lip-sync-status strong { color: var(--text); font-weight: 600; }
 .lip-sync-status small { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.audio-error { color: #ff9b9b; font-size: 11px; }
-.song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: #d8e3ef; font-size: 13px; }
+.audio-error { color: #a34444; font-size: 11px; }
+.song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: var(--text); font-size: 13px; }
 .song-position select { height: 38px; padding: 0 10px; }
 .timeline-control { display: grid; gap: 7px; }
 .timeline-control input { width: 100%; margin: 0; accent-color: var(--accent); }
 .timeline-control span { color: var(--muted); font: 600 11px/1 monospace; text-align: right; }
-.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; color: white; background: rgba(34, 107, 181, 0.52); border: 1px solid var(--accent); border-radius: 8px; font: 650 12px/1 inherit; cursor: pointer; }
-.choreography-play:hover { background: rgba(40, 127, 213, 0.62); }
+.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; color: white; background: #247e7c; border: 1px solid var(--accent); border-radius: 8px; font: 650 12px/1 inherit; cursor: pointer; }
 .playback-section { display: grid; gap: 17px; }
 .playback-buttons { display: flex; gap: 10px; }
 .playback-buttons .wide-play { flex: 1; gap: 8px; font: 600 12px/1 inherit; }
 .range-control { display: grid; grid-template-columns: 42px minmax(0, 1fr) 48px; gap: 10px; align-items: center; }
 .range-control input { width: 100%; accent-color: var(--accent); }
-.range-control output { color: #e9f2fb; font: 600 12px/1 inherit; text-align: right; font-variant-numeric: tabular-nums; }
+.range-control output { color: var(--text); font: 600 12px/1 inherit; text-align: right; font-variant-numeric: tabular-nums; }
 .resource-section { border-bottom: 0; }
 .resource-section h2 { margin-bottom: 14px; }
 .resource-section dl { margin: 0; display: grid; gap: 10px; }
 .resource-section dl div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; font-size: 11px; }
 .resource-section dt { color: var(--muted); }
-.resource-section dd { margin: 0; color: #d3dfeb; overflow-wrap: anywhere; }
+.resource-section dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.chibi-lab button:focus-visible, .chibi-lab input:focus-visible, .chibi-lab select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .stage-link:hover, .text-button:hover { background: #e4f3ef; }
+  .transport button:hover, .playback-buttons button:hover { border-color: var(--accent); background: #edf8f4; }
+  .transport .primary-transport:hover, .choreography-play:hover { background: #1d706e; }
+}
 
 @media (max-width: 860px) {
   .lab-header { height: 54px; padding: 0 12px; gap: 11px; }

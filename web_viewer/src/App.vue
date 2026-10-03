@@ -523,10 +523,15 @@
     </ArchiveExperimentFrame>
     <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
+    <SpineViewer v-if="view === 'spine_lab'" :idol-name="idolDisplayName" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
       :audio-experiments="stageAudioExperiments"
+      :idol-directory="archiveBootstrap.idols"
+      :idol-name="idolDisplayName"
+      :idol-search="idolEntitySearchText"
+      :original-performers="stageOriginalPerformers"
+      :song-directory="stageSongDirectory"
       :stage-target-id="stageTargetId"
       :stage-song-code="currentSongId"
       :stage-handoff="stageHandoff"
@@ -1391,6 +1396,9 @@ const currentSong = computed(() => songReadModelDetail.value?.id === currentSong
 const stageAudioExperiments = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : '')) && songReadModelDetail.value?.experimental
   ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
   : {})
+const stageOriginalPerformers = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : ''))
+  ? songReadModelDetail.value.song?.performance_mapping?.performer_idol_codes || [] : [])
+const stageSongDirectory = computed(() => Object.values(songReadModelCatalog.value?.songs || {}))
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.view : null)
 
@@ -1875,7 +1883,10 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
-    if (route.view === 'chibi_stage') await chibiStageViewerLoader()
+    if (route.view === 'chibi_stage') {
+      await chibiStageViewerLoader()
+      void ensureSongCatalog()
+    }
 
     if (!intent.isCurrent()) return
     if (invalidIdolPickTarget) view.value = 'idol_picker'
@@ -2623,6 +2634,7 @@ async function openChibiStage(target = null) {
     currentSongId.value = stageTargetId.value ? target.songCode : ''
     stageHandoff.value = target?.stageHandoff || null
     commitView('chibi_stage')
+    void ensureSongCatalog()
   })
 }
 
