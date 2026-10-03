@@ -27,7 +27,7 @@ assert.equal(deployment.branch,'gs-architecture-device-test')
 const checks=[]
 for (const prefix of ['assets/domain-images/event/', 'assets/domain-images/image/image_honor/',
   'assets/domain-images/image/image_item/', 'assets/domain-images/image/image_picturestudio/',
-  'assets/terminal/', 'assets/song-chart-sprites/']) {
+  'assets/terminal/', 'assets/song-chart-sprites/', 'assets/live-chibi/']) {
   const entry=manifest.entries.filter(e=>e.request_key.startsWith(prefix) && e.object_key.endsWith('.webp'))
     .sort((a,b)=>a.deployed_size-b.deployed_size)[0]
   if (!entry) continue
