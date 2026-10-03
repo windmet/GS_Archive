@@ -1,0 +1,90 @@
+<template>
+  <ArchiveTerminalDialog class="photo-detail-dialog" :open="open" :title="name" :title-id="titleId" @close="emit('close')">
+    <p v-if="spotName" class="photo-detail-context">{{ spotName }}</p>
+    <DomainMediaPreview v-if="kind !== 'filters'" class="photo-detail-preview" :class="{ 'is-background': ['spots', 'scenes'].includes(kind), 'is-transparent': !['spots', 'scenes'].includes(kind) }" :binding="previewBinding" :name="name" />
+    <p v-if="kind === 'filters'" class="domain-muted">原始滤镜参数尚未解析；摄影工作台提供网页近似效果。</p>
+    <p v-if="binding?.effectStatus === 'effect-not-rendered'" class="domain-muted">当前仅展示背景图，场景效果尚未重建。</p>
+    <p class="domain-description">{{ description || '查看对应场景或预设。' }}</p>
+    <button type="button" class="domain-action" :data-archive-focus-id="`photo-studio:${kind}:${entry.id}`" @click="emit('open-studio', `${kind}:${entry.id}`)"><Camera :size="18" aria-hidden="true" />在摄影工作台打开</button>
+    <section v-if="kind === 'spots'" class="photo-related-scenes" aria-label="关联场景">
+      <h3>关联场景</h3>
+      <div class="photo-scene-grid">
+        <button v-for="scene in scenes" :key="scene.id" type="button" :aria-label="`查看场景 ${sceneName(scene)}`" @click="emit('scene', scene.id)">
+          <span class="photo-scene-art"><img v-if="sceneMedia?.[`scenes:${scene.id}`]?.image?.url && !failedScenes.has(scene.id)" :src="sceneMedia[`scenes:${scene.id}`].image.url" alt="" loading="lazy" decoding="async" @error="failedScenes.add(scene.id)" /><ImageOff v-else :size="24" aria-hidden="true" /></span>
+          <strong>{{ sceneName(scene) }}</strong>
+        </button>
+      </div>
+      <p v-if="!scenes.length" class="domain-muted">没有关联的场景配置。</p>
+    </section>
+    <section v-if="kind === 'frames' && frameLayers.length" class="photo-frame-layers" aria-label="原始相框图层">
+      <h3>原始相框图层</h3>
+      <div><DomainMediaPreview v-for="(layer, index) in frameLayers" :key="`${entry.id}:${index}`" class="is-transparent" :binding="layer" :name="`${name} · 图层 ${index + 1}`" /></div>
+    </section>
+    <details class="photo-detail-source">
+      <summary>来源与资源</summary>
+      <dl class="domain-meta">
+        <div v-if="resourceDescription"><dt>原始说明</dt><dd>{{ entry.description }}</dd></div>
+        <div><dt>配置编号</dt><dd>{{ entry.id }}</dd></div>
+        <div><dt>资源名称</dt><dd>{{ entry.backgroundResourceId || entry.resourceId || entry.iconResourceId || '未记录' }}</dd></div>
+        <div v-if="entry.animationName"><dt>脚本预设</dt><dd>{{ entry.animationName }}</dd></div>
+        <div v-if="entry.scenarioResourceId"><dt>脚本资源</dt><dd>{{ entry.scenarioResourceId }}</dd></div>
+        <div v-if="entry.effectResourceId"><dt>场景效果</dt><dd>{{ entry.effectResourceId }}</dd></div>
+        <div v-if="binding?.preset?.motion"><dt>脚本动作</dt><dd>{{ binding.preset.motion }}</dd></div>
+        <div v-if="binding?.preset?.face"><dt>脚本表情</dt><dd>{{ binding.preset.face }}</dd></div>
+        <div v-if="binding?.preset?.neck"><dt>颈部动作</dt><dd>{{ binding.preset.neck }}</dd></div>
+        <div v-if="initialGrant !== null"><dt>初始配置</dt><dd>{{ initialGrant ? '属于客户端初始授予配置' : '未在初始授予表中出现' }}</dd></div>
+      </dl>
+    </details>
+  </ArchiveTerminalDialog>
+</template>
+<script setup>
+import { computed, getCurrentInstance, ref } from 'vue';
+import { Camera, ImageOff } from '@lucide/vue';
+import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue';
+import DomainMediaPreview from './DomainMediaPreview.vue';
+import { archiveText } from './useArchivePhotoText.js';
+const props = defineProps({
+  open: Boolean, kind: String, entry: { type: Object, required: true }, binding: Object,
+  name: String, spotName: String, description: String, resourceDescription: Boolean,
+  initialGrant: { default: null }, scenes: { type: Array, default: () => [] }, sceneMedia: Object,
+});
+const emit = defineEmits(['close', 'open-studio', 'scene']);
+const titleId = `photo-detail-title-${getCurrentInstance().uid}`;
+const failedScenes = ref(new Set());
+const previewBinding = computed(() => props.kind === 'stickers' && props.binding?.full?.url ? props.binding.full : props.binding?.image);
+const frameLayers = computed(() => Array.isArray(props.binding?.layers) ? props.binding.layers : []);
+const sceneName = scene => archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`;
+</script>
+<style scoped>
+.photo-detail-dialog { width:min(760px,calc(100% - 32px));max-width:calc(100% - 32px);max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:0;border:1px solid #cddfe3;border-radius:12px;background:#fff;color:#243d4b;font-family:var(--gs-font-directory);font-size:var(--gs-text-body,14px); }
+.photo-detail-dialog[open] { display:flex;flex-direction:column; }
+.photo-detail-dialog::backdrop { background:#152b4373; }
+.photo-detail-dialog :deep(.terminal-dialog-header) { display:flex;align-items:center;gap:12px;flex:none;padding:12px 16px;border-bottom:1px solid #e1ecea;background:#fff; }
+.photo-detail-dialog :deep(.terminal-dialog-header h2) { flex:1;min-width:0;margin:0;font-size:20px;line-height:1.5;overflow-wrap:anywhere; }
+.photo-detail-dialog :deep(.terminal-icon-button) { display:grid;place-items:center;flex:none;width:44px;min-height:44px;padding:0;border:1px solid #d2e3dd;border-radius:8px;background:#fff;color:#236b60;cursor:pointer; }
+.photo-detail-dialog :deep(.terminal-dialog-body) { min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px; }
+.photo-detail-dialog :deep(button:focus-visible),.photo-detail-source summary:focus-visible { outline:3px solid #048a6d;outline-offset:2px; }
+.photo-detail-context { margin:0 0 10px;color:#627c83;font-size:13px;line-height:1.6; }
+.photo-detail-preview { padding:12px; }
+.photo-detail-preview.is-background { display:grid;place-items:center;aspect-ratio:16/9;padding:0; }
+.photo-detail-preview.is-background :deep(img) { width:100%;height:100%;min-height:0;max-height:none;object-fit:contain; }
+.photo-detail-dialog .is-transparent { background:repeating-conic-gradient(#eff3f4 0% 25%,#fff 0% 50%) 50%/16px 16px;border-color:#e0e8e7; }
+.photo-detail-preview.is-transparent :deep(img) { min-height:0;max-height:320px;object-fit:contain; }
+.photo-detail-dialog .domain-description { margin:12px 0; }
+.photo-detail-dialog .domain-action { min-height:44px;margin-bottom:12px;font:inherit;cursor:pointer; }
+.photo-related-scenes,.photo-frame-layers { margin:16px 0; }
+.photo-related-scenes h3,.photo-frame-layers h3 { margin:0 0 10px;font-size:16px; }
+.photo-scene-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px; }
+.photo-scene-grid button { display:grid;align-content:start;gap:7px;padding:0 0 8px;min-width:0;border:1px solid #dce8e4;border-radius:8px;background:#fff;color:#27444e;text-align:left;cursor:pointer; }
+.photo-scene-art { display:grid;place-items:center;width:100%;aspect-ratio:16/9;background:#edf4f4;border-radius:7px 7px 0 0;overflow:hidden;color:#71888c; }
+.photo-scene-art img { display:block;width:100%;height:100%;object-fit:contain; }
+.photo-scene-grid strong { padding:0 8px;font-size:13px;line-height:1.5;overflow-wrap:anywhere; }
+.photo-frame-layers > div { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
+.photo-frame-layers :deep(.domain-media-preview) { margin:0; }
+.photo-frame-layers :deep(img) { min-height:0;max-height:260px;object-fit:contain; }
+.photo-detail-source { margin-top:12px;color:#657e86; }
+.photo-detail-source summary { min-height:44px;padding:10px 0;font-size:13px;cursor:pointer; }
+.photo-detail-source .domain-meta { margin:0 0 8px; }
+@media(hover:hover) and (pointer:fine){.photo-scene-grid button:hover{border-color:#84baad;background:#f5faf8;}}
+@media(max-width:760px){.photo-detail-dialog{width:calc(100% - 16px);max-width:calc(100% - 16px);max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));}.photo-detail-dialog :deep(.terminal-dialog-header),.photo-detail-dialog :deep(.terminal-dialog-body){padding:12px;}.photo-detail-dialog :deep(.terminal-dialog-header h2){font-size:18px;}.photo-scene-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}}
+</style>

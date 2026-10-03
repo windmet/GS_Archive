@@ -2063,6 +2063,9 @@ async function openDomainTarget(target){
   if(target?.view==='photo_catalog' && /^(spots|scenes|stickers|frames|filters):\d+$/.test(target.photoEntity || '')){captureDetailSource();currentPhotoIdol.value='';currentPhotoEntity.value=target.photoEntity;currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog')}
 }
 function selectPhotoEntity(key) {
+  if (key === '' && view.value === 'photo_catalog') {
+    currentPhotoEntity.value = ''; syncArchiveRoute({ replace: true, restoreView: false }); return
+  }
   if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
   currentPhotoEntity.value=key; syncArchiveRoute({replace:true,restoreView:false})
 }

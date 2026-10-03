@@ -1,10 +1,11 @@
 <template>
   <article class="domain-page photo-page" data-archive-scroll-container :aria-busy="busy">
     <p class="domain-intro">查阅摄影地点、场景和偶像的表情、动作配置。</p>
-    <nav class="domain-tabs" aria-label="摄影分类">
+    <nav ref="tabsElement" class="domain-tabs" aria-label="摄影分类">
       <button
         v-for="tab in photoTabs"
         :key="tab.id"
+        :data-archive-focus-id="`photo-tab:${tab.id}`"
         type="button"
         :aria-pressed="photoTab === tab.id"
         @click="switchPhotoTab(tab.id)"
@@ -16,11 +17,11 @@
     <p v-if="error" role="alert" class="domain-error">
       {{ error }}<button type="button" @click="load">重试</button>
     </p>
-    <div class="domain-layout">
-      <section class="domain-panel" aria-label="资料目录">
+      <section class="photo-directory" aria-label="资料目录">
         <div class="domain-tools">
           <label
             >搜索<input
+              ref="searchElement"
               :value="query"
               placeholder="名称或编号"
               @input="emit('query', $event.target.value)"
@@ -38,16 +39,19 @@
           </label>
         </div>
         <p class="domain-count">{{ activeDataReady ? `${filtered.length} 条资料` : busy ? '正在读取…' : error ? '结果暂不可用' : '— 条资料' }}</p>
-        <div class="domain-list">
+        <div ref="gridElement" class="photo-grid" :class="{ 'is-backgrounds': ['spots', 'scenes'].includes(photoTab), 'is-frames': photoTab === 'frames', 'is-filters': photoTab === 'filters' }">
           <button
             v-for="row in visible"
-            :key="row.id"
+            :key="`${photoTab}:${row.id}`"
             type="button"
             :data-archive-focus-id="`photo:${photoTab}:${row.id}`"
-            :aria-pressed="String(row.id) === selectedId"
+            :aria-label="[photoName(row), sceneSpotName(row)].filter(Boolean).join(' · ')"
+            :title="photoName(row)"
+            :aria-pressed="detailOpen && String(row.id) === selectedId"
+            aria-haspopup="dialog"
             @click="select(row)"
           >
-            <span class="domain-symbol">
+            <span class="photo-card-art" :class="{ 'is-transparent': !['spots', 'scenes', 'filters'].includes(photoTab) }">
               <img
                 v-if="
                   thumbnail(row) &&
@@ -56,6 +60,7 @@
                 :src="thumbnail(row)"
                 alt=""
                 loading="lazy"
+                decoding="async"
                 @error="
                   failedThumbnails = new Set([
                     ...failedThumbnails,
@@ -63,114 +68,45 @@
                   ])
                 "
               />
-              <Camera v-else :size="21" />
+              <SlidersHorizontal v-else-if="photoTab === 'filters'" :size="26" aria-hidden="true" />
+              <Camera v-else :size="26" aria-hidden="true" />
             </span>
-            <span class="domain-list-copy">
+            <span class="photo-card-copy">
               <strong>{{ photoName(row) }}</strong>
-              <small>{{ photoTabs.find(tab => tab.id === photoTab)?.label }}</small>
+              <small v-if="photoTab === 'scenes'">{{ sceneSpotName(row) }}</small>
+              <small v-else-if="photoTab === 'spots'">{{ materials?.sceneIdsBySpotId?.[row.id]?.length || 0 }} 个场景</small>
             </span>
-            <ChevronRight :size="16" />
           </button>
         </div>
         <p v-if="activeDataReady && !filtered.length" class="domain-muted">没有匹配的资料。</p>
         <nav v-if="pages > 1" class="domain-pagination" aria-label="目录分页">
-          <button type="button" :disabled="page === 0" @click="page--">
+          <button type="button" :disabled="page === 0" @click="changePage(-1)">
             上一页
           </button>
           <span>{{ page + 1 }} / {{ pages }}</span>
-          <button type="button" :disabled="page + 1 >= pages" @click="page++">
+          <button type="button" :disabled="page + 1 >= pages" @click="changePage(1)">
             下一页
           </button>
         </nav>
       </section>
-      <div class="domain-detail" ref="detailElement">
-        <section v-if="photoEntry" class="domain-panel">
-          <h3>{{ photoName(photoEntry) }}</h3>
-          <button
-            type="button"
-            class="domain-action"
-            :data-archive-focus-id="`photo-studio:${photoTab}:${photoEntry.id}`"
-            @click="emit('open-studio', `${photoTab}:${photoEntry.id}`)"
-          >
-            <Camera :size="18" />在摄影工作台打开
-          </button>
-          <DomainMediaPreview
-            v-if="photoTab !== 'filters'"
-            :binding="photoBinding?.image"
-            :effect-status="photoBinding?.effectStatus"
-            :name="photoName(photoEntry)"
-          />
-          <p v-if="photoTab === 'filters'" class="domain-muted">
-            原始 shader 参数尚未解析，此页仅展示滤镜名称与配置。
-          </p>
-          <p class="domain-description">
-            {{
-              photoDescription || "查看对应场景或预设。"
-            }}
-          </p>
-          <details><summary>来源与资源</summary><dl class="domain-meta">
-            <div v-if="resourceDescription"><dt>原始说明</dt><dd>{{ photoEntry.description }}</dd></div>
-            <div>
-              <dt>配置编号</dt>
-              <dd>{{ photoEntry.id }}</dd>
-            </div>
-            <div>
-              <dt>资源名称</dt>
-              <dd>
-                {{
-                  photoEntry.resourceId || photoEntry.iconResourceId || "未记录"
-                }}
-              </dd>
-            </div>
-            <div v-if="['faces', 'poses'].includes(photoTab)">
-              <dt>脚本预设</dt>
-              <dd>{{ photoEntry.animationName }}</dd>
-            </div>
-            <div v-if="photoEntry.scenarioResourceId">
-              <dt>脚本资源</dt>
-              <dd>{{ photoEntry.scenarioResourceId }}</dd>
-            </div>
-            <div v-if="photoBinding?.preset?.motion">
-              <dt>脚本动作</dt>
-              <dd>{{ photoBinding.preset.motion }}</dd>
-            </div>
-            <div v-if="photoBinding?.preset?.face">
-              <dt>脚本表情</dt>
-              <dd>{{ photoBinding.preset.face }}</dd>
-            </div>
-            <div v-if="photoBinding?.preset?.neck">
-              <dt>颈部动作</dt>
-              <dd>{{ photoBinding.preset.neck }}</dd>
-            </div>
-            <div v-if="initialGrant !== null">
-              <dt>初始配置</dt>
-              <dd>
-                {{
-                  initialGrant
-                    ? "属于客户端初始授予配置"
-                    : "未在初始授予表中出现"
-                }}
-              </dd>
-            </div>
-          </dl></details>
-          <div v-if="photoTab === 'spots'">
-            <h3>关联场景</h3>
-            <div class="domain-records">
-              <div v-for="scene in scenesForSpot" :key="scene.id">
-                {{ archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`
-                }}<small
-                  >{{ scene.effectResourceId ? "含场景效果" : "背景场景" }}</small
-                >
-              </div>
-            </div>
-            <p v-if="!scenesForSpot.length" class="domain-muted">
-              没有关联的场景配置。
-            </p>
-          </div>
-        </section>
-        <p v-else-if="activeDataReady" class="domain-muted">{{ photoSelection ? '当前资料不在此目录中，请选择有效资料。' : '选择资料查看详情。' }}</p>
-      </div>
-    </div>
+      <p v-if="activeDataReady && photoSelection && !photoEntry" class="domain-muted">当前资料不在此目录中，请选择有效资料。</p>
+      <ArchivePhotoDetailDialog
+        v-if="photoEntry"
+        :open="detailOpen"
+        :kind="photoTab"
+        :entry="photoEntry"
+        :binding="photoBinding"
+        :name="photoName(photoEntry)"
+        :spot-name="sceneSpotName(photoEntry)"
+        :description="photoDescription"
+        :resource-description="resourceDescription"
+        :initial-grant="initialGrant"
+        :scenes="photoTab === 'spots' ? scenesForSpot : []"
+        :scene-media="materialMedia"
+        @close="closeDetail"
+        @open-studio="emit('open-studio', $event)"
+        @scene="selectRelatedScene"
+      />
   </article>
 </template>
 <script setup>
@@ -182,8 +118,8 @@ import {
   shallowRef,
   watch,
 } from "vue";
-import { Camera, ChevronRight } from "@lucide/vue";
-import DomainMediaPreview from "./DomainMediaPreview.vue";
+import { Camera, SlidersHorizontal } from "@lucide/vue";
+import ArchivePhotoDetailDialog from "./ArchivePhotoDetailDialog.vue";
 import {archiveText, archiveSearchText} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
 import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
@@ -217,8 +153,9 @@ const materials = shallowRef(null),
   photoTab = ref("spots"),
   photoSelection = ref(""),
   pendingTabSelection = ref(false),
-  detailElement = ref(null),
+  detailOpen = ref(false),
   failedThumbnails = shallowRef(new Set());
+const gridElement = ref(null), tabsElement = ref(null), searchElement = ref(null);
 const photoTabs = [
   { id: "spots", label: "地点" },
   { id: "scenes", label: "场景" },
@@ -251,7 +188,8 @@ const filtered = computed(() => {
     (row) =>
       !q ||
       String(
-        archiveSearchText(`photo-${photoTab.value}`, row.name) + ' ' + photoName(row) +
+        archiveSearchText(`photo-${photoTab.value}`, row.name) + ' ' + photoName(row) + ' ' + sceneSpotName(row) + ' ' +
+          (photoTab.value === 'scenes' ? archiveSearchText('photo-spots', spotForScene(row)?.name) : '') +
           " " +
           row.id +
           " " +
@@ -269,7 +207,7 @@ const photoEntry = computed(
     () =>
       photoSelection.value
         ? photoRows.value.find((row) => String(row.id) === photoSelection.value) || null
-        : photoRows.value[0] || null,
+        : null,
   ),
   selectedId = computed(() => String(photoEntry.value?.id || ""));
 function binding(row) {
@@ -314,10 +252,29 @@ function photoName(row) {
   if (source) return archiveText(`photo-${photoTab.value}`, source);
   return `${photoTabs.find((tab) => tab.id === photoTab.value)?.label} ${row.id}`;
 }
+function spotForScene(row) {
+  if (photoTab.value !== 'scenes' || !row) return null;
+  const matches = (materials.value?.spots || []).filter(spot =>
+    materials.value.sceneIdsBySpotId?.[spot.id]?.includes(row.id),
+  );
+  return matches.length === 1 ? matches[0] : null;
+}
+function sceneSpotName(row) {
+  const spot = spotForScene(row);
+  return spot ? archiveText('photo-spots', spot.name) : '';
+}
+// Automatic canonical selection keeps the tab in its route, without opening a dialog.
+let quietSelectionKey = '';
+function selectQuietly(key) {
+  quietSelectionKey = key;
+  emit('photo-entity', key);
+}
 let controller = null,
   request = 0,
   interactionRevision = 0;
+let pendingCloseRevision = 0;
 function begin() {
+  interactionRevision++;
   controller?.abort();
   controller = new AbortController();
   busy.value = true;
@@ -331,13 +288,12 @@ function fail(cause, id, options) {
   }
 }
 onBeforeUnmount(() => {
+  interactionRevision++;
   request++;
   controller?.abort();
 });
 
 async function load() {
-  const requestedPhotoEntity = props.photoEntity;
-  const requestedInteraction = interactionRevision;
   loadingActorId.value = props.photoIdol || actors.value[0]?.id || "";
   const { id, options } = begin();
   try {
@@ -367,7 +323,7 @@ async function load() {
     ) {
       photoSelection.value = String(photoRows.value[0].id);
       pendingTabSelection.value = false;
-      emit("photo-entity", `${photoTab.value}:${photoSelection.value}`);
+      selectQuietly(`${photoTab.value}:${photoSelection.value}`);
     }
     const position = filtered.value.findIndex(
       (row) => String(row.id) === photoSelection.value,
@@ -375,17 +331,6 @@ async function load() {
     page.value = position >= 0 ? Math.floor(position / 25) : 0;
     busy.value = false;
     await nextTick();
-    if (
-      id === request &&
-      !options.signal.aborted &&
-      requestedInteraction === interactionRevision &&
-      requestedPhotoEntity &&
-      props.photoEntity === requestedPhotoEntity &&
-      photoEntry.value &&
-      `${photoTab.value}:${photoEntry.value.id}` === requestedPhotoEntity &&
-      window.matchMedia("(max-width:700px)").matches
-    )
-      detailElement.value?.scrollIntoView({ block: "start" });
     if(id === request && !options.signal.aborted)emit("ready");
   } catch (cause) {
     fail(cause, id, options);
@@ -393,39 +338,63 @@ async function load() {
     if (id === request) busy.value = false;
   }
 }
-async function select(row) {
+function select(row) {
   if(!photoRows.value.some(entry => String(entry.id) === String(row.id)))return;
-  const tab = photoTab.value, person = actorId.value, revision = ++interactionRevision;
+  interactionRevision++;
+  quietSelectionKey = '';
   photoSelection.value = String(row.id);
+  detailOpen.value = true;
   emit("photo-entity", `${photoTab.value}:${row.id}`);
+}
+async function closeDetail() {
+  const tab = photoTab.value, key = `photo:${tab}:${photoSelection.value}`;
+  const revision = ++interactionRevision;
+  pendingCloseRevision = revision;
+  quietSelectionKey = '';
+  detailOpen.value = false;
+  emit('photo-entity', '');
   await nextTick();
-  if (
-    revision === interactionRevision && photoTab.value === tab &&
-    (!["faces","poses"].includes(tab) || actorId.value === person) &&
-    photoEntry.value && String(photoEntry.value.id) === String(row.id) &&
-    window.matchMedia("(max-width:700px)").matches
-  )
-    detailElement.value?.scrollIntoView({ block: "start" });
+  if (revision !== interactionRevision || photoTab.value !== tab) return;
+  const find = (element, focusId) => Array.from(element?.querySelectorAll('[data-archive-focus-id]') || [])
+    .find(node => node.dataset.archiveFocusId === focusId && node.isConnected);
+  const target = find(gridElement.value, key) || find(tabsElement.value, `photo-tab:${tab}`) || searchElement.value;
+  if (target?.isConnected) target.focus({ preventScroll: true });
+}
+function selectRelatedScene(id) {
+  if (photoTab.value !== 'spots' || !scenesForSpot.value.some(row => row.id === id)) return;
+  quietSelectionKey = '';
+  emit('photo-entity', `scenes:${id}`);
 }
 function applyPhotoSelection(key) {
+  const quiet = quietSelectionKey === key;
+  quietSelectionKey = '';
   const [kind, id] = (key || "").split(":");
-  if(kind !== photoTab.value || id !== photoSelection.value)interactionRevision++;
+  const closeEcho = key === '' && pendingCloseRevision > 0 && pendingCloseRevision === interactionRevision;
+  pendingCloseRevision = 0;
+  if(!closeEcho && (kind !== photoTab.value || id !== photoSelection.value))interactionRevision++;
   pendingTabSelection.value = false;
   if (photoTabs.some((tab) => tab.id === kind)) {
     photoTab.value = kind;
     photoSelection.value = id;
+    detailOpen.value = !quiet;
     const position = filtered.value.findIndex((row) => String(row.id) === id);
     page.value = position >= 0 ? Math.floor(position / 25) : 0;
-  } else photoSelection.value = "";
+  } else { photoSelection.value = ""; detailOpen.value = false; }
 }
 function switchPhotoTab(tab) {
+  if (photoTab.value === tab) return;
   interactionRevision++;
+  detailOpen.value = false;
   photoTab.value = tab;
   page.value = 0;
   photoSelection.value = "";
   pendingTabSelection.value = !photoRows.value[0];
   if (photoRows.value[0])
-    emit("photo-entity", `${tab}:${photoRows.value[0].id}`);
+    selectQuietly(`${tab}:${photoRows.value[0].id}`);
+}
+function changePage(delta) {
+  interactionRevision++;
+  page.value = Math.max(0, Math.min(pages.value - 1, page.value + delta));
 }
 watch(() => props.photoEntity, applyPhotoSelection, { immediate: true });
 watch(() => props.photoIdol, load, { immediate: true });
@@ -434,6 +403,7 @@ watch(
   () => {
     interactionRevision++;
     page.value = 0;
+    if (!photoEntry.value) detailOpen.value = false;
   },
 );
 </script>
@@ -448,21 +418,31 @@ watch(
 .photo-page .domain-tools label{min-width:0;flex:1 1 140px;gap:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
 .photo-page .domain-tools input,.photo-page .domain-tools select{padding:var(--gs-space-3) var(--gs-space-4);border-radius:var(--gs-radius-field);font-weight:var(--gs-weight-regular);}
 .photo-page .domain-count{margin-bottom:var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium);}
-.photo-page .domain-list>button{gap:var(--gs-space-4);border-radius:var(--gs-radius-control);}
-.photo-page .domain-list>button:hover{background:#fff;}
-.photo-page .domain-list>button[aria-pressed=true]{background:#e5f6f1;}
-.photo-page .domain-list>button:active:not([aria-pressed=true]){background:#f1faf7;}
-.photo-page .domain-list strong{font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);}
-.photo-page .domain-list small{margin-top:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);}
+.photo-directory{min-width:0;}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;}
+.photo-grid.is-backgrounds{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
+.photo-grid.is-frames{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+.photo-grid.is-filters{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
+.photo-grid>button{display:flex;flex-direction:column;align-items:stretch;align-self:start;gap:8px;min-width:0;min-height:44px;padding:8px;border:1px solid #dce7e5;border-radius:9px;background:#fff;color:#25444c;text-align:left;cursor:pointer;}
+.photo-grid>button[aria-pressed=true]{border-color:#258f7a;background:#edf8f3;}
+.photo-grid>button:active{background:#edf8f3;}
+.photo-card-art{display:grid;place-items:center;width:100%;aspect-ratio:1;background:#f2f7f7;border-radius:5px;color:#65838a;overflow:hidden;}
+.photo-card-art.is-transparent{background:repeating-conic-gradient(#eff3f4 0% 25%,#fff 0% 50%) 50%/12px 12px;}
+.photo-card-art img{display:block;width:100%;height:100%;object-fit:contain;}
+.photo-grid.is-backgrounds>button{padding:0 0 10px;}
+.photo-grid.is-backgrounds .photo-card-art{aspect-ratio:16/9;border-radius:8px 8px 0 0;}
+.photo-grid.is-backgrounds .photo-card-copy{padding-inline:10px;}
+.photo-grid.is-frames .photo-card-art{aspect-ratio:16/9;}
+.photo-grid.is-filters .photo-card-art{height:56px;aspect-ratio:auto;background:#edf6f3;}
+.photo-card-copy{min-width:0;}
+.photo-card-copy strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:13px;line-height:1.55;font-weight:var(--gs-weight-semibold,600);overflow-wrap:anywhere;}
+.photo-grid.is-backgrounds .photo-card-copy strong{font-size:14px;}
+.photo-card-copy small{display:block;margin-top:3px;font-size:12px;line-height:1.5;color:#6b8389;overflow-wrap:anywhere;}
 .photo-page .domain-pagination{gap:var(--gs-space-4);margin-top:var(--gs-space-5);font-size:var(--gs-text-ui);}
-.photo-page .domain-detail h3{font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);}
-.photo-page .domain-detail>.domain-panel>h3:first-child{font-size:var(--gs-text-title);overflow-wrap:anywhere;}
-.photo-page .domain-detail details>summary{font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer;}
-.photo-page .domain-meta{font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);}
-.photo-page .domain-action{gap:var(--gs-space-3);border-radius:var(--gs-radius-field);}
-@media(hover:hover) and (pointer:fine){.photo-page .domain-list>button:hover:not([aria-pressed=true]){background:#f1faf7;}}
+@media(hover:hover) and (pointer:fine){.photo-grid>button:hover{border-color:#84baad;background:#f5faf8;}}
 @media(max-width:760px), (pointer:coarse){
  .photo-page .domain-tools input,.photo-page .domain-tools select{font-size:var(--gs-text-subtitle);}
- .photo-page .domain-detail details>summary{min-height:var(--gs-control-touch);padding-block:var(--gs-space-4);}
 }
+@media(max-width:760px){.photo-page .domain-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;}.photo-page .domain-tabs button{flex:none;}.photo-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.photo-grid>button{padding:6px;gap:6px;}.photo-grid.is-backgrounds,.photo-grid.is-frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.photo-grid.is-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.photo-card-copy strong{font-size:12px;}.photo-page .domain-tools{margin-bottom:12px;}}
+@media(max-width:360px){.photo-grid:not(.is-backgrounds):not(.is-frames):not(.is-filters){grid-template-columns:repeat(3,minmax(0,1fr));}}
 </style>
