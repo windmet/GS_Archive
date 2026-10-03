@@ -56,13 +56,13 @@ def suspensionlight_model(prefab):
                         'anchorX': .5, 'anchorY': 0, 'scaleX': 1, 'scaleY': 1, 'blend': 'add'}]}
 
 
-def suspensionlight_events(payload):
+def suspensionlight_events(payload, prefix='NewSuspensionlight_', value_count=10):
     reader = csv.reader(io.StringIO(payload.decode('utf-8-sig')))
     header = next(reader)
     fields = {name: i for i, name in enumerate(header)}
     result = []
     for source_row, row in enumerate(reader, 2):
-        if not row or not row[0].startswith('NewSuspensionlight_'):
+        if not row or not row[0].startswith(prefix):
             continue
         def field(name):
             index = fields.get(name)
@@ -72,8 +72,8 @@ def suspensionlight_events(payload):
         except ValueError:
             raise ValueError(f'Invalid suspension time/id at source row {source_row}')
         result.append({'time': time, 'id': identifier, 'command': row[0],
-                       'sourceRow': source_row, 'values': [field(f'value{i}') for i in range(1, 11)],
+                       'sourceRow': source_row, 'values': [field(f'value{i}') for i in range(1, value_count + 1)],
                        'extraValues': {name: field(name) for name in header if name.startswith('value')
-                                       and int(name[5:]) > 10 and field(name)},
+                                       and int(name[5:]) > value_count and field(name)},
                        'erase': field('value101') == '1' or field('value102') == '1'})
     return sorted(result, key=lambda e: (e['time'], e['sourceRow']))

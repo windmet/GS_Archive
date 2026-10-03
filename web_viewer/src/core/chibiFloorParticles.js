@@ -3,6 +3,7 @@ import { CHIBI_FIRE_PROFILE, attachChibiFire, sampleFireSystem } from './chibiFi
 
 export const CHIBI_FLOOR_PROFILE = 'take-masked-nebula-reference-v1'
 export const CHIBI_BOX_FLOOR_PROFILE = 'continuous-masked-box-floor-v1'
+export const CHIBI_VOLUME_FLOOR_PROFILE = 'continuous-masked-volume-floor-v1'
 const asset = 'fx_in_tkstp1_panel_1'
 const random = (birth, channel, seed) => {
   let n = Math.imul(birth + 1, 0x45d9f3b) ^ Math.imul(channel + 1, 0x27d4eb2d) ^ seed
@@ -38,9 +39,20 @@ export function sampleFloorSystem(system, milliseconds, activatedAt) {
       (Math.round(sampleFloorGradient(system.color.colors, colorPosition, ['r','g','b'][channel]) * 255
         * (system.colorOverLife ? sampleFloorGradient(system.colorOverLife.colors,fraction,['r','g','b'][channel]) : 1)) << shift), 0)
     const startAlpha = sampleFloorGradient(system.color.alphas, colorPosition)
+    let x=(rnd(2)-.5)*system.shape.x, y=(rnd(3)-.5)*system.shape.y
+    if (system.shapeType===0) {
+      // Uniform sphere volume, projected onto XY. Keep Z in the direction
+      // distribution, rather than replacing the sphere with a uniform disk.
+      const z=rnd(7)*2-1, angle=rnd(2)*Math.PI*2, radial=Math.sqrt(1-z*z)
+      const dx=Math.cos(angle)*radial,dy=Math.sin(angle)*radial
+      const radius=Math.cbrt(rnd(3))*system.radius, speed=range(system.speedParameters,rnd(8))
+      x=dx*radius*system.shape.x+dx*speed*age
+      y=dy*radius*system.shape.y+dy*speed*age
+    }
     particles.push({ birth,
-      x: (system.position.x + (rnd(2) - .5) * system.shape.x) * 100,
-      y: -(system.position.y + (rnd(3) - .5) * system.shape.y) * 100,
+      x: (system.position.x + x) * 100,
+      y: -(system.position.y + y) * 100,
+      frame:system.frameRange ? Math.min(15,Math.floor(range(system.frameRange,rnd(9))*16)) : system.frame,
       size: range(system.size, rnd(4)) * 100 * (system.sizeOverLife ? sampleParticleCurve(system.sizeOverLife, fraction) : 1),
       rotation: -(range(system.rotation, rnd(5)) + (system.angularVelocity ? range(system.angularVelocity, rnd(6)) * age : 0)),
       color, alpha: startAlpha * sampleFloorGradient(system.alpha, fraction) })
@@ -88,6 +100,7 @@ export function attachChibiFloor(objectIndex, model) {
 }
 
 function attachBoxFloor(index, model) {
+  const volume=model?.profile===CHIBI_VOLUME_FLOOR_PROFILE
   const original = index?.assets?.[model?.asset]
   const finite = n => typeof n === 'number' && Number.isFinite(n)
   const hash = s => /^[a-f0-9]{64}$/.test(s || '')
@@ -102,17 +115,17 @@ function attachBoxFloor(index, model) {
     && model.textures[id].serializedFile===model.keeper.serializedFile
     && hash(model.textures[id].pngSha256) && /^floor-particles\/[\w.-]+\.png$/.test(model.textures[id].file || '')
     && [model.textures[id].width,model.textures[id].height].every(n=>Number.isInteger(n) && n>0 && n<=4096)
-  if (model?.profile !== CHIBI_BOX_FLOOR_PROFILE || original?.kind !== 'particle'
+  if ((!volume && model?.profile !== CHIBI_BOX_FLOOR_PROFILE) || original?.kind !== 'particle'
     || original.bundle !== model.bundle || original.particleCount !== model.particleCount
     || !hash(model.bundleSha256) || typeof model.keeper?.pathId !== 'string'
     || !Array.isArray(model.systems) || !model.systems.length || model.systems.length!==model.particleCount
     || !model.mask || !texture(model.mask.texture) || ![model.mask.x,model.mask.y].every(finite)
     || ![model.mask.width,model.mask.height].every(n=>finite(n) && n>0 && n<=2500)
-    || model.systems.reduce((n,s)=>n+s.capacity,0)>512
+    || model.systems.reduce((n,s)=>n+s.capacity,0)>(volume ? 2048 : 512)
     || !model.systems.every(s=> s.source?.serializedFile===model.keeper.serializedFile
       && typeof s.source.pathId==='string' && hash(s.source.parameterTreeSha256)
-      && Number.isInteger(s.capacity) && s.capacity>0 && s.capacity<=250
-      && finite(s.rate) && s.rate>0 && s.rate<=250 && [s.position?.x,s.position?.y,s.shape?.x,s.shape?.y].every(finite)
+      && Number.isInteger(s.capacity) && s.capacity>0 && s.capacity<=(volume ? 1024 : 250)
+      && finite(s.rate) && s.rate>0 && s.rate<=(volume ? 1000 : 250) && [s.position?.x,s.position?.y,s.shape?.x,s.shape?.y].every(finite)
       && s.shape.x>=0 && s.shape.y>=0 && curve(s.size) && [0,3].includes(s.size.mode) && s.size.scalar>0
       && curve(s.rotation) && [0,3].includes(s.rotation.mode) && curve(s.lifetime) && [0,3].includes(s.lifetime.mode)
       && s.lifetime.scalar>0 && s.lifetime.scalar<=10 && (s.lifetime.mode!==3 || s.lifetime.minScalar>0)
@@ -120,7 +133,13 @@ function attachBoxFloor(index, model) {
       && colors(s.color) && colors(s.colorOverLife) && [0,4].includes(s.colorMode) && gradient(s.alpha,['value'])
       && texture(s.texture) && (s.frame===null || Number.isInteger(s.frame) && s.frame>=0 && s.frame<16)
       && finite(s.sortingOrder) && finite(s.prewarmSeconds) && s.prewarmSeconds>=0 && s.prewarmSeconds<=10
-      && s.noiseParameters===null && s.speedParameters?.mode===0 && s.speedParameters.scalar===0)) return index
+      && s.noiseParameters===null && (volume
+        ? [0,5].includes(s.shapeType) && finite(s.radius) && s.radius>0 && s.radius<=10
+          && curve(s.speedParameters) && [0,3].includes(s.speedParameters.mode)
+          && Math.max(Math.abs(s.speedParameters.scalar),Math.abs(s.speedParameters.minScalar))<=2
+          && (!s.frameRange || curve(s.frameRange) && [0,3].includes(s.frameRange.mode)
+            && [s.frameRange.scalar,s.frameRange.minScalar].every(n=>n>=0 && n<=1))
+        : s.speedParameters?.mode===0 && s.speedParameters.scalar===0))) return index
   return {...index,assets:{...index.assets,[model.asset]:{...original,floorAnimation:model}}}
 }
 
@@ -152,7 +171,15 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
         sprite.blendMode=PIXI.BLEND_MODES.NORMAL;sprite.visible=false;content.addChild(sprite)
         return {system,sprites:[sprite],fireFrames:frames}
       }
-      if (system.frame !== null) {
+      let atlasFrames=null
+      if (system.frameRange) {
+        const metadata=animation.textures[system.texture], w=metadata.width/4,h=metadata.height/4
+        atlasFrames=Array.from({length:16},(_,i)=>{
+          const frame=new PIXI.Texture(texture.baseTexture,new PIXI.Rectangle(i%4*w,Math.floor(i/4)*h,w,h))
+          frameTextures.push(frame);return frame
+        })
+        texture=atlasFrames[0]
+      } else if (system.frame !== null) {
         const metadata=animation.textures[system.texture], w=metadata.width/4,h=metadata.height/4
         texture=new PIXI.Texture(texture.baseTexture,new PIXI.Rectangle(system.frame%4*w,Math.floor(system.frame/4)*h,w,h))
         frameTextures.push(texture)
@@ -161,7 +188,7 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
         const s=new PIXI.Sprite(texture); s.anchor.set(.5); s.blendMode=PIXI.BLEND_MODES.ADD
         s.zIndex=system.sortingOrder; s.visible=false; content.addChild(s);return s
       })
-      return {system,sprites}
+      return {system,sprites,atlasFrames}
     })
     return {container,textures,frameTextures,floorEmitters:emitters,floorSignature:'',destroyed:false}
   } catch(error) {
@@ -174,7 +201,7 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
 
 export function updateChibiFloor(runtime,milliseconds,activatedAt) {
   const signatures=[]
-  for(const {system,sprites,fireFrames} of runtime.floorEmitters) {
+  for(const {system,sprites,fireFrames,atlasFrames} of runtime.floorEmitters) {
     if (fireFrames) {
       const sample=sampleFireSystem(system,milliseconds,activatedAt),sprite=sprites[0]
       sprite.visible=Boolean(sample && sample.alpha>.001)
@@ -189,6 +216,7 @@ export function updateChibiFloor(runtime,milliseconds,activatedAt) {
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i], sample=samples[i]; sprite.visible=Boolean(sample && sample.alpha > .001)
       if(!sample)continue
+      if(atlasFrames)sprite.texture=atlasFrames[sample.frame]
       sprite.position.set(sample.x,sample.y);sprite.width=sprite.height=sample.size
       sprite.rotation=sample.rotation;sprite.tint=sample.color;sprite.alpha=sample.alpha
     }

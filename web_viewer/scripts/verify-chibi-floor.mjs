@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { attachChibiFloor,sampleFloorSystem,sampleFloorGradient,loadChibiFloor,updateChibiFloor } from '../src/core/chibiFloorParticles.js'
+import { attachChibiFloor,sampleFloorSystem,sampleFloorGradient,loadChibiFloor,updateChibiFloor,CHIBI_VOLUME_FLOOR_PROFILE } from '../src/core/chibiFloorParticles.js'
 import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
 import { CHIBI_FIRE_PROFILE, sampleFireSystem } from '../src/core/chibiFireFlipbook.js'
 const model=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-model.json',import.meta.url)))
@@ -58,9 +58,10 @@ console.log('Take floor source guards, native gradient/alpha witnesses, bounded 
 const catalog=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-catalog.json',import.meta.url)))
 const indexed={assets:Object.fromEntries(Object.values(catalog.assets).map(m=>[m.asset,{kind:'particle',bundle:m.bundle,particleCount:m.particleCount}]))}
 const attached=attachChibiFloor(indexed,catalog)
-assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,8)
+assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,20)
 assert.equal(catalog.inventory.length,49)
-assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,41)
+assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,29)
+assert.equal(catalog.inventory.filter(r=>r.status==='registered_continuous_volume_profile').length,12)
 assert.equal(catalog.inventory.filter(r=>r.status==='registered_partial_fire_flipbook_profile').length,1)
 const toy=structuredClone(catalog.assets.fx_in_mtples_panel_1.systems[0])
 toy.rate=1;toy.lifetime={mode:0,scalar:2,minScalar:2,keys:[]};toy.prewarmSeconds=0
@@ -74,7 +75,7 @@ for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset
  assert.equal(attached.assets[entry.asset].floorAnimation,entry)
  assert.notEqual(entry.mask.texture,model.mask.texture)
  const rt=await loadChibiFloor(pixi,entry,async()=>({baseTexture:{},destroy(){}}))
- assert.ok(rt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0)<=512)
+ assert.ok(rt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0)<=(entry.profile===CHIBI_VOLUME_FLOOR_PROFILE ? 2048 : 512))
  updateChibiFloor(rt,5000,0); const previous=rt.floorSignature
  updateChibiFloor(rt,5250,0);assert.notEqual(previous,rt.floorSignature)
  updateChibiFloor(rt,5000,0);assert.equal(previous,rt.floorSignature)
@@ -86,7 +87,7 @@ for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset
   assert.notDeepEqual(a,b)
  }
  for(const mutate of [m=>m.mask.width=-1,m=>m.bundle='wrong',m=>m.systems[0].capacity=10000,
-  m=>m.systems[0].noiseParameters={},m=>m.systems[0].speedParameters.scalar=1,
+  m=>m.systems[0].noiseParameters={},m=>m.systems[0].speedParameters.scalar=20,
   m=>m.systems[0].colorOverLife.alphas[0].time=2,m=>m.textures[m.mask.texture].file='../wrong.png']) {
   const bad=structuredClone(entry);mutate(bad)
   const result=attachChibiFloor(indexed,{schemaVersion:2,assets:{[bad.asset]:bad}})
@@ -116,4 +117,17 @@ for(const mutate of [m=>m.deferredSystems=[],m=>m.systems[0].blend='add',m=>m.sy
  const bad=structuredClone(fire);mutate(bad)
  assert.ok(!attachChibiFloor(indexed,{schemaVersion:2,assets:{[bad.asset]:bad}}).assets[bad.asset].floorAnimation)
 }
-console.log('49 floor objects classified; seven complete native floor profiles plus partial masked flame flipbook, source guards, seek and alpha blend passed')
+const moon=catalog.assets.fx_in_montns_panel_1,cloud=moon.systems[0]
+const a=sampleFloorSystem(cloud,5000,0),b=sampleFloorSystem(cloud,5050,0)
+assert.ok(new Set(a.map(p=>p.frame)).size>1,'Random birth atlas frames must be used')
+const retained=a.find(p=>b.some(q=>q.birth===p.birth)),next=b.find(p=>p.birth===retained.birth)
+assert.equal(retained.frame,next.frame)
+assert.ok(Math.hypot(next.x-retained.x,next.y-retained.y)>0,'A retained sphere particle must move')
+assert.deepEqual(sampleFloorSystem(cloud,5000,0),a,'Backward seek must restore birth seed and motion')
+const dense=catalog.assets.fx_in_montns_panel_3.systems[2]
+assert.ok(sampleFloorSystem(dense,3000,0).length>600,'Native dense ring must not be capped at old box limit')
+const moonRt=await loadChibiFloor(pixi,moon,async()=>({baseTexture:{},destroy(){}}))
+assert.equal(moonRt.frameTextures.length,32)
+updateChibiFloor(moonRt,5000,0)
+assert.ok(new Set(moonRt.floorEmitters[0].sprites.filter(s=>s.visible).map(s=>s.texture.rect.v.join(','))).size>1)
+console.log('49 floor objects classified; 19 complete native-input profiles plus partial flame, volume motion, per-birth atlas, seek and alpha blend passed')

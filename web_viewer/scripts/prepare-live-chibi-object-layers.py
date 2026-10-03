@@ -22,6 +22,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
+from live_chibi_texture import sprite_image
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "object-layers"
@@ -183,6 +184,7 @@ def inspect_asset(
     asset: str,
     output_root: Path,
     force: bool,
+    astcenc=None,
 ) -> dict | None:
     environment = UnityPy.load(str(bundle))
     objects_by_id = {int(obj.path_id): obj for obj in environment.objects}
@@ -214,7 +216,7 @@ def inspect_asset(
         if sprite_id not in textures:
             filename = f"{safe_name(asset)}__{safe_name(sprite.m_Name)}__{abs(sprite_id)}.png"
             target = output_root / "sprites" / filename
-            metadata = save_sprite(sprite.image, target, force)
+            metadata = save_sprite(sprite_image(sprite, astcenc), target, force)
             textures[sprite_id] = {
                 "id": str(sprite_id),
                 "name": sprite.m_Name,
@@ -301,6 +303,7 @@ def main() -> None:
         help="Only prepare this referenced object-layer asset. Repeat for multiple assets.",
     )
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--astcenc", type=Path, help="Official Arm astcenc CLI for native ASTC HDR sprites")
     args = parser.parse_args()
 
     sources = load_archive_sources(args.sources_config)
@@ -336,7 +339,7 @@ def main() -> None:
     for index, (asset, song_codes) in enumerate(sorted(references.items()), 1):
         entry = None
         for bundle in candidate_bundles(asset, song_codes, filenames):
-            entry = inspect_asset(bundle, asset, output_root, args.force)
+            entry = inspect_asset(bundle, asset, output_root, args.force, args.astcenc)
             if entry is not None:
                 break
         if entry is None:

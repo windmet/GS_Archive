@@ -21,6 +21,7 @@ from live_chibi_laser import extract_laser_model
 from live_chibi_spotbeam import extract_spotbeam_model
 from live_chibi_turnlaser import extract_turnlaser_model
 from live_chibi_character_shadow import extract_character_shadow
+from live_chibi_old_suspension import old_suspension_model
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -62,7 +63,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return name == 'fx_in_ntalon_spotlight' or name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"tex_chara_shadow_2", "laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
+    return name == 'sidelight' or name == 'fx_in_ntalon_spotlight' or name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"tex_chara_shadow_2", "laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -131,6 +132,11 @@ def main() -> None:
     if len(suspension_roots) != 1:
         raise ValueError('Ambiguous native new-suspension prefab')
     suspension = suspensionlight_model(audit.inspect_prefab(suspension_roots[0]))
+    old_animation = {}
+    old_roots = [audit.inspect_prefab(o, old_animation) for o in environment.objects
+                 if o.type.name == 'GameObject' and o.read().m_Name in {
+                     'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
+    old_suspension = old_suspension_model(old_roots, old_animation)
     particle_spec = importlib.util.spec_from_file_location(
         'laser_particle_audit', PROJECT_ROOT / 'scripts/audit-live-chibi-stage-objects.py')
     particle_audit = importlib.util.module_from_spec(particle_spec)
@@ -144,6 +150,7 @@ def main() -> None:
     if assets[character_shadow['asset']]['source']['pathId'] != character_shadow['texturePathId']:
         raise ValueError('Wrong native character shadow texture')
     suspension_songs = {}
+    old_suspension_songs = {}
     stagelights, unsupported_prefabs = {}, {}
     native_names = set()
     for obj in environment.objects:
@@ -170,6 +177,20 @@ def main() -> None:
             script = obj.read()
             if '_live_effect' not in script.m_Name: continue
             payload = text_asset_payload(script)
+            old_events = suspensionlight_events(payload, 'Suspensionlight', 15)
+            if old_events:
+                relative = f'old-suspension/{script.m_Name}.json'
+                target = output_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                old_track = {'events':old_events, 'source':{'bundle':bundle.name,
+                    'bundleSha256':sha256_file(bundle), 'pathId':str(obj.path_id),
+                    'serializedFile':obj.assets_file.name,'sha256':hashlib.sha256(payload).hexdigest()}}
+                target.write_text(json.dumps(old_track,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+                old_suspension_songs[script.m_Name] = {'file':f'stage-effects/{relative}',
+                    'eventCount':len(old_events), 'source':old_track['source'],
+                    # Geometry/timing acceptance starts with Moon. Other tracks
+                    # remain inventoried until their director projection is checked.
+                    'previewEnabled':script.m_Name=='montns_live_effect'}
             events = suspensionlight_events(payload)
             if not events: continue
             if script.m_Name in suspension_songs:
@@ -207,14 +228,14 @@ def main() -> None:
             'textAsset': f'{code}_live_effect', 'sha256': hashlib.sha256(payload).hexdigest()},
             'events': events, 'unsupportedAssets':unknown, 'unsupportedModes':modes,
             'status':'native_bindings_partial_recording_guided_envelopes'}
-    for model in (spotlight, background, pinspotlight, suspension, *stagelights.values()):
+    for model in (spotlight, background, pinspotlight, suspension, *old_suspension['styles'].values(), *stagelights.values()):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
             if (source['serializedFile'], source['pathId']) != (model['serializedFile'], layer['texturePathId']):
                 raise ValueError('Spotlight texture identity mismatch')
 
     index = {
-        "schemaVersion": 7,
+        "schemaVersion": 8,
         "source": xapk.name,
         "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
@@ -227,6 +248,8 @@ def main() -> None:
         "turnlaser": turnlaser,
         "characterShadow": character_shadow,
         "newSuspensionlightSongs": suspension_songs,
+        "oldSuspensionlight": old_suspension,
+        "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,
         "stagelightInventory": {"nativePrefabs":len(native_names), "renderablePrefabs":len(stagelights),

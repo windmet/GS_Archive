@@ -13,6 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('take_floor',ROOT/'scripts/prepare-live-chibi-floor.py')
 take=importlib.util.module_from_spec(spec);spec.loader.exec_module(take)
 PROFILE='continuous-masked-box-floor-v1'
+VOLUME_PROFILE='continuous-masked-volume-floor-v1'
 require=take.require
 
 def colors(c):
@@ -72,6 +73,34 @@ def system(p):
             'prewarmSeconds':p['main']['lengthInSec'] if p['main']['prewarm'] else 0,
             'noiseParameters':None,'speedParameters':take.compact_curve(i['startSpeed'])}
     return result,tex['_AlphaTex']['pathId']
+
+def volume_system(p):
+    """A separate, bounded projection contract; original box guards stay strict."""
+    import copy
+    native=copy.deepcopy(p);m=p['modules'];i=m['InitialModule'];shape=m['ShapeModule'];e=m['EmissionModule'];u=m.get('UVModule')
+    require(shape['type'] in (0,5) and shape['radius']['mode']==0 and 0<shape['radius']['value']<=10
+            and shape['radiusThickness']==1 and not shape['alignToDirection']
+            and all(shape[k]==0 for k in ('randomDirectionAmount','sphericalDirectionAmount','randomPositionAmount')),
+            'Volume shape/direction unsupported')
+    require(p['renderer']['pivot']=={'x':0,'y':0,'z':0} and not i['size3D'] and not i['rotation3D']
+            and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0,'Volume pivot/gravity/3D unsupported')
+    require(e['rateOverTime']['minMaxState']==0 and 0<e['rateOverTime']['scalar']<=1000
+            and 0<i['maxNumParticles']<=1024,'Volume exceeds bounded emitter budget')
+    speed=take.compact_curve(i['startSpeed'])
+    require(speed['mode'] in (0,3) and max(abs(speed['scalar']),abs(speed['minScalar']))<=2,'Volume birth speed unsupported')
+    frame=take.compact_curve(u['startFrame']) if u else None
+    require(not frame or frame['mode'] in (0,3) and 0<=frame['minScalar']<=1 and 0<=frame['scalar']<=1,'Volume atlas birth frame unsupported')
+    # Reuse all shader, hierarchy, curve and lifetime checks without loosening v1.
+    n=native['modules'];n['ShapeModule']['type']=5
+    n['InitialModule']['startSpeed'].update(minMaxState=0,scalar=0)
+    n['InitialModule']['maxNumParticles']=min(i['maxNumParticles'],250)
+    n['EmissionModule']['rateOverTime']['scalar']=min(e['rateOverTime']['scalar'],250)
+    if u:n['UVModule']['startFrame'].update(minMaxState=0,scalar=0)
+    if 'ColorModule' not in n:n['ColorModule']={'gradient':{'minMaxState':0,'maxColor':{'r':1,'g':1,'b':1,'a':1}}}
+    result,mask=system(native)
+    result.update(shapeType=shape['type'],radius=shape['radius']['value'],rate=e['rateOverTime']['scalar'],
+                  capacity=i['maxNumParticles'],speedParameters=speed,frameRange=frame,frame=None)
+    return result,mask
 
 def mask_for(env,identity):
     audit=take.load_audit()
@@ -133,10 +162,12 @@ def main():
                         'Flame shader mask contract changed')
                 profile=FIRE_PROFILE
             else:
-                parsed=[system(p) for p in native['particles']]
+                try:
+                    parsed=[system(p) for p in native['particles']];profile=PROFILE
+                except (ValueError,KeyError):
+                    parsed=[volume_system(p) for p in native['particles']];profile=VOLUME_PROFILE
                 systems=[s for s,_ in parsed];mask_ids={i for _,i in parsed}
-                require(sum(s['capacity'] for s in systems)<=512,'Object exceeds 512-sprite budget')
-                profile=PROFILE
+                require(sum(s['capacity'] for s in systems)<=(2048 if profile==VOLUME_PROFILE else 512),'Object exceeds profile sprite budget')
             require(len(mask_ids)==1,'Multiple masks require separate emitter groups')
             mask=mask_for(env,next(iter(mask_ids)));textures={}
             for identity in {s['texture'] for s in systems}|mask_ids:
@@ -153,7 +184,7 @@ def main():
                 models[asset]['deferredSystems']=deferred
                 record.update(status='registered_partial_fire_flipbook_profile',supportedSystems=2,deferredSystems=deferred,spriteBudget=2)
             else:
-                record.update(status='registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
+                record.update(status='registered_continuous_volume_profile' if profile==VOLUME_PROFILE else 'registered_continuous_box_profile',spriteBudget=sum(s['capacity'] for s in systems))
         except (ValueError,KeyError) as error:
             record.update(status='deferred',reason=str(error))
         records.append(record)

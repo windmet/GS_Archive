@@ -51,6 +51,8 @@
     data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
     data-backmonitor-logo-status="unimplemented-native-runtime-sprite-selection-pending"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
+    :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
+    data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
     data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
@@ -467,6 +469,7 @@ import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
+import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
@@ -639,6 +642,25 @@ const suspensionSprites = createSpotlightSpriteStore({
   onError: error => console.warn('[ChibiStage] suspension texture load failed', error),
 })
 const spotlightBackgroundAlpha = ref(0)
+const visibleOldSuspensionlightIds = ref([])
+let oldSuspensionTrackKey = ''
+let oldSuspensionTrack = null
+let oldSuspensionAbort = null
+const oldSuspensionSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layers[0].anchorX, layers[0].anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncOldSuspensionlights(),
+  onError: error => console.warn('[ChibiStage] old sidelight texture load failed', error),
+})
 const pinspotlightMaskCount = ref(0)
 const spotlightBackgroundSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -967,6 +989,8 @@ onBeforeUnmount(() => {
   stagelightSprites.release()
   suspensionSprites.release()
   suspensionAbort?.abort()
+  oldSuspensionSprites.release()
+  oldSuspensionAbort?.abort()
   releaseLaserlights()
   releasePinspotlights()
   releaseStageBackground()
@@ -1581,6 +1605,7 @@ function ensureWholeScreenColorOverlay() {
 function applyStageLighting() {
   syncStagelights()
   syncSuspensionlights()
+  syncOldSuspensionlights()
   syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
   applyImageColors()
@@ -1886,6 +1911,54 @@ function syncSuspensionlights() {
     visibleSuspensionlightIds.value.push(state.id)
   }
   visibleSuspensionlightIds.value.sort((a, b) => a - b)
+}
+
+function syncOldSuspensionlights() {
+  if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  const descriptor = stageEffectIndex.value?.oldSuspensionlightSongs?.[songId]
+  const key = `${songId}:${descriptor?.previewEnabled ? descriptor.file : ''}`
+  if (oldSuspensionTrackKey !== key) {
+    oldSuspensionSprites.release()
+    oldSuspensionAbort?.abort()
+    oldSuspensionTrack = null
+    oldSuspensionTrackKey = key
+    if (descriptor?.previewEnabled && descriptor.file) {
+      const abort = new AbortController()
+      oldSuspensionAbort = abort
+      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Old sidelight track HTTP ${response.status}`)
+          return response.json()
+        }).then(track => {
+          if (stageDisposed || abort.signal.aborted || oldSuspensionTrackKey !== key) return
+          oldSuspensionTrack = track
+          syncOldSuspensionlights()
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight track load failed', error)
+        })
+    }
+  }
+  visibleOldSuspensionlightIds.value = []
+  for (const runtime of oldSuspensionSprites.runtimes.values()) runtime.sprite.visible = false
+  if (!beamEffectsEnabled.value || !oldSuspensionTrack) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
+    stageEffectIndex.value?.oldSuspensionlight)) {
+    if (state.alpha <= .001) continue
+    const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
+    if (!runtime) continue
+    const layout = oldSuspensionlightLayout(state,width,height,environmentScale.value)
+    runtime.sprite.position.set(layout.x,layout.y)
+    runtime.sprite.scale.set(layout.scaleX,layout.scaleY)
+    runtime.sprite.rotation = layout.rotation
+    runtime.sprite.alpha = state.alpha
+    runtime.sprite.tint = parseHexColor(state.color)
+    runtime.sprite.zIndex = state.depth
+    runtime.sprite.visible = true
+    visibleOldSuspensionlightIds.value.push(state.key)
+  }
 }
 
 function releaseSpotlights() {

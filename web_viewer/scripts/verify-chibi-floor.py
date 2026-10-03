@@ -51,3 +51,23 @@ for change in [lambda p:p['modules'].update(NoiseModule={}),
     except ValueError:pass
     else:raise AssertionError('Unknown flame semantics accepted')
 print('Two native delayed flame bursts, UV curves and alpha material match; remaining noise sparks stay deferred')
+volume=json.loads((base/'fixtures/chibi-floor-volume-inputs.json').read_text(encoding='utf8'))
+for native in volume:
+    expected=published['assets'][native['asset']]
+    parsed=[catalog.volume_system(p) for p in native['particles']]
+    assert [s for s,_ in parsed]==expected['systems']
+    assert {mask for _,mask in parsed}=={expected['mask']['texture']}
+    for change in [lambda p:p['modules']['ShapeModule'].update(type=2),
+                   lambda p:p['modules']['ShapeModule'].update(radiusThickness=.5),
+                   lambda p:p['modules']['InitialModule']['gravityModifier'].update(scalar=1),
+                   lambda p:p['modules']['EmissionModule'].update(m_Bursts=[{}]),
+                   lambda p:p['modules']['UVModule']['frameOverTime'].update(scalar=1),
+                   lambda p:p['modules']['InitialModule']['startSpeed'].update(scalar=20),
+                   lambda p:p['modules'].update(NoiseModule={})]:
+        p=copy.deepcopy(native['particles'][0]);change(p)
+        try:catalog.volume_system(p)
+        except ValueError:pass
+        else:raise AssertionError('Unsupported volume source semantics accepted')
+assert len([m for m in published['assets'].values() if m['profile']==catalog.VOLUME_PROFILE])==12
+assert sum(len(n['particles']) for n in volume)==37
+print('37 native volume emitters across 12 objects match independent fixtures; shape, gravity, burst, animated-UV, speed and noise rejection passed')
