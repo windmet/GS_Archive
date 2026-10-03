@@ -90,11 +90,15 @@ export async function restoreArchiveViewState(context, {
   root = globalThis.document,
   storage = globalThis.sessionStorage,
   attempts = 4,
+  isCurrent = () => true,
 } = {}) {
+  if (!isCurrent()) return false
   const saved = readArchiveViewRestoration(context, storage)
   if (!saved) return false
   for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (!isCurrent()) return false
     await nextFrame()
+    if (!isCurrent()) return false
     const scrollContainer = root?.querySelector?.('[data-archive-scroll-container]')
     if (!scrollContainer) continue
     const focusTarget = saved.focusId
@@ -102,6 +106,7 @@ export async function restoreArchiveViewState(context, {
           .find(element => element.dataset.archiveFocusId === saved.focusId)
       : null
     focusTarget?.focus?.({ preventScroll: true })
+    if (!isCurrent()) return false
     const maxScroll = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight)
     scrollContainer.scrollTop = Math.min(saved.scrollTop, maxScroll)
     return true

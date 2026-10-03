@@ -200,6 +200,8 @@
       <p v-if="view === 'song_detail' && (songReadModelStatus || legacyEntryStatus)" class="song-read-model-status" role="status">{{ songReadModelStatus || legacyEntryStatus }}</p>
       <ArchiveSongDetail
         v-if="view === 'song_detail' && currentSongPresentation"
+        :key="currentSongPresentation.id"
+        ref="songDetailView"
         :song="currentSongPresentation"
         :idol-directory="archiveBootstrap.idols"
         :idol-name="idolDisplayName"
@@ -210,6 +212,7 @@
         @open-idol="openSongIdol"
         @open-related-story="openSongRelatedStory"
         @open-stage="openSongStage"
+        @ready="restoreSongDetailView"
       />
 
       <ArchiveEventDetail
@@ -603,6 +606,7 @@ import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
 import {
   buildArchiveViewContext,
   captureArchiveViewState,
+  readArchiveViewRestoration,
   restoreArchiveViewState,
 } from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
@@ -942,6 +946,8 @@ let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
 let pendingEventCatalogRestore = null
 let pendingPhotoCatalogRestore = null
+const songDetailView = ref(null)
+let pendingSongDetailRestore = null
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
   state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
@@ -1551,18 +1557,53 @@ function captureActiveArchiveView() {
 
 function adoptArchiveViewContext({ restore = true } = {}) {
   activeArchiveViewContext = buildArchiveViewContext(window.location.href, window.history.state)
+  const context = activeArchiveViewContext
   const revision = ++archiveViewRestoreRevision
+  const navigationRevision = navigation.getRevision()
+  pendingSongDetailRestore = null
   pendingEventCatalogRestore = restore && view.value==='event_catalog'
     ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   pendingPhotoCatalogRestore = restore && view.value==='photo_catalog'
     ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   if (!restore) return
+  if (view.value === 'song_detail') {
+    pendingSongDetailRestore = { context, revision, navigationRevision, songId: currentSongId.value }
+    nextTick(() => restoreSongDetailView())
+    return
+  }
   nextTick(() => {
-    if (revision !== archiveViewRestoreRevision || navigation.isDisposed()) return
-    restoreArchiveViewState(activeArchiveViewContext).catch(error => {
+    const isCurrent = () => context === activeArchiveViewContext && revision === archiveViewRestoreRevision &&
+      navigationRevision === navigation.getRevision() && !navigation.isDisposed()
+    if (!isCurrent()) return
+    restoreArchiveViewState(context, { isCurrent }).catch(error => {
       console.error('[ArchiveNavigation] Failed to restore view position:', error)
     })
   })
+}
+
+async function restoreSongDetailView({ songId } = {}) {
+  const pending = pendingSongDetailRestore
+  const component = songDetailView.value
+  if (!pending || pending.running || (songId && songId !== pending.songId) ||
+      typeof component?.prepareRestoreFocus !== 'function') return false
+  const isCurrent = () => pending === pendingSongDetailRestore && component === songDetailView.value &&
+    pending.context === activeArchiveViewContext && pending.revision === archiveViewRestoreRevision &&
+    pending.navigationRevision === navigation.getRevision() && !navigation.isDisposed() &&
+    view.value === 'song_detail' && currentSongId.value === pending.songId
+  if (!isCurrent()) return false
+  pending.running = true
+  try {
+    const saved = readArchiveViewRestoration(pending.context)
+    if (!saved) return false
+    await component.prepareRestoreFocus({ focusId: saved.focusId, songId: pending.songId, isCurrent })
+    if (!isCurrent()) return false
+    return await restoreArchiveViewState(pending.context, { isCurrent })
+  } catch (error) {
+    console.error('[ArchiveNavigation] Failed to restore song detail position:', error)
+    return false
+  } finally {
+    if (pending === pendingSongDetailRestore) pendingSongDetailRestore = null
+  }
 }
 
 function syncArchiveRoute({ replace = false, restoreView = true } = {}) {

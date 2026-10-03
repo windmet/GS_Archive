@@ -63,7 +63,7 @@ for (const [file, markers] of Object.entries({
   'StoryDiscovery.vue': ['story:${entry.id}'],
   'EventStoryCard.vue': ['event:${entry.id}'],
   'ArchiveIdolGrid.vue': ['data-archive-scroll-container', 'idol:${entry.id}'],
-  'ArchiveSongDetail.vue': ['data-archive-scroll-container', 'song-unit:${song.unit.id}', 'audio-unit:${entry.id}'],
+  'ArchiveSongDetail.vue': ['data-archive-scroll-container', 'song-unit:${song.unit.id}', 'song-audio:${props.song.id}', 'song-performer:${props.song.id}'],
   'ArchiveCardDetail.vue': ['data-archive-scroll-container'],
   'ArchiveUnitDetail.vue': ['data-archive-scroll-container'],
   'ArchiveGashaDetail.vue': ['data-archive-scroll-container'],

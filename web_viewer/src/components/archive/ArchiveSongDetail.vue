@@ -46,20 +46,20 @@
           <ul class="chip-list"><li><button :disabled="!song.unit.actionable" :data-archive-focus-id="`song-unit:${song.unit.id}`" @click="emit('open-unit', song.unit.id)">{{ song.unit.displayName }}</button></li></ul>
         </div>
         <div v-else class="performance-scope-card"><strong>{{ song.scopeLabel }}</strong><p>{{ song.scopeDescription }}</p></div>
-        <details v-if="song.performers.length > 5" class="song-subsection" @toggle="performersOpen = $event.target.open"><summary>演唱成员（{{ song.performers.length }}）</summary><ul v-if="performersOpen" class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" @open="emit('open-idol', $event)" /></li></ul></details>
+        <details v-if="song.performers.length > 5" class="song-subsection" :open="performersOpen" @toggle="performersOpen = $event.target.open"><summary>演唱成员（{{ song.performers.length }}）</summary><ul v-if="performersOpen" class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" :data-archive-focus-id="performerFocusId(entry)" @open="emit('open-idol', $event)" /></li></ul></details>
         <div v-else-if="song.performers.length" class="song-subsection">
           <h4>演唱成员</h4><p v-if="song.performerNote && song.performerNote !== '按已确认的演唱组合列出成员。'" class="song-block-note">{{ song.performerNote }}</p>
-          <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" @open="emit('open-idol', $event)" /></li></ul>
+          <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" :data-archive-focus-id="performerFocusId(entry)" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <details class="song-block" @toggle="audioArchiveOpen = $event.target.open">
+      <details class="song-block" :open="audioArchiveOpen" @toggle="audioArchiveOpen = $event.target.open">
         <summary>声部与音频归档</summary>
         <div v-if="audioArchiveOpen">
         <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel.replace(' · 实验混音', '') }}。</p>
         <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
           <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
-          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="`audio-unit:${entry.id}`" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
-          <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" @open="emit('open-idol', $event)" /></li></ul>
+          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="audioFocusId(group, entry)" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
+          <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" :data-archive-focus-id="audioFocusId(group, entry)" @open="emit('open-idol', $event)" /></li></ul>
         </div>
         </div></details>
       <section v-if="song.variants.length" class="song-block">
@@ -90,16 +90,49 @@
 
 <script setup>
 import { ChevronRight, ExternalLink } from '@lucide/vue'
-import { ref } from 'vue'
+import { ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
-const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart'])
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart', 'ready'])
 const songPlayer = ref(null)
 const performersOpen = ref(false), audioArchiveOpen = ref(false)
+let disposed = false, prepareRevision = 0
+function performerFocusId(entry) {
+  return entry.reference?.actionable ? `song-performer:${props.song.id}:${entry.id}` : undefined
+}
+function audioFocusId(group, entry) {
+  const actionable = group.kind === 'unit' ? entry.actionable : entry.reference?.actionable
+  return actionable ? `song-audio:${props.song.id}:${encodeURIComponent(group.title)}:${group.kind}:${entry.id}` : undefined
+}
+// Expand only the disclosure that owns this saved target, before shared DOM restoration.
+async function prepareRestoreFocus({ focusId, songId, isCurrent = () => true }) {
+  if (disposed || songId !== props.song.id || !isCurrent()) return false
+  const revision = ++prepareRevision
+  const performer = focusId && props.song.performers.some(entry => performerFocusId(entry) === focusId)
+  const audio = focusId && props.song.audioGroups.some(group => group.entries.some(entry => audioFocusId(group, entry) === focusId))
+  if (!performer && !audio) return false
+  if (performer && props.song.performers.length > 5) performersOpen.value = true
+  if (audio) audioArchiveOpen.value = true
+  await nextTick()
+  return !disposed && revision === prepareRevision && songId === props.song.id && isCurrent()
+}
+function announceReady() {
+  const songId = props.song.id
+  nextTick(() => { if (!disposed && props.song.id === songId) emit('ready', { songId }) })
+}
+onMounted(announceReady)
+watch(() => props.song.id, () => {
+  prepareRevision += 1
+  performersOpen.value = false
+  audioArchiveOpen.value = false
+  announceReady()
+})
+onBeforeUnmount(() => { disposed = true; prepareRevision += 1 })
+defineExpose({ prepareRestoreFocus })
 function performerReference(reference) {
   return reference?.actionable && reference.idolCode
     ? { ...reference, displayName: props.idolName(reference.idolCode, reference.displayName) || reference.displayName }
