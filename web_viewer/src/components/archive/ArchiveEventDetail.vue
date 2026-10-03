@@ -100,17 +100,17 @@
         <div v-for="card in rewardCards" :key="card.card_resource_id" class="event-reward-card">
           <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
           <button type="button" class="event-reward-open" :data-archive-focus-id="`event-card:${view.identity.id}:reward:${card.card_resource_id}`" @click="emit('open-card',card)"><div class="reward-copy">
-            <span>{{ card.rarity }} · {{ displayIdolName(card.character_id) || idolName(card.character_id) }}</span>
+            <div class="reward-identity"><span v-if="card.rarity" class="reward-rarity">{{ card.rarity }}</span><span class="reward-name">{{ displayIdolName(card.character_id,card.character_name) || card.character_name || idolName(card.character_id) }}</span></div>
             <strong>{{ cardTitle(card.card_title) }}</strong>
             <ul>
               <li v-for="method in card.methods" :key="method.key">
                 <BookOpen v-if="method.kind === 'story'" :size="13" />
                 <Gauge v-else :size="13" />
-                <span>{{ method.label }}</span>
+                <span>{{ rewardMethodLabel(card,method) }}</span>
               </li>
             </ul>
           </div>
-          <ChevronRight :size="17" /></button>
+          </button>
         </div>
       </div>
       <div v-if="exchangeRewards" class="exchange-rewards">
@@ -119,9 +119,9 @@
           <div v-for="card in exchangeRewards.cards" :key="card.card_resource_id" class="event-reward-card">
             <DomainMediaPreview :binding="card.image" :name="card.card_title" compact/>
             <button type="button" class="event-reward-open" :data-archive-focus-id="`event-card:${view.identity.id}:exchange:${card.card_resource_id}`" @click="emit('open-card',card)">
-              <div class="reward-copy"><span>{{ card.rarity }} · {{ displayIdolName(card.character_id) || card.character_name }}</span><strong>{{ cardTitle(card.card_title) }}</strong>
+              <div class="reward-copy"><div class="reward-identity"><span v-if="card.rarity" class="reward-rarity">{{ card.rarity }}</span><span class="reward-name">{{ displayIdolName(card.character_id,card.character_name) || card.character_name }}</span></div><strong>{{ cardTitle(card.card_title) }}</strong>
                 <ul><li>{{ card.cost.nameJa }} × {{ card.cost.amount }}</li><li>限兑 {{ card.exchangeLimit }} 次 · Wiki 补录</li></ul>
-              </div><ChevronRight :size="17" />
+              </div>
             </button>
           </div>
         </div>
@@ -130,7 +130,7 @@
       <p v-if="!rewardCards.length&&!exchangeRewards" class="empty-copy">{{ view.identity.kind==='collection' ? '尚未收录兑换商店的卡片明细。' : '尚未收录此活动的卡片报酬信息。' }}</p>
     </section>
 
-    <section v-if="view.rewards" class="detail-section" aria-labelledby="event-general-rewards">
+    <section v-if="view.rewards" class="detail-section general-reward-section" aria-labelledby="event-general-rewards">
       <div class="section-heading"><div><h3 id="event-general-rewards">{{ view.identity.kind==='collection' ? '活动兑换道具' : '奖励明细与藏品' }}</h3><p>{{ exchangeRewards ? '通过演唱会与工作收集道具，用于兑换活动报酬。完整兑换清单见上方 Wikiwiki 补录。' : '历史客户端配置。兑换商店明细与实时排行榜尚未收录。' }}</p></div></div>
       <nav v-if="view.rewards.materials?.length" class="event-materials" aria-label="活动材料"><div v-for="item in view.rewards.materials" :key="`${item.role}:${item.itemId}`" class="event-material"><DomainMediaPreview v-if="item.image?.url" :binding="item.image" :name="item.nameJa" compact/><button type="button" @click="openQuick(`item:${item.itemId}`)">{{ item.nameJa }}</button></div></nav>
       <ArchiveRewardTable :rows="view.rewards.general || []" @open-entity="openQuick" @open-target="emit('open-target',$event)" />
@@ -186,7 +186,7 @@
 
 <script setup>
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
-import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
+import { BookOpen, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
@@ -199,6 +199,8 @@ import '../../styles/archive-domains.css'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {eventResources} from '../../data/eventResourceGraph.js'
+import {rewardConditions} from './DomainPresentation.mjs'
+import {uiLocale} from '../../localization/ui/UiLocaleStore.js'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
 const quickEntity=ref('')
@@ -232,6 +234,18 @@ const hasStoryVisuals=computed(()=>castReferences.value.some(entry=>entry.refere
 const eventTypeLabel=computed(()=>({theater:'THEATER 累计 PT',tour:'TOUR 累计 PT',collection:'315 CARNIVAL',valentine:'VALENTINE',whiteday:'WHITEDAY'}[props.view?.identity.kind] || '活动剧情'))
 const scopeLabel=computed(()=>({fixed_unit_event:'固定组合团活',attribute_event:`${props.view?.identity.attribute || ''} 属性团曲`.trim(),mixed_unit_event:'跨组合团活'}[props.view?.identity.scope] || (props.view?.identity.isReprint?'复刻活动':'历史活动')))
 const rewardCards=computed(()=>props.view?.rewards.cards || [])
+const rewardRowsByKey=computed(()=>{
+  const rows=new Map()
+  for(const row of props.view?.rewards.general || []) {
+    if(row.key) rows.set(row.key,rows.has(row.key)?null:row)
+  }
+  return rows
+})
+const rewardEpisodesById=computed(()=>{
+  const entries=new Map()
+  for(const episode of episodes.value) entries.set(String(episode.id),entries.has(String(episode.id))?null:episode)
+  return entries
+})
 const rewardCardIds = computed(() => new Set(rewardCards.value.map(card => card.card_resource_id)))
 const derivedOnlyCards = computed(() => (props.view?.cards || []).filter(card => !rewardCardIds.value.has(card.card_resource_id)))
 const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => ({
@@ -253,6 +267,42 @@ const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => (
 
 function idolName(id) {
   return props.view.cast.find(idol => idol.idol_code === id)?.display_name || '姓名待确认'
+}
+function rewardMethodLabel(card,method) {
+  // The method key and target identify the raw reward; the episode ID joins the
+  // published chapter label. Resource-ID suffixes are not player-facing numbers.
+  const row=rewardRowsByKey.value.get(method.key)
+  if(row?.product?.kind==='card' && row.product.target?.card===card.card_resource_id) {
+    if(method.kind==='story' && row.scope?.startsWith('story') && row.episodeId) {
+      const episode=rewardEpisodesById.value.get(String(row.episodeId))
+      if(!episode?.label) return method.label
+      let label=episode.label
+      if(uiLocale.value==='zh-CN') {
+        const ordinal=label.match(/^エピソード\s*(\d+)$/)
+        if(ordinal) label=`第${ordinal[1]}话`
+        else if(label==='プロローグ') label='序章'
+      }
+      return `${label} 阅读${row.scope==='story-in-event-term'?'（活动期内）':''}`
+    }
+    if(method.kind==='point' && ['point','repeated'].includes(row.scope) &&
+      [row.totalPoint,row.intervalPoint,row.offsetPoint,row.limitPoint].some(Number.isFinite)) {
+      const quantity=Number.isFinite(row.product.amount)?` · ×${formatNumber(row.product.amount)}`:''
+      return `${rewardConditions(row).join(' · ')}${quantity}`
+    }
+  }
+  if(method.key===`fragments-${card.card_resource_id}`) {
+    const fragments=(props.view?.rewards.general || []).filter(entry=>
+      entry.product?.kind==='cardFragment' && entry.product.target?.card===card.card_resource_id)
+    // Summarize only finite, one-off point grants; panel/repeated or incomplete
+    // records retain the producer label instead of inventing an acquisition rule.
+    if(fragments.length && fragments.every(entry=>entry.scope==='point' &&
+      Number.isFinite(entry.totalPoint) && Number.isFinite(entry.product.amount) &&
+      [entry.intervalPoint,entry.offsetPoint,entry.limitPoint].every(value=>value===undefined))) {
+      const quantity=fragments.reduce((sum,entry)=>sum+entry.product.amount,0)
+      return `${formatNumber(fragments[0].totalPoint)} PT 起 · ${fragments.length} 次碎片 · 共 ×${formatNumber(quantity)}`
+    }
+  }
+  return method.label
 }
 function formatNumber(value) {
   return new Intl.NumberFormat('zh-CN').format(Number(value || 0))
@@ -334,16 +384,18 @@ function formatDateTime(timestamp) {
 .episode-copy small { overflow: hidden; color: #929ca1; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); text-overflow: ellipsis; white-space: nowrap; }
 .episode-stats { display: flex; flex-direction: column; align-items: flex-end; gap: var(--gs-space-1); color: #7d898f; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .episode-list button > svg { color: #168a82; }
-.reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-4); }
-.event-reward-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 106px; padding: var(--gs-space-4); border: 1px solid #dfe5e7; border-radius: var(--gs-radius-panel); background: #fff; }
-.event-reward-open { display: grid; grid-template-columns: minmax(0, 1fr) 18px; gap: var(--gs-space-3); align-items: center; min-width: 0; min-height: 84px; padding: 0; border: 0; background: transparent; color: #28363e; cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--gs-space-6); }
+.event-reward-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 96px; padding: var(--gs-space-4) 0; border-bottom: 1px solid #e5eaec; }
+.event-reward-open { display: block; min-width: 0; min-height: 84px; padding: 0; border: 0; background: transparent; color: #28363e; cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
 .event-reward-card :deep(.domain-media-compact) { width:72px;height:72px;min-width:0;margin:0; }
 .event-materials { display: flex; flex-wrap: wrap; gap: var(--gs-space-4); margin: 0 0 var(--gs-space-5); }
 .event-material { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; max-width: 100%; padding: var(--gs-space-4); border: 1px solid #d3e2ed; border-radius: var(--gs-radius-panel); background: #fff; }
 .event-material :deep(.domain-media-compact) { margin:0; }
 .event-material > button { min-width: 0; min-height: var(--gs-control-normal); border: 0; padding: 0 var(--gs-space-2); background: transparent; color: #36506b; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-align: left; overflow-wrap: anywhere; }
 .reward-copy { min-width: 0; }
-.reward-copy > span { color: #168078; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
+.reward-identity { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--gs-space-2); min-width: 0; }
+.reward-rarity { flex: 0 0 auto; padding: 0 var(--gs-space-2); border: 1px solid #d7e2e1; border-radius: var(--gs-radius-control); color: #466862; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; }
+.reward-name { color: #5f7774; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
 .reward-copy strong { display: block; margin: var(--gs-space-2) 0 var(--gs-space-3); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.45; overflow-wrap: anywhere; }
 .reward-copy ul { display: grid; gap: var(--gs-space-2); margin: 0; padding: 0; list-style: none; }
 .reward-copy li { display: flex; align-items: flex-start; gap: var(--gs-space-2); color: #69767e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); line-height: 1.4; }
@@ -383,11 +435,14 @@ function formatDateTime(timestamp) {
 .detail-section :deep(.relation-labels strong), .detail-section :deep(.relation-labels small), .detail-section :deep(.relation-meta), .detail-section :deep(.relation-proof), .detail-section :deep(.relation-copy code) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .detail-section :deep(.relation-labels small) { padding: var(--gs-space-1) var(--gs-space-2); }
 .detail-section :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.detail-section :deep(.domain-reward-list) { gap: var(--gs-space-3); font-size: var(--gs-text-body); }
-.detail-section :deep(.domain-reward-entry) { gap: var(--gs-space-4); padding: var(--gs-space-4) var(--gs-space-5); border-radius: var(--gs-radius-panel); }
+.general-reward-section :deep(.domain-reward-list) { gap: 0; font-size: var(--gs-text-body); }
+.general-reward-section :deep(.domain-reward-entry) { gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid #e5eaec; border-radius: 0; background: transparent; }
+.general-reward-section :deep(.domain-reward-entry.is-card) { border-left: 0; background: transparent; }
+.general-reward-section :deep(.domain-reward-icon) { border: 0; border-radius: 0; background: transparent; }
 .detail-section :deep(.domain-reward-conditions > small) { margin-bottom: var(--gs-space-3); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-reward-conditions > div) { gap: var(--gs-space-2); }
-.detail-section :deep(.domain-reward-condition) { padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.general-reward-section :deep(.domain-reward-condition) { padding: 0; border-radius: 0; background: transparent; color: #5f7774; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.general-reward-section :deep(.domain-reward-condition + .domain-reward-condition)::before { content: '·'; margin-right: var(--gs-space-2); color: #9aa7aa; }
 .detail-section :deep(.domain-reward-quantity) { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .detail-section :deep(.domain-reward-product) { gap: var(--gs-space-4); }
 .detail-section :deep(.domain-reward-name) { gap: var(--gs-space-3); padding: var(--gs-space-2) 0; font-family: inherit; font-size: var(--gs-text-body); border-radius: var(--gs-radius-control); }
@@ -415,7 +470,7 @@ function formatDateTime(timestamp) {
 }
 @media (hover: hover) and (pointer: fine) {
   .episode-list button:hover:not(:disabled) { background: #eff9f7; }
-  .event-reward-card:hover { border-color: #69beb7; background: #f4fbfa; }
+  .event-reward-open:hover { color: #157c78; }
 }
 @media (hover: none), (pointer: coarse) {
   .idol-list :deep(button.archive-idol-reference:hover) { border-color: #dce8e8; background: #f8fbfb; }
@@ -431,7 +486,6 @@ function formatDateTime(timestamp) {
   .cast-layout { grid-template-columns: minmax(0, 1fr); }
   .unit-list { min-width: 0; }
   .evidence-section dl { grid-template-columns: minmax(0, 1fr); }
-  .detail-section :deep(.domain-reward-entry) { padding: var(--gs-space-4); }
 }
 @media (max-width: 760px), (pointer: coarse) {
   .story-actions > button, .story-actions > a, .event-media-archive > summary, .wiki-exchange-table > summary,

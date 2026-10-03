@@ -49,7 +49,6 @@
         :key="song.song_code"
         class="song-card"
         :data-archive-focus-id="`song:${song.song_code}`"
-        :class="{ special: hasSpecialVariant(song) }"
         @click="$emit('open', song.song_code)"
       >
         <span v-if="song.jacket_url" class="song-card-jacket">
@@ -59,7 +58,7 @@
         <span class="song-card-copy">
           <small>{{ song.kana }}</small>
           <strong :title="song.title">{{ song.title }}</strong>
-          <span class="song-performers" :title="performerLabel(song)">{{ performerLabel(song) }}</span>
+          <span class="song-performers" :title="performerLabel(song)">{{ performerSummary(song) }}</span>
           <span v-if="song.credits" class="song-credits">{{ song.credits }}</span>
           <span class="song-badges">
             <span v-if="hasSpecialVariant(song)" class="badge badge-special">含特殊版本</span>
@@ -69,7 +68,6 @@
             <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
           </span>
         </span>
-        <ChevronRight :size="17" aria-hidden="true" />
       </button>
     </div>
     <p v-if="!status && !filteredSongs.length" class="song-empty">没有匹配的曲目。</p>
@@ -78,7 +76,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ChevronRight, Search } from '@lucide/vue'
+import { Search } from '@lucide/vue'
 
 const props = defineProps({
   catalog: { type: Object, default: null },
@@ -123,6 +121,10 @@ function performerLabel(song) {
   if (performance.performers?.length) return performance.performers.map(entry => props.idolName(entry.id) || entry.displayName).join('、')
   if (performance.scope === 'unspecified_special') return '特别演出'
   return '演唱者待确认'
+}
+
+function performerSummary(song) {
+  return song.performance?.scope === 'configurable_formation' ? '自由编成' : performerLabel(song)
 }
 
 function hasMovie(song, kind) {
@@ -221,26 +223,27 @@ const filteredSongs = computed(() => {
 }
 .song-search input { min-width: 0; width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: #18212b; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
 .song-search:focus-within { border-color: #158f87; outline: var(--gs-focus-ring) solid #158f87; outline-offset: var(--gs-focus-offset); }
-.song-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.song-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-6); }
 .song-grid.empty { display: block; }
 .song-card {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
+  grid-template-columns: 46px minmax(0, 1fr);
   align-items: center;
   gap: var(--gs-space-4);
-  min-height: 92px;
-  padding: 13px 14px;
-  border: 1px solid #dfe4e8;
-  border-radius: 6px;
-  background: #fff;
+  height: auto;
+  min-height: 72px;
+  padding: var(--gs-space-4);
+  border: 0;
+  border-bottom: 1px solid #dfe4e8;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
   color: #26313a;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s, background 0.15s;
   font: inherit;
 }
-.song-card:hover { border-color: #7bcfc9; background: #f0fbfa; }
-.song-card.special { border-left: 3px solid #a86bd8; }
+.song-card:focus-visible, .song-filters button:focus-visible { outline: var(--gs-focus-ring) solid #158f87; outline-offset: calc(-1 * var(--gs-focus-ring)); }
 .song-card-code {
   display: grid;
   place-items: center;
@@ -261,19 +264,18 @@ const filteredSongs = computed(() => {
   background: #eef1f4;
 }
 .song-card-jacket img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.song-card-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.song-card-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
 .song-card-copy small { color: #8a949e; font-size: var(--gs-text-caption); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
-.song-card-copy strong { font-size: var(--gs-text-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-bold); }
+.song-card-copy strong { font-size: var(--gs-text-subtitle); line-height: 1.4; overflow-wrap: anywhere; white-space: normal; font-weight: var(--gs-weight-semibold); }
 .song-credits { color: #7a858e; font-size: var(--gs-text-caption); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-weight: var(--gs-weight-regular); }
 .song-performers { color: #596d7c; font-size: var(--gs-text-meta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
 .song-badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2); }
-.badge { padding: var(--gs-space-1) var(--gs-space-3); border-radius: 999px; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
+.badge { max-width: 100%; padding: var(--gs-space-1) var(--gs-space-3); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
 .badge-movie { background: #fff3e0; color: #b26a00; }
 .badge-layered { background: #e8f0fe; color: #2f5fd0; }
 .badge-oneshot { background: #f3e8fd; color: #7a3fd0; }
 .badge-special { background: #f3e8fd; color: #7136a5; }
 .badge-muted { background: #eef1f4; color: #68727d; }
-.song-card > svg { color: #9aa4ad; }
 .song-empty { color: #7a858e; font-size: var(--gs-text-ui); padding: 22px 4px; font-weight: var(--gs-weight-regular); }
 
 @media (max-width: 980px) {
@@ -291,16 +293,18 @@ const filteredSongs = computed(() => {
   .song-filters::-webkit-scrollbar { display: none; }
   .song-filters button { flex: 0 0 auto; min-height: var(--gs-control-touch); white-space: nowrap; }
   .song-search { min-width: 0; height: var(--gs-control-touch); }
-  .song-grid { gap: 6px; }
-  .song-card { grid-template-columns: 52px minmax(0, 1fr) 18px; gap: 10px; height: 72px; min-height: 72px; padding: 8px 10px; border-radius: 10px; }
+  .song-grid { gap: 0; }
+  .song-card { grid-template-columns: 52px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; }
   .song-card-jacket, .song-card-code { width: 52px; height: 52px; border-radius: 7px; }
   .song-card-copy { gap: var(--gs-space-1); }
   .song-card-copy small, .song-credits { display: none; }
-  .song-card-copy strong { font-size: 15px; line-height: 18px; }
   .song-performers { font-size: var(--gs-text-meta); line-height: 15px; }
-  .song-badges { flex-wrap: nowrap; gap: 3px; }
-  .badge { flex: 0 0 auto; font-size: var(--gs-text-caption); line-height: 13px; padding: 0 var(--gs-space-2); }
-  .song-card > svg { grid-column: 3; grid-row: 1; justify-self: end; align-self: center; }
+  .song-badges { gap: var(--gs-space-2); }
+  .badge { line-height: 1.4; padding: 0 var(--gs-space-2); }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .song-card:hover { background: #eef7f6; }
 }
 
 @media (max-width: 760px), (pointer: coarse) {

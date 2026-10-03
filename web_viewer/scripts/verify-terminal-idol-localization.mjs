@@ -95,8 +95,14 @@ const eventRecord = preferredEvent && usableEvent(preferredEvent) ? preferredEve
 assert.ok(eventRecord, 'a real event has Aslan, derived cards and a ready first episode')
 const eventView = eventRecord.view
 console.log(`Event localization source fixture: ${eventRecord.id} / ${eventView.identity.title}; ${eventView.castReferences.length} cast references, ${derivedCards(eventView).length} derived cards`)
+const rewardView = eventProduct.extraDomains.events.records.find(record => record.id === '410012')?.view
+const exchangeView = eventProduct.extraDomains.events.records.find(record => record.id === 'event:20001')?.view
+assert.ok(rewardView && exchangeView, 'the real point/story/fragment and Wiki exchange consumers are available')
+const eventSource = read('src/components/archive/ArchiveEventDetail.vue')
+assert.equal((eventSource.match(/@click="emit\('open-card',card\)"/g) || []).length, 2,
+  'both reward and exchange actions emit the original card without a display projection')
 const sourceEvidence = () => JSON.stringify([owner, card, drive, altessimo, experiments,
-  dictionary, overlay, manifest, profile, idolEvents, idolSongs, unitEntry, eventView])
+  dictionary, overlay, manifest, profile, idolEvents, idolSongs, unitEntry, eventView, rewardView, exchangeView])
 const evidenceBefore = sourceEvidence()
 
 // Compile and render the actual SFCs. Setting their existing setup refs supplies
@@ -127,6 +133,7 @@ const technicalEvidence = (html, entity) => {
   return blocks[0]
 }
 let checks = 0
+let renderedLocale, previousRenderedLocale
 // The native dialog's immediate focus watcher runs during SSR; there is no DOM
 // element or audio playback. Supply only its inert focus origin for these renders.
 const previousDocument = globalThis.document
@@ -140,6 +147,9 @@ try {
   const { default: Idol } = await server.ssrLoadModule('/src/components/archive/ArchiveIdolDetail.vue')
   const { default: Unit } = await server.ssrLoadModule('/src/components/archive/ArchiveUnitDetail.vue')
   const { default: Event } = await server.ssrLoadModule('/src/components/archive/ArchiveEventDetail.vue')
+  const { default: Media } = await server.ssrLoadModule('/src/components/archive/DomainMediaPreview.vue')
+  ;({ uiLocale: renderedLocale } = await server.ssrLoadModule('/src/localization/ui/UiLocaleStore.js'))
+  previousRenderedLocale = renderedLocale.value
   const { default: Experimental } = await server.ssrLoadModule('/src/components/archive/ArchiveSongExperimentalPlayer.vue')
   const { default: Lineup } = await server.ssrLoadModule('/src/components/archive/ArchiveSongLineupPlayer.vue')
   const idolProps = { idol: profile, events: idolEvents, songs: idolSongs }
@@ -245,13 +255,59 @@ try {
     }
     checks++
   }
+  const rewardRegion = html => html.match(/<section\b[^>]*aria-labelledby="event-rewards-title"[^>]*>([^]*?)<\/section>/)?.[1] || ''
+  async function rewardRender(view, { failedMedia = false } = {}) {
+    let state
+    const html = await render(withState(Event, value => {
+      state = value
+      if (failedMedia) value.DomainMediaPreview = withState(Media, { failed: true })
+    }), { view, displayIdolName: context.idolDisplayName })
+    assert.equal(state.rewardCards.value, view.rewards.cards, 'the reward leaf remains the canonical card array')
+    assert.deepEqual(technicalEvidence(html, 'eventId'), view.provenance)
+    const region = rewardRegion(html)
+    const badges = [...region.matchAll(/<span\b[^>]*class="reward-rarity"[^>]*>([^]*?)<\/span>/g)].map(match => decodeHtml(match[1]))
+    assert.deepEqual(badges, [...view.rewards.cards, ...(state.exchangeRewards.value?.cards || [])]
+      .filter(entry => entry.rarity).map(entry => entry.rarity), 'badges come only from associated cards, never generic rewards')
+    const openButtons = [...region.matchAll(/<button\b[^>]*class="event-reward-open"[^>]*>([^]*?)<\/button>/g)]
+    assert.equal(openButtons.length, view.rewards.cards.length + (state.exchangeRewards.value?.cards.length || 0),
+      'each associated reward card retains its navigation button')
+    for (const [, body] of openButtons) {
+      assert.ok(!/<button\b/.test(body), 'media retry stays outside the card navigation button')
+      assert.ok(!body.includes('lucide-chevron-right'), 'reward navigation has no redundant row arrow')
+    }
+    return { state, html, region }
+  }
+  async function verifyRewardLabels() {
+    const { state, region } = await rewardRender(rewardView)
+    const storyCard = rewardView.rewards.cards.find(entry => entry.card_resource_id === '035mco_r02')
+    const storyMethod = storyCard.methods.find(method => method.kind === 'story')
+    const rawStoryRow = rewardView.rewards.general.find(row => row.key === storyMethod.key)
+    assert.equal(rawStoryRow.episodeId, 4100120110)
+    assert.equal(rewardView.episodes.find(episode => episode.id === String(rawStoryRow.episodeId)).label, 'エピソード10')
+    const storyLabel = `${locale.value === 'zh-CN' ? '第10话' : 'エピソード10'} 阅读（活动期内）`
+    assert.equal(state.rewardMethodLabel(storyCard, storyMethod), storyLabel)
+    assert.ok(elementText(region, 'span').map(decodeHtml).includes(storyLabel),
+      'the actual reward copy uses the exact source episode join')
+    assert.ok(!region.includes('4100120110'), 'raw source IDs are kept out of the player-facing reward condition')
+    const pointCard = rewardView.rewards.cards.find(entry => entry.card_resource_id === '037jir_sr06')
+    assert.equal(state.rewardMethodLabel(pointCard, pointCard.methods[0]), '25,000 PT · ×1')
+    assert.equal(state.rewardMethodLabel(storyCard, storyCard.methods[1]), '8,400 PT 起 · 4 次碎片 · 共 ×4')
+    assert.ok(region.includes('25,000 PT · ×1') && region.includes('8,400 PT 起 · 4 次碎片 · 共 ×4'))
+    const exchanged = await rewardRender(exchangeView)
+    assert.deepEqual(exchanged.state.exchangeRewards.value.cards.map(entry => [entry.cost.amount, entry.exchangeLimit]),
+      [[40, 1], [35, 1], [15, 1]], 'the Wiki costs and exchange limits remain source-bound')
+    assert.ok(exchanged.region.includes('限兑 1 次 · Wiki 补录'))
+    checks += 2
+  }
   for (const currentLocale of ['zh-CN', 'ja-JP']) {
     locale.value = currentLocale
+    renderedLocale.value = currentLocale
     const displayed = currentLocale === 'zh-CN' ? overlay.entries['029ass'].name : sourceNames['029ass']
     assert.equal(canonicalProfile.value, profile, 'the leaf profile stays canonical in both languages')
     assert.equal(displayedProfileName.value, displayed, 'Shell name is a display projection, separate from evidence')
     await verifyEntityDetails(displayed)
     await verifyEventDetails()
+    await verifyRewardLabels()
     for (const query of ['阿斯兰', 'アスラン', '别西卜II世']) {
       const html = await render(withState(Picker, { query }), { idols, modelValue: '029ass', ...callbacks })
       assert.match(html, /1 位偶像/)
@@ -362,6 +418,7 @@ try {
   })
   await missingNameRepository.loadEntity({ entityType: 'idol', locale: 'zh-CN', sourceNames: IDOL_ID_TO_NAME })
   locale.value = 'zh-CN'
+  renderedLocale.value = 'zh-CN'
   context.entityTranslationRepository = missingNameRepository
   context.idolEntityTranslationRevision.value++
   assert.equal(displayedProfileName.value, profile.display_name, 'missing translation falls back to the canonical name')
@@ -389,13 +446,53 @@ try {
   assert.ok(unsupportedHtml.includes(`data-archive-focus-id="event-read:${eventView.identity.id}:episode:${laterEpisode.id}"`),
     'a later ready chapter retains its own reading action')
   checks++
+  // Controlled unsupported fixtures copied from the actual reward consumer.
+  // These changed keys/episode references are guard inputs, not archived rewards.
+  for (const corrupt of [
+    view => { view.rewards.cards.find(entry => entry.card_resource_id === '035mco_r02').methods[0].key = 'unsupported-key' },
+    view => { view.episodes = view.episodes.filter(episode => episode.id !== '4100120110') },
+    view => {
+      const method = view.rewards.cards.find(entry => entry.card_resource_id === '035mco_r02').methods[0]
+      view.rewards.general.push(structuredClone(view.rewards.general.find(row => row.key === method.key)))
+    },
+  ]) {
+    const unsupported = structuredClone(rewardView)
+    corrupt(unsupported)
+    const { state, region } = await rewardRender(unsupported)
+    const sourceCard = unsupported.rewards.cards.find(entry => entry.card_resource_id === '035mco_r02')
+    assert.equal(state.rewardMethodLabel(sourceCard, sourceCard.methods[0]), sourceCard.methods[0].label)
+    assert.ok(region.includes(sourceCard.methods[0].label), 'an unresolved or ambiguous join retains the existing source label')
+    checks++
+  }
+  // A controlled repeated-card boundary copies an actual repeated reward row,
+  // changes only its target/type, and is explicitly not a published association.
+  const repeated = eventProduct.extraDomains.events.records.flatMap(record => record.view.rewards.general)
+    .find(row => row.scope === 'repeated' && Number.isFinite(row.intervalPoint) && Number.isFinite(row.limitPoint))
+  assert.ok(repeated)
+  const repeatedView = structuredClone(rewardView)
+  const repeatedCard = repeatedView.rewards.cards[0]
+  const repeatedRow = { ...structuredClone(repeated), key: 'controlled-repeated-card', offsetPoint: 0,
+    product: { ...structuredClone(repeated.product), kind: 'card', amount: 0, target: { view: 'card_detail', card: repeatedCard.card_resource_id } } }
+  repeatedView.rewards.general.push(repeatedRow)
+  repeatedCard.methods.push({ key: repeatedRow.key, kind: 'point', label: '原始重复报酬' })
+  const repeatedRender = await rewardRender(repeatedView)
+  assert.equal(repeatedRender.state.rewardMethodLabel(repeatedCard, repeatedCard.methods.at(-1)),
+    `每 ${repeatedRow.intervalPoint.toLocaleString('zh-CN')} PT · 起点 0 PT · 上限 ${repeatedRow.limitPoint.toLocaleString('zh-CN')} PT · ×0`,
+    'repeated intervals, zero origin/quantity and explicit upper limits survive compact display')
+  const failedReward = await rewardRender(rewardView, { failedMedia: true })
+  for (const sourceCard of rewardView.rewards.cards) {
+    assert.ok(failedReward.region.includes(`aria-label="重试图片 ${sourceCard.card_title}"`),
+      'the actual failed thumbnail retains its independent retry control')
+  }
+  checks += 2
   context.currentCharacterId.value = '001tom'
   assert.equal(canonicalProfile.value, null, 'a stale profile cannot supply a different selected identity')
   assert.equal(displayedProfileName.value, '', 'the stale profile cannot leave a name in the Shell')
   assert.equal(evidenceBefore, sourceEvidence(), 'display never mutates source evidence or media tracks')
   checks++
-  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup and idol/unit/event detail display, bilingual search, 49 track IDs, avatar alt, canonical event resources/rewards/evidence/payloads, first-episode reading guard, and source/missing-translation/empty/stale fallbacks. No DOM, pinned read-model bytes or playback acceptance is implied.`)
+  console.log(`Idol localization: ${checks} SFC render scenarios passed; terminal/card/performer/Solo/lineup and idol/unit/event detail display, bilingual search, 49 track IDs, avatar alt, canonical event resources/rewards/evidence/payloads, source-bound reward episode/point/fragment labels, Wiki exchange limits, independent thumbnail retry, first-episode reading guard, and source/missing-translation/empty/stale fallbacks. No DOM, pinned read-model bytes or playback acceptance is implied.`)
 } finally {
+  if (renderedLocale) renderedLocale.value = previousRenderedLocale
   if (previousDocument === undefined) delete globalThis.document
   else globalThis.document = previousDocument
   await server.close()
