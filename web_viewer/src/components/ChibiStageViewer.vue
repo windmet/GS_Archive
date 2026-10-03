@@ -47,6 +47,8 @@
     data-backmonitor-transition-mode="alpha-overlay"
     :data-backmonitor-ready="backmonitorReady"
     :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
+    :data-backmonitor-raw-value7="currentBackmonitorState.rawValue7"
+    data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
     data-backmonitor-logo-status="unimplemented-native-runtime-sprite-selection-pending"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
@@ -111,8 +113,8 @@
         </div>
 
         <div class="performance-screen">
-        <div class="stage-backdrop" aria-hidden="true"></div>
-        <div class="stage-floor" aria-hidden="true"></div>
+        <div v-if="!hasAuthoredStage" class="stage-backdrop" aria-hidden="true"></div>
+        <div v-if="!hasAuthoredStage" class="stage-floor" aria-hidden="true"></div>
         <div ref="canvasRef" class="stage-canvas"></div>
 
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
@@ -470,7 +472,7 @@ import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightMode
 import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
-import { backmonitorRegistration, projectChibiBackmonitor } from '../core/chibiBackmonitorCoordinates.js'
+import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
 import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
@@ -842,6 +844,7 @@ const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.va
   .filter(event => event.source === 'group').length)
 const currentCameraState = computed(() => cameraStateAt(stageTime.value))
 const currentBackmonitorState = computed(() => backmonitorStateAt(stageTime.value))
+const hasAuthoredStage = computed(() => Boolean(stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]))
 const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.movie
   ? currentBackmonitorState.value.movie.replace('live_backmonitor_movie_', '')
   : '无')
@@ -1355,37 +1358,7 @@ function cameraStateAt(milliseconds) {
 }
 
 function backmonitorStateAt(milliseconds) {
-  const state = {
-    movie: null,
-    movieTime: 0,
-    transition: null,
-    transitionTime: 0,
-    x: 0,
-    y: 360,
-    scale: 1000,
-    rawValue6: 0,
-    opacity: 1000,
-    eventTime: '',
-  }
-  for (const event of (selectedSong.value?.backmonitorEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    if (event.movie) {
-      state.movie = event.movie
-      state.movieTime = eventTime
-    }
-    for (const key of ['x', 'y', 'scale', 'opacity']) {
-      if (event[key] !== null && event[key] !== undefined) state[key] = Number(event[key])
-    }
-    // Older prepared indexes named this binary field "rotation". Keep its
-    // original value, but do not tilt the entire movie by the inferred logo flag.
-    const rawValue6 = event.rawValue6 ?? event.rotation
-    if (rawValue6 !== null && rawValue6 !== undefined) state.rawValue6 = rawValue6
-    state.transition = event.transition || null
-    if (state.transition) state.transitionTime = eventTime
-    state.eventTime = eventTime
-  }
-  return state
+  return chibiBackmonitorStateAt(selectedSong.value?.backmonitorEvents, milliseconds)
 }
 
 function parseHexColor(value, fallback = 0xffffff) {
@@ -2658,7 +2631,7 @@ function layoutBackmonitor(state) {
   backmonitorSprite.position.set(projected.x, projected.y)
   backmonitorSprite.scale.set(projected.scale)
   backmonitorSprite.rotation = 0
-  backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
+  backmonitorSprite.alpha = 1
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)

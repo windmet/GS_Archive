@@ -120,8 +120,8 @@ jobs:
       - name: Verify chibi ground registration across viewport sizes
         run: npm run verify:chibi-stage-coordinates
 
-      - name: Verify Take backmonitor aperture coverage
-        run: npm run verify:chibi-backmonitor-registration
+      - name: Verify backmonitor aperture coverage and raw controls
+        run: npm run verify:chibi-backmonitor-registration && python scripts/verify-chibi-backmonitor-parser.py && node scripts/verify-chibi-backmonitor-controls.mjs
 
       - name: Verify authored chibi Camera erase controls and reset sampling
         run: python scripts/verify-live-chibi-camera-controls.py && node scripts/verify-chibi-camera-reset.mjs

@@ -36,6 +36,7 @@ from live_chibi_color_commands import parse_color_layer
 from live_chibi_body_colors import body_color_events
 from live_chibi_image_colors import image_color_events
 from live_chibi_camera_controls import camera_controls
+from live_chibi_backmonitor import parse_backmonitor_row
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -585,21 +586,9 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Backmonitor" and len(row) >= 9:
-                    event_time = parse_optional_number(row[1])
-                    if event_time is None:
-                        continue
-                    backmonitor_events.append(
-                        {
-                            "time": event_time,
-                            "movie": row[2].strip() or None,
-                            "transition": row[3].strip() or None,
-                            "x": parse_optional_number(row[4]),
-                            "y": parse_optional_number(row[5]),
-                            "scale": parse_optional_number(row[6]),
-                            "rawValue6": parse_optional_number(row[7]),
-                            "opacity": parse_optional_number(row[8]),
-                        }
-                    )
+                    event = parse_backmonitor_row(row)
+                    if event is not None:
+                        backmonitor_events.append(event)
                     continue
                 if row[0] in {"Image_layer", "Image_layer_2"} and len(row) >= 4:
                     event_time = parse_optional_number(row[1])
@@ -1005,7 +994,7 @@ def export_choreography(
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 15,
+        "schemaVersion": 16,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
