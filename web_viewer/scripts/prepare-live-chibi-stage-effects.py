@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import io
+import importlib.util
 import json
 import sys
 import zipfile
@@ -16,6 +17,7 @@ from live_chibi_spotlight import spotlight_sprite_model, spotlight_background_mo
 from live_chibi_pinspotlight import pinspotlight_sprite_model
 from live_chibi_stagelight import NAMES as STAGELIGHT_NAMES, TEXTURES as STAGELIGHT_TEXTURES, stagelight_model, stagelight_events
 from live_chibi_suspensionlight import ASSET as SUSPENSION_ASSET, suspensionlight_model, suspensionlight_events
+from live_chibi_laser import extract_laser_model
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -126,6 +128,11 @@ def main() -> None:
     if len(suspension_roots) != 1:
         raise ValueError('Ambiguous native new-suspension prefab')
     suspension = suspensionlight_model(audit.inspect_prefab(suspension_roots[0]))
+    particle_spec = importlib.util.spec_from_file_location(
+        'laser_particle_audit', PROJECT_ROOT / 'scripts/audit-live-chibi-stage-objects.py')
+    particle_audit = importlib.util.module_from_spec(particle_spec)
+    particle_spec.loader.exec_module(particle_audit)
+    laser, _ = extract_laser_model(environment, particle_audit)
     suspension_songs = {}
     stagelights, unsupported_prefabs = {}, {}
     native_names = set()
@@ -205,6 +212,7 @@ def main() -> None:
         "spotlightBackground": background,
         "pinspotlight": pinspotlight,
         "newSuspensionlight": suspension,
+        "laserlight": laser,
         "newSuspensionlightSongs": suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

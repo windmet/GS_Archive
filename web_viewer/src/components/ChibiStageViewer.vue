@@ -69,6 +69,9 @@
     :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
+    :data-laser-particle-count="visibleLaserParticleCount"
+    :data-laser-particle-origins="laserParticleOrigins"
+    data-laser-particle-status="native-texture-burst-curves-reference-director-projection"
     :data-pinspotlight-count="visiblePinspotlightCount"
     :data-pinspotlight-ids="visiblePinspotlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
@@ -456,6 +459,7 @@ import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
+import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
@@ -535,6 +539,8 @@ const visibleSpotlightIds = ref([])
 const unresolvedSpotlightIds = ref([])
 const visibleLaserlightCount = ref(0)
 const visibleLaserlightIds = ref([])
+const visibleLaserParticleCount = ref(0)
+const laserParticleOrigins = ref('')
 const visiblePinspotlightCount = ref(0)
 const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
@@ -643,6 +649,20 @@ const spotlightBackgroundSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native Spotlight background could not be loaded', error),
 })
 const laserlightRuntimes = new Map()
+let laserParticleSongId = ''
+const laserParticleSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const container = markRaw(new PIXI.Container())
+    cameraContainer.addChild(container)
+    return markRaw({ container, sprites: [], texture: textures[0] })
+  },
+  destroyRuntime: runtime => { runtime.container.removeFromParent(); runtime.container.destroy({ children: true }) },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncLaserlights(),
+  onError: error => console.warn('[ChibiStage] native laser texture load failed', error),
+})
 const pinspotlightSprites = createSpotlightSpriteStore({
   loadTexture: file => loadImageLayerTexture(file),
   createRuntime: (id, layers, textures) => markRaw(createPinspotlightSprites(PIXI, cameraContainer, id, layers, textures)),
@@ -1984,6 +2004,11 @@ function drawLaserlight(runtime, state, viewportScale) {
 
 function syncLaserlights() {
   if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  if (laserParticleSongId !== songId) {
+    laserParticleSprites.release()
+    laserParticleSongId = songId
+  }
   const states = laserlightStatesAt(stageTime.value)
   const active = beamEffectsEnabled.value
     ? [...states.values()].filter(state => (
@@ -1993,12 +2018,48 @@ function syncLaserlights() {
   visibleLaserlightCount.value = active.length
   visibleLaserlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
   for (const [id, runtime] of laserlightRuntimes) {
-    runtime.graphics.visible = beamEffectsEnabled.value && Boolean(states.get(id)?.alpha > 0.001)
+    runtime.graphics.visible = false
   }
+  for (const runtime of laserParticleSprites.runtimes.values()) runtime.container.visible = false
+  visibleLaserParticleCount.value = 0
+  const origins = []
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
+    const native = stageEffectIndex.value?.laserlight?.styles?.[state.style]
+    if (native) {
+      const runtime = laserParticleSprites.ensure(`${songId}:${state.id}:${state.style}`,
+        { layers: [{ asset: native.systems[0].asset }] }, stageEffectIndex.value.assets)
+      if (!runtime) continue
+      const layout = laserParticleLayout(state,width,height,environmentScale.value)
+      const particles = sampleLaserParticles(native,state,stageTime.value)
+      runtime.container.position.set(layout.x,layout.y)
+      runtime.container.zIndex = Number(state.depth) || 1650
+      runtime.container.visible = true
+      for (let i = 0; i < Math.max(particles.length,runtime.sprites.length); i++) {
+        const sample = particles[i]
+        let sprite = runtime.sprites[i]
+        if (!sprite && sample) {
+          sprite = markRaw(new PIXI.Sprite(runtime.texture))
+          sprite.blendMode = PIXI.BLEND_MODES.ADD
+          runtime.container.addChild(sprite)
+          runtime.sprites.push(sprite)
+        }
+        if (!sprite) continue
+        sprite.visible = Boolean(sample && sample.alpha > .001)
+        if (!sample) continue
+        sprite.anchor.set(sample.anchorX,sample.anchorY)
+        sprite.width = sample.width * layout.fit
+        sprite.height = sample.length * layout.fit
+        sprite.rotation = sample.rotation
+        sprite.alpha = sample.alpha
+        sprite.tint = sample.color
+        if (sprite.visible) visibleLaserParticleCount.value++
+      }
+      origins.push(`${state.id}:${layout.x.toFixed(1)},${layout.y.toFixed(1)}`)
+      continue
+    }
     const runtime = laserlightRuntimes.get(state.id) || createLaserlightRuntime(state.id)
     drawLaserlight(runtime, state, viewportScale)
     runtime.graphics.position.set(
@@ -2014,9 +2075,13 @@ function syncLaserlights() {
     runtime.graphics.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.graphics.visible = true
   }
+  laserParticleOrigins.value = origins.join(';')
 }
 
 function releaseLaserlights() {
+  laserParticleSprites.release()
+  visibleLaserParticleCount.value = 0
+  laserParticleOrigins.value = ''
   for (const runtime of laserlightRuntimes.values()) {
     runtime.graphics.removeFromParent()
     runtime.graphics.destroy()
