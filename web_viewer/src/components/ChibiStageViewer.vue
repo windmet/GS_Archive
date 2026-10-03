@@ -49,7 +49,8 @@
     :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
     :data-backmonitor-raw-value7="currentBackmonitorState.rawValue7"
     data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
-    data-backmonitor-logo-status="unimplemented-native-runtime-sprite-selection-pending"
+    data-backmonitor-logo-status="take-ending-native-mesh-reference-projection"
+    :data-backmonitor-logo-angle="backmonitorLogoAngle"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
     data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
@@ -300,7 +301,7 @@
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
               <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
-              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；运行时换图尚未确认，旋转标志未接入。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾已接原生旋转标志，其他运行时换图仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
@@ -470,6 +471,7 @@ import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
@@ -643,6 +645,16 @@ const suspensionSprites = createSpotlightSpriteStore({
 })
 const spotlightBackgroundAlpha = ref(0)
 const visibleOldSuspensionlightIds = ref([])
+const backmonitorLogoAngle = ref('')
+const backmonitorLogoSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createBackmonitorLogoMesh(PIXI,backmonitorContainer,textures[0])),
+  destroyRuntime: destroyBackmonitorLogoMesh,
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncBackmonitor(true),
+  onError: error => console.warn('[ChibiStage] backmonitor logo texture load failed',error),
+})
 let oldSuspensionTrackKey = ''
 let oldSuspensionTrack = null
 let oldSuspensionAbort = null
@@ -1038,6 +1050,7 @@ function createPixiApp() {
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
   backmonitorContainer = markRaw(new PIXI.Container())
+  backmonitorContainer.sortableChildren = true
   // Backmonitor movies are projected through transparent cut-outs in the
   // authored stage art.  Keep the video below the static stage composite so
   // the opaque clockwork/floor pixels act as the original Unity mask.
@@ -2727,6 +2740,19 @@ function layoutBackmonitor(state) {
     backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
     backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
   }
+  syncBackmonitorLogo(state,projected)
+}
+
+function syncBackmonitorLogo(state,projected) {
+  backmonitorLogoAngle.value = ''
+  for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
+  const model = stageEffectIndex.value?.backmonitorLogo
+  const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model)
+  if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
+  const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
+  if (!runtime) return
+  updateBackmonitorLogoMesh(runtime,model,sample,projected)
+  backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }
 
 function pauseBackmonitorTransition() {
@@ -2777,6 +2803,8 @@ function syncBackmonitorTransition(state, forceSeek = false) {
 function syncBackmonitor(forceSeek = false) {
   const state = currentBackmonitorState.value
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
+    backmonitorLogoAngle.value = ''
+    for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
     if (backmonitorSprite) backmonitorSprite.visible = false
     pauseBackmonitorTransition()
     return
@@ -2803,6 +2831,8 @@ function syncBackmonitor(forceSeek = false) {
 }
 
 function releaseBackmonitor() {
+  backmonitorLogoSprites.release()
+  backmonitorLogoAngle.value = ''
   backmonitorVideo?.pause()
   pauseBackmonitorTransition()
   backmonitorMovie = ''

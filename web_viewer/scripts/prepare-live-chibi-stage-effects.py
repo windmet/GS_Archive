@@ -22,6 +22,7 @@ from live_chibi_spotbeam import extract_spotbeam_model
 from live_chibi_turnlaser import extract_turnlaser_model
 from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_old_suspension import old_suspension_model
+from live_chibi_backmonitor_logo import logo_model, extract_logo_source
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -63,7 +64,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return name == 'sidelight' or name == 'fx_in_ntalon_spotlight' or name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"tex_chara_shadow_2", "laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
+    return name == 'live_backmonitor_movie_logo_m' or name == 'sidelight' or name == 'fx_in_ntalon_spotlight' or name == SUSPENSION_ASSET or name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"tex_chara_shadow_2", "laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -137,6 +138,7 @@ def main() -> None:
                  if o.type.name == 'GameObject' and o.read().m_Name in {
                      'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
     old_suspension = old_suspension_model(old_roots, old_animation)
+    backmonitor_logo = logo_model(extract_logo_source(environment))
     particle_spec = importlib.util.spec_from_file_location(
         'laser_particle_audit', PROJECT_ROOT / 'scripts/audit-live-chibi-stage-objects.py')
     particle_audit = importlib.util.module_from_spec(particle_spec)
@@ -235,7 +237,7 @@ def main() -> None:
                 raise ValueError('Spotlight texture identity mismatch')
 
     index = {
-        "schemaVersion": 8,
+        "schemaVersion": 9,
         "source": xapk.name,
         "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
@@ -249,6 +251,7 @@ def main() -> None:
         "characterShadow": character_shadow,
         "newSuspensionlightSongs": suspension_songs,
         "oldSuspensionlight": old_suspension,
+        "backmonitorLogo": backmonitor_logo,
         "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,
