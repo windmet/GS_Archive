@@ -2,10 +2,13 @@
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
     <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small>分轨混音 · 实验</small></div>
     <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
-    <div class="song-modes" role="group" aria-label="试听模式" data-vocal-setting-selector>
-      <button v-for="item in listeningModes" :key="item.id" type="button" :aria-pressed="mode === item.id" @click="mode = item.id">{{ item.label }}</button>
-    </div>
-    <button v-if="hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
+    <label class="song-mode-selector" data-vocal-setting-selector>
+      <span>试听模式</span>
+      <select :value="mode" @change="changeListeningMode">
+        <option v-for="item in listeningModes" :key="item.id" :value="item.id">{{ item.label }}</option>
+      </select>
+    </label>
+    <button v-if="mode === 'solo' && hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
     <div class="experimental-controls">
       <label v-if="mode === 'unit'">
         组合
@@ -130,9 +133,31 @@ const listeningModes = computed(() => [
   ...(hasVocalSetting('all_stars') ? [{ id: 'all_stars', label: '全员合唱' }] : []),
   ...(hasVocalSetting('unit') ? [{ id: 'unit', label: '组合预设' }] : []),
   ...(hasVocalSetting('formation') ? [{ id: 'lineup', label: '自由编成 · 5 槽' }] : []),
+  ...(hasVocalSetting('center') && soloEntries.value.length ? [{ id: 'solo', label: 'Solo 试听' }] : []),
   ...(auditedOptions.value.length ? [{ id: 'single', label: '收录音轨' }] : []),
 ])
-function selectSolo(id) { selectedIdolCode.value = id; mode.value = 'solo'; soloOpen.value = false }
+function changeListeningMode(event) {
+  const selector = event.target
+  const requestedMode = selector.value
+  if (!listeningModes.value.some(item => item.id === requestedMode)) {
+    selector.value = mode.value
+    return
+  }
+  if (requestedMode === 'solo') {
+    // A Solo request opens the picker; the active mode changes only on selection.
+    selector.value = mode.value
+    selector.focus({ preventScroll: true })
+    soloOpen.value = true
+    return
+  }
+  mode.value = requestedMode
+}
+function selectSolo(id) {
+  if (!hasVocalSetting('center') || !props.audioExperiment?.solo_tracks?.[id]) return
+  selectedIdolCode.value = id
+  mode.value = 'solo'
+  soloOpen.value = false
+}
 const selectedSingleKey = ref('full_mix')
 const selectedIdolCode = ref('')
 const singleAudio = ref(null)
@@ -332,12 +357,10 @@ onBeforeUnmount(() => resetPlayback())
 <style scoped>
 .song-block-heading { display: flex; gap: 8px; align-items: center; }
 .song-block-heading small { font-size: 11px; padding: 3px 6px; border-radius: 4px; color: #60717d; background: #eef4f7; }
-.song-modes { display: flex; flex-wrap: nowrap; gap: var(--gs-space-2); padding: var(--gs-space-2); min-width: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; overscroll-behavior-x: contain; background: #eef5f5; border-radius: var(--gs-radius-field); }
-.song-modes::-webkit-scrollbar { display: none; }
-.song-modes button, .solo-open { min-height: 44px; padding: 8px 12px; border: 1px solid #c7dcdf; border-radius: 6px; background: white; color: #245a64; font: inherit; font-size: 12px; cursor: pointer; }
-.song-modes button { flex: 0 0 auto; min-height: var(--gs-control-touch); border-radius: var(--gs-radius-pill); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
-.song-modes button[aria-pressed=true] { background: #176f69; color: white; border-color: #176f69; }
-.song-modes button:focus-visible { outline: var(--gs-focus-ring) solid #007caa; outline-offset: calc(-1 * var(--gs-focus-ring)); }
+.song-mode-selector { display: grid; gap: var(--gs-space-3); min-width: 0; color: #245a64; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid #c7dcdf; border-radius: var(--gs-radius-field); background: white; color: #245a64; font: inherit; }
+.song-mode-selector select:focus-visible { outline: var(--gs-focus-ring) solid #007caa; outline-offset: 2px; }
+.solo-open { min-height: 44px; padding: 8px 12px; border: 1px solid #c7dcdf; border-radius: 6px; background: white; color: #245a64; font: inherit; font-size: 12px; cursor: pointer; }
 .solo-open { width: 100%; margin-top: 12px; text-align: left; }
 summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #245a64; font-size: 13px; }
 button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }
@@ -379,6 +402,7 @@ button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }
   .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 14px 14px 0 0; }
 }
 @media(max-width:760px), (pointer:coarse) {
+  .song-mode-selector select { font-size: var(--gs-text-subtitle); }
   .solo-filters input, .solo-filters select { font-size: var(--gs-text-subtitle); }
 }
 </style>
