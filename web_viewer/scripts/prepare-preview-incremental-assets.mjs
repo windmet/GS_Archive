@@ -4,6 +4,7 @@ import path from 'node:path'
 import {createHash} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {hashFile} from './lib/preview-source-baseline.mjs'
+import {loadPreviewUploadedBaseline} from './lib/preview-uploaded-baseline.mjs'
 import {encodeStructuredGzip} from './lib/structured-gzip.mjs'
 import {encodeLosslessWebp, runPool, shutdownEncoderPool} from './lib/lossless-webp.mjs'
 import {isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
@@ -14,26 +15,42 @@ import {PREVIEW_BUCKET_LIMIT_BYTES, projectIncrementalUsage} from './lib/upload-
 const root=path.resolve(process.cwd())
 const args=process.argv.slice(2)
 const option=name=>args.includes(name)?args[args.indexOf(name)+1]:''
+const options=name=>args.flatMap((arg,index)=>arg===name?[args[index+1]]:[])
 assert(option('--inventory') && option('--remote') && option('--out'),
-  'Use --inventory <source inventory> --remote <live lsjson> --out <new .deploy directory>')
+  'Use --inventory <source inventory> --remote <live lsjson> --out <new .deploy directory> '
+  + '[--baseline <source baseline>] [--baseline-overlay <descriptor> ... --baseline-remote <remote:bucket>]')
 const read=async file=>JSON.parse((await fs.readFile(file,'utf8')).replace(/^\uFEFF/,''))
 const inventory=await read(option('--inventory')), remote=await read(option('--remote'))
 assert.equal(inventory.kind,'current-source-inventory')
-assert(remote.every(row=>!row.IsDir && Number.isSafeInteger(row.Size) && row.Size>=0))
+assert(Array.isArray(inventory.entries) && Array.isArray(inventory.missing),'Invalid source inventory')
+assert(Array.isArray(remote),'Invalid remote inventory')
+const validKey=key=>typeof key==='string' && key && !/[\\\0\r\n?#:]/.test(key)
+  && key.split('/').every(part=>part && part!=='.' && part!=='..')
+assert(remote.every(row=>row && validKey(row.Path) && !row.IsDir && Number.isSafeInteger(row.Size) && row.Size>=0),
+  'Invalid remote object metadata')
+assert(inventory.entries.every(entry=>entry && validKey(entry.request_key)
+  && typeof entry.source==='string' && entry.source && Number.isSafeInteger(entry.source_size) && entry.source_size>=0
+  && typeof entry.source_content_type==='string' && entry.source_content_type),'Invalid source metadata')
 const remoteKeys=new Map(remote.map(row=>[row.Path,row]))
 assert.equal(remoteKeys.size,remote.length,'Duplicate remote object keys')
-const previous=await read('.deploy/storage-compression/source-baseline.json')
-const oldSources=new Map(previous.entries.map(entry=>[entry.request_key,entry.source_sha256]))
+const overlayFiles=options('--baseline-overlay')
+assert(overlayFiles.every(file=>typeof file==='string' && file && !file.startsWith('--')),'Missing overlay descriptor')
+assert(!args.includes('--baseline') || (option('--baseline') && !option('--baseline').startsWith('--')),'Missing source baseline')
+assert(!args.includes('--baseline-remote') || (option('--baseline-remote') && !option('--baseline-remote').startsWith('--')),
+  'Missing baseline remote')
+const {sources:oldSources,evidence:baselineEvidence}=await loadPreviewUploadedBaseline({
+  baselineFile:option('--baseline') || '.deploy/storage-compression/source-baseline.json',
+  overlayFiles,remote:option('--baseline-remote')})
+const requestKeys=new Set(inventory.entries.map(entry=>entry.request_key))
+assert.equal(requestKeys.size,inventory.entries.length,'Duplicate source request')
 const output=path.resolve(option('--out')), relative=path.relative(path.join(root,'.deploy'),output)
 assert(relative && !relative.startsWith('..') && !path.isAbsolute(relative),'Output must stay inside .deploy')
 assert.equal(await fs.realpath(path.join(root,'.deploy')),path.join(root,'.deploy'),'Linked staging parent')
+assert.equal(await fs.realpath(path.dirname(output)),path.dirname(output),'Linked staging output parent')
 await fs.mkdir(output) // Exclusive batch creation; never erase another run.
 assert.equal(await fs.realpath(output),output)
-const requestKeys=new Set()
 let hashed=0
 await runPool(inventory.entries,4,async entry=>{
-  assert(!requestKeys.has(entry.request_key),'Duplicate source request')
-  requestKeys.add(entry.request_key)
   const source=path.resolve(entry.source), before=await fs.stat(source), hash=await hashFile(source), after=await fs.stat(source)
   assert.equal(hash.size,entry.source_size,`Source size changed: ${entry.request_key}`)
   assert.equal(before.mtimeMs,after.mtimeMs,`Source changed during hash: ${entry.request_key}`)
@@ -86,11 +103,11 @@ const manifest={schema_version:3,kind:'incremental-preview',created_at:new Date(
   inventory_sha256:(await hashFile(option('--inventory'))).sha256,
   remote_inventory_sha256:(await hashFile(option('--remote'))).sha256,
   remote_inventory_created_at:(await fs.stat(option('--remote'))).mtime.toISOString(),
-  dataRevision,stage:'objects',missing:inventory.missing,entries:selected,
+  dataRevision,baseline_evidence:baselineEvidence,stage:'objects',missing:inventory.missing,entries:selected,
   totals:{files:selected.length,source_bytes:selected.reduce((sum,e)=>sum+e.source_size,0),
     deployed_bytes:selected.reduce((sum,e)=>sum+e.deployed_size,0),
     targetBytes,netDelta,positiveDelta,projectedBytes,conservativePeakBytes,
     limitBytes:PREVIEW_BUCKET_LIMIT_BYTES,uploadAllowed:conservativePeakBytes<PREVIEW_BUCKET_LIMIT_BYTES}}
 await fs.writeFile(path.join(output,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'})
 console.log(JSON.stringify(manifest.totals))
-if (!manifest.totals.uploadAllowed) console.log('Do not upload: user approval is required at or above the limit.')
+if (!manifest.totals.uploadAllowed) console.log('Do not upload: the configured storage limit is reached or exceeded.')
