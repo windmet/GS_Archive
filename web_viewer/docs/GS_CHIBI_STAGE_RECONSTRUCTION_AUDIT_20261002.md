@@ -599,3 +599,7 @@ python scripts/verify-chibi-penlight-render-inputs.py
 ```
 
 下一步仍需从CSV命令到原生animation family／speed／颜色放置及摄影机投影闭合，再接线绘制并以音频配准后的Study录屏检查动作与前景高度；本批不将未消费的资源模型视作舞台完整验收。Study全曲、Foot渐变、粒子、Take两半录屏及最终master PR仍未收口。
+
+本轮代码提交 `42367ffb` 与可见性补丁 `5bc2c4e1` 均已推送。完整 [Source Gate 37086040675](https://github.com/windmet/GS_Archive/actions/runs/37086040675) 已终态success，准确绑定 `5bc2c4e1cc40dc45fcb5194d143d43cf0313ccc7`，116项成功、无失败；包含新原生render-input verifier。其它窗口未提交的活动页／译名回归不属于此HEAD，保留且未纳入本批CI声明。
+
+已从本地Study录屏按既有audio offset=4.7275s截取song time 6.5–8.5s的前景底部100像素、8fps／16帧contact sheet：`study-reference/penlight-front-reference-006500-008500.png`（只作分析裁切，未改源视频）。可以观察到call棒随时间升降、底部留有舞台／歌词上缘，不能用静止的一排长亮棒替代；这一短片只支持可见运动观察，尚不足以证明RAW animation type/id／speed具体换算。未据此直接指定Beat／Wiper／Yeah映射。
