@@ -43,7 +43,9 @@ const node = (type, text = '') => {
     root.activeElement = item
     root.focusCalls.push({ focusId: item.dataset.archiveFocusId, preventScroll: options?.preventScroll })
   }
-  Object.defineProperty(item, 'scrollHeight', { get: () => 800 + referenceCards(item).length * 44 })
+  item.getBoundingClientRect = () => ({ height: item.clientHeight })
+  Object.defineProperty(item, 'scrollHeight', { configurable: true,
+    get: () => 800 + referenceCards(item).length * 44 })
   return item
 }
 const remove = item => {
@@ -229,6 +231,8 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
 
 {
   const t = fixture('flslgt'); await flush()
+  assert.equal(all(t.root).some(item => hasClass(item, 'is-sticky-fit')), false,
+    'without ResizeObserver, the real template safely keeps its default flow')
   const main = all(t.root).find(item => hasClass(item, 'performer-list'))
   assert.equal(referenceCards(main).length, 4, 'the fixed lineup stays distinct from the audio archive')
   assert.equal(Boolean(audioArchive(t.root).props.open), false)
@@ -364,4 +368,69 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
   assert.equal(await unmounting, false, 'unmounting during preparation cannot authorize shared restoration')
   assert.equal(await prepare({ focusId: audioFocusId, songId: 'flslgt' }), false)
 }
-console.log('Song detail: actual SFC compact hero metadata/form uniqueness, four source attributes, real full-mix/experiment/unavailable projections, source dates and special-version parent passed. Labeled unknown-attribute/date omissions passed. Existing language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; decoded audio, native events, Browser/layout/focus visibility and App routing acceptance are separate.')
+{
+  // Reproduce the measured failure dimensions in the real mounted SFC. The
+  // style values are lifecycle fixtures, not assertions about emitted CSS.
+  const observers = []
+  let styleReads = 0
+  class FitObserver {
+    targets = new Set()
+    disconnected = false
+    constructor(callback) { this.callback = callback; observers.push(this) }
+    observe(target) { this.targets.add(target) }
+    disconnect() { this.disconnected = true; this.targets.clear() }
+  }
+  context.ResizeObserver = FitObserver
+  context.getComputedStyle = item => {
+    styleReads++
+    return hasClass(item, 'song-detail') ? { paddingBottom: '24px' } : { top: '12px' }
+  }
+  const t = fixture('drvalv'); await flush()
+  try {
+    assert.equal(observers.length, 1, 'one observer owns this mounted detail')
+    const observer = observers[0]
+    const scroll = all(t.root).find(item => hasClass(item, 'song-detail'))
+    const column = all(t.root).find(item => hasClass(item, 'song-listen-column'))
+    assert.equal(observer.targets.size, 2)
+    const observedNodes = [...observer.targets].map(Vue.toRaw)
+    assert.ok(observedNodes.includes(scroll) && observedNodes.includes(column),
+      'viewport and listening-content sizes are both observed')
+    scroll.clientHeight = 824
+    column.clientHeight = 1595
+    Object.defineProperty(scroll, 'scrollHeight', { configurable: true, value: 40441 })
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), false,
+      'tall full lyrics stay in flow even with 40441px of left archive content')
+    column.clientHeight = 788
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), true,
+      'a column that exactly fits the viewport including top and bottom space can stick')
+    column.clientHeight = 789
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), false,
+      'content growth beyond available space disables sticky')
+    column.clientHeight = 700
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), true)
+    scroll.clientHeight = 700
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), false,
+      'a shorter viewport invalidates a previously fitting column')
+    scroll.clientHeight = 824
+    observer.callback(); await flush()
+    assert.equal(hasClass(column, 'is-sticky-fit'), true,
+      'viewport growth restores sticky eligibility')
+    const readsBeforeUnmount = styleReads
+    t.app.unmount()
+    assert.equal(observer.disconnected, true)
+    assert.equal(observer.targets.size, 0)
+    observer.callback(); await flush()
+    assert.equal(styleReads, readsBeforeUnmount,
+      'late delivery after unmount never reads released DOM refs')
+  } finally {
+    if (!observers[0]?.disconnected) t.app.unmount()
+    delete context.ResizeObserver
+    delete context.getComputedStyle
+  }
+}
+console.log('Song detail: actual SFC compact hero metadata/form uniqueness, four source attributes, real full-mix/experiment/unavailable projections, source dates and special-version parent passed. Labeled unknown-attribute/date omissions passed. Existing language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. ResizeObserver lifecycle, viewport-versus-content height, fit/growth/resize and unmount guards passed in the real template; the measured tall-lyrics/40441px archive dimensions are labeled host fixtures. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; decoded audio, native events, Browser/layout/focus visibility and App routing acceptance are separate.')

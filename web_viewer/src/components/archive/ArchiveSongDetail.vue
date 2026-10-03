@@ -1,10 +1,14 @@
 <template>
-  <section class="song-detail" data-archive-scroll-container>
+  <section ref="songScrollContainer" class="song-detail" data-archive-scroll-container>
+    <div class="song-detail-layout">
     <header class="song-detail-hero" :class="{ 'has-jacket': song.jacketUrl }">
+      <div v-if="song.jacketUrl" class="song-detail-ambient" aria-hidden="true" :style="{ backgroundImage: `url(${song.jacketUrl})` }"></div>
       <img v-if="song.jacketUrl" class="song-detail-jacket" :src="song.jacketUrl" :alt="`${song.title} 封面`" />
       <div class="song-detail-title">
         <h2>{{ song.title }}</h2>
         <p class="song-detail-meta"><span v-if="song.kana" class="song-detail-kana">{{ song.kana }}</span><span class="song-detail-date">{{ implementationDateLabel }}</span></p>
+        <p class="song-detail-scope">演唱 · {{ song.unit?.displayName || song.scopeLabel }}</p>
+        <ul v-if="song.credits.length" class="song-detail-credits" aria-label="歌曲制作信息"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
         <button v-if="song.parentId" class="song-parent-link" :data-archive-focus-id="`song-parent:${song.parentId}`" @click="emit('open-song', song.parentId)">返回歌曲作品</button>
       </div>
       <div class="song-detail-badges">
@@ -14,7 +18,7 @@
       </div>
     </header>
     <div class="song-detail-body">
-      <div class="song-listen-column">
+      <div ref="songListenColumn" class="song-listen-column" :class="{ 'is-sticky-fit': listeningColumnFits }">
       <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @open-stage="openStage" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" />
       <p v-else class="song-block-note song-playback-unavailable" role="status">{{ song.playbackLabel || '暂未提供试听' }}</p>
@@ -74,12 +78,13 @@
         <div class="song-block-heading"><h3>专辑链接</h3></div>
         <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
       </section>
-      <section v-if="song.credits.length" class="song-block">
+      <section v-if="song.credits.length" class="song-block song-credit-section">
         <div class="song-block-heading"><h3>制作信息</h3></div>
         <ul class="credit-list"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
       </section>
       <ArchiveTechnicalDetails :key="song.id" :evidence="song.technicalEvidence" />
       </div>
+    </div>
     </div>
   </section>
 </template>
@@ -102,8 +107,33 @@ const implementationDateLabel = computed(() => {
   return !fallback || ['未收录', '特殊版本'].includes(fallback) ? '实装日期未收录' : `${fallback} 实装`
 })
 const songPlayer = ref(null)
+const songScrollContainer = ref(null), songListenColumn = ref(null)
+const listeningColumnFits = ref(false)
+let listeningResizeObserver = null
 const performersOpen = ref(false), audioArchiveOpen = ref(false)
 let disposed = false, prepareRevision = 0
+function updateListeningColumnFit() {
+  if (disposed) return
+  const container = songScrollContainer.value, column = songListenColumn.value
+  if (!container || !column || typeof globalThis.getComputedStyle !== 'function') {
+    listeningColumnFits.value = false
+    return
+  }
+  // The wide-layout top remains resolved even while the column is in normal
+  // flow. Use the viewport height, not the possibly huge archive scrollHeight.
+  const top = Math.max(0, Number.parseFloat(globalThis.getComputedStyle(column).top) || 0)
+  const bottom = Math.max(0, Number.parseFloat(globalThis.getComputedStyle(container).paddingBottom) || 0)
+  const height = column.getBoundingClientRect().height
+  listeningColumnFits.value = height > 0 && height + top + bottom <= container.clientHeight
+}
+function observeListeningColumnFit() {
+  if (typeof globalThis.ResizeObserver !== 'function' ||
+    !songScrollContainer.value || !songListenColumn.value) return
+  listeningResizeObserver = new globalThis.ResizeObserver(updateListeningColumnFit)
+  listeningResizeObserver.observe(songScrollContainer.value)
+  listeningResizeObserver.observe(songListenColumn.value)
+  updateListeningColumnFit()
+}
 function performerFocusId(entry) {
   return entry.reference?.actionable ? `song-performer:${props.song.id}:${entry.id}` : undefined
 }
@@ -127,14 +157,19 @@ function announceReady() {
   const songId = props.song.id
   nextTick(() => { if (!disposed && props.song.id === songId) emit('ready', { songId }) })
 }
-onMounted(announceReady)
+onMounted(() => { announceReady(); observeListeningColumnFit() })
 watch(() => props.song.id, () => {
   prepareRevision += 1
   performersOpen.value = false
   audioArchiveOpen.value = false
   announceReady()
 })
-onBeforeUnmount(() => { disposed = true; prepareRevision += 1 })
+onBeforeUnmount(() => {
+  disposed = true
+  prepareRevision += 1
+  listeningResizeObserver?.disconnect()
+  listeningResizeObserver = null
+})
 defineExpose({ prepareRestoreFocus })
 function performerReference(reference) {
   return reference?.actionable && reference.idolCode
@@ -146,14 +181,17 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 </script>
 
 <style scoped>
-.song-detail { height: 100%; padding: var(--gs-space-7); overflow-y: auto; background: #f7f9fa; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.song-detail-hero { display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-4) var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 3px solid #28b6ac; background: #17212b; color: #fff; }
-.song-detail-hero.has-jacket { grid-template-columns: 172px minmax(0, 1fr); }
-.song-detail-jacket { width: 172px; height: auto; border-radius: var(--gs-radius-field); display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+.song-detail { height: 100%; padding: var(--gs-space-7); overflow-y: auto; container: song-detail / inline-size; background: #f7f9fa; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
+.song-detail-hero { position: relative; isolation: isolate; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: var(--gs-space-4) var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 3px solid #28b6ac; background: linear-gradient(120deg, #193d45, #182b38 75%); color: #fff; }
+.song-detail-hero.has-jacket { grid-template-columns: 72px minmax(0, 1fr); }
+.song-detail-ambient { display: none; position: absolute; z-index: 0; inset: -48px; background-size: cover; background-position: center; filter: blur(44px); opacity: .22; pointer-events: none; }
+.song-detail-jacket { position: relative; z-index: 1; width: 72px; height: 72px; border-radius: var(--gs-radius-field); display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); }
+.song-detail-title, .song-detail-badges { position: relative; z-index: 1; }
 .song-detail-title { min-width: 0; }
 .song-detail-title h2 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
 .song-detail-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-2) var(--gs-space-3); margin: var(--gs-space-2) 0 0; color: #aeb9c2; font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .song-detail-date { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.song-detail-scope, .song-detail-credits { display: none; }
 .song-parent-link { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: var(--gs-space-2) 0; border: 0; background: transparent; color: #76d9d1; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .song-parent-link:hover { text-decoration: underline; }
 .song-detail-badges { grid-column: 1 / -1; display: flex; gap: var(--gs-space-2); flex-wrap: wrap; min-width: 0; }
@@ -165,9 +203,9 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .badge-attribute[data-song-attribute="ALL"] { background: #f0f3f5; color: #475863; }
 .badge-form { background: #e2f4f0; color: #21685b; }
 .badge-special { background: #f3e8fd; color: #7136a5; }
-.song-detail-body { padding-top: var(--gs-space-6); display: grid; grid-template-columns: minmax(300px,.8fr) minmax(0,1.2fr); align-items: start; gap: var(--gs-space-6); }
+.song-detail-body { padding-top: var(--gs-space-6); display: grid; grid-template-columns: minmax(0,1fr); align-items: start; gap: var(--gs-space-6); }
 /* The independently styled player keeps its existing inherited 16px base. */
-.song-listen-column { position: sticky; top: 0; min-width: 0; font-size: var(--gs-text-subtitle); }
+.song-listen-column { min-width: 0; font-size: var(--gs-text-subtitle); }
 .song-record-column { display: grid; gap: var(--gs-space-5); min-width: 0; }
 .song-block { padding: 16px 18px; border: 1px solid #dfe4e8; border-radius: var(--gs-radius-control); background: #fff; }
 .song-record-column > .song-block { padding: var(--gs-space-5); }
@@ -219,7 +257,26 @@ summary::after { content: '⌄'; margin-left: auto; } details[open] > summary::a
 .link-list a:hover { text-decoration: underline; }
 .song-detail button:focus-visible, .song-detail a:focus-visible, .song-detail summary:focus-visible { outline: var(--gs-focus-ring) solid #37a9a1; outline-offset: var(--gs-focus-offset); }
 .song-record-column :deep(button.archive-idol-reference:focus-visible), .song-record-column :deep(.archive-technical > summary:focus-visible) { outline: var(--gs-focus-ring) solid #37a9a1; outline-offset: var(--gs-focus-offset); }
-@media (max-width: 1100px) { .song-detail-body { grid-template-columns: 1fr; } .song-listen-column { position: static; } }
+@container song-detail (min-width: 520px) {
+  .song-detail-hero { border-radius: var(--gs-radius-control); }
+  .song-detail-hero.has-jacket { grid-template-columns: 160px minmax(0,1fr); }
+  .song-detail-jacket { width: 160px; height: auto; border-radius: 12px; }
+  .song-detail-ambient { display: block; }
+  .song-detail-title h2 { font-size: 24px; line-height: 1.3; }
+  .song-detail-scope { display: block; margin: var(--gs-space-3) 0 0; color: #d1e3e5; font-size: var(--gs-text-ui); line-height: 1.6; }
+  .song-detail-credits { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-5); margin: var(--gs-space-2) 0 0; padding: 0; list-style: none; color: #c5d8dd; font-size: var(--gs-text-meta); line-height: 1.7; }
+  .song-credit-section { display: none; }
+}
+@container song-detail (min-width: 700px) { .song-detail-title h2 { font-size: 28px; } }
+@container song-detail (min-width: 900px) {
+  .song-detail-layout { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(340px,.85fr); align-items: start; gap: var(--gs-space-6); }
+  .song-detail-hero { grid-column: 1; grid-row: 1; }
+  .song-detail-body { display: contents; }
+  .song-record-column { grid-column: 1; grid-row: 2; }
+  .song-listen-column { grid-column: 2; grid-row: 1 / 3; top: var(--gs-space-4); }
+  .song-listen-column.is-sticky-fit { position: sticky; }
+  .song-listen-column :deep(.performer-lineup) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
 @media (max-width: 700px), (pointer: coarse) { .song-parent-link, .link-list a, .song-history a { min-height: var(--gs-control-touch); } }
 @media (max-width: 560px) {
   .song-detail { padding: var(--gs-space-4); }

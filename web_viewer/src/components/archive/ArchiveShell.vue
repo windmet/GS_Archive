@@ -287,6 +287,41 @@ const primaryNavigation = [
 .archive-mobile-brand, .archive-mobile-nav { display: none; }
 .archive-search-toggle { display:none; }
 
+@media (min-width: 761px) {
+  /* The language-only action group must not reserve a search-sized column.
+     Allow wrapped page identity to grow its own row without covering content. */
+  .archive-shell:not(.is-home):not(.is-portal):not(.is-home-focus) {
+    grid-template-rows: minmax(var(--archive-topbar), auto) minmax(0, 1fr);
+  }
+  .archive-topbar {
+    grid-template-columns: auto minmax(0, 1fr) max-content;
+    padding: 12px 18px;
+  }
+  .archive-topbar:not(:has(.archive-back)) {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  .archive-topbar:has(.archive-search) {
+    grid-template-columns: auto minmax(0, 1fr) clamp(320px, 38%, 420px);
+  }
+  .archive-topbar:has(.archive-search):not(:has(.archive-back)) {
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 38%, 420px);
+  }
+  .archive-topbar h1 {
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+  .archive-heading :deep(.archive-breadcrumb ol) { flex-wrap: wrap; row-gap: 4px; }
+  .archive-heading :deep(.archive-breadcrumb li) { max-width: 100%; }
+  .archive-heading :deep(.archive-breadcrumb a),
+  .archive-heading :deep(.archive-breadcrumb span) {
+    min-width: 0;
+    white-space: normal;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+}
+
 @media (max-width: 760px) {
   .archive-shell, .archive-shell.has-inspector {
     --archive-sidebar: 0px;
