@@ -50,6 +50,46 @@ await assert.rejects(loadChibiFloor(pixi,model,async path=>{
 }))
 assert.equal(disposed,2)
 if(process.argv.includes('--published-assets')) {
- assert.deepEqual(JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/floor-particles/index.json',import.meta.url))),model)
+ const published=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/floor-particles/index.json',import.meta.url)))
+ assert.deepEqual(published.schemaVersion===2 ? published.assets[model.asset] : published,model)
 }
 console.log('Take floor source guards, native gradient/alpha witnesses, bounded 244-sprite pools, masked atlas binding, seek/pause and failed texture cleanup passed')
+const catalog=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-floor-catalog.json',import.meta.url)))
+const indexed={assets:Object.fromEntries(Object.values(catalog.assets).map(m=>[m.asset,{kind:'particle',bundle:m.bundle,particleCount:m.particleCount}]))}
+const attached=attachChibiFloor(indexed,catalog)
+assert.equal(Object.values(attached.assets).filter(a=>a.floorAnimation).length,7)
+assert.equal(catalog.inventory.length,49)
+assert.equal(catalog.inventory.filter(r=>r.status==='deferred').length,42)
+const toy=structuredClone(catalog.assets.fx_in_mtples_panel_1.systems[0])
+toy.rate=1;toy.lifetime={mode:0,scalar:2,minScalar:2,keys:[]};toy.prewarmSeconds=0
+toy.color={colors:[{time:0,r:1,g:1,b:1},{time:1,r:1,g:1,b:1}],alphas:[{time:0,value:1},{time:1,value:1}]}
+toy.colorOverLife={colors:[{time:0,r:1,g:0,b:0},{time:1,r:0,g:0,b:1}],alphas:[{time:0,value:0},{time:1,value:1}]}
+toy.alpha=toy.colorOverLife.alphas
+assert.equal(sampleFloorSystem(toy,500,0)[0].color,0xbf0040)
+assert.equal(sampleFloorSystem(toy,500,0)[0].alpha,.25)
+assert.ok(sampleFloorSystem(catalog.assets.fx_in_cgtocc_panel_3.systems[0],0,0).length>100)
+for(const entry of Object.values(catalog.assets).filter(e=>e.asset!==model.asset)) {
+ assert.equal(attached.assets[entry.asset].floorAnimation,entry)
+ assert.notEqual(entry.mask.texture,model.mask.texture)
+ const rt=await loadChibiFloor(pixi,entry,async()=>({baseTexture:{},destroy(){}}))
+ assert.ok(rt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0)<=512)
+ updateChibiFloor(rt,5000,0); const previous=rt.floorSignature
+ updateChibiFloor(rt,5250,0);assert.notEqual(previous,rt.floorSignature)
+ updateChibiFloor(rt,5000,0);assert.equal(previous,rt.floorSignature)
+ for(const s of entry.systems) {
+  assert.deepEqual(sampleFloorSystem(s,-1,0),[])
+  const a=sampleFloorSystem(s,2000,0),b=sampleFloorSystem(s,2050,0)
+  assert.ok(a.length && a.length<=s.capacity)
+  assert.ok(a.every(p=>p.alpha>=0 && p.alpha<=1 && Number.isFinite(p.x) && Number.isFinite(p.y)))
+  assert.notDeepEqual(a,b)
+ }
+ for(const mutate of [m=>m.mask.width=-1,m=>m.bundle='wrong',m=>m.systems[0].capacity=10000,
+  m=>m.systems[0].noiseParameters={},m=>m.systems[0].speedParameters.scalar=1,
+  m=>m.systems[0].colorOverLife.alphas[0].time=2,m=>m.textures[m.mask.texture].file='../wrong.png']) {
+  const bad=structuredClone(entry);mutate(bad)
+  const result=attachChibiFloor(indexed,{schemaVersion:2,assets:{[bad.asset]:bad}})
+  assert.ok(!result.assets[bad.asset].floorAnimation)
+ }
+}
+if(process.argv.includes('--published-assets')) assert.deepEqual(JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/floor-particles/index.json',import.meta.url))),catalog)
+console.log('49 floor objects classified; seven independent native masks, continuous gradients, prewarm, bounded pools and seek witnesses passed')

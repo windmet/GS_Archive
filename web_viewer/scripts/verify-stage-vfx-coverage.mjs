@@ -35,4 +35,9 @@ const unresolved = buildStageVfxCoverage({ id:'unaddressed',
 assert.equal(unresolved.sourceEvents.wholeScreenColorLayer, 1)
 assert.equal(unresolved.unresolvedColorPlanes.length, 1)
 assert.equal(unresolved.status, 'partial')
+const unsupportedLamp=buildStageVfxCoverage({id:'missing-lamp',songCode:'synthetic'},
+ {stageEffects:{stagelightSongs:{synthetic:{events:[{asset:'unknown',previewSupported:false}]}},stagelights:{}}})
+assert.deepEqual(unsupportedLamp.stagelightUnimplemented,['unknown'])
+assert.equal(unsupportedLamp.stagelightUnimplementedCommands,1)
+assert.equal(unsupportedLamp.status,'partial')
 console.log(`Stage VFX coverage: ${coverages.length} arrangements, ${coverages.filter(entry => entry.status === 'partial').length} with unsupported or missing layers; raw source status only`)

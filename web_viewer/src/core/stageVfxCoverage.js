@@ -20,6 +20,8 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const pinspotlightAssets = uniqueAssets(song.pinspotlightEvents, 'asset')
   const stagelightEvents = indexes.stageEffects?.stagelightSongs?.[song.songCode]?.events || []
   const stagelightAssets = uniqueAssets(stagelightEvents, 'asset')
+  const stagelightUnimplemented = stagelightAssets.filter(asset=>!indexes.stageEffects?.stagelights?.[asset])
+  const stagelightUnimplementedCommands = stagelightEvents.filter(event=>event.previewSupported===false)
   const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
   const unresolvedImageColors = (song.imageColorEvents || []).filter(event => event.unresolvedReason)
   const imageColorAssets = uniqueAssets((song.imageColorEvents || []).filter(event => !event.unresolvedReason), 'asset')
@@ -59,13 +61,15 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectMissing,
     objectOther,
     stagelightAssets,
+    stagelightUnimplemented,
+    stagelightUnimplementedCommands:stagelightUnimplementedCommands.length,
     // Resource binding / color assignment are separate from native tween parity.
     stagelightAnimationStatus: stagelightEvents.length ? 'reference_preview_unverified_native_tweens' : 'not_loaded',
     missingMedia,
     unresolvedColorPlanes,
     unresolvedImageColors,
     imageColorMissing,
-    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length
+    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length
       ? 'partial'
       : 'source_mapped_unverified',
   }

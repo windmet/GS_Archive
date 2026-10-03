@@ -56,7 +56,7 @@ def read_unity_data(xapk: Path) -> bytes:
 
 def is_stage_effect_texture(name: str) -> bool:
     lowered = name.lower()
-    return name in STAGELIGHT_TEXTURES or lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
+    return name in STAGELIGHT_TEXTURES or '_stagelight' in lowered or lowered in {"laserlight_1", "laserlight_2", "laserlight_3", "spotlight1", "spotlight2"} or (
         "pinspotlight" in lowered
     )
 
@@ -120,22 +120,46 @@ def main() -> None:
     if len(pin_roots) != 1:
         raise ValueError('Ambiguous native Pinspotlight')
     pinspotlight = pinspotlight_sprite_model(audit.inspect_prefab(pin_roots[0]))
-    stagelights = {obj.read().m_Name: stagelight_model(audit.inspect_prefab(obj))
-                  for obj in environment.objects
-                  if obj.type.name == 'GameObject' and obj.read().m_Name in STAGELIGHT_NAMES}
-    if set(stagelights) != STAGELIGHT_NAMES:
+    stagelights, unsupported_prefabs = {}, {}
+    native_names = set()
+    for obj in environment.objects:
+        if obj.type.name != 'GameObject': continue
+        name = obj.read().m_Name
+        if not name.startswith('fx_in_') or '_stagelight' not in name: continue
+        prefab = audit.inspect_prefab(obj)
+        if not any(c.get('scriptClass') == 'LiveObjectLightSpriteEffect' for c in prefab['components']): continue
+        if name in native_names:
+            stagelights.pop(name,None)
+            unsupported_prefabs[name] = 'Ambiguous native prefab name; exact director binding pending'
+            continue
+        native_names.add(name)
+        try: stagelights[name] = stagelight_model(prefab, allow_general=name not in STAGELIGHT_NAMES)
+        except ValueError as error: unsupported_prefabs[name] = str(error)
+    if not STAGELIGHT_NAMES <= stagelights.keys():
         raise ValueError('Incomplete native Take stage lamp set')
     stagelight_songs = {}
-    for code in ('tkstp1', 'tkstp2'):
-        bundle = sources.raw_root / 'asset' / f'song_{code}.unity3d'
+    for bundle in sorted((sources.raw_root / 'asset').glob('song_*.unity3d')):
+        code = bundle.stem.removeprefix('song_')
         scripts = [obj for obj in UnityPy.load(str(bundle)).objects
                    if obj.type.name == 'TextAsset' and obj.read().m_Name == f'{code}_live_effect']
-        if len(scripts) != 1:
-            raise ValueError('Ambiguous native Take choreography')
+        if not scripts: continue
+        if len(scripts) != 1: raise ValueError('Ambiguous native choreography: ' + code)
         payload = text_asset_payload(scripts[0].read())
+        events = stagelight_events(payload, native_names=native_names)
+        if not events: continue
+        # Retain unsupported commands and identities; never substitute static
+        # white lamps for unrecovered rainbow/color/director modes.
+        unknown = sorted({e['asset'] for e in events if not e['hide'] and e['asset'] not in stagelights})
+        modes = sorted({(e['alphaMode'], e['colorMode']) for e in events if not e['hide']
+                        and (e['alphaMode'] not in (0,1) or e['colorMode'] not in (1,2,5))},key=str)
+        if code not in ('tkstp1','tkstp2'):
+            for event in events:
+                if not event['hide']:
+                    event['previewSupported'] = event['asset'] in stagelights and event['alphaMode'] in (0,1) and event['colorMode'] in (1,2,5)
         stagelight_songs[code] = {'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
             'textAsset': f'{code}_live_effect', 'sha256': hashlib.sha256(payload).hexdigest()},
-            'events': stagelight_events(payload)}
+            'events': events, 'unsupportedAssets':unknown, 'unsupportedModes':modes,
+            'status':'native_bindings_partial_recording_guided_envelopes'}
     for model in (spotlight, background, pinspotlight, *stagelights.values()):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
@@ -143,7 +167,7 @@ def main() -> None:
                 raise ValueError('Spotlight texture identity mismatch')
 
     index = {
-        "schemaVersion": 5,
+        "schemaVersion": 6,
         "source": xapk.name,
         "unityDataSha256": hashlib.sha256(unity_data).hexdigest(),
         "assets": dict(sorted(assets.items())),
@@ -152,6 +176,8 @@ def main() -> None:
         "pinspotlight": pinspotlight,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,
+        "stagelightInventory": {"nativePrefabs":len(native_names), "renderablePrefabs":len(stagelights),
+            "unsupportedPrefabs":unsupported_prefabs,"nativeTracks":len(stagelight_songs)},
     }
     index_target = output_root / "index.json"
     index_target.write_text(

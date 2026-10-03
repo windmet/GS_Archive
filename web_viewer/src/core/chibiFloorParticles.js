@@ -1,6 +1,7 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 
 export const CHIBI_FLOOR_PROFILE = 'take-masked-nebula-reference-v1'
+export const CHIBI_BOX_FLOOR_PROFILE = 'continuous-masked-box-floor-v1'
 const asset = 'fx_in_tkstp1_panel_1'
 const random = (birth, channel, seed) => {
   let n = Math.imul(birth + 1, 0x45d9f3b) ^ Math.imul(channel + 1, 0x27d4eb2d) ^ seed
@@ -22,8 +23,8 @@ export function sampleFloorGradient(keys, time, property = 'value') {
 // Reproducible browser seeds make backwards seeks stable. Native autoRandomSeed
 // and NoiseModule are retained in the source model but are not Unity RNG/noise.
 export function sampleFloorSystem(system, milliseconds, activatedAt) {
-  const elapsed = (milliseconds - activatedAt) / 1000
-  if (elapsed < 0) return []
+  if (milliseconds < activatedAt) return []
+  const elapsed = (milliseconds - activatedAt) / 1000 + (system.prewarmSeconds || 0)
   const last = Math.floor(elapsed * system.rate), seed = seedOf(system.source.pathId)
   const first = Math.max(0, last - Math.ceil(Math.max(system.lifetime.scalar, system.lifetime.minScalar) * system.rate))
   const particles = []
@@ -33,7 +34,8 @@ export function sampleFloorSystem(system, milliseconds, activatedAt) {
     if (age < 0 || age >= lifetime) continue
     const fraction = age / lifetime, colorPosition = rnd(1)
     const color = [16, 8, 0].reduce((value, shift, channel) => value |
-      (Math.round(sampleFloorGradient(system.color.colors, colorPosition, ['r','g','b'][channel]) * 255) << shift), 0)
+      (Math.round(sampleFloorGradient(system.color.colors, colorPosition, ['r','g','b'][channel]) * 255
+        * (system.colorOverLife ? sampleFloorGradient(system.colorOverLife.colors,fraction,['r','g','b'][channel]) : 1)) << shift), 0)
     const startAlpha = sampleFloorGradient(system.color.alphas, colorPosition)
     particles.push({ birth,
       x: (system.position.x + (rnd(2) - .5) * system.shape.x) * 100,
@@ -47,6 +49,13 @@ export function sampleFloorSystem(system, milliseconds, activatedAt) {
 }
 
 export function attachChibiFloor(objectIndex, model) {
+  if (model?.schemaVersion === 2) {
+    let index = objectIndex
+    for (const entry of Object.values(model.assets || {})) {
+      index = entry.profile === CHIBI_FLOOR_PROFILE ? attachChibiFloor(index,entry) : attachBoxFloor(index,entry)
+    }
+    return index
+  }
   const original = objectIndex?.assets?.[asset]
   const finite = n => typeof n === 'number' && Number.isFinite(n)
   const curve = c => c && [0,1,3].includes(c.mode) && finite(c.scalar) && finite(c.minScalar)
@@ -74,6 +83,43 @@ export function attachChibiFloor(objectIndex, model) {
       && gradient(s.alpha,['value']) && gradient(s.color?.colors,['r','g','b']) && gradient(s.color?.alphas,['value'])
       && texture(s.texture) && (s.frame === null || Number.isInteger(s.frame) && s.frame >= 0 && s.frame < 16))) return objectIndex
   return {...objectIndex,assets:{...objectIndex.assets,[asset]:{...original,floorAnimation:model}}}
+}
+
+function attachBoxFloor(index, model) {
+  const original = index?.assets?.[model?.asset]
+  const finite = n => typeof n === 'number' && Number.isFinite(n)
+  const hash = s => /^[a-f0-9]{64}$/.test(s || '')
+  const curve = c => c && [0,1,3].includes(c.mode) && finite(c.scalar) && finite(c.minScalar)
+    && Array.isArray(c.keys) && (c.mode !== 1 || c.keys.length > 0)
+    && c.keys.every((k,i,a) => [k.time,k.value,k.inSlope,k.outSlope].every(finite) && (!i || k.time > a[i-1].time))
+  const gradient = (g,props) => Array.isArray(g) && g.length >= 2 && g.every((k,i,a) =>
+    finite(k.time) && k.time>=0 && k.time<=1 && (!i || k.time>a[i-1].time)
+    && props.every(p=>finite(k[p]) && k[p]>=0 && k[p]<=1))
+  const colors = g => gradient(g?.colors,['r','g','b']) && gradient(g?.alphas,['value'])
+  const texture = id => model?.textures?.[id]?.pathId===id
+    && model.textures[id].serializedFile===model.keeper.serializedFile
+    && hash(model.textures[id].pngSha256) && /^floor-particles\/[\w.-]+\.png$/.test(model.textures[id].file || '')
+    && [model.textures[id].width,model.textures[id].height].every(n=>Number.isInteger(n) && n>0 && n<=4096)
+  if (model?.profile !== CHIBI_BOX_FLOOR_PROFILE || original?.kind !== 'particle'
+    || original.bundle !== model.bundle || original.particleCount !== model.particleCount
+    || !hash(model.bundleSha256) || typeof model.keeper?.pathId !== 'string'
+    || !Array.isArray(model.systems) || !model.systems.length || model.systems.length!==model.particleCount
+    || !model.mask || !texture(model.mask.texture) || ![model.mask.x,model.mask.y].every(finite)
+    || ![model.mask.width,model.mask.height].every(n=>finite(n) && n>0 && n<=2500)
+    || model.systems.reduce((n,s)=>n+s.capacity,0)>512
+    || !model.systems.every(s=> s.source?.serializedFile===model.keeper.serializedFile
+      && typeof s.source.pathId==='string' && hash(s.source.parameterTreeSha256)
+      && Number.isInteger(s.capacity) && s.capacity>0 && s.capacity<=250
+      && finite(s.rate) && s.rate>0 && s.rate<=250 && [s.position?.x,s.position?.y,s.shape?.x,s.shape?.y].every(finite)
+      && s.shape.x>=0 && s.shape.y>=0 && curve(s.size) && [0,3].includes(s.size.mode) && s.size.scalar>0
+      && curve(s.rotation) && [0,3].includes(s.rotation.mode) && curve(s.lifetime) && [0,3].includes(s.lifetime.mode)
+      && s.lifetime.scalar>0 && s.lifetime.scalar<=10 && (s.lifetime.mode!==3 || s.lifetime.minScalar>0)
+      && (!s.sizeOverLife || curve(s.sizeOverLife)) && (!s.angularVelocity || curve(s.angularVelocity))
+      && colors(s.color) && colors(s.colorOverLife) && [0,4].includes(s.colorMode) && gradient(s.alpha,['value'])
+      && texture(s.texture) && (s.frame===null || Number.isInteger(s.frame) && s.frame>=0 && s.frame<16)
+      && finite(s.sortingOrder) && finite(s.prewarmSeconds) && s.prewarmSeconds>=0 && s.prewarmSeconds<=10
+      && s.noiseParameters===null && s.speedParameters?.mode===0 && s.speedParameters.scalar===0)) return index
+  return {...index,assets:{...index.assets,[model.asset]:{...original,floorAnimation:model}}}
 }
 
 export async function loadChibiFloor(PIXI, animation, loadTexture) {

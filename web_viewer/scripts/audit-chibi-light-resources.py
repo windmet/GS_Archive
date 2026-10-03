@@ -90,6 +90,7 @@ def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
                 if animation_evidence is not None:
                     entry['animationEvidenceKey'] = inspect_controller(controller_reader, animation_evidence)
         elif obj.type.name == 'SpriteRenderer':
+            entry.update(enabled=value.m_Enabled,flipX=value.m_FlipX,flipY=value.m_FlipY,drawMode=value.m_DrawMode)
             if sprite_evidence is not None:
                 entry['renderState'] = {key: getattr(value, 'm_' + key) for key in (
                     'Enabled', 'SortingLayerID', 'SortingLayer', 'FlipX', 'FlipY',
@@ -111,6 +112,7 @@ def inspect_prefab(reader, animation_evidence=None, sprite_evidence=None):
                 entry['sprite'] = {'name': sprite.m_Name, **identity(sprite_reader),
                     'rect': {k: getattr(sprite.m_Rect, k) for k in ('x', 'y', 'width', 'height')},
                     'pivot': vector(sprite.m_Pivot), 'pixelsToUnits': sprite.m_PixelsToUnits}
+                entry['sprite']['packingFlags'] = sprite.m_RD.settingsRaw
                 texture_reader = sprite.m_RD.texture.deref()
                 texture = texture_reader.read()
                 entry['sprite']['texture'] = {'name': texture.m_Name, **identity(texture_reader),

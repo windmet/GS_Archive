@@ -10,7 +10,7 @@ const takeStar = asset => {
 }
 
 function lampAt(state, time, index, count) {
-  if (!state) return { color: 0xffffff, alpha: 0 }
+  if (!state || state.previewSupported === false) return { color: 0xffffff, alpha: 0 }
   if (state.hideTime !== undefined) {
     const start = lampAt({ ...state, hideTime: undefined }, state.hideTime, index, count)
     return { color: start.color, alpha: start.alpha * (1 - clamp(
@@ -70,15 +70,32 @@ export function sampleStagelight(state, time, index = 0, count = 1) {
 
 export function createStagelightRuntime(PIXI, parent, layers, textures) {
   const container = new PIXI.Container()
+  container.sortableChildren = true
+  const frameTextures = []
   const sprites = layers.map((layer, index) => {
-    const sprite = new PIXI.Sprite(textures[index])
+    let texture = textures[index]
+    if (layer.crop) {
+      const {x,y,width,height} = layer.crop
+      texture = new PIXI.Texture(texture.baseTexture,new PIXI.Rectangle(x,y,width,height))
+      frameTextures.push(texture)
+    }
+    const sprite = new PIXI.Sprite(texture)
     sprite.anchor.set(layer.anchorX, layer.anchorY)
     sprite.position.set(layer.x, layer.y)
     sprite.scale.set(layer.scaleX, layer.scaleY)
+    sprite.rotation = layer.rotation || 0
+    sprite.zIndex = layer.sortingOrder || 0
     sprite.blendMode = PIXI.BLEND_MODES.ADD
     container.addChild(sprite)
     return sprite
   })
   parent.addChild(container)
-  return { container, sprites }
+  return { container, sprites, frameTextures }
+}
+
+export function applyNativeLampColor(lamp, layer) {
+  const color = layer.nativeColor
+  if (!color) return lamp
+  return {color:[16,8,0].reduce((out,shift,i)=>out | (Math.round(((lamp.color>>shift)&255)*color[['r','g','b'][i]])<<shift),0),
+    alpha:lamp.alpha*color.a}
 }

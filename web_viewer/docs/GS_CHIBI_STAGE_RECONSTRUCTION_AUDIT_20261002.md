@@ -646,3 +646,7 @@ Python typed-source拒绝用例、Node梯度/生命周期/容量/seek/异步释�
 新增两曲原命令fixture，回归覆盖225ms/450ms亮暗交换、补色时间点、隐藏/向后seek、01青色与02橙色、真实50ms差异；既有地面相位与旧异步资源释放通过。build:check 2781模块24.71s，不复制public。5198 Browser 1280×720两相位截图可见左右星灯亮暗交换，02使用橙色；390×844页面宽390无横向溢出、console error0。证据stars-22200-22600.jpg为原录屏，stars-browser-22400.png/22600.png为复刻画面。
 
 全曲展开已重新读取135个带粒子的indexed对象、992个ParticleSystem完整模块树，source范围49个明确bundle（包括共享shader依赖）；账目仍是raw_inventory_not_visual_acceptance。后续按真实模块/材质逐类推广，不把Take灯/地板图硬套全曲。独唱上方光束初查显示Take使用大量NewSuspensionlight_*与Searchlight_*新格式，尚未进入现有Spotlight消费者，继续独立解析，未声称完成。
+
+### 2026-10-03：逐曲固定灯资源与多对象地面推广
+
+已遍历419个固定灯原生名称，414个可生成绘制描述、3293个有序Sprite；30条RAW曲目灯光轨道登记原命令及未解析模式。49个粒子panel全部分类，原Take加6个新对象共7个接线，42个保留具体模块缺口。各自原生图集、旋转、初始RGB/alpha、遮罩、预热、渐变与容量独立保存，不能套用Take参数。118编排完整来源覆盖报告已生成，仍不等于全曲画面验收。实际Browser验证ETERNITY、ANYWHERE、Change to Chance、運命光年与Take02回归；最终构建与窄屏无溢出检查通过。详见 [推广范围、复现与验收边界](GS_CHIBI_DYNAMIC_PROMOTION_20261003.md)。Study Suspensionlight、Take新格式上方光束与其余复杂floor模块仍是后续目标。

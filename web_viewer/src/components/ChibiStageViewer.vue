@@ -386,8 +386,9 @@
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
               <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
-              <div v-if="stageVfxCoverage?.floorParticleStatus !== 'not_loaded' && stageVfxCoverage?.floorParticleStatus"><dt>地面动态</dt><dd>原生渐变与遮罩 · 随机种子为预览，噪声待复刻</dd></div>
+              <div v-if="stageVfxCoverage?.floorParticleStatus !== 'not_loaded' && stageVfxCoverage?.floorParticleStatus"><dt>地面动态</dt><dd>原生渐变与遮罩 · 投影及随机种子仍在核对</dd></div>
               <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位与配色，闪烁曲线仍在核对</dd></div>
+              <div v-if="stageVfxCoverage?.stagelightUnimplementedCommands"><dt>待补灯效</dt><dd>{{ stageVfxCoverage.stagelightUnimplementedCommands }} 条原始指令 · 含未解析颜色模式或指令版本</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
@@ -446,7 +447,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
-import { stagelightStatesAt, sampleStagelight, createStagelightRuntime } from '../core/chibiStagelights.js'
+import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround } from '../core/chibiStageCoordinates.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
@@ -585,7 +586,10 @@ const stagelightSprites = createSpotlightSpriteStore({
   layerCount: null,
   loadTexture: file => loadImageLayerTexture(file),
   createRuntime: (id, layers, textures) => markRaw(createStagelightRuntime(PIXI, cameraContainer, layers, textures)),
-  destroyRuntime: runtime => { runtime.container.removeFromParent(); runtime.container.destroy({ children: true }) },
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent(); runtime.container.destroy({ children: true })
+    for (const texture of runtime.frameTextures) texture.destroy(false)
+  },
   destroyTexture: texture => texture.destroy(true),
   onReady: () => syncStagelights(),
   onError: error => console.warn('Native stage lamp textures could not be loaded', error),
@@ -1768,7 +1772,7 @@ function syncStagelights() {
   const colors = []
   for (const state of stagelightStatesAt(track.events, stageTime.value).values()) {
     const model = stageEffectIndex.value.stagelights?.[state.asset]
-    if (!model || (state.hideTime !== undefined && stageTime.value >= state.hideTime + (state.fadeDuration || 1))) continue
+    if (!model || state.previewSupported === false || (state.hideTime !== undefined && stageTime.value >= state.hideTime + (state.fadeDuration || 1))) continue
     // Asset belongs in the runtime key: reused lamp IDs must not reuse another prefab.
     const runtime = stagelightSprites.ensure(`${code}:${state.id}:${state.asset}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue
@@ -1777,7 +1781,7 @@ function syncStagelights() {
     runtime.container.zIndex = state.depth ?? 1600
     runtime.container.visible = true
     for (const [index, sprite] of runtime.sprites.entries()) {
-      const lamp = sampleStagelight(state, stageTime.value, index, runtime.sprites.length)
+      const lamp = applyNativeLampColor(sampleStagelight(state, stageTime.value, index, runtime.sprites.length),model.layers[index])
       sprite.tint = lamp.color
       sprite.alpha = lamp.alpha
     }

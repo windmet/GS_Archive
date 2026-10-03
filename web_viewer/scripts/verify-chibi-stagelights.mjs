@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { stagelightStatesAt, sampleStagelight, createStagelightRuntime } from '../src/core/chibiStagelights.js'
+import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../src/core/chibiStagelights.js'
 import { createSpotlightSpriteStore } from '../src/core/chibiSpotlightSprites.js'
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-stagelight-events.json', import.meta.url)))
 for (const [code, track] of Object.entries(fixture.songs)) {
@@ -60,6 +60,14 @@ const runtime=createStagelightRuntime({Container,Sprite,BLEND_MODES:{ADD:'add'}}
 assert.deepEqual(runtime.sprites.map(s=>s.position.v),[[30,-24],[-30,-24]])
 assert.deepEqual(runtime.sprites.map(s=>s.scale.v),[[.5,.2],[.5,.2]])
 assert.ok(runtime.sprites.every(s=>s.blendMode==='add'))
+class Texture {constructor(baseTexture,rect){this.baseTexture=baseTexture;this.rect=rect}}
+class Rectangle {constructor(...v){this.v=v}}
+const atlas=createStagelightRuntime({Container,Sprite,Texture,Rectangle,BLEND_MODES:{ADD:'add'}},camera,
+ [{...layers[0],crop:{x:256,y:0,width:128,height:128},rotation:.25}],[{baseTexture:'original atlas'}])
+assert.deepEqual(atlas.frameTextures[0].rect.v,[256,0,128,128])
+assert.equal(atlas.sprites[0].rotation,.25)
+assert.deepEqual(applyNativeLampColor({color:0xffffff,alpha:.5},{nativeColor:{r:1,g:.5,b:0,a:.8}}),{color:0xff8000,alpha:.4})
+assert.equal(sampleStagelight({previewSupported:false},3000).alpha,0)
 let resolve, destroyed=0, created=0
 const store=createSpotlightSpriteStore({layerCount:null,
  loadTexture:()=>new Promise(r=>{resolve=r}),createRuntime:()=>{created++;return{}},

@@ -17,3 +17,21 @@ for mutate in [lambda p:p['renderer'].update(alignment=0),
  except ValueError:pass
  else:raise AssertionError('Unsupported floor source accepted')
 print('Four typed native floor emitters, gradient keys, mask material and changed-source rejection passed')
+spec=importlib.util.spec_from_file_location('catalog',base/'prepare-live-chibi-floor-catalog.py')
+catalog=importlib.util.module_from_spec(spec);spec.loader.exec_module(catalog)
+native=json.loads((base/'fixtures/chibi-floor-box-inputs.json').read_text(encoding='utf8'))
+published=json.loads((base/'fixtures/chibi-floor-catalog.json').read_text(encoding='utf8'))
+expected=published['assets'][native['asset']]
+parsed=[catalog.system(p) for p in native['particles']]
+assert [s for s,_ in parsed]==expected['systems']
+assert {id for _,id in parsed}=={expected['mask']['texture']}
+for change in [lambda p:p['modules']['InitialModule']['startSpeed'].update(scalar=1),
+               lambda p:p['modules']['ShapeModule'].update(type=0),
+               lambda p:p['modules']['EmissionModule'].update(m_Bursts=[{}]),
+               lambda p:p['modules'].update(NoiseModule={}),
+               lambda p:p['modules']['UVModule']['startFrame'].update(minMaxState=3)]:
+    p=copy.deepcopy(native['particles'][0]);change(p)
+    try:catalog.system(p)
+    except ValueError:pass
+    else:raise AssertionError('Unimplemented source semantics entered general box profile')
+print('Independent floor source fixture matches catalog; velocity, sphere, burst, noise and random-UV guards passed')
