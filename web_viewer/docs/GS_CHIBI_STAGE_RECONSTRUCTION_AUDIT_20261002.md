@@ -534,4 +534,6 @@ Pin 与 Spotlight 共用一个背景消费者，按既有事件采样选环境�
 
 实际 5198 Browser 新生产 bundle：Study、S.E.M 2/3/4、005_00、暂停 4.8s，背景 alpha=0.700，mask count=3（含原始离屏 id1）而屏内两孔，能透出 ABC 布景及台面。1440×900 与 390×844 的孔洞均跟随镜头和缩放；手机模拟 canvas≈357×201、scrollWidth=clientWidth=390。关闭光束后 Flash=0、mask=3／背景=0.700；再关灯光为 mask=0／背景=0。重开、前进到13.7s变 Spotlight 20/21/22、mask=0／背景=0.500，倒退4.8s恢复两孔。Take 01／02 的40s检查无 Study 遮罩残留。这仅是切歌清理，不能代替 Take 两半录屏光效验收。截图保存 `study-reference/pinspotlight-native-004.800.png`、`pinspotlight-native-007.000.png`、`pinspotlight-mobile-004.800.png`；窄屏模拟不是真实设备测试。
 
-对齐录屏差异账本：4.3s 指令边界附近，录屏仍仅左孔，Web 已开始第二孔；4.8s 两边均有左／中孔，右侧暗；7s 录屏右孔照亮 ABC，Web 同区域可透出，但人物动作相位仍不同。参考的黑色裤装在 Web 同服装编号下呈浅色、角色比例与孔洞范围仍存在差异，不能把“GPU shader 工作”和“录屏完全复刻”混为一谈。下一步继续查动作／Spine 颜色、原生镜头与投影、call 棒、粒子和全曲灯光；尚不具备全舞台或 master PR 收口结论。
+对齐录屏差异账本：4.3s 指令边界附近，录屏仍仅左孔，Web 已开始第二孔；4.8s 两边均有左／中孔，右侧暗；7s 录屏右孔照亮 ABC，Web 同区域可透出，但人物动作相位仍不同。参考黑色裤装在 Web 当前005_00编队中呈浅色；直接查看 `costumes/035mco_005_00/cos.png` 可见裤装原纹理本身浅灰，录屏服装身份／原生分部位颜色机制还需确认，不能据此直接认定为 tint 错误。角色比例与孔洞范围仍存在差异，不能把“GPU shader 工作”和“录屏完全复刻”混为一谈。下一步继续查动作／Spine 颜色、原生镜头与投影、call 棒、粒子和全曲灯光；尚不具备全舞台或 master PR 收口结论。
+
+本批确切代码提交 `ea418ca4d754876347dadb6b24dd39cb286de27f` 的完整 [Source Gate 37080592028](https://github.com/windmet/GS_Archive/actions/runs/37080592028) 已终态 success，114 个步骤成功、无失败，包含 Pinspotlight 两项新 portable 回归。期间其他窗口提交 `39ed7770` 的歌曲返回／展开定位修复，保留其成果；上述 CI 仅绑定 ea418ca4，并非对后续 HEAD 的整体验收。Browser console error 空，结束恢复默认视口、保留 Study 验收入口。
