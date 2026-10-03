@@ -561,3 +561,15 @@ python -X utf8 scripts/verify-chibi-costume-shader.py
 后续门禁：代码 `86909ac23246b1efdf71c7b6c0e72d98e965e927` 的完整 [Source Gate 37082087402](https://github.com/windmet/GS_Archive/actions/runs/37082087402) 已终态 success，115 个成功步骤、无失败，包含新增 portable shader 契约。期间其它窗口的卡片 UI／歌曲验收提交 `0b413ef7`、`81707aa1` 保留；此 CI 绑定 86909ac2，而不是后续文档 revision。
 
 进一步定位了现有消费者偏差：`prepare-live-chibi-assets.py` 把 `Livechara_Foot_Color` 输出为 characterLightEvents，`characterLightAt` 再以 opacity／1000 混白并对整个 Spine 设置 tint。实际 Study RAW `steqmg_live_effect`（song bundle SHA256 `c8ac69f6c08f0dcac5dfd397cb4a72e8409927e1e1f5f5ed3bc784121645f1c8`）有 **29 条 Foot_Color、0 条已解析 Body_Color**，首条 time=-2000、color=#221d23、value2=600、value3=1、value4=1250。原始行、TextAsset 身份／SHA、当前派生事件与 metadata 方法 witness 保存 `study-reference/foot-color-mapping-candidate.json`。第19列的 #cc6b8c 属于原表“コメント”，不是第二个运行期颜色参数。结合原生局部高度渐变 shader 与 `ChangeFootColor(color,rate,transitionDuration)` 方法签名，现有“整身乘色”缺少 Foot 渐变维度，不能作为原生等效；但方法体缺失，**value2 是否直接 rate、除1000、如何换算 cutoff／角色高度仍待证明**。暂未把该列强行重命名成高度或套用新的数值公式。下一批应优先闭合 Foot 命令到 runtime uniform，而不是仅从衣装纹理差异推断换装。
+
+## 2026-10-03：Study 录屏衣装核准与动作切换点定位修复
+
+输入 HEAD `b3295fb4`。沿既有 audio offset=4.7275s 复核录屏，并以实际导出纹理、衣装名称和 Browser 换装确认：录屏使用 **チアーズトゥフューチャー／敬向未来**，2号位次郎 `037jir_102_00`、3号位道夫 `035mco_101_00`、4号位类 `036rui_101_00`。同组同名衣装的数字 ID 并不一致，不能全部套用101。此前005_00验收的浅灰裤、白手套、粉色眼镜差异来自选错衣装；换装后的黑裤、裸手、粉色鞋及蓝黄衣尾已与参考对应。**撤回用这组裤装差异推测运行期配色的依据**；Foot_Color整身乘色缺少局部高度维度的独立源码证据仍成立。三份正确衣装 RAW material 再抽取成功，仍精确关联同一 Growing/Skeleton-Gradient shader；来源保存在本地 `study-reference/reference-outfit-shader-contract.json`，没有提交纹理或录屏。
+
+动作比对也需避开错误结论：6.5s录屏与Web都是道夫举手、类向右指，7s是RAW三人 motion23001 的切换边界。旧 `syncSlotAtTime(reset=true)` 只从setup重建最新动作，使暂停定位7s立即跳成双臂平举；连续播放则有既有0.12s骨骼混合。现在定位在混合窗口内时，先重建最近过渡链及其前驱，再依次按原time／speed／mode采样，保留出动作姿态。mode3仍重置，窗口外仍只采样最新事件；不回放全曲、不修改CSV时间、速度或原生未证实的混合公式。每次异步步骤核对intent、runtime和换装loadSequence，取消、卸载或快速切歌不继续安装后续动作。该批修复Web暂停定位与Web连续播放一致性，**并不证明Unity原生混合时长就是0.12s**。
+
+验证：`verify-stage-intent.mjs` 执行实际SFC sampler／playSlotEvent和Spine AnimationState，对比逐帧连续播放，包含不同速度、连续短间隔handoff、mode3、倒退、旧跳变witness以及intent／runtime／换装中断；35项控制时序回归通过。`npm run verify:engineering`通过，`npm run build:check` 2,779 modules／14.81s，固定 `.analysis/build-check`、无public corpus copy。编译包含同工作区其它窗口尚未提交的资料页修改，但本批只提交舞台与自身回归，不将它们计作本批验收。
+
+实际5198生产bundle `ChibiStageViewer-C9ZSZfEW.js`：1280×720，正确S.E.M衣装、3/3就绪，定位7s已保持道夫举手、类向右指；与音频对齐参考7s动作对应。390×844在13.7→7s倒退后仍保留该姿态，canvas CSS≈357×201，document scrollWidth=clientWidth=390。快速Study→Take01→Study期间取消尚在加载的站位，最后Study 3/3就绪、无console error；此处不算Take40s已完成演出或灯光验收。证据 `study-seek-handoff-fixed-007.000.png`、`study-seek-handoff-mobile-007.000.png`，对照 `study-reference-outfits-007.000.png` 与录屏 `song-007.000s.jpg`／`song-006.500s.jpg`。结束恢复默认视口并保留后续验收tab。
+
+同时读到RAW五份 `live_costume_setup_1..5` 的SkeletonDataAsset `scale=0.003333332948386669`（约1/300），TextAsset PPtr可直接读取。这是原生骨架单位线索，不能把当前pixel-space Spine.scale直接设成1/300：原生相机／mesh世界单位到浏览器投影、Foot rate到cutoff仍未闭合，本批未改比例。完整Study还需处理call棒、粒子、投影／灯光范围与全曲动作；Take两半配准和完整门禁／master PR也仍未收口。当前没有全舞台、实体手机或发布通过声明。

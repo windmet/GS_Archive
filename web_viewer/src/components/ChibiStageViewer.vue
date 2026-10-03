@@ -2903,11 +2903,31 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
 }
 
 async function syncSlotAtTime(slot, milliseconds, reset = true) {
-  const event = [...eventsForPosition(slot.position)]
-    .reverse()
-    .find(item => item.time <= milliseconds)
-  if (event) await playSlotEvent(slot, event, { reset, seekTime: milliseconds })
-  else layoutRuntime(slot.position)
+  const events = eventsForPosition(slot.position)
+  const index = events.findLastIndex(item => item.time <= milliseconds)
+  if (index < 0) {
+    layoutRuntime(slot.position)
+    return
+  }
+  const runtime = runtimes.get(slot.position)
+  const revision = stageIntent.revision()
+  const loadSequence = slot.loadSequence
+  // A paused seek inside a cross-fade needs the outgoing pose too. Rebuild
+  // only the recent mixing chain and its predecessor, not the whole song.
+  const mixMilliseconds = Math.max(0, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
+  let start = index
+  if (reset) {
+    while (start > 0 && events[start].mode !== 3
+      && events[start].time > milliseconds - mixMilliseconds) start -= 1
+  }
+  for (let cursor = start; cursor <= index; cursor += 1) {
+    if (stageIntent.revision() !== revision || slot.loadSequence !== loadSequence
+      || runtimes.get(slot.position) !== runtime) return
+    await playSlotEvent(slot, events[cursor], {
+      reset: cursor === start ? reset : false,
+      seekTime: cursor === index ? milliseconds : events[cursor + 1].time,
+    })
+  }
 }
 
 async function seekStage() {

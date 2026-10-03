@@ -26,6 +26,76 @@ function fixture(boundary='audio'){
 }
 let cases=0
 {
+  // Actual SFC seek at an authored handoff must match the outgoing pose and
+  // subsequent cross-fade seen during continuous playback, not setup pose.
+  const events = [
+    {time:0,motion:1,speed:1300,mode:3},
+    {time:1000,motion:2,speed:750,mode:2},
+    {time:1060,motion:3,speed:1000,mode:2},
+    {time:1800,motion:4,speed:1000,mode:3},
+  ]
+  function harness() {
+    const data=new SkeletonData();data.bones.push(new BoneData(0,'root',null))
+    for (let id=1;id<=4;id++) {
+      const curve=new RotateTimeline(2);curve.boneIndex=0
+      curve.setFrame(0,0,id*25);curve.setFrame(1,2,id*25+15)
+      data.animations.push(new Animation(`motion${id}_3dance`,[curve],2))
+    }
+    const stateData=new AnimationStateData(data);stateData.defaultMix=.12
+    const skeleton=new Skeleton(data),state=new AnimationState(stateData)
+    const runtime={skeletonData:data,spine:{state,skeleton,stateData,
+      update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
+    const slot={position:3,loadSequence:1,motionSequence:0}
+    const c={runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
+      playing:ref(false),playbackSpeed:ref(1),motionCatalog:ref(new Map(events.map(e=>[e.motion,{id:e.motion}]))),
+      injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_3dance`],
+      layoutRuntime(){},eventsForPosition:()=>events}
+    vm.createContext(c)
+    for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])
+      vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
+    for(const name of ['playSlotEvent','syncSlotAtTime'])
+      vm.runInContext(source.match(new RegExp(`async function ${name}\\([^]*?\\n\\}`))[0],c)
+    return {c,slot,runtime}
+  }
+  async function continuous(target) {
+    const f=harness()
+    for(let index=0;index<events.length&&events[index].time<=target;index++) {
+      const event=events[index]
+      await f.c.playSlotEvent(f.slot,event,{reset:index===0})
+      const until=Math.min(target,events[index+1]?.time??target)
+      let remaining=(until-event.time)/1000*event.speed/1000
+      f.runtime.spine.state.timeScale=1
+      while(remaining>1e-9){const dt=Math.min(1/60,remaining);f.runtime.spine.update(dt);remaining-=dt}
+      f.runtime.spine.state.timeScale=0
+    }
+    return f.runtime.spine.skeleton.bones[0].rotation
+  }
+  for (const target of [950,1000,1030,1060,1090,1190,1800,1850]) {
+    const f=harness();await f.c.syncSlotAtTime(f.slot,target,true)
+    const expected=await continuous(target)
+    assert(Math.abs(f.runtime.spine.skeleton.bones[0].rotation-expected)<.001,
+      `Authored handoff at ${target} must retain playback pose`)
+    assert.equal(f.runtime.spine.state.timeScale,0);cases++
+  }
+  const old=harness();await old.c.playSlotEvent(old.slot,events[1],{reset:true,seekTime:1000})
+  assert(Math.abs(old.runtime.spine.skeleton.bones[0].rotation-await continuous(1000))>10,
+    'Witness must reproduce old setup-pose jump at the handoff')
+  const backwards=harness()
+  await backwards.c.syncSlotAtTime(backwards.slot,1850,true)
+  await backwards.c.syncSlotAtTime(backwards.slot,1030,true)
+  assert(Math.abs(backwards.runtime.spine.skeleton.bones[0].rotation-await continuous(1030))<.001);cases++
+  for(const invalidation of ['intent','runtime','costume']) {
+    const f=harness(),pending=deferred();let loads=0
+    f.c.injectLiveChibiMotion=async(_runtime,motion)=>{loads++;await pending.promise;return [`motion${motion.id}_3dance`]}
+    const seek=f.c.syncSlotAtTime(f.slot,1030,true);await flush()
+    if(invalidation==='intent')f.c.stageIntent.cancel()
+    if(invalidation==='runtime')f.c.runtimes.set(3,{})
+    if(invalidation==='costume')f.slot.loadSequence++
+    pending.resolve();await seek
+    assert.equal(loads,1,'A cancelled seek must not load or replace the next motion');cases++
+  }
+}
+{
   const c={};vm.createContext(c)
   for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
   function actor(){
