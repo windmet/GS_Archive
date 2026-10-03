@@ -22,7 +22,7 @@
         <button class="portal-workbench" type="button" aria-label="编辑制作人工作台" @click="personalOpen = true">
           <ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :accent-color="preferredReference.accentColor" :size="42" decorative />
           <span v-else class="portal-workbench-empty"><Users :size="22" aria-hidden="true" /></span>
-          <span><strong>{{ producerName || '未设置制作人' }}</strong><small>{{ preferredReference?.actionable ? `担当：${idolName(preferredReference.idolCode) || preferredReference.displayName}` : '点击选择担当偶像' }}</small></span>
+          <span class="portal-workbench-copy"><strong>{{ producerDisplayName }}</strong><small>{{ preferredReference?.actionable ? `担当：${idolName(preferredReference.idolCode) || preferredReference.displayName}` : '点击选择担当偶像' }}</small></span>
           <ChevronRight :size="17" aria-hidden="true" />
         </button>
         <nav class="portal-sections" aria-label="全部门户入口">
@@ -62,7 +62,9 @@ import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { producerName } from '../../utils/LanguageStore.js'
-import { onMounted, ref, watch } from 'vue'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAddressing.js'
+import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ChevronRight, Images, Settings2, Sparkles, Users } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
@@ -75,6 +77,7 @@ import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
 const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' } })
 const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred'])
+const producerDisplayName = computed(() => producerName.value ? presentProducerAddressingText(PRODUCER_NAME_WITH_P_TOKEN) : '未设置制作人')
 const personalOpen = ref(false), settingsOpen = ref(false)
 const heading = ref(null), wallpaperOpen = ref(false), wallpaper = useTerminalWallpaper()
 const backdropFailed = ref(false)
@@ -101,7 +104,7 @@ onMounted(() => { heading.value?.focus({ preventScroll: true }); if (wallpaper.p
 .terminal-portal .terminal-signature {padding-top:var(--gs-space-7);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-regular);}
 .portal-mobile-settings {display:none;}
 .portal-workbench {display:flex;align-items:center;gap:var(--gs-space-4);width:100%;min-height:64px;margin-bottom:var(--gs-space-5);padding:var(--gs-space-3) var(--gs-space-4);border:1px solid #dce8e4;border-radius:var(--gs-radius-panel);background:#f7fbfa;color:#32584f;text-align:left;}
-.portal-workbench > span:not(.portal-workbench-empty) {display:grid;gap:var(--gs-space-2);flex:1;min-width:0;}
+.portal-workbench > .portal-workbench-copy {display:grid;gap:var(--gs-space-2);flex:1;min-width:0;}
 .portal-workbench strong {font-size:var(--gs-text-body);font-weight:var(--gs-weight-bold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .portal-workbench small {font-size:var(--gs-text-caption);font-weight:var(--gs-weight-regular);color:#7d9690;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .portal-workbench-empty {display:grid;place-items:center;width:42px;height:42px;border:1px dashed #afcfc3;border-radius:50%;color:#72a894;}
