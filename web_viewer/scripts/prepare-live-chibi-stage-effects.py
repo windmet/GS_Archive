@@ -19,6 +19,7 @@ from live_chibi_stagelight import NAMES as STAGELIGHT_NAMES, TEXTURES as STAGELI
 from live_chibi_suspensionlight import ASSET as SUSPENSION_ASSET, suspensionlight_model, suspensionlight_events
 from live_chibi_laser import extract_laser_model
 from live_chibi_spotbeam import extract_spotbeam_model
+from live_chibi_turnlaser import extract_turnlaser_model
 from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
@@ -136,6 +137,7 @@ def main() -> None:
     particle_spec.loader.exec_module(particle_audit)
     laser, _ = extract_laser_model(environment, particle_audit)
     spotbeam, _ = extract_spotbeam_model(environment, particle_audit)
+    turnlaser, _ = extract_turnlaser_model(environment, particle_audit, audit)
     if assets['fx_in_ntalon_spotlight']['source']['pathId'] != '629':
         raise ValueError('Wrong native spotbeam atlas')
     character_shadow, _ = extract_character_shadow(environment)
@@ -222,6 +224,7 @@ def main() -> None:
         "newSuspensionlight": suspension,
         "laserlight": laser,
         "spotbeam": spotbeam,
+        "turnlaser": turnlaser,
         "characterShadow": character_shadow,
         "newSuspensionlightSongs": suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),

@@ -1,5 +1,6 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
+import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 
 // Integrate unweighted native angular-velocity curves, rather than treating
 // their values as absolute rotation angles or inventing a triangular sweep.
@@ -36,7 +37,10 @@ export function sampleLaserParticles(model, state, milliseconds) {
         const angular = s.angularVelocity ? integrateLaserCurve(s.angularVelocity, fraction) * life : 0
         // CSV/director alignment and 2D projection are recording-guided.
         // Style 7's Y-axis mirror reverses fan rotation, not beam direction.
-        const angle = (s.mirrored ? -1 : 1) * (s.angle + angular)
+        // World-space turning particles retain the Animator angle at birth.
+        const animated = s.animation ? sampleStreamedCurve(s.animation.curve,
+          (born*s.animation.speed)%s.animation.duration)*Math.PI/180 : 0
+        const angle = (s.mirrored ? -1 : 1) * (s.angle + angular + animated)
         const color = [16,8,0].reduce((tint,shift,i) => tint | (Math.round(
           (Number.parseInt(String(state.color || '#ffffff').slice(1),16) >> shift & 255)
           * s.color[['r','g','b'][i]]) << shift), 0)

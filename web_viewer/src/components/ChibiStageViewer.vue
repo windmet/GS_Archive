@@ -2021,6 +2021,7 @@ function syncLaserlights() {
   for (const state of active) {
     const native = stageEffectIndex.value?.laserlight?.styles?.[state.style]
       || stageEffectIndex.value?.spotbeam?.styles?.[state.style]
+      || stageEffectIndex.value?.turnlaser?.styles?.[state.style]
     if (native) {
       const spotbeam = native.kind === 'spotbeam'
       const runtime = laserParticleSprites.ensure(`${songId}:${state.id}:${state.style}`,

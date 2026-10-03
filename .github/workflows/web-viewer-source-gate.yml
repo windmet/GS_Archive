@@ -140,6 +140,9 @@ jobs:
       - name: Verify native Not Alone beam and pool atlas particles
         run: python scripts/verify-chibi-spotbeam-parser.py && node scripts/verify-chibi-spotbeam-particles.mjs
 
+      - name: Verify native turning laser Animator particle bindings
+        run: python scripts/verify-chibi-turnlaser-parser.py && node scripts/verify-chibi-turnlaser-particles.mjs
+
       - name: Verify native Take floor particles and masked timeline
         run: python scripts/verify-chibi-floor.py && node scripts/verify-chibi-floor.mjs
 
