@@ -425,7 +425,8 @@ let _runtimeDiagnosticsTimer = null
 let unregisterReleaseViewer = null
 
 const storyAudioSession = new StoryAudioSession({
-  busVolumes: { bgm: 0.7, ambient: 0.7, voice: 1, se: 0.7 },
+  masterVolume: initialPreferences.volumes.master,
+  busVolumes: initialPreferences.volumes,
   disabled: NO_AUDIO,
   releaseOwner: 'story-player',
 })

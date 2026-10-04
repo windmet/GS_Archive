@@ -37,6 +37,8 @@
 </template>
 
 <script setup>
+import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
+const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { ChevronLeft, ChevronRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
 import { validateSongChart } from '../../presentation/SongChartPresentation.js'
@@ -75,9 +77,9 @@ const clock = createMediaElementClock(snapshot => {
   clockSnapshot.value = snapshot
   if (snapshot.phase === 'error') { audioError.value = '歌曲音频加载失败，请点击播放重试。'; stopPlayback() }
 })
-watch(audio, element => { clock.bind(element); if (element) { element.playbackRate = playbackRate.value; element.volume = volume.value } })
+watch(audio, element => { clock.bind(element); if (element) { element.playbackRate = playbackRate.value; element.volume = volume.value * masterVolume } })
 watch(playbackRate, value => { if (audio.value) audio.value.playbackRate = value })
-watch(volume, value => { if (audio.value) audio.value.volume = value })
+watch(volume, value => { if (audio.value) audio.value.volume = value * masterVolume })
 async function loadChart() {
   stopPlayback(); const current = ++generation; controller?.abort()
   editingTick.value = false

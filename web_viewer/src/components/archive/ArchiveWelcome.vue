@@ -1,5 +1,6 @@
 <template>
-  <section aria-labelledby="welcome-title" class="archive-terminal terminal-welcome" :class="{ 'has-wallpaper': wallpaper.selected.value, 'selection-only': selectionOnly || step === 'idol' }">
+  <ArchiveProducerSettings v-if="canCancel && !selectionOnly && step === 'mode'" :preferences="preferences" :idols="idols" :preferred-idols="preferredIdols" :idol-name="idolName" :idol-search="idolSearch" :notice="notice" @cancel="emit('cancel')" @save-startup="emit('save-startup',$event)" @save-preferred="emit('save-preferred',$event)" @settings-applied="emit('settings-applied')" />
+  <section v-else aria-labelledby="welcome-title" class="archive-terminal terminal-welcome" :class="{ 'has-wallpaper': wallpaper.selected.value, 'selection-only': selectionOnly || step === 'idol' }">
     <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" @error="backdropFailed = true" />
     <div class="terminal-scroll" data-archive-scroll-container>
       <div class="terminal-panel">
@@ -67,6 +68,7 @@
 </template>
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
+import ArchiveProducerSettings from './ArchiveProducerSettings.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ChevronRight, Images, LayoutGrid, Shuffle, Sparkles } from '@lucide/vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
@@ -83,7 +85,7 @@ const props = defineProps({
   dataReady: Boolean, selectionOnly: Boolean, canCancel: Boolean,
   targetLabel: { type: String, default: '立绘主页' },
 })
-const emit = defineEmits(['cancel', 'choose-later', 'choose-portal', 'choose-idol', 'save-startup', 'save-preferred', 'clear-preferences'])
+const emit = defineEmits(['cancel', 'choose-later', 'choose-portal', 'choose-idol', 'save-startup', 'save-preferred', 'clear-preferences', 'settings-applied'])
 const heading = ref(null), step = ref(props.selectionOnly ? 'idol' : 'mode')
 const selectedMode = ref(props.preferences.homeMode === 'card' ? 'card' : 'spine')
 function chooseMode(mode) { selectedMode.value = mode; step.value = 'idol' }

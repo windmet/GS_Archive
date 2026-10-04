@@ -71,4 +71,6 @@ const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intellig
 @media(hover:hover) and (pointer:fine){.card-bento button:hover {box-shadow:0 4px 12px #1b33441a;border-color:var(--portal-accent);}.bento-note,.bento-directory,.encounter-card {transition:transform 160ms ease-out;}.bento-note:hover,.bento-directory:hover {transform:translateY(-2px);}}
 @media(prefers-reduced-motion:reduce){.card-bento button {transition:none!important;transform:none!important;}}
 @container(max-width:850px){.card-bento {grid-template-rows:210px 94px;}.is-global {grid-template-rows:168px 150px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}}
+
+.bento-note,.bento-directory {border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--portal-idol-color) 6%,#ffffffa0)!important;}
 </style>

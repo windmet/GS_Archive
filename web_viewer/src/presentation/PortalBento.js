@@ -16,5 +16,5 @@ export function portalTimeline(events) {
     choices.push(rows.find(row=>row.id==='410008' && row.title.includes('K.now O.nly')) || rows[Math.floor(rows.length/2)])
   }
   choices.push(sorted.at(-1))
-  return [...new Map(choices.map(row=>[row.id,row])).values()].sort((a,b)=>a.releaseAt-b.releaseAt)
+  return [...new Map(choices.map(row=>[row.id,row])).values()].sort((a,b)=>a.releaseAt-b.releaseAt).map(row => ({...row, timelineDate: new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date(row.releaseAt*1000)).replaceAll('-','.'), seriesLabel: String(row.title || '').match(/GROWING (?:SIGN@L|SELECTION)/)?.[0] || row.subtitle.split(' · ')[0]}))
 }

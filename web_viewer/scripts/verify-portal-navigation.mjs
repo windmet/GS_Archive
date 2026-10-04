@@ -67,6 +67,7 @@ for (const destination of [
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {
+  userPreferences: {value:{portalDefaultScope:"favorite"}},
   archiveBootstrap: {idols:[{id:"001tom"}]},
   isDirectScenarioEntry,
   ...useArchiveNavigationState(),
@@ -82,6 +83,11 @@ await restoreContext.applyArchiveRoute({ view: 'portal', portalFrom: '?view=card
 assert.equal(restoreContext.view.value, 'portal')
 assert.equal(restoreContext.currentScenario.value, null, 'history entry into portal releases retained playback payload')
 assert.equal(restoreContext.portalFrom.value, '?view=cards&idol=001tom')
+restoreContext.userPreferences.value.portalDefaultScope = 'all'
+await restoreContext.applyArchiveRoute({view:'portal'})
+assert.equal(restoreContext.portalScope.value,'all','bare portal follows saved default scope')
+await restoreContext.applyArchiveRoute({view:'portal',portalScope:'001tom'})
+assert.equal(restoreContext.portalScope.value,'001tom','explicit temporary lens wins over default')
 // No loaders or media globals were provided: this early restoration path is isolated.
 const handlers = ['openArchivePortal', 'closeArchivePortal'].map(name => {
   const source = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]

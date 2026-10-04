@@ -65,6 +65,7 @@
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
         @save-startup="storeUserPreferences"
+        @settings-applied="userPreferences = loadArchiveUserPreferences().preferences"
         @clear-preferences="clearUserPreferences"
       />
       <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
@@ -81,6 +82,7 @@
         @focus-change="homeFocus = $event"
         :can-return-to-archive="Boolean(homeFrom)"
         @open-archive="openArchivePortal(homeSelectedId)"
+        @settings="openWelcomeSettings"
         @return-to-archive="closeHomeVisit"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
@@ -1794,7 +1796,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
-      portalScope.value = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : ''
+      portalScope.value = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : userPreferences.value.portalDefaultScope === 'all' ? 'all' : ''
       portalQuery.value = route.portalQuery || ''
       playbackController.reset()
       view.value = 'portal'

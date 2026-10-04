@@ -12,7 +12,7 @@
       @error="audioError = '暂时无法播放，请稍后重试。'"
     />
     <ArchiveMediaTransport music :playing="['playing', 'waiting'].includes(clockSnapshot.phase)" :duration="clockSnapshot.duration" :current-time="clockSnapshot.currentTime" @toggle="togglePlayback" @restart="clock.seek(0)" @seek="clock.seek">
-      <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume" /></label></details>
+      <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume" /></label></details>
     </ArchiveMediaTransport>
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
     <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
@@ -22,6 +22,8 @@
 </template>
 
 <script setup>
+import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
+const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { onBeforeUnmount, ref, watch } from 'vue'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
@@ -48,7 +50,7 @@ const audioError = ref('')
 const audioElement = ref(null)
 const clockSnapshot = ref({ phase: 'idle', currentTime: 0, duration: null, playbackRate: 1, errorCode: null })
 const clock = createMediaElementClock(snapshot => { clockSnapshot.value = snapshot })
-watch(audioElement, element => clock.bind(element), { immediate: true })
+watch(audioElement, element => { clock.bind(element); if(element) element.volume = volume.value * masterVolume }, { immediate: true })
 onBeforeUnmount(() => { audioElement.value?.pause(); clock.dispose() })
 
 watch(() => props.track, () => { audioError.value = '' })

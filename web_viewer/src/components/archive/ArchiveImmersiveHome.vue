@@ -41,6 +41,7 @@
     <nav v-if="!focusMode" class="home-archive-links" aria-label="主页与资料馆">
       <button type="button" @click="emit('open-archive')">查看他的档案</button>
       <button v-if="canReturnToArchive" type="button" @click="emit('return-to-archive')">返回资料馆</button>
+      <button type="button" @click="emit('settings')">{{ producerName ? `${producerName} P` : '制作人档案' }}</button>
     </nav>
 
     <header class="home-masthead">
@@ -213,7 +214,7 @@
           <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
         </fieldset>
 
-        <ProducerNameSetting />
+        <button type="button" class="home-producer-settings" @click="emit('settings')">{{ producerName || '制作人' }} P · 编辑制作人档案</button>
         <label class="settings-field">
           <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
@@ -291,7 +292,8 @@ import { archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames 
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
-import ProducerNameSetting from './ProducerNameSetting.vue'
+import { producerName } from '../../utils/LanguageStore.js'
+import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
@@ -313,7 +315,7 @@ const props = defineProps({
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -412,7 +414,8 @@ async function loadCards(retry = false) {
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '', steps: [renderStep.value] }))
-const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio })
+const homeAudioPreferences = new PlayerPreferencesRepository().load().volumes
+const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio, masterVolume: homeAudioPreferences.master, busVolumes: homeAudioPreferences })
 const homeStyle = computed(() => ({
   '--idol-color': activeIdol.value?.color || '#21b7c5',
   '--interface-alpha': (preferences.interfaceOpacity / 100).toFixed(2),

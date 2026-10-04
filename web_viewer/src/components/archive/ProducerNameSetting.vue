@@ -1,7 +1,7 @@
 <template>
   <section class="producer-setting" aria-label="P 名字设置">
     <label :for="inputId">P 名字 <small>剧情、首页与卡面共用</small></label>
-    <input :id="inputId" :value="producerName" type="text" autocomplete="off" placeholder="例如 windmet（不用加 P）" @input="saveProducerName($event.target.value)" />
+    <input :id="inputId" :value="producerName" type="text" maxlength="100" autocomplete="off" placeholder="例如 windmet（不用加 P）" @input="saveProducerName($event.target.value)" />
     <p class="producer-preview" aria-live="polite">{{ preview }}</p>
     <small>输入即保存到此浏览器。留空保留原文占位；语音不变。</small>
   </section>

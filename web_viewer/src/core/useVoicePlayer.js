@@ -2,6 +2,7 @@ import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { getVoiceUrlCandidates } from '../utils/AssetResolver.js'
 import { sampleLipCurve } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
+import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { compressedVoiceCache } from './CompressedVoiceCache.js'
 import { VoiceMediaOutput } from './VoiceMediaOutput.js'
@@ -13,7 +14,8 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   voiceTimeoutMs = 20000, lipTimeoutMs = 8000, decodeTimeoutMs = 6000,
   backendMode = 'auto', createAudio, resolveVoiceUrls = getVoiceUrlCandidates, voiceCache = compressedVoiceCache, lipStore = createVoiceLipStore(),
 }) {
-  const session = audioSession || new StoryAudioSession()
+  const volumes = audioSession ? null : new PlayerPreferencesRepository().load().volumes
+  const session = audioSession || new StoryAudioSession({ masterVolume: volumes.master, busVolumes: volumes })
   const ownsAudioSession = !audioSession
   const lifetime = new AbortController()
   const preparations = new Set(), lipRequests = new Set()

@@ -1,11 +1,11 @@
 <template>
   <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value, 'is-desktop-overview': isDesktop }" :style="isDesktop ? desktopTheme : null" aria-labelledby="portal-title">
     <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" :landscape-only="isDesktop" @error="backdropFailed = true" />
-    <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="viewReference" :saved-idol-code="preferredReference?.idolCode || ''" :idols="idols" :idol-search="idolSearch" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home', $event)" @navigate="emit('navigate', $event)" @edit-personal="personalOpen = true" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')" @select-scope="emit('select-scope', $event)" @save-preferred="emit('save-preferred', $event)">
+    <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="viewReference" :saved-idol-code="preferredReference?.idolCode || ''" :idols="idols" :idol-search="idolSearch" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home', $event)" @navigate="emit('navigate', $event)" @edit-personal="emit('settings')" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')" @select-scope="emit('select-scope', $event)" @save-preferred="emit('save-preferred', $event)">
       <template #toolbar>
-        <ArchiveLanguageSwitch :compact-mobile="false" />
-        <button class="portal-overview-control" type="button" aria-label="更换 SSR 卡面壁纸" data-archive-focus-id="portal-wallpaper" @click="wallpaperOpen = true"><Images :size="18" aria-hidden="true" /><span>壁纸</span></button>
-        <button class="portal-overview-control" type="button" aria-label="启动设置" data-archive-focus-id="portal-settings" @click="emit('settings')"><Settings2 :size="18" aria-hidden="true" /><span>设置</span></button>
+        <ArchiveLanguageSwitch dropdown />
+        <button class="portal-overview-control" type="button" aria-label="更换 SSR 卡面壁纸" title="SSR 卡面壁纸" data-archive-focus-id="portal-wallpaper" @click="wallpaperOpen = true"><Images :size="18" aria-hidden="true" /></button>
+        <button class="portal-overview-control" type="button" aria-label="制作人设置" title="制作人设置" data-archive-focus-id="portal-settings" @click="emit('settings')"><Settings2 :size="18" aria-hidden="true" /></button>
       </template>
       <template #notices>
         <p v-if="loadingSection" class="terminal-notice" role="status">{{ loadingSection }}<button v-if="retrySection" class="terminal-text-button" type="button" @click="emit('navigate', retrySection)">重试卡池目录</button></p>
@@ -55,7 +55,7 @@
     </div>
     <div v-if="!isDesktop && wallpaper.selected.value && !backdropFailed" class="terminal-art-caption" aria-hidden="true"><span>SSR</span><strong>{{ archiveNamedText('card', wallpaper.selected.value.label, 'title') }}</strong><small>{{ wallpaper.selected.value.idolName }}</small></div>
     <ArchiveTerminalDialog :open="personalOpen" title="我的工作台" title-id="portal-personal-title" @close="personalOpen = false">
-      <ProducerNameSetting />
+      <button class="terminal-text-button" type="button" @click="personalOpen=false;emit('settings')">{{ producerDisplayName }} · 修改制作人档案</button>
       <section class="terminal-personal" aria-label="我的偶像快捷入口">
         <ArchivePreferredIdolSlot :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferredReference?.idolCode || ''" id-prefix="portal" @save="emit('save-preferred', $event)" />
         <nav v-if="preferredReference?.actionable" class="terminal-preferred-actions" aria-label="我的偶像快捷入口">
@@ -72,7 +72,6 @@
 </template>
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
-import ProducerNameSetting from './ProducerNameSetting.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { producerName } from '../../utils/LanguageStore.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'

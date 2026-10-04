@@ -5,16 +5,9 @@
         <div class="overview-brand">
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
           <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
+          <span class="overview-breadcrumb-divider" aria-hidden="true">/</span>
+          <button class="overview-lens-trigger" type="button" aria-label="切换资料馆视角" :aria-expanded="scopeOpen" @click="scopeOpen = true"><ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="26" decorative /><Users v-else :size="17" /><span>{{ preferredReference?.actionable ? preferredName : '全站档案' }}</span><ChevronRight :size="15" /></button>
         </div>
-
-      <div class="overview-scope-bar">
-        <div class="overview-segment" role="group" aria-label="资料馆浏览模式">
-          <button type="button" :aria-pressed="!preferredReference?.actionable" @click="emit('select-scope', '')"><Users :size="17" />全站档案</button>
-          <button type="button" :aria-pressed="Boolean(preferredReference?.actionable)" aria-label="切换资料馆视角" :aria-expanded="scopeOpen" @click="scopeOpen = true"><ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="26" decorative /><span>{{ preferredReference?.actionable ? `偶像视角 · ${preferredName}` : '选择偶像视角' }}</span><ChevronRight :size="16" /></button>
-        </div>
-
-        <span class="overview-scope-note">{{ preferredReference?.actionable ? '卡片、歌曲、故事与活动，沿着他的足迹探索。' : '浏览全体偶像的卡片、歌曲、故事与活动。' }}</span>
-      </div>
 
 
 
@@ -22,13 +15,14 @@
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索核心档案</h2>
         <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; emit('search', query)">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen && Boolean(query.trim())" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
+          <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', '')"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
 
-        <div v-if="query.trim() && searchOpen" id="portal-search-results" class="overview-search-results" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
+        <div v-if="searchOpen" id="portal-search-results" class="overview-search-results" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
           <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="searchOpen = false"><X :size="16" />收起</button>
+          <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="emit('search',term)">{{ term }}</button></div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <p v-if="globalSearch.error" class="overview-error" role="status">{{ globalSearch.error }}</p>
           <template v-if="searchGroups.length">
@@ -44,7 +38,7 @@
               </ul>
             </section>
           </template>
-          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">没有找到匹配的核心档案。试试名称或关键词。</p>
+          <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">{{ query.trim() ? '没有找到匹配的核心档案。试试名称或关键词。' : '搜索全站的偶像、卡片、歌曲与故事。' }}</p>
         </div>
       </section>
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
@@ -57,7 +51,6 @@
           <span><strong>{{ formatCount(count.value) }}</strong><small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></span><span class="overview-count-label">{{ count.label }}</span>
         </button>
       </nav>
-        <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>快捷搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="searchOpen = true; emit('search', term)">{{ term }}</button></div>
       </div>
 
       <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
@@ -87,7 +80,7 @@
             <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">打开他的主页<ArrowUpRight :size="16" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
-            <button v-else class="overview-save-idol" type="button" @click="emit('edit-personal')">{{ producerDisplayName }} · 工作台设置</button>
+            <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
           </div>
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="collectionOpen = 'cards'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
@@ -110,24 +103,23 @@
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${desktopOverview.mainCollections?.length || 0} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="collectionOpen = 'stories'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="collectionOpen = 'stories'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div>
-          <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in desktopOverview.mainCollections || []" :key="chapter.id"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" /><button type="button" :disabled="!chapter.target" @click="emit('open-result', chapter)"><strong>{{ chapter.title }}</strong><small>{{ chapter.target ? `${chapter.chapterCount} 节 · ${chapter.episodeCount} 话` : '未实装 · 无可读内容' }}</small><ChevronRight v-if="chapter.target" :size="16" /></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small>{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
+          <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" /><span><strong>{{ chapter.title }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small>{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ story.subtitle }}</small><strong>{{ story.title }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
           <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="collectionOpen = 'events'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
-          <div v-if="!preferredReference?.actionable" class="overview-timeline"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.date }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ index === 0 ? '从这里启程' : index === timeline.length - 1 ? '继续珍藏' : '回忆片段' }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
+          <div v-if="!preferredReference?.actionable" class="overview-timeline" tabindex="0" aria-label="运营时间画卷，可横向滚动"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.timelineDate }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ event.seriesLabel }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
           <div v-else-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
         </section>
       </div>
-      <ArchiveTerminalDialog :open="scopeOpen" title="切换资料馆视角" title-id="portal-scope-title" @close="scopeOpen = false">
+      <ArchiveTerminalDialog class="portal-scope-dialog" :open="scopeOpen" title="切换资料馆视角" title-id="portal-scope-title" @close="scopeOpen = false">
         <p class="overview-dialog-note">切换浏览视角不会修改已保存的担当。</p>
-        <button class="terminal-text-button" type="button" @click="chooseScope('')">查看全体偶像</button>
-        <button v-if="savedIdolCode" class="terminal-text-button" type="button" @click="chooseScope(savedIdolCode)">我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button>
-        <ArchiveIdolPickerPanel :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
+        <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
+        <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
       <ArchiveTerminalDialog :open="Boolean(collectionOpen)" :title="collectionTitle" title-id="portal-collection-title" @close="collectionOpen = ''">
         <p class="overview-dialog-note">{{ preferredReference?.actionable ? preferredName : '全站档案' }} · {{ collectionRows.length }} 条{{ collectionOpen === 'stories' ? '可读故事' : '' }}</p>
@@ -167,6 +159,7 @@ const props = defineProps({
   desktopOverview: { type: Object, default: () => ({}) },
   globalSearch: { type: Object, default: () => ({}) },
 })
+const readableMainCollections = computed(() => (props.desktopOverview.mainCollections || []).filter(row => row.target && row.episodeCount > 0))
 const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred'])
 const searchPanel = ref(null), searchOpen = ref(false)
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) searchOpen.value = false }

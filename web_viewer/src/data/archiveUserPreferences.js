@@ -7,6 +7,7 @@ export const DEFAULT_ARCHIVE_USER_PREFERENCES = Object.freeze({
   homeMode: 'spine',
   startupIdol: null,
   preferredIdol: null,
+  portalDefaultScope: 'favorite',
   onboardingComplete: false,
 })
 
@@ -24,6 +25,7 @@ export function normalizeArchiveUserPreferences(value = {}) {
     homeMode: ['card', 'spine'].includes(legacyMode) ? legacyMode : 'spine',
     startupIdol: idolCode(value.startupIdol),
     preferredIdol: idolCode(value.preferredIdol),
+    portalDefaultScope: value.portalDefaultScope === 'all' ? 'all' : 'favorite',
     onboardingComplete: value.onboardingComplete === true,
   }
 }

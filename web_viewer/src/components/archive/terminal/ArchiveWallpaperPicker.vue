@@ -13,8 +13,8 @@
       <p v-if="matches.length" class="wallpaper-picker-count">已显示 {{ visible.length }} / {{ matches.length }} 张卡面</p>
       <div class="terminal-wallpaper-grid">
         <button v-for="entry in visible" :key="entry.id" type="button" :aria-pressed="preferences.wallpaperKey === entry.id" :aria-label="`${cardLabel(entry.label)}，${idolLabel(entry)}，${entry.variantLabel}`" :title="`${cardLabel(entry.label)} · ${idolLabel(entry)} · ${entry.variantLabel}`" @click="choose(entry.id)">
-          <span class="wallpaper-thumbnail"><img :src="entry.thumbnail || entry.portrait.url" alt="" loading="lazy" decoding="async" /><span v-if="!variantFilter" class="wallpaper-variant">{{ entry.variantLabel }}</span><span class="wallpaper-idol">{{ idolLabel(entry) }}</span></span>
-          <strong>{{ cardLabel(entry.label) }}</strong>
+          <span class="wallpaper-thumbnail"><img :src="entry.landscape?.url || entry.portrait.url" alt="" loading="lazy" decoding="async" /><span class="wallpaper-variant">SSR</span><span v-if="preferences.wallpaperKey === entry.id" class="wallpaper-selected">✓ 已选</span></span>
+          <strong>{{ cardLabel(entry.label) }}</strong><small class="wallpaper-details">{{ idolLabel(entry) }} · {{ idolMetadata.get(entry.idolCode)?.unitName }} · {{ entry.variantLabel }}</small>
         </button>
       </div>
       <p v-if="!matches.length" class="terminal-help">{{ catalogue?.entries?.length ? '没有找到匹配的卡面，试试其他名称或筛选条件。' : '壁纸目录暂时为空。' }}</p>
@@ -32,7 +32,7 @@ import { archiveNamedText, archiveNamedSearchText, loadArchiveNames } from '../u
 const props = defineProps({ open: Boolean, idols: { type: Array, default: () => [] }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
 const emit = defineEmits(['close'])
 const { catalogue, preferences, error, notice, loading, load, choose: select } = useTerminalWallpaper()
-const PAGE_SIZE = 36
+const PAGE_SIZE = 12
 const query = ref(''), limit = ref(PAGE_SIZE), variantFilter = ref('p'), unitFilter = ref('')
 watch([query, variantFilter, unitFilter], () => { limit.value = PAGE_SIZE })
 watch(() => props.open, open => { if (open) {
@@ -97,4 +97,14 @@ function choose(id) { if (select(id)) emit('close') }
 .wallpaper-more { width:100%;min-height:44px;font-size:var(--gs-text-ui); }
 @container (max-width:440px) { .terminal-wallpaper-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 @media (hover:hover) and (pointer:fine) { .terminal-wallpaper-grid > button:hover { background:var(--portal-tint,#edf8f5); } }
+
+.terminal-wallpaper-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;grid-auto-rows:auto;}
+.terminal-wallpaper-grid > button {display:grid;align-content:start;gap:7px;padding:0 0 10px;background:#ffffff80;border-radius:10px;text-align:left;overflow:hidden;}
+.wallpaper-thumbnail {width:100%;aspect-ratio:1600/853;border-radius:10px 10px 0 0;}
+.wallpaper-variant {left:8px;right:auto;top:8px;background:#fff5d9c9;color:#876622;}
+.wallpaper-selected {position:absolute;top:8px;right:8px;background:#177f78;color:#fff;border-radius:5px;padding:2px 6px;font-size:11px;}
+.terminal-wallpaper-grid strong {padding:0 10px;white-space:normal;font-size:13px;color:var(--terminal-ink);font-weight:600;}
+.wallpaper-details {padding:0 10px;font-size:11px;color:var(--terminal-muted);line-height:1.5;}
+.terminal-wallpaper-grid > button[aria-pressed=true] {box-shadow:inset 0 0 0 2px var(--portal-accent,#177f78);background:#edf8f5;}
+@container(max-width:550px){.terminal-wallpaper-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
 </style>
