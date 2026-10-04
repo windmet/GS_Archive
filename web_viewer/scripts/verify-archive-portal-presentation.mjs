@@ -58,7 +58,8 @@ function artifactDataset(root) {
   const eventIndex = load(bootstrap.domains.events)
   const overviewEvents = eventIndex.pages.flatMap(descriptor => load(descriptor).rows)
   assert.equal(overviewEvents.length, eventIndex.count)
-  return { bootstrap, indexes, rowsByDomain, preferredIdol, preferredDetail, kaoruDetail, overviewStories, overviewEvents, stageManifest, actual: true }
+  const storyCollections = load(bootstrap.domains.collections).pages.flatMap(page => load(page).rows)
+  return { bootstrap, indexes, rowsByDomain, preferredIdol, preferredDetail, kaoruDetail, overviewStories, overviewEvents, stageManifest, storyCollections, actual: true }
 }
 
 // Checkout-portable boundary fixture: real identity/title strings, explicitly
@@ -94,7 +95,25 @@ function check(dataset) {
   const before = JSON.stringify(dataset)
   const options = { bootstrap, cards: rowsByDomain.cards, songs: rowsByDomain.songs,
     stories: overviewStories, events: overviewEvents, stageManifest, preferredIdol, preferredDetail, ...callbacks }
+  options.storyCollections = dataset.storyCollections || []
   const overview = buildPortalDesktopOverview(options)
+  const hub = buildPortalDesktopOverview({...options,preferredIdol:null,preferredDetail:null})
+  assert.equal(hub.units.length,16)
+  assert.equal(hub.units.flatMap(unit => unit.members).length,49)
+  assert.ok(hub.units.every(unit => unit.target.unitCode === unit.id && unit.members.every(idol => bootstrap.idols.find(row => row.id === idol.id)?.unitCode === unit.id)))
+  if (actual) {
+    assert.deepEqual(hub.mainCollections.map(row => [row.id,row.chapterCount,Boolean(row.target)]),[['main:101',11,true],['main:102',11,true],['main:103',0,false]])
+    assert.equal(hub.eventYears.reduce((sum,row) => sum+row.count,0),overviewEvents.length)
+    assert.deepEqual(hub.eventYears.map(row => [row.year,row.count]),[[2021,9],[2022,38],[2023,12]])
+    assert.deepEqual(['configurable_formation','fixed_unit','fixed_special_lineup'].map(kind => hub.collections.songs.filter(row => row.performanceKind === kind).length),[5,47,7])
+    for (const idol of bootstrap.idols) {
+      const idolOverview = buildPortalDesktopOverview({ ...options, preferredIdol: idol, preferredDetail: null })
+      assert.deepEqual(idolOverview.songs.map(row => row.id), idolOverview.collections.songs.map(row => row.id),
+        `${idol.id}: every related song is visible; the count cannot silently exceed a four-song preview`)
+    }
+    const minoriOverview = buildPortalDesktopOverview({ ...options, preferredIdol: bootstrap.idols.find(row => row.id === '011min'), preferredDetail: null })
+    assert.equal(minoriOverview.songs.length, 5, 'Minori has five related songs and all five must render')
+  }
   assert.deepEqual(overview.counts.map(row => [row.id, row.value]), [
     ['cards', bootstrap.counts.canonical_cards], ['stories', bootstrap.counts.catalog_story_entries],
     ['songs', bootstrap.counts.primary_songs], ['idols', bootstrap.idols.length],
@@ -267,6 +286,10 @@ function check(dataset) {
   const registry = read('public/data/assets/raw_character_image_promotions.json')
   assert.ok(portalIdolPortrait(registry, preferredIdol.id)?.url.includes(preferredIdol.id))
   assert.equal(portalIdolPortrait(registry,'unknown'),null)
+  for (const idol of bootstrap.idols.filter(row => !['012yus','013kys'].includes(row.id))) assert.ok(portalIdolPortrait(registry,idol.id), `formal single birthday portrait for ${idol.id}`)
+  for (const id of ['012yus','013kys']) assert.equal(portalIdolPortrait(registry,id).url,'/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png','W joint visual is an explicit owner-bound exception')
+  const wrongJoint = {...registry.entries.find(row => row.idol_code === '012yus'),shared_identity_ids:['001tom','012yus']}
+  assert.equal(portalIdolPortrait({entries:[wrongJoint]},'012yus'),null)
   assert.equal(portalIdolPortrait({entries:[{...registry.entries[0],asset_url:'/assets/stories/birthday/wrong.png'}]}, registry.entries[0].idol_code),null)
 
   const card = clone(preferredCards.find(row => row.rarity === 'SSR') || preferredCards[0])

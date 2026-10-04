@@ -18,25 +18,31 @@
         <p v-if="wallpaper.notice.value" class="terminal-notice" role="status">{{ wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
         <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
-        <h2 v-if="!selectionOnly && step === 'mode'" class="welcome-section-title">下次打开哪里？</h2>
-        <div v-if="!selectionOnly && step === 'mode'" class="terminal-mode-list">
+        <div v-if="canCancel && !selectionOnly && step === 'mode'" class="welcome-preferences">
+          <label>默认启动页面<select aria-label="默认启动页面" :value="preferences.startupPage === 'home' ? 'home' : 'portal'" @change="emit('save-startup', {startupPage: $event.target.value, onboardingComplete: true})"><option value="home">偶像主页</option><option value="portal">资料馆</option></select></label>
+          <label>主页展示方式<select aria-label="主页展示方式" :value="preferences.homeMode" @change="emit('save-startup', {homeMode: $event.target.value})"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
+          <label>默认主页偶像<select aria-label="默认主页偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup', {startupIdol: $event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idolName(idol.id) || idol.name }}</option></select></label>
+          <p>选择后立即保存到此浏览器。启动页、主页样式与我的担当分别保存；临时访问另一位偶像不会改变这些设置。</p>
+        </div>
+        <h2 v-if="!canCancel && !selectionOnly && step === 'mode'" class="welcome-section-title">下次打开哪里？</h2>
+        <div v-if="!canCancel && !selectionOnly && step === 'mode'" class="terminal-mode-list">
           <button class="terminal-mode mode-portal" type="button" @click="emit('choose-portal')">
             <span class="mode-emblem" aria-hidden="true"><LayoutGrid :size="26" /></span>
             <span class="mode-copy"><small>ARCHIVE</small><strong>资料馆</strong><span>浏览故事、歌曲、卡片与偶像资料。<br />随时切换到带台词与语音的首页。</span><b>进入资料馆 <ChevronRight :size="16" /></b></span>
-            <span v-if="preferences.homeMode === 'portal' || (preferences.homeMode === 'unset' && preferences.onboardingComplete)" class="mode-current">当前默认</span>
+            <span v-if="preferences.startupPage === 'portal'" class="mode-current">当前默认</span>
           </button>
           <button class="terminal-mode mode-light" type="button" @click="chooseMode('card')">
             <span class="mode-emblem" aria-hidden="true"><LayoutGrid :size="26" /></span>
-            <span class="mode-copy"><small>CARD HOME</small><strong>卡牌首页</strong><span>静态 SSR 卡面 · 首页台词与语音。<br />横竖画面随屏幕方向切换。</span><b>选择首页偶像 <ChevronRight :size="16" /></b></span>
+            <span class="mode-copy"><small>CARD HOME</small><strong>卡面主页</strong><span>静态 SSR 卡面 · 首页台词与语音。<br />横竖画面随屏幕方向切换。</span><b>选择首页偶像 <ChevronRight :size="16" /></b></span>
             <span v-if="preferences.homeMode === 'card'" class="mode-current">当前默认</span>
           </button>
           <button class="terminal-mode mode-stage" type="button" @click="chooseMode('spine')">
             <span class="mode-emblem" aria-hidden="true"><Sparkles :size="27" /></span>
-            <span class="mode-copy"><small>HOME</small><strong>人物互动首页</strong><span>动态人物、服装与首页台词语音。<br />偶像和场景背景可以分开选择。</span><b>选择首页偶像 <ChevronRight :size="16" /></b></span>
+            <span class="mode-copy"><small>HOME</small><strong>立绘主页</strong><span>动态人物、服装与首页台词语音。<br />偶像和场景背景可以分开选择。</span><b>选择首页偶像 <ChevronRight :size="16" /></b></span>
             <span v-if="preferences.homeMode === 'spine'" class="mode-current">当前默认</span>
           </button>
         </div>
-        <div v-else class="terminal-selection">
+        <div v-else-if="selectionOnly || step === 'idol'" class="terminal-selection">
           <button v-if="!selectionOnly" type="button" class="terminal-text-button" @click="step = 'mode'"><ArrowLeft :size="16" />返回模式选择</button>
           <p v-if="!dataReady" role="status">正在准备人物名单…</p>
           <ArchiveIdolPickerPanel v-model="selectedIdol" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
@@ -44,13 +50,13 @@
             <p class="terminal-picker-summary" role="status">{{ selectedName ? `已选：${selectedName}` : '请选择一位偶像' }}<small>{{ selectionOnly ? `打开${targetLabel}` : '确认后将记住此首页，下次直接打开。' }}</small></p>
             <label><input v-model="setPreferred" type="checkbox" /> 也保存为资料馆的“我的偶像”快捷入口</label>
             <button class="terminal-secondary" type="button" :disabled="!idols.length" @click="chooseRandom"><Shuffle :size="16" />随机一位</button>
-            <button class="terminal-primary" type="button" :disabled="!selectedName" @click="chooseIdol">打开{{ selectionOnly ? targetLabel : selectedMode === 'card' ? '卡牌首页' : '人物互动首页' }}</button>
+            <button class="terminal-primary" type="button" :disabled="!selectedName" @click="chooseIdol">打开{{ selectionOnly ? targetLabel : selectedMode === 'card' ? '卡面主页' : '立绘主页' }}</button>
           </div>
         </div>
         <footer v-if="!selectionOnly && step === 'mode'" class="terminal-welcome-footer">
           <ProducerNameSetting />
           <ArchivePreferredIdolSlot :idols="preferredIdols.length ? preferredIdols : idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferences.preferredIdol || ''" id-prefix="welcome" @save="emit('save-preferred', $event)" />
-          <button class="terminal-text-button" type="button" @click="emit('choose-later')">{{ canCancel ? '暂不更改，返回来源页' : '先浏览资料馆，下次直接打开' }}</button>
+          <button class="terminal-text-button" type="button" @click="emit('choose-later')">{{ canCancel ? '返回来源页' : '先浏览资料馆，下次直接打开' }}</button>
           <details class="terminal-reset"><summary>更多设置</summary><button type="button" class="terminal-text-button" @click="emit('clear-preferences')">重置启动与“我的偶像”设置</button><small>不删除收藏、阅读位置或卡面壁纸。</small></details>
         </footer>
         <p class="terminal-signature">SideM Archive · 非官方资料存档</p>
@@ -75,9 +81,9 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
   preferences: { type: Object, default: () => ({}) }, notice: { type: String, default: '' },
   dataReady: Boolean, selectionOnly: Boolean, canCancel: Boolean,
-  targetLabel: { type: String, default: '人物互动首页' },
+  targetLabel: { type: String, default: '立绘主页' },
 })
-const emit = defineEmits(['cancel', 'choose-later', 'choose-portal', 'choose-idol', 'save-preferred', 'clear-preferences'])
+const emit = defineEmits(['cancel', 'choose-later', 'choose-portal', 'choose-idol', 'save-startup', 'save-preferred', 'clear-preferences'])
 const heading = ref(null), step = ref(props.selectionOnly ? 'idol' : 'mode')
 const selectedMode = ref(props.preferences.homeMode === 'card' ? 'card' : 'spine')
 function chooseMode(mode) { selectedMode.value = mode; step.value = 'idol' }
@@ -102,4 +108,8 @@ function chooseIdol() {
 
 <style scoped>
 .welcome-section-title { font-size: 16px; margin: 20px 0 10px; color: #244558; }
+.welcome-preferences { display:grid;gap:16px;margin:24px 0; }
+.welcome-preferences label { display:grid;gap:6px;font-weight:600; }
+.welcome-preferences select { min-height:44px;width:100%;border:1px solid #c9dedc;border-radius:8px;padding:8px 12px;color:#244558;background:#fff;font:inherit; }
+.welcome-preferences p { color:#627782;font-size:13px; }
 </style>

@@ -23,6 +23,7 @@ navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
 navigation.currentScenarioInitialStep.value = null
 navigation.playerEntryRoute.value = null // legacy oracle excludes explicit player entry descriptors
 navigation.stageTargetId.value = ''
+navigation.homeFrom.value = '' // Independent portal visit is tested by the portal navigation contract.
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']

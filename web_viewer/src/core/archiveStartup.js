@@ -16,7 +16,7 @@ export function isBareArchiveEntry(input) {
 }
 
 export function canResolveArchiveStartupBeforeData(input, preferences) {
-  return !(isBareArchiveEntry(input) && ['card', 'spine'].includes(preferences?.homeMode))
+  return !(isBareArchiveEntry(input) && preferences?.startupPage === 'home')
 }
 
 function validIdol(idolCode, validHomeIdols) {
@@ -33,11 +33,11 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
       source: 'explicit',
     }
   }
-  if (['card', 'spine'].includes(preferences?.homeMode)) {
+  if (preferences?.startupPage === 'home') {
     const idol = [preferences.startupIdol, preferences.preferredIdol].find(id => validIdol(id, validHomeIdols))
     return { route: idol ? { view: 'home', homeIdol: idol } : { view: 'home' }, lightweight: !idol, source: idol ? 'preference' : 'invalid-home-idol' }
   }
-  if (preferences?.homeMode === 'portal' || preferences?.onboardingComplete) {
+  if (preferences?.startupPage === 'portal' || preferences?.onboardingComplete) {
     return { route: { view: 'portal' }, lightweight: true, source: 'preference' }
   }
   return { route: { view: 'welcome' }, lightweight: true, source: 'new-user' }

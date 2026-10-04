@@ -4,6 +4,7 @@ const ROUTE_QUERY_KEYS = [
   'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'event_kind','event_sort','event_page',
   'portal_from',
+  'portal_scope', 'home_from',
   'from',
   'reading',
   'reading_row',
@@ -153,7 +154,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
 })
 
 const ARCHIVE_NAVIGATION = Object.freeze([
-  { id: 'home', label: '首页' },
+  { id: 'home', label: '偶像主页' },
   { id: 'stories', label: '故事' },
   { id: 'songs', label: '歌曲' },
   { id: 'idols', label: '偶像' },
@@ -183,6 +184,7 @@ export function readPortalReturnRoute(query) {
   if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return normalizeArchiveRoute({ view: 'home' })
   const url = new URL(query, 'http://localhost/')
   url.searchParams.delete('portal_from')
+  url.searchParams.delete('home_from')
   if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(url.searchParams.get('view')) || url.searchParams.has('scenario') || url.searchParams.has('file')) return normalizeArchiveRoute({ view: 'home' })
   const route = readArchiveRoute(url)
   return route.view === 'player' ? normalizeArchiveRoute({ view: 'home' }) : route
@@ -190,7 +192,16 @@ export function readPortalReturnRoute(query) {
 
 export function buildPortalReturnQuery(route) {
   if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(route.view)) return ''
-  return buildArchiveUrl('http://localhost/', route).search
+  return buildArchiveUrl('http://localhost/', { ...route, homeFrom: '' }).search
+}
+
+// A Home visit can return only to a bounded portal context, never to another Home visit.
+export function readHomeReturnRoute(query) {
+  if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return null
+  const url = new URL(query, 'http://localhost/')
+  if (url.searchParams.get('view') !== 'portal') return null
+  url.searchParams.delete('home_from')
+  return readArchiveRoute(url)
 }
 
 // Keep the immediate source plus a flat tail of canonical queries. Flat encoding
@@ -376,6 +387,12 @@ export function normalizeArchiveRoute(input = {}) {
   if (route.view === 'portal') {
     const portalFrom = clean(input.portalFrom)
     route.portalFrom = portalFrom ? buildPortalReturnQuery(readPortalReturnRoute(portalFrom)) : ''
+    if (input.portalScope === 'all' || /^\d{3}[a-z0-9]{3}$/.test(input.portalScope || '')) route.portalScope = input.portalScope
+    if (clean(input.portalQuery)) route.portalQuery = clean(input.portalQuery).slice(0, 120)
+  }
+  if (route.view === 'home' && clean(input.homeFrom)) {
+    const source = readHomeReturnRoute(input.homeFrom)
+    if (source) route.homeFrom = buildArchiveUrl('http://localhost/', source).search
   }
   if (ownsArchiveSource(route.view, route.returnView) && clean(input.sourceRoute)) {
     const frames = sourceFrames(input.sourceRoute)
@@ -577,6 +594,9 @@ export function readArchiveRoute(input = null) {
     view: params.get('view'),
     pickTarget: params.get('pick'),
     portalFrom: params.get('portal_from'),
+    portalScope: params.get('portal_scope'),
+    portalQuery: params.get('q'),
+    homeFrom: params.get('home_from'),
     sourceRoute: params.get('from'),
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
@@ -676,11 +696,14 @@ export function buildArchiveUrl(input, route) {
   if (normalized.view === 'player' && normalized.initialStep) url.searchParams.set('at_step', String(normalized.initialStep))
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
+    if (normalized.portalScope) url.searchParams.set('portal_scope', normalized.portalScope)
+    if (normalized.portalQuery) url.searchParams.set('q', normalized.portalQuery)
     return url
   }
   if (normalized.view === 'home' && normalized.homeIdol) url.searchParams.set('home_idol', normalized.homeIdol)
   if (normalized.view === 'home' && normalized.homeCue) url.searchParams.set('home_cue', normalized.homeCue)
   if (normalized.view === 'home' && normalized.homeCostume) url.searchParams.set('home_costume', normalized.homeCostume)
+  if (normalized.view === 'home' && normalized.homeFrom) url.searchParams.set('home_from', normalized.homeFrom)
   if (normalized.category) url.searchParams.set('category', normalized.category)
   if (normalized.idol) url.searchParams.set('idol', normalized.idol)
   if (normalized.group) url.searchParams.set('group', normalized.group)

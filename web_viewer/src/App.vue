@@ -64,6 +64,7 @@
         @choose-portal="choosePortalStartup"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
+        @save-startup="storeUserPreferences"
         @clear-preferences="clearUserPreferences"
       />
       <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
@@ -78,6 +79,9 @@
         :home-mode="userPreferences.homeMode === 'card' ? 'card' : 'spine'"
         @update:home-mode="storeUserPreferences({ homeMode: $event })"
         @focus-change="homeFocus = $event"
+        :can-return-to-archive="Boolean(homeFrom)"
+        @open-archive="openArchivePortal(homeSelectedId)"
+        @return-to-archive="closeHomeVisit"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
@@ -618,6 +622,8 @@ import {
   buildPortalReturnQuery,
   readArchiveSourceRoute,
   readPortalReturnRoute,
+  readHomeReturnRoute,
+  buildArchiveUrl,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
@@ -772,6 +778,7 @@ const {
   playerEntryRoute,
   currentPickTarget,
   portalFrom,
+  portalScope, portalQuery, homeFrom,
   detailSourceRoute,
   readingDocumentId,
   readingRowId,
@@ -968,6 +975,7 @@ let pendingEventCatalogRestore = null
 let pendingPhotoCatalogRestore = null
 const songDetailView = ref(null)
 let pendingSongDetailRestore = null
+let pendingPortalRestore = null
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
   state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
@@ -1016,9 +1024,10 @@ const idolPickerLabel = computed(() => ({
   mobile: '通信档案',
 })[currentPickTarget.value] || '首页')
 const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, client: readModelClient,
+  scope: portalScope, searchQuery: portalQuery,
   preferredIdol: preferredArchiveIdol,
   loadCards: async () => { await loadArchiveNames('cards'); return loadCardCatalog() },
-  loadSongs: loadSongCatalog, loadIdol: loadIdolDetail,
+  loadSongs: loadSongCatalog, loadIdol: loadIdolDetail, loadCollections: loadCollectionCatalog,
   loadStories: async () => (await loadStoryReadModelCatalog()).map(row => {
     const resource = row.domain === 'event' ? storyEventResources(row) : null
     return resource?.storyFile === row.file ? { ...row, image: resource.hero } : row
@@ -1497,7 +1506,7 @@ const archiveSearchPlaceholder = computed(() => {
   return '搜索资料'
 })
 
-const archiveShowBack = computed(() => view.value !== 'home' && (view.value !== 'portal' || Boolean(portalFrom.value)))
+const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
 
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
@@ -1606,11 +1615,13 @@ function adoptArchiveViewContext({ restore = true } = {}) {
   const revision = ++archiveViewRestoreRevision
   const navigationRevision = navigation.getRevision()
   pendingSongDetailRestore = null
+  pendingPortalRestore = restore && view.value === 'portal' ? {context,revision,navigationRevision} : null
   pendingEventCatalogRestore = restore && view.value==='event_catalog'
     ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   pendingPhotoCatalogRestore = restore && view.value==='photo_catalog'
     ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   if (!restore) return
+  if (view.value === 'portal') { nextTick(restorePortalPosition); return }
   if (view.value === 'song_detail') {
     pendingSongDetailRestore = { context, revision, navigationRevision, songId: currentSongId.value }
     nextTick(() => restoreSongDetailView())
@@ -1625,6 +1636,17 @@ function adoptArchiveViewContext({ restore = true } = {}) {
     })
   })
 }
+
+async function restorePortalPosition() {
+  const pending = pendingPortalRestore
+  if (!pending || portalData.overview.value.loading || portalData.search.value.loading) return
+  const isCurrent = () => pending === pendingPortalRestore && pending.context === activeArchiveViewContext && pending.revision === archiveViewRestoreRevision && pending.navigationRevision === navigation.getRevision() && view.value === 'portal' && !navigation.isDisposed()
+  await nextTick()
+  if (!isCurrent()) return
+  await restoreArchiveViewState(pending.context, {isCurrent})
+  if (isCurrent()) pendingPortalRestore = null
+}
+watch([() => portalData.overview.value.loading, () => portalData.search.value.loading], () => { void restorePortalPosition() })
 
 async function restoreSongDetailView({ songId } = {}) {
   const pending = pendingSongDetailRestore
@@ -1769,6 +1791,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
+      portalScope.value = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : ''
+      portalQuery.value = route.portalQuery || ''
       playbackController.reset()
       view.value = 'portal'
       return
@@ -1878,6 +1902,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       ? archiveHomeIdols.value.find(idol => idol.id === route.homeIdol)
       : null
     homeSelectedId.value = requestedHomeIdol?.id || ''
+    homeFrom.value = route.view === 'home' ? route.homeFrom || '' : ''
     homeSelectedCue.value = requestedHomeIdol?.cues?.find(cue => cue.cue === route.homeCue)?.cue || requestedHomeIdol?.cues?.[0]?.cue || ''
     const defaultHomeModel = requestedHomeIdol?.cues?.find(cue => cue.cue === homeSelectedCue.value)?.modelId
     homeSelectedCostume.value = requestedHomeIdol?.costumes?.find(costume => costume.modelId === route.homeCostume)?.modelId ||
@@ -2287,7 +2312,7 @@ function chooseStartupLater() {
 }
 
 function choosePortalStartup() {
-  storeUserPreferences({ homeMode: 'portal', onboardingComplete: true })
+  storeUserPreferences({ startupPage: 'portal', onboardingComplete: true })
   detailSourceRoute.value = ''
   openRootPortal()
 }
@@ -2298,7 +2323,7 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
   const next = {}
   if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) {
     Object.assign(next, { startupIdol: idolCode, onboardingComplete: true })
-    if (rememberStartup) next.homeMode = homeMode
+    if (rememberStartup) Object.assign(next, { startupPage: 'home', homeMode })
   }
   if (setPreferred) next.preferredIdol = idolCode
   if (Object.keys(next).length) storeUserPreferences(next)
@@ -2359,10 +2384,16 @@ function cancelWelcomeOrPicker() {
   if (view.value === 'idol_picker') openRootPortal()
 }
 
+const homeVisits = new Map()
 async function openGameHome(idolCode = '') {
+  if (view.value === 'home' && homeSelectedId.value) homeVisits.set(homeSelectedId.value, currentArchiveRoute())
   const candidate = [idolCode, userPreferences.value.startupIdol, userPreferences.value.preferredIdol]
     .find(code => validArchiveHomeIdols.value.includes(code)) || ''
   if (!candidate) return openIdolPicker('home')
+  const source = view.value === 'portal' ? buildArchiveUrl(window.location.href, currentArchiveRoute()).search : ''
+  const portalHome = portalFrom.value ? readPortalReturnRoute(portalFrom.value) : null
+  const previous = homeVisits.get(candidate) || (portalHome?.view === 'home' && portalHome.homeIdol === candidate ? portalHome : null)
+  navigation.invalidate()
   const request = ++pendingHomeNavigation
   const revision = navigation.getRevision()
   homeEntryStatus.value = '正在准备首页…'
@@ -2380,9 +2411,19 @@ async function openGameHome(idolCode = '') {
   detailSourceRoute.value = ''
   portalFrom.value = ''
   homeSelectedId.value = candidate
-  homeSelectedCue.value = ''
-  homeSelectedCostume.value = ''
+  homeSelectedCue.value = previous?.homeCue || ''
+  homeSelectedCostume.value = previous?.homeCostume || ''
+  homeFrom.value = source
   commitView('home')
+}
+
+async function closeHomeVisit() {
+  const destination = readHomeReturnRoute(homeFrom.value)
+  if (!destination) return
+  homeVisits.set(homeSelectedId.value, currentArchiveRoute())
+  captureActiveArchiveView()
+  await restoreRoute(destination)
+  if (view.value === 'portal') syncArchiveRoute()
 }
 
 function openPreferredDestination(request) {
@@ -2397,10 +2438,12 @@ function openPreferredDestination(request) {
   else if (destination === 'mobile') openMobileArchive({ idolCode, mode: 'personal' })
 }
 
-function openArchivePortal() {
+function openArchivePortal(idolCode = '') {
+  if (view.value === 'home' && homeSelectedId.value) homeVisits.set(homeSelectedId.value, currentArchiveRoute())
   if (!archiveShellVisible.value || view.value === 'portal') return
   legacyEntryStatus.value = ''
   const source = currentArchiveRoute()
+  if (typeof idolCode === 'string' && archiveBootstrap.idols.some(row => row.id === idolCode)) portalScope.value = idolCode
   portalFrom.value = ['welcome', 'idol_picker'].includes(source.view) ||
     (source.view === 'home' && !source.homeIdol)
     ? ''
@@ -2505,6 +2548,7 @@ function openHomeChat(idolId) {
 }
 
 function goArchiveBack() {
+  if (view.value === 'home' && homeFrom.value) return closeHomeVisit()
   if (view.value === 'reader') return closeStoryReader()
   if (view.value === 'portal') return closeArchivePortal()
   if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
@@ -3720,7 +3764,12 @@ async function openPortalResult(result) {
   const target = result.target, sourceRevision = navigation.getRevision()
   const stillHere = () => view.value === 'portal' && sourceRevision === navigation.getRevision() && !navigation.isDisposed()
   try {
-    if (target.domain === 'cards' && target.view === 'card_detail') {
+    if (target.domain === 'units' && target.view === 'unit_detail' && archiveBootstrap.idols.some(row => row.unitCode === target.unitCode)) {
+      return openArchiveUnit({unit_code: target.unitCode})
+    } else if (target.domain === 'collections' && target.view === 'story_collection') {
+      const rows = await loadCollectionCatalog()
+      if (stillHere() && rows.some(row => row.id === target.collectionId && row.chapterCount > 0)) return openProjectedCollection({domain: target.storyDomain, section: target.sectionId})
+    } else if (target.domain === 'cards' && target.view === 'card_detail') {
       const rows = await loadCardCatalog()
       if (!stillHere()) return
       const card = rows.find(row => row.resource_id === target.cardId && row.character_id === target.idolCode)
@@ -4893,6 +4942,10 @@ onMounted(async () => {
 
 watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true, restoreView: false })
+})
+
+watch([portalScope, portalQuery], () => {
+  if (view.value === 'portal' && !navigation.isRestoring()) { captureActiveArchiveView(); syncArchiveRoute({replace:true,restoreView:false}) }
 })
 
 watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {

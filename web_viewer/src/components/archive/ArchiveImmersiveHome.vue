@@ -38,6 +38,10 @@
       @click="handleStageTap"
     ></button>
     <div class="scene-shade" aria-hidden="true"></div>
+    <nav v-if="!focusMode" class="home-archive-links" aria-label="主页与资料馆">
+      <button type="button" @click="emit('open-archive')">查看他的档案</button>
+      <button v-if="canReturnToArchive" type="button" @click="emit('return-to-archive')">返回资料馆</button>
+    </nav>
 
     <header class="home-masthead">
       <div class="idol-heading">
@@ -186,7 +190,7 @@
       </header>
 
       <div class="settings-body">
-        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡牌首页</option><option value="spine">人物互动首页</option></select></label>
+        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
         <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
           <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
           <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
@@ -302,13 +306,14 @@ const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
 const props = defineProps({
   idols: { type: Array, default: () => [] },
   homeMode: { type: String, default: 'spine' },
+  canReturnToArchive: Boolean,
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
+import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readHomeReturnRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -67,6 +67,7 @@ for (const destination of [
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const restoreContext = {
+  archiveBootstrap: {idols:[{id:"001tom"}]},
   isDirectScenarioEntry,
   ...useArchiveNavigationState(),
   navigation: createArchiveNavigationCoordinator(),
@@ -95,6 +96,7 @@ const navigation = createArchiveNavigationCoordinator()
 let release, published = 0
 const context = {
   ...nav, navigation, buildPortalReturnQuery, readPortalReturnRoute,
+  archiveBootstrap: {idols:[{id:"001tom"}]}, homeVisits: new Map(),
   archiveShellVisible: { value: true },
   archiveDataReady: { value: true },
   loadCardCatalog: async () => [],
@@ -133,3 +135,20 @@ await context.closeArchivePortal()
 assert.equal(nav.view.value, 'portal', 'root Portal has no synthetic return action')
 assert.equal(published, 1)
 console.log('Portal navigation: preserved contexts, safe deep links, refresh, no nesting and obsolete-close suppression passed')
+
+// Two-way visit contexts retain the selected lens and search while preventing nested cross-page cycles.
+const homeFrame = {view:'home',homeIdol:'007kei',homeCue:'2_1_007_01_00_09',homeCostume:'007kei_002_00'}
+const portalFrame = {view:'portal',portalFrom:buildPortalReturnQuery(homeFrame),portalScope:'040ren',portalQuery:'K.now O.nly'}
+const visitingHome = readArchiveRoute(buildArchiveUrl('http://localhost/',{...homeFrame,homeIdol:'040ren',homeFrom:buildArchiveUrl('http://localhost/',portalFrame).search}))
+const returnedPortal = readHomeReturnRoute(visitingHome.homeFrom)
+assert.equal(returnedPortal.portalScope,'040ren')
+assert.equal(returnedPortal.portalQuery,'K.now O.nly')
+assert.equal(readPortalReturnRoute(returnedPortal.portalFrom).homeCue, homeFrame.homeCue)
+assert.equal(readPortalReturnRoute(buildPortalReturnQuery(visitingHome)).homeFrom, undefined)
+for (const bad of ['https://example.com/','//example.com/','?view=home','?view=player','?'+'x'.repeat(8193)]) assert.equal(readHomeReturnRoute(bad),null)
+for (let i=0;i<50;i++) {
+  const safePortal = { ...portalFrame, portalFrom:buildPortalReturnQuery(visitingHome) }
+  const safeHome = readArchiveRoute(buildArchiveUrl('http://localhost/',{...visitingHome,homeFrom:buildArchiveUrl('http://localhost/',safePortal).search}))
+  assert.ok(safeHome.homeFrom.length < 1000, 'repeated visits stay bounded without exponential nesting')
+}
+console.log('Home/Portal contexts: lens, query, cue/costume, explicit all-view, refresh, local-only bounded return passed')

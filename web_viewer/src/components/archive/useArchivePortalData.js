@@ -2,29 +2,29 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS, portalSearchPageDescriptors, validatePortalSearchRows } from '../../presentation/ArchivePortalPresentation.js'
 
 // Portal data is independent of catalogue filters and never owns a player detail.
-export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
-  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadStageManifest, loadPortraits, loadEventDetail,
+export function useArchivePortalData({ view, bootstrap, client, preferredIdol, scope = ref(''), searchQuery = ref(''),
+  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadCollections, loadStageManifest, loadPortraits, loadEventDetail,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
   const desktop = ref(false), cards = shallowRef([]), songs = shallowRef([])
   const preferredDetail = shallowRef(null), loading = ref(false), error = ref('')
   const stories = shallowRef([]), events = shallowRef([]), stageManifest = shallowRef(null)
-  const query = ref(''), searchLoading = ref(false), searchError = ref('')
+  const query = searchQuery, searchLoading = ref(false), searchError = ref('')
   const rowsByDomain = shallowRef({})
   let media, mediaListener, disposed = false, revision = 0, searchRevision = 0, timer, searchController
-  // undefined follows the saved preference; an empty string is an explicit all-idol view.
+  // An empty scope follows the favorite; 'all' explicitly selects the whole archive.
   const eventDetails = shallowRef([])
-  const scope = ref(undefined), portraits = shallowRef(null), available = shallowRef({})
-  const scopeIdol = computed(() => scope.value === undefined ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
+  const portraits = shallowRef(null), available = shallowRef({}), storyCollections = shallowRef([])
+  const scopeIdol = computed(() => scope.value === '' ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
   const preferredCode = computed(() => scopeIdol.value?.id || '')
   function selectScope(code) {
     if (code !== '' && !bootstrap.idols.some(row => row.id === code)) return
-    scope.value = code
+    scope.value = code || 'all'
   }
   const overview = computed(() => buildPortalDesktopOverview({ bootstrap, cards: cards.value,
     songs: songs.value, stories: stories.value, events: events.value, stageManifest: stageManifest.value,
     preferredIdol: scopeIdol.value,
     preferredDetail: preferredDetail.value?.id === preferredCode.value && preferredDetail.value?.view?.profile?.idol_code === preferredCode.value ? preferredDetail.value : null,
-    idolName, cardTitle, songTitle, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value }))
+    idolName, cardTitle, songTitle, storyCollections: storyCollections.value, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value }))
   const search = computed(() => ({ query: query.value, loading: searchLoading.value,
     error: searchError.value, results: buildPortalSearchResults({ query: query.value,
       rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle }) }))
@@ -41,6 +41,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
       loadEvents ? loadEvents() : Promise.resolve([]),
       loadStageManifest ? loadStageManifest() : Promise.resolve(null),
       loadPortraits ? loadPortraits() : Promise.resolve(null),
+      loadCollections ? loadCollections() : Promise.resolve([]),
     ])
     if (disposed || ticket !== revision || view.value !== 'portal' || !desktop.value) return
     if (results[0].status === 'fulfilled') cards.value = results[0].value
@@ -50,6 +51,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
     if (results[4].status === 'fulfilled') events.value = results[4].value
     if (results[5].status === 'fulfilled') stageManifest.value = results[5].value
     if (results[6].status === 'fulfilled') portraits.value = results[6].value
+    if (results[7].status === 'fulfilled') storyCollections.value = results[7].value
     available.value = Object.fromEntries([['cards',0],['songs',1],['stories',3],['events',4]].map(([key,index]) => [key, results[index].status === 'fulfilled']))
     error.value = results.every(result => result.status === 'fulfilled') ? '' : '部分资料暂时无法读取，已保留可用内容。'
     loading.value = false

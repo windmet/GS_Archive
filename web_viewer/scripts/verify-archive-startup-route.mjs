@@ -22,11 +22,11 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   context.chooseStartupLater()
   assert.deepEqual(events.splice(0), [['return']], 'canceling settings must not overwrite the saved default')
   context.choosePortalStartup()
-  assert.deepEqual(events.splice(0), [['save', { homeMode: 'portal', onboardingComplete: true }], ['portal']])
+  assert.deepEqual(events.splice(0), [['save', { startupPage: 'portal', onboardingComplete: true }], ['portal']])
   assert.equal(context.detailSourceRoute.value, '')
 }
 {
-  let preferences = { homeMode: 'portal', startupIdol: null, onboardingComplete: true }
+  let preferences = { startupPage: 'portal', homeMode: 'card', startupIdol: null, onboardingComplete: true }
   const opened = []
   const context = {
     view: { value: 'idol_picker' }, currentPickTarget: { value: 'home' }, homeSelectedId: { value: '' },
@@ -37,7 +37,7 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
   }
   vm.runInNewContext(app.match(/function chooseImmersiveIdol\([^]*?\n\}/)[0], context)
   context.chooseImmersiveIdol({ idolCode: '001tom', rememberStartup: false })
-  assert.equal(preferences.homeMode, 'portal', 'opening Home from its picker keeps the archive startup choice')
+  assert.equal(preferences.startupPage, 'portal', 'opening Home from its picker keeps the archive startup choice')
   assert.equal(preferences.startupIdol, '001tom')
   assert.deepEqual(opened, ['001tom'])
   context.view.value = 'welcome'

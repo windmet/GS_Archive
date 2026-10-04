@@ -16,7 +16,7 @@
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
           <span>{{ item.label }}</span>
         </button>
-        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆总览</span></button>
+        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆</span></button>
         <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }" role="group" :aria-labelledby="`nav-${group.id}`">
           <h2>
             <button :id="`nav-${group.id}`" type="button" class="archive-nav-group-trigger" :aria-expanded="openNavigationGroup === group.id" :aria-controls="`nav-items-${group.id}`" @click="openNavigationGroup = openNavigationGroup === group.id ? '' : group.id">
@@ -137,7 +137,7 @@ const activeNavigationGroup = computed(() => navigationGroups.find(group => grou
 const openNavigationGroup = ref('')
 watch(() => props.activeSection, () => { openNavigationGroup.value = activeNavigationGroup.value }, { immediate: true })
 const primaryNavigation = [
-  { id: 'home', label: '首页', icon: Home },
+  { id: 'home', label: '偶像主页', icon: Home },
   { id: 'portal', label: '资料馆', icon: LayoutGrid },
 ]
 </script>

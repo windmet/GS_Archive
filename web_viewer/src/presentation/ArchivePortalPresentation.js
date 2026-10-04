@@ -145,7 +145,9 @@ function boundImage(binding, kind) {
 /** Only explicitly promoted original character art may become the portal portrait. */
 export function portalIdolPortrait(registry, idolCode) {
   const entry = (registry?.entries || []).find(row => row.kind === 'birthday_visual' && row.idol_code === idolCode &&
-    row.asset_url === `/assets/stories/birthday/image_chara_birthday_visual_${idolCode}.png` &&
+    (row.asset_url === `/assets/stories/birthday/image_chara_birthday_visual_${idolCode}.png` ||
+      (['012yus', '013kys'].includes(idolCode) && row.asset_url === '/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png' &&
+        row.shared_identity_ids?.length === 2 && row.shared_identity_ids.includes('012yus') && row.shared_identity_ids.includes('013kys'))) &&
     /^[a-f0-9]{64}$/u.test(row.output?.sha256 || '') && row.output.width > 0 && row.output.height > 0 &&
     row.raw_source?.sha256 && row.master_evidence?.compiled_files?.length)
   return entry ? { url: entry.asset_url, width: entry.output.width, height: entry.output.height } : null
@@ -210,7 +212,7 @@ function preferredStats(preferredId, detail) {
 
 export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], stories = [], events = [], stageManifest = null,
   preferredIdol = null, preferredDetail = null, idolName, cardTitle, songTitle, storyTitle, storySummary, eventTitle,
-  loading = false, error = '', available = {}, portraits = null, eventDetails = [] } = {}) {
+  loading = false, error = '', available = {}, portraits = null, eventDetails = [], storyCollections = [] } = {}) {
   const directory = identities(bootstrap)
   const preferredId = typeof preferredIdol === 'string' ? preferredIdol : preferredIdol?.id || ''
   requireValue(!preferredId || directory.has(preferredId), 'preferred idol is outside the formal directory')
@@ -236,9 +238,9 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
     .sort((a, b) => (b.release_at || 0) - (a.release_at || 0) || a.id.localeCompare(b.id))
   const collections = {
     cards: previewCards.map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
-      idolName: idolDisplay(row.character_id, directory, idolName), rarity: text(row.rarity), image: cardImage(row), target: cardTarget(row) })),
+      idolName: idolDisplay(row.character_id, directory, idolName), idolCode: row.character_id, unitCode: text(directory.get(row.character_id)?.unitCode), unitName: text(directory.get(row.character_id)?.unitName), rarity: text(row.rarity), image: cardImage(row), target: cardTarget(row) })),
     songs: previewSongs.map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),
-      unitName: text(row.performance?.unitName), image: songImage(row), target: songTarget(row),
+      unitName: text(row.performance?.unitName), performanceKind: text(row.performance?.scope), image: songImage(row), target: songTarget(row),
       performers: (row.performance?.performers || []).filter(person => directory.has(person.id))
         .map(person => ({ id: person.id, name: idolDisplay(person.id, directory, idolName) })),
       relationLabel: preferredId && (row.performance?.performers || []).some(person => person.id === preferredId) ? '演唱成员' : preferredId ? '组合歌曲' : '',
@@ -265,6 +267,21 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
   return {
     counts: [['cards', '卡片'], ['stories', '故事条目'], ['songs', '歌曲'], ['idols', '偶像']]
       .map(([id, label]) => ({ id, label, value: domainCount(bootstrap, id) })),
+    units: [...new Set([...directory.values()].map(idol => idol.unitCode).filter(Boolean))].map(code => ({
+      id: code, title: text([...directory.values()].find(idol => idol.unitCode === code)?.unitName),
+      members: [...directory.values()].filter(idol => idol.unitCode === code).map(idol => ({id: idol.id, name: idolDisplay(idol.id, directory, idolName), color: idol.color})),
+      target: {domain:'units',view:'unit_detail',unitCode:code},
+    })),
+    mainCollections: storyCollections.filter(row => row.domain === 'main').map(row => ({
+      id: row.id, title: row.title, chapterCount: row.chapterCount, episodeCount: row.episodeCount,
+      image: safeAssetUrl(row.visualUrl) ? {url:row.visualUrl,kind:'story_cover',status:'catalogued'} : null,
+      target: row.chapterCount > 0 ? {domain:'collections',view:'story_collection',collectionId:row.id,storyDomain:row.domain,sectionId:row.sectionId} : null,
+    })),
+    eventYears: [...new Set(events.filter(row => Number.isFinite(row.release_at) && row.release_at > 0).map(row => new Date(row.release_at * 1000).getUTCFullYear()))].sort().filter(year => year > 2000 && year < 2099).map(year => {
+      const rows = events.filter(row => new Date(row.release_at * 1000).getUTCFullYear() === year).sort((a,b) => a.release_at-b.release_at)
+      return {year,count:rows.length,from:historicalDate(rows[0].release_at),to:historicalDate(rows.at(-1).release_at),
+        previews: rows.slice(0,2).map(row => collections.events.find(event => event.id === row.id)).filter(Boolean)}
+    }),
     preferredStats: stats,
     scopeId: preferredId, collections, footprints,
     portrait: portalIdolPortrait(portraits, preferredId),
@@ -274,7 +291,7 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
     unitCount: [...directory.values()].every(idol => nonempty(idol.unitCode))
       ? new Set([...directory.values()].map(idol => idol.unitCode)).size : null,
     cards: collections.cards.slice(0, 3),
-    songs: collections.songs.slice(0, 4),
+    songs: preferredId ? collections.songs : collections.songs.slice(0, 4),
     stories: collections.stories.slice(0, 4),
     events: collections.events.slice(0, 3),
     loading: loading === true, error: text(error),

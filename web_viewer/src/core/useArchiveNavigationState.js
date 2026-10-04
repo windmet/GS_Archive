@@ -9,6 +9,7 @@ export function useArchiveNavigationState() {
   const playerEntryRoute = ref(null)
   const currentPickTarget = ref('')
   const portalFrom = ref('')
+  const portalScope = ref(''), portalQuery = ref(''), homeFrom = ref('')
   const detailSourceRoute = ref('')
   const readingDocumentId = ref('')
   const readingRowId = ref('')
@@ -87,7 +88,9 @@ export function useArchiveNavigationState() {
           initialStep: currentScenarioInitialStep.value, returnView: 'reader' } : {}),
       }
     }
-    if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
+    if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value,
+      ...(portalScope.value ? { portalScope: portalScope.value } : {}),
+      ...(portalQuery.value ? { portalQuery: portalQuery.value } : {}) }
     if (view.value === 'welcome' || view.value === 'idol_picker') return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
@@ -120,6 +123,7 @@ export function useArchiveNavigationState() {
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',
       homeCue: view.value === 'home' ? homeSelectedCue.value : '',
       homeCostume: view.value === 'home' ? homeSelectedCostume.value : '',
+      ...(view.value === 'home' && homeFrom.value ? { homeFrom: homeFrom.value } : {}),
       category: currentCategoryId.value,
       idol: currentCharacterId.value,
       group: currentGroup.value?.id || '',
@@ -179,6 +183,7 @@ export function useArchiveNavigationState() {
     playerEntryRoute,
     currentPickTarget,
     portalFrom,
+    portalScope, portalQuery, homeFrom,
     detailSourceRoute,
     readingDocumentId,
     readingRowId,

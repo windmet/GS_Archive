@@ -82,3 +82,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .exit-focus { position: absolute; z-index: 7; top: 16px; right: 16px; min-height: 44px; padding: 8px 14px; border: 1px solid #ffffff88; border-radius: 6px; background: #173047b8; color: white; }
 .is-focus-mode .home-context, .is-focus-mode .mobile-idol-switch, .is-focus-mode .mobile-settings-trigger, .is-focus-mode .mobile-costume-trigger { display: none; }
 .immersive-home[data-home-mode="card"] .stage-tap-target { inset: 0; width: 100%; }
+
+.home-archive-links {position:absolute;z-index:5;right:24px;top:82px;display:flex;gap:8px;}
+.home-archive-links button {min-height:40px;padding:6px 12px;border:1px solid #d9e4ee;border-radius:8px;background:var(--chrome-bg);color:var(--chrome-ink);font-size:12px;}
+@media(max-width:700px){.home-archive-links {left:12px;right:auto;top:110px;flex-direction:column;}.home-archive-links button{font-size:11px;min-height:36px;}}
