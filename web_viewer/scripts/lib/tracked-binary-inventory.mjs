@@ -94,6 +94,12 @@ function classify(relativePath) {
   }
 
   const eventMatch = stem.match(/^image_chara_event_story_visual_(.+)$/)
+  const storyPortrait = stem.match(/^image_chara_story_visual_(\d{3}[a-z0-9]{3})$/)
+  if (storyPortrait && relativePath.includes('/assets/stories/characters/')) return {
+    category: 'stable-promoted-asset', logical_id: `story-visual:${storyPortrait[1]}`,
+    consumer: ['ArchivePortalOverview'], reason_tracked: 'source-bound single idol archive portrait',
+    force_add_allowed: true, owner_release: '2026-10-04-portal-story-portraits-001', grandfathered: false,
+  }
   if (eventMatch) {
     return {
       category: 'stable-promoted-asset',

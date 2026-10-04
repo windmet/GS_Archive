@@ -318,6 +318,15 @@ def main() -> None:
         identity_evidence["story_master"] = event_story_evidence(
             args.story_master.resolve(), idol_code
         )
+    elif args.kind == "story_visual":
+        master = json.loads(args.story_master.read_text(encoding="utf-8"))
+        references = {}
+        for row in master.get("idol_story", {}).get("episodes", []):
+            filename = str(row.get("compiled_file") or "")
+            characters = row.get("compiled_summary", {}).get("characters", [])
+            if filename.startswith(f"1_2_{idol_code}_") and idol_code in characters and row.get("compiled_exists") is True:
+                references[filename] = {"compiled_file": filename, "compiled_exists": True, "characters": characters}
+        identity_evidence["story_master"] = {"domain": "idol_story", "reference_count": len(references), "references": list(references.values())}
 
     manifest = {
         "schema_version": 1,

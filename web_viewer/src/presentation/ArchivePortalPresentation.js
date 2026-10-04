@@ -143,14 +143,21 @@ function boundImage(binding, kind) {
 }
 
 /** Only explicitly promoted original character art may become the portal portrait. */
-export function portalIdolPortrait(registry, idolCode) {
+export function portalIdolPortrait(registry, idolCode, theme = 'story_visual') {
+  const story = theme === 'story_visual' && (registry?.entries || []).find(row => row.kind === 'story_visual' && row.idol_code === idolCode &&
+    row.asset_url === `/assets/stories/characters/image_chara_story_visual_${idolCode}.png` &&
+    row.unity_object?.asset_name === `image_chara_story_visual_${idolCode}` &&
+    row.master_evidence?.identity_scope === 'master_idol' && row.master_evidence.compiled_files?.every(file=>file.startsWith(`1_2_${idolCode}_`)) &&
+    /^[a-f0-9]{64}$/.test(row.output?.sha256 || '') && row.output.width > 0 && row.output.height > 0 &&
+    row.raw_source?.sha256 && row.master_evidence?.compiled_files?.length)
+  if (story) return {url:story.asset_url,width:story.output.width,height:story.output.height,kind:'story_visual'}
   const entry = (registry?.entries || []).find(row => row.kind === 'birthday_visual' && row.idol_code === idolCode &&
     (row.asset_url === `/assets/stories/birthday/image_chara_birthday_visual_${idolCode}.png` ||
       (['012yus', '013kys'].includes(idolCode) && row.asset_url === '/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png' &&
         row.shared_identity_ids?.length === 2 && row.shared_identity_ids.includes('012yus') && row.shared_identity_ids.includes('013kys'))) &&
     /^[a-f0-9]{64}$/u.test(row.output?.sha256 || '') && row.output.width > 0 && row.output.height > 0 &&
     row.raw_source?.sha256 && row.master_evidence?.compiled_files?.length)
-  return entry ? { url: entry.asset_url, width: entry.output.width, height: entry.output.height } : null
+  return entry ? { url: entry.asset_url, width: entry.output.width, height: entry.output.height,kind:'birthday_visual' } : null
 }
 
 export function portalEventRole(detail, eventId, idolCode) {
@@ -212,7 +219,7 @@ function preferredStats(preferredId, detail) {
 
 export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], stories = [], events = [], stageManifest = null,
   preferredIdol = null, preferredDetail = null, idolName, cardTitle, songTitle, storyTitle, storySummary, eventTitle,
-  loading = false, error = '', available = {}, portraits = null, eventDetails = [], storyCollections = [] } = {}) {
+  loading = false, error = '', available = {}, portraits = null, eventDetails = [], storyCollections = [], units = [], cardFacets = null, gatewayCounts = {} } = {}) {
   const directory = identities(bootstrap)
   const preferredId = typeof preferredIdol === 'string' ? preferredIdol : preferredIdol?.id || ''
   requireValue(!preferredId || directory.has(preferredId), 'preferred idol is outside the formal directory')
@@ -238,9 +245,13 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
     .sort((a, b) => (b.release_at || 0) - (a.release_at || 0) || a.id.localeCompare(b.id))
   const collections = {
     cards: previewCards.map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
-      idolName: idolDisplay(row.character_id, directory, idolName), idolCode: row.character_id, unitCode: text(directory.get(row.character_id)?.unitCode), unitName: text(directory.get(row.character_id)?.unitName), rarity: text(row.rarity), image: cardImage(row), target: cardTarget(row) })),
+      idolName: idolDisplay(row.character_id, directory, idolName), idolCode: row.character_id, unitCode: text(directory.get(row.character_id)?.unitCode), unitName: text(directory.get(row.character_id)?.unitName), rarity: text(row.rarity), image: cardImage(row),
+      landscape: ['awakened_landscape','normal_landscape'].some(key=>row.asset_status?.[key]===true) ? {url:getCardLandscapeUrl(row.resource_id,row.asset_status?.awakened_landscape===true),kind:'card_landscape',variant:row.asset_status?.awakened_landscape===true?'p':'base',status:'available'} : null,
+      attribute: cardFacets?.release === bootstrap.release && cardFacets.cards?.[row.resource_id]?.detailSha256 === row.detail.sha256 && ['Physical','Intelligence','Mental'].includes(cardFacets.cards[row.resource_id].attribute) ? cardFacets.cards[row.resource_id].attribute : '',
+      target: cardTarget(row) })),
     songs: previewSongs.map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),
       unitName: text(row.performance?.unitName), performanceKind: text(row.performance?.scope), image: songImage(row), target: songTarget(row),
+      performerLabel: !preferredId && row.performance?.scope === 'configurable_formation' ? '315 ALL STARS' : '',
       performers: (row.performance?.performers || []).filter(person => directory.has(person.id))
         .map(person => ({ id: person.id, name: idolDisplay(person.id, directory, idolName) })),
       relationLabel: preferredId && (row.performance?.performers || []).some(person => person.id === preferredId) ? '演唱成员' : preferredId ? '组合歌曲' : '',
@@ -251,7 +262,7 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       cast: [...new Set(row.characters || [])].filter(id => directory.has(id))
         .map(id => ({ id, name: idolDisplay(id, directory, idolName), accentColor: directory.get(id).color || '' })),
       image: boundImage(row.image, 'story_cover') || boundImage(row.resources?.hero, 'story_cover'), target: storyTarget(row) })),
-    events: previewEvents.map(row => ({ id: row.id, title: sourceText(eventTitle, text(row.title)),
+    events: previewEvents.map(row => ({ id: row.id, title: sourceText(eventTitle, text(row.title)),releaseAt:row.release_at,date:historicalDate(row.release_at),
       subtitle: [eventKindLabels[row.eventKind], row.isReprint === true ? '复刻' : '',
         Number.isFinite(row.release_at) && new Date(row.release_at * 1000).getUTCFullYear() > 2000 &&
           new Date(row.release_at * 1000).getUTCFullYear() < 2099 ? historicalDate(row.release_at) : ''].filter(Boolean).join(' · '),
@@ -269,6 +280,7 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       .map(([id, label]) => ({ id, label, value: domainCount(bootstrap, id) })),
     units: [...new Set([...directory.values()].map(idol => idol.unitCode).filter(Boolean))].map(code => ({
       id: code, title: text([...directory.values()].find(idol => idol.unitCode === code)?.unitName),
+      color: /^#[a-f0-9]{6}$/i.test(units.find(row=>row.catalog?.unit?.unit_code===code)?.catalog.unit.unit_color || '') ? units.find(row=>row.catalog?.unit?.unit_code===code).catalog.unit.unit_color : '#33a8a5',
       members: [...directory.values()].filter(idol => idol.unitCode === code).map(idol => ({id: idol.id, name: idolDisplay(idol.id, directory, idolName), color: idol.color})),
       target: {domain:'units',view:'unit_detail',unitCode:code},
     })),
@@ -283,8 +295,10 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
         previews: rows.slice(0,2).map(row => collections.events.find(event => event.id === row.id)).filter(Boolean)}
     }),
     preferredStats: stats,
+    gatewayCounts,
     scopeId: preferredId, collections, footprints,
     portrait: portalIdolPortrait(portraits, preferredId),
+    birthdayPortrait: portalIdolPortrait(portraits, preferredId, 'birthday_visual'),
     kana: text(preferredDetail?.view?.profile?.name_fields?.kana),
     preferredUnitName: text(preferred?.unitName),
     preferredUnitCode: text(preferred?.unitCode),

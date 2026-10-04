@@ -287,7 +287,7 @@ function check(dataset) {
   assert.ok(portalIdolPortrait(registry, preferredIdol.id)?.url.includes(preferredIdol.id))
   assert.equal(portalIdolPortrait(registry,'unknown'),null)
   for (const idol of bootstrap.idols.filter(row => !['012yus','013kys'].includes(row.id))) assert.ok(portalIdolPortrait(registry,idol.id), `formal single birthday portrait for ${idol.id}`)
-  for (const id of ['012yus','013kys']) assert.equal(portalIdolPortrait(registry,id).url,'/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png','W joint visual is an explicit owner-bound exception')
+  for (const id of ['012yus','013kys']) assert.equal(portalIdolPortrait(registry,id,'birthday_visual').url,'/assets/stories/birthday/image_chara_birthday_visual_012yus-013kys.png','W joint visual is an explicit owner-bound exception')
   const wrongJoint = {...registry.entries.find(row => row.idol_code === '012yus'),shared_identity_ids:['001tom','012yus']}
   assert.equal(portalIdolPortrait({entries:[wrongJoint]},'012yus'),null)
   assert.equal(portalIdolPortrait({entries:[{...registry.entries[0],asset_url:'/assets/stories/birthday/wrong.png'}]}, registry.entries[0].idol_code),null)

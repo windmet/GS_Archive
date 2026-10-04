@@ -3,7 +3,7 @@ import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOM
 
 // Portal data is independent of catalogue filters and never owns a player detail.
 export function useArchivePortalData({ view, bootstrap, client, preferredIdol, scope = ref(''), searchQuery = ref(''),
-  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadCollections, loadStageManifest, loadPortraits, loadEventDetail,
+  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadCollections, loadStageManifest, loadPortraits, loadEventDetail, loadUnits, loadCardFacets, loadGatewayCounts,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
   const desktop = ref(false), cards = shallowRef([]), songs = shallowRef([])
   const preferredDetail = shallowRef(null), loading = ref(false), error = ref('')
@@ -14,6 +14,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
   // An empty scope follows the favorite; 'all' explicitly selects the whole archive.
   const eventDetails = shallowRef([])
   const portraits = shallowRef(null), available = shallowRef({}), storyCollections = shallowRef([])
+  const units = shallowRef([]), cardFacets = shallowRef(null), gatewayCounts = shallowRef({})
   const scopeIdol = computed(() => scope.value === '' ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
   const preferredCode = computed(() => scopeIdol.value?.id || '')
   function selectScope(code) {
@@ -24,7 +25,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     songs: songs.value, stories: stories.value, events: events.value, stageManifest: stageManifest.value,
     preferredIdol: scopeIdol.value,
     preferredDetail: preferredDetail.value?.id === preferredCode.value && preferredDetail.value?.view?.profile?.idol_code === preferredCode.value ? preferredDetail.value : null,
-    idolName, cardTitle, songTitle, storyCollections: storyCollections.value, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value }))
+    idolName, cardTitle, songTitle, storyCollections: storyCollections.value, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value, units:units.value,cardFacets:cardFacets.value,gatewayCounts:gatewayCounts.value }))
   const search = computed(() => ({ query: query.value, loading: searchLoading.value,
     error: searchError.value, results: buildPortalSearchResults({ query: query.value,
       rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle }) }))
@@ -42,6 +43,9 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
       loadStageManifest ? loadStageManifest() : Promise.resolve(null),
       loadPortraits ? loadPortraits() : Promise.resolve(null),
       loadCollections ? loadCollections() : Promise.resolve([]),
+      loadUnits ? loadUnits() : Promise.resolve([]),
+      loadCardFacets ? loadCardFacets() : Promise.resolve(null),
+      loadGatewayCounts ? loadGatewayCounts() : Promise.resolve({}),
     ])
     if (disposed || ticket !== revision || view.value !== 'portal' || !desktop.value) return
     if (results[0].status === 'fulfilled') cards.value = results[0].value
@@ -52,6 +56,9 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     if (results[5].status === 'fulfilled') stageManifest.value = results[5].value
     if (results[6].status === 'fulfilled') portraits.value = results[6].value
     if (results[7].status === 'fulfilled') storyCollections.value = results[7].value
+    if (results[8].status === 'fulfilled') units.value = results[8].value
+    if (results[9].status === 'fulfilled') cardFacets.value = results[9].value
+    if (results[10].status === 'fulfilled') gatewayCounts.value = results[10].value
     available.value = Object.fromEntries([['cards',0],['songs',1],['stories',3],['events',4]].map(([key,index]) => [key, results[index].status === 'fulfilled']))
     error.value = results.every(result => result.status === 'fulfilled') ? '' : '部分资料暂时无法读取，已保留可用内容。'
     loading.value = false

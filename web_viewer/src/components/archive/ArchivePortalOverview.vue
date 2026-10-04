@@ -4,32 +4,29 @@
       <header class="overview-toolbar">
         <div class="overview-brand">
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
-          <h1 id="portal-title" ref="heading" tabindex="-1">资料馆 <span class="overview-title-view">· {{ preferredReference?.actionable ? '担当档案' : '全站档案' }}</span></h1>
+          <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
         </div>
-        <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
-      </header>
 
-      <div class="overview-explorer">
       <div class="overview-scope-bar">
         <div class="overview-segment" role="group" aria-label="资料馆浏览模式">
           <button type="button" :aria-pressed="!preferredReference?.actionable" @click="emit('select-scope', '')"><Users :size="17" />全站档案</button>
           <button type="button" :aria-pressed="Boolean(preferredReference?.actionable)" aria-label="切换资料馆视角" :aria-expanded="scopeOpen" @click="scopeOpen = true"><ArchiveIdolAvatar v-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="26" decorative /><span>{{ preferredReference?.actionable ? `偶像视角 · ${preferredName}` : '选择偶像视角' }}</span><ChevronRight :size="16" /></button>
         </div>
-        <button v-if="savedIdolCode && preferredReference?.idolCode !== savedIdolCode" class="overview-scope-reset" type="button" @click="emit('select-scope', savedIdolCode)">我的担当</button>
+
         <span class="overview-scope-note">{{ preferredReference?.actionable ? '卡片、歌曲、故事与活动，沿着他的足迹探索。' : '浏览全体偶像的卡片、歌曲、故事与活动。' }}</span>
       </div>
 
-      <slot name="notices" />
+
 
       <section ref="searchPanel" class="overview-search" @keydown.esc.prevent="searchOpen = false" aria-labelledby="portal-search-title">
         <h2 id="portal-search-title" class="overview-visually-hidden">搜索核心档案</h2>
         <form class="overview-search-form" role="search" @submit.prevent="searchOpen = true; emit('search', query)">
           <Search :size="21" aria-hidden="true" />
-          <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站：偶像、卡片、歌曲、故事" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen && Boolean(query.trim())" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
+          <input id="portal-global-search" type="search" :value="query" aria-label="搜索偶像、卡片、歌曲、故事" placeholder="搜索全站档案…" autocomplete="off" aria-controls="portal-search-results" :aria-expanded="searchOpen && Boolean(query.trim())" data-archive-focus-id="portal-search" @focus="searchOpen = true" @input="searchOpen = true; emit('search', $event.target.value)" />
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', '')"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
-        <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>快捷搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="searchOpen = true; emit('search', term)">{{ term }}</button></div>
+
         <div v-if="query.trim() && searchOpen" id="portal-search-results" class="overview-search-results" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
           <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="searchOpen = false"><X :size="16" />收起</button>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
@@ -50,38 +47,43 @@
           <p v-else-if="!globalSearch.loading && !globalSearch.error" class="overview-status" role="status">没有找到匹配的核心档案。试试名称或关键词。</p>
         </div>
       </section>
-
-      </div>
+      <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
+      </header>
+      <slot name="notices" />
+      <div class="overview-metrics">
       <nav class="overview-counts" aria-label="当前视角资料数量">
         <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" :aria-label="`${count.label} ${formatCount(count.value)}，查看全部`" @click="collectionOpen = count.id">
           <component :is="archiveNavigationIcons[count.id]" :size="17" aria-hidden="true" />
           <span><strong>{{ formatCount(count.value) }}</strong><small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></span><span class="overview-count-label">{{ count.label }}</span>
         </button>
       </nav>
+        <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>快捷搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="searchOpen = true; emit('search', term)">{{ term }}</button></div>
+      </div>
 
       <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
       <p v-if="desktopOverview.error" class="overview-error" role="status">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></p>
 
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
         <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length }} UNITS</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
-        <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile">
+        <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
           <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><img :src="getUnitLogoUrl(unit.id)" :alt="unit.title" loading="lazy" /></button>
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :size="28" decorative /></button></div>
         </article></div>
       </section>
-      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable, 'is-w-view': ['012yus','013kys'].includes(preferredReference?.idolCode)}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
-          <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': desktopOverview.portrait && !portraitFailed}">
+      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable, 'is-w-view': birthdayTheme && ['012yus','013kys'].includes(preferredReference?.idolCode)}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
+          <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}">
             <header class="overview-identity">
-              <div class="overview-portrait-slot"><img v-if="desktopOverview.portrait && !portraitFailed" class="overview-idol-art" :style="{transform: preferredReference?.idolCode === '012yus' ? 'translateX(8%)' : preferredReference?.idolCode === '013kys' ? 'translateX(-12%)' : undefined}" :src="desktopOverview.portrait.url" alt="" decoding="async" @error="portraitFailed = true" />
+              <div class="overview-portrait-slot"><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :style="{transform: birthdayTheme && preferredReference?.idolCode === '012yus' ? 'translateX(8%)' : birthdayTheme && preferredReference?.idolCode === '013kys' ? 'translateX(-12%)' : undefined}" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
               <ArchiveIdolAvatar v-else-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="88" :accent-color="preferredReference.accentColor" decorative />
               <Users v-else class="overview-all-mark" :size="76" aria-hidden="true" />
               </div><div class="overview-identity-copy">
-                <p class="overview-eyebrow">{{ preferredReference?.idolCode === savedIdolCode ? '我的担当' : preferredReference?.actionable ? '偶像档案' : '315 STARS' }}</p>
+                <p class="overview-eyebrow" :class="{'is-favorite':preferredReference?.idolCode === savedIdolCode}">{{ preferredReference?.idolCode === savedIdolCode ? '我的担当' : preferredReference?.actionable ? '偶像档案' : '315 STARS' }}</p>
                 <h2 id="portal-workbench-title">{{ preferredReference?.actionable ? preferredName : '每一颗星的故事' }}</h2>
                 <p v-if="desktopOverview.kana" class="overview-kana">{{ desktopOverview.kana }}</p>
                 <p v-if="desktopOverview.preferredUnitName" class="overview-unit-name"><img v-if="unitLogoUrl && !unitLogoFailed" :src="unitLogoUrl" :alt="desktopOverview.preferredUnitName" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ desktopOverview.preferredUnitName }}</span></p>
               </div>
             </header>
+            <button v-if="desktopOverview.birthdayPortrait" class="overview-art-theme" type="button" :aria-pressed="birthdayTheme" @click="birthdayTheme = !birthdayTheme; portraitFailed=false">{{ birthdayTheme ? '生日主题 · 切换原版立绘' : '原版立绘 · 切换生日主题' }}</button>
             <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">打开他的主页<ArrowUpRight :size="16" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
@@ -90,40 +92,33 @@
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="collectionOpen = 'cards'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组卡面 <Shuffle :size="15" /></button>
-            <div v-if="cards.length" class="overview-card-grid">
-              <article v-for="card in cards" :key="card.id" class="overview-card">
-                <div class="overview-card-art"><DomainMediaPreview class="overview-card-image" :binding="card.image" :name="card.title" /><span v-if="card.rarity" class="overview-rarity" :class="{ 'is-ssr': card.rarity === 'SSR' }">{{ card.rarity }}</span><button v-if="card.target && card.image?.url" class="overview-card-art-link" type="button" :aria-label="`打开卡片 ${card.title}`" :data-archive-focus-id="`portal-card-art:${card.id}`" @click="emit('open-result', card)"></button></div>
-                <div v-if="card.idolName && !preferredReference?.actionable" class="overview-card-meta"><span>{{ card.idolName }} · {{ card.unitName }}</span></div>
-                <button type="button" :disabled="!card.target" :data-archive-focus-id="`portal-card:${card.id}`" @click="emit('open-result', card)"><strong>{{ card.title }}</strong><ArrowUpRight :size="16" aria-hidden="true" /></button>
-              </article>
-            </div>
-            <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取卡片预览…' : '暂无可展示的卡片预览，可前往目录查阅。' }}</p>
+            <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openCardCollection" />
           </div>
       </section>
 
-      <div class="overview-content-grid">
+      <div class="overview-content-grid" :class="{'is-global-grid':!preferredReference?.actionable}">
           <section class="overview-panel overview-music" aria-labelledby="portal-song-preview-title">
             <header class="overview-section-heading"><h2 id="portal-song-preview-title">{{ preferredReference?.actionable ? '相关歌曲' : '歌曲与舞台' }} <small>{{ collectionCount('songs') }}</small></h2><button type="button" data-archive-focus-id="portal-songs-all" @click="collectionOpen = 'songs'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <div v-if="!preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="歌曲演唱范围"><button v-for="category in songCategories" :key="category.id" type="button" :aria-pressed="songCategory === category.id" @click="songCategory = category.id">{{ category.label }} <small>{{ category.count }}</small></button></div>
             <div v-if="songs.length" class="overview-song-list">
               <article v-for="song in songs" :key="song.id" class="overview-song">
                 <div class="overview-song-cover"><DomainMediaPreview class="overview-song-image" :binding="song.image" :name="song.title" /></div>
-                <div class="overview-song-copy"><button class="overview-song-detail" type="button" :disabled="!song.target" :data-archive-focus-id="`portal-song:${song.id}`" @click="emit('open-result', song)"><strong>{{ song.title }}</strong><small v-if="song.performers?.length">{{ song.performers.map(person => person.name).join('、') }}</small><small v-else-if="song.unitName">{{ song.unitName }}</small><small v-if="song.relationLabel" class="overview-relation">{{ song.relationLabel }}</small></button></div>
+                <div class="overview-song-copy"><button class="overview-song-detail" type="button" :disabled="!song.target" :data-archive-focus-id="`portal-song:${song.id}`" @click="emit('open-result', song)"><strong>{{ song.title }}</strong><small v-if="song.performerLabel">{{ song.performerLabel }}</small><small v-else-if="song.performers?.length">{{ song.performers.map(person => person.name).join('、') }}</small><small v-else-if="song.unitName">{{ song.unitName }}</small><small v-if="song.relationLabel" class="overview-relation">{{ song.relationLabel }}</small></button></div>
                 <button v-if="song.stageTarget" class="overview-stage-button" type="button" :aria-label="`在舞台中打开 ${song.title}`" :title="`在舞台中打开 ${song.title}`" :data-archive-focus-id="`portal-song-stage:${song.id}`" @click="emit('open-stage', song.stageTarget)"><Play :size="15" aria-hidden="true" /><span class="overview-visually-hidden">打开舞台</span></button>
               </article>
             </div>
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '主线章节' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${desktopOverview.mainCollections?.length || 0} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="collectionOpen = 'stories'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${desktopOverview.mainCollections?.length || 0} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="collectionOpen = 'stories'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div>
-          <div v-if="!preferredReference?.actionable" class="overview-main-index"><article v-for="chapter in desktopOverview.mainCollections || []" :key="chapter.id"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" /><button type="button" :disabled="!chapter.target" @click="emit('open-result', chapter)"><strong>{{ chapter.title }}</strong><small>{{ chapter.target ? `${chapter.chapterCount} 节 · ${chapter.episodeCount} 话` : '未实装 · 无可读内容' }}</small><ChevronRight v-if="chapter.target" :size="16" /></button></article></div>
+          <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in desktopOverview.mainCollections || []" :key="chapter.id"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" /><button type="button" :disabled="!chapter.target" @click="emit('open-result', chapter)"><strong>{{ chapter.title }}</strong><small>{{ chapter.target ? `${chapter.chapterCount} 节 · ${chapter.episodeCount} 话` : '未实装 · 无可读内容' }}</small><ChevronRight v-if="chapter.target" :size="16" /></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small>{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ story.subtitle }}</small><strong>{{ story.title }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营年表' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="collectionOpen = 'events'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
-          <div v-if="!preferredReference?.actionable" class="overview-year-grid"><article v-for="year in desktopOverview.eventYears || []" :key="year.year"><header><strong>{{ year.year }}</strong><span>{{ year.count }} 场活动</span></header><small>{{ year.from }} — {{ year.to }}</small><div v-for="event in year.previews" :key="event.id"><button type="button" @click="emit('open-result', event)"><img v-if="event.image" :src="event.image.url" alt="" loading="lazy" /><span>{{ event.title }}</span><ArrowUpRight :size="15" /></button></div></article></div>
+          <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="collectionOpen = 'events'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <div v-if="!preferredReference?.actionable" class="overview-timeline"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.date }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ index === 0 ? '从这里启程' : index === timeline.length - 1 ? '继续珍藏' : '回忆片段' }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
           <div v-else-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
         </section>
@@ -131,10 +126,12 @@
       <ArchiveTerminalDialog :open="scopeOpen" title="切换资料馆视角" title-id="portal-scope-title" @close="scopeOpen = false">
         <p class="overview-dialog-note">切换浏览视角不会修改已保存的担当。</p>
         <button class="terminal-text-button" type="button" @click="chooseScope('')">查看全体偶像</button>
+        <button v-if="savedIdolCode" class="terminal-text-button" type="button" @click="chooseScope(savedIdolCode)">我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button>
         <ArchiveIdolPickerPanel :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
       <ArchiveTerminalDialog :open="Boolean(collectionOpen)" :title="collectionTitle" title-id="portal-collection-title" @close="collectionOpen = ''">
         <p class="overview-dialog-note">{{ preferredReference?.actionable ? preferredName : '全站档案' }} · {{ collectionRows.length }} 条{{ collectionOpen === 'stories' ? '可读故事' : '' }}</p>
+        <div v-if="collectionOpen === 'cards'" class="overview-card-facets"><label>稀有度 <select v-model="cardFilter.rarity"><option value="">全部</option><option v-for="rarity in ['SSR','SR','R','N']" :key="rarity">{{ rarity }}</option></select></label><label>属性 <select v-model="cardFilter.attribute"><option value="">全部</option><option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute">{{ attribute }}</option></select></label></div>
         <ul class="overview-collection-list"><li v-for="row in collectionPageRows" :key="row.id"><button type="button" :disabled="!row.target" @click="openCollectionResult(row)"><img v-if="row.image?.url" :src="row.image.url" alt="" loading="lazy" /><span v-else class="overview-collection-mark"><component :is="archiveNavigationIcons[collectionOpen] || BookOpen" :size="22" aria-hidden="true" /></span><span><strong>{{ row.title }}</strong><small>{{ row.subtitle || row.unitName || row.idolName }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></li></ul>
         <nav v-if="collectionPages > 1" class="overview-collection-pages" aria-label="关联档案翻页"><button type="button" :disabled="collectionPage === 1" @click="collectionPage--">上一页</button><span>{{ collectionPage }} / {{ collectionPages }}</span><button type="button" :disabled="collectionPage === collectionPages" @click="collectionPage++">下一页</button></nav>
         <p v-if="!collectionRows.length" class="overview-empty">当前视角没有已确认的关联记录。</p>
@@ -153,6 +150,9 @@ import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
+import PortalCardBento from './PortalCardBento.vue'
+import {portalTimeline} from '../../presentation/PortalBento.js'
+import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 
 const props = defineProps({
@@ -178,10 +178,18 @@ const footprints = computed(() => props.desktopOverview.footprints || [])
 const collectionPage = ref(1)
 const scopeOpen = ref(false), collectionOpen = ref(''), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
-const collectionRows = computed(() => collections.value[collectionOpen.value] || [])
+const cardFilter=ref({rarity:'',attribute:''})
+function openCardCollection(filter) {cardFilter.value={rarity:'',attribute:'',...filter};collectionOpen.value='cards'}
+const collectionRows = computed(() => (collections.value[collectionOpen.value] || []).filter(row=>collectionOpen.value !== 'cards' || ((!cardFilter.value.rarity || row.rarity===cardFilter.value.rarity) && (!cardFilter.value.attribute || row.attribute===cardFilter.value.attribute))))
+watch(cardFilter,()=>{collectionPage.value=1},{deep:true})
+const birthdayTheme=ref(false)
+const activePortrait=computed(()=>birthdayTheme.value ? props.desktopOverview.birthdayPortrait : props.desktopOverview.portrait)
+const gateways=storyGateways.filter(row=>row.action!=='external-resources')
+function gatewayCount(gateway){return storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
+const timeline=computed(()=>portalTimeline(collections.value.events || []))
 const collectionPages = computed(() => Math.max(1, Math.ceil(collectionRows.value.length / 24)))
 const collectionPageRows = computed(() => collectionRows.value.slice((collectionPage.value - 1) * 24, collectionPage.value * 24))
-watch(collectionOpen, () => { collectionPage.value = 1 })
+watch(collectionOpen, (value,previous) => { collectionPage.value = 1; if(!value && previous==='cards') cardFilter.value={rarity:'',attribute:''} })
 const collectionTitle = computed(() => footprints.value.find(row => row.id === collectionOpen.value)?.label || '关联档案')
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
@@ -193,22 +201,9 @@ function storyGroup(row) { return ['main','event'].includes(row.domain) ? row.do
 watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; collectionOpen.value = ''; portraitFailed.value = false })
 const cardOffset = ref(0)
 function shuffleCards() { cardOffset.value += 1 }
-const cards = computed(() => {
-  if (props.preferredReference?.actionable) return props.desktopOverview.cards || []
-  const pool = (collections.value.cards || []).filter(row => row.image?.url)
-  if (!pool.length) return []
-  const chosen = [], units = new Set(), owners = new Set()
-  const start = (cardOffset.value * 37) % pool.length
-  for (let i = 0; i < pool.length && chosen.length < 4; i++) {
-    const card = pool[(start + i) % pool.length]
-    if (units.has(card.unitCode) || owners.has(card.idolCode)) continue
-    chosen.push(card); units.add(card.unitCode); owners.add(card.idolCode)
-  }
-  return chosen
-})
 const songCategory = ref('configurable_formation')
-const songCategories = computed(() => [['configurable_formation','代表曲 · 自由编成'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成']].map(([id,label]) => ({id,label,count:(collections.value.songs || []).filter(row => row.performanceKind === id).length})))
-const songs = computed(() => props.preferredReference?.actionable ? props.desktopOverview.songs || [] : (collections.value.songs || []).filter(row => row.performanceKind === songCategory.value).slice(0,4))
+const songCategories = computed(() => [['configurable_formation','代表曲 · 自由编成'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成'],['all','全部歌曲']].map(([id,label]) => ({id,label,count:(collections.value.songs || []).filter(row => id==='all' || row.performanceKind === id).length})))
+const songs = computed(() => props.preferredReference?.actionable ? props.desktopOverview.songs || [] : (collections.value.songs || []).filter(row => songCategory.value==='all' || row.performanceKind === songCategory.value).slice(0,songCategory.value==='configurable_formation' ? 5 : 4))
 const stories = computed(() => (collections.value.stories || []).filter(row => storyTab.value === 'all' || storyGroup(row) === storyTab.value).slice(0, 4))
 const events = computed(() => props.desktopOverview.events || [])
 const query = computed(() => props.globalSearch.query || '')
@@ -242,12 +237,9 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-brand b { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:.12em;margin-left:var(--gs-space-2); }
 .overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end;gap:4px;padding:4px;border:1px solid #ffffffa6;border-radius:14px;background:#ffffffc9; }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
-.overview-home-link { display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:transparent;color:inherit; }
-.overview-home-link > svg { color:var(--portal-accent); }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:var(--gs-radius-field);background:transparent;color:var(--portal-accent); }
 .overview-brand h1 { margin:0;padding-left:14px;border-left:1px solid var(--portal-line);font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-.02em; }
 .overview-brand h1:focus { outline:none; }
-.overview-description { margin:8px 0 14px;color:var(--portal-muted);font-size:13px; }
 .overview-search { position:relative;margin-bottom:var(--gs-space-4); }
 .overview-search-form { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:4px 6px 4px 16px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffed;color:var(--portal-accent);box-shadow:0 6px 24px #26394709; }
 .overview-search-form:focus-within { border-color:var(--portal-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--portal-idol-color) 12%,transparent); }
@@ -287,40 +279,18 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-personal, .overview-card-showcase { min-width:0; }
 .overview-personal { position:relative;align-self:stretch;display:flex;flex-direction:column;justify-content:center; }
 .overview-card-showcase { width:100%;max-width:none;padding-left:24px;border-left:1px solid color-mix(in srgb,var(--portal-idol-color) 10%,#dce4e660); }
-.overview-hero-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px; }
 .overview-eyebrow { color:var(--portal-accent);font-size:11px;font-weight:650;letter-spacing:.06em; }
-.overview-hero-heading > button { display:flex;align-items:center;gap:6px;min-height:44px;padding:4px 0;border:0;background:transparent;color:var(--portal-accent);font-size:12px; }
 .overview-section-heading { display:flex;justify-content:space-between;align-items:center;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4); }
 .overview-section-heading h2 { margin:0;font-size:16px;line-height:1.4;font-weight:650; }
 .overview-section-heading > button { display:flex;align-items:center;gap:var(--gs-space-2);flex:none;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-identity { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0; }
-.overview-avatar-trigger { display:grid;place-items:center;flex:none;width:64px;height:64px;padding:0;border:0;border-radius:50%;background:transparent; }
 /* Only the named copy grows. The shared avatar root remains a square circle. */
-.overview-preferred-avatar, .overview-avatar-empty { flex:none;width:64px;height:64px;min-width:64px;max-width:64px;aspect-ratio:1; }
-.overview-preferred-avatar { --idol-avatar-override-size:64px; }
-.overview-avatar-empty { display:grid;place-items:center;border:1px dashed var(--portal-line);border-radius:50%;color:var(--portal-accent); }
 .overview-identity-copy { min-width:0; }
 .overview-identity-copy h2 { font-size:25px;line-height:1.3;overflow-wrap:anywhere; }
-.overview-producer-name { margin:0 0 var(--gs-space-1);color:var(--portal-muted);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
-.overview-personal-meta { display:grid;gap:12px;margin-top:20px; }
-.overview-preferred-stats { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0; }
-.overview-preferred-stats > div { display:flex;flex-direction:column;gap:2px;min-width:0; }
-.overview-preferred-stats dt { order:2;font-size:11px;color:var(--portal-muted); }
-.overview-preferred-stats dd { margin:0;font-size:20px;font-weight:650;line-height:1.3;font-variant-numeric:tabular-nums; }
 .overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:6px; }
 .overview-preferred-actions button { display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:12px;font-weight:500; }
-.overview-personal-note { margin:0 0 var(--gs-space-3);color:#718678;font-size:var(--gs-text-ui); }
 .overview-card-heading { margin-bottom:10px; }
 .overview-card-heading h3 { margin:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-card-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-4); }
-.overview-card { min-width:0; }
-.overview-card-meta { display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:22px;margin-top:6px;color:#6c8275;font-size:11px; }
-.overview-rarity { position:absolute;z-index:1;top:8px;left:8px;padding:1px 6px;border:1px solid #ffffff60;border-radius:5px;background:#20353bd9;color:#f0f5f5;font-size:10px;font-weight:650;line-height:1.6;letter-spacing:.025em;pointer-events:none; }
-.overview-rarity.is-ssr { border-color:#f5dfa280;background:#302d25de;color:#fff0b9; }
-.overview-card-meta > span:first-child { color:var(--portal-accent); }
-.overview-card > button { display:flex;align-items:start;justify-content:space-between;gap:6px;width:min(100%,160px);min-height:44px;margin:4px auto 0;padding:4px 0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-card > button strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
-.overview-card > button svg { flex:none;margin-top:var(--gs-space-1);color:var(--portal-accent); }
 .overview-song-list { display:grid;grid-template-columns:1fr;gap:0; }
 .overview-song { display:flex;align-items:center;gap:10px;min-width:0;padding:10px 0; }
 .overview-song + .overview-song { border-top:1px solid #edf1ed; }
@@ -331,19 +301,15 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-song-detail > svg { flex:none;color:#739884; }
 .overview-song-cover { position:relative;flex:none;width:64px; }
 .overview-stage-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--portal-line);border-radius:50%;background:#ffffff70;color:var(--portal-accent); }
-.overview-card-image, .overview-song-image, .overview-story-image, .overview-event-image { display:flex;position:relative;align-items:center;justify-content:center;margin:0;padding:var(--gs-space-2);border:0;border-radius:var(--gs-radius-field);background:var(--portal-tint); }
+.overview-song-image, .overview-story-image, .overview-event-image { display:flex;position:relative;align-items:center;justify-content:center;margin:0;padding:var(--gs-space-2);border:0;border-radius:var(--gs-radius-field);background:var(--portal-tint); }
 /* Every card uses the same portrait frame; bound pixels retain their own ratio. */
-.overview-card-art { position:relative;width:min(100%,160px);margin-inline:auto; }
-.overview-card-art-link { position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:var(--gs-radius-field);background:transparent; }
-.overview-card-art:not(:has(img)) > .overview-card-art-link { display:none; }
-.overview-card-image { width:100%;height:auto;aspect-ratio:4 / 5;margin-inline:auto;border-radius:10px;box-shadow:0 4px 12px #25384314,0 1px 2px #2538430d,0 0 0 1px #ffffff99; }
 .overview-song-image { flex:none;width:64px;height:64px;box-shadow:0 2px 6px #2538430a; }
 .overview-story-image { flex:none;width:44px;height:44px; }
 .overview-event-image { flex:none;width:128px;height:72px;aspect-ratio:16 / 9;margin:0; }
-.overview-card-image:deep(img), .overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:auto;height:auto;max-width:100%;max-height:100%;min-height:0;object-fit:contain;margin:0; }
-.overview-card-image:deep(.domain-resource-empty), .overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--gs-space-3);min-height:0;width:100%;height:100%;margin:0;background:transparent;color:#6e887b;font-size:var(--gs-text-meta); }
+.overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:auto;height:auto;max-width:100%;max-height:100%;min-height:0;object-fit:contain;margin:0; }
+.overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--gs-space-3);min-height:0;width:100%;height:100%;margin:0;background:transparent;color:#6e887b;font-size:var(--gs-text-meta); }
 .overview-song-image:deep(.domain-resource-empty span), .overview-story-image:deep(.domain-resource-empty span), .overview-song-image:deep(figcaption), .overview-story-image:deep(figcaption) { display:none; }
-.overview-card-image:deep(figcaption), .overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:#688273;font-size:var(--gs-text-meta); }
+.overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:#688273;font-size:var(--gs-text-meta); }
 .portal-overview :deep(.domain-media-preview button) { min-height:44px;padding:var(--gs-space-2) var(--gs-space-3);border:1px solid var(--portal-line);border-radius:var(--gs-radius-control);background:#fff;color:var(--portal-accent);font-size:var(--gs-text-ui); }
 .overview-song-image:deep(button), .overview-story-image:deep(button) { width:44px;padding:0;font-size:var(--gs-text-meta); }
 .overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px;align-items:stretch; }
@@ -373,38 +339,23 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 @media (hover:hover) and (pointer:fine) {
   .overview-icon-button:hover, .overview-search-shortcuts > button:hover, .overview-preferred-actions button:hover { background:var(--portal-tint); }
   .overview-stage-button:hover { border-color:var(--portal-accent);background:var(--portal-accent);color:#fff; }
-  .overview-section-heading > button:hover, .overview-card > button:hover, .overview-song-detail:hover, .overview-search-results li > button:hover, .overview-story > button:hover, .overview-event > button:hover { color:var(--portal-accent); }
+  .overview-section-heading > button:hover, .overview-song-detail:hover, .overview-search-results li > button:hover, .overview-story > button:hover, .overview-event > button:hover { color:var(--portal-accent); }
   .overview-search-submit:hover { background:color-mix(in srgb,var(--portal-accent) 88%,#000); }
-  .overview-card-art { transition:transform 160ms cubic-bezier(.23,1,.32,1); }
-  .overview-card-image { transition:box-shadow 160ms ease; }
-  .overview-card:has(.overview-card-art-link:hover,>button:hover) .overview-card-art { transform:translateY(-4px); }
-  .overview-card:has(.overview-card-art-link:hover,>button:hover) .overview-card-image { box-shadow:0 10px 22px #25384322,0 0 0 1px color-mix(in srgb,var(--portal-idol-color) 25%,#fff); }
 }
 .portal-overview button:active { background-color:var(--portal-tint); }
-.portal-overview .overview-card-art-link:active { background-color:#ffffff18; }
 .portal-overview .overview-search-submit:active { background-color:color-mix(in srgb,var(--portal-accent) 80%,#000); }
-@media (prefers-reduced-motion:reduce) {
-  .overview-card-art, .overview-card-image { transition:none; }
-  .overview-card:has(.overview-card-art-link:hover,>button:hover) .overview-card-art { transform:none; }
-}
 @media (pointer:coarse) {
   .overview-search-shortcuts > button { min-height:44px; }
 }
 @container (max-width:900px) {
   .overview-featured { grid-template-columns:1fr;gap:18px; }
   .overview-card-showcase { max-width:none;padding:10px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--portal-idol-color) 10%,#dce4e660); }
-  .overview-card-art { width:min(100%,144px); }
-  .overview-hero-heading { grid-column:1 / -1;margin-bottom:0; }
-  .overview-personal-heading { align-self:center;margin-bottom:0; }
-  .overview-personal-meta { margin-top:0; }
   .overview-preferred-actions button { padding-inline:8px; }
   .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 @container (max-width:650px) {
   .overview-content-grid { grid-template-columns:1fr; }
   .overview-personal { display:flex; }
-  .overview-hero-heading { margin-bottom:10px; }
-  .overview-personal-meta { margin-top:16px; }
   .overview-counts > div { padding-inline:10px; }
   .overview-counts dd { font-size:20px; }
 }
@@ -415,7 +366,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 }
 /* The view controller, typography and original art share the existing GS palette. */
 .overview-brand h1 { border:0;padding:0;font-size:24px; }
-.overview-title-view { color:var(--portal-muted);font-size:18px;font-weight:500; }
 .overview-scope-bar { display:flex;align-items:center;gap:12px;min-width:0;margin:16px 0 12px; }
 .overview-scope-trigger { display:flex;align-items:center;gap:10px;flex:none;min-height:52px;padding:6px 12px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffd9;color:var(--portal-accent); }
 .overview-scope-trigger > span { display:flex;align-items:baseline;gap:10px; }
@@ -469,10 +419,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-idol-art { height:240px; }
   .overview-identity-copy h2 { font-size:23px; }
   .overview-preferred-actions { flex-wrap:wrap;justify-content:flex-start; }
-  .overview-card-grid { gap:10px; }
 }
 @container(max-width:720px) {
-  .overview-title-view { font-size:15px; }
   .overview-featured { grid-template-columns:1fr; }
   .overview-personal { min-height:260px; }
   .overview-identity { min-height:190px; }
@@ -482,19 +430,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-card-showcase { padding:16px 0 0;border-left:0;border-top:1px solid var(--portal-line); }
   .overview-counts { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .overview-content-grid { grid-template-columns:1fr; }
-}
-.overview-explorer { display:grid;grid-template-columns:fit-content(45%) minmax(0,1fr);align-items:start;gap:16px;margin-top:16px; }
-.overview-explorer .overview-search { position:relative;margin-bottom:0; }
-.overview-explorer .overview-scope-bar { flex-wrap:wrap;gap:4px;margin:0; }
-.overview-explorer .overview-scope-trigger { width:100%; }
-.overview-explorer .overview-scope-trigger > svg:last-child { margin-left:auto; }
-.overview-explorer .overview-scope-note { display:none; }
-@container(max-width:900px) {
-  .overview-explorer { gap:12px; }
-}
-@container(max-width:720px) {
-  .overview-explorer { grid-template-columns:1fr; }
-  .overview-explorer .overview-scope-trigger { width:auto; }
 }
 .overview-collection-pages { display:flex;justify-content:center;align-items:center;gap:16px;margin:16px 0; }
 .overview-collection-pages button { min-height:44px;padding:6px 12px;border:1px solid var(--portal-line);border-radius:8px;background:var(--portal-tint);color:var(--portal-accent); }
@@ -516,8 +451,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-featured.is-w-view {grid-template-columns:minmax(340px,38%) minmax(0,1fr);}
 .is-w-view .overview-identity {grid-template-columns:minmax(0,58%) minmax(0,1fr);}
 @container(max-width:900px){.overview-featured.is-w-view {grid-template-columns:1fr;}}
-.is-all-view .overview-card-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
-.is-all-view .overview-card-art {max-height:240px;}
 .overview-unit-hub {margin:20px 0;}
 .overview-unit-matrix {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
 .overview-unit-tile {position:relative;min-width:0;height:100px;border:1px solid var(--portal-line);border-radius:10px;background:#ffffffa0;}
@@ -531,14 +464,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-main-index button {display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:84px;padding:10px 14px;border:0;background:transparent;color:inherit;text-align:left;}
 .overview-main-index small {flex-basis:100%;color:var(--portal-muted);}
 .overview-main-index article:has(button:disabled) {grid-template-columns:1fr;opacity:.6;}
-.overview-year-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
-.overview-year-grid article {min-width:0;padding:14px;border:1px solid var(--portal-line);border-radius:10px;background:#ffffff70;}
-.overview-year-grid header {display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.overview-year-grid header strong {font-size:24px;font-variant-numeric:tabular-nums;}
-.overview-year-grid article > small {font-size:11px;color:var(--portal-muted);}
-.overview-year-grid button {display:flex;align-items:center;gap:8px;width:100%;min-height:48px;margin-top:12px;padding:0;border:0;background:transparent;color:inherit;text-align:left;}
-.overview-year-grid img {width:90px;height:44px;object-fit:contain;flex:none;}
-.overview-year-grid button span {flex:1;min-width:0;font-size:12px;line-height:1.4;}
-@container(max-width:760px){.overview-unit-matrix {gap:6px;}.overview-unit-tile {height:84px;}.overview-segment > button {padding:8px;font-size:12px;}.overview-year-grid {grid-template-columns:1fr;}.overview-identity {grid-template-columns:minmax(0,42%) minmax(0,1fr);}.overview-identity-copy h2 {font-size:24px;}}
+@container(max-width:760px){.overview-unit-matrix {gap:6px;}.overview-unit-tile {height:84px;}.overview-segment > button {padding:8px;font-size:12px;}.overview-identity {grid-template-columns:minmax(0,42%) minmax(0,1fr);}.overview-identity-copy h2 {font-size:24px;}}
 @media(prefers-reduced-motion:reduce){.portal-overview * {transition:none!important;animation:none!important;}}
 </style>
+<style scoped src="./portal-bento.css"></style>

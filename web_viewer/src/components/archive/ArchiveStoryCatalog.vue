@@ -301,6 +301,7 @@
 </template>
 
 <script setup>
+import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed, ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -361,26 +362,13 @@ const birthdayCards = computed(() => {
       .length,
   }))
 })
-const secondaryGateways = [
-  { id: 'card_scenarios', label: '卡片剧情', icon: CreditCard },
-  { id: 'external_story_resources', label: '社区中文剧情', icon: Languages, unit: '条', action: 'external-resources' },
-  { id: 'idol_story', label: '个人故事', icon: UserRound, action: 'idol-story' },
-  { id: 'work', label: '工作剧情', icon: Briefcase, unit: '人', action: 'work' }, { id: 'birthday', label: '生日剧情', icon: Cake },
-  { id: 'extra', label: '额外剧情', icon: Sparkles },
-  { id: 'seasonal_campaign', label: '季节企划', icon: CalendarRange, unit: '组', action: 'seasonal' },
-].filter(gateway => EXTERNAL_STORY_RESOURCES_ENABLED || gateway.action !== 'external-resources')
+const secondaryGateways = storyGateways.filter(gateway => EXTERNAL_STORY_RESOURCES_ENABLED || gateway.action !== 'external-resources')
 const sectionLabel = computed(() => props.allEntries.find(entry => entry.domain === props.domain && entry.sectionId === props.section)?.sectionLabel || props.section)
 
 function browse(domain, section = '') { emit('browse', { domain, section }) }
 function openDomain(domain) { emit('browse', { domain, section: '', mode: 'portal' }) }
 function domainCount(domain) { return props.allEntries.filter(entry => entry.domain === domain).length }
-function gatewayCount(gateway) {
-  if (gateway.action === 'external-resources') return props.externalResourceCount
-  if (gateway.action === 'seasonal') return props.seasonalCount
-  if (gateway.action === 'work') return props.workCount
-  if (gateway.action === 'idol-story') return props.idolStoryCount
-  return domainCount(gateway.id)
-}
+function gatewayCount(gateway) {return storyGatewayCount(gateway,props.allEntries,props)}
 function openGateway(gateway) {
   if (gateway.action === 'external-resources') emit('open-external-resources')
   else if (gateway.action === 'seasonal') emit('open-seasonal')

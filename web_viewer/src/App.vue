@@ -1034,6 +1034,9 @@ const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, cli
   }),
   loadEvents: async () => (await loadEventCatalog()).map(row => ({ ...row, resources: eventResources(row) })),
   loadStageManifest: fetchSongTimelineManifest, loadEventDetail, loadPortraits: loadCharacterPortraitData,
+  loadUnits: loadUnitCatalog,
+  loadCardFacets: async () => { const response=await fetch('/data/assets/portal_card_facets.json'); if(!response.ok) throw Error('Portal facets unavailable'); return response.json() },
+  loadGatewayCounts: async () => {const index=await readModelClient.load(archiveBootstrap.domains.stories); return {seasonalCount:index.seasonalCount,workCount:index.workCount,idolStoryCount:archiveBootstrap.idols.length}},
   idolName: idolDisplayName, idolSearch: idolEntitySearchText,
   cardTitle: source => archiveNamedText('card', source, 'title'),
   cardSearch: source => archiveNamedSearchText('card', source, 'title'),
@@ -3766,6 +3769,14 @@ async function openPortalResult(result) {
   try {
     if (target.domain === 'units' && target.view === 'unit_detail' && archiveBootstrap.idols.some(row => row.unitCode === target.unitCode)) {
       return openArchiveUnit({unit_code: target.unitCode})
+    } else if (target.view === 'story_gateway') {
+      if (target.gateway === 'idol_story') return openIdolStoryArchive()
+      if (target.gateway === 'work') return openWorkArchive()
+      if (target.gateway === 'seasonal_campaign') return openSeasonalCampaign()
+      if (['card_scenarios','birthday','extra'].includes(target.gateway)) {
+        captureDetailSource()
+        return openStoryCatalog({domain:target.gateway})
+      }
     } else if (target.domain === 'collections' && target.view === 'story_collection') {
       const rows = await loadCollectionCatalog()
       if (stillHere() && rows.some(row => row.id === target.collectionId && row.chapterCount > 0)) return openProjectedCollection({domain: target.storyDomain, section: target.sectionId})
