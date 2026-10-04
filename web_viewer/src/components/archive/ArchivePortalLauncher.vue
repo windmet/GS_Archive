@@ -121,7 +121,7 @@ onBeforeUnmount(() => desktopMedia?.removeEventListener('change', updateDesktop)
 .terminal-portal {--gs-text-portal:26px;}
 .terminal-portal.is-desktop-overview {background:#f5f8f3;}
 .terminal-portal.is-desktop-overview :deep(.terminal-backdrop) {opacity:.08;}
-.portal-overview-control {display:flex;align-items:center;gap:var(--gs-space-3);min-height:44px;padding:var(--gs-space-3) var(--gs-space-4);border:1px solid #d1e0d7;border-radius:var(--gs-radius-field);background:#ffffffed;color:#486f5c;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);}
+.portal-overview-control {display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#486f5c;font-size:12px;font-weight:500;}
 .portal-overview-control:active {background:#e6f2ea;}
 .terminal-portal.is-desktop-overview :deep(.archive-language-switch button) {min-height:44px;font-size:var(--gs-text-ui);}
 .terminal-portal.is-desktop-overview .terminal-notice {font-size:var(--gs-text-body);}

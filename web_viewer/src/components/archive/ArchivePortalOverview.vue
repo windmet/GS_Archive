@@ -4,15 +4,13 @@
       <header class="overview-toolbar">
         <div class="overview-brand">
           <button v-if="canGoBack" class="overview-icon-button" type="button" aria-label="返回来源页" data-archive-focus-id="portal-back" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
-          <span>SideM <b>ARCHIVE</b></span>
+          <button class="overview-home-link" type="button" aria-label="打开首页" title="打开首页" data-archive-focus-id="portal-home" @click="emit('open-home')"><Sparkles :size="19" aria-hidden="true" /><span>SideM <b>ARCHIVE</b></span></button>
+          <h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1>
         </div>
         <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
       </header>
 
-      <header class="overview-intro">
-        <div><h1 id="portal-title" ref="heading" tabindex="-1">资料馆</h1><p class="overview-description">从担当的卡片、歌曲与故事，继续资料探索。</p></div>
-        <button class="overview-home-button" type="button" data-archive-focus-id="portal-home" @click="emit('open-home')"><Sparkles :size="18" aria-hidden="true" />前往首页<ArrowUpRight :size="16" aria-hidden="true" /></button>
-      </header>
+      <p class="overview-description">从担当的卡片、歌曲与故事，继续资料探索。</p>
 
       <slot name="notices" />
 
@@ -24,6 +22,7 @@
           <button v-if="query" class="overview-icon-button" type="button" aria-label="清空搜索" @click="emit('search', '')"><X :size="18" aria-hidden="true" /></button>
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
+        <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>快捷搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="emit('search', term)">{{ term }}<ArrowUpRight :size="13" aria-hidden="true" /></button></div>
         <div v-if="query.trim()" class="overview-search-results" :aria-busy="Boolean(globalSearch.loading)">
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>
           <p v-if="globalSearch.error" class="overview-error" role="status">{{ globalSearch.error }}</p>
@@ -49,49 +48,51 @@
       <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
       <p v-if="desktopOverview.error" class="overview-error" role="status">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></p>
 
-      <div class="overview-bento">
-          <section class="overview-panel overview-featured" aria-labelledby="portal-workbench-title">
+      <section class="overview-panel overview-featured" aria-labelledby="portal-workbench-title">
+          <div class="overview-personal">
+            <div class="overview-hero-heading"><span class="overview-eyebrow">{{ preferredReference?.actionable ? '我的担当' : '制作人工作台' }}</span><button type="button" data-archive-focus-id="portal-personal-edit" aria-label="编辑制作人工作台" @click="emit('edit-personal')"><Pencil :size="15" aria-hidden="true" />编辑担当</button></div>
             <header class="overview-section-heading overview-personal-heading">
               <div class="overview-identity">
-                <button class="overview-avatar-trigger" type="button" aria-label="编辑担当偶像" data-archive-focus-id="portal-preferred-edit" @click="emit('edit-personal')"><ArchiveIdolAvatar v-if="preferredReference?.actionable" class="overview-preferred-avatar" :idol-code="preferredReference.idolCode" :accent-color="preferredReference.accentColor" :size="42" decorative /><span v-else class="overview-avatar-empty"><Users :size="22" aria-hidden="true" /></span></button>
+                <button class="overview-avatar-trigger" type="button" aria-label="编辑担当偶像" data-archive-focus-id="portal-preferred-edit" @click="emit('edit-personal')"><ArchiveIdolAvatar v-if="preferredReference?.actionable" class="overview-preferred-avatar" :idol-code="preferredReference.idolCode" :accent-color="preferredReference.accentColor" :size="64" decorative /><span v-else class="overview-avatar-empty"><Users :size="26" aria-hidden="true" /></span></button>
                 <div class="overview-identity-copy"><p class="overview-producer-name">{{ producerDisplayName }}</p><h2 id="portal-workbench-title">{{ preferredReference?.actionable ? preferredName : '我的工作台' }}</h2><p v-if="desktopOverview.preferredUnitName" class="overview-unit-name">{{ desktopOverview.preferredUnitName }}</p></div>
               </div>
-              <button type="button" data-archive-focus-id="portal-personal-edit" aria-label="编辑制作人工作台" @click="emit('edit-personal')"><Pencil :size="16" aria-hidden="true" />编辑担当</button>
             </header>
             <div v-if="preferredReference?.actionable" class="overview-personal-meta">
               <dl v-if="preferredStats.length" class="overview-preferred-stats" aria-label="担当个人档案数量"><div v-for="stat in preferredStats" :key="stat.id"><dt>{{ stat.label }}</dt><dd>{{ formatCount(stat.value) }}</dd></div></dl>
-              <nav class="overview-preferred-actions" aria-label="担当快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', action.id)">{{ action.label }}<ChevronRight :size="14" aria-hidden="true" /></button></nav>
+              <nav class="overview-preferred-actions" aria-label="担当快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', action.id)"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             </div>
             <p v-else class="overview-personal-note">选择担当后，可继续查阅个人资料与关联内容。</p>
+          </div>
+          <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '担当卡片' : '卡片档案' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="emit('navigate', 'cards')">卡片目录<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <div v-if="cards.length" class="overview-card-grid">
               <article v-for="card in cards" :key="card.id" class="overview-card">
                 <DomainMediaPreview class="overview-card-image" :binding="card.image" :name="card.title" />
-                <div class="overview-card-meta"><span v-if="card.rarity">{{ card.rarity }}</span><span v-if="card.idolName">{{ card.idolName }}</span></div>
+                <div class="overview-card-meta"><span v-if="card.rarity" class="overview-rarity">{{ card.rarity }}</span><span v-if="card.idolName && !preferredReference?.actionable">{{ card.idolName }}</span></div>
                 <button type="button" :disabled="!card.target" :data-archive-focus-id="`portal-card:${card.id}`" @click="emit('open-result', card)"><strong>{{ card.title }}</strong><ArrowUpRight :size="16" aria-hidden="true" /></button>
               </article>
             </div>
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取卡片预览…' : '暂无可展示的卡片预览，可前往目录查阅。' }}</p>
-          </section>
+          </div>
+      </section>
 
+      <div class="overview-content-grid">
           <section class="overview-panel overview-music" aria-labelledby="portal-song-preview-title">
             <header class="overview-section-heading"><h2 id="portal-song-preview-title">歌曲与舞台</h2><button type="button" data-archive-focus-id="portal-songs-all" @click="emit('navigate', 'songs')">歌曲目录<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <div v-if="songs.length" class="overview-song-list">
               <article v-for="song in songs" :key="song.id" class="overview-song">
                 <DomainMediaPreview class="overview-song-image" :binding="song.image" :name="song.title" />
-                <div class="overview-song-copy"><button class="overview-song-detail" type="button" :disabled="!song.target" :data-archive-focus-id="`portal-song:${song.id}`" @click="emit('open-result', song)"><span><strong>{{ song.title }}</strong><small v-if="song.unitName">{{ song.unitName }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button><button v-if="song.stageTarget" class="overview-stage-button" type="button" :aria-label="`在舞台中打开 ${song.title}`" :data-archive-focus-id="`portal-song-stage:${song.id}`" @click="emit('open-stage', song.stageTarget)">进入舞台<ArrowUpRight :size="14" aria-hidden="true" /></button></div>
+                <div class="overview-song-copy"><button class="overview-song-detail" type="button" :disabled="!song.target" :data-archive-focus-id="`portal-song:${song.id}`" @click="emit('open-result', song)"><strong>{{ song.title }}</strong><small v-if="song.unitName">{{ song.unitName }}</small></button></div><button v-if="song.stageTarget" class="overview-stage-button" type="button" :aria-label="`在舞台中打开 ${song.title}`" :title="`在舞台中打开 ${song.title}`" :data-archive-focus-id="`portal-song-stage:${song.id}`" @click="emit('open-stage', song.stageTarget)"><Play :size="17" aria-hidden="true" /><span>舞台</span></button>
               </article>
             </div>
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
-      </div>
-      <div class="overview-reading">
-        <section class="overview-panel" aria-labelledby="portal-story-preview-title">
+        <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
           <header class="overview-section-heading"><h2 id="portal-story-preview-title">故事档案</h2><button type="button" data-archive-focus-id="portal-stories-all" @click="emit('navigate', 'stories')">故事目录<ChevronRight :size="16" aria-hidden="true" /></button></header>
-          <div v-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" /><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span><strong>{{ story.title }}</strong><small v-if="story.subtitle">{{ story.subtitle }}</small><span v-if="story.summary" class="overview-story-summary">{{ story.summary }}</span></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
+          <div v-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span><small v-if="story.subtitle">{{ story.subtitle }}</small><strong>{{ story.title }}</strong></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
         </section>
-        <section class="overview-panel" aria-labelledby="portal-event-preview-title">
+        <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
           <header class="overview-section-heading"><h2 id="portal-event-preview-title">活动记录</h2><button type="button" data-archive-focus-id="portal-events-all" @click="emit('navigate', 'events')">活动目录<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
@@ -104,7 +105,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { ArrowLeft, ArrowUpRight, ChevronRight, Pencil, Search, Sparkles, Users, X } from '@lucide/vue'
+import { ArrowLeft, ArrowUpRight, BookOpen, BriefcaseBusiness, ChevronRight, ContactRound, Layers, MessageCircle, Pencil, Play, Search, Sparkles, Users, X } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
@@ -134,13 +135,16 @@ const searchGroups = computed(() => ['idols', 'cards', 'songs', 'stories'].map(d
   return { domain, total: rows.length, rows: rows.slice(0, 6) }
 }).filter(group => group.total > 0))
 const preferredName = computed(() => props.idolName(props.preferredReference?.idolCode, props.preferredReference?.displayName) || props.preferredReference?.displayName || '')
+const quickSearchTerms = computed(() => props.preferredReference?.actionable
+  ? [...new Set([props.desktopOverview.preferredUnitName, preferredName.value].filter(value => typeof value === 'string' && value.trim()))] : [])
+const preferredActionIcons = { profile: ContactRound, story: BookOpen, cards: Layers, work: BriefcaseBusiness, mobile: MessageCircle }
 function formatCount(value) { return typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : '—' }
 function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols: '偶像', stories: '故事' }[domain] || '档案' }
 </script>
 
 <style scoped>
-.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:var(--gs-space-7);scrollbar-width:thin; }
-.portal-overview { container-type:inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:#24463f;font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6; }
+.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:24px;scrollbar-width:thin; }
+.portal-overview { container-type:inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:#24463f;font-family:var(--gs-font-directory);font-size:13px;line-height:1.6; }
 .portal-overview *, .portal-overview-scroll { box-sizing:border-box; }
 .portal-overview button, .portal-overview input { font:inherit; }
 .portal-overview button { cursor:pointer; }
@@ -150,22 +154,25 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-toolbar { justify-content:space-between;min-height:44px;gap:var(--gs-space-5); }
 .overview-brand { flex:none;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);letter-spacing:-.03em; }
 .overview-brand b { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:.12em;margin-left:var(--gs-space-2); }
-.overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end; }
+.overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end;gap:4px;padding:4px;border:1px solid #dbe6e0;border-radius:14px;background:#ffffffb8; }
+.overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
+.overview-home-link { display:flex;align-items:center;gap:10px;min-height:44px;padding:0;border:0;background:transparent;color:inherit; }
+.overview-home-link > svg { color:#438574; }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid #d8e6e0;border-radius:var(--gs-radius-field);background:#fff;color:#466d61; }
-.overview-intro { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-6);margin:var(--gs-space-4) 0; }
-.overview-intro > div { min-width:0; }
-.overview-intro h1 { margin:0;font-size:var(--gs-text-subtitle);line-height:1.4;font-weight:var(--gs-weight-semibold); }
-.overview-intro h1:focus { outline:none; }
-.overview-description { margin:var(--gs-space-2) 0 0;color:#5f7c72;font-size:var(--gs-text-ui); }
-.overview-home-button { display:flex;align-items:center;gap:var(--gs-space-3);flex:none;min-height:44px;padding:var(--gs-space-3) var(--gs-space-4);border:1px solid #ccdfd6;border-radius:var(--gs-radius-field);background:#f2f9f5;color:#287a61;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-brand h1 { margin:0;padding-left:14px;border-left:1px solid #d3dfd7;font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-.02em; }
+.overview-brand h1:focus { outline:none; }
+.overview-description { margin:8px 0 14px;color:#687c73;font-size:13px; }
 .overview-search { margin-bottom:var(--gs-space-4); }
-.overview-search-form { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:52px;padding:var(--gs-space-2) var(--gs-space-3) var(--gs-space-2) var(--gs-space-5);border:1px solid #c7dcd3;border-radius:var(--gs-radius-panel);background:#fff;color:#5a8172; }
+.overview-search-form { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:4px 6px 4px 16px;border:1px solid #b8d7c9;border-radius:12px;background:#fff;color:#5a8172;box-shadow:0 3px 14px #365a4510; }
+.overview-search-form:focus-within { border-color:#438c73;box-shadow:0 0 0 3px #438c7314; }
 .overview-search-form > svg { flex:none; }
 .overview-search-form input { flex:1;min-width:0;height:44px;padding:var(--gs-space-3) 0;border:0;background:transparent;color:#234e3e;font-size:var(--gs-text-subtitle); }
 .overview-search-form input::placeholder { color:#7d9289; }
 .overview-search-form input::-webkit-search-cancel-button { display:none; }
 .overview-search-submit { min-height:44px;padding:var(--gs-space-3) var(--gs-space-6);border:0;border-radius:var(--gs-radius-field);background:#257f66;color:#fff;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-search-form .overview-icon-button { border:0;background:transparent; }
+.overview-search-shortcuts { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;color:#738279;font-size:12px; }
+.overview-search-shortcuts > button { display:flex;align-items:center;gap:5px;min-height:36px;padding:4px 8px;border:0;border-radius:6px;background:transparent;color:#4c7765;overflow-wrap:anywhere;text-align:left; }
 .overview-search-results { margin-top:var(--gs-space-4);padding:var(--gs-space-3) var(--gs-space-5);border:1px solid #d7e4dd;border-radius:var(--gs-radius-panel);background:#fff; }
 .overview-search-results ul { list-style:none;padding:0;margin:0; }
 .overview-search-total { margin:var(--gs-space-3) 0;color:#6f8477;font-size:var(--gs-text-meta); }
@@ -183,75 +190,82 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-result-copy > span { color:#6d8077;font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-search-results li > button > svg { flex:none; }
 .overview-result-kind { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:var(--gs-radius-field);background:#f0f7f3;color:#558570; }
-.overview-counts { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-3) var(--gs-space-6);margin:0 0 var(--gs-space-4);padding:var(--gs-space-3) 0;border-block:1px solid #dfe8df; }
-.overview-counts > div { display:flex;align-items:baseline;gap:var(--gs-space-3); }
-.overview-counts dt { font-size:var(--gs-text-meta);color:#708575; }
-.overview-counts dd { margin:0;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
-.overview-bento { display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:var(--gs-space-5);align-items:start; }
-.overview-panel { min-width:0;padding:var(--gs-space-5);border:1px solid #dce7df;border-radius:var(--gs-radius-panel);background:#ffffffed; }
-.overview-featured { background:#fcfefbea; }
+.overview-counts { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:0 0 20px;padding:0; }
+.overview-counts > div { display:flex;flex-direction:column;justify-content:center;min-width:0;padding:8px 16px;border:1px solid #dae6de;border-radius:10px;background:#eff5f1a6; }
+.overview-counts dt { order:2;font-size:12px;color:#6d8175; }
+.overview-counts dd { margin:0;font-size:22px;font-weight:650;line-height:1.25;letter-spacing:-.025em;font-variant-numeric:tabular-nums; }
+.overview-panel { min-width:0;padding:20px;border:1px solid #345b4614;border-radius:16px;background:#ffffffeb;box-shadow:0 4px 16px #294f3b05; }
+.overview-featured { display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:28px;padding:22px 24px;background:linear-gradient(115deg,#e8f3ed,#f7fbf6 55%,#ffffffed);border-color:#b8d4c299; }
+.overview-personal, .overview-card-showcase { min-width:0; }
+.overview-personal { align-self:center; }
+.overview-hero-heading { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px; }
+.overview-eyebrow { color:#54806a;font-size:11px;font-weight:650;letter-spacing:.06em; }
+.overview-hero-heading > button { display:flex;align-items:center;gap:6px;min-height:44px;padding:4px 0;border:0;background:transparent;color:#4c7765;font-size:12px; }
 .overview-section-heading { display:flex;justify-content:space-between;align-items:center;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4); }
-.overview-section-heading h2 { margin:0;font-size:var(--gs-text-subtitle);line-height:1.4;font-weight:var(--gs-weight-semibold); }
+.overview-section-heading h2 { margin:0;font-size:16px;line-height:1.4;font-weight:650; }
 .overview-section-heading > button { display:flex;align-items:center;gap:var(--gs-space-2);flex:none;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:#458369;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-identity { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0; }
-.overview-avatar-trigger { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent; }
+.overview-avatar-trigger { display:grid;place-items:center;flex:none;width:64px;height:64px;padding:0;border:0;border-radius:50%;background:transparent; }
 /* Only the named copy grows. The shared avatar root remains a square circle. */
-.overview-preferred-avatar, .overview-avatar-empty { flex:none;width:42px;height:42px;min-width:42px;max-width:42px;aspect-ratio:1; }
-.overview-preferred-avatar { --idol-avatar-override-size:42px; }
+.overview-preferred-avatar, .overview-avatar-empty { flex:none;width:64px;height:64px;min-width:64px;max-width:64px;aspect-ratio:1; }
+.overview-preferred-avatar { --idol-avatar-override-size:64px; }
 .overview-avatar-empty { display:grid;place-items:center;border:1px dashed #b8d4c3;border-radius:50%;color:#6f9b81; }
 .overview-identity-copy { min-width:0; }
-.overview-identity-copy h2 { overflow-wrap:anywhere; }
+.overview-identity-copy h2 { font-size:25px;line-height:1.3;overflow-wrap:anywhere; }
 .overview-producer-name { margin:0 0 var(--gs-space-1);color:#6b8476;font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
-.overview-personal-meta { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-4);margin-bottom:var(--gs-space-3); }
-.overview-preferred-stats { display:flex;flex-wrap:wrap;align-items:baseline;gap:var(--gs-space-2) var(--gs-space-4);margin:0; }
-.overview-preferred-stats > div { display:flex;align-items:baseline;gap:var(--gs-space-2); }
-.overview-preferred-stats dt { font-size:var(--gs-text-meta);color:#738b7b; }
-.overview-preferred-stats dd { margin:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
-.overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-2); }
-.overview-preferred-actions button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:44px;padding:var(--gs-space-2) var(--gs-space-2);border:0;background:transparent;color:#497961;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-personal-meta { display:grid;gap:12px;margin-top:20px; }
+.overview-preferred-stats { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0; }
+.overview-preferred-stats > div { display:flex;flex-direction:column;gap:2px;min-width:0; }
+.overview-preferred-stats dt { order:2;font-size:11px;color:#697f70; }
+.overview-preferred-stats dd { margin:0;font-size:20px;font-weight:650;line-height:1.3;font-variant-numeric:tabular-nums; }
+.overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:6px; }
+.overview-preferred-actions button { display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:1px solid #365b4617;border-radius:8px;background:#ffffff80;color:#49715d;font-size:12px;font-weight:500; }
 .overview-personal-note { margin:0 0 var(--gs-space-3);color:#718678;font-size:var(--gs-text-ui); }
-.overview-card-heading { margin-bottom:var(--gs-space-3);padding-top:var(--gs-space-2);border-top:1px solid #e3ece3; }
+.overview-card-heading { margin-bottom:10px; }
 .overview-card-heading h3 { margin:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-card-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-4); }
 .overview-card { min-width:0; }
-.overview-card-meta { display:flex;flex-wrap:wrap;gap:var(--gs-space-3);margin-top:var(--gs-space-3);color:#6c8275;font-size:var(--gs-text-meta); }
+.overview-card-meta { display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-height:22px;margin-top:6px;color:#6c8275;font-size:11px; }
+.overview-rarity { padding:0 5px;border:1px solid #527a601a;border-radius:4px;background:#fff9;color:#597260;font-size:10px;font-weight:650;letter-spacing:.025em; }
 .overview-card-meta > span:first-child { color:#4b7865; }
-.overview-card > button { display:flex;align-items:start;justify-content:space-between;gap:var(--gs-space-3);width:100%;min-height:44px;padding:var(--gs-space-3) 0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-card > button { display:flex;align-items:start;justify-content:space-between;gap:6px;width:100%;min-height:44px;padding:4px 0;border:0;background:transparent;color:inherit;text-align:left; }
 .overview-card > button strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
 .overview-card > button svg { flex:none;margin-top:var(--gs-space-1);color:#6d927d; }
-.overview-song-list { display:grid;gap:var(--gs-space-3); }
-.overview-song { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-3) 0; }
-.overview-song + .overview-song { border-top:1px solid #e5ece5; }
+.overview-song-list { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px; }
+.overview-song { display:flex;align-items:center;gap:10px;min-width:0;padding:10px 0; }
+.overview-song:nth-child(n+3) { border-top:1px solid #edf1ed; }
 .overview-song-copy { flex:1;min-width:0; }
-.overview-song-detail { display:flex;align-items:center;gap:var(--gs-space-3);justify-content:space-between;width:100%;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-song-detail > span { display:grid;min-width:0;gap:var(--gs-space-2); }
-.overview-song strong { font-size:var(--gs-text-ui);line-height:1.5;font-weight:var(--gs-weight-semibold);overflow-wrap:anywhere; }
+.overview-song-detail { display:grid;gap:4px;width:100%;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-song strong { font-size:13px;line-height:1.45;font-weight:600;overflow-wrap:anywhere; }
 .overview-song small { font-size:var(--gs-text-meta);color:#708278;overflow-wrap:anywhere; }
 .overview-song-detail > svg { flex:none;color:#739884; }
-.overview-stage-button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:44px;margin-top:var(--gs-space-2);padding:var(--gs-space-2) var(--gs-space-3);border:1px solid #cfe2d5;border-radius:var(--gs-radius-control);background:#f0f8f1;color:#36775a;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-stage-button { display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;flex:none;width:44px;min-height:48px;padding:4px;border:0;border-radius:8px;background:#f0f6f2;color:#438365; }
+.overview-stage-button > span { font-size:10px;line-height:1.3; }
 .overview-card-image, .overview-song-image, .overview-story-image, .overview-event-image { display:flex;position:relative;align-items:center;justify-content:center;margin:0;padding:var(--gs-space-2);border:0;border-radius:var(--gs-radius-field);background:#f0f5f1; }
 /* Every card uses the same portrait frame; bound pixels retain their own ratio. */
-.overview-card-image { width:min(100%,144px);height:auto;aspect-ratio:4 / 5;margin-inline:auto; }
-.overview-song-image, .overview-story-image { flex:none;width:64px;height:64px; }
-.overview-event-image { width:100%;height:100px;margin-bottom:var(--gs-space-3); }
+.overview-card-image { width:min(100%,156px);height:auto;aspect-ratio:4 / 5;margin-inline:auto;box-shadow:0 4px 12px #2e4a3b0d; }
+.overview-song-image { flex:none;width:56px;height:56px; }
+.overview-story-image { flex:none;width:44px;height:44px; }
+.overview-event-image { width:100%;height:auto;aspect-ratio:16 / 9;margin-bottom:8px; }
 .overview-card-image:deep(img), .overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:auto;height:auto;max-width:100%;max-height:100%;min-height:0;object-fit:contain;margin:0; }
 .overview-card-image:deep(.domain-resource-empty), .overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--gs-space-3);min-height:0;width:100%;height:100%;margin:0;background:transparent;color:#6e887b;font-size:var(--gs-text-meta); }
 .overview-song-image:deep(.domain-resource-empty span), .overview-story-image:deep(.domain-resource-empty span), .overview-song-image:deep(figcaption), .overview-story-image:deep(figcaption) { display:none; }
 .overview-card-image:deep(figcaption), .overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:#688273;font-size:var(--gs-text-meta); }
 .portal-overview :deep(.domain-media-preview button) { min-height:44px;padding:var(--gs-space-2) var(--gs-space-3);border:1px solid #d1e2d8;border-radius:var(--gs-radius-control);background:#fff;color:#40765d;font-size:var(--gs-text-ui); }
 .overview-song-image:deep(button), .overview-story-image:deep(button) { width:44px;padding:0;font-size:var(--gs-text-meta); }
-.overview-reading { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-5);margin-top:var(--gs-space-5); }
+.overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px;align-items:stretch; }
+.overview-events { grid-column:1 / -1; }
 .overview-story-list { display:grid; }
 .overview-unit-name { margin:0;color:#6f8377;font-size:12px; }
-.overview-story-summary { display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:#637d6f;font-size:13px;line-height:1.6;font-weight:400; }
-.overview-story { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding-block:var(--gs-space-3); }
+.overview-story { display:flex;align-items:center;gap:12px;min-width:0;padding-block:10px; }
+.overview-story-mark { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:8px;background:#f1f5f2;color:#87a294; }
 .overview-story + .overview-story { border-top:1px solid #e5ece5; }
 .overview-story > button, .overview-event > button { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-4);width:100%;min-width:0;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:inherit;text-align:left; }
 .overview-story > button > span, .overview-event > button > span { display:grid;gap:var(--gs-space-2);min-width:0; }
 .overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
-.overview-story small, .overview-event small { color:#708278;font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
+.overview-story small, .overview-event small { color:#708278;font-size:11px;overflow-wrap:anywhere; }
 .overview-story > button > svg, .overview-event > button > svg { flex:none;color:#739884; }
-.overview-event-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-4); }
+.overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
 .overview-event { min-width:0; }
 .overview-status, .overview-error, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:#6b8274;font-size:var(--gs-text-ui); }
 .overview-error { color:#875a40; }
@@ -259,23 +273,40 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footer { margin-top:var(--gs-space-6);padding:var(--gs-space-5) 0;color:#829387;font-size:var(--gs-text-meta); }
 .overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
 @media (hover:hover) and (pointer:fine) {
-  .overview-icon-button:hover, .overview-home-button:hover, .overview-stage-button:hover { background:#eaf5ee;border-color:#99c3ac; }
+  .overview-icon-button:hover, .overview-stage-button:hover, .overview-search-shortcuts > button:hover { background:#eaf5ee;border-color:#99c3ac; }
   .overview-section-heading > button:hover, .overview-card > button:hover, .overview-song-detail:hover, .overview-preferred-actions button:hover, .overview-search-results li > button:hover, .overview-story > button:hover, .overview-event > button:hover { color:#16825f; }
   .overview-search-submit:hover { background:#17684f; }
 }
 .portal-overview button:active { background-color:#e7f1eb; }
 .overview-search-submit:active { background-color:#145b46; }
-@container (max-width:900px) {
-  .overview-card-image { width:min(100%,120px); }
-  .overview-personal-meta { align-items:start; }
+@media (pointer:coarse) {
+  .overview-search-shortcuts > button { min-height:44px; }
 }
-@container (max-width:800px) {
-  .overview-bento, .overview-reading { grid-template-columns:1fr; }
-  .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-4); }
-  .overview-song + .overview-song { border-top:0; }
+@container (max-width:900px) {
+  .overview-featured { grid-template-columns:1fr;gap:18px; }
+  .overview-card-showcase { border-top:1px solid #365b4614;padding-top:10px; }
+  .overview-card-image { width:min(100%,144px); }
+  .overview-personal { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 20px; }
+  .overview-hero-heading { grid-column:1 / -1;margin-bottom:0; }
+  .overview-personal-heading { align-self:center;margin-bottom:0; }
+  .overview-personal-meta { margin-top:0; }
+  .overview-preferred-actions button { padding-inline:8px; }
+  .overview-song-list { grid-template-columns:1fr;gap:0; }
+  .overview-song:nth-child(n+2) { border-top:1px solid #edf1ed; }
+  .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@container (max-width:650px) {
+  .overview-content-grid { grid-template-columns:1fr; }
+  .overview-personal { display:block; }
+  .overview-hero-heading { margin-bottom:10px; }
+  .overview-personal-meta { margin-top:16px; }
+  .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));gap:14px; }
+  .overview-song:nth-child(2) { border-top:0; }
+  .overview-counts > div { padding-inline:10px; }
+  .overview-counts dd { font-size:20px; }
 }
 @media(max-width:900px) {
-  .portal-overview-scroll { padding:var(--gs-space-6); }
+  .portal-overview-scroll { padding:16px; }
   .overview-toolbar { align-items:start; }
   .overview-brand b { display:none; }
 }
