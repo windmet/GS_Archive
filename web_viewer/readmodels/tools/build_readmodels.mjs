@@ -33,7 +33,7 @@ try {
   // Only code that affects projection bytes belongs in the data release.
   // Assembler, audit and verification changes must not rotate immutable URLs.
   const generatorHashes = {};
-  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/domain_expansion.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'tools/build_readmodels.mjs']) {
+  for (const relative of ['lib/common.mjs', 'lib/checkout_adapter.mjs', 'lib/domain_expansion.mjs', 'lib/legacy_alias_projection.mjs', 'lib/mobile_projection.mjs', 'lib/reading_locator_projection.mjs', 'lib/projections.mjs', 'lib/portal_projection.mjs', 'tools/build_readmodels.mjs']) {
     generatorHashes[relative] = sha256(await safeRead(kit, relative));
   }
   const release = sha256(jsonBytes({ format: 'gs-readmodels-v1', ...provenance, generatorHashes }));

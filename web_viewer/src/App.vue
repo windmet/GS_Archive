@@ -38,6 +38,7 @@
         @open-directory="openPortalDirectory"
         @open-stage="openPortalStage"
         @retry-overview="portalData.refresh"
+        @expand-cards="portalData.expandCardPool"
         @save-preferred="savePreferredIdol"
         :loading-section="gashaReadModelStatus || homeEntryStatus || legacyEntryStatus"
         :retry-section="gashaReadModelStatus && !loading ? 'gashas' : ''"
@@ -593,7 +594,7 @@ import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoor
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { Preloader } from './utils/Preloader.js'
+const preloadScenario = async (...args) => (await import('./utils/Preloader.js')).Preloader.preloadScenario(...args)
 import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
 import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
@@ -607,7 +608,6 @@ import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
-import { loadCharacterPortraitData } from './data/ArchiveDataRepository.js'
 import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
@@ -874,96 +874,79 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
 const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
   idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
 })))
-const mobileIdolReadModelCatalog = ref(null)
-const mobileUnitReadModelCatalog = ref(null)
-const mobileIdolReadModelDetail = ref(null)
-const mobileUnitReadModelDetail = ref(null)
+const mobileIdolReadModelCatalog = shallowRef(null)
+const mobileUnitReadModelCatalog = shallowRef(null)
+const mobileIdolReadModelDetail = shallowRef(null)
+const mobileUnitReadModelDetail = shallowRef(null)
 const mobileReadModelStatus = ref('')
-const legacyGroupReadModelDetail = ref(null)
-const legacyFileReadModelDetail = ref(null)
-const legacyZeroReadModelDetail = ref(null)
-const legacyEpisodeReadModelDetail = ref(null)
+const legacyGroupReadModelDetail = shallowRef(null)
+const legacyFileReadModelDetail = shallowRef(null)
+const legacyZeroReadModelDetail = shallowRef(null)
+const legacyEpisodeReadModelDetail = shallowRef(null)
 const legacyAliasStatus = ref('')
 let pendingLegacyAliasNavigation = 0
 const mobileIdolOptions = computed(() => archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idolDisplayName(idol.id), color: idol.color })))
 const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []).map(unit => ({
   unit_code: unit.id, unit_name: unit.name, unit_color: unit.color,
 })))
-let mobileIdolCatalogPromise = null
-let mobileUnitCatalogPromise = null
 let pendingMobileNavigation = 0
 const homeFocus = ref(false)
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const legacyEntryStatus = ref('')
-const songReadModelCatalog = ref(null)
-const songReadModelDetail = ref(null)
+const songReadModelCatalog = shallowRef(null)
+const songReadModelDetail = shallowRef(null)
 const songReadModelStatus = ref('')
-let songCatalogPromise = null
 let pendingSongNavigation = 0
-const idolReadModelCatalog = ref(null)
-const idolReadModelDetail = ref(null)
+const idolReadModelCatalog = shallowRef(null)
+const idolReadModelDetail = shallowRef(null)
 const idolReadModelStatus = ref('')
-let idolCatalogPromise = null
 let pendingIdolNavigation = 0
-const unitReadModelCatalog = ref(null)
-const unitReadModelDetail = ref(null)
+const unitReadModelCatalog = shallowRef(null)
+const unitReadModelDetail = shallowRef(null)
 const unitReadModelStatus = ref('')
-let unitCatalogPromise = null
 let pendingUnitNavigation = 0
-const gashaReadModelCatalog = ref(null)
+const gashaReadModelCatalog = shallowRef(null)
 const gashaCatalogFunctions = shallowRef(null)
-const gashaReadModelDetail = ref(null)
+const gashaReadModelDetail = shallowRef(null)
 const gashaReadModelStatus = ref('')
-let gashaCatalogPromise = null
 let pendingGashaNavigation = 0
-const cardReadModelCatalog = ref(null)
-const cardReadModelDetail = ref(null)
+const cardReadModelCatalog = shallowRef(null)
+const cardReadModelDetail = shallowRef(null)
 const cardReadModelStatus = ref('')
-let cardCatalogPromise = null
 let pendingCardNavigation = 0
-const eventReadModelCatalog = ref(null)
-const eventReadModelDetail = ref(null)
+const eventReadModelCatalog = shallowRef(null)
+const eventReadModelDetail = shallowRef(null)
 const eventReadModelStatus = ref('')
-let eventCatalogPromise = null
 let pendingEventNavigation = 0
 const seasonalReadModelCatalog = shallowRef(null)
 const seasonalReadModelDetail = shallowRef(null)
 const seasonalReadModelStatus = ref('')
-let seasonalCatalogPromise = null
 let pendingSeasonalNavigation = 0
 const workReadModelCatalog = shallowRef(null)
 const workReadModelDetail = shallowRef(null)
 const workReadModelStatus = ref('')
-let workCatalogPromise = null
 let pendingWorkNavigation = 0
 const idolStoryReadModelCatalog = shallowRef(null)
 const idolStoryReadModelDetail = shallowRef(null)
 const idolStoryReadModelStatus = ref('')
-let idolStoryCatalogPromise = null
 let pendingIdolStoryNavigation = 0
 const collectionReadModelCatalog = shallowRef(null)
 const collectionReadModelDetail = shallowRef(null)
 const collectionReadModelStatus = ref('')
-let collectionCatalogPromise = null
 let pendingCollectionNavigation = 0
 const storyReadModelCatalog = shallowRef(null)
 const storyReadModelDetail = shallowRef(null)
 const storyReadModelStatus = ref('')
 const storyCatalogIndex = shallowRef(null)
 const storyCatalogLanding = shallowRef(null)
-let storyCatalogPromise = null
-let storyLandingPromise = null
 let pendingStoryDetailNavigation = 0
 const resourceReadModelDetail = shallowRef(null)
 const resourceReadModelStatus = ref('')
-let resourceDetailPromise = null
 let pendingResourceNavigation = 0
-const homeReadModelIndex = ref(null)
-const homeReadModelProfiles = ref({})
+const homeReadModelIndex = shallowRef(null)
+const homeReadModelProfiles = shallowRef({})
 const homeEntryStatus = ref('')
-let homeIndexPromise = null
-const homeProfilePromises = new Map()
 const recentHomeProfiles = []
 let pendingHomeNavigation = 0
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
@@ -990,7 +973,7 @@ const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loadin
 const playbackController = useStoryPlaybackController({
   state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
-  preloadAssets: (plan, progress, options) => Preloader.preloadScenario(plan, progress, options),
+  preloadAssets: (plan, progress, options) => preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: restorePlaybackDestination, resolveQueue: loadPlayerQueue,
   resolveReaderSource: resolveReaderContinuationSource,
 })
@@ -1036,17 +1019,7 @@ const idolPickerLabel = computed(() => ({
 const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, client: readModelClient,
   scope: portalScope, searchQuery: portalQuery,
   preferredIdol: preferredArchiveIdol,
-  loadCards: async () => { await loadArchiveNames('cards'); return loadCardCatalog() },
-  loadSongs: loadSongCatalog, loadIdol: loadIdolDetail, loadCollections: loadCollectionCatalog,
-  loadStories: async () => (await loadStoryReadModelCatalog()).map(row => {
-    const resource = row.domain === 'event' ? storyEventResources(row) : null
-    return resource?.storyFile === row.file ? { ...row, image: resource.hero } : row
-  }),
-  loadEvents: async () => (await loadEventCatalog()).map(row => ({ ...row, resources: eventResources(row) })),
-  loadStageManifest: fetchSongTimelineManifest, loadEventDetail, loadPortraits: loadCharacterPortraitData,
-  loadUnits: loadUnitCatalog,
-  loadCardFacets,
-  loadGatewayCounts: async () => {const index=await readModelClient.load(archiveBootstrap.domains.stories); return {seasonalCount:index.seasonalCount,workCount:index.workCount,idolStoryCount:archiveBootstrap.idols.length}},
+  loadCards: options => loadCardCatalog(options),
   idolName: idolDisplayName, idolSearch: idolEntitySearchText,
   cardTitle: source => archiveNamedText('card', source, 'title'),
   cardSearch: source => archiveNamedSearchText('card', source, 'title'),
@@ -1308,7 +1281,7 @@ const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
 
 watch(view,nextView=>{
   if (nextView === 'idols') void loadUnitCatalog().catch(error=>console.warn('Unit display metadata unavailable',error));
-  if (['cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
+  if (['portal','cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
     void loadArchiveNames('cards').catch(error=>console.warn('Card name translations unavailable',error));
   }
 },{immediate:true});
@@ -1406,21 +1379,21 @@ watch(() => Boolean(playbackError.value || playbackReadiness.value?.status === '
   await nextTick()
   playbackFailure.value?.querySelector('button')?.focus()
 }, { flush:'post' })
-const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh }) => {
+const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh, signal }) => {
   const descriptor = await entityDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.detail')
   if (fresh) readModelClient.invalidate(descriptor)
   try {
-    const detail = await readModelClient.load(descriptor, { expectedId: documentId,
+    const detail = await readModelClient.load({...descriptor,expectedId:documentId}, { signal, expectedId: documentId,
       validate: data => { if (!data.view?.entry || !Array.isArray(data.view.entries)) throw Error('Reading locator shape mismatch') } })
     return detail.view
   } catch (error) {
     if (error.code !== 'RELEASE_OR_ARTIFACT_MISSING') throw error
-    const exists = (await readingRepository.manifest()).entries.some(entry => entry.document_id === documentId)
+    const exists = (await readingRepository.manifest({signal})).entries.some(entry => entry.document_id === documentId)
     if (exists) throw error
     return { entry: null, entries: [] }
   }
 } })
-function loadSynopsisReadingDocument(entry) { return readingRepository.load(entry.document_id, entry) }
+function loadSynopsisReadingDocument(entry) { return readingRepository.load(entry.document_id, entry, navigation.getLoadOptions()) }
 const readingCatalogEntries = computed(() => {
   if (view.value === 'story_collection' && currentStoryCollection.value)
     return collectionReadModelDetail.value.view.readingEntries
@@ -2892,6 +2865,14 @@ function openExternalStoryInternal(entry) {
     storyFile: target.storyFile, parent: 'external_story_resources' })
 }
 
+watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {
+  if (view.value !== 'story_catalog' || (currentStoryMode.value !== 'search' && !currentCharacterId.value)) return
+  const options = navigation.getLoadOptions()
+  void loadStoryReadModelCatalog(options).catch(error => {
+    if (!options.signal?.aborted) storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
+  })
+})
+
 function setStoryDomain(domain) {
   currentStoryDomain.value = domain
   currentStorySection.value = ''
@@ -3836,8 +3817,7 @@ async function openPortalResult(result) {
     } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
       return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
     } else if (target.domain === 'stories' && target.view === 'story_detail') {
-      const rows = await loadStoryReadModelCatalog()
-      if (stillHere() && rows.some(row => row.id === target.storyId && row.file === target.file)) return openStoryDetail({ file: target.file }, 'portal')
+      if (stillHere()) return openStoryDetail({ file: target.file }, 'portal')
     } else if (target.domain === 'events' && target.view === 'event_detail') {
       const rows = await loadEventCatalog()
       if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
@@ -4174,84 +4154,78 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-async function loadHomeIndex() {
+async function loadHomeIndex(options = navigation.getLoadOptions?.() || {}) {
   if (homeReadModelIndex.value) return homeReadModelIndex.value
-  if (!homeIndexPromise) {
-    homeIndexPromise = readModelClient.load(archiveBootstrap.domains.home, { validate: data => {
+  const index = await readModelClient.load(archiveBootstrap.domains.home, { ...options, validate: data => {
       const expected = archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id)
       if (!Array.isArray(data.idols) || data.idols.length !== expected.length ||
         data.idols.some((idol, index) => idol.id !== expected[index]) ||
         !Array.isArray(data.stats) || !Array.isArray(data.highlights))
         throw new Error('Home index does not match inline bootstrap')
-    } }).then(index => { homeReadModelIndex.value = index; return index })
-      .catch(error => { homeIndexPromise = null; throw error })
-  }
-  return homeIndexPromise
+  } })
+  options.signal?.throwIfAborted()
+  homeReadModelIndex.value = index
+  return index
 }
 
-async function loadHomeIdol(idolId) {
+async function loadHomeIdol(idolId, options = navigation.getLoadOptions?.() || {}) {
   if (homeReadModelProfiles.value[idolId]) {
     const previous = recentHomeProfiles.indexOf(idolId)
     if (previous >= 0) recentHomeProfiles.splice(previous, 1)
     recentHomeProfiles.push(idolId)
     return homeReadModelProfiles.value[idolId]
   }
-  if (homeProfilePromises.has(idolId)) return homeProfilePromises.get(idolId)
-  const pending = (async () => {
-    const index = await loadHomeIndex()
+  return (async () => {
+    const index = await loadHomeIndex(options)
     const row = index.idols.find(idol => idol.id === idolId)
     if (!row) throw new Error(`Unavailable Home idol: ${idolId}`)
-    const detail = await readModelClient.load(row.detail, { validate: data => {
+    const detail = await readModelClient.load(row.detail, { ...options, validate: data => {
       if (data.id !== idolId || data.profile?.id !== idolId || !Array.isArray(data.cueIndex))
         throw new Error('Home detail identity mismatch')
     } })
     const pageDescriptors = [...new Map(detail.cueIndex.map(cue => [cue.page.url, cue.page])).values()]
-    const pages = await Promise.all(pageDescriptors.map(descriptor => readModelClient.load(descriptor)))
+    const pages = await Promise.all(pageDescriptors.map(descriptor => readModelClient.load(descriptor, options)))
     const profile = hydrateHomeProfile(detail, pageDescriptors, pages)
+    options.signal?.throwIfAborted()
     recentHomeProfiles.push(idolId)
     const profiles = { ...homeReadModelProfiles.value, [idolId]: profile }
     while (recentHomeProfiles.length > 3) delete profiles[recentHomeProfiles.shift()]
     homeReadModelProfiles.value = profiles
     return profile
-  })().finally(() => homeProfilePromises.delete(idolId))
-  homeProfilePromises.set(idolId, pending)
-  return pending
+  })()
 }
 
-async function loadIdolCatalog() {
+async function loadIdolCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (idolReadModelCatalog.value) return idolReadModelCatalog.value
-  if (!idolCatalogPromise) {
-    idolCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.idols)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.idols, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || rows.length !== archiveBootstrap.idols.length ||
         rows.some((row, position) => row.id !== archiveBootstrap.idols[position].id ||
           row.name !== archiveBootstrap.idols[position].name || !row.detail))
         throw new Error('Idol catalog does not match inline bootstrap')
+      options.signal?.throwIfAborted()
       idolReadModelCatalog.value = Object.fromEntries(rows.map(row => [row.id, row]))
       return idolReadModelCatalog.value
-    })().catch(error => { idolCatalogPromise = null; throw error })
-  }
-  return idolCatalogPromise
+  })()
 }
 
-async function loadIdolDetail(idolCode) {
-  const row = (await loadIdolCatalog())[idolCode]
+async function loadIdolDetail(idolCode, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadIdolCatalog(options))[idolCode]
   if (!row) throw new Error(`Unavailable idol: ${idolCode}`)
-  return readModelClient.load(row.detail, { expectedId: idolCode, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: idolCode}, { ...options, expectedId: idolCode, validate: data => {
     if (data.view?.profile?.idol_code !== idolCode || !data.view?.stats ||
       !Array.isArray(data.view?.events) || !Array.isArray(data.view?.songs))
       throw new Error('Idol detail identity or shape mismatch')
   } })
 }
 
-async function loadUnitCatalog() {
+async function loadUnitCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (unitReadModelCatalog.value) return unitReadModelCatalog.value
-  if (!unitCatalogPromise) {
-    unitCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.units)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.units, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       const expected = [...new Set(archiveBootstrap.idols.map(idol => idol.unitId))]
       if (rows.length !== index.count || rows.length !== expected.length ||
@@ -4259,18 +4233,17 @@ async function loadUnitCatalog() {
           String(row.catalog?.unit?.unit_id) !== row.id || !row.catalog?.members ||
           !row.catalog?.cardStats || !row.detail))
         throw new Error('Unit catalog does not match inline bootstrap')
+      options.signal?.throwIfAborted()
       unitReadModelCatalog.value = rows
       return rows
-    })().catch(error => { unitCatalogPromise = null; throw error })
-  }
-  return unitCatalogPromise
+  })()
 }
 
-async function loadUnitDetail(unitCode) {
-  const rows = await loadUnitCatalog()
+async function loadUnitDetail(unitCode, options = navigation.getLoadOptions?.() || {}) {
+  const rows = await loadUnitCatalog(options)
   const row = rows.find(entry => entry.id === unitCode || entry.catalog.unit.unit_code === unitCode)
   if (!row) throw new Error(`Unavailable unit: ${unitCode}`)
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
     if (String(data.view?.entry?.unit?.unit_id) !== row.id ||
       !Array.isArray(data.view?.entry?.members) || !data.view?.entry?.cardStats ||
       !Array.isArray(data.view?.stories) || !Array.isArray(data.view?.songs))
@@ -4278,35 +4251,34 @@ async function loadUnitDetail(unitCode) {
   } })
 }
 
-async function loadGashaCatalog() {
+async function loadGashaCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
-  if (!gashaCatalogPromise) {
-    gashaCatalogPromise = (async () => {
+  return (async () => {
       const [functions, tickets, index] = await Promise.all([
         import('./data/gashaCatalog.js'),
         import('./data/gashaTicketCatalog.js'),
-        readModelClient.load(archiveBootstrap.domains.gashas),
+        readModelClient.load(archiveBootstrap.domains.gashas, options),
       ])
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.primary_gashas ||
         new Set(rows.map(row => String(row.id))).size !== rows.length ||
         rows.some(row => row.phase !== 'primary' || !row.detail))
         throw new Error('Gasha catalog count or identity mismatch')
       const catalog = tickets.supplementGashaCatalog(rows,index.summary || {})
+      options.signal?.throwIfAborted()
       gashaCatalogFunctions.value = {...functions,...tickets}
+      options.signal?.throwIfAborted()
       gashaReadModelCatalog.value = catalog
       return catalog
-    })().catch(error => { gashaCatalogPromise = null; throw error })
-  }
-  return gashaCatalogPromise
+  })()
 }
 
-async function loadGashaDetail(id) {
-  const row = (await loadGashaCatalog()).rows.find(entry => String(entry.id) === id)
+async function loadGashaDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadGashaCatalog(options)).rows.find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable gasha: ${id}`)
   if(row.source_type==='item-masterdata')return {id,gasha:row}
-  const detail = await readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  const detail = await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
       throw new Error('Gasha detail identity or shape mismatch')
   } })
@@ -4322,57 +4294,53 @@ function loadCardFacets() {
   return cardFacetsPromise
 }
 
-async function loadCardCatalog() {
+async function loadCardCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (cardReadModelCatalog.value) return cardReadModelCatalog.value
-  if (!cardCatalogPromise) {
-    cardCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.cards)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.cards, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.canonical_cards ||
         new Set(rows.map(row => row.resource_id)).size !== rows.length ||
         rows.some(row => row.id !== row.resource_id || !row.detail || !row.ownerReference ||
           !Number.isInteger(row.home_voice_count) || !Number.isInteger(row.scenario_count)))
         throw new Error('Card catalog count or identity mismatch')
-      const facets = await loadCardFacets().catch(() => null)
-      cardReadModelCatalog.value = rows.map(row => ({ ...row, attribute: cardAttribute(row, facets, archiveBootstrap.release) }))
+      const facets = rows.every(row => ['Physical','Intelligence','Mental'].includes(row.attribute)) ? null : await loadCardFacets().catch(() => null)
+      options.signal?.throwIfAborted()
+      cardReadModelCatalog.value = rows.map(row => ({ ...row, attribute: row.attribute || cardAttribute(row, facets, archiveBootstrap.release) }))
       return cardReadModelCatalog.value
-    })().catch(error => { cardCatalogPromise = null; throw error })
-  }
-  return cardCatalogPromise
+  })()
 }
 
-async function loadCardDetail(id) {
-  const row = (await loadCardCatalog()).find(card => card.resource_id === id)
+async function loadCardDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadCardCatalog(options)).find(card => card.resource_id === id)
   if (!row) throw new Error(`Unavailable card: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (data.card?.resource_id !== id || !data.ownerReference ||
       !Array.isArray(data.card?.home_voice_cues) || !Array.isArray(data.card?.scenario_entries))
       throw new Error('Card detail identity or shape mismatch')
   } })
 }
 
-async function loadEventCatalog() {
+async function loadEventCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (eventReadModelCatalog.value) return eventReadModelCatalog.value
-  if (!eventCatalogPromise) {
-    eventCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.events)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.events, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || new Set(rows.map(row => String(row.id))).size !== rows.length ||
         rows.some(row => !row.detail || String(row.event_id) !== String(row.id)))
         throw new Error('Event catalog count or identity mismatch')
+      options.signal?.throwIfAborted()
       eventReadModelCatalog.value = rows
       return rows
-    })().catch(error => { eventCatalogPromise = null; throw error })
-  }
-  return eventCatalogPromise
+  })()
 }
 
-async function loadEventDetail(id, options = {}) {
-  const row = (await loadEventCatalog()).find(entry => String(entry.id) === id)
+async function loadEventDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadEventCatalog(options)).find(entry => String(entry.id) === id)
   if (!row) throw new Error(`Unavailable event: ${id}`)
-  const detail=await readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
+  const detail=await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (data.view?.schemaVersion !== 2 || String(data.view?.identity?.id) !== id || !Array.isArray(data.view?.episodes) ||
       !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.cast) ||
       !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
@@ -4392,59 +4360,55 @@ async function loadEventDetail(id, options = {}) {
 
 }
 
-async function loadSeasonalCatalog() {
+async function loadSeasonalCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (seasonalReadModelCatalog.value) return seasonalReadModelCatalog.value
-  if (!seasonalCatalogPromise) {
-    seasonalCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.seasonal)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.seasonal, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || new Set(rows.map(row => row.id)).size !== rows.length ||
         rows.some(row => !row.detail || !row.name || !Number.isInteger(row.year) ||
           !['valentine', 'white_day'].includes(row.season)))
         throw new Error('Seasonal catalog count or switch fields mismatch')
+      options.signal?.throwIfAborted()
       seasonalReadModelCatalog.value = rows
       return rows
-    })().catch(error => { seasonalCatalogPromise = null; throw error })
-  }
-  return seasonalCatalogPromise
+  })()
 }
 
-async function loadSeasonalDetail(requestedId = 'valentine_2023') {
-  const rows = await loadSeasonalCatalog()
+async function loadSeasonalDetail(requestedId = 'valentine_2023', options = navigation.getLoadOptions?.() || {}) {
+  const rows = await loadSeasonalCatalog(options)
   const row = rows.find(entry => entry.id === requestedId) ||
     rows.find(entry => entry.id === 'valentine_2023') || rows[0]
   if (!row) throw new Error('No seasonal campaigns available')
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
     if (data.view?.campaign?.id !== row.id || data.view.campaign.year !== row.year ||
       data.view.campaign.season !== row.season || !Array.isArray(data.view.campaign.participants))
       throw new Error('Seasonal campaign identity or shape mismatch')
   } })
 }
 
-async function loadWorkCatalog() {
+async function loadWorkCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (workReadModelCatalog.value) return workReadModelCatalog.value
-  if (!workCatalogPromise) {
-    workCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.work)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.work, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       const expected = archiveBootstrap.idols.map(idol => idol.id)
       if (rows.length !== index.count || rows.length !== expected.length ||
         rows.some((row, position) => row.id !== expected[position] || row.idol_code !== row.id ||
           !row.display_name || !row.work_type_name || !row.detail))
         throw new Error('Work catalog identity or switch fields mismatch')
+      options.signal?.throwIfAborted()
       workReadModelCatalog.value = rows
       return rows
-    })().catch(error => { workCatalogPromise = null; throw error })
-  }
-  return workCatalogPromise
+  })()
 }
 
-async function loadWorkDetail(id) {
-  const row = (await loadWorkCatalog()).find(entry => entry.id === id)
+async function loadWorkDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadWorkCatalog(options)).find(entry => entry.id === id)
   if (!row) throw new Error(`Unavailable work idol: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
       !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries) ||
       !Array.isArray(data.view?.readingEntries))
@@ -4452,44 +4416,40 @@ async function loadWorkDetail(id) {
   } })
 }
 
-async function loadIdolStoryCatalog() {
+async function loadIdolStoryCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (idolStoryReadModelCatalog.value) return idolStoryReadModelCatalog.value
-  if (!idolStoryCatalogPromise) {
-    idolStoryCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains['idol-stories'])
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains['idol-stories'], options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       const expected = archiveBootstrap.idols.map(idol => idol.id)
       if (rows.length !== index.count || rows.length !== expected.length ||
         rows.some((row, position) => row.id !== expected[position] || row.idolCode !== row.id ||
           !row.idolName || !Number.isInteger(row.sectionCount) || !Number.isInteger(row.episodeCount) || !row.detail))
         throw new Error('Idol story catalog identity or switch fields mismatch')
+      options.signal?.throwIfAborted()
       idolStoryReadModelCatalog.value = rows
       return rows
-    })().catch(error => { idolStoryCatalogPromise = null; throw error })
-  }
-  return idolStoryCatalogPromise
+  })()
 }
 
-async function loadIdolStoryDetail(id, options = {}) {
-  const row = (await loadIdolStoryCatalog()).find(entry => entry.id === id)
+async function loadIdolStoryDetail(id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadIdolStoryCatalog(options)).find(entry => entry.id === id)
   if (!row) throw new Error(`Unavailable idol story: ${id}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (data.view?.page?.idol_code !== id || !Array.isArray(data.view.page.sections) ||
       !Array.isArray(data.view?.readingEntries))
       throw new Error('Idol story detail identity or shape mismatch')
   } })
 }
 
-async function loadMobileCatalog(domain) {
+async function loadMobileCatalog(domain, options = navigation.getLoadOptions?.() || {}) {
   const idol = domain === 'mobile-idols'
   const current = idol ? mobileIdolReadModelCatalog : mobileUnitReadModelCatalog
   if (current.value) return current.value
-  const pending = idol ? mobileIdolCatalogPromise : mobileUnitCatalogPromise
-  if (pending) return pending
-  const promise = (async () => {
-    const index = await readModelClient.load(archiveBootstrap.domains[domain])
-    const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+    const index = await readModelClient.load(archiveBootstrap.domains[domain], options)
+    const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
     const rows = pages.flatMap(page => page.rows || [])
     if (rows.length !== index.count || rows.some(row => !row.id || !row.detail ||
       (idol ? !row.idolCode || !row.name : !row.unitCode || !row.name)))
@@ -4497,22 +4457,16 @@ async function loadMobileCatalog(domain) {
     if (idol && (rows.length !== archiveBootstrap.idols.length ||
       rows.some(row => !archiveBootstrap.idols.some(entry => entry.id === row.id))))
       throw new Error('Mobile idol catalog differs from bootstrap identity')
+    options.signal?.throwIfAborted()
     current.value = rows
     return rows
-  })().catch(error => {
-    if (idol) mobileIdolCatalogPromise = null
-    else mobileUnitCatalogPromise = null
-    throw error
-  })
-  if (idol) mobileIdolCatalogPromise = promise
-  else mobileUnitCatalogPromise = promise
-  return promise
+  })()
 }
 
-async function loadMobileDetail(domain, id) {
-  const row = (await loadMobileCatalog(domain)).find(entry => entry.id === id)
+async function loadMobileDetail(domain, id, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadMobileCatalog(domain, options)).find(entry => entry.id === id)
   if (!row) throw new Error(`Unavailable ${domain} entry: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
     if (domain === 'mobile-idols' ?
       !Array.isArray(data.view?.personalBundles) || !Array.isArray(data.view?.phoneBundles) || !Array.isArray(data.view?.randomBundles) :
       !Array.isArray(data.view?.unitBundles))
@@ -4520,21 +4474,21 @@ async function loadMobileDetail(domain, id) {
   } })
 }
 
-async function loadMobileRoute(idolCode, mode, requestedUnit = '') {
+async function loadMobileRoute(idolCode, mode, requestedUnit = '', options = navigation.getLoadOptions?.() || {}) {
   const [idol, units] = await Promise.all([
-    loadMobileDetail('mobile-idols', idolCode), loadMobileCatalog('mobile-units'),
+    loadMobileDetail('mobile-idols', idolCode, options), loadMobileCatalog('mobile-units', options),
   ])
   const unitCode = resolveMobileArchiveUnit({ idolCode, mode, requestedUnit,
     manifest: bootstrapMembership, units: units.map(unit => ({ unit_code: unit.id })),
     archive: { by_unit_code: Object.fromEntries(units.map(unit => [unit.id, true])) },
   })
-  const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode) : null
+  const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode, options) : null
   return { idol, unit, unitCode }
 }
 
-async function loadLegacyAliasDetail(domain, id) {
+async function loadLegacyAliasDetail(domain, id, options = navigation.getLoadOptions?.() || {}) {
   const descriptor = await entityDescriptor(archiveBootstrap, domain, id, `${domain}.detail`)
-  return readModelClient.load(descriptor, { expectedId: id, validate: data => {
+  return readModelClient.load({...descriptor,expectedId:id}, { ...options, expectedId: id, validate: data => {
     const view = data.view
     if (domain === 'legacy-groups' && (!view?.title || !Array.isArray(view.groups)) ||
       domain === 'legacy-files' && (!view?.group || !Array.isArray(view.entries) || !view.sourceRoute) ||
@@ -4544,20 +4498,20 @@ async function loadLegacyAliasDetail(domain, id) {
   } })
 }
 
-async function loadLegacyAliasRoute(route) {
+async function loadLegacyAliasRoute(route, options = navigation.getLoadOptions?.() || {}) {
   const owner = route.view === 'player' ? route.returnView : route.view
-  if (owner === 'episode_zero_units') return { zero: await loadLegacyAliasDetail('legacy-zero', 'episode_zero') }
-  if (owner === 'episodes') return { episode: await loadLegacyAliasDetail('legacy-episodes', route.unit) }
+  if (owner === 'episode_zero_units') return { zero: await loadLegacyAliasDetail('legacy-zero', 'episode_zero', options) }
+  if (owner === 'episodes') return { episode: await loadLegacyAliasDetail('legacy-episodes', route.unit, options) }
   if (owner === 'groups') {
     const id = route.idol ? `${route.category}:${route.idol}` : route.category
-    return { groups: await loadLegacyAliasDetail('legacy-groups', id) }
+    return { groups: await loadLegacyAliasDetail('legacy-groups', id, options) }
   }
   if (owner !== 'files' || !route.group) return null
   const id = route.idol ? `${route.category}:${route.idol}` : route.category
   const [files, parent] = await Promise.all([
-    loadLegacyAliasDetail('legacy-files', route.group),
+    loadLegacyAliasDetail('legacy-files', route.group, options),
     loadLegacyAliasDetail(route.category === 'episode_zero' ? 'legacy-episodes' : 'legacy-groups',
-      route.category === 'episode_zero' ? route.unit : id),
+      route.category === 'episode_zero' ? route.unit : id, options),
   ])
   if (files.view.sourceRoute.categoryId !== route.category ||
     files.view.sourceRoute.ownerId !== (route.category === 'episode_zero' ? route.unit : route.idol || ''))
@@ -4573,28 +4527,26 @@ function publishLegacyAliasRoute(result) {
   if (result.zero) legacyZeroReadModelDetail.value = result.zero
 }
 
-async function loadCollectionCatalog() {
+async function loadCollectionCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (collectionReadModelCatalog.value) return collectionReadModelCatalog.value
-  if (!collectionCatalogPromise) {
-    collectionCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.collections)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.collections, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || new Set(rows.map(row => row.id)).size !== rows.length ||
         rows.some(row => row.id !== `${row.domain}:${row.sectionId}` || !row.title || !row.detail))
         throw new Error('Collection catalog identity or shape mismatch')
+      options.signal?.throwIfAborted()
       collectionReadModelCatalog.value = rows
       return rows
-    })().catch(error => { collectionCatalogPromise = null; throw error })
-  }
-  return collectionCatalogPromise
+  })()
 }
 
-async function loadCollectionDetail(domain, section, options = {}) {
-  const row = (await loadCollectionCatalog()).find(entry => entry.domain === domain &&
+async function loadCollectionDetail(domain, section, options = navigation.getLoadOptions?.() || {}) {
+  const row = (await loadCollectionCatalog(options)).find(entry => entry.domain === domain &&
     (entry.sectionId === String(section) || entry.legacySectionIds?.includes(String(section))))
   if (!row) throw new Error(`Unavailable story collection: ${domain}:${section}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: row.id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
     const collection = data.view?.collection
     if (collection?.domain !== row.domain || collection.sectionId !== row.sectionId ||
       !Array.isArray(collection.chapters) || !Array.isArray(data.view?.readingEntries))
@@ -4602,48 +4554,56 @@ async function loadCollectionDetail(domain, section, options = {}) {
   } })
 }
 
-async function loadStoryReadModelCatalog() {
+async function loadStoryReadModelCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (storyReadModelCatalog.value) return storyReadModelCatalog.value
-  if (!storyCatalogPromise) {
-    storyCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.stories)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.stories, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.catalog_story_entries ||
         new Set(rows.map(row => row.file)).size !== rows.length ||
         rows.some(row => row.id !== row.file || !row.title || !row.detail))
         throw new Error('Story directory identity or count mismatch')
+      options.signal?.throwIfAborted()
       storyCatalogIndex.value = index
+      options.signal?.throwIfAborted()
       storyReadModelCatalog.value = rows
       return rows
-    })().catch(error => { storyCatalogPromise = null; throw error })
-  }
-  return storyCatalogPromise
+  })()
 }
 
-async function loadStoryReadModelLanding() {
+async function loadStoryReadModelLanding(options = navigation.getLoadOptions?.() || {}) {
   if (storyCatalogLanding.value) return storyCatalogLanding.value
-  await loadStoryReadModelCatalog()
-  if (!storyLandingPromise) {
-    storyLandingPromise = (async () => {
-      const descriptors = storyCatalogIndex.value?.landing
+  const index = await readModelClient.load(archiveBootstrap.domains.stories, options)
+  return (async () => {
+      const descriptors = index.landing
       if (!descriptors?.main || !descriptors?.extra || !descriptors?.birthday)
         throw new Error('Story catalog landing descriptors missing')
       const [main, extra, birthday] = await Promise.all(['main', 'extra', 'birthday'].map(key =>
-        readModelClient.load(descriptors[key])))
+        readModelClient.load(descriptors[key], options)))
       if (!main?.value?.collections || !extra?.value?.collections || !birthday?.value?.collections)
         throw new Error('Story catalog landing shape mismatch')
+      options.signal?.throwIfAborted()
       storyCatalogLanding.value = { main: main.value, extra: extra.value, birthday: birthday.value }
       return storyCatalogLanding.value
-    })().catch(error => { storyLandingPromise = null; throw error })
-  }
-  return storyLandingPromise
+  })()
 }
 
-async function loadStoryReadModelDetail(file) {
-  const row = (await loadStoryReadModelCatalog()).find(entry => entry.file === file)
+async function loadStoryReadModelDetail(file, options = navigation.getLoadOptions?.() || {}) {
+  let row = storyReadModelCatalog.value?.find(entry => entry.file === file)
+  if (!row) {
+    const index = await readModelClient.load(archiveBootstrap.domains.stories, options)
+    const locatorKey = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(file)))]
+      .map(byte => byte.toString(16).padStart(2,'0')).join('')
+    const shardKey = (parseInt(locatorKey.slice(0,2),16)%32).toString(16).padStart(2,'0')
+    const descriptor = index.detailLocatorShards?.[shardKey]
+    if (!descriptor?.sha256) throw new Error('Story locator missing')
+    const locator = await readModelClient.load(descriptor, options)
+    row = locator.rows?.find(entry => entry.file === file)
+    if (row) row = {...row,id:file}
+  }
   if (!row) throw new Error(`Unavailable story: ${file}`)
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+  return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
     if (data.story?.file !== file || !Array.isArray(data.view?.related) ||
       !Array.isArray(data.view?.castReferences) || typeof data.view.promotedVisualUrl !== 'string' ||
       !Array.isArray(data.view?.readingEntries))
@@ -4651,58 +4611,56 @@ async function loadStoryReadModelDetail(file) {
   } })
 }
 
-async function loadResourceStatus() {
-  if (!resourceDetailPromise) {
-    resourceDetailPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.resources)
+async function loadResourceStatus(options = navigation.getLoadOptions?.() || {}) {
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.resources, options)
       if (index.count !== 1 || index.pages?.length !== 1) throw new Error('Resource status directory mismatch')
-      const page = await readModelClient.load(index.pages[0])
+      const page = await readModelClient.load(index.pages[0], options)
       const row = page.rows?.[0]
       if (row?.id !== 'archive-status' || !row.detail) throw new Error('Resource status identity mismatch')
-      return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
+      return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
         if (!data.view?.manifest?.coverage || !data.view?.verification?.scenarios ||
           !data.view?.uiAssets?.meta) throw new Error('Resource status shape mismatch')
       } })
-    })().catch(error => { resourceDetailPromise = null; throw error })
-  }
-  return resourceDetailPromise
+  })()
 }
 
-async function loadSongCatalog() {
+async function loadSongCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (songReadModelCatalog.value) return songReadModelCatalog.value
-  if (!songCatalogPromise) {
-    songCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.songs)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
+  return (async () => {
+      const index = await readModelClient.load(archiveBootstrap.domains.songs, options)
+      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
       const rows = pages.flatMap(page => page.rows || [])
       if (rows.length !== index.count || new Set(rows.map(row => row.song_code)).size !== rows.length)
         throw new Error('Song catalog page count or identity mismatch')
       const catalog = { songs: Object.fromEntries(rows.map(row => [row.song_code, row])), summary: index.summary }
+      options.signal?.throwIfAborted()
       songReadModelCatalog.value = catalog
       return catalog
-    })().catch(error => { songCatalogPromise = null; throw error })
-  }
-  return songCatalogPromise
+  })()
 }
 
-async function ensureSongCatalog() {
+async function ensureSongCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (songReadModelCatalog.value) return true
+  options.signal?.throwIfAborted()
   songReadModelStatus.value = '正在读取歌曲目录…'
   try {
-    await loadSongCatalog()
+    await loadSongCatalog(options)
+    options.signal?.throwIfAborted()
     songReadModelStatus.value = ''
     return true
   } catch (error) {
     console.error('[SongReadModel] Failed to load catalog:', error)
+    options.signal?.throwIfAborted()
     songReadModelStatus.value = '歌曲目录暂时无法读取，请重试。'
     return false
   }
 }
 
-async function loadSongDetail(songCode) {
+async function loadSongDetail(songCode, options = navigation.getLoadOptions?.() || {}) {
   const row = songReadModelCatalog.value?.songs?.[songCode]
   const descriptor = row?.detail || await entityDescriptor(archiveBootstrap, 'songs', songCode, 'songs.detail')
-  return readModelClient.load(descriptor, { validate: data => {
+  return readModelClient.load(descriptor, { ...options, validate: data => {
     if (data.song?.song_code !== songCode || data.view?.id !== songCode)
       throw new Error('Song detail identity mismatch')
   } })
@@ -5006,6 +4964,33 @@ onMounted(async () => {
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
   await restoreRoute(startup.route)
 })
+
+// App owns assembled catalogues only while their directory/detail is in use.
+// The shared client keeps its independently bounded immutable-byte LRU.
+watch(view,next=> {
+  if(['player','reader'].includes(next))return
+  for(const [catalog,detail,owners] of [
+    [cardReadModelCatalog,cardReadModelDetail,['cards','card_detail','idols']],
+    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage']],
+    [idolReadModelCatalog,idolReadModelDetail,['idol_catalog','idol_detail','idols']],
+    [unitReadModelCatalog,unitReadModelDetail,['unit_catalog','unit_detail']],
+    [gashaReadModelCatalog,gashaReadModelDetail,['gasha_catalog','gasha_detail']],
+    [eventReadModelCatalog,eventReadModelDetail,['event_catalog','event_detail']],
+    [seasonalReadModelCatalog,seasonalReadModelDetail,['seasonal_campaign']],
+    [workReadModelCatalog,workReadModelDetail,['work_archive']],
+    [idolStoryReadModelCatalog,idolStoryReadModelDetail,['idol_story_archive']],
+    [collectionReadModelCatalog,collectionReadModelDetail,['collection_catalog','story_collection']],
+    [storyReadModelCatalog,storyReadModelDetail,['story_catalog','story_detail']],
+    [mobileIdolReadModelCatalog,mobileIdolReadModelDetail,['mobile_archive']],
+    [mobileUnitReadModelCatalog,mobileUnitReadModelDetail,['mobile_archive']],
+  ])if(!owners.includes(next)){catalog.value=null;detail.value=null}
+  for(const [detail,owners] of [
+    [legacyGroupReadModelDetail,['groups','files']],
+    [legacyFileReadModelDetail,['files']],
+    [legacyZeroReadModelDetail,['episode_zero_units','episodes']],
+    [legacyEpisodeReadModelDetail,['episodes']],
+  ])if(!owners.includes(next))detail.value=null
+},{flush:'post'})
 
 watch([filterQuery, currentSongScope, currentCardRarity, currentCardAttribute, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true, restoreView: false })

@@ -1,74 +1,57 @@
+import { createPortalRepository, portalDisplayOverview } from '../../data/PortalRepository.js'
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS, portalSearchPageDescriptors, validatePortalSearchRows } from '../../presentation/ArchivePortalPresentation.js'
 
 // Portal data is independent of catalogue filters and never owns a player detail.
 export function useArchivePortalData({ view, bootstrap, client, preferredIdol, scope = ref(''), searchQuery = ref(''),
-  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadCollections, loadStageManifest, loadPortraits, loadEventDetail, loadUnits, loadCardFacets, loadGatewayCounts,
+  loadCards,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
-  const desktop = ref(false), cards = shallowRef([]), songs = shallowRef([])
-  const preferredDetail = shallowRef(null), loading = ref(false), error = ref('')
-  const stories = shallowRef([]), events = shallowRef([]), stageManifest = shallowRef(null)
+  const desktop = ref(false), loading = ref(false), error = ref('')
   const query = searchQuery, searchLoading = ref(false), searchError = ref('')
   const rowsByDomain = shallowRef({})
   let media, mediaListener, disposed = false, revision = 0, searchRevision = 0, timer, searchController
   // An empty scope follows the favorite; 'all' explicitly selects the whole archive.
-  const eventDetails = shallowRef([])
-  const portraits = shallowRef(null), available = shallowRef({}), storyCollections = shallowRef([])
-  const units = shallowRef([]), cardFacets = shallowRef(null), gatewayCounts = shallowRef({})
   const scopeIdol = computed(() => scope.value === '' ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
   const preferredCode = computed(() => scopeIdol.value?.id || '')
   function selectScope(code) {
     if (code !== '' && !bootstrap.idols.some(row => row.id === code)) return
     scope.value = code || 'all'
   }
-  const overview = computed(() => buildPortalDesktopOverview({ bootstrap, cards: cards.value,
-    songs: songs.value, stories: stories.value, events: events.value, stageManifest: stageManifest.value,
-    preferredIdol: scopeIdol.value,
-    preferredDetail: preferredDetail.value?.id === preferredCode.value && preferredDetail.value?.view?.profile?.idol_code === preferredCode.value ? preferredDetail.value : null,
-    idolName, cardTitle, songTitle, storyCollections: storyCollections.value, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value, units:units.value,cardFacets:cardFacets.value,gatewayCounts:gatewayCounts.value }))
+  const repository = createPortalRepository({bootstrap,client})
+  const projection = shallowRef(null)
+  let overviewController
+  const overview = computed(() => ({...portalDisplayOverview(projection.value, {idolName,cardTitle}),
+    loading:loading.value,error:error.value}))
   const search = computed(() => ({ query: query.value, loading: searchLoading.value,
     error: searchError.value, results: buildPortalSearchResults({ query: query.value,
       rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle }) }))
+  function stopOverview() { ++revision; overviewController?.abort(); overviewController = null }
   async function refresh() {
+    stopOverview()
     if (view.value !== 'portal' || !desktop.value || disposed) return
-    const ticket = ++revision, code = preferredCode.value
-    loading.value = true; error.value = ''; preferredDetail.value = null; eventDetails.value = []
-    const results = await Promise.allSettled([
-      loadCards(), loadSongs(), code ? loadIdol(code).then(detail => {
-        if (detail?.id !== code || detail.view?.profile?.idol_code !== code) throw Error('Portal preferred owner mismatch')
-        return detail
-      }) : Promise.resolve(null),
-      loadStories ? loadStories() : Promise.resolve([]),
-      loadEvents ? loadEvents() : Promise.resolve([]),
-      loadStageManifest ? loadStageManifest() : Promise.resolve(null),
-      loadPortraits ? loadPortraits() : Promise.resolve(null),
-      loadCollections ? loadCollections() : Promise.resolve([]),
-      loadUnits ? loadUnits() : Promise.resolve([]),
-      loadCardFacets ? loadCardFacets() : Promise.resolve(null),
-      loadGatewayCounts ? loadGatewayCounts() : Promise.resolve({}),
-    ])
-    if (disposed || ticket !== revision || view.value !== 'portal' || !desktop.value) return
-    if (results[0].status === 'fulfilled') cards.value = results[0].value
-    if (results[1].status === 'fulfilled') songs.value = Object.values(results[1].value?.songs || {})
-    if (results[2].status === 'fulfilled' && preferredCode.value === code) preferredDetail.value = results[2].value
-    if (results[3].status === 'fulfilled') stories.value = results[3].value
-    if (results[4].status === 'fulfilled') events.value = results[4].value
-    if (results[5].status === 'fulfilled') stageManifest.value = results[5].value
-    if (results[6].status === 'fulfilled') portraits.value = results[6].value
-    if (results[7].status === 'fulfilled') storyCollections.value = results[7].value
-    if (results[8].status === 'fulfilled') units.value = results[8].value
-    if (results[9].status === 'fulfilled') cardFacets.value = results[9].value
-    if (results[10].status === 'fulfilled') gatewayCounts.value = results[10].value
-    available.value = Object.fromEntries([['cards',0],['songs',1],['stories',3],['events',4]].map(([key,index]) => [key, results[index].status === 'fulfilled']))
-    error.value = results.every(result => result.status === 'fulfilled') ? '' : '部分资料暂时无法读取，已保留可用内容。'
-    loading.value = false
-    // Optional preview enrichment stays bound to the current lens and never blocks core counts.
-    if (code && loadEventDetail) {
-      const ids = overview.value.events.map(row => row.id)
-      const details = await Promise.allSettled(ids.map(id => loadEventDetail(id)))
-      if (disposed || ticket !== revision || view.value !== 'portal' || preferredCode.value !== code) return
-      eventDetails.value = details.filter(row => row.status === 'fulfilled').map(row => row.value)
-    }
+    const ticket = revision, code = preferredCode.value
+    const owner = overviewController = new AbortController()
+    projection.value = null; loading.value = true; error.value = ''
+    try {
+      const data = await repository.loadScope(code || 'all', {signal:owner.signal,priority:'foreground'})
+      if (disposed || owner.signal.aborted || ticket !== revision) return
+      projection.value = data.overview
+    } catch (cause) {
+      if (disposed || owner.signal.aborted || ticket !== revision) return
+      error.value = '门户资料暂时无法读取，可直接进入各目录或重试。'
+    } finally { if (!disposed && ticket === revision) loading.value = false }
+  }
+  async function expandCardPool() {
+    const ticket = revision, owner = overviewController
+    if (!projection.value || !owner || owner.signal.aborted) return
+    try {
+      const rows = await loadCards({signal:owner.signal,priority:'background'})
+      if (disposed || ticket !== revision || owner.signal.aborted) return
+      const selected = preferredCode.value ? rows.filter(row => row.character_id === preferredCode.value) : rows
+      const pool = buildPortalDesktopOverview({bootstrap,cards:selected,cardTitle,idolName}).collections.cards
+        .map(row => ({...row,attribute:rows.find(source => source.resource_id === row.id)?.attribute || ''}))
+      projection.value = {...projection.value,collections:{...projection.value.collections,cards:pool}}
+    } catch (cause) { if (!owner.signal.aborted && ticket === revision) error.value = '卡面探索暂时无法读取，请重试。' }
   }
   async function loadSearch(ticket) {
     searchController?.abort(); searchController = new AbortController()
@@ -105,7 +88,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     timer = setTimeout(() => { void loadSearch(ticket) }, 220)
   })
   watch([view, desktop, preferredCode], () => {
-    ++revision
+    stopOverview()
     if (view.value === 'portal' && desktop.value) {
       void refresh()
       if (query.value.trim() && Object.keys(rowsByDomain.value).length !== PORTAL_SEARCH_DOMAINS.length) {
@@ -114,7 +97,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
         timer = setTimeout(() => { void loadSearch(++searchRevision) }, 220)
       }
     }
-    else { loading.value = false; clearTimeout(timer); ++searchRevision; searchController?.abort(); searchLoading.value = false }
+    else { projection.value = null; rowsByDomain.value = {}; loading.value = false; clearTimeout(timer); ++searchRevision; searchController?.abort(); searchLoading.value = false }
   })
   onMounted(() => {
     media = window.matchMedia('(min-width: 761px)')
@@ -122,8 +105,8 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     mediaListener(); media.addEventListener('change', mediaListener)
   })
   onBeforeUnmount(() => {
-    disposed = true; ++revision; ++searchRevision; clearTimeout(timer); searchController?.abort()
+    disposed = true; stopOverview(); ++searchRevision; clearTimeout(timer); searchController?.abort()
     media?.removeEventListener('change', mediaListener)
   })
-  return { scopeIdol, selectScope, overview, search, updateSearch, refresh }
+  return { scopeIdol, selectScope, overview, search, updateSearch, refresh, expandCardPool }
 }

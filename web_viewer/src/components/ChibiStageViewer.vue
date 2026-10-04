@@ -430,7 +430,7 @@ import { colorLayersAt } from '../core/chibiColorLayers.js'
 import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
-import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive, useId } from 'vue'
+import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
@@ -520,19 +520,19 @@ const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' 
 const snapshotUrl = ref(''), snapshotFilename = ref('')
 let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
-const manifest = ref(null)
-const choreography = ref(null)
+const manifest = shallowRef(null)
+const choreography = shallowRef(null)
 const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
-const musicIndex = ref(null)
-const backmonitorIndex = ref(null)
-const imageLayerIndex = ref(null)
-const imageObjectIndex = ref(null)
+const musicIndex = shallowRef(null)
+const backmonitorIndex = shallowRef(null)
+const imageLayerIndex = shallowRef(null)
+const imageObjectIndex = shallowRef(null)
 const visibleImageObjectCount = ref(0)
 const visibleImageObjectAssets = ref([])
-const objectLayerIndex = ref(null)
-const stageBackgroundIndex = ref(null)
-const stageEffectIndex = ref(null)
+const objectLayerIndex = shallowRef(null)
+const stageBackgroundIndex = shallowRef(null)
+const stageEffectIndex = shallowRef(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -550,7 +550,15 @@ const stageVocalReady = stageVocalSession.ready
 const stageVocalBusGain = stageVocalSession.vocalGain
 const stageVocalBackingGain = stageVocalSession.backingGain
 const stageVocalLoadedIdolCodes = stageVocalSession.loadedIdolCodes
-const stageTime = ref(0)
+// Renderer reads the exact frame clock; Vue publishes at 10 Hz while playing.
+const stageTime = customRef((track,trigger)=> {
+  let time=0,lastPublished=0
+  return {get(){track();return time},set(value){
+    time=value; const now=performance.now()
+    if (!playing.value || now-lastPublished >= 100) {lastPublished=now;trigger()}
+  }}
+})
+const frameValue = read => customRef(() => ({get:read,set(){}}))
 const playbackSpeed = ref(1)
 const playing = ref(false)
 const cameraEnabled = ref(true)
@@ -864,15 +872,15 @@ const stageDuration = computed(() => Math.max(
 const motionCatalog = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
 ))
-const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
+const currentSingerEvent = frameValue(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= stageTime.value))
-const currentSingerPositions = computed(() => (
+const currentSingerPositions = frameValue(() => (
   currentSingerEvent.value?.stagePositions
   || currentSingerEvent.value?.singers
   || []
 ).filter(position => activePositions.value.includes(position)))
-const currentSingerPerformerSlots = computed(() => (
+const currentSingerPerformerSlots = frameValue(() => (
   currentSingerEvent.value?.performerSlots
   || currentSingerEvent.value?.singers
   || []
@@ -918,20 +926,20 @@ const performanceEventsByPosition = computed(() => {
 const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.value.values()]
   .flat()
   .filter(event => event.source === 'group').length)
-const currentCameraState = computed(() => cameraStateAt(stageTime.value))
-const currentBackmonitorState = computed(() => backmonitorStateAt(stageTime.value))
+const currentCameraState = frameValue(() => cameraStateAt(stageTime.value))
+const currentBackmonitorState = frameValue(() => backmonitorStateAt(stageTime.value))
 const hasAuthoredStage = computed(() => Boolean(stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]))
 const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.movie
   ? currentBackmonitorState.value.movie.replace('live_backmonitor_movie_', '')
   : '无')
 const currentLyric = computed(() => lyricAt(stageTime.value))
-const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.value))
-const currentColorPlanes = computed(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
+const currentWholeScreenColor = frameValue(() => wholeScreenColorAt(stageTime.value))
+const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
-const currentFootLighting = computed(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
-const currentBodyColors = computed(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
-const currentImageColors = computed(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
+const currentFootLighting = frameValue(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
+const currentBodyColors = frameValue(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
   if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
@@ -942,6 +950,8 @@ const currentCameraLabel = computed(() => {
 })
 
 let stageDisposed = false
+const lifetime = new AbortController()
+const slotOwners = new Map()
 const stageStarting = ref(false)
 const stageIntent = createPlaybackIntent(() => `${selectedSong.value?.id || ''}:${stageBuildSequence}`)
 const stageAudioOwners = new Map()
@@ -961,27 +971,11 @@ onMounted(async () => {
       }
     }
     createPixiApp()
-    manifest.value = await fetchLiveChibiManifest()
+    manifest.value = await fetchLiveChibiManifest({signal:lifetime.signal})
     if (stageDisposed) return
-    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
+    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal})
     if (stageDisposed) return
-    ;[
-      musicIndex.value,
-      backmonitorIndex.value,
-      imageLayerIndex.value,
-      imageObjectIndex.value,
-      objectLayerIndex.value,
-      stageBackgroundIndex.value,
-      stageEffectIndex.value,
-    ] = await Promise.all([
-      fetchLiveChibiMusicIndex(),
-      fetchLiveChibiBackmonitorIndex(),
-      fetchLiveChibiImageLayerIndex(),
-      fetchLiveChibiImageObjectIndex(),
-      fetchLiveChibiObjectLayerIndex(),
-      fetchLiveChibiStageBackgroundIndex(),
-      fetchLiveChibiStageEffectIndex(),
-    ])
+    musicIndex.value = await fetchLiveChibiMusicIndex({signal:lifetime.signal})
     if (stageDisposed) return
     initializeLineup()
     selectedSongId.value = props.stageTargetId
@@ -1010,6 +1004,25 @@ onMounted(async () => {
       stageVocalBackingGain.value = resolvedHandoff.backingGain
       stageVocalEnabled.value = stageVocalAvailable.value
     }
+    const optionalOptions={signal:lifetime.signal}
+    const install=(target,value,sync)=> {
+      if(stageDisposed || !value)return
+      target.value=value
+      if(sync)void sync().then(()=> {if(!stageDisposed && !playing.value)app?.render()}).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] optional visual unavailable',error)})
+    }
+    const visualJobs=[
+      [backmonitorIndex,fetchLiveChibiBackmonitorIndex,async()=>syncBackmonitor(true)],
+      [imageLayerIndex,fetchLiveChibiImageLayerIndex,syncImageLayers],
+      [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
+      [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
+      [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
+      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting()}],
+    ].map(async ([target,load,sync])=> {
+      try {install(target,await load(optionalOptions),sync)}
+      catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
+    })
+    // The president's silhouette is an authored object, required for that stage.
+    if(isSpecialSingle.value)await visualJobs[3]
     await Promise.all([loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
     if (stageDisposed) return
     await rebuildStage()
@@ -1025,6 +1038,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleStageShortcut)
   if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value)
   stageDisposed = true
+  lifetime.abort()
+  for(const owner of slotOwners.values())owner.abort()
+  slotOwners.clear()
   stageIntent.dispose()
   stageBuildSequence += 1
   lipSyncSequence += 1
@@ -1084,6 +1100,7 @@ function createPixiApp() {
     autoDensity: true,
     resolution: Math.min(window.devicePixelRatio || 1, 2),
   }))
+  app.stop() // One owned RAF drives rendering; paused stages have no Pixi ticker.
   app.stage.sortableChildren = true
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
@@ -1280,12 +1297,24 @@ function ensureCharacterShadowTexture() {
     const profile = stageEffectIndex.value?.characterShadow
     const relativePath = stageEffectIndex.value?.assets?.[profile?.asset]?.file
     if (!relativePath) return Promise.resolve(null)
-    characterShadowLoad = loadImageLayerTexture(relativePath).then(texture => {
+    const pending = loadImageLayerTexture(relativePath).then(texture => {
+      if(stageDisposed || !app) {texture.destroy(true);return null}
       characterShadowTexture = texture
       return texture
-    })
+    }).catch(error=> {if(characterShadowLoad===pending)characterShadowLoad=null; throw error})
+    characterShadowLoad=pending
   }
   return characterShadowLoad
+}
+
+async function attachStageShadow(runtime) {
+  if(runtime.groundShadow)return
+  const texture=await ensureCharacterShadowTexture()
+  if(!texture || stageDisposed || runtimes.get(runtime.stagePosition)!==runtime || !cameraContainer || runtime.groundShadow)return
+  const shadow=runtime.groundShadow=markRaw(new PIXI.Sprite(texture));shadow.anchor.set(0.5);shadow.alpha=1
+  cameraContainer.addChild(shadow)
+  runtime.releaseShadowFollower=installCharacterShadowFollower(runtime.spine,()=>syncCharacterShadow(runtime))
+  syncCharacterShadow(runtime);if(!playing.value)app?.render()
 }
 
 function destroyStageRuntime(runtime) {
@@ -1313,6 +1342,8 @@ async function loadSlot(slot) {
   const costume = costumeForSlot(slot)
   if (!character || !costume) return
 
+  slotOwners.get(slot.position)?.abort()
+  const owner=new AbortController();slotOwners.set(slot.position,owner)
   const sequence = ++slot.loadSequence
   slot.motionSequence += 1
   slot.loading = true
@@ -1324,24 +1355,14 @@ async function loadSlot(slot) {
   }
 
   try {
-    const [runtime, shadowTexture] = await Promise.all([
-      createLiveChibi(character, costume),
-      ensureCharacterShadowTexture(),
-    ])
+    const runtime = await createLiveChibi(character,costume,{signal:owner.signal,isCurrent:()=>!stageDisposed && sequence===slot.loadSequence && Boolean(app)})
     if (sequence !== slot.loadSequence || !app) {
       destroyLiveChibi(runtime)
       return
     }
-    const groundShadow = shadowTexture ? markRaw(new PIXI.Sprite(shadowTexture)) : null
-    if (groundShadow) {
-    groundShadow.anchor.set(0.5)
-    // The source PNG already tops out at 50% alpha; avoid attenuating it a
-    // second time or it disappears against the illuminated stage floor.
-    groundShadow.alpha = 1
-    }
     const stageRuntime = markRaw({
       ...runtime,
-      groundShadow,
+      groundShadow:null,
       loadedMotions: new Map(),
       preloadedSongs: new Set(),
       characterId: character.id,
@@ -1349,11 +1370,7 @@ async function loadSlot(slot) {
       stagePosition: slot.position,
     })
     runtimes.set(slot.position, stageRuntime)
-    if (groundShadow) {
-      cameraContainer.addChild(groundShadow)
-      stageRuntime.releaseShadowFollower = installCharacterShadowFollower(stageRuntime.spine,
-        () => syncCharacterShadow(stageRuntime))
-    }
+    void attachStageShadow(stageRuntime).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] optional shadow unavailable',error)})
     cameraContainer.addChild(stageRuntime.spine)
     slot.loading = false
     resizeStage()
@@ -1361,7 +1378,7 @@ async function loadSlot(slot) {
     applyCurrentLipSync()
     applyStageLighting()
   } catch (error) {
-    if (sequence !== slot.loadSequence) return
+    if (stageDisposed || owner.signal.aborted || sequence !== slot.loadSequence) return
     slot.loading = false
     errorText.value = `${slot.position}号位加载失败：${error.message}`
     console.error('[ChibiStage] slot load failed', slot.position, error)
@@ -1807,7 +1824,7 @@ function applyStageLighting() {
       runtime.spine.tint = 0xffffff
       syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
     }
-    appliedBodyColors.value = ''
+    if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
     return
   }
   const screen = currentWholeScreenColor.value
@@ -1866,7 +1883,7 @@ function applyStageLighting() {
     runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
     syncFootLighting(PIXI,runtime,foot,true)
   }
-  appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
+  if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
     `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
 }
@@ -2721,9 +2738,9 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
   }
-  floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
+  if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
-  particleLayerFrames.value = [...objectLayerRuntimes.entries()]
+  if (!playing.value || inspectorOpen.value) particleLayerFrames.value = [...objectLayerRuntimes.entries()]
     .filter(([, runtime]) => runtime.particles && runtime.container.visible)
     .map(([asset, runtime]) => `${asset}:${runtime.particleFrames.join('/')}`).sort().join(',')
 }
@@ -2740,8 +2757,8 @@ function releaseObjectLayers() {
   visibleObjectLayerCount.value = 0
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
-  particleLayerFrames.value = ''
-  floorParticleState.value = ''
+  if (!playing.value || inspectorOpen.value) particleLayerFrames.value = ''
+  if (!playing.value || inspectorOpen.value) floorParticleState.value = ''
 }
 
 async function syncObjectLayers() {
@@ -3080,6 +3097,7 @@ function applyLayerDebugVisibility() {
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer debug sync failed', error))
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer debug sync failed', error))
+  if (app && !playing.value && !stageDisposed) app.render()
 }
 
 function syncCharacterShadow(runtime) {
@@ -3151,6 +3169,7 @@ function resizeStage() {
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
+  if(!playing.value)app?.render()
 }
 
 async function selectStageScript(id) {
@@ -3363,25 +3382,33 @@ async function preloadSongMotions(intent) {
   preloading.value = true
   preloadProgress.value = 0
   audioError.value = ''
+  const owner = new AbortController()
+  const cancel = () => owner.abort()
+  intent.signal?.addEventListener('abort',cancel,{once:true})
+  if (intent.signal?.aborted) cancel()
   try {
-    await Promise.all(targets.map(async ({ runtime }) => {
-      await Promise.all(motions.map(async motion => {
-        await injectLiveChibiMotion(runtime, motion, { signal:intent.signal, isCurrent: () => intent.current() && runtimes.get(runtime.stagePosition) === runtime })
-        if (!intent.current() || runtimes.get(runtime.stagePosition) !== runtime) return
-        completed += 1
-        preloadProgress.value = Math.round(completed / total * 100)
-      }))
-      if (intent.current() && runtimes.get(runtime.stagePosition) === runtime) runtime.preloadedSongs.add(songId)
-    }))
+    const jobs=motions.flatMap(motion=>targets.map(({runtime})=>({runtime,motion})))
+    const worker=async()=> {
+      while(intent.current() && !owner.signal.aborted && jobs.length) {
+        const {runtime,motion}=jobs.shift()
+        await injectLiveChibiMotion(runtime,motion,{signal:owner.signal,isCurrent:()=>intent.current() && !owner.signal.aborted && runtimes.get(runtime.stagePosition)===runtime})
+        if(!intent.current())return
+        completed++;preloadProgress.value=Math.round(completed/total*100)
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(3,jobs.length)},worker))
+    if(intent.current())for(const {runtime} of targets)if(runtimes.get(runtime.stagePosition)===runtime)runtime.preloadedSongs.add(songId)
     if (!intent.current()) return false
     songMotionsReady.value = true
     return true
   } catch (error) {
+    owner.abort()
     if (!intent.current()) return false
     audioError.value = `舞台动作预载失败：${error.message}`
     console.error('[ChibiStage] motion preload failed', error)
     return false
   } finally {
+    intent.signal?.removeEventListener('abort',cancel)
     if (intent.current()) preloading.value = false
   }
 }
@@ -3393,7 +3420,7 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const sequence = ++slot.motionSequence
   const revision = stageIntent.revision()
   const current = () => !stageDisposed && revision === stageIntent.revision() && sequence === slot.motionSequence && runtimes.get(slot.position) === runtime
-  const animationNames = await injectLiveChibiMotion(runtime, motion, { isCurrent: current })
+  const animationNames = await injectLiveChibiMotion(runtime, motion, { isCurrent: current, signal:lifetime.signal })
   if (!current()) return
   slot.currentMotion = motion.id
   slot.currentMotionSource = event.source || 'script'
@@ -3452,6 +3479,7 @@ async function seekStage() {
   syncBackmonitor(true)
   await syncImageLayers()
   await syncObjectLayers()
+  app?.render()
 }
 
 function resetEventIndices() {
@@ -3520,6 +3548,7 @@ async function toggleStage() {
   playing.value = true
   syncMotionPlaybackSpeed()
   syncBackmonitor(true)
+  if(app)app.ticker.lastTime=performance.now()
   animationFrame = requestAnimationFrame(updateStage)
   } catch (error) {
     if (current()) { stopStage(); audioError.value = `舞台无法开始：${error.message || error}` }
@@ -3542,7 +3571,7 @@ function updateStage(now) {
     const events = eventsForPosition(slot.position)
     let index = eventIndices.get(slot.position) || 0
     while (index < events.length && events[index].time <= stageTime.value) {
-      playSlotEvent(slot, events[index])
+      void playSlotEvent(slot, events[index]).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] motion event failed',error)})
       index += 1
     }
     eventIndices.set(slot.position, index)
@@ -3561,6 +3590,7 @@ function updateStage(now) {
     stopStage()
     return
   }
+  app?.ticker.update(now)
   animationFrame = requestAnimationFrame(updateStage)
 }
 

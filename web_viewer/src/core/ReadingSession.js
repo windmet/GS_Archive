@@ -8,10 +8,10 @@ export function createReadingSession({ repository, publish }) {
       if (cached) { publish({...cached,entries,error:''}); return }
       publish({ status: 'loading', document: null, entries, error: '' })
       try {
-        const locator = knownLocator || (repository.locator ? await repository.locator(documentId) : null)
-        entries = locator?.entries || (await repository.manifest()).entries
+        const locator = knownLocator || (repository.locator ? await repository.locator(documentId,{signal:intent.signal}) : null)
+        entries = locator?.entries || (await repository.manifest({signal:intent.signal})).entries
         if (!intent.isCurrent()) return
-        const result = await repository.load(documentId, locator?.entry)
+        const result = await repository.load(documentId, locator?.entry,{signal:intent.signal})
         if (intent.isCurrent()) publish({ ...result, entries, error: '' })
       } catch (error) {
         if (intent.isCurrent()) publish({ status: 'error', document: null, entries, error: error.message })

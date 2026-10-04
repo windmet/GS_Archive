@@ -117,6 +117,12 @@ export async function verifyChatStampIdentity() {
   state.historyStack = [first]; state.step = scenario.steps[last]; state.stepIndex = last; await flush()
   for (const mode of ['translation', 'original', 'translation']) {
     preferences.value = { ...preferences.value, story_content_mode: mode }; await flush()
+    if (mode !== 'original') {
+      const deadline=Date.now()+3000
+      while (!localization.entityDiagnostics.value.some(row=>row.code==='entity_translation_ready')) {
+        assert.ok(Date.now()<deadline,'entity view did not become ready'); await new Promise(resolve=>setImmediate(resolve)); await flush()
+      }
+    }
     const name = mode === 'translation' ? entities.entries['001tom'].name : scenario.steps[first].dialogue.speaker.trim()
     const names = all(root).filter(item => hasClass(item, 'chat-name')).map(text)
     assert.deepEqual(names, [name, name], 'text and stamp identify the same participant in ' + mode)

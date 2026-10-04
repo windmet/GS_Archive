@@ -74,7 +74,7 @@ const race = createReadingRepository({ digest, fetchImpl: () => ++count === 1
   ? new Promise((_, reject) => { rejectOld = reject })
   : Promise.resolve(new Response(manifestText)) })
 const old = race.manifest()
-const oldFailure = assert.rejects(old, /obsolete/)
+const oldFailure = assert.rejects(old, /obsolete|abort|cancel/i)
 await race.manifest({ fresh: true })
 rejectOld(Error('obsolete'))
 await oldFailure

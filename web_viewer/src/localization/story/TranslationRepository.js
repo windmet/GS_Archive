@@ -1,3 +1,5 @@
+import translationRelease from '../../../config/translation-release.json' with {type:'json'}
+import { createBoundedTextTransport } from '../../utils/BoundedTextTransport.js'
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$/
 const ID_PATTERN = /^[A-Za-z0-9._-]+$/
 const UNIT_ID_PATTERN = /^story-text:v1:[A-Za-z0-9._-]+:[A-Za-z0-9._-]+:cmd-[0-9]{6}:[A-Za-z0-9._-]+:[0-9]{3}$/
@@ -96,13 +98,15 @@ function defaultFetch() {
 export class TranslationRepository {
   constructor({
     baseUrl = '/translations',
-    assetRevision = '1',
-    fetchImpl = null,
+    assetRevision = translationRelease.release,
+    fetchImpl = null, timeoutMs = 12000,
   } = {}) {
     this.baseUrl = String(baseUrl).replace(/\/$/, '')
     this.assetRevision = String(assetRevision)
     this.fetchImpl = fetchImpl || defaultFetch()
-    this._cache = new Map()
+    this.transport = createBoundedTextTransport({fetchImpl:this.fetchImpl,timeoutMs})
+    this._generation = new Map()
+    this._epoch = 0
     this._overlays = new Map()
     this._diagnostics = new Map()
   }
@@ -120,68 +124,25 @@ export class TranslationRepository {
     if (!ID_PATTERN.test(scenarioId || '')) throw new TypeError('Invalid scenarioId')
     if (!LOCALE_PATTERN.test(locale || '')) throw new TypeError('Invalid locale')
     const key = this._key(scenarioId, locale)
+    if (signal?.aborted) throw new DOMException('Cancelled','AbortError')
     if (this._overlays.has(key)) return this._overlays.get(key)
-    if (this._cache.has(key)) return this._cache.get(key)
-
-    const pending = this._load({ key, scenarioId, locale, signal })
-    this._cache.set(key, pending)
-    try {
-      return await pending
-    } catch (error) {
-      this._cache.delete(key)
-      throw error
-    }
-  }
-
-  async _load({ key, scenarioId, locale, signal }) {
-    const url = this._url(scenarioId, locale)
-    let response
-    try {
-      response = await this.fetchImpl(url, { signal })
-    } catch (error) {
-      if (error?.name === 'AbortError') throw error
-      return this._storeFailure({
-        key, scenarioId, locale, url,
-        code: 'translation_invalid',
-        errors: [`fetch failed: ${error?.message || String(error)}`],
-      })
-    }
-
-    if (response?.status === 404) {
-      return this._storeFailure({
-        key, scenarioId, locale, url,
-        code: 'translation_missing',
-        errors: [],
-      })
-    }
-    if (!response?.ok) {
-      return this._storeFailure({
-        key, scenarioId, locale, url,
-        code: 'translation_invalid',
-        errors: [`HTTP ${response?.status ?? 'unknown'}`],
-      })
-    }
-
+    const epoch = this._epoch, generation = this._generation.get(key) || 0
+    const url = this._url(scenarioId,locale)
     let overlay
     try {
-      overlay = JSON.parse(await response.text())
-    } catch (error) {
-      return this._storeFailure({
-        key, scenarioId, locale, url,
-        code: 'translation_invalid',
-        errors: [`invalid JSON: ${error?.message || String(error)}`],
-      })
+      overlay = JSON.parse(await this.transport.load(url,{signal}))
+      const validation = validateStoryTranslationOverlay(overlay,{scenarioId,locale})
+      if (!validation.valid) throw Error(validation.errors.join('; '))
+    } catch(error) {
+      if (signal?.aborted || error?.name === 'AbortError') throw error
+      this.transport.invalidate(url)
+      if ((epoch !== this._epoch || generation !== (this._generation.get(key) || 0))) throw new DOMException('Superseded','AbortError')
+      return this._storeFailure({key,scenarioId,locale,url,code:error.status === 404 ? 'translation_missing' : 'translation_invalid',errors:[error.message]})
     }
-    const validation = validateStoryTranslationOverlay(overlay, { scenarioId, locale })
-    if (!validation.valid) {
-      return this._storeFailure({
-        key, scenarioId, locale, url,
-        code: 'translation_invalid',
-        errors: validation.errors,
-      })
-    }
-
+    if (signal?.aborted || (epoch !== this._epoch || generation !== (this._generation.get(key) || 0))) throw new DOMException('Superseded','AbortError')
+    if (this._overlays.has(key)) return this._overlays.get(key)
     this._overlays.set(key, overlay)
+    while (this._overlays.size > 16) {const oldest=this._overlays.keys().next().value; this._overlays.delete(oldest); this._diagnostics.delete(oldest)}
     this._diagnostics.set(key, Object.freeze({
       code: 'translation_ready',
       scenarioId,
@@ -195,7 +156,6 @@ export class TranslationRepository {
 
   _storeFailure({ key, scenarioId, locale, url, code, errors }) {
     const overlay = emptyOverlay(scenarioId, locale)
-    this._overlays.set(key, overlay)
     this._diagnostics.set(key, Object.freeze({
       code,
       scenarioId,
@@ -204,6 +164,7 @@ export class TranslationRepository {
       entryCount: 0,
       errors: Object.freeze([...errors]),
     }))
+    while (this._diagnostics.size > 32) this._diagnostics.delete(this._diagnostics.keys().next().value)
     return overlay
   }
 
@@ -218,13 +179,16 @@ export class TranslationRepository {
 
   invalidate({ scenarioId, locale } = {}) {
     const key = this._key(scenarioId, locale)
-    this._cache.delete(key)
+    this._generation.set(key,(this._generation.get(key) || 0)+1)
+    this.transport.invalidate(this._url(scenarioId,locale))
     this._overlays.delete(key)
     this._diagnostics.delete(key)
   }
 
   clear() {
-    this._cache.clear()
+    this._epoch++
+    for (const key of this._overlays.keys()) this._generation.set(key,(this._generation.get(key) || 0)+1)
+    this.transport.clear()
     this._overlays.clear()
     this._diagnostics.clear()
   }

@@ -85,7 +85,7 @@
           <div class="overview-card-showcase">
             <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组卡面 <Shuffle :size="15" /></button>
-            <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
+            <PortalCardBento :cards="collections.cards || []" :counts="desktopOverview.cardCounts" @expand="emit('expand-cards')" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
           </div>
       </section>
 
@@ -152,7 +152,7 @@ const props = defineProps({
   globalSearch: { type: Object, default: () => ({}) },
 })
 const readableMainCollections = computed(() => (props.desktopOverview.mainCollections || []).filter(row => row.target && row.episodeCount > 0))
-const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred'])
+const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred', 'expand-cards'])
 const searchPanel = ref(null), searchOpen = ref(false)
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) searchOpen.value = false }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
@@ -165,24 +165,24 @@ const collections = computed(() => props.desktopOverview.collections || {})
 const birthdayTheme=ref(false)
 const activePortrait=computed(()=>birthdayTheme.value ? props.desktopOverview.birthdayPortrait : props.desktopOverview.portrait)
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
-function gatewayCount(gateway){return storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
-const timeline=computed(()=>portalTimeline(collections.value.events || []))
+function gatewayCount(gateway){return props.desktopOverview.gatewayCountsByAction?.[gateway.id] ?? storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
+const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
 function openDirectory(domain, filters = {}) {
   emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
 }
-const storyTabs = computed(() => [{id:'all',label:'全部',count:(collections.value.stories || []).length},
-  ...[['main','主线'],['event','活动'],['personal','个人'],['other','其他']].map(([id,label]) => ({id,label,count:(collections.value.stories || []).filter(row => storyGroup(row) === id).length})).filter(row => row.count)])
+const storyTabs = computed(() => [{id:'all',label:'全部',count:props.desktopOverview.storyCounts?.all ?? (collections.value.stories || []).length},
+  ...[['main','主线'],['event','活动'],['personal','个人'],['other','其他']].map(([id,label]) => ({id,label,count:props.desktopOverview.storyCounts?.[id] ?? (collections.value.stories || []).filter(row => storyGroup(row) === id).length})).filter(row => row.count)])
 function storyGroup(row) { return ['main','event'].includes(row.domain) ? row.domain : ['idol_story','card_scenarios','work','birthday'].includes(row.domain) ? 'personal' : 'other' }
 watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; portraitFailed.value = false })
 const cardOffset = ref(0)
-function shuffleCards() { cardOffset.value += 1 }
+function shuffleCards() { cardOffset.value += 1; emit('expand-cards') }
 const songCategory = ref('configurable_formation')
-const songCategories = computed(() => [['configurable_formation','代表曲 · 自由编成'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成'],['all','全部歌曲']].map(([id,label]) => ({id,label,count:(collections.value.songs || []).filter(row => id==='all' || row.performanceKind === id).length})))
+const songCategories = computed(() => [['configurable_formation','代表曲 · 自由编成'],['fixed_unit','组合曲'],['fixed_special_lineup','特别编成'],['all','全部歌曲']].map(([id,label]) => ({id,label,count:props.desktopOverview.songCounts?.[id] ?? (collections.value.songs || []).filter(row => id==='all' || row.performanceKind === id).length})))
 const songs = computed(() => props.preferredReference?.actionable ? props.desktopOverview.songs || [] : (collections.value.songs || []).filter(row => songCategory.value==='all' || row.performanceKind === songCategory.value).slice(0,songCategory.value==='configurable_formation' ? 5 : 4))
 const stories = computed(() => (collections.value.stories || []).filter(row => storyTab.value === 'all' || storyGroup(row) === storyTab.value).slice(0, 4))
-const events = computed(() => props.desktopOverview.events || [])
+const events = computed(() => collections.value.events || props.desktopOverview.events || [])
 const query = computed(() => props.globalSearch.query || '')
 const searchResults = computed(() => props.globalSearch.results || [])
 const searchGroups = computed(() => ['idols', 'cards', 'songs', 'stories'].map(domain => {

@@ -1,11 +1,21 @@
 import {shallowRef} from 'vue';
 import {uiLocale} from '../../localization/ui/UiLocaleStore.js';
 import {archiveGeneralText, archiveBackgroundLabel} from '../../presentation/ArchiveGeneralTextCore.mjs';
+import translationRelease from '../../../config/translation-release.json';
+import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
 
 // Shell titles and catalogue search need these names without eagerly loading metadata.
 const entries=shallowRef({}), pending=new Map();
+const transport=createBoundedTextTransport();
+const cardUrl=`/translations/zh-CN/archive-general/cards.json?rev=${translationRelease.release}`;
 const loaders={
-  cards:()=>import('../../../public/translations/zh-CN/archive-general/cards.json'),
+  cards:async()=>{
+    try {
+      const data=JSON.parse(await transport.load(cardUrl));
+      if (!data.entries || typeof data.entries !== 'object' || Array.isArray(data.entries)) throw Error('Invalid card name overlay');
+      return {default:data};
+    } catch(error) {transport.invalidate(cardUrl);throw error;}
+  },
   costumes:()=>import('../../../public/translations/zh-CN/archive-general/costumes.json'),
   photos:()=>import('../../../public/translations/zh-CN/archive-general/photos.json'),
 };

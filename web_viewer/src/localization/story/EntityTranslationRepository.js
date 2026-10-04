@@ -1,3 +1,5 @@
+import translationRelease from '../../../config/translation-release.json' with {type:'json'}
+import { createBoundedTextTransport } from '../../utils/BoundedTextTransport.js'
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$/
 const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/
 const ENTITY_TYPES = new Set(['idol', 'npc', 'unit', 'card', 'event', 'skill', 'story_collection'])
@@ -81,11 +83,14 @@ export function buildEntitySearchText({ entityId = '', sourceName = '', translat
 }
 
 export class EntityTranslationRepository {
-  constructor({ baseUrl = '/translations', assetRevision = '1', fetchImpl = null } = {}) {
+  constructor({ baseUrl = '/translations', assetRevision = translationRelease.release, fetchImpl = null, timeoutMs = 12000 } = {}) {
     this.baseUrl = String(baseUrl).replace(/\/$/u, '')
     this.assetRevision = String(assetRevision)
     this.fetchImpl = fetchImpl || defaultFetch()
-    this._cache = new Map()
+    this.transport = createBoundedTextTransport({fetchImpl:this.fetchImpl,timeoutMs,maxBytes:512*1024})
+    this._views = new WeakMap()
+    this._generation = new Map()
+    this._epoch = 0
     this._states = new Map()
   }
 
@@ -102,37 +107,20 @@ export class EntityTranslationRepository {
     if (!ENTITY_TYPES.has(entityType)) throw new TypeError('Invalid entityType')
     if (!LOCALE_PATTERN.test(locale || '')) throw new TypeError('Invalid locale')
     const key = this._key(entityType, locale)
-    if (this._states.has(key)) return this._states.get(key).overlay
-    if (this._cache.has(key)) return this._cache.get(key)
-    const pending = this._load({ key, entityType, locale, sourceNames, signal })
-    this._cache.set(key, pending)
+    const epoch = this._epoch, generation = this._generation.get(key) || 0
+    const url = this._url(entityType,locale)
+    let raw
     try {
-      return await pending
-    } catch (error) {
-      this._cache.delete(key)
-      throw error
+      raw = JSON.parse(await this.transport.load(url,{signal}))
+      const validation = validateEntityTranslationOverlay(raw,{entityType,locale})
+      if (!validation.valid) throw Error(validation.errors.join('; '))
+    } catch(error) {
+      if (signal?.aborted || error?.name === 'AbortError') throw error
+      this.transport.invalidate(url)
+      if ((epoch !== this._epoch || generation !== (this._generation.get(key) || 0))) throw new DOMException('Superseded','AbortError')
+      return this._storeFailure(key,entityType,locale,url,error.status === 404 ? 'entity_translation_missing' : 'entity_translation_invalid',[error.message])
     }
-  }
-
-  async _load({ key, entityType, locale, sourceNames, signal }) {
-    const url = this._url(entityType, locale)
-    let response
-    try {
-      response = await this.fetchImpl(url, { signal })
-    } catch (error) {
-      if (error?.name === 'AbortError') throw error
-      return this._storeFailure(key, entityType, locale, url, 'entity_translation_invalid', [error?.message || String(error)])
-    }
-    if (response?.status === 404) return this._storeFailure(key, entityType, locale, url, 'entity_translation_missing', [])
-    if (!response?.ok) return this._storeFailure(key, entityType, locale, url, 'entity_translation_invalid', [`HTTP ${response?.status ?? 'unknown'}`])
-
-    let overlay
-    try { overlay = JSON.parse(await response.text()) } catch (error) {
-      return this._storeFailure(key, entityType, locale, url, 'entity_translation_invalid', [`invalid JSON: ${error.message}`])
-    }
-    const validation = validateEntityTranslationOverlay(overlay, { entityType, locale })
-    if (!validation.valid) return this._storeFailure(key, entityType, locale, url, 'entity_translation_invalid', validation.errors)
-
+    const overlay = Object.freeze({...raw,entries:Object.freeze(raw.entries)})
     const staleEntityIds = new Set()
     const unknownEntityIds = new Set()
     for (const [entityId, entry] of Object.entries(overlay.entries)) {
@@ -142,7 +130,8 @@ export class EntityTranslationRepository {
       }
       if (entry.source_hash !== await hashEntitySourceText(sourceNames[entityId])) staleEntityIds.add(entityId)
     }
-    this._states.set(key, {
+    if (signal?.aborted || (epoch !== this._epoch || generation !== (this._generation.get(key) || 0))) throw new DOMException('Superseded','AbortError')
+    const state = {
       overlay,
       staleEntityIds,
       unknownEntityIds,
@@ -156,7 +145,10 @@ export class EntityTranslationRepository {
         unknownEntityIds: Object.freeze([...unknownEntityIds].sort()),
         errors: Object.freeze([]),
       }),
-    })
+    }
+    this._views.set(overlay,state)
+    this._states.set(key,state)
+    while (this._states.size > 16) this._states.delete(this._states.keys().next().value)
     return overlay
   }
 
@@ -177,11 +169,12 @@ export class EntityTranslationRepository {
         errors: Object.freeze([...errors]),
       }),
     })
+    while (this._states.size > 16) this._states.delete(this._states.keys().next().value)
     return overlay
   }
 
-  getEntry({ entityType, entityId, locale, allowStale = false } = {}) {
-    const state = this._states.get(this._key(entityType, locale))
+  getEntry({ entityType, entityId, locale, allowStale = false, overlay = null } = {}) {
+    const state = overlay ? this._views.get(overlay) : this._states.get(this._key(entityType, locale))
     if (!state || state.unknownEntityIds.has(entityId)) return null
     if (!allowStale && state.staleEntityIds.has(entityId)) return null
     return state.overlay.entries[entityId] || null
@@ -205,12 +198,15 @@ export class EntityTranslationRepository {
 
   invalidate({ entityType, locale } = {}) {
     const key = this._key(entityType, locale)
-    this._cache.delete(key)
+    this._generation.set(key,(this._generation.get(key) || 0)+1)
+    this.transport.invalidate(this._url(entityType,locale))
     this._states.delete(key)
   }
 
   clear() {
-    this._cache.clear()
+    this._epoch++
+    for (const key of this._states.keys()) this._generation.set(key,(this._generation.get(key) || 0)+1)
+    this.transport.clear()
     this._states.clear()
   }
 }

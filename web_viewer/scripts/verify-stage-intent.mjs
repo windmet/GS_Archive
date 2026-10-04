@@ -13,7 +13,7 @@ const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()}
 const ref=value=>({value})
 function fixture(boundary='audio'){
   const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
-  const c={stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
+  const c={app:null,lifetime:new AbortController(),stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
     stageVocalEnabled:ref(boundary==='unlock'),stageVocalReady:ref(boundary==='unlock'),audioError:ref(''),stageIntent:createPlaybackIntent(()=>''),stageAudioOwners:new Map(),runtimes:new Map([[1,runtime]]),activePositions:ref([1]),activeSlots:ref([{}]),
     stageVocalSession:{error:ref(''),currentTime:ref(0),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
     preloadSongMotions:()=>boundary==='preload'?gate.promise:Promise.resolve(true),syncSlotAtTime:()=>boundary==='slots'?gate.promise:Promise.resolve(),resetEventIndices(){},syncBackmonitor(){},syncStagePlaybackTime(){},stagePlaybackAudios:()=>audios,
@@ -46,7 +46,7 @@ let cases=0
     const runtime={skeletonData:data,spine:{state,skeleton,stateData,
       update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
     const slot={position:3,loadSequence:1,motionSequence:0}
-    const c={runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
+    const c={lifetime:new AbortController(),runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
       playing:ref(false),playbackSpeed:ref(1),motionCatalog:ref(new Map(events.map(e=>[e.motion,{id:e.motion}]))),
       injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_3dance`],
       layoutRuntime(){},eventsForPosition:()=>events}
@@ -168,7 +168,7 @@ for(const outcome of ['resolve','reject']){
 for(const reason of ['dispose','cancel','current']){
   const gate=deferred(),intent=createPlaybackIntent(),token=intent.begin()
   const runtime={disposed:false,bodyType:1,setupStrings:[],skeletonData:{animations:[]},skeletonBinary:{readAnimation:()=>({name:'motion'})}}
-  const ctx={LIVE_CHIBI_BASE:'/assets/live-chibi',withLoadDeadline,fetch:()=>gate.promise.then(bytes=>({ok:true,arrayBuffer:async()=>bytes})),BinaryInput:class {readInt(){return 1}readString(){return 'motion'}},Uint8Array}
+  const ctx={LIVE_CHIBI_BASE:'/assets/live-chibi',fetchBuffer:()=>gate.promise,withLoadDeadline,fetch:()=>gate.promise.then(bytes=>({ok:true,arrayBuffer:async()=>bytes})),BinaryInput:class {readInt(){return 1}readString(){return 'motion'}},Uint8Array}
   vm.createContext(ctx);vm.runInContext(motionSource.match(/export async function injectLiveChibiMotion\([^]*?\n\}/)[0].replace('export ',''),ctx)
   const pending=ctx.injectLiveChibiMotion(runtime,{id:1,file:'motion_{bodyType}'},{isCurrent:token.current})
   if(reason==='dispose')runtime.disposed=true

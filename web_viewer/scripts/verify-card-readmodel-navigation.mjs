@@ -22,7 +22,7 @@ function setup() {
     currentArchiveUnitCode: { value: '01jup' }, currentIdolUnitFilter: { value: '' },
     loading: { value: false }, view: { value: 'cards' }, filterQuery: { value: 'old' },
     currentCategoryId: { value: '' }, currentCharacterId: { value: '' }, currentCardId: { value: '' },
-    currentGroup: { value: null }, currentCardRarity: { value: 'SSR' },
+    currentCardAttribute:{value:'all'}, currentGroup: { value: null }, currentCardRarity: { value: 'SSR' },
     currentCardAssetState: { value: 'all' }, currentCardRelationState: { value: 'all' },
     archiveBootstrap: { idols: [{ id: '001tom' }] },
     navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },

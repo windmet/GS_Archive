@@ -1,6 +1,6 @@
-import cards from '../../../public/translations/zh-CN/archive-general/cards.json' with {type:'json'};
-import {createArchiveTextTools} from './useArchiveGeneralText.js';
-export const {archiveText,archiveSearchText}=createArchiveTextTools(cards.entries);
+import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './useArchiveNamedText.js';
+void loadArchiveNames('cards').catch(()=>{});
+export const archiveText=archiveNamedText,archiveSearchText=archiveNamedSearchText;
 export function archiveCardFullTitle(card) {
   const source=card?.title_full || '', title=archiveText('card',card?.title,'title');
   const prefix=`【${card?.title || ''}】`;

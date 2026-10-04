@@ -1,3 +1,4 @@
+import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import * as PIXI from 'pixi.js'
 import {
   AtlasAttachmentLoader,
@@ -62,95 +63,41 @@ class CostumeAtlasAttachmentLoader extends AtlasAttachmentLoader {
   }
 }
 
-export async function fetchLiveChibiManifest() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/manifest.json`)
-  if (!response.ok) throw new Error(`资源索引加载失败 (${response.status})`)
-  return response.json()
+// Current authored choreography index is 8,982,299 bytes; keep an explicit
+// 12 MiB response ceiling while bounding retained raw JSON separately.
+const indexTransport = createBoundedTextTransport({maxBytes:12*1024*1024,cacheBytes:16*1024*1024,maxEntries:16})
+const binaryTransport = createBoundedTextTransport({binary:true,maxBytes:4*1024*1024,cacheBytes:8*1024*1024,maxEntries:48,timeoutMs:25000})
+async function liveJson(relativePath, options={}, optional=false) {
+  const url=`${LIVE_CHIBI_BASE}/${relativePath}`
+  try {return JSON.parse(await indexTransport.load(url,options))}
+  catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
-
-export async function fetchLiveChibiChoreography(relativePath) {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)
-  if (!response.ok) throw new Error(`歌曲编排索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiMusicIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/music/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`歌曲音频索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiBackmonitorIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/backmonitor/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`Backmonitor 索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiImageLayerIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/image-layers/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`舞台图片层索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiImageObjectIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/image-objects/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`舞台图片对象索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiObjectLayerIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/object-layers/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`舞台对象索引加载失败 (${response.status})`)
-  let index = await response.json()
-  // Optional pilot resources; older resource packages retain their Sprite path.
-  const optional = await Promise.allSettled(['particle-layers','floor-particles'].map(path =>
-    withLoadDeadline(async signal => {
-      const result = await fetch(`${LIVE_CHIBI_BASE}/${path}/index.json`, { signal })
-      return result.ok ? result.json() : null
-    }, { timeoutMs: 10000, label: '舞台粒子索引' })))
-  for (const [i,result] of optional.entries()) {
-    if (result.status === 'fulfilled') index = (i === 0 ? attachChibiParticleLayers : attachChibiFloor)(index,result.value)
-    else console.warn('[ChibiStage] optional particle index unavailable', result.reason)
+export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
+export const fetchLiveChibiChoreography = (file,options) => liveJson(file,options)
+export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
+export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
+export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
+export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
+export const fetchLiveChibiStageEffectIndex = options => liveJson('stage-effects/index.json',options,true)
+export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
+export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
+  const index=await liveJson('object-layers/index.json',{signal},true)
+  if (!index) return null
+  // Start refinements independently; never mutate the shared cached source.
+  let refined=index
+  for(const [file,attach] of [['particle-layers',attachChibiParticleLayers],['floor-particles',attachChibiFloor]]) {
+    void liveJson(`${file}/index.json`,{signal},true).then(extra=> {
+      if(!signal?.aborted && extra) {refined=attach(refined,extra); onOptional?.(refined)}
+    }).catch(error=> {if(error.name!=='AbortError')console.warn('[ChibiStage] optional particle index unavailable',error)})
   }
   return index
 }
-
-export async function fetchLiveChibiStageBackgroundIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/stage-backgrounds/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`舞台背景索引加载失败 (${response.status})`)
-  const index = await response.json()
-  try {
-    const components = await withLoadDeadline(async signal => {
-      const result = await fetch(`${LIVE_CHIBI_BASE}/image-components/index.json`, { signal })
-      if (result.status === 404) return null
-      if (!result.ok) throw new Error(`舞台背景组件加载失败 (${result.status})`)
-      return result.json()
-    }, { timeoutMs: 10000, label: '舞台背景组件索引' })
-    if (components) index.components = components
-  } catch (error) {
-    console.warn('[ChibiStage] optional background components unavailable', error)
-  }
+export async function fetchLiveChibiStageBackgroundIndex({signal,onOptional}={}) {
+  const index=await liveJson('stage-backgrounds/index.json',{signal},true)
+  if(index) void liveJson('image-components/index.json',{signal},true).then(components=> {
+    if(!signal?.aborted && components)onOptional?.({...index,components})
+  }).catch(error=> {if(error.name!=='AbortError')console.warn('[ChibiStage] optional background components unavailable',error)})
   return index
-}
-
-export async function fetchLiveChibiStageEffectIndex() {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/stage-effects/index.json`)
-  if (response.status === 404) return null
-  if (!response.ok) throw new Error(`舞台内置特效索引加载失败 (${response.status})`)
-  return response.json()
-}
-
-export async function fetchLiveChibiLipSync(relativePath) {
-  if (!relativePath) return null
-  const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)
-  if (!response.ok) throw new Error(`唇部曲线加载失败 (${response.status})`)
-  return response.json()
 }
 
 export function sampleLiveChibiLipSync(curve, milliseconds) {
@@ -227,10 +174,9 @@ export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
   }
 }
 
-async function fetchBuffer(relativePath) {
-  const response = await fetch(`${LIVE_CHIBI_BASE}/${relativePath}`)
-  if (!response.ok) throw new Error(`${relativePath} 加载失败 (${response.status})`)
-  return response.arrayBuffer()
+async function fetchBuffer(relativePath,options={}) {
+  const bytes=await binaryTransport.load(`${LIVE_CHIBI_BASE}/${relativePath}`,options)
+  return bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)
 }
 
 function decodeUnityTextAsset(buffer) {
@@ -273,17 +219,16 @@ function readSetupStringTable(buffer) {
   return Array.from({ length: stringCount }, () => input.readString())
 }
 
-function loadTexture(url) {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => {
-      const baseTexture = new PIXI.BaseTexture(image)
-      baseTexture.alphaMode = PIXI.ALPHA_MODES.PMA
-      resolve(new PIXI.Texture(baseTexture))
-    }
-    image.onerror = () => reject(new Error('服装贴图加载失败'))
-    image.src = url
-  })
+function loadTexture(url,{signal}={}) {
+  return withLoadDeadline(owner=>new Promise((resolve,reject)=> {
+    const image=new Image()
+    const cleanup=()=> {image.onload=null; image.onerror=null; owner.removeEventListener('abort',cancel)}
+    const cancel=()=> {cleanup();image.src='';reject(owner.reason || new DOMException('Cancelled','AbortError'))}
+    owner.addEventListener('abort',cancel,{once:true})
+    image.onload=()=> {cleanup();const baseTexture=new PIXI.BaseTexture(image);baseTexture.alphaMode=PIXI.ALPHA_MODES.PMA;resolve(new PIXI.Texture(baseTexture))}
+    image.onerror=()=> {cleanup();reject(Error('服装贴图加载失败'))}
+    image.src=url
+  }),{signal,timeoutMs:25000,label:'chibi-texture'})
 }
 
 async function createAtlas(atlasText, texture, textureFileName) {
@@ -303,18 +248,21 @@ async function createAtlas(atlasText, texture, textureFileName) {
   })
 }
 
-export async function createLiveChibi(character, costume) {
+export async function createLiveChibi(character, costume, {signal,isCurrent=()=>true}={}) {
   const [setupBuffer, atlasBuffer] = await Promise.all([
-    fetchBuffer(character.setup),
-    fetchBuffer(costume.atlas),
+    fetchBuffer(character.setup,{signal}),
+    fetchBuffer(costume.atlas,{signal}),
   ])
   const atlasText = decodeUnityTextAsset(atlasBuffer)
   const textureFileName = atlasText
     .split(/\r?\n/)
     .map(line => line.trim())
     .find(line => /\.(png|jpg)$/i.test(line)) || 'cos.png'
-  const texture = await loadTexture(`${LIVE_CHIBI_BASE}/${costume.texture}`)
-  const atlas = await createAtlas(atlasText, texture, textureFileName)
+  let texture,atlas,spine
+  try {
+  texture = await loadTexture(`${LIVE_CHIBI_BASE}/${costume.texture}`,{signal})
+  if(signal?.aborted || !isCurrent())throw new DOMException('Superseded','AbortError')
+  atlas = await createAtlas(atlasText, texture, textureFileName)
   atlas.pages.forEach(page => { page.pma = true })
 
   // The shared setup skeleton contains optional accessories for every costume.
@@ -323,7 +271,7 @@ export async function createLiveChibi(character, costume) {
   const attachmentLoader = new CostumeAtlasAttachmentLoader(atlas)
   const skeletonBinary = new SkeletonBinary(attachmentLoader)
   const skeletonData = skeletonBinary.readSkeletonData(new Uint8Array(setupBuffer))
-  const spine = new Spine(skeletonData)
+  spine = new Spine(skeletonData)
   const costumeSkin = new Skin(`costume-${costume.id}`)
   const baseSkinNames = ['body', 'head', 'cos_defo']
   const optionalSkinNames = skeletonData.skins
@@ -400,6 +348,7 @@ export async function createLiveChibi(character, costume) {
     diagnostics,
     setupStrings: readSetupStringTable(setupBuffer),
   }
+  } catch(error) {spine?.destroy({children:true}); atlas?.dispose?.(); texture?.destroy(true); throw error}
 }
 
 export async function injectLiveChibiMotion(runtime, motion, { isCurrent = () => true, signal } = {}) {
@@ -409,12 +358,10 @@ export async function injectLiveChibiMotion(runtime, motion, { isCurrent = () =>
   }
 
   const motionFile = motion.file.replace('{bodyType}', String(runtime.bodyType))
-  const buffer = await withLoadDeadline(async owner => {
-    const response = await fetch(`${LIVE_CHIBI_BASE}/${motionFile}`, {signal:owner})
-    if(!response.ok)throw Error(`${motionFile} 加载失败 (${response.status})`)
-    return response.arrayBuffer()
-  }, {signal, timeoutMs:25000, label:'stage-motion'})
+  const buffer = await fetchBuffer(motionFile,{signal})
   if (runtime.disposed || !isCurrent()) return []
+  // Parallel consumers may have installed it while the shared bytes arrived.
+  if (runtime.loadedMotions?.has(motion.id)) return runtime.loadedMotions.get(motion.id)
   // Animation fragments use readStringRef(), whose indexes point into the
   // shared setup skeleton's string table. Without it, attachment keys decode
   // as null and the animation hides entire body parts.

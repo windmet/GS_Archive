@@ -7,11 +7,11 @@
     <template v-if="!global">
       <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="secondary.image.url" :alt="secondary.title" /><small>{{ secondary.rarity }}</small></button>
       <button v-if="third" class="bento-note" type="button" :data-archive-focus-id="`portal-card-art:${third.id}`" @click="emit('open',third)"><img :src="third.image.url" alt="" /><span><small>{{ third.rarity }} · 精选档案</small><strong>{{ third.title }}</strong></span><ArrowUpRight :size="16" /></button>
-      <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
+      <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
     </template>
     <template v-else>
-      <div class="bento-encounter"><header><Sparkles :size="16" /><span>今日相遇</span><button type="button" aria-label="再遇见一张卡片" @click="draw++"><Shuffle :size="16" /></button></header><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button><small>从档案中遇见一颗星</small></div>
-      <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
+      <div class="bento-encounter"><header><Sparkles :size="16" /><span>今日相遇</span><button type="button" aria-label="再遇见一张卡片" @click="draw++; emit('expand')"><Shuffle :size="16" /></button></header><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button><small>从档案中遇见一颗星</small></div>
+      <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
     </template>
   </div>
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
@@ -20,8 +20,8 @@
 import {computed,ref} from 'vue'
 import {ArrowUpRight,Layers,Shuffle,Sparkles} from '@lucide/vue'
 import {portalDailyCard} from '../../presentation/PortalBento.js'
-const props=defineProps({cards:{type:Array,default:()=>[]},global:Boolean,offset:{type:Number,default:0}})
-const emit=defineEmits(['open','filter'])
+const props=defineProps({cards:{type:Array,default:()=>[]},counts:Object,global:Boolean,offset:{type:Number,default:0}})
+const emit=defineEmits(['open','filter','expand'])
 const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date()),draw=ref(0)
 const lead=computed(()=>{const pool=props.cards.filter(row=>row.landscape?.url);return props.global ? portalDailyCard(pool,date,props.offset) : pool[0] || props.cards.find(row=>row.image?.url)})
 const secondary=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.image?.url))
@@ -29,7 +29,7 @@ const third=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.id
 const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boolean).length)
 const encounter=computed(()=>portalDailyCard(props.cards,date,draw.value))
 const rarities=['SSR','SR','R','N']
-const attributeAvailable=computed(()=>props.cards.length>0 && props.cards.every(row=>row.attribute))
+const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
 const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intelligence',label:'Intelligence',color:'#446aa8'},{id:'Mental',label:'Mental',color:'#9b7f24'}]
 </script>
 <style scoped>

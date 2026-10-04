@@ -21,7 +21,8 @@
       <p v-if="title !== originalTitle" class="reader-source-title" lang="ja">{{ originalTitle }}</p>
       <p v-if="state.status === 'ready' && mode !== 'original'" class="reader-notice" role="status">
         已选择{{ mode === 'bilingual' ? '双语' : '译文' }}。{{ translationStatus }}
-        <button v-if="translationLoadFailed" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
+        <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span>
+        <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button>
       </p>
       <button v-if="state.status === 'ready'" class="reader-full-play" :disabled="busy" @click="emit('play-document')">{{ busy ? '正在准备演出…' : '播放完整剧情' }}</button>
       <p v-if="notice" ref="playbackNotice" tabindex="-1" class="reader-notice" role="alert">{{ notice }} <button class="reader-play" :disabled="busy" @click="emit('refresh')">重新载入正文</button></p>

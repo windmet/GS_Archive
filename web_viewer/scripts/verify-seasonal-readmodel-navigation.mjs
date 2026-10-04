@@ -65,7 +65,7 @@ const detail = id => ({ id, view: { campaign: { id } } })
 {
   const rows = [{ id: 'valentine_2022', year: 2022, season: 'valentine', detail: {} },
     { id: 'valentine_2023', year: 2023, season: 'valentine', detail: {} }]
-  const context = vm.createContext({ loadSeasonalCatalog: async () => rows,
+  const context = vm.createContext({ navigation:{getLoadOptions:()=>({})}, loadSeasonalCatalog: async () => rows,
     readModelClient: { load: async (_descriptor, options) => {
       const result = { id: options.expectedId, view: { campaign: { id: options.expectedId,
         year: 2023, season: 'valentine', participants: [] } } }

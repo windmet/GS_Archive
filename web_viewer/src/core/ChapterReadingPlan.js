@@ -28,9 +28,9 @@ export function createChapterReadingSession({ repository, publish }) {
     if (!fresh && segment.document) return
     segment.status = 'loading'; segment.error = ''; notify()
     try {
-      const entry = fresh ? (await repository.locator(segment.documentId, { fresh: true })).entry : segment.entry
+      const entry = fresh ? (await repository.locator(segment.documentId, { fresh: true, signal:activeIntent.signal })).entry : segment.entry
       if (!entry || entry.source_file !== segment.source_file || entry.document_id !== segment.documentId) throw Error('阅读来源身份变化')
-      const result = await repository.load(segment.documentId, entry)
+      const result = await repository.load(segment.documentId, entry,{signal:activeIntent.signal})
       if (!current(token)) return
       segment.entry = entry; segment.status = result.status; segment.document = result.document
     } catch (error) { if (current(token)) { segment.status = 'error'; segment.error = error.message } }

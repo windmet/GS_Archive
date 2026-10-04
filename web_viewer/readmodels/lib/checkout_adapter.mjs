@@ -80,6 +80,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  // Imported by the portal's pure event selectors; bind its bytes to this release too.
+  await readSource('data/editorial/event-resource-graph.json');
   assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&
     data.songTimelines.songs && typeof data.songTimelines.songs === 'object', 'Song timeline manifest contract mismatch');
   const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
@@ -241,6 +243,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
       seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length },
+    portalPortraits:data.rawCharacterImagePromotions, portalStageManifest:data.songTimelines,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },

@@ -172,6 +172,7 @@
           <label class="menu-setting"><span>{{ uiText('player.immersive.mode') }}</span><select v-model="mobileViewMode" @change="saveMobileViewMode"><option value="ask">{{ uiText('player.immersive.ask') }}</option><option value="landscape">{{ uiText('player.immersive.landscape') }}</option><option value="portrait">{{ uiText('player.immersive.portrait') }}</option></select></label>
         </template>
         <button @click="cycleLanguage"><span>{{ uiText('player.immersive.language') }}</span><b>{{ langLabel }}</b></button>
+        <button v-if="storyLocalization.retryAvailable.value" :disabled="storyLocalization.loading.value" @click="storyLocalization.retryTranslation()">译文暂时无法载入 · 重试译文</button>
         <label class="menu-toggle">
           <span>{{ uiText('player.settings.continuous') }}</span>
           <input type="checkbox" :checked="continuousPlayback" @change="emit('update:continuous-playback', $event.target.checked)" />

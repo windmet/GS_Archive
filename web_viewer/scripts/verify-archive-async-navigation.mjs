@@ -42,6 +42,7 @@ function setup() {
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
     archiveBootstrap: { idols: [{ id: '038tak' }] },
+    userPreferences: {value:{portalDefaultScope:'all'}},
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
     idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
     ensureIdolCommunicationData: async () => {},

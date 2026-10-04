@@ -337,11 +337,13 @@ const runtimeSentinel = {
   historyLength: 4,
 }
 const sentinelBefore = structuredClone(runtimeSentinel)
+let contextOverlayRequests = 0
 const context = scope.run(() => createStoryLocalization({
   compiledData,
   storyPreferences,
   repository: {
     async loadScenario({ scenarioId, locale }) {
+      contextOverlayRequests++
       assert.equal(scenarioId, overlay.scenario_id)
       assert.equal(locale, overlay.locale)
       return overlay
@@ -387,11 +389,14 @@ const contextDialogue = {
   text_ref: textRef,
 }
 assert.equal(context.resolveDialogue(contextDialogue).text, source)
+assert.equal(contextOverlayRequests,0,'Original mode must not fetch translations')
 storyPreferences.value = {
   ...storyPreferences.value,
   story_content_mode: 'translation',
   bilingual_primary: 'translation',
 }
+await nextTick()
+await new Promise(resolve => setTimeout(resolve,0))
 assert.equal(context.resolveDialogue(contextDialogue).text, fixtureEntry.text)
 assert.equal(context.resolveDialogue(contextDialogue).speaker, '都筑圭')
 const structuredSpeaker = context.resolveDialogue({

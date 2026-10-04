@@ -1,4 +1,4 @@
-import { inject, onScopeDispose, provide, ref, watch } from 'vue'
+import { computed, inject, onScopeDispose, provide, ref, shallowRef, watch } from 'vue'
 
 import {
   normalizeChoiceSelection,
@@ -64,10 +64,13 @@ export function createStoryLocalization({
 } = {}) {
   const loading = ref(false)
   const reloadRevision = ref(0)
-  const overlay = ref(null)
+  const overlay = shallowRef(null)
   const diagnostics = ref(null)
   const entityDiagnostics = ref([])
   const entityRevision = ref(0)
+  const entityViews = new Map()
+  const retryAvailable = computed(() => diagnostics.value?.code === 'translation_invalid' ||
+    entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid'))
   let generation = 0
   let abortController = null
 
@@ -80,6 +83,8 @@ export function createStoryLocalization({
     () => [
       compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id || '',
       currentPreferences().story_translation_locale || translationLocale,
+      currentPreferences().story_content_mode,
+      compiledData?.value,
       reloadRevision.value,
     ],
     async ([scenarioId, locale]) => {
@@ -88,31 +93,31 @@ export function createStoryLocalization({
       abortController = null
       overlay.value = null
       diagnostics.value = null
-      entityDiagnostics.value = []
+      entityDiagnostics.value = []; entityViews.clear(); entityRevision.value++
       loading.value = Boolean(scenarioId)
-      if (!scenarioId) return
+      if (!scenarioId || currentPreferences().story_content_mode === 'original') {loading.value=false; return}
 
       abortController = new AbortController()
       try {
         const sourceNamesByType = collectScenarioEntitySourceNames(compiledData?.value)
-        const [loaded] = await Promise.all([
-          repository.loadScenario({ scenarioId, locale, signal: abortController.signal }),
-          ...[...sourceNamesByType].map(([entityType, sourceNames]) => (
-            entityRepository.loadEntity({
-              entityType,
-              locale,
-              sourceNames,
-              signal: abortController.signal,
-            })
-          )),
-        ])
+        const signal = abortController.signal
+        // Entity labels publish independently; a stalled optional label cannot hold body text.
+        for (const [entityType, sourceNames] of sourceNamesByType) {
+          void entityRepository.loadEntity({entityType,locale,sourceNames,signal}).then(loaded => {
+            if (requestGeneration !== generation) return
+            entityViews.set(entityType,loaded)
+            entityDiagnostics.value = [...sourceNamesByType.keys()].map(type => entityRepository.getDiagnostics({entityType:type,locale})).filter(Boolean)
+            entityRevision.value++
+          }).catch(error => {
+            if (error?.name !== 'AbortError' && requestGeneration === generation) {
+              entityDiagnostics.value = [...entityDiagnostics.value,{code:'entity_translation_invalid',entityType,locale,errors:[error.message]}]
+            }
+          })
+        }
+        const loaded = await repository.loadScenario({scenarioId,locale,signal})
         if (requestGeneration !== generation) return
         overlay.value = loaded
         diagnostics.value = repository.getDiagnostics({ scenarioId, locale })
-        entityDiagnostics.value = [...sourceNamesByType.keys()]
-          .map(entityType => entityRepository.getDiagnostics({ entityType, locale }))
-          .filter(Boolean)
-        entityRevision.value += 1
       } catch (error) {
         if (error?.name !== 'AbortError' && requestGeneration === generation) {
           diagnostics.value = {
@@ -134,6 +139,9 @@ export function createStoryLocalization({
     const locale = currentPreferences().story_translation_locale || translationLocale
     if (!scenarioId || loading.value) return false
     repository.invalidate({ scenarioId, locale })
+    for (const [entityType] of collectScenarioEntitySourceNames(compiledData?.value)) {
+      if (entityRepository.getDiagnostics({entityType,locale})?.code !== 'entity_translation_ready') entityRepository.invalidate({entityType,locale})
+    }
     reloadRevision.value += 1
     return true
   }
@@ -155,12 +163,12 @@ export function createStoryLocalization({
       speaker,
       overlayEntry: overlayEntry(textRef, inlineEntry),
       entityNames: entityNames || ((entityId, locale, entityType = 'idol') => (
-        entityRepository.getEntry({ entityType, entityId, locale })?.name || ''
+        (entityViews.has(entityType) ? entityRepository.getEntry({ entityType, entityId, locale, overlay:entityViews.get(entityType) }) : null)?.name || ''
       )),
       speakerLabelNames: (value, locale) => {
         const display = speakerDisplayLookup(value)
-        return display ? entityRepository.getEntry({ entityType: display.entityType,
-          entityId: display.entityId, locale })?.name || '' : ''
+        return display && entityViews.has(display.entityType) ? entityRepository.getEntry({ entityType: display.entityType,
+          entityId: display.entityId, locale, overlay:entityViews.get(display.entityType) })?.name || '' : ''
       },
       preferences: preferences(),
     })
@@ -224,6 +232,7 @@ export function createStoryLocalization({
     overlay,
     loading,
     retryTranslation,
+    retryAvailable,
     diagnostics,
     entityDiagnostics,
     resolveUnit,

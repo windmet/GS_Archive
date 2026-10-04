@@ -45,7 +45,7 @@ const calls=[];const original=function(delta){bone.worldX+=delta;calls.push('pos
 const release=installCharacterShadowFollower(spine,()=>calls.push(characterShadowLayout(spine,profile).x))
 spine.update(10);assert.deepEqual(calls,['pose',627]);release();assert.equal(spine.update,original)
 assert(sfc.includes('return resolveChibiPlacement(positionState, event, fallbackX)'))
-assert(sfc.includes('installCharacterShadowFollower(stageRuntime.spine'))
+assert(sfc.includes('installCharacterShadowFollower(runtime.spine'))
 assert(sfc.includes('syncCharacterShadow(runtime)'))
 if (process.argv.includes('--published-assets')) {
   const index=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))

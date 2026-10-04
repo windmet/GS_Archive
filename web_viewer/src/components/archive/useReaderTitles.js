@@ -1,17 +1,24 @@
-import { computed, onMounted, shallowRef } from 'vue'
+import { computed, onScopeDispose, shallowRef, watch } from 'vue'
 import { readerTitle, validateReaderTitles } from '../../presentation/ReaderTitle.js'
 import { uiLocale } from '../../utils/LanguageStore.js'
+import translationRelease from '../../../config/translation-release.json'
+import { createBoundedTextTransport } from '../../utils/BoundedTextTransport.js'
 const index = shallowRef(null)
-let request
-function load() {
-  request ||= fetch('/translations/zh-CN/reader-titles.json?rev=1').then(async response => {
-    if (!response.ok) throw Error('Reader titles unavailable')
-    index.value = validateReaderTitles(await response.json())
-  }).catch(() => { /* Titles are optional; keep the original on invalid/missing data. */ })
-  return request
-}
+const transport = createBoundedTextTransport({maxBytes:256*1024,cacheBytes:256*1024,maxEntries:1})
+const url = `/translations/zh-CN/reader-titles.json?rev=${translationRelease.release}`
 export function useReaderTitles() {
-  onMounted(load)
+  const owner = new AbortController()
+  onScopeDispose(() => owner.abort())
+  watch(uiLocale, async locale => {
+    if (locale !== 'zh-CN' || index.value) return
+    try {
+      const parsed = validateReaderTitles(JSON.parse(await transport.load(url,{signal:owner.signal})))
+      if (!owner.signal.aborted) index.value = parsed
+    } catch (error) {
+      if (error.name !== 'AbortError') transport.invalidate(url)
+      // Titles are optional; a later consumer can retry a failed request.
+    }
+  },{immediate:true})
   return (entry, source) => readerTitle(index.value, entry, source, uiLocale.value)
 }
 export function useReaderTitle(entry, source) {
