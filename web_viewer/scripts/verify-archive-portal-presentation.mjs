@@ -8,7 +8,7 @@ import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../src/utils/CardAssetResolver.js'
 import { eventResources, storyEventResources } from '../src/data/eventResourceGraph.js'
 import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOMAINS,
-  portalSearchPageDescriptors, validatePortalSearchRows } from '../src/presentation/ArchivePortalPresentation.js'
+  portalSearchPageDescriptors, validatePortalSearchRows, portalIdolPortrait, portalEventRole } from '../src/presentation/ArchivePortalPresentation.js'
 
 const viewer = fileURLToPath(new URL('../', import.meta.url))
 const read = relative => JSON.parse(readFileSync(path.join(viewer, relative), 'utf8'))
@@ -141,7 +141,9 @@ function check(dataset) {
   assert.ok(buildPortalDesktopOverview({ ...options, stageManifest: null }).songs.every(row => row.stageTarget === null))
   assert.ok(buildPortalDesktopOverview({ ...options, stageManifest: { ...stageManifest, songs: {} } }).songs.every(row => row.stageTarget === null),
     'song identity does not synthesize a stage id when the actual directory has no entry')
-  const drive = rowsByDomain.songs.find(row => row.song_code === 'drvalv')
+  // The configurable song is outside strict idol scope; this isolated fixture tests stage variant binding.
+  const driveSource = rowsByDomain.songs.find(row => row.song_code === 'drvalv')
+  const drive = { ...driveSource, performance: { ...driveSource.performance, performers: [{ id: preferredIdol.id }] } }
   const driveTarget = buildPortalDesktopOverview({ ...options, songs: [drive] }).songs[0].stageTarget
   assert.deepEqual(driveTarget, { songCode: 'drvalv', choreographyId: 'drvalv_live_effect_01jup' }, 'an existing formal-unit variant is preferred for a collective song')
   const base = stageManifest.songs.drvalv.find(row => !row.variant)
@@ -178,7 +180,7 @@ function check(dataset) {
     'an empty display callback preserves source names')
   assert.equal(JSON.stringify(castSource), castBefore, 'cast filtering does not rewrite source character evidence')
   for (const characters of [[], undefined, ['101ken', 'group', '047shu_001']]) {
-    assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [{ ...castSource, characters }] }).stories[0].cast, [])
+    assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [{ ...castSource, characters }], preferredIdol: null, preferredDetail: null }).stories[0].cast, [])
   }
   const allCastIds = bootstrap.idols.map(row => row.id).reverse()
   assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [{ ...castSource, characters: allCastIds }] }).stories[0].cast.map(row => row.id), allCastIds,
@@ -188,7 +190,7 @@ function check(dataset) {
   if (actual) {
     assert.deepEqual(overview.songs.map(row => row.id), ['brndnf', 'trhorz', 'inndgn', 'unmikn'], 'formal-unit and explicit-member songs retain source order ahead of collective defaults')
     assert.ok(overview.songs.every(row => row.isPreferredRelated))
-    assert.equal(overview.events[0].id, '410011', 'actual preferred detail event identity is promoted ahead of general source rows')
+    assert.ok(overview.events.every(row => preferredDetail.view.events.some(event => String(event.event_id) === row.id)), 'strict event scope never fills with unrelated events')
     for (const event of overview.events) {
       const source = overviewEvents.find(row => row.id === event.id)
       assert.deepEqual(event.target, { domain: 'events', view: 'event_detail', eventId: source.id })
@@ -196,14 +198,14 @@ function check(dataset) {
     }
     const missingImage = overviewEvents.find(row => row.image?.status === 'file-not-found')
     assert.ok(missingImage)
-    assert.equal(buildPortalDesktopOverview({ ...options, events: [missingImage] }).events[0].image, null)
+    assert.equal(buildPortalDesktopOverview({ ...options, events: [missingImage], preferredIdol: null, preferredDetail: null }).events[0].image, null)
     const eventStory = overviewStories.find(row => row.domain === 'event' && storyEventResources(row)?.hero)
     assert.ok(eventStory)
     const boundStory = { ...eventStory, image: storyEventResources(eventStory).hero }
-    assert.equal(buildPortalDesktopOverview({ ...options, stories: [boundStory] }).stories[0].image.url, boundStory.image.url,
+    assert.equal(buildPortalDesktopOverview({ ...options, stories: [boundStory], preferredIdol: null, preferredDetail: null }).stories[0].image.url, boundStory.image.url,
       'only an explicitly passed actual graph binding can supply a story cover')
     const graphEvent = { ...overviewEvents[0], resources: eventResources(overviewEvents[0]) }
-    assert.equal(buildPortalDesktopOverview({ ...options, events: [graphEvent] }).events[0].image.url, graphEvent.resources.hero.url)
+    assert.equal(buildPortalDesktopOverview({ ...options, events: [graphEvent], preferredIdol: null, preferredDetail: null }).events[0].image.url, graphEvent.resources.hero.url)
     const kaoru = bootstrap.idols.find(row => row.id === '005kao')
     const kaoruCards = rowsByDomain.cards.filter(row => row.character_id === kaoru.id)
     const kaoruOverview = buildPortalDesktopOverview({ ...options, preferredIdol: kaoru, preferredDetail: null })
@@ -218,11 +220,11 @@ function check(dataset) {
     assert.deepEqual(shortage.cards.map(row => row.id), ['SSR', 'SR', 'R'].map(rarity => sourceByRarity[rarity].resource_id))
     const kaoruRelations = buildPortalDesktopOverview({ ...options, preferredIdol: kaoru, preferredDetail: kaoruDetail })
     assert.deepEqual(kaoruRelations.preferredStats.map(row => row.value), [17, 5, 19, 4])
-    assert.deepEqual(kaoruRelations.events.map(row => row.id), ['410013', '430005', '430006'],
-      'exact Kaoru event relations are promoted while retaining event directory source order')
+    assert.deepEqual(kaoruRelations.events.map(row => row.id), overviewEvents.filter(row => kaoruDetail.view.events.some(event => String(event.event_id) === row.id)).sort((a,b) => b.release_at - a.release_at || a.id.localeCompare(b.id)).slice(0,3).map(row => row.id),
+      'strict Kaoru event relations are sorted by historical date')
     const historical = overviewEvents.find(row => row.id === 'event:20001')
     assert.ok(historical)
-    assert.deepEqual(buildPortalDesktopOverview({ ...options, events: [historical] }).events[0].target,
+    assert.deepEqual(buildPortalDesktopOverview({ ...options, events: [historical], preferredIdol: null, preferredDetail: null }).events[0].target,
       { domain: 'events', view: 'event_detail', eventId: 'event:20001' }, 'historical source identity remains typed and uncoerced')
     assert.throws(() => buildPortalDesktopOverview({ ...options, events: [{ ...overviewEvents[0], event_id: 'wrong-owner' }] }))
     assert.throws(() => buildPortalDesktopOverview({ ...options, events: [overviewEvents[0], overviewEvents[0]] }))
@@ -235,6 +237,38 @@ function check(dataset) {
   assert.throws(() => buildPortalDesktopOverview({ ...options, preferredIdol: 'unknown-idol' }))
   if (actual) assert.deepEqual(overview.preferredStats.map(row => row.value), [19, 13, 20, 9])
 
+  const all = buildPortalDesktopOverview({ ...options, preferredIdol: null, preferredDetail: null })
+  assert.equal(all.collections.cards.length, rowsByDomain.cards.length)
+  assert.equal(all.collections.songs.length, rowsByDomain.songs.length)
+  assert.equal(all.collections.stories.length, overviewStories.filter(row => row.exists === true).length)
+  assert.equal(all.collections.events.length, overviewEvents.length)
+  for (const metric of overview.footprints) {
+    assert.equal(metric.value, metric.id === 'events' && !preferredDetail ? null : overview.collections[metric.id].length)
+    assert.equal(metric.total, all.collections[metric.id].length, 'numerator and denominator use the same identity and availability universe')
+  }
+  const unrelatedSongs = rowsByDomain.songs.filter(row => !row.performance?.performers?.some(person => person.id === preferredIdol.id) && row.performance?.unitName !== overview.preferredUnitName)
+  const unrelatedStories = overviewStories.filter(row => !row.characters?.includes(preferredIdol.id))
+  const isolated = buildPortalDesktopOverview({ ...options, songs: unrelatedSongs, stories: unrelatedStories, preferredDetail: {id:preferredIdol.id,view:{profile:{idol_code:preferredIdol.id},events:[]}} })
+  assert.deepEqual(isolated.songs, [], 'shortage never fills with unrelated or configurable songs')
+  assert.deepEqual(isolated.stories, [], 'shortage never fills with another idol story')
+  assert.deepEqual(isolated.events, [], 'shortage never fills with global event records')
+  assert.ok(buildPortalDesktopOverview({...options,loading:true}).footprints.every(row => row.value === null))
+  assert.equal(buildPortalDesktopOverview({...options,available:{cards:false}}).footprints.find(row=>row.id==='cards').value,null)
+  const role = {id:'410001',view:{identity:{id:'410001'},rewards:{cards:[{character_id:preferredIdol.id,card_resource_id:'owned',methods:[{kind:'point',key:'source-key'}]}],general:[{key:'source-key',scope:'point',totalPoint:10000,product:{kind:'card',target:{card:'owned'}}}]}}}
+  assert.equal(portalEventRole(role,'410001',preferredIdol.id),'累计 PT 报酬')
+  assert.equal(portalEventRole(role,'wrong-event',preferredIdol.id),'')
+  assert.equal(portalEventRole(role,'410001','008rei'),'')
+  assert.equal(portalEventRole({...role,view:{...role.view,rewards:{...role.view.rewards,general:[]}}},'410001',preferredIdol.id),'活动报酬卡','method labels alone cannot prove the PT source')
+  if (overview.events.length) {
+    assert.equal(overview.events[0].relationLabel,'活动关联','an idol-detail event relation alone cannot prove story appearance before enrichment')
+    const castEvent = { ...overviewEvents.find(row => row.id === overview.events[0].id), resources: { storyCast: [preferredIdol.id] } }
+    assert.equal(buildPortalDesktopOverview({...options,events:[castEvent]}).events[0].relationLabel,'剧情登场')
+  }
+  const registry = read('public/data/assets/raw_character_image_promotions.json')
+  assert.ok(portalIdolPortrait(registry, preferredIdol.id)?.url.includes(preferredIdol.id))
+  assert.equal(portalIdolPortrait(registry,'unknown'),null)
+  assert.equal(portalIdolPortrait({entries:[{...registry.entries[0],asset_url:'/assets/stories/birthday/wrong.png'}]}, registry.entries[0].idol_code),null)
+
   const card = clone(preferredCards.find(row => row.rarity === 'SSR') || preferredCards[0])
   card.asset_status = { normal_portrait: true, awakened_portrait: false, awakened_icon: false }
   const normalImage = buildPortalDesktopOverview({ ...options, cards: [card] }).cards[0].image
@@ -245,11 +279,11 @@ function check(dataset) {
   delete card.asset_status
   assert.equal(buildPortalDesktopOverview({ ...options, cards: [card] }).cards[0].image, null)
   const badSong = { ...rowsByDomain.songs[0], jacket_url: 'https://unrelated.invalid/fake.png' }
-  assert.equal(buildPortalDesktopOverview({ ...options, songs: [badSong] }).songs[0].image, null)
+  assert.equal(buildPortalDesktopOverview({ ...options, songs: [badSong], preferredIdol: null, preferredDetail: null }).songs[0].image, null)
   const longCard = { ...card, title: '【长标题】' + '无截断的完整卡片标题'.repeat(30) }
   assert.equal(buildPortalDesktopOverview({ ...options, cards: [longCard], cardTitle: source => source }).cards[0].title, longCard.title)
   const longSong = { ...rowsByDomain.songs[0], title: 'Multiple Entertainment Show! '.repeat(12) }
-  assert.equal(buildPortalDesktopOverview({ ...options, songs: [longSong] }).songs[0].title, longSong.title)
+  assert.equal(buildPortalDesktopOverview({ ...options, songs: [longSong], preferredIdol: null, preferredDetail: null }).songs[0].title, longSong.title)
   assert.equal(buildPortalDesktopOverview({ ...options, cardTitle: () => '', idolName: () => '' }).cards[0].title,
     orderedCards[0].title, 'empty display callback preserves the valid original title')
   assert.equal(buildPortalDesktopOverview({ ...options, idolName: undefined }).cards[0].idolName, preferredIdol.name)

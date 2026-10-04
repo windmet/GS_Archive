@@ -3,7 +3,7 @@ import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOM
 
 // Portal data is independent of catalogue filters and never owns a player detail.
 export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
-  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadStageManifest,
+  loadCards, loadSongs, loadIdol, loadStories, loadEvents, loadStageManifest, loadPortraits, loadEventDetail,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
   const desktop = ref(false), cards = shallowRef([]), songs = shallowRef([])
   const preferredDetail = shallowRef(null), loading = ref(false), error = ref('')
@@ -11,19 +11,27 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
   const query = ref(''), searchLoading = ref(false), searchError = ref('')
   const rowsByDomain = shallowRef({})
   let media, mediaListener, disposed = false, revision = 0, searchRevision = 0, timer, searchController
-  const preferredCode = computed(() => preferredIdol.value?.id || '')
+  // undefined follows the saved preference; an empty string is an explicit all-idol view.
+  const eventDetails = shallowRef([])
+  const scope = ref(undefined), portraits = shallowRef(null), available = shallowRef({})
+  const scopeIdol = computed(() => scope.value === undefined ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
+  const preferredCode = computed(() => scopeIdol.value?.id || '')
+  function selectScope(code) {
+    if (code !== '' && !bootstrap.idols.some(row => row.id === code)) return
+    scope.value = code
+  }
   const overview = computed(() => buildPortalDesktopOverview({ bootstrap, cards: cards.value,
     songs: songs.value, stories: stories.value, events: events.value, stageManifest: stageManifest.value,
-    preferredIdol: preferredIdol.value,
+    preferredIdol: scopeIdol.value,
     preferredDetail: preferredDetail.value?.id === preferredCode.value && preferredDetail.value?.view?.profile?.idol_code === preferredCode.value ? preferredDetail.value : null,
-    idolName, cardTitle, songTitle, loading: loading.value, error: error.value }))
+    idolName, cardTitle, songTitle, portraits: portraits.value, eventDetails: eventDetails.value, available: available.value, loading: loading.value, error: error.value }))
   const search = computed(() => ({ query: query.value, loading: searchLoading.value,
     error: searchError.value, results: buildPortalSearchResults({ query: query.value,
       rowsByDomain: rowsByDomain.value, bootstrap, idolName, idolSearch, cardTitle, cardSearch, songTitle }) }))
   async function refresh() {
     if (view.value !== 'portal' || !desktop.value || disposed) return
     const ticket = ++revision, code = preferredCode.value
-    loading.value = true; error.value = ''; preferredDetail.value = null
+    loading.value = true; error.value = ''; preferredDetail.value = null; eventDetails.value = []
     const results = await Promise.allSettled([
       loadCards(), loadSongs(), code ? loadIdol(code).then(detail => {
         if (detail?.id !== code || detail.view?.profile?.idol_code !== code) throw Error('Portal preferred owner mismatch')
@@ -32,6 +40,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
       loadStories ? loadStories() : Promise.resolve([]),
       loadEvents ? loadEvents() : Promise.resolve([]),
       loadStageManifest ? loadStageManifest() : Promise.resolve(null),
+      loadPortraits ? loadPortraits() : Promise.resolve(null),
     ])
     if (disposed || ticket !== revision || view.value !== 'portal' || !desktop.value) return
     if (results[0].status === 'fulfilled') cards.value = results[0].value
@@ -40,8 +49,17 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
     if (results[3].status === 'fulfilled') stories.value = results[3].value
     if (results[4].status === 'fulfilled') events.value = results[4].value
     if (results[5].status === 'fulfilled') stageManifest.value = results[5].value
+    if (results[6].status === 'fulfilled') portraits.value = results[6].value
+    available.value = Object.fromEntries([['cards',0],['songs',1],['stories',3],['events',4]].map(([key,index]) => [key, results[index].status === 'fulfilled']))
     error.value = results.every(result => result.status === 'fulfilled') ? '' : '部分资料暂时无法读取，已保留可用内容。'
     loading.value = false
+    // Optional preview enrichment stays bound to the current lens and never blocks core counts.
+    if (code && loadEventDetail) {
+      const ids = overview.value.events.map(row => row.id)
+      const details = await Promise.allSettled(ids.map(id => loadEventDetail(id)))
+      if (disposed || ticket !== revision || view.value !== 'portal' || preferredCode.value !== code) return
+      eventDetails.value = details.filter(row => row.status === 'fulfilled').map(row => row.value)
+    }
   }
   async function loadSearch(ticket) {
     searchController?.abort(); searchController = new AbortController()
@@ -98,5 +116,5 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol,
     disposed = true; ++revision; ++searchRevision; clearTimeout(timer); searchController?.abort()
     media?.removeEventListener('change', mediaListener)
   })
-  return { overview, search, updateSearch, refresh }
+  return { scopeIdol, selectScope, overview, search, updateSearch, refresh }
 }

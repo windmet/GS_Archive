@@ -142,7 +142,28 @@ function boundImage(binding, kind) {
   return verified ? { ...binding, kind, status: binding.status || 'catalogued' } : null
 }
 
-const prioritize = (rows, predicate) => [...rows.filter(predicate), ...rows.filter(row => !predicate(row))]
+/** Only explicitly promoted original character art may become the portal portrait. */
+export function portalIdolPortrait(registry, idolCode) {
+  const entry = (registry?.entries || []).find(row => row.kind === 'birthday_visual' && row.idol_code === idolCode &&
+    row.asset_url === `/assets/stories/birthday/image_chara_birthday_visual_${idolCode}.png` &&
+    /^[a-f0-9]{64}$/u.test(row.output?.sha256 || '') && row.output.width > 0 && row.output.height > 0 &&
+    row.raw_source?.sha256 && row.master_evidence?.compiled_files?.length)
+  return entry ? { url: entry.asset_url, width: entry.output.width, height: entry.output.height } : null
+}
+
+export function portalEventRole(detail, eventId, idolCode) {
+  if (!idolCode || detail?.id !== eventId || detail.view?.identity?.id !== eventId) return ''
+  const rewards = detail.view.rewards
+  const ownedCards = (rewards?.cards || []).filter(card => card.character_id === idolCode)
+  for (const card of ownedCards) {
+    if ((card.methods || []).some(method => method.kind === 'point' && (rewards.general || []).some(row =>
+      row.key === method.key && ['point', 'repeated'].includes(row.scope) && row.product?.kind === 'card' &&
+      row.product.target?.card === card.card_resource_id && [row.totalPoint, row.intervalPoint].some(Number.isFinite)))) return '累计 PT 报酬'
+  }
+  if (ownedCards.length) return '活动报酬卡'
+  if (detail.view.exchangeRewards?.cards?.some(card => card.character_id === idolCode)) return '兑换报酬'
+  return ''
+}
 
 function songStageTarget(row, manifest, unitCode) {
   if (manifest === null || manifest === undefined) return null
@@ -189,7 +210,7 @@ function preferredStats(preferredId, detail) {
 
 export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], stories = [], events = [], stageManifest = null,
   preferredIdol = null, preferredDetail = null, idolName, cardTitle, songTitle, storyTitle, storySummary, eventTitle,
-  loading = false, error = '' } = {}) {
+  loading = false, error = '', available = {}, portraits = null, eventDetails = [] } = {}) {
   const directory = identities(bootstrap)
   const preferredId = typeof preferredIdol === 'string' ? preferredIdol : preferredIdol?.id || ''
   requireValue(!preferredId || directory.has(preferredId), 'preferred idol is outside the formal directory')
@@ -204,38 +225,58 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
   const previewCards = [...selectedCards].sort((left, right) => (rarityOrder[left.rarity] ?? 3) - (rarityOrder[right.rarity] ?? 3))
   const relatedSong = row => Boolean(preferredId && ((nonempty(preferred?.unitName) && row.performance?.unitName === preferred.unitName) ||
     (Array.isArray(row.performance?.performers) && row.performance.performers.some(performer => performer?.id === preferredId))))
-  const previewSongs = prioritize(songs, relatedSong)
+  const previewSongs = preferredId ? songs.filter(relatedSong) : songs
   const relatedStory = row => Boolean(preferredId && Array.isArray(row.characters) && row.characters.includes(preferredId))
-  const previewStories = prioritize(stories.filter(row => row.exists === true), relatedStory)
+  const readableStories = stories.filter(row => row.exists === true)
+  const previewStories = preferredId ? readableStories.filter(relatedStory) : readableStories
   const relatedEventIds = new Set((Array.isArray(preferredDetail?.view?.events) ? preferredDetail.view.events : [])
     .map(row => String(row.event_id)))
-  const previewEvents = prioritize(events, row => relatedEventIds.has(row.id))
-  return {
-    counts: [['cards', '卡片'], ['stories', '故事条目'], ['songs', '歌曲'], ['idols', '偶像']]
-      .map(([id, label]) => ({ id, label, value: domainCount(bootstrap, id) })),
-    preferredStats: stats,
-    preferredUnitName: text(preferred?.unitName),
-    preferredUnitCode: text(preferred?.unitCode),
-    unitCount: [...directory.values()].every(idol => nonempty(idol.unitCode))
-      ? new Set([...directory.values()].map(idol => idol.unitCode)).size : null,
-    cards: previewCards.slice(0, 3).map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
+  const relatedEvent = row => relatedEventIds.has(row.id) || row.resources?.storyCast?.includes(preferredId)
+  const previewEvents = (preferredId ? events.filter(relatedEvent) : [...events])
+    .sort((a, b) => (b.release_at || 0) - (a.release_at || 0) || a.id.localeCompare(b.id))
+  const collections = {
+    cards: previewCards.map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
       idolName: idolDisplay(row.character_id, directory, idolName), rarity: text(row.rarity), image: cardImage(row), target: cardTarget(row) })),
-    songs: previewSongs.slice(0, 4).map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),
+    songs: previewSongs.map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),
       unitName: text(row.performance?.unitName), image: songImage(row), target: songTarget(row),
-      isPreferredRelated: relatedSong(row),
-      stageTarget: songStageTarget(row, stageManifest, text(preferred?.unitCode)) })),
-    stories: previewStories.slice(0, 3).map(row => ({ id: row.id, title: sourceText(storyTitle, text(row.title)),
+      performers: (row.performance?.performers || []).filter(person => directory.has(person.id))
+        .map(person => ({ id: person.id, name: idolDisplay(person.id, directory, idolName) })),
+      relationLabel: preferredId && (row.performance?.performers || []).some(person => person.id === preferredId) ? '演唱成员' : preferredId ? '组合歌曲' : '',
+      isPreferredRelated: relatedSong(row), stageTarget: songStageTarget(row, stageManifest, text(preferred?.unitCode)) })),
+    stories: previewStories.map(row => ({ id: row.id, domain: row.domain, title: sourceText(storyTitle, text(row.title)),
       subtitle: [text(row.domainLabel) || storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '),
       summary: sourceText(storySummary, text(row.preplaySynopsis?.text)),
       cast: [...new Set(row.characters || [])].filter(id => directory.has(id))
         .map(id => ({ id, name: idolDisplay(id, directory, idolName), accentColor: directory.get(id).color || '' })),
       image: boundImage(row.image, 'story_cover') || boundImage(row.resources?.hero, 'story_cover'), target: storyTarget(row) })),
-    events: previewEvents.slice(0, 3).map(row => ({ id: row.id, title: sourceText(eventTitle, text(row.title)),
+    events: previewEvents.map(row => ({ id: row.id, title: sourceText(eventTitle, text(row.title)),
       subtitle: [eventKindLabels[row.eventKind], row.isReprint === true ? '复刻' : '',
         Number.isFinite(row.release_at) && new Date(row.release_at * 1000).getUTCFullYear() > 2000 &&
           new Date(row.release_at * 1000).getUTCFullYear() < 2099 ? historicalDate(row.release_at) : ''].filter(Boolean).join(' · '),
+      relationLabel: preferredId ? portalEventRole(eventDetails.find(detail => detail.id === row.id), row.id, preferredId) ||
+        (row.resources?.storyCast?.includes(preferredId) ? '剧情登场' : '活动关联') : '',
       image: boundImage(row.resources?.hero, 'event_banner') || boundImage(row.image, 'event_banner'),
       target: { domain: 'events', view: 'event_detail', eventId: row.id } })),
+  }
+  const footprints = [['cards', '卡片', cards], ['songs', '相关歌曲', songs], ['stories', '出场故事', readableStories], ['events', '活动足迹', events]]
+    .map(([id, label, rows]) => ({ id, label: preferredId ? label : { songs: '歌曲', stories: '可读故事', events: '活动记录' }[id] || label,
+      value: loading || available[id] === false || (id === 'events' && preferredId && !preferredDetail) ? null : collections[id].length,
+      total: loading || available[id] === false ? null : rows.length }))
+  return {
+    counts: [['cards', '卡片'], ['stories', '故事条目'], ['songs', '歌曲'], ['idols', '偶像']]
+      .map(([id, label]) => ({ id, label, value: domainCount(bootstrap, id) })),
+    preferredStats: stats,
+    scopeId: preferredId, collections, footprints,
+    portrait: portalIdolPortrait(portraits, preferredId),
+    kana: text(preferredDetail?.view?.profile?.name_fields?.kana),
+    preferredUnitName: text(preferred?.unitName),
+    preferredUnitCode: text(preferred?.unitCode),
+    unitCount: [...directory.values()].every(idol => nonempty(idol.unitCode))
+      ? new Set([...directory.values()].map(idol => idol.unitCode)).size : null,
+    cards: collections.cards.slice(0, 3),
+    songs: collections.songs.slice(0, 4),
+    stories: collections.stories.slice(0, 4),
+    events: collections.events.slice(0, 3),
     loading: loading === true, error: text(error),
   }
 }

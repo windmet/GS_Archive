@@ -29,6 +29,8 @@
         :idol-search="idolEntitySearchText"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
+        :view-reference="portalViewReference"
+        @select-scope="portalData.selectScope"
         :desktop-overview="portalData.overview.value"
         :global-search="portalData.search.value"
         @search="portalData.updateSearch"
@@ -592,6 +594,7 @@ import { readingPlaybackTarget } from './core/ReadingPlayback.js'
 import { createReadingRepository } from './data/ReadingRepository.js'
 import { createReadingSession, knownReadingLocator } from './core/ReadingSession.js'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
+import { loadCharacterPortraitData } from './data/ArchiveDataRepository.js'
 import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
@@ -1021,12 +1024,14 @@ const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, cli
     return resource?.storyFile === row.file ? { ...row, image: resource.hero } : row
   }),
   loadEvents: async () => (await loadEventCatalog()).map(row => ({ ...row, resources: eventResources(row) })),
-  loadStageManifest: fetchSongTimelineManifest,
+  loadStageManifest: fetchSongTimelineManifest, loadEventDetail, loadPortraits: loadCharacterPortraitData,
   idolName: idolDisplayName, idolSearch: idolEntitySearchText,
   cardTitle: source => archiveNamedText('card', source, 'title'),
   cardSearch: source => archiveNamedSearchText('card', source, 'title'),
   songTitle: source => source || '',
 })
+const portalViewReference = computed(() => portalData.scopeIdol.value
+  ? buildIdolReference(portalData.scopeIdol.value.id, bootstrapIdolDictionary, bootstrapMembership, 'portal:view') : null)
 const stageBackLabel = computed(() => (
   (detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail') ||
   (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
@@ -2380,14 +2385,11 @@ async function openGameHome(idolCode = '') {
   commitView('home')
 }
 
-function openPreferredDestination(destination) {
-  if (destination === 'profile') {
-    const idolCode = preferredArchiveIdol.value?.id
-    if (idolCode) return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
-    return
-  }
-  const idolCode = preferredArchiveIdol.value?.id
-  if (!idolCode) return
+function openPreferredDestination(request) {
+  const destination = typeof request === 'string' ? request : request?.action
+  const idolCode = typeof request === 'string' ? preferredArchiveIdol.value?.id : request?.idolCode
+  if (!idolCode || !archiveBootstrap.idols.some(row => row.id === idolCode)) return
+  if (destination === 'profile') return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
   if (destination === 'cards') captureDetailSource()
   if (destination === 'cards') openPrimaryCards(idolCode)
   else if (destination === 'work') openWorkArchive(idolCode)

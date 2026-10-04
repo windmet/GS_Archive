@@ -1,7 +1,7 @@
 <template>
   <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value, 'is-desktop-overview': isDesktop }" :style="isDesktop ? desktopTheme : null" aria-labelledby="portal-title">
     <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" :landscape-only="isDesktop" @error="backdropFailed = true" />
-    <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="preferredReference" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home')" @navigate="emit('navigate', $event)" @edit-personal="personalOpen = true" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')">
+    <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="viewReference" :saved-idol-code="preferredReference?.idolCode || ''" :idols="idols" :idol-search="idolSearch" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home')" @navigate="emit('navigate', $event)" @edit-personal="personalOpen = true" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')" @select-scope="emit('select-scope', $event)" @save-preferred="emit('save-preferred', $event)">
       <template #toolbar>
         <ArchiveLanguageSwitch :compact-mobile="false" />
         <button class="portal-overview-control" type="button" aria-label="更换 SSR 卡面壁纸" data-archive-focus-id="portal-wallpaper" @click="wallpaperOpen = true"><Images :size="18" aria-hidden="true" /><span>壁纸</span></button>
@@ -90,12 +90,12 @@ import ArchiveWallpaperPicker from './terminal/ArchiveWallpaperPicker.vue'
 import { useTerminalWallpaper } from '../../data/terminal/useTerminalWallpaper.js'
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import '../../styles/archive-terminal.css'
-const props = defineProps({ preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' }, desktopOverview: { type: Object, default: () => ({}) }, globalSearch: { type: Object, default: () => ({}) } })
-const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred', 'search', 'open-result', 'open-stage', 'retry-overview'])
+const props = defineProps({ viewReference: { type: Object, default: null }, preferredReference: { type: Object, default: null }, idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' }, idols: { type: Array, default: () => [] }, canGoBack: Boolean, loadingSection: { type: String, default: '' }, retrySection: { type: String, default: '' }, preferenceNotice: { type: String, default: '' }, desktopOverview: { type: Object, default: () => ({}) }, globalSearch: { type: Object, default: () => ({}) } })
+const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-preferred', 'save-preferred', 'search', 'open-result', 'open-stage', 'retry-overview', 'select-scope'])
 const desktopMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 761px)') : null
 const isDesktop = ref(Boolean(desktopMedia?.matches))
 const overview = ref(null)
-const desktopTheme = computed(() => ({ '--portal-idol-color': (props.preferredReference?.actionable && normalizeIdolAccentColor(props.preferredReference.accentColor)) || '#33a8a5' }))
+const desktopTheme = computed(() => ({ '--portal-idol-color': (props.viewReference?.actionable && normalizeIdolAccentColor(props.viewReference.accentColor)) || '#33a8a5' }))
 function updateDesktop(event) { isDesktop.value = event.matches }
 const producerDisplayName = computed(() => producerName.value ? presentProducerAddressingText(PRODUCER_NAME_WITH_P_TOKEN) : '未设置制作人')
 const personalOpen = ref(false), settingsOpen = ref(false)
