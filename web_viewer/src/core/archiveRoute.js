@@ -45,6 +45,7 @@ const ROUTE_QUERY_KEYS = [
   'gasha',
   'gasha_type',
   'rarity',
+  'card_attribute',
   'asset_state',
   'relation_state',
   'q',
@@ -355,6 +356,7 @@ export function normalizeArchiveRoute(input = {}) {
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
+    ...(['Physical','Intelligence','Mental'].includes(clean(input.cardAttribute)) ? {cardAttribute:clean(input.cardAttribute)} : {}),
     assetState: allowed(clean(input.assetState), VALID_CARD_ASSET_STATES, 'all'),
     relationState: allowed(clean(input.relationState), VALID_CARD_RELATION_STATES, 'all'),
     query: clean(input.query),
@@ -422,6 +424,7 @@ function breadcrumbFilters(route) {
     unitFilter: route.unitFilter,
     eventScope: route.eventScope,
     rarity: route.rarity,
+    cardAttribute: route.cardAttribute,
     assetState: route.assetState,
     relationState: route.relationState,
     gashaType: route.gashaType,
@@ -637,6 +640,7 @@ export function readArchiveRoute(input = null) {
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
+    cardAttribute: params.get('card_attribute'),
     assetState: params.get('asset_state'),
     relationState: params.get('relation_state'),
     query: clean(params.get('q')),
@@ -727,6 +731,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
+  if (normalized.cardAttribute && normalized.cardAttribute !== 'all') url.searchParams.set('card_attribute', normalized.cardAttribute)
   if (normalized.rarity !== 'all') url.searchParams.set('rarity', normalized.rarity)
   if (normalized.assetState !== 'all') url.searchParams.set('asset_state', normalized.assetState)
   if (normalized.relationState !== 'all') url.searchParams.set('relation_state', normalized.relationState)

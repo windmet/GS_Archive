@@ -1,5 +1,6 @@
 <template>
   <article class="event-catalog" data-archive-scroll-container :aria-busy="busy">
+    <ArchiveCatalogScope :idol="scopeIdol" :name="scopeIdol ? idolName(scopeIdol.id) : ''" @clear="emit('clear-idol')" />
     <div class="catalog-summary"><div><strong>{{ ready ? rows.length : '—' }}</strong><span>历史活动</span></div><div><strong>{{ ready ? storyCount : '—' }}</strong><span>关联剧情</span></div><div><strong>{{ ready ? reprintCount : '—' }}</strong><span>复刻活动</span></div></div>
     <p v-if="busy" role="status">正在读取活动一览…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load">重试</button></p>
@@ -30,12 +31,17 @@ import {eventKindLabels,historicalDate} from './DomainPresentation.mjs'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {eventResources} from '../../data/eventResourceGraph.js'
 import EventResourceImage from './EventResourceImage.vue'
-const props=defineProps({client:Object,bootstrap:Object,query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'',sort:'newest',page:0})}})
-const emit=defineEmits(['query','browse','ready','open-event'])
+import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
+import { eventMatchesIdol, idolEventIds } from '../../presentation/CatalogIdolScope.js'
+const props=defineProps({scopeIdol:{type:Object,default:null},idolName:{type:Function,default:()=>''},loadIdol:Function,client:Object,bootstrap:Object,query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'',sort:'newest',page:0})}})
+const emit=defineEmits(['query','browse','ready','open-event','clear-idol'])
 const repository=new DomainRepository(props.client,props.bootstrap)
-const rows=shallowRef([]),busy=ref(false),error=ref('')
+const scopeDetail=shallowRef(null)
+const relatedEventIds=computed(()=>idolEventIds(scopeDetail.value))
+const sourceRows=shallowRef([]),busy=ref(false),error=ref('')
 function filterModel(key){return computed({get:()=>props.browseState[key] ?? (key==='page'?0:key==='sort'?'newest':''),set:value=>emit('browse',{...props.browseState,[key]:value,...(key==='page'?{}:{page:0})})})}
 const page=filterModel('page'),eventKind=filterModel('kind'),sort=filterModel('sort')
+const rows=computed(()=>sourceRows.value.filter(row=>eventMatchesIdol(row,props.scopeIdol,relatedEventIds.value)))
 const ready=computed(()=>!busy.value&&!error.value)
 const storyCount=computed(()=>rows.value.filter(row=>row.resources?.storyAvailable).length)
 const reprintCount=computed(()=>rows.value.filter(row=>row.isReprint).length)
@@ -51,11 +57,12 @@ async function load(){
   controller?.abort();controller=new AbortController()
   const id=++request,options={signal:controller.signal}
   let loaded=false
-  busy.value=true;error.value='';rows.value=[]
+  busy.value=true;error.value='';sourceRows.value=[]
   try{
-    const value=await repository.catalog('events',options)
+    const [value,detail]=await Promise.all([repository.catalog('events',options),props.scopeIdol ? props.loadIdol(props.scopeIdol.id) : Promise.resolve(null)])
     if(id!==request||options.signal.aborted)return
-    rows.value=value.map(row=>({...row,resources:eventResources(row)}))
+    scopeDetail.value=detail
+    sourceRows.value=value.map(row=>({...row,resources:eventResources(row)}))
     const lastPage=Math.max(0,pages.value-1)
     if(page.value>lastPage)page.value=lastPage
     loaded=true
@@ -65,7 +72,7 @@ async function load(){
 }
 function select(row){emit('open-event',{event_id:row.id})}
 watch(()=>[ready.value,page.value,pages.value],([isReady,current,total])=>{if(isReady&&current>Math.max(0,total-1))page.value=Math.max(0,total-1)})
-load()
+watch(()=>props.scopeIdol?.id,load,{immediate:true})
 </script>
 <style scoped>
 .event-catalog{height:100%;overflow-y:auto;background:#f6f8f9;color:#27343b;font-family:var(--gs-font-directory);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular)}.catalog-summary{display:flex;gap:28px;padding:var(--gs-space-5) var(--gs-space-6);background:#fff;border-bottom:1px solid #e3e8eb}.catalog-summary div{display:flex;gap:7px;align-items:baseline}.catalog-summary strong{color:#1b7772;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-bold)}.catalog-summary span,.catalog-filter>span{color:#758088;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular)}.catalog-filter{display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-4);padding:var(--gs-space-4) var(--gs-space-6);background:#fff;border-bottom:1px solid #e3e8eb}.catalog-filter label{display:flex;gap:var(--gs-space-3);align-items:center;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold)}.catalog-filter input,.catalog-filter select{min-height:var(--gs-control-normal);max-width:100%;border:1px solid #dce5e8;border-radius:5px;padding:6px 9px;font:inherit;background:#fff;color:#34454d;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular)}.catalog-filter>span{margin-left:auto}.event-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:var(--gs-space-4);padding:16px 20px 28px}.event-item{display:grid;grid-template-columns:178px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);padding:10px;min-width:0;border:1px solid #e0e5e8;border-radius:7px;background:#fff;color:inherit;text-align:left;cursor:pointer;font:inherit}.event-item:hover{border-color:#85cbc6;box-shadow:0 3px 12px #23494e14}.event-copy{display:flex;flex-direction:column;gap:var(--gs-space-3);min-width:0}.event-copy strong{font-size:15px;line-height:1.5;overflow-wrap:anywhere;font-weight:var(--gs-weight-bold)}.badges{display:flex;gap:5px;flex-wrap:wrap}.badges small{background:#e7f6f4;color:#187b74;padding:2px 5px;border-radius:3px;font-size:var(--gs-text-caption);font-weight:var(--gs-weight-medium)}.badges .reprint{background:#fff0db;color:#965f13}.event-meta{font-size:var(--gs-text-meta);line-height:1.5;color:#75838b;font-weight:var(--gs-weight-regular)}.pagination{display:flex;justify-content:center;align-items:center;gap:var(--gs-space-5);padding:0 var(--gs-space-6) var(--gs-space-7);font-size:var(--gs-text-ui)}.pagination button{border:1px solid #dce5e8;background:#fff;border-radius:5px;padding:9px 14px;color:#187b74;cursor:pointer;font:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);min-height:var(--gs-control-normal)}.pagination button:disabled{opacity:.45;cursor:default}.empty{padding:var(--gs-space-6)}.event-catalog>p[role]{padding:var(--gs-space-4) var(--gs-space-6)}

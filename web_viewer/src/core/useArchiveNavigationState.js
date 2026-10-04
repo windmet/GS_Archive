@@ -54,6 +54,7 @@ export function useArchiveNavigationState() {
   const currentPhotoEntity = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
+  const currentCardAttribute = ref('all')
   const currentCardRarity = ref('all')
   const currentCardAssetState = ref('all')
   const currentCardRelationState = ref('all')
@@ -154,6 +155,7 @@ export function useArchiveNavigationState() {
       gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
       gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
       rarity: currentCardRarity.value,
+      cardAttribute: currentCardAttribute.value,
       assetState: currentCardAssetState.value,
       relationState: currentCardRelationState.value,
       query: filterQuery.value,
@@ -224,6 +226,7 @@ export function useArchiveNavigationState() {
     currentGashaId,
     currentGashaCategory,
     currentCardRarity,
+    currentCardAttribute,
     currentCardAssetState,
     currentCardRelationState,
     filterQuery,

@@ -35,6 +35,7 @@
         :global-search="portalData.search.value"
         @search="portalData.updateSearch"
         @open-result="openPortalResult"
+        @open-directory="openPortalDirectory"
         @open-stage="openPortalStage"
         @retry-overview="portalData.refresh"
         @save-preferred="savePreferredIdol"
@@ -120,6 +121,7 @@
         :idol-name="idolDisplayName"
         :rarity-tabs="cardRarityTabs"
         :current-rarity="currentCardRarity"
+        :current-attribute="currentCardAttribute"
         :current-asset-state="currentCardAssetState"
         :current-relation-state="currentCardRelationState"
         :idols="bootstrapIdolSwitcher"
@@ -128,6 +130,7 @@
         @back="goArchiveBack"
         @select-card="openCard"
         @select-rarity="updateArchiveFilter('currentCardRarity', $event)"
+        @select-attribute="updateArchiveFilter('currentCardAttribute', $event)"
         @select-asset-state="updateArchiveFilter('currentCardAssetState', $event)"
         @select-relation-state="updateArchiveFilter('currentCardRelationState', $event)"
         @select-idol="selectCardIdol"
@@ -203,6 +206,7 @@
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
         :catalog="songReadModelCatalog"
+        :scope-idol="catalogScopeIdol" @clear-idol="clearCatalogIdol"
         :idol-name="idolDisplayName"
         :idol-search="idolEntitySearchText"
         :status="songReadModelStatus"
@@ -250,6 +254,7 @@
       />
 
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
+        :scope-idol="catalogScopeIdol" :idol-name="idolDisplayName" :load-idol="loadIdolDetail" @clear-idol="clearCatalogIdol"
         :browse-state="currentEventBrowseState" @query="updateEventCatalogQuery" @browse="updateEventBrowse" @ready="onEventCatalogReady" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
         @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-card="openCollectionCard" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
@@ -307,7 +312,8 @@
       <ArchiveStoryCatalog
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
-        :all-entries="storyCatalogEntries"
+        :scope-idol="catalogScopeIdol" @clear-idol="clearCatalogIdol"
+        :all-entries="catalogStoryEntries"
         :search-entries="filteredStoryCatalog"
         :idol-directory="archiveBootstrap.idols"
         :search-query="filterQuery" @update:search-query="updateArchiveFilter('filterQuery',$event)"
@@ -321,7 +327,7 @@
         :event-scope="currentEventScope"
         :availability="currentStoryAvailability"
         :sort="currentStorySort"
-        :catalog-total="storyCatalogEntries.length"
+        :catalog-total="catalogStoryEntries.length"
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-count="storyCatalogIndex?.seasonalCount ?? 0"
         :work-count="storyCatalogIndex?.workCount ?? 0"
@@ -578,6 +584,7 @@ import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectColl
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
+import { cardAttribute, storyMatchesIdol } from './presentation/CatalogIdolScope.js'
 import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
 import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -825,6 +832,7 @@ const {
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
+  currentCardAttribute,
   currentCardAssetState,
   currentCardRelationState,
   filterQuery,
@@ -1037,7 +1045,7 @@ const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, cli
   loadEvents: async () => (await loadEventCatalog()).map(row => ({ ...row, resources: eventResources(row) })),
   loadStageManifest: fetchSongTimelineManifest, loadEventDetail, loadPortraits: loadCharacterPortraitData,
   loadUnits: loadUnitCatalog,
-  loadCardFacets: async () => { const response=await fetch('/data/assets/portal_card_facets.json'); if(!response.ok) throw Error('Portal facets unavailable'); return response.json() },
+  loadCardFacets,
   loadGatewayCounts: async () => {const index=await readModelClient.load(archiveBootstrap.domains.stories); return {seasonalCount:index.seasonalCount,workCount:index.workCount,idolStoryCount:archiveBootstrap.idols.length}},
   idolName: idolDisplayName, idolSearch: idolEntitySearchText,
   cardTitle: source => archiveNamedText('card', source, 'title'),
@@ -1162,7 +1170,7 @@ const currentIdolStoryExternalResources = computed(() =>
 const storyDomainOptions = computed(() => {
   const counts = new Map()
   const labels = new Map()
-  for (const entry of storyCatalogEntries.value) {
+  for (const entry of catalogStoryEntries.value) {
     counts.set(entry.domain, (counts.get(entry.domain) || 0) + 1)
     labels.set(entry.domain, entry.domainLabel)
   }
@@ -1178,14 +1186,16 @@ const storyEventScopeOptions = computed(() => {
   return Object.entries(labels).map(([id, label]) => ({
     id,
     label,
-    count: storyCatalogEntries.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
+    count: catalogStoryEntries.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
   }))
 })
 
+const catalogScopeIdol = computed(() => archiveBootstrap.idols.find(row => row.id === currentCharacterId.value) || null)
+const catalogStoryEntries = computed(() => storyCatalogEntries.value.filter(entry => storyMatchesIdol(entry, catalogScopeIdol.value)))
 const filteredStoryCatalog = computed(() => {
   const query = filterQuery.value.trim().toLowerCase()
   const availability = currentStoryAvailability.value
-  const entries = storyCatalogEntries.value.filter(entry =>
+  const entries = catalogStoryEntries.value.filter(entry =>
     (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
     (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
     (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
@@ -1307,6 +1317,7 @@ const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
   query: filterQuery.value,
   titleSearchText: source=>archiveNamedSearchText('card',source,'title'),
   rarity: currentCardRarity.value,
+  attribute: currentCardAttribute.value,
   assetState: currentCardAssetState.value,
   relationState: currentCardRelationState.value,
 }))
@@ -1704,7 +1715,7 @@ function commitArchiveSelection() {
 
 function updateArchiveFilter(key, value) {
   const target = {
-    filterQuery, currentIdolUnitFilter, currentCardRarity, currentCardAssetState,
+    filterQuery, currentIdolUnitFilter, currentCardRarity, currentCardAttribute, currentCardAssetState,
     currentCardRelationState, currentGashaCategory, currentSongScope,
     currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort,
   }[key]
@@ -1850,7 +1861,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     filterQuery.value = route.query || ''
     const idolOwnerView = route.view === 'player' ? route.returnView : route.view
     const validRouteIdol = !route.idol || (['groups', 'files'].includes(idolOwnerView) && aliasRoute?.groups
-      ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
+      ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'song_catalog', 'story_catalog', 'event_catalog'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
       : Boolean(bootstrapIdolDictionary.by_idol_code[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
@@ -1889,11 +1900,12 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentSongScope.value = route.songScope || 'all'
     songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
+    currentCardAttribute.value = route.cardAttribute || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
     currentIdolUnitFilter.value = route.unitFilter || ''
     currentStoryDomain.value = route.storyType || ''
-    currentStoryMode.value = route.storyMode || 'portal'
+    currentStoryMode.value = route.view === 'story_catalog' && currentCharacterId.value ? 'search' : route.storyMode || 'portal'
     currentStorySection.value = route.storySection || ''
     currentStoryFile.value = route.story || ''
     currentWorkMode.value = route.workMode || 'stories'
@@ -1985,6 +1997,7 @@ function goHome() {
   currentSongScope.value = 'all'
   songParentView.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
   currentIdolUnitFilter.value = ''
@@ -2006,6 +2019,30 @@ function goHome() {
   } else {
     commitView('welcome')
   }
+}
+
+function openPortalDirectory({ domain, idolCode = '', rarity = '', attribute = '' } = {}) {
+  if (view.value !== 'portal' || !['cards','songs','stories','events'].includes(domain)) return
+  if (idolCode && !archiveBootstrap.idols.some(row => row.id === idolCode)) return
+  captureDetailSource()
+  currentStoryDomain.value = ''; currentStorySection.value = ''; currentStoryFile.value = ''
+  currentStoryMode.value = 'portal'; currentStoryAvailability.value = 'all'; currentStorySort.value = 'domain'
+  currentEventScope.value = 'all'; currentSongScope.value = 'all'
+  currentCardRarity.value = 'all'; currentCardAttribute.value = 'all'
+  currentCardAssetState.value = 'all'; currentCardRelationState.value = 'all'
+  if (domain === 'cards') return openPrimaryCards(idolCode, { rarity, attribute })
+  if (domain === 'songs') return openSongCatalog({ idolCode })
+  if (domain === 'stories') return openStoryCatalog({ idolCode, mode: 'search' })
+  return openDomainCatalog('events', { idolCode })
+}
+
+function clearCatalogIdol() {
+  navigation.invalidate()
+  currentCharacterId.value = ''
+  currentStoryAvailability.value = 'all'
+  storyVisibleLimit.value = 80
+  currentEventBrowseState.value = { ...currentEventBrowseState.value, page: 0 }
+  syncArchiveRoute({ replace: true })
 }
 
 function navigateArchiveSection(section) {
@@ -2033,11 +2070,11 @@ function navigateArchiveSection(section) {
   else if (['events','collections','photos'].includes(section)) openDomainCatalog(section)
 }
 
-function openDomainCatalog(section) {
+function openDomainCatalog(section, { idolCode = '' } = {}) {
   currentEventBrowseState.value=normalizeEventBrowseState()
   currentCollectionState.value={kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
-  currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = ''
+  currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
   commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
 }
 function openCollectionEntity(key) {
@@ -2483,8 +2520,9 @@ async function closeArchivePortal() {
   syncArchiveRoute()
 }
 
-function openSongCatalog() {
+function openSongCatalog({ idolCode = '' } = {}) {
   if (view.value !== 'portal') detailSourceRoute.value = ''
+  currentCharacterId.value = idolCode
   currentSongId.value = ''
   currentSongScope.value = 'all'
   songParentView.value = ''
@@ -2804,13 +2842,14 @@ async function openStoryCatalog(options = {}) {
     if (!intent.isCurrent()) return
     filterQuery.value = ''
     currentStoryDomain.value = domain
-    currentStoryMode.value = 'portal'
+    currentCharacterId.value = options.idolCode || ''
+    currentStoryMode.value = options.mode || 'portal'
     currentStorySection.value = ''
     currentStoryFile.value = ''
     storyDetailParentView.value = ''
     storyCollectionParentView.value = ''
     currentEventScope.value = 'all'
-    currentStoryAvailability.value = 'all'
+    currentStoryAvailability.value = options.idolCode ? 'playable' : 'all'
     currentStorySort.value = 'domain'
     currentMobileMode.value = 'personal'
     currentMobileScenarioId.value = ''
@@ -3357,6 +3396,7 @@ function openUnitCards() {
     currentArchiveUnitCode.value = ''
     currentIdolUnitFilter.value = unitId
     currentCardRarity.value = 'all'
+    currentCardAttribute.value = 'all'
     currentCardAssetState.value = 'all'
     currentCardRelationState.value = 'all'
     commitView('idols')
@@ -3561,7 +3601,7 @@ function openIdolDirectory() {
   commitView('idols')
 }
 
-function openPrimaryCards(idolCode = '', { captureSource = false } = {}) {
+function openPrimaryCards(idolCode = '', { captureSource = false, rarity = 'all', attribute = 'all' } = {}) {
   const request = ++pendingCardNavigation
   navigation.invalidate()
   const revision = navigation.getRevision()
@@ -3576,7 +3616,8 @@ function openPrimaryCards(idolCode = '', { captureSource = false } = {}) {
     currentCharacterId.value = archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
     currentGroup.value = null
     currentCardId.value = ''
-    currentCardRarity.value = 'all'
+    currentCardRarity.value = ['SSR','SR','R','N'].includes(rarity) ? rarity : 'all'
+    currentCardAttribute.value = ['Physical','Intelligence','Mental'].includes(attribute) ? attribute : 'all'
     currentCardAssetState.value = 'all'
     currentCardRelationState.value = 'all'
     commitView('cards')
@@ -3599,6 +3640,7 @@ function selectCardIdol(idolCode) {
   currentCardId.value = ''
   filterQuery.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
   commitArchiveSelection()
@@ -3611,6 +3653,7 @@ function openIdol(entry) {
   currentCharacterId.value = entry.id
   currentCardId.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
   commitView('cards')
@@ -3827,6 +3870,7 @@ function openCollectionCard(card) {
 function goBackFromCards() {
   currentCardId.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   filterQuery.value = ''
   currentCategoryId.value = 'idol'
   commitView('idol_detail')
@@ -4269,6 +4313,15 @@ async function loadGashaDetail(id) {
   return {...detail,gasha:gashaCatalogFunctions.value.attachGashaTickets(detail.gasha)}
 }
 
+let cardFacetsPromise = null
+function loadCardFacets() {
+  if (!cardFacetsPromise) cardFacetsPromise = fetch('/data/assets/portal_card_facets.json').then(response => {
+    if (!response.ok) throw Error('Card attributes unavailable')
+    return response.json()
+  }).catch(error => { cardFacetsPromise = null; throw error })
+  return cardFacetsPromise
+}
+
 async function loadCardCatalog() {
   if (cardReadModelCatalog.value) return cardReadModelCatalog.value
   if (!cardCatalogPromise) {
@@ -4281,8 +4334,9 @@ async function loadCardCatalog() {
         rows.some(row => row.id !== row.resource_id || !row.detail || !row.ownerReference ||
           !Number.isInteger(row.home_voice_count) || !Number.isInteger(row.scenario_count)))
         throw new Error('Card catalog count or identity mismatch')
-      cardReadModelCatalog.value = rows
-      return rows
+      const facets = await loadCardFacets().catch(() => null)
+      cardReadModelCatalog.value = rows.map(row => ({ ...row, attribute: cardAttribute(row, facets, archiveBootstrap.release) }))
+      return cardReadModelCatalog.value
     })().catch(error => { cardCatalogPromise = null; throw error })
   }
   return cardCatalogPromise
@@ -4953,7 +5007,7 @@ onMounted(async () => {
   await restoreRoute(startup.route)
 })
 
-watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
+watch([filterQuery, currentSongScope, currentCardRarity, currentCardAttribute, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true, restoreView: false })
 })
 

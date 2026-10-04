@@ -1,3 +1,4 @@
+import { songMatchesIdol, storyMatchesIdol, idolEventIds, eventMatchesIdol, cardAttribute } from './CatalogIdolScope.js'
 import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortraitUrl } from '../utils/CardAssetResolver.js'
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
 import { eventKindLabels, historicalDate } from './DomainPresentation.mjs'
@@ -232,22 +233,20 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
   const selectedCards = preferredId ? cards.filter(row => row.character_id === preferredId) : cards
   const rarityOrder = { SSR: 0, SR: 1, R: 2, N: 4 }
   const previewCards = [...selectedCards].sort((left, right) => (rarityOrder[left.rarity] ?? 3) - (rarityOrder[right.rarity] ?? 3))
-  const relatedSong = row => Boolean(preferredId && ((nonempty(preferred?.unitName) && row.performance?.unitName === preferred.unitName) ||
-    (Array.isArray(row.performance?.performers) && row.performance.performers.some(performer => performer?.id === preferredId))))
+  const relatedSong = row => Boolean(preferredId && songMatchesIdol(row, preferred))
   const previewSongs = preferredId ? songs.filter(relatedSong) : songs
-  const relatedStory = row => Boolean(preferredId && Array.isArray(row.characters) && row.characters.includes(preferredId))
+  const relatedStory = row => Boolean(preferredId && storyMatchesIdol(row, preferred))
   const readableStories = stories.filter(row => row.exists === true)
   const previewStories = preferredId ? readableStories.filter(relatedStory) : readableStories
-  const relatedEventIds = new Set((Array.isArray(preferredDetail?.view?.events) ? preferredDetail.view.events : [])
-    .map(row => String(row.event_id)))
-  const relatedEvent = row => relatedEventIds.has(row.id) || row.resources?.storyCast?.includes(preferredId)
+  const relatedEventIds = idolEventIds(preferredDetail)
+  const relatedEvent = row => eventMatchesIdol(row, preferred, relatedEventIds)
   const previewEvents = (preferredId ? events.filter(relatedEvent) : [...events])
     .sort((a, b) => (b.release_at || 0) - (a.release_at || 0) || a.id.localeCompare(b.id))
   const collections = {
     cards: previewCards.map(row => ({ id: row.resource_id, title: sourceText(cardTitle, text(row.title) || text(row.title_full)),
       idolName: idolDisplay(row.character_id, directory, idolName), idolCode: row.character_id, unitCode: text(directory.get(row.character_id)?.unitCode), unitName: text(directory.get(row.character_id)?.unitName), rarity: text(row.rarity), image: cardImage(row),
       landscape: ['awakened_landscape','normal_landscape'].some(key=>row.asset_status?.[key]===true) ? {url:getCardLandscapeUrl(row.resource_id,row.asset_status?.awakened_landscape===true),kind:'card_landscape',variant:row.asset_status?.awakened_landscape===true?'p':'base',status:'available'} : null,
-      attribute: cardFacets?.release === bootstrap.release && cardFacets.cards?.[row.resource_id]?.detailSha256 === row.detail.sha256 && ['Physical','Intelligence','Mental'].includes(cardFacets.cards[row.resource_id].attribute) ? cardFacets.cards[row.resource_id].attribute : '',
+      attribute: cardAttribute(row, cardFacets, bootstrap.release),
       target: cardTarget(row) })),
     songs: previewSongs.map(row => ({ id: row.song_code, title: sourceText(songTitle, text(row.title)),
       unitName: text(row.performance?.unitName), performanceKind: text(row.performance?.scope), image: songImage(row), target: songTarget(row),

@@ -46,7 +46,7 @@
       <slot name="notices" />
       <div class="overview-metrics">
       <nav class="overview-counts" aria-label="当前视角资料数量">
-        <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" :aria-label="`${count.label} ${formatCount(count.value)}，查看全部`" @click="collectionOpen = count.id">
+        <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" :aria-label="`${count.label} ${formatCount(count.value)}，查看全部`" @click="openDirectory(count.id)">
           <component :is="archiveNavigationIcons[count.id]" :size="17" aria-hidden="true" />
           <span><strong>{{ formatCount(count.value) }}</strong><small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></span><span class="overview-count-label">{{ count.label }}</span>
         </button>
@@ -83,15 +83,15 @@
             <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
           </div>
           <div class="overview-card-showcase">
-            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="collectionOpen = 'cards'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组卡面 <Shuffle :size="15" /></button>
-            <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openCardCollection" />
+            <PortalCardBento :cards="collections.cards || []" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
           </div>
       </section>
 
       <div class="overview-content-grid" :class="{'is-global-grid':!preferredReference?.actionable}">
           <section class="overview-panel overview-music" aria-labelledby="portal-song-preview-title">
-            <header class="overview-section-heading"><h2 id="portal-song-preview-title">{{ preferredReference?.actionable ? '相关歌曲' : '歌曲与舞台' }} <small>{{ collectionCount('songs') }}</small></h2><button type="button" data-archive-focus-id="portal-songs-all" @click="collectionOpen = 'songs'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+            <header class="overview-section-heading"><h2 id="portal-song-preview-title">{{ preferredReference?.actionable ? '相关歌曲' : '歌曲与舞台' }} <small>{{ collectionCount('songs') }}</small></h2><button type="button" data-archive-focus-id="portal-songs-all" @click="openDirectory('songs')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
             <div v-if="!preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="歌曲演唱范围"><button v-for="category in songCategories" :key="category.id" type="button" :aria-pressed="songCategory === category.id" @click="songCategory = category.id">{{ category.label }} <small>{{ category.count }}</small></button></div>
             <div v-if="songs.length" class="overview-song-list">
               <article v-for="song in songs" :key="song.id" class="overview-song">
@@ -103,14 +103,14 @@
             <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取歌曲预览…' : '暂无可展示的歌曲预览，可前往目录查阅。' }}</p>
           </section>
         <section class="overview-panel overview-stories" aria-labelledby="portal-story-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="collectionOpen = 'stories'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading"><h2 id="portal-story-preview-title">{{ preferredReference?.actionable ? '出场故事' : '故事档案' }} <small>{{ preferredReference?.actionable ? collectionCount('stories') : `${readableMainCollections.length} 章` }}</small></h2><button type="button" data-archive-focus-id="portal-stories-all" @click="openDirectory('stories')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="preferredReference?.actionable" class="overview-story-tabs" role="group" aria-label="故事分类"><button v-for="tab in storyTabs" :key="tab.id" type="button" :aria-pressed="storyTab === tab.id" @click="storyTab = tab.id">{{ tab.label }} <small>{{ tab.count }}</small></button></div>
           <div v-if="!preferredReference?.actionable" class="overview-story-hub">          <div class="overview-main-index"><article v-for="chapter in readableMainCollections" :key="chapter.id"><button type="button" @click="emit('open-result', chapter)"><DomainMediaPreview v-if="chapter.image" :binding="chapter.image" :name="chapter.title" /><span><strong>{{ chapter.title }}</strong><small>{{ chapter.chapterCount }} 节 · {{ chapter.episodeCount }} 话</small><ChevronRight :size="16" /></span></button></article></div><div class="overview-story-gateways"><button v-for="gateway in gateways" :key="gateway.id" type="button" @click="emit('open-result',{target:{view:'story_gateway',gateway:gateway.id}})"><component :is="gateway.icon" :size="18" /><span><strong>{{ gateway.label }}</strong><small>{{ formatCount(gatewayCount(gateway)) }} {{ gateway.unit || '篇' }}</small></span><ArrowUpRight :size="14" /></button></div></div>
           <div v-else-if="stories.length" class="overview-story-list"><article v-for="story in stories" :key="story.id" class="overview-story"><DomainMediaPreview v-if="story.image?.url" class="overview-story-image" :binding="story.image" :name="story.title" /><span v-else class="overview-story-mark" aria-hidden="true"><BookOpen :size="21" /></span><button type="button" :disabled="!story.target" :data-archive-focus-id="`portal-story:${story.id}`" @click="emit('open-result', story)"><span class="overview-story-copy"><small v-if="story.subtitle">{{ story.subtitle }}</small><strong>{{ story.title }}</strong></span><span v-if="story.cast?.length" class="overview-story-cast" role="img" :aria-label="`登场偶像：${story.cast.map(idol => idol.name).join('、')}`"><ArchiveIdolAvatar v-for="idol in story.cast.slice(0, 3)" :key="idol.id" :idol-code="idol.id" :accent-color="idol.accentColor" :size="24" :ring-width="1" :gap="1" decorative /><small v-if="story.cast.length > 3">+{{ story.cast.length - 3 }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取故事预览…' : '暂无可展示的故事预览，可前往目录查阅。' }}</p>
         </section>
         <section class="overview-panel overview-events" aria-labelledby="portal-event-preview-title">
-          <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="collectionOpen = 'events'">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
+          <header class="overview-section-heading"><h2 id="portal-event-preview-title">{{ preferredReference?.actionable ? '活动足迹' : '运营轨迹 · 315 的回忆录' }} <small>{{ collectionCount('events') }}</small></h2><button type="button" data-archive-focus-id="portal-events-all" @click="openDirectory('events')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
           <div v-if="!preferredReference?.actionable" class="overview-timeline" tabindex="0" aria-label="运营时间画卷，可横向滚动"><article v-for="(event,index) in timeline" :key="event.id"><small class="timeline-date">{{ event.timelineDate }}</small><span class="timeline-dot" aria-hidden="true"></span><button type="button" @click="emit('open-result',event)"><img :src="event.image.url" alt="" loading="lazy" /><small>{{ event.seriesLabel }}</small><strong>{{ event.title }}</strong><ArrowUpRight :size="15" /></button></article></div>
           <div v-else-if="events.length" class="overview-event-grid"><article v-for="event in events" :key="event.id" class="overview-event"><DomainMediaPreview v-if="event.image?.url" class="overview-event-image" :binding="event.image" :name="event.title" /><button type="button" :disabled="!event.target" :data-archive-focus-id="`portal-event:${event.id}`" @click="emit('open-result', event)"><span><strong>{{ event.title }}</strong><small v-if="event.subtitle">{{ event.subtitle }}</small><small v-if="event.relationLabel" class="overview-relation">{{ event.relationLabel }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></article></div>
           <p v-else class="overview-empty">{{ desktopOverview.loading ? '正在读取活动预览…' : '暂无可展示的活动记录，可前往目录查阅。' }}</p>
@@ -120,14 +120,6 @@
         <p class="overview-dialog-note">切换浏览视角不会修改已保存的担当。</p>
         <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
         <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
-      </ArchiveTerminalDialog>
-      <ArchiveTerminalDialog :open="Boolean(collectionOpen)" :title="collectionTitle" title-id="portal-collection-title" @close="collectionOpen = ''">
-        <p class="overview-dialog-note">{{ preferredReference?.actionable ? preferredName : '全站档案' }} · {{ collectionRows.length }} 条{{ collectionOpen === 'stories' ? '可读故事' : '' }}</p>
-        <div v-if="collectionOpen === 'cards'" class="overview-card-facets"><label>稀有度 <select v-model="cardFilter.rarity"><option value="">全部</option><option v-for="rarity in ['SSR','SR','R','N']" :key="rarity">{{ rarity }}</option></select></label><label>属性 <select v-model="cardFilter.attribute"><option value="">全部</option><option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute">{{ attribute }}</option></select></label></div>
-        <ul class="overview-collection-list"><li v-for="row in collectionPageRows" :key="row.id"><button type="button" :disabled="!row.target" @click="openCollectionResult(row)"><img v-if="row.image?.url" :src="row.image.url" alt="" loading="lazy" /><span v-else class="overview-collection-mark"><component :is="archiveNavigationIcons[collectionOpen] || BookOpen" :size="22" aria-hidden="true" /></span><span><strong>{{ row.title }}</strong><small>{{ row.subtitle || row.unitName || row.idolName }}</small></span><ArrowUpRight :size="16" aria-hidden="true" /></button></li></ul>
-        <nav v-if="collectionPages > 1" class="overview-collection-pages" aria-label="关联档案翻页"><button type="button" :disabled="collectionPage === 1" @click="collectionPage--">上一页</button><span>{{ collectionPage }} / {{ collectionPages }}</span><button type="button" :disabled="collectionPage === collectionPages" @click="collectionPage++">下一页</button></nav>
-        <p v-if="!collectionRows.length" class="overview-empty">当前视角没有已确认的关联记录。</p>
-        <button class="terminal-text-button" type="button" @click="openDirectory">打开全站目录<ChevronRight :size="16" aria-hidden="true" /></button>
       </ArchiveTerminalDialog>
       <footer class="overview-footer">SideM Archive · 非官方资料存档</footer>
     </div>
@@ -160,7 +152,7 @@ const props = defineProps({
   globalSearch: { type: Object, default: () => ({}) },
 })
 const readableMainCollections = computed(() => (props.desktopOverview.mainCollections || []).filter(row => row.target && row.episodeCount > 0))
-const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred'])
+const emit = defineEmits(['back', 'open-home', 'navigate', 'edit-personal', 'open-preferred', 'search', 'open-result', 'open-directory', 'open-stage', 'retry-overview', 'select-scope', 'save-preferred'])
 const searchPanel = ref(null), searchOpen = ref(false)
 function closeSearchOutside(event) { if (searchPanel.value && !searchPanel.value.contains(event.target)) searchOpen.value = false }
 onMounted(() => document.addEventListener('pointerdown',closeSearchOutside))
@@ -168,30 +160,22 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown',closeSearchOuts
 const heading = ref(null)
 defineExpose({ focusHeading: () => heading.value?.focus({ preventScroll: true }) })
 const footprints = computed(() => props.desktopOverview.footprints || [])
-const collectionPage = ref(1)
-const scopeOpen = ref(false), collectionOpen = ref(''), storyTab = ref('all'), portraitFailed = ref(false)
+const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
-const cardFilter=ref({rarity:'',attribute:''})
-function openCardCollection(filter) {cardFilter.value={rarity:'',attribute:'',...filter};collectionOpen.value='cards'}
-const collectionRows = computed(() => (collections.value[collectionOpen.value] || []).filter(row=>collectionOpen.value !== 'cards' || ((!cardFilter.value.rarity || row.rarity===cardFilter.value.rarity) && (!cardFilter.value.attribute || row.attribute===cardFilter.value.attribute))))
-watch(cardFilter,()=>{collectionPage.value=1},{deep:true})
 const birthdayTheme=ref(false)
 const activePortrait=computed(()=>birthdayTheme.value ? props.desktopOverview.birthdayPortrait : props.desktopOverview.portrait)
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
 function gatewayCount(gateway){return storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
 const timeline=computed(()=>portalTimeline(collections.value.events || []))
-const collectionPages = computed(() => Math.max(1, Math.ceil(collectionRows.value.length / 24)))
-const collectionPageRows = computed(() => collectionRows.value.slice((collectionPage.value - 1) * 24, collectionPage.value * 24))
-watch(collectionOpen, (value,previous) => { collectionPage.value = 1; if(!value && previous==='cards') cardFilter.value={rarity:'',attribute:''} })
-const collectionTitle = computed(() => footprints.value.find(row => row.id === collectionOpen.value)?.label || '关联档案')
 function collectionCount(id) { return formatCount(footprints.value.find(row => row.id === id)?.value) }
 function chooseScope(code) { scopeOpen.value = false; emit('select-scope', code) }
-function openCollectionResult(row) { collectionOpen.value = ''; emit('open-result', row) }
-function openDirectory() { const id = collectionOpen.value; collectionOpen.value = ''; emit('navigate', id) }
+function openDirectory(domain, filters = {}) {
+  emit('open-directory', { domain, idolCode: props.preferredReference?.actionable ? props.preferredReference.idolCode : '', ...filters })
+}
 const storyTabs = computed(() => [{id:'all',label:'全部',count:(collections.value.stories || []).length},
   ...[['main','主线'],['event','活动'],['personal','个人'],['other','其他']].map(([id,label]) => ({id,label,count:(collections.value.stories || []).filter(row => storyGroup(row) === id).length})).filter(row => row.count)])
 function storyGroup(row) { return ['main','event'].includes(row.domain) ? row.domain : ['idol_story','card_scenarios','work','birthday'].includes(row.domain) ? 'personal' : 'other' }
-watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; collectionOpen.value = ''; portraitFailed.value = false })
+watch(() => props.desktopOverview.scopeId, () => { storyTab.value = 'all'; portraitFailed.value = false })
 const cardOffset = ref(0)
 function shuffleCards() { cardOffset.value += 1 }
 const songCategory = ref('configurable_formation')
@@ -385,15 +369,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story { min-height:80px; }
 .overview-relation { display:inline-flex;width:fit-content;padding:1px 6px;border-radius:5px;background:var(--portal-tint);color:var(--portal-accent)!important;font-size:10px!important; }
 .overview-dialog-note { margin:0 0 12px;color:var(--portal-muted);font-size:13px; }
-.overview-collection-list { margin:0;padding:0;list-style:none; }
-.overview-collection-list li + li { border-top:1px solid var(--portal-line); }
-.overview-collection-list button { display:flex;align-items:center;gap:14px;width:100%;min-height:72px;padding:10px 0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-collection-list img,.overview-collection-mark { flex:none;width:48px;height:56px;object-fit:contain; }
-.overview-collection-mark { display:grid;place-items:center;color:var(--portal-accent); }
-.overview-collection-list button > span:not(.overview-collection-mark) { display:grid;gap:4px;flex:1;min-width:0; }
-.overview-collection-list strong { font-size:14px;overflow-wrap:anywhere; }
-.overview-collection-list small { font-size:12px;color:var(--portal-muted);overflow-wrap:anywhere; }
-.overview-collection-list svg { flex:none; }
 @media(hover:hover) and (pointer:fine) {
   .overview-counts > button:hover,.overview-scope-trigger:hover { background:#ffffffeb;box-shadow:0 4px 16px #1d344014; }
   .overview-scope-reset:hover,.overview-save-idol:hover,.overview-story-tabs button:hover { background:var(--portal-tint); }
@@ -424,9 +399,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-counts { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .overview-content-grid { grid-template-columns:1fr; }
 }
-.overview-collection-pages { display:flex;justify-content:center;align-items:center;gap:16px;margin:16px 0; }
-.overview-collection-pages button { min-height:44px;padding:6px 12px;border:1px solid var(--portal-line);border-radius:8px;background:var(--portal-tint);color:var(--portal-accent); }
-.overview-collection-pages span { font-variant-numeric:tabular-nums;color:var(--portal-muted); }
 
 .overview-segment {display:flex;max-width:100%;min-width:0;gap:3px;padding:4px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffa8;}
 .overview-segment > button {display:flex;min-width:0;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:8px;background:transparent;color:var(--portal-muted);white-space:nowrap;}

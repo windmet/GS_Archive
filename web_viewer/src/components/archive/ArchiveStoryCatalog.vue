@@ -1,7 +1,8 @@
 <template>
   <section class="story-catalog" data-archive-scroll-container>
+    <ArchiveCatalogScope :idol="scopeIdol" :name="scopeIdol ? idolName(scopeIdol.id) : ''" @clear="emit('clear-idol')" />
     <div class="catalog-switcher" role="group" aria-label="故事浏览方式">
-      <button :class="{ active: mode === 'portal' }" :aria-pressed="mode === 'portal'" @click="emit('update:mode', 'portal')">
+      <button v-if="!scopeIdol" :class="{ active: mode === 'portal' }" :aria-pressed="mode === 'portal'" @click="emit('update:mode', 'portal')">
         <LayoutGrid :size="16" />
         <span>分类入口</span>
       </button>
@@ -311,7 +312,9 @@ import { presentProducerAddressingText } from '../../presentation/ProducerAddres
 import EventStoryCard from './EventStoryCard.vue'
 import StoryDiscovery from './StoryDiscovery.vue'
 
+import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
 const props = defineProps({
+  scopeIdol: { type: Object, default: null },
   idolName:{type:Function,default:()=>''},
   idolSearch:{type:Function,default:()=>''},
   entries: { type: Array, default: () => [] }, allEntries: { type: Array, default: () => [] },
@@ -331,7 +334,8 @@ const props = defineProps({
   extraDomain: { type: Object, default: null },
   birthdayDomain: { type: Object, default: null },
 })
-const emit = defineEmits(['select', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
+const emit = defineEmits([
+  'clear-idol','select', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
 const unitTrack=ref(null)
 function scrollUnits(direction){const track=unitTrack.value;if(track)track.scrollBy({left:direction*track.clientWidth*.8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 

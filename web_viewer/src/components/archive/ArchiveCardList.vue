@@ -40,6 +40,14 @@
       </div>
 
       <label class="asset-filter">
+        <span>属性</span>
+        <select aria-label="卡片属性" :value="currentAttribute" @change="emit('select-attribute', $event.target.value)">
+          <option value="all">全部属性</option>
+          <option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute">{{ attribute }}</option>
+        </select>
+      </label>
+
+      <label class="asset-filter">
         <span>资源</span>
         <select aria-label="卡片资源" :value="currentAssetState" @change="emit('select-asset-state', $event.target.value)">
           <option v-for="option in assetStateOptions" :key="option.id" :value="option.id">
@@ -120,6 +128,7 @@ defineProps({
   idolName: { type: Function, default: () => '' },
   rarityTabs: { type: Array, default: () => [] },
   currentRarity: { type: String, default: 'all' },
+  currentAttribute: { type: String, default: 'all' },
   currentAssetState: { type: String, default: 'all' },
   currentRelationState: { type: String, default: 'all' },
   modelValue: { type: String, default: '' },
@@ -133,6 +142,7 @@ const emit = defineEmits([
   'back',
   'select-card',
   'select-rarity',
+  'select-attribute',
   'select-asset-state',
   'select-relation-state',
   'update:modelValue',

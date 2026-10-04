@@ -1,5 +1,6 @@
 <template>
   <section class="song-catalog" data-archive-scroll-container>
+    <ArchiveCatalogScope :idol="scopeIdol" :name="scopeIdol ? idolName(scopeIdol.id) : ''" @clear="emit('clear-idol')" />
     <header class="song-hero">
       <div>
         <span>SONG ARCHIVE</span>
@@ -78,7 +79,10 @@
 import { computed } from 'vue'
 import { Search } from '@lucide/vue'
 
+import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
+import { songMatchesIdol } from '../../presentation/CatalogIdolScope.js'
 const props = defineProps({
+  scopeIdol: { type: Object, default: null },
   catalog: { type: Object, default: null },
   status: { type: String, default: '' },
   scope: { type: String, default: 'all' },
@@ -86,7 +90,7 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' },
   idolSearch: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open', 'retry', 'update:scope', 'update:query'])
+const emit = defineEmits(['open', 'retry', 'update:scope', 'update:query', 'clear-idol'])
 
 const activeFilter = computed({
   get: () => props.scope,
@@ -100,10 +104,12 @@ const query = computed({
 const songs = computed(() => {
   const map = props.catalog?.songs || {}
   return Object.values(map)
-    .filter(song => song.variant_kind === 'primary')
+    .filter(song => song.variant_kind === 'primary' && songMatchesIdol(song, props.scopeIdol))
     .sort((a, b) => (a.song_id || 0) - (b.song_id || 0))
 })
-const summary = computed(() => props.catalog?.summary || {})
+const summary = computed(() => props.scopeIdol ? {
+  three_d_movie_count: filterCount('movie'), mvlive_count: filterCount('mvlive'), layered_song_count: filterCount('layered'),
+} : props.catalog?.summary || {})
 
 const filters = [
   { id: 'all', label: '全部' },
