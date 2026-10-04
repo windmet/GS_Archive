@@ -120,7 +120,7 @@ import {
 } from "vue";
 import { Camera, SlidersHorizontal } from "@lucide/vue";
 import ArchivePhotoDetailDialog from "./ArchivePhotoDetailDialog.vue";
-import {archiveText, archiveSearchText} from './useArchivePhotoText.js';
+import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
 import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
@@ -294,6 +294,7 @@ onBeforeUnmount(() => {
 });
 
 async function load() {
+  loadArchivePhotoNames();
   loadingActorId.value = props.photoIdol || actors.value[0]?.id || "";
   const { id, options } = begin();
   try {

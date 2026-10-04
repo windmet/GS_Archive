@@ -84,3 +84,25 @@ npm run verify:entry
 旧 ledger 的完整路由 parity 与设备批准保持未完成，因此最终发布 cutover 仍未通过。只提交/推送此分支，不部署，不将 `reviewed` 改写为 `final`。未穷举的照片/其他通用名称消费者、短信等正文类型和所有 Chibi 故障阶段明确保留未验证。
 
 截图与小型 Browser 记录位于 `C:/Users/windm/.codex/visualizations/2026/10/04/01a105b6-49c6-75d2-8eb1-1051da3588ac`：`cleanup-global.png`、`cleanup-minori.png`、`cleanup-reader-bilingual.png`、`cleanup-player-bilingual.png`、`cleanup-reader-source-fallbacks.png`、`cleanup-reader-real-draft.png`、`cleanup-reader-untranslated-call.png`、`cleanup-player-untranslated-call.png`、`cleanup-stage-five-paused.png`、`cleanup-stage-solo.png`、`cleanup-stage-president.png`、`cleanup-stage-optional-failure.png`、三种小视口截图及几何/往返 JSON。该目录只保存截图/小日志。
+
+## 继续清扫：摄影译名与页面组件失败恢复
+
+本批从 `68a260c9376a29f303d5b1ade94a51a08947655d` 继续。上面的最终入口数字和正式模型记录属于首批，不覆盖本批的代码证明。新生产代码验收单独记录在 `E:/Web_build/GS_Archive_Domain_Work/qa-portal-cleanup-followup-20261005`；模型及翻译内容没有改动，继续使用上述正式 release。
+
+实际复现 `photos-AUEY1Gw0.js` 返回 503：摄影页面组件因静态名称依赖加载失败，页面只剩导航与空白内容。这证明 F05 的同类问题还存在于摄影入口，并非只有卡片标题。现将摄影/衣装名称改为独立、带翻译 release 的有界 HTTP；摄影目录和工作台每次成为消费者时可重试失败的请求。名称字典按 exact source/domain/field 解析，拒绝 HTML、错误 schema 与损坏嵌套结构；失败保留原名，成功后更新显示与搜索别名。没有重新导入或修改任何译文。
+
+另给 31 个目录/工具异步组件注册统一的错误内容。真正的组件 chunk 失败时展示清晰错误及“重新加载此页”；浏览器失败模块缓存通过文档重载恢复，原 URL、筛选及偏好不丢失。不自动清缓存或反复重试。首个 Browser 失败是旧代码的真实空壳，修复后分别实测了桌面和 390×844 的摄影组件 503 与恢复；其余注册组件未逐个注入故障。
+
+本批实际 Browser 路径与结果：
+
+- 摄影/衣装名称同时 503，摄影目录仍有 133 个地点；摄影棚的日文源名、原文说明与三项相关场景可操作。解除故障，在同一会话重新进目录，中文恢复。
+- 场景 186、贴纸 184、相框 26、滤镜 4，以及冬马表情 11、动作 8 的实际目录通过；这是各类首屏样本，非全部条目的逐图验收。
+- 日文界面输入中文“摄影棚”找到 3 个实际同名地点；切中文仍保持 3 项。没有把同名地点合并为一个。
+- 摄影详情进入既有工作台，中文“基础常服”可见；在新文档中同时让摄影/衣装名称 HTTP 503，工作台仍显示源名衣装与实际人物、背景画布（1280×720），导出入口可用。没有据此声称已验证 PNG 文件下载。
+- 桌面和 390×844 的组件 503 均出现错误及重新加载按钮；解除故障后点击按钮，原 URL、“摄影棚”筛选、地点详情均恢复。小屏 document clientWidth/scrollWidth 均为 390。
+
+`verify:architecture-cleanup` 新增实际名称 helper 的 503/HTML/schema、重试、并发共享、日文显示/中文搜索别名与来源 fallback 回归；已有异步导航和资料展示回归通过。`build:check` 本批 2,819 modules，不复制 public。最终 HEAD、入口预算及代码 hash 对照另存 `final-acceptance.json`。翻译 CSV 新增六项真实词条，摄影词条仍为 draft，基础常服为 reviewed；名称字典没有逐条 `source_hash` 字段，该列留空，不能虚构来源 hash。
+
+本地故障服务曾因并发修改故障计数在 Windows 出现 rename EPERM，部分注入请求变为 500。证据保留；QA 服务随后串行化故障配置读写，在 PID 22588 下重新确认摄影/衣装两项均为实际 HTTP 503，不能将服务自身的 500 冒充所要求的 503。这个修改仅位于忽略的本地 QA 服务，没有进入生产代码。
+
+本批未扩大为完整全站 cutover。其他通用名称消费者、SMS 等正文、完整冷启动/性能录制、真机和完整路由对照仍按前面的未验证边界保留。

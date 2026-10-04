@@ -1,4 +1,9 @@
-import photos from '../../../public/translations/zh-CN/archive-general/photos.json' with {type:'json'};
-import costumes from '../../../public/translations/zh-CN/archive-general/costumes.json' with {type:'json'};
-import {createArchiveTextTools} from './useArchiveGeneralText.js';
-export const {archiveText, archiveSearchText} = createArchiveTextTools({...photos.entries, ...costumes.entries});
+import {loadArchiveNames, archiveNamedText, archiveNamedSearchText} from './useArchiveNamedText.js';
+export const archiveText = archiveNamedText, archiveSearchText = archiveNamedSearchText;
+
+// Names update independently; a missing translation must not prevent the studio
+// or source catalogue from mounting. Each new owner can retry a failed request.
+export function loadArchivePhotoNames() {
+  for (const domain of ['photos', 'costumes'])
+    void loadArchiveNames(domain).catch(error => console.warn('Photo names unavailable', domain, error));
+}

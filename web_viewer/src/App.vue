@@ -579,6 +579,7 @@
 
 <script setup>
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
+import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
 import {eventResources, storyEventResources} from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
@@ -724,37 +725,38 @@ const archiveRouteLoaders = {
   archive_status: () => import('./components/archive/ArchiveStatus.vue'),
   external_story_resources: () => import('./components/archive/ArchiveExternalStoryResources.vue'),
 }
-const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
-const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
-const ArchiveEventCatalog = defineAsyncComponent(archiveRouteLoaders.event_catalog)
-const ArchiveCollectionCatalog = defineAsyncComponent(archiveRouteLoaders.collection_catalog)
-const ArchivePhotoCatalog = defineAsyncComponent(archiveRouteLoaders.photo_catalog)
-const ArchiveExperiments = defineAsyncComponent(archiveRouteLoaders.experiments)
-const ArchiveChartLab = defineAsyncComponent(archiveRouteLoaders.chart_lab)
-const PictureStudio = defineAsyncComponent(archiveRouteLoaders.picture_studio)
-const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
-const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
-const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
-const ArchiveSeasonalCampaign = defineAsyncComponent(archiveRouteLoaders.seasonal_campaign)
-const ArchiveWorkStory = defineAsyncComponent(archiveRouteLoaders.work_archive)
-const ArchiveIdolStory = defineAsyncComponent(archiveRouteLoaders.idol_story_archive)
-const ArchiveCardList = defineAsyncComponent(archiveRouteLoaders.cards)
-const ArchiveCardDetail = defineAsyncComponent(archiveRouteLoaders.card_detail)
-const ArchiveGashaCatalog = defineAsyncComponent(archiveRouteLoaders.gashas)
-const ArchiveGashaDetail = defineAsyncComponent(archiveRouteLoaders.gasha_detail)
-const ArchiveSongCatalog = defineAsyncComponent(archiveRouteLoaders.song_catalog)
-const ArchiveSongDetail = defineAsyncComponent(archiveRouteLoaders.song_detail)
-const ArchiveMobileArchive = defineAsyncComponent(archiveRouteLoaders.mobile_archive)
-const ArchiveUnitCatalog = defineAsyncComponent(archiveRouteLoaders.unit_catalog)
-const ArchiveUnitDetail = defineAsyncComponent(archiveRouteLoaders.unit_detail)
-const ArchiveIdolGrid = defineAsyncComponent(archiveRouteLoaders.idols)
-const ArchiveIdolDetail = defineAsyncComponent(archiveRouteLoaders.idol_detail)
-const ArchiveGroupList = defineAsyncComponent(archiveRouteLoaders.groups)
-const ArchiveFileList = defineAsyncComponent(archiveRouteLoaders.files)
-const ArchiveUnitGrid = defineAsyncComponent(archiveRouteLoaders.episode_zero_units)
-const ArchiveEpisodeList = defineAsyncComponent(archiveRouteLoaders.episodes)
-const ArchiveStatus = defineAsyncComponent(archiveRouteLoaders.archive_status)
-const ArchiveExternalStoryResources = defineAsyncComponent(archiveRouteLoaders.external_story_resources)
+const defineArchivePage = loader => defineAsyncComponent({ loader, errorComponent: ArchivePageLoadError })
+const ArchiveStoryReader = defineArchivePage(archiveRouteLoaders.reader)
+const ArchiveEventDetail = defineArchivePage(archiveRouteLoaders.event_detail)
+const ArchiveEventCatalog = defineArchivePage(archiveRouteLoaders.event_catalog)
+const ArchiveCollectionCatalog = defineArchivePage(archiveRouteLoaders.collection_catalog)
+const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
+const ArchiveExperiments = defineArchivePage(archiveRouteLoaders.experiments)
+const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
+const PictureStudio = defineArchivePage(archiveRouteLoaders.picture_studio)
+const ArchiveStoryCatalog = defineArchivePage(archiveRouteLoaders.story_catalog)
+const ArchiveStoryDetail = defineArchivePage(archiveRouteLoaders.story_detail)
+const ArchiveStoryCollection = defineArchivePage(archiveRouteLoaders.story_collection)
+const ArchiveSeasonalCampaign = defineArchivePage(archiveRouteLoaders.seasonal_campaign)
+const ArchiveWorkStory = defineArchivePage(archiveRouteLoaders.work_archive)
+const ArchiveIdolStory = defineArchivePage(archiveRouteLoaders.idol_story_archive)
+const ArchiveCardList = defineArchivePage(archiveRouteLoaders.cards)
+const ArchiveCardDetail = defineArchivePage(archiveRouteLoaders.card_detail)
+const ArchiveGashaCatalog = defineArchivePage(archiveRouteLoaders.gashas)
+const ArchiveGashaDetail = defineArchivePage(archiveRouteLoaders.gasha_detail)
+const ArchiveSongCatalog = defineArchivePage(archiveRouteLoaders.song_catalog)
+const ArchiveSongDetail = defineArchivePage(archiveRouteLoaders.song_detail)
+const ArchiveMobileArchive = defineArchivePage(archiveRouteLoaders.mobile_archive)
+const ArchiveUnitCatalog = defineArchivePage(archiveRouteLoaders.unit_catalog)
+const ArchiveUnitDetail = defineArchivePage(archiveRouteLoaders.unit_detail)
+const ArchiveIdolGrid = defineArchivePage(archiveRouteLoaders.idols)
+const ArchiveIdolDetail = defineArchivePage(archiveRouteLoaders.idol_detail)
+const ArchiveGroupList = defineArchivePage(archiveRouteLoaders.groups)
+const ArchiveFileList = defineArchivePage(archiveRouteLoaders.files)
+const ArchiveUnitGrid = defineArchivePage(archiveRouteLoaders.episode_zero_units)
+const ArchiveEpisodeList = defineArchivePage(archiveRouteLoaders.episodes)
+const ArchiveStatus = defineArchivePage(archiveRouteLoaders.archive_status)
+const ArchiveExternalStoryResources = defineArchivePage(archiveRouteLoaders.external_story_resources)
 function prepareArchivePage(routeView, data) {
   // The shared pending notice owns progress; discard notices from superseded routes.
   for (const status of [mobileReadModelStatus, songReadModelStatus, idolReadModelStatus,

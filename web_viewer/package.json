@@ -6,7 +6,7 @@
   "scripts": {
     "verify:cutover-routes": "node readmodels/tools/check_cutover_routes.mjs --progress",
     "verify:entry": "node scripts/verify-archive-build-audit.mjs --entry",
-    "verify:architecture-cleanup": "node scripts/verify-architecture-cleanup.mjs && node scripts/verify-stage-resource-ownership.mjs",
+    "verify:architecture-cleanup": "node scripts/verify-architecture-cleanup.mjs && node scripts/verify-stage-resource-ownership.mjs && node scripts/verify-archive-optional-names.mjs",
     "verify:build-audit": "node scripts/verify-archive-build-audit.mjs --progress",
     "verify:player-qa": "node scripts/verify-player-session.mjs && node scripts/verify-player-qa-flow.mjs && node scripts/verify-story-interaction.mjs",
     "verify:player-immersive": "node scripts/verify-player-immersive.mjs",

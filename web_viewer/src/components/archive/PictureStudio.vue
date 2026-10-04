@@ -471,7 +471,7 @@ import {
 import { useStudioComposition } from "./useStudioComposition.js";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import { studioPresetPresentation } from '../../presentation/studio-preset-labels.mjs';
-import {archiveText, archiveSearchText} from './useArchivePhotoText.js';
+import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const emit = defineEmits(['back']);
@@ -701,5 +701,5 @@ async function previewPerson() {
   }
 }
 watch([personToAdd, libraryTab, busy], previewPerson);
-onMounted(load);
+onMounted(() => { loadArchivePhotoNames(); return load(); });
 </script>
