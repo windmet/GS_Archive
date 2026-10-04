@@ -40,7 +40,9 @@
 
 开发期 Browser 使用显式 dirty candidate `21b0b1fe97ff47b16e8cb9958366bc2ec4fed8a09981196350bbb8ca1d4bedf0`，位于 `E:/Web_build/GS_Archive_Domain_Work/portal-cleanup-candidate-20261005`，有 `BUILD_CANDIDATE.json`，没有伪装成正式 build complete。
 
-正式生成器要求已提交且干净的输入。源代码提交后，下一步使用正式生成器生成独立 readmodels 根，验证真实语料并绑定 bootstrap、routes release 和卡片 facets；正式 release 与复验状态将追加到本节。旧候选保留作证据，不复制媒体。
+正式生成器在已提交的 `3d4bae30c9e31abddc0885232d21169d1a2d1faa` 上运行，输入干净，生成根 `E:/Web_build/GS_Archive_Domain_Work/portal-cleanup-readmodels-20261005`，release `ce317169fc85ce52e2087fac36b46b65436af32515ff5619ee3f751047f1e0b1`，`BUILD_COMPLETE.json` 明确 generated:true/deployed:false。全部 8,834 工件的 bytes/hash/envelope/依赖闭包通过；50 个实际 scope、全部 1,394 locator、49 偶像与既有目录统计逐项通过。bootstrap 14,591 bytes，全部 JSON 78,968,667 bytes；826 张卡片的 facets 从该正式模型与逐卡详情 hash 重新生成，bootstrap/routes/facets 均绑定此 release。旧 dirty 候选保留作证据，不复制媒体。
+
+最终绑定提交之后进行生产代码编译与 Browser 代表旅程，结果独立保存到 `E:/Web_build/GS_Archive_Domain_Work/qa-portal-cleanup-20261005/final-ui-acceptance.json`、`final-entry-audit.json`、`final-cutover-gate.json`，使构建 proof 绑定最终 HEAD；本报告上面的完整 Browser 样本矩阵对应开发期实页，最终代表旅程不能将未测项提升为通过。
 
 翻译 release `8de730b2e3ad9105307f067ee0e37afb670202c1cec7e61b6e722081097167af`，实际 112 文件生成 manifest；翻译内容与 source hashes 没有修改。当前翻译审计 sourceDigest `fee2638a52122506f9232f6432b500d774b5cef987c31e9312ddbc0c40151b40`，仍明确区分 reviewed/draft/missing/excluded。
 
@@ -66,6 +68,7 @@ npm run verify:chibi-particles
 npm run verify:chibi-image-objects
 npm run verify:chibi-stage-coordinates
 npm run test:source --prefix readmodels
+node readmodels/tools/verify_artifacts.mjs <真实 readmodels 根>
 node scripts/verify-portal-projections.mjs <真实 readmodels 根>
 node scripts/verify-portal-directory-navigation.mjs <真实 readmodels 根>
 npm run build:check
