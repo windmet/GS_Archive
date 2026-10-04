@@ -1,6 +1,6 @@
 <template>
-  <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value, 'is-desktop-overview': isDesktop }" aria-labelledby="portal-title">
-    <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" @error="backdropFailed = true" />
+  <section class="archive-terminal terminal-portal" :class="{ 'has-wallpaper': wallpaper.selected.value, 'is-desktop-overview': isDesktop }" :style="isDesktop ? desktopTheme : null" aria-labelledby="portal-title">
+    <ArchiveTerminalBackdrop :key="wallpaper.revision.value" :wallpaper="wallpaper.selected.value" :landscape-only="isDesktop" @error="backdropFailed = true" />
     <ArchivePortalOverview v-if="isDesktop" ref="overview" :can-go-back="canGoBack" :producer-display-name="producerDisplayName" :preferred-reference="preferredReference" :idol-name="idolName" :preferred-actions="preferredActions" :desktop-overview="desktopOverview" :global-search="globalSearch" @back="emit('back')" @open-home="emit('open-home')" @navigate="emit('navigate', $event)" @edit-personal="personalOpen = true" @open-preferred="emit('open-preferred', $event)" @search="emit('search', $event)" @open-result="emit('open-result', $event)" @open-stage="emit('open-stage', $event)" @retry-overview="emit('retry-overview')">
       <template #toolbar>
         <ArchiveLanguageSwitch :compact-mobile="false" />
@@ -67,7 +67,7 @@
       <button class="terminal-text-button" type="button" @click="settingsOpen = false; wallpaperOpen = true"><Images :size="18" />更换 SSR 卡面壁纸</button>
       <button class="terminal-text-button" type="button" @click="settingsOpen = false; emit('settings')"><Settings2 :size="18" />启动设置</button>
     </ArchiveTerminalDialog>
-    <ArchiveWallpaperPicker :open="wallpaperOpen" @close="wallpaperOpen = false" />
+    <ArchiveWallpaperPicker :open="wallpaperOpen" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" @close="wallpaperOpen = false" />
   </section>
 </template>
 <script setup>
@@ -77,6 +77,7 @@ import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { producerName } from '../../utils/LanguageStore.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { PRODUCER_NAME_WITH_P_TOKEN } from '../../localization/story/ProducerAddressing.js'
+import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ArrowLeft, ChevronRight, Images, Settings2, Sparkles, Users } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -94,6 +95,7 @@ const emit = defineEmits(['navigate', 'back', 'settings', 'open-home', 'open-pre
 const desktopMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(min-width: 761px)') : null
 const isDesktop = ref(Boolean(desktopMedia?.matches))
 const overview = ref(null)
+const desktopTheme = computed(() => ({ '--portal-idol-color': (props.preferredReference?.actionable && normalizeIdolAccentColor(props.preferredReference.accentColor)) || '#33a8a5' }))
 function updateDesktop(event) { isDesktop.value = event.matches }
 const producerDisplayName = computed(() => producerName.value ? presentProducerAddressingText(PRODUCER_NAME_WITH_P_TOKEN) : '未设置制作人')
 const personalOpen = ref(false), settingsOpen = ref(false)
@@ -119,11 +121,19 @@ onBeforeUnmount(() => desktopMedia?.removeEventListener('change', updateDesktop)
 
 <style scoped>
 .terminal-portal {--gs-text-portal:26px;}
-.terminal-portal.is-desktop-overview {background:#f5f8f3;}
-.terminal-portal.is-desktop-overview :deep(.terminal-backdrop) {opacity:.08;}
-.portal-overview-control {display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#486f5c;font-size:12px;font-weight:500;}
-.portal-overview-control:active {background:#e6f2ea;}
+.terminal-portal.is-desktop-overview {--portal-paper:color-mix(in srgb,var(--portal-idol-color) 4%,#f8fafb);--portal-accent:color-mix(in srgb,var(--portal-idol-color) 36%,#13232d);--portal-tint:color-mix(in srgb,var(--portal-idol-color) 7%,#fff);background:var(--portal-paper);}
+/* The full-width desktop portal must not inherit the half-width terminal art window. */
+.terminal-portal.is-desktop-overview :deep(.terminal-backdrop) {z-index:0;opacity:1;}
+.terminal-portal.is-desktop-overview :deep(.terminal-backdrop picture) {padding:0;}
+.terminal-portal.is-desktop-overview :deep(.terminal-backdrop img) {object-fit:cover;object-position:var(--art-position-wide, 50% 40%);}
+.terminal-portal.is-desktop-overview :deep(.terminal-neutral) {background:linear-gradient(135deg,var(--portal-paper),color-mix(in srgb,var(--portal-idol-color) 12%,#fff));}
+.terminal-portal.is-desktop-overview :deep(.terminal-backdrop)::after {content:'';position:absolute;inset:0;background:linear-gradient(100deg,color-mix(in srgb,var(--portal-paper) 96%,transparent) 0%,color-mix(in srgb,var(--portal-paper) 86%,transparent) 38%,color-mix(in srgb,var(--portal-paper) 62%,transparent) 72%,color-mix(in srgb,var(--portal-paper) 48%,transparent) 100%),linear-gradient(0deg,color-mix(in srgb,var(--portal-paper) 80%,transparent),transparent 65%);}
+.terminal-portal.is-desktop-overview::before {content:'';position:absolute;z-index:1;inset:0;pointer-events:none;background:radial-gradient(ellipse at 15% 10%,color-mix(in srgb,var(--portal-idol-color) 9%,transparent),transparent 60%);}
+.portal-overview-control {display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent,#486f5c);font-size:12px;font-weight:500;}
+.portal-overview-control:active {background:var(--portal-tint,#e6f2ea);}
 .terminal-portal.is-desktop-overview :deep(.archive-language-switch button) {min-height:44px;font-size:var(--gs-text-ui);}
+.terminal-portal.is-desktop-overview :deep(.archive-language-switch button[aria-pressed=true]) {background:var(--portal-accent);}
+.terminal-portal.is-desktop-overview :deep(.archive-language-switch button:focus-visible) {outline-color:var(--portal-accent);}
 .terminal-portal.is-desktop-overview .terminal-notice {font-size:var(--gs-text-body);}
 .terminal-portal.is-desktop-overview .terminal-text-button {min-height:44px;font-size:var(--gs-text-ui);}
 .terminal-portal .terminal-panel {width:min(860px,100%);min-width:0;padding:var(--gs-space-6) var(--gs-space-7);}
@@ -173,6 +183,8 @@ onBeforeUnmount(() => desktopMedia?.removeEventListener('change', updateDesktop)
 .portal-entry:active {transform:translateY(1px);box-shadow:none;}
 @media(max-width:760px) {
  .terminal-portal {--gs-text-portal:23px;}
+ /* Keep the portrait clear above and soften the lower browsing area without another image copy. */
+ .terminal-portal.has-wallpaper :deep(.terminal-backdrop)::after {content:'';position:absolute;inset:32% 0 0;background:#f1f5fb24;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);-webkit-mask-image:linear-gradient(transparent,#000 42%);mask-image:linear-gradient(transparent,#000 42%);}
  .terminal-portal .terminal-scroll {padding:max(var(--gs-space-4),var(--terminal-safe-top)) max(var(--gs-space-4),var(--terminal-safe-right)) var(--gs-space-4) max(var(--gs-space-4),var(--terminal-safe-left));}
  .terminal-portal .terminal-panel,.terminal-portal.has-wallpaper .terminal-panel {width:100%;min-width:0;padding:var(--gs-space-4);border-radius:8px 20px 8px 8px;}
  .terminal-portal .terminal-brand {font-size:15px;}

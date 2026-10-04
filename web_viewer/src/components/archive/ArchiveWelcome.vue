@@ -56,7 +56,7 @@
         <p class="terminal-signature">SideM Archive · 非官方资料存档</p>
       </div>
     </div>
-    <ArchiveWallpaperPicker :open="wallpaperOpen" @close="wallpaperOpen = false" />
+    <ArchiveWallpaperPicker :open="wallpaperOpen" :idols="preferredIdols.length ? preferredIdols : idols" :idol-name="idolName" :idol-search="idolSearch" @close="wallpaperOpen = false" />
   </section>
 </template>
 <script setup>

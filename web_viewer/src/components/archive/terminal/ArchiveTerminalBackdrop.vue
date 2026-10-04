@@ -1,7 +1,7 @@
 <template>
   <div class="terminal-backdrop" aria-hidden="true">
     <picture v-if="wallpaper && !failed" :key="wallpaper.id">
-      <source media="(max-width: 1100px) and (orientation: portrait)" :srcset="wallpaper.portrait.url" />
+      <source v-if="!landscapeOnly" media="(max-width: 1100px) and (orientation: portrait)" :srcset="wallpaper.portrait.url" />
       <img :src="wallpaper.landscape.url" alt="" decoding="async" :style="positionStyle" @error="failImage" />
     </picture>
     <div v-else class="terminal-neutral"><span>315</span></div>
@@ -9,7 +9,7 @@
 </template>
 <script setup>
 import { computed, ref, watch } from 'vue'
-const props = defineProps({ wallpaper: { type: Object, default: null } })
+const props = defineProps({ wallpaper: { type: Object, default: null }, landscapeOnly: Boolean })
 const failed = ref(false)
 const emit = defineEmits(['error'])
 function failImage() { failed.value = true; emit('error') }

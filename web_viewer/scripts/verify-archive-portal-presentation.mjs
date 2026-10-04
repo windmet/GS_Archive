@@ -126,6 +126,8 @@ function check(dataset) {
   assert.ok(overview.songs.every(song => song.target.songCode === song.id))
   assert.equal(overview.unitCount, 16, 'combination count comes from the complete formal bootstrap unit identities')
   assert.equal(overview.preferredUnitName, 'Jupiter')
+  assert.equal(overview.preferredUnitCode, '01jup', 'unit logo identity uses the formal unit code, not its numeric id or display name')
+  assert.equal(buildPortalDesktopOverview({ ...options, preferredIdol: null, preferredDetail: null }).preferredUnitCode, '')
   for (const song of overview.songs) {
     if (!song.stageTarget) continue
     assert.equal(song.stageTarget.songCode, song.id)
@@ -155,8 +157,32 @@ function check(dataset) {
     assert.deepEqual(story.target, { domain: 'stories', view: 'story_detail', storyId: source.id,
       file: source.file, storyDomain: source.domain, sectionId: String(source.sectionId) })
     assert.equal(story.summary, source.preplaySynopsis?.text || '')
+    const sourceCast = [...new Set(source.characters || [])].filter(id => bootstrap.idols.some(idol => idol.id === id))
+    assert.deepEqual(story.cast, sourceCast.map(id => {
+      const idol = bootstrap.idols.find(row => row.id === id)
+      return { id, name: callbacks.idolName(id, idol.name), accentColor: idol.color || '' }
+    }), 'actual cast references retain only exact formal identities, source order and localized names')
     assert.equal(story.image, null, 'a story directory without an actual cover binding never guesses a portrait')
   }
+  const castSource = { ...overviewStories.find(row => row.exists === true), characters: ['002sht', '001tom', '002sht', '101ken', '047shu_001', 'group', '047shu', '001TOM'] }
+  const expectedCastIds = ['002sht', '001tom', '047shu']
+  const castBefore = JSON.stringify(castSource)
+  const castOverview = buildPortalDesktopOverview({ ...options, stories: [castSource] }).stories[0]
+  assert.deepEqual(castOverview.cast.map(row => row.id), expectedCastIds,
+    'duplicates, NPCs, model aliases and differently cased identities cannot become formal idol avatars')
+  assert.deepEqual(castOverview.cast.map(row => row.name), expectedCastIds.map(id => callbacks.idolName(id, bootstrap.idols.find(row => row.id === id).name)))
+  const japaneseCast = buildPortalDesktopOverview({ ...options, stories: [castSource], idolName: undefined }).stories[0].cast
+  assert.deepEqual(japaneseCast.map(row => row.name), expectedCastIds.map(id => bootstrap.idols.find(row => row.id === id).name),
+    'Japanese fallback names and identities remain intact when no localized callback is supplied')
+  assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [castSource], idolName: () => '' }).stories[0].cast, japaneseCast,
+    'an empty display callback preserves source names')
+  assert.equal(JSON.stringify(castSource), castBefore, 'cast filtering does not rewrite source character evidence')
+  for (const characters of [[], undefined, ['101ken', 'group', '047shu_001']]) {
+    assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [{ ...castSource, characters }] }).stories[0].cast, [])
+  }
+  const allCastIds = bootstrap.idols.map(row => row.id).reverse()
+  assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [{ ...castSource, characters: allCastIds }] }).stories[0].cast.map(row => row.id), allCastIds,
+    'the presentation preserves the complete formal cast; visual consumers own any avatar count limit')
   assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [], events: [] }).stories, [])
   assert.deepEqual(buildPortalDesktopOverview({ ...options, stories: [], events: [] }).events, [])
   if (actual) {
@@ -184,6 +210,7 @@ function check(dataset) {
     assert.deepEqual(kaoruOverview.songs.map(row => row.id), ['strclb', 'montns', 'anwhre', 'cgtocc'])
     assert.ok(kaoruOverview.stories.every(row => overviewStories.find(source => source.id === row.id).characters.includes('005kao')))
     assert.equal(kaoruOverview.preferredUnitName, 'DRAMATIC STARS')
+    assert.equal(kaoruOverview.preferredUnitCode, '02dra')
     assert.ok(kaoruOverview.cards.every(row => row.image.kind === 'card_portrait'), 'Kaoru preview uses actual portrait capability with no landscape container mismatch')
     const sourceByRarity = Object.fromEntries(['N', 'R', 'SR', 'SSR'].map(rarity => [rarity, kaoruCards.find(row => row.rarity === rarity)]))
     const shortage = buildPortalDesktopOverview({ ...options, cards: ['N', 'R', 'SSR', 'SR'].map(rarity => sourceByRarity[rarity]), preferredIdol: kaoru, preferredDetail: null })
@@ -272,7 +299,7 @@ function check(dataset) {
   assert.deepEqual(buildPortalSearchResults({ query: story.file, bootstrap, rowsByDomain: { stories: [unavailableStory] } }), [],
     'an absent story remains absent rather than acquiring an actionable result')
   assert.equal(JSON.stringify(dataset), before, 'all counts, rows, descriptors and statistics remain source-faithful and unmodified')
-  console.log(`PASS Portal ${actual ? 'actual artifact' : 'explicit portable fixture'} ${bootstrap.release}: typed 4-domain search, source counts/portrait rarity order, preferred song/cast/event relations, exact manifest stage targets, actual bindings and source synopsis, owner binding, null/zero stats, CN/JA callbacks, long names, empty query, pinned descriptors and complete row counts.`)
+  console.log(`PASS Portal ${actual ? 'actual artifact' : 'explicit portable fixture'} ${bootstrap.release}: typed 4-domain search, source counts/portrait rarity order, preferred unit code and complete exact-id cast, preferred song/cast/event relations, exact manifest stage targets, actual bindings and source synopsis, owner binding, null/zero stats, CN/JA callbacks, long names, empty query, pinned descriptors and complete row counts.`)
 }
 
 check(portableDataset())

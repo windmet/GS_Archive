@@ -16,6 +16,7 @@
           <component :is="item.icon" :size="19" :stroke-width="1.8" />
           <span>{{ item.label }}</span>
         </button>
+        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆总览</span></button>
         <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }" role="group" :aria-labelledby="`nav-${group.id}`">
           <h2>
             <button :id="`nav-${group.id}`" type="button" class="archive-nav-group-trigger" :aria-expanded="openNavigationGroup === group.id" :aria-controls="`nav-items-${group.id}`" @click="openNavigationGroup = openNavigationGroup === group.id ? '' : group.id">
@@ -28,7 +29,6 @@
             </button>
           </div>
         </div>
-        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆总览</span></button>
       </nav>
     </aside>
 
@@ -128,8 +128,8 @@ const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
 const navigationGroups = [
-  { id: 'idol-archive', label: '偶像图鉴', icon: Users, ids: ['idols', 'cards', 'stories', 'songs', 'collections'] },
-  { id: 'operations', label: '运营年表', icon: CalendarDays, ids: ['events', 'gashas', 'interactions'] },
+  { id: 'idol-archive', label: '偶像图鉴', icon: Users, ids: ['idols', 'cards', 'stories', 'songs', 'collections', 'interactions'] },
+  { id: 'operations', label: '运营年表', icon: CalendarDays, ids: ['events', 'gashas'] },
   { id: 'workshop', label: '视听工坊', icon: Camera, ids: ['photos', 'experiments', 'resources'] },
 ].map(group => ({ ...group, items: group.ids.map(id => ({ ...ARCHIVE_NAVIGATION.find(item => item.id === id), icon: iconBySection[id] })) }))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
@@ -237,7 +237,6 @@ const primaryNavigation = [
 .archive-nav-group.is-active .archive-nav-group-trigger {color:#5bd4c6;background:#203340;}
 .archive-nav-group-items {padding:4px 0;}
 .archive-nav .archive-nav-group-items button {padding-left:20px;gap:9px;}
-.archive-nav .archive-overview-link {margin-top:12px;border-top:1px solid #30404c;border-radius:0;padding-top:8px;min-height:44px;}
 .archive-nav button:focus-visible {outline:3px solid #35c2b8;outline-offset:-3px;}
 @media(pointer:coarse){.archive-nav button{min-height:44px;}}
 .archive-topbar {
