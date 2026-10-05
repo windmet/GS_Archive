@@ -19,6 +19,10 @@
 - `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`；
 - `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`。
 
+任务涉及界面、版式、手机适配或设计系统时，先读
+`docs/GS_ARCHIVE_UI_HANDOFF_20261005.md`（当前 UI 主线、顺序与坑）和
+`docs/GS_UI_CONSTITUTION.md` 的「视觉语言」一节。
+
 只有任务涉及 Pixi/Spine 舞台时再读 `docs/SMOKE_CASES.md`、
 `docs/SMOKE_EXPECTATIONS.md` 和 `docs/DO_NOT_REOPEN.md`。前两者是人工兼容
 样例，不是自动化 Story Runtime 门禁。
