@@ -87,11 +87,11 @@ assert.match(appSource, /storyReadModelDetail\.value\?\.view\?\.promotedVisualUr
 assert.doesNotMatch(appSource, /getPromotedCharacterImageUrl/)
 const adapterSource = await readFile(new URL('../readmodels/lib/checkout_adapter.mjs', import.meta.url), 'utf8')
 assert.match(adapterSource, /getPromotedCharacterImageUrl\('birthday_visual',birthdayIdol,data\.rawCharacterImagePromotions\)/)
-assert.match(appSource, /eventStoryIdolRawCandidateUrl/)
-assert.match(
-  appSource,
-  /getRawCharacterImageCandidateUrl\('event_story_visual', idolCode\)/,
-)
+// Event story art no longer goes through App.vue; the only consumer is the
+// reference builder, whose optional rawCandidateUrl is currently unwired.
+assert.doesNotMatch(appSource, /eventStoryIdolRawCandidateUrl/)
+const referenceSource = await readFile(new URL('../src/presentation/IdolReferencePresentation.js', import.meta.url), 'utf8')
+assert.match(referenceSource, /buildEventIdolReference\(idolCode, dictionary, manifest, registry, event, rawCandidateUrl = ''\)/)
 
 const eventDetailSource = await readFile(
   new URL('../src/components/archive/ArchiveEventDetail.vue', import.meta.url),
