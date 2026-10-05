@@ -16,6 +16,8 @@
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
       :breadcrumbs="archiveBreadcrumbs"
+      :stage-idol="stageLightIdol"
+      :stage-idol-name="stageLightIdol ? idolDisplayName(stageLightIdol.id) || stageLightIdol.name : ''"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
@@ -610,6 +612,7 @@ import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vu
 import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
+import { STAGE_LIGHT_TOKENS, idolStageLightProperties } from './presentation/idolStageLight.js'
 import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
@@ -1037,6 +1040,17 @@ const idolPickerLabel = computed(() => ({
   story: '个人故事',
   mobile: '通信档案',
 })[currentPickTarget.value] || '首页')
+// The 担当 colour takes over the stage light when the producer opts in. The role tokens
+// resolve on :root, so the override must sit on the root element itself.
+const stageLightIdol = computed(() => userPreferences.value.stageLight === 'idol' ? preferredArchiveIdol.value : null)
+watch(() => stageLightIdol.value?.color || '', color => {
+  const root = document.documentElement
+  const properties = idolStageLightProperties(color)
+  for (const token of STAGE_LIGHT_TOKENS) {
+    if (properties[token]) root.style.setProperty(token, properties[token])
+    else root.style.removeProperty(token)
+  }
+}, { immediate: true })
 const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, client: readModelClient,
   scope: portalScope, searchQuery: portalQuery,
   preferredIdol: preferredArchiveIdol,

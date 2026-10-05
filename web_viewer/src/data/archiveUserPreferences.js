@@ -8,6 +8,7 @@ export const DEFAULT_ARCHIVE_USER_PREFERENCES = Object.freeze({
   startupIdol: null,
   preferredIdol: null,
   portalDefaultScope: 'favorite',
+  stageLight: 'mint',
   onboardingComplete: false,
 })
 
@@ -26,6 +27,8 @@ export function normalizeArchiveUserPreferences(value = {}) {
     startupIdol: idolCode(value.startupIdol),
     preferredIdol: idolCode(value.preferredIdol),
     portalDefaultScope: value.portalDefaultScope === 'all' ? 'all' : 'favorite',
+    // 'idol': the 担当 colour takes over the stage light; 'mint' keeps the archive default.
+    stageLight: value.stageLight === 'idol' ? 'idol' : 'mint',
     onboardingComplete: value.onboardingComplete === true,
   }
 }

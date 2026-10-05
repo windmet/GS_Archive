@@ -81,7 +81,7 @@
         音画对齐：{{ syncLabel }}。{{ playbackEvidence }}
       </p>
     </ArchiveTechnicalDetails>
-    <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
+    <ArchiveErrorNote v-if="audioError" class="experimental-error">{{ audioError }}</ArchiveErrorNote>
     <ArchiveTerminalDialog class="solo-drawer" :open="soloOpen" title="Solo 声部试听" :title-id="soloTitleId" @close="soloOpen = false">
       <div class="solo-filters">
         <label>查找偶像<input v-model="soloQuery" type="search" placeholder="输入姓名或组合" /></label>
@@ -96,6 +96,7 @@
 
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'

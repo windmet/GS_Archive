@@ -130,7 +130,7 @@
               <strong>{{ selectedSongAudio ? (audioReady ? '已加载 · 音频主时钟' : '正在加载') : '无对应音频' }}</strong>
               <small v-if="selectedSongAudio">{{ formatTime(selectedSongAudio.duration) }}</small>
             </div>
-            <small v-if="audioError" class="audio-error">{{ audioError }}</small>
+            <ArchiveErrorNote v-if="audioError" tag="small" class="audio-error">{{ audioError }}</ArchiveErrorNote>
             <label class="song-position">
               <span>站位</span>
               <select v-model.number="selectedPosition" @change="seekChoreography">
@@ -197,6 +197,7 @@
 
 <script setup>
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
+import ArchiveErrorNote from './archive/ArchiveErrorNote.vue'
 import { isMaintainerMode } from '../core/maintainerMode.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'

@@ -78,13 +78,14 @@
       </p>
     </ArchiveTechnicalDetails>
     <p v-if="loadingTimeline" class="lineup-status">正在准备所选演唱成员的音频…</p>
-    <p v-else-if="session.error.value" class="lineup-error" role="alert">{{ session.error.value }}</p>
+    <ArchiveErrorNote v-else-if="session.error.value" class="lineup-error">{{ session.error.value }}</ArchiveErrorNote>
   </div>
 </template>
 
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'

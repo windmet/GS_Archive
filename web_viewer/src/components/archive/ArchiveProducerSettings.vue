@@ -15,6 +15,7 @@
           <span class="settings-row-copy"><strong>{{ favorite ? displayName(favorite) : '尚未设置担当' }}</strong><small>{{ favorite?.unitName ? `我的担当 · ${favorite.unitName}` : '资料馆首页会围绕担当展开；临时浏览其他偶像不会改变它。' }}</small></span>
           <button type="button" class="settings-button" @click="favoriteOpen=true">{{ favorite ? '更换担当' : '选择担当' }}</button>
         </div>
+        <label class="settings-row"><span class="settings-row-copy"><span>跟随担当配色</span><small>{{ favorite ? '选中、播放与进度改用担当色。' : '设置担当后可用。' }}</small></span><input type="checkbox" aria-label="跟随担当配色" :checked="preferences.stageLight === 'idol'" :disabled="!favorite" @change="emit('save-startup',{stageLight:$event.target.checked ? 'idol' : 'mint'})" /></label>
         <div class="settings-row settings-name"><ProducerNameSetting /></div>
       </section>
 

@@ -3,7 +3,7 @@
     <summary>歌词 <span>{{ synchronized ? '同步歌词' : '演出脚本' }}</span></summary>
     <div v-if="expanded" class="song-lyrics-body">
       <p v-if="loading" role="status">正在读取歌词…</p>
-      <p v-else-if="error" class="song-lyrics-error" role="alert">{{ error }} <button type="button" @click="load">重试</button></p>
+      <ArchiveErrorNote v-else-if="error" class="song-lyrics-error">{{ error }} <button type="button" @click="load">重试</button></ArchiveErrorNote>
       <p v-else-if="!lines.length">这首歌暂无可展示的演出脚本歌词。</p>
       <template v-else>
         <p v-if="!synchronized" class="song-lyrics-note">歌词仅供阅读。</p>
@@ -24,6 +24,7 @@
 
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import { fetchSongBaseTimeline } from '../../utils/songPerformanceData.js'
 import { authoredSongLyrics, activeSongLyric, sharesSongAudio } from '../../utils/songLyrics.js'
 

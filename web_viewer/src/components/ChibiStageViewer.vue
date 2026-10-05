@@ -260,7 +260,7 @@
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
             <div class="viewing-actions"><button type="button" @click="togglePureMode"><EyeOff :size="16" />纯净观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
           </section>
-          <p v-if="audioError" class="audio-error" role="alert">{{ audioError }}</p>
+          <ArchiveErrorNote v-if="audioError" class="audio-error">{{ audioError }}</ArchiveErrorNote>
           <p v-if="panelNotice || fullscreenNoticeText" class="panel-notice" role="status">{{ panelNotice || fullscreenNoticeText }} <a v-if="snapshotUrl" :href="snapshotUrl" :download="snapshotFilename">保存 PNG</a></p>
         </div>
       </aside>
@@ -417,6 +417,7 @@
 <script setup>
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import ArchiveIdolAvatar from './archive/ArchiveIdolAvatar.vue'
+import ArchiveErrorNote from './archive/ArchiveErrorNote.vue'
 import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
 import { isMaintainerMode } from '../core/maintainerMode.js'
 import ChibiIdolPicker from './ChibiIdolPicker.vue'
@@ -3828,7 +3829,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .runtime-summary div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 10px; }
 .runtime-summary dt { color: var(--muted); }
 .runtime-summary dd { margin: 0; color: #365860; }
-.audio-error { color: #a73737; font-size: 10px; }
+.audio-error { font-size: var(--gs-text-meta); }
 
 .stage-header-title { flex: 1; min-width: 0; }
 .stage-icon-action { display: inline-grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; color: var(--gs-chrome-ink); border: 0; border-radius: var(--gs-radius-control); background: transparent; cursor: pointer; }

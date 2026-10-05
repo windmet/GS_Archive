@@ -15,7 +15,7 @@
       <details><summary>音量</summary><label>音量 <input type="range" min="0" max="1" step="0.01" :value="volume" @input="volume = Number($event.target.value); audioElement.volume = volume * masterVolume" /></label></details>
     </ArchiveMediaTransport>
     <p v-if="clockSnapshot.phase === 'waiting'" class="song-block-note" role="status">正在缓冲音频…</p>
-    <p v-if="audioError" class="single-song-error" role="alert">{{ audioError }}</p>
+    <ArchiveErrorNote v-if="audioError" class="single-song-error">{{ audioError }}</ArchiveErrorNote>
     <ArchiveSongLyrics :song-code="song.id" :audio-url="track.url" :current-time="clockSnapshot.currentTime"
       :ready="clockSnapshot.duration > 0 && clockSnapshot.phase !== 'error'" @seek="clock.seek" />
   </section>
@@ -26,6 +26,7 @@ import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPref
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { onBeforeUnmount, ref, watch } from 'vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 

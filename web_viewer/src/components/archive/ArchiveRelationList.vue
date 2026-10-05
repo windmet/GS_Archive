@@ -22,7 +22,7 @@
             {{ item.evidenceLabel }}
           </small>
           <small v-if="item.statusLabel" class="status" :class="`tone-${item.statusTone || 'available'}`">
-            {{ item.statusLabel }}
+            <CircleAlert v-if="item.statusTone === 'missing'" :size="12" aria-hidden="true" />{{ item.statusLabel }}
           </small>
         </span>
         <b :title="item.kind === 'card' ? item.title : undefined">{{ item.kind === 'card' ? archiveText('card',item.title,'title') : item.title }}</b>
@@ -41,7 +41,7 @@
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCardTitle.js'
-import { BookOpenText, CalendarRange, ChevronRight, Images, Layers3, Link2, Sparkles, UsersRound } from '@lucide/vue'
+import { BookOpenText, CalendarRange, ChevronRight, CircleAlert, Images, Layers3, Link2, Sparkles, UsersRound } from '@lucide/vue'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -82,7 +82,7 @@ function select(item) {
 .relation-labels strong { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .relation-labels small { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .status.tone-available { color: var(--gs-mint-ink); }
-.status.tone-missing { color: var(--gs-critical); }
+.status.tone-missing { display: inline-flex; align-items: center; gap: 3px; color: var(--gs-critical); }
 .status.tone-reference, .evidence { color: var(--gs-ink-3); }
 .evidence.tone-derived, .evidence.tone-grouped { color: var(--gs-attr-mental); }
 .relation-copy b { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
