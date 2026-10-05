@@ -7,7 +7,6 @@
       </div>
       <div class="gasha-summary">
         <div class="gasha-kicker">
-          <span>GASHA ARCHIVE</span>
           <small class="curated">{{ categoryLabel(gasha.category) }}</small>
           <small v-if="gasha.is_reprint" class="reprint">复刻</small>
         </div>
@@ -142,13 +141,13 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
-.gasha-detail { height: 100%; overflow-y: auto; background: #f7f9fa; container-type: inline-size; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
-.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e2e5e7; border-radius: 6px; background: #eef1f2; }
+.gasha-detail { height: 100%; overflow-y: auto; background: var(--gs-paper); container-type: inline-size; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
+.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
+.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: #eef1f2; }
 .gasha-banner img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .gasha-summary { min-width: 0; padding-top: var(--gs-space-2); }
 .gasha-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); color: #1c8880; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-heavy); }
-.gasha-kicker small { padding: var(--gs-space-1) 5px; border-radius: 3px; background: #eef1f3; color: #7b858b; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
+.gasha-kicker small { padding: var(--gs-space-1) 5px; border-radius: var(--gs-radius-control); background: #eef1f3; color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
 .gasha-kicker small.curated { background: #e8f7f5; color: #177b74; }
 .gasha-kicker small.reprint { background: #fff0db; color: #965f13; }
 .gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
@@ -158,8 +157,8 @@ function formatDateTime(timestamp) {
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }
 .ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:var(--gs-text-ui); }
-.ticket-list { list-style:none;padding:0;display:grid;gap:var(--gs-space-4); }
-.ticket-list li { min-width:0;border:1px solid #deeaeb;border-radius:7px;padding:var(--gs-space-4); }
+.ticket-list { list-style:none;padding:0;display:grid;gap:0;border-top:1px solid var(--gs-ink); }
+.ticket-list li { min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
 .ticket-list button { display:block;width:100%;min-height:var(--gs-control-touch);background:transparent;border:0;color:#157a72;text-align:left;cursor:pointer;font:inherit;font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.6;overflow-wrap:anywhere; }
 .ticket-list p { font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);white-space:pre-wrap;color:#627680;line-height:1.7;margin:var(--gs-space-2) 0 0;overflow-wrap:anywhere; }
 .gasha-summary dl { margin: 0; }
@@ -170,14 +169,14 @@ function formatDateTime(timestamp) {
 .gasha-summary :deep(.archive-source-link) { display: block; max-width: 100%; min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); color: #167d76; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
 .gasha-summary :deep(.archive-source-link svg) { display: inline; margin-right: var(--gs-space-2); vertical-align: middle; }
 .gasha-summary :deep(.archive-source-link small) { display: block; margin-top: var(--gs-space-2); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
-.detail-section { padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }
+.detail-section { padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
 .detail-section + .detail-section { margin-top: var(--gs-space-4); }
 .section-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-5); }
 .section-heading > div { flex: 1 1 240px; min-width: 0; }
 .section-heading > span:not(.derived-badge) { font-size: var(--gs-text-meta); }
-.section-heading h3 { margin: 0; color: #26363e; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
+.section-heading h3 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .section-heading p { margin: var(--gs-space-2) 0 0; color: var(--gs-color-muted); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.6; }
-.derived-badge { flex: 0 0 auto; max-width: 100%; padding: var(--gs-space-2) var(--gs-space-3); border-radius: 4px; background: #fff2d6; color: #8b6413; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.derived-badge { flex: 0 0 auto; max-width: 100%; padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); background: #fff2d6; color: #8b6413; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; }
 .evidence-grid div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid #edf0f2; }
 .evidence-grid dt { color: #7d898f; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
@@ -187,6 +186,7 @@ function formatDateTime(timestamp) {
 .gasha-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); }
 .gasha-detail :deep(.relation-meta), .gasha-detail :deep(.relation-proof) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .gasha-detail :deep(.relation-copy code) { font-size: var(--gs-text-caption); }
+.gasha-detail > :deep(.archive-technical) { margin: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)) var(--gs-space-9); }
 .gasha-detail :deep(.archive-technical summary) { min-height: var(--gs-control-touch); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .gasha-detail :deep(.archive-technical-body) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 .gasha-detail :deep(.archive-technical pre) { font-size: var(--gs-text-caption); }

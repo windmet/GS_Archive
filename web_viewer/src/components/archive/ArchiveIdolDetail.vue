@@ -3,8 +3,7 @@
     <header class="idol-profile-header">
       <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="displayedIdolName" />
       <div class="idol-identity">
-        <span class="idol-code">偶像档案</span>
-        <h2>{{ displayedIdolName }}</h2>
+        <h2>{{ displayedIdolName }}<span v-if="idol.color" class="idol-color" :style="{ backgroundColor: idol.color }" :title="`代表色 ${idol.color}`"></span></h2>
         <p>{{ idol.name_fields?.kana || idol.cv || '' }}</p>
         <button v-if="idol.unit_code" class="idol-unit-link" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" @click="emit('open-unit', idol)">
           <UsersRound :size="15" />
@@ -12,12 +11,10 @@
           <ChevronRight :size="14" />
         </button>
       </div>
-      <span v-if="idol.color" class="idol-color" :style="{ backgroundColor: idol.color }" :title="idol.color"></span>
       <ArchiveIdolSwitcher
         class="profile-switcher"
         :idols="idols"
         :selected-idol="selectedIdol"
-        dark
         @select="emit('select-idol', $event)"
       />
     </header>
@@ -34,7 +31,6 @@
     <section class="idol-related" aria-labelledby="idol-related-title">
       <div class="section-heading">
         <h3 id="idol-related-title">关联资料</h3>
-        <span>已收录</span>
       </div>
       <div class="related-grid">
         <button v-for="item in related" :key="item.id" :data-archive-focus-id="`idol-domain:${idol.idol_code}:${item.id}`" @click="emit('open-domain', item.id)">
@@ -174,146 +170,71 @@ function formatDate(timestamp) {
 </script>
 
 <style scoped>
-.idol-detail {
-  container: idol-detail / inline-size;
-  min-width: 0;
-  height: 100%;
-  overflow-y: auto;
-  padding: var(--gs-space-7);
-  background: #f7f9fa;
-  font-family: var(--gs-font-directory);
-  font-size: var(--gs-text-body);
-  font-weight: var(--gs-weight-regular);
-}
-.idol-detail button { font-family: inherit; font-weight: var(--gs-weight-semibold); }
-.idol-detail :deep(button:focus-visible),
-.idol-detail :deep(select:focus-visible),
-.idol-detail :deep(summary:focus-visible) {
-  outline: var(--gs-focus-ring) solid #16978e;
-  outline-offset: var(--gs-focus-offset);
-}
-.idol-profile-header :deep(button:focus-visible),
-.idol-profile-header :deep(select:focus-visible) { outline-color: #58cec5; }
-.idol-profile-header {
-  position: relative;
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr) minmax(0, 360px);
-  align-items: center;
-  gap: var(--gs-space-6);
-  min-height: 152px;
-  padding: var(--gs-space-7);
-  border-bottom: 3px solid #2bb8ae;
-  background: #17212b;
-  color: #fff;
-}
-.idol-portrait { box-shadow: 0 0 0 1px rgba(255, 255, 255, .85); }
-.idol-identity { min-width: 0; overflow-wrap: anywhere; }
-.idol-code { color: #58cec5; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.idol-identity h2 { margin: var(--gs-space-3) 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.4; letter-spacing: 0; }
-.idol-identity p { margin: 0; color: #aeb9c2; font-size: var(--gs-text-meta); }
-.idol-unit-link { display: inline-flex; align-items: center; gap: var(--gs-space-3); min-height: var(--gs-control-compact); max-width: 100%; margin-top: var(--gs-space-4); padding: 0 var(--gs-space-3); border: 1px solid #42515d; border-radius: var(--gs-radius-control); background: #22303b; color: #dce5e9; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.idol-unit-link span { min-width: 0; }
+/* Idol detail: identity on paper (the idol colour lives in the avatar ring), then flat sections. */
+.idol-detail { container: idol-detail / inline-size; display: grid; align-content: start; gap: var(--gs-space-section); min-width: 0; height: 100%; overflow-y: auto; padding: var(--gs-space-8); background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
+.idol-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
+.idol-detail button { font-family: inherit; }
+.idol-detail :deep(button:focus-visible), .idol-detail :deep(select:focus-visible), .idol-detail :deep(summary:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+
+.idol-profile-header { display: grid; grid-template-columns: 104px minmax(0, 1fr) minmax(0, 360px); align-items: center; gap: var(--gs-space-7); }
+.idol-identity { display: grid; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
+.idol-identity h2 { display: flex; align-items: center; gap: var(--gs-space-4); margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; }
+.idol-identity p { margin: 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-ui); }
+.idol-color { flex: none; width: 12px; height: 12px; border-radius: 50%; }
+.idol-unit-link { display: inline-flex; align-items: center; justify-self: start; gap: var(--gs-space-2); min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .idol-unit-link svg { flex: 0 0 auto; }
-.idol-color { position: absolute; right: var(--gs-space-7); top: var(--gs-space-7); width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; }
-.profile-switcher { gap: var(--gs-space-3); min-width: 0; margin-right: var(--gs-space-8); }
-.profile-switcher :deep(button) { flex-basis: var(--gs-control-normal); width: var(--gs-control-normal); height: var(--gs-control-normal); border-radius: var(--gs-radius-control); font-family: inherit; }
-.profile-switcher :deep(label) { gap: var(--gs-space-2); }
+.profile-switcher { gap: var(--gs-space-3); min-width: 0; }
+.profile-switcher :deep(button) { flex-basis: var(--gs-control-normal); width: var(--gs-control-normal); height: var(--gs-control-normal); border-radius: var(--gs-radius-control); }
 .profile-switcher :deep(label span) { font-size: var(--gs-text-meta); }
-.profile-switcher :deep(select) { min-width: 0; height: var(--gs-control-normal); padding: 0 var(--gs-space-8) 0 var(--gs-space-4); border-radius: var(--gs-radius-field); font-family: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { min-width: 0; margin-top: var(--gs-space-6); padding: var(--gs-space-6); border: 1px solid #dfe4e8; background: #fff; }
-.idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
-.idol-facts dl div { min-width: 0; padding: var(--gs-space-4) var(--gs-space-5); border-left: 1px solid #e5e9ec; }
-.idol-facts dl div:nth-child(4n + 1) { border-left: 0; }
-.idol-facts dt { color: #7b858e; font-size: var(--gs-text-meta); }
-.idol-facts dd { margin: var(--gs-space-2) 0 0; overflow-wrap: anywhere; white-space: pre-line; font-size: var(--gs-text-body); font-weight: var(--gs-weight-medium); }
-.section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-4); }
+.profile-switcher :deep(select) { min-width: 0; height: var(--gs-control-normal); padding: 0 var(--gs-space-8) 0 var(--gs-space-4); border-radius: var(--gs-radius-control); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+
+.idol-facts dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; border-top: 1px solid var(--gs-ink); }
+.idol-facts dl div { min-width: 0; padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
+.idol-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.idol-facts dd { margin: var(--gs-space-1) 0 0; overflow-wrap: anywhere; white-space: pre-line; font-weight: var(--gs-weight-medium); }
+
+.section-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); }
 .section-heading h3, .idol-notes h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
-.section-heading span { color: #7b858e; font-size: var(--gs-text-meta); }
-.related-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-3); }
-.related-grid button {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--gs-space-3);
-  min-width: 0;
-  min-height: 62px;
-  padding: var(--gs-space-4);
-  border: 1px solid #dfe4e8;
-  border-radius: var(--gs-radius-control);
-  background: #fff;
-  color: #26313a;
-  cursor: pointer;
-  text-align: left;
-}
-.related-grid button > svg:first-child { color: #16978e; }
-.related-grid button > svg:last-child { color: #9ca5ad; }
-.related-grid span { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
-.related-grid strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.related-grid small { color: #7b858e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.song-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-3); }
-.song-links button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid #dfe4e8; border-radius: var(--gs-radius-control); background: #fff; color: #26313a; cursor: pointer; text-align: left; }
-.song-links img { width: 44px; height: 44px; border-radius: var(--gs-radius-control); object-fit: cover; }
-.song-links button > svg:first-child { margin: auto; color: #16978e; }
-.song-links button > svg:last-child { color: #9ca5ad; }
-.song-links span { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
-.song-links strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.song-links small { color: #7b858e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-7); }
-.idol-notes p { margin: var(--gs-space-3) 0 0; color: #4f5b64; font-size: var(--gs-text-body); line-height: 1.7; overflow-wrap: anywhere; }
-.idol-honor-note { margin: var(--gs-space-4) 0 0; color: #70848a; font-size: var(--gs-text-body); line-height: 1.7; }
-
-.idol-detail :deep(.relation-list) { gap: var(--gs-space-3); }
-.idol-detail :deep(.relation-row) { gap: var(--gs-space-4); padding: var(--gs-space-3) var(--gs-space-4); border-radius: var(--gs-radius-control); font-family: inherit; }
-.idol-detail :deep(.relation-copy) { gap: var(--gs-space-2); }
-.idol-detail :deep(.relation-labels) { gap: var(--gs-space-2); }
-.idol-detail :deep(.relation-labels strong),
-.idol-detail :deep(.relation-labels small),
-.idol-detail :deep(.relation-meta),
-.idol-detail :deep(.relation-proof),
-.idol-detail :deep(.relation-copy code) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.idol-detail :deep(.relation-labels small) { padding: var(--gs-space-1) var(--gs-space-2); }
+.section-heading span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.related-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); }
+.related-grid button { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); text-align: left; cursor: pointer; }
+.related-grid button > svg:first-child { color: var(--gs-ink-3); }
+.related-grid button > svg:last-child { color: var(--gs-ink-3); }
+.related-grid span { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-1) var(--gs-space-4); min-width: 0; overflow-wrap: anywhere; }
+.related-grid strong { font-weight: var(--gs-weight-semibold); }
+.related-grid small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 var(--gs-space-7); }
+.song-links button { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); text-align: left; cursor: pointer; }
+.song-links img { width: 48px; height: 48px; border-radius: var(--gs-radius-media); object-fit: cover; }
+.song-links button > svg { margin: auto; color: var(--gs-ink-3); }
+.song-links span { display: grid; min-width: 0; }
+.song-links strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-8); }
+.idol-notes h3 { padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); }
+.idol-notes p { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-2); line-height: 1.8; overflow-wrap: anywhere; }
+.idol-honor-note { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
+.idol-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
 .idol-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.idol-detail :deep(.archive-technical) { margin-top: var(--gs-space-5); border-radius: var(--gs-radius-control); }
-.idol-detail :deep(.archive-technical summary) { min-height: var(--gs-control-normal); padding: var(--gs-space-4) var(--gs-space-5); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.idol-detail :deep(.archive-technical-body) { padding: 0 var(--gs-space-5) var(--gs-space-5); font-size: var(--gs-text-meta); }
-.idol-detail :deep(.archive-technical pre) { font-size: var(--gs-text-meta); }
+.idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 
-@media (hover: hover) and (pointer: fine) {
-  .idol-unit-link:hover { border-color: #58cec5; }
-  .related-grid button:hover, .song-links button:hover { border-color: #75cbc5; background: #f0fbfa; }
+@media (hover: hover) {
+  .idol-unit-link:hover { text-decoration: underline; }
+  .related-grid button:hover strong, .song-links button:hover strong { color: var(--gs-mint-ink); }
 }
-
-/* 104px portrait + 40px gaps + 200px identity + 360px selector + 48px padding = 752px. */
-/* Stack the selector before that identity column becomes narrow; keep both portrait sizes. */
 @container idol-detail (max-width: 800px) {
   .idol-profile-header { grid-template-columns: 104px minmax(0, 1fr); }
-  .profile-switcher { grid-column: 1 / -1; width: 100%; margin: 0; }
+  .profile-switcher { grid-column: 1 / -1; width: 100%; }
 }
-
-@media (max-width: 760px), (pointer: coarse) {
+@media (max-width: 900px) { .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .idol-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
+  .idol-profile-header { grid-template-columns: 78px minmax(0, 1fr); gap: var(--gs-space-5); }
+  .idol-portrait { --idol-avatar-override-size: 78px; }
+  .idol-identity h2 { font-size: var(--gs-text-section); }
   .idol-unit-link { min-height: var(--gs-control-touch); }
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
-  .idol-detail :deep(.archive-technical summary) { min-height: var(--gs-control-touch); }
-}
-
-@media (max-width: 900px) {
-  .idol-facts dl, .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .idol-facts dl div:nth-child(4n + 1) { border-left: 1px solid #e5e9ec; }
-  .idol-facts dl div:nth-child(2n + 1) { border-left: 0; }
-}
-
-@media (max-width: 560px) {
-  .idol-detail { padding: var(--gs-space-4); }
-  .idol-profile-header { grid-template-columns: 78px minmax(0, 1fr); align-items: start; gap: var(--gs-space-5); min-height: 124px; padding: var(--gs-space-5); }
-  .idol-portrait { --idol-avatar-override-size: 78px; }
-  .idol-color { right: var(--gs-space-5); top: var(--gs-space-5); }
-  .idol-facts, .idol-related, .idol-songs, .idol-events, .idol-notes { margin-top: var(--gs-space-4); padding: var(--gs-space-5); }
-  .idol-facts dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .idol-facts dl div { padding: var(--gs-space-3); }
-  .related-grid { grid-template-columns: 1fr; }
-  .song-links { grid-template-columns: 1fr; }
-  .idol-notes { grid-template-columns: 1fr; gap: var(--gs-space-5); }
-  .idol-detail :deep(.relation-row) { gap: var(--gs-space-3); padding: var(--gs-space-3); }
+  .related-grid, .song-links, .idol-notes { grid-template-columns: 1fr; gap: 0; }
+  .idol-notes { gap: var(--gs-space-7); }
 }
 </style>
