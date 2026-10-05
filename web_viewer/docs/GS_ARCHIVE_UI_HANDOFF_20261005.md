@@ -201,7 +201,21 @@ npm run gallery:capture -- <label>     # 输出 .analysis/gallery/<label>/
   - 「实验」「解码」「AudioContext」这类说明移进维护者模式。
 - 相关检查脚本在基线里本来就失败（song-* 若干，需要浏览器或 HTTP 环境）。改动前先读这些脚本的断言，避免破坏它们真正守护的东西。
 
-### 第 5 步：小人舞台、Spine、摄影工作台
+### 第 5 步：小人舞台、Spine、摄影工作台 ✅ 已完成
+
+- 规则写进 `GS_UI_CONSTITUTION.md`「沉浸式工具外壳」一节。三个工具都只改了外壳与浮层，模板仅调整顶栏按钮的呈现（图标化、顺序）与维护者开关，交互不变。
+- 舞台小人：`ChibiStageViewer.vue` 的自有变量对齐令牌，深色顶栏 / 满幅舞台 / 舞台底色上的编队头像 / 白色浮层播放条 / 右侧白面板 + 下划线标签；`ChibiSongPicker`、`ChibiIdolPicker` 同步（无残留十六进制颜色）。
+- 小人动作（`SpineViewer.vue`）：标题改「小人动作」+ 当前对象；「多人舞台」图标化；「Spine 3.8 · 实验预览」与「当前资源」仅维护者可见；手机顶栏从两行 108px 收为一行 56px。
+- 摄影工作台：顶栏图标化并重排（返回 · 标题 · 撤销 · 导出 · 保存 · 菜单 · 语言），图层编辑条改白色浮层（位置不变，画布排版不变），菜单为贴右 360px 白面板 / 手机底部抽屉，表情与动作格子去粗边框。
+- 对预览的两处修正：舞台小人的截图 / 纯净 / 全屏留在舞台 HUD（全屏对象是舞台）；摄影工作台的「操作提示」留在画布左下（只改成白色浮层），未挪进顶栏。
+- `ArchiveLanguageSwitch` 新增 `on-dark`，并把浅色版本令牌化。
+- 未动：`SpineStage.vue`（剧情播放器与偶像主页的舞台，其颜色是引擎调试浮层，不属工具外壳）。
+- 预览画布：https://claude.ai/artifact/SbNM7A24EYn4Seow8AKeog（规则板 + 三个工具宽屏 / 手机的现在与改造后对照）。
+- 规则：深色舞台 #0B1424 满幅；56px chrome 顶栏（返回图标 · 工具名 + 当前对象 · 44px 图标按钮 · 语言）；画布上的控制只有一种白色浮层（panel 圆角 + float 阴影，墨色圆播放钮）；宽屏右侧 360px 白面板 / 手机底部抽屉，下划线标签 + 细线行；舞台光只标选中/播放/进度；资源路径、「Spine 3.8 · 实验预览」进维护者模式。
+- 对预览的一处修正：舞台小人的截图 / 纯净 / 全屏按钮必须留在 `.performance-hud`（全屏的是舞台区域，顶栏会被隐藏），只改成深色舞台上的图标按钮。
+- 已查明：没有检查脚本断言舞台小人外壳类的 CSS；模板不用改。`ChibiStageViewer.vue` 样式从 3653 行起，用自有变量 `--ink/--panel/--line/--text/--muted/--accent`（`--ink` 只用于根背景），先把这组变量对齐令牌，再改 `.stage-header / .stage-workspace / .performance-shell / .performance-hud / .position-marker / .transport / .stage-inspector / .mobile-panel-tabs` 几条。之后是 SpineViewer / SpineStage、PictureStudio + `picture-studio.css`。
+
+原始要求（留作对照）：
 
 为沉浸式工具单独定一套界面规则，**不要直接套节目册版式**。
 

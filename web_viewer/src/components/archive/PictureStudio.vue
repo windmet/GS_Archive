@@ -2,15 +2,15 @@
   <div ref="studioShell" class="studio-shell" :class="{ 'is-focused': focused }">
   <article class="domain-page studio-page" :class="{ 'is-focused': focused, 'has-drawer': focused && menuOpen }" data-archive-scroll-container>
     <header class="studio-focus-bar">
-      <ArchiveLanguageSwitch class="studio-header-language" />
-      <button v-if="standalone" type="button" title="返回打开摄影工作台的页面" aria-label="返回来源页" @click="emit('back')"><ArrowLeft :size="18" />返回</button>
+      <button v-if="standalone" class="studio-bar-icon" type="button" title="返回打开摄影工作台的页面" aria-label="返回来源页" @click="emit('back')"><ArrowLeft :size="20" /></button>
       <button v-else-if="focused" type="button" @click="leaveFocus">退出专注编辑</button>
       <button v-if="!focused" type="button" @click="enterFocus">专注编辑</button>
-      <span v-if="focused">摄影工作台 · {{ selected ? objectName(selected) : '点选对象后拖动' }}</span>
-      <button v-if="focused" type="button" :disabled="!canUndoDelete" aria-label="撤销删除" title="恢复最近删除的图层" @click="undoDelete"><Undo2 :size="18" /></button>
-      <button v-if="focused" type="button" :aria-expanded="menuOpen" title="素材、图层与所选对象的编辑菜单" @click="menuOpen = !menuOpen"><PanelRight :size="18" />菜单</button>
-      <button v-if="focused" type="button" :disabled="busy || rendering || documentLoading || !!error || exporting" title="生成无选框的 PNG 图片" @click="exportAndShow"><Download :size="18" />导出</button>
-      <button v-if="focused" ref="menuButton" type="button" :aria-expanded="menuOpen && drawerTab === 'files'" aria-controls="studio-focus-menu" title="保存构图、导出图片及全屏设置" aria-label="保存与导出" @click="openDrawer('files')"><Save :size="18" /></button>
+      <span v-if="focused" class="studio-bar-title"><strong>摄影工作台</strong><small>{{ selected ? objectName(selected) : '点选对象后拖动' }}</small></span>
+      <button v-if="focused" class="studio-bar-icon" type="button" :disabled="!canUndoDelete" aria-label="撤销删除" title="恢复最近删除的图层" @click="undoDelete"><Undo2 :size="20" /></button>
+      <button v-if="focused" class="studio-bar-icon" type="button" :disabled="busy || rendering || documentLoading || !!error || exporting" aria-label="导出图片" title="生成无选框的 PNG 图片" @click="exportAndShow"><Download :size="20" /></button>
+      <button v-if="focused" ref="menuButton" class="studio-bar-icon" type="button" :aria-expanded="menuOpen && drawerTab === 'files'" aria-controls="studio-focus-menu" title="保存构图、导出图片及全屏设置" aria-label="保存与导出" @click="openDrawer('files')"><Save :size="18" /></button>
+      <button v-if="focused" class="studio-bar-icon" type="button" :aria-expanded="menuOpen" aria-label="菜单" title="素材、图层与所选对象的编辑菜单" @click="menuOpen = !menuOpen"><PanelRight :size="20" /></button>
+      <ArchiveLanguageSwitch class="studio-header-language" :on-dark="focused" />
     </header>
     <div v-if="focused" class="studio-selection-bar" aria-label="当前图层操作">
       <button type="button" class="studio-edit-selection" :disabled="!selected" :aria-label="selected ? `编辑 ${objectName(selected)}` : '未选择图层'" title="打开所选图层的编辑面板" @click="openDrawer('edit')"><span><strong>{{ selected ? objectName(selected) : '未选择图层' }}</strong><small>{{ selected ? '编辑 ' + (selected.idolId ? '人物' : '贴纸') : '添加素材' }}</small></span><Pencil :size="16" /></button>

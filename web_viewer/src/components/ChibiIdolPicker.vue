@@ -126,47 +126,46 @@ const selectedName = computed(() => availableIdols.value.find(idol => idol.id ==
   --picker-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
   --picker-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
   --picker-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
-  --picker-mint: #33a8a5;
   box-sizing: border-box;
   width: min(720px, calc(100vw - max(16px, var(--picker-safe-left)) - max(16px, var(--picker-safe-right))));
   max-width: none;
   max-height: calc(100dvh - max(16px, var(--picker-safe-top)) - max(16px, var(--picker-safe-bottom)));
   margin: auto;
   padding: 0;
-  border: 1px solid #cddfda;
-  border-top: 3px solid var(--picker-mint);
-  border-radius: 12px;
-  background: #ffffff;
-  color: #243c45;
+  border: 0;
+  border-radius: var(--gs-radius-panel);
+  background: var(--gs-surface);
+  box-shadow: var(--gs-shadow-float);
+  color: var(--gs-ink);
   color-scheme: light;
-  font-family: var(--gs-font-directory, Inter, 'Noto Sans JP', 'Noto Sans SC', system-ui, sans-serif);
+  font-family: var(--gs-font-body);
   font-size: var(--gs-text-body, 14px);
   overflow: hidden;
 }
 .chibi-idol-picker[open] { display: flex; flex-direction: column; }
-.chibi-idol-picker::backdrop { background: #03151cd9; }
+.chibi-idol-picker::backdrop { background: rgb(11 20 36 / 70%); }
 .chibi-idol-picker :deep(.terminal-dialog-header) {
   gap: 12px;
   padding: 12px 16px;
-  border-bottom-color: #cddfda;
-  background: #f2faf7;
+  border-bottom-color: var(--gs-line);
+  background: var(--gs-surface);
 }
 .chibi-idol-picker :deep(.terminal-dialog-header h2) { min-width: 0; font-size: 20px; line-height: 1.4; font-weight: 600; }
 .chibi-idol-picker :deep(.terminal-icon-button) {
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  border: 1px solid #cddfda;
-  color: #365860;
-  background: #e7f3f0;
+  border: 0;
+  color: var(--gs-ink);
+  background: transparent;
 }
 .chibi-idol-picker :deep(.terminal-dialog-body) { min-width: 0; min-height: 0; padding: 16px; overflow-x: hidden; overflow-y: auto; }
 .chibi-idol-picker :deep(.terminal-icon-button:focus-visible),
 .chibi-picker-filters input:focus-visible,
 .chibi-picker-filters select:focus-visible,
-.chibi-picker-idol:focus-visible { outline: 3px solid #168f87; outline-offset: 3px; }
+.chibi-picker-idol:focus-visible { outline: 3px solid var(--gs-mint); outline-offset: 3px; }
 .chibi-picker-filters { display: flex; flex-wrap: wrap; gap: 12px; min-width: 0; }
-.chibi-picker-filters label { display: grid; gap: 8px; min-width: 0; max-width: 100%; color: #526e73; font-size: var(--gs-text-ui, 13px); }
+.chibi-picker-filters label { display: grid; gap: 8px; min-width: 0; max-width: 100%; color: var(--gs-ink-3); font-size: var(--gs-text-ui, 13px); }
 .chibi-picker-search { flex: 1 1 240px; }
 .chibi-picker-unit { flex: 0 1 auto; }
 .chibi-picker-filters input,
@@ -176,16 +175,16 @@ const selectedName = computed(() => availableIdols.value.find(idol => idol.id ==
   max-width: 100%;
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid #cddfda;
-  border-radius: 6px;
-  color: #243c45;
-  background: #ffffff;
+  border: 1px solid var(--gs-line);
+  border-radius: var(--gs-radius-field);
+  color: var(--gs-ink);
+  background: var(--gs-surface);
   font: inherit;
 }
 .chibi-picker-filters input { width: 100%; }
-.chibi-picker-filters input::placeholder { color: #768d89; opacity: 1; }
+.chibi-picker-filters input::placeholder { color: var(--gs-ink-3); opacity: 1; }
 .chibi-picker-filters select { width: auto; }
-.chibi-picker-count { margin: 12px 0; color: #607e79; font-size: var(--gs-text-meta, 12px); line-height: 1.6; overflow-wrap: anywhere; }
+.chibi-picker-count { margin: 12px 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta, 12px); line-height: 1.6; overflow-wrap: anywhere; }
 .chibi-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 8px; min-width: 0; }
 .chibi-picker-idol {
   display: flex;
@@ -196,23 +195,23 @@ const selectedName = computed(() => availableIdols.value.find(idol => idol.id ==
   min-width: 0;
   min-height: 116px;
   padding: 12px 8px;
-  border: 1px solid #cddfda;
-  border-radius: 8px;
+  border: 0;
+  border-radius: var(--gs-radius-control);
   color: inherit;
-  background: #f8fbfa;
+  background: transparent;
   font: inherit;
   text-align: center;
   cursor: pointer;
   touch-action: manipulation;
 }
 .chibi-picker-idol strong { width: 100%; font-size: var(--gs-text-body, 14px); font-weight: 600; line-height: 1.5; white-space: normal; word-break: normal; overflow-wrap: anywhere; }
-.chibi-picker-idol small { width: 100%; color: #607e79; font-size: var(--gs-text-meta, 12px); line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
-.chibi-picker-idol[aria-pressed=true] { border-color: var(--picker-mint); background: #e8f7f0; box-shadow: inset 0 0 0 1px var(--picker-mint); }
-.chibi-picker-idol:active, .chibi-idol-picker :deep(.terminal-icon-button:active) { background: #d9efe8; }
-.chibi-picker-current { padding: 2px 8px; border-radius: 12px; color: #197264; background: #d5eee4; font-size: var(--gs-text-meta, 12px); line-height: 1.5; }
-.chibi-picker-empty { margin: 16px 0 0; color: #526e73; font-size: var(--gs-text-body, 14px); line-height: 1.6; }
+.chibi-picker-idol small { width: 100%; color: var(--gs-ink-3); font-size: var(--gs-text-meta, 12px); line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }
+.chibi-picker-idol[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 0 0 0 2px var(--gs-mint); }
+.chibi-picker-idol:active, .chibi-idol-picker :deep(.terminal-icon-button:active) { background: var(--gs-mint-wash); }
+.chibi-picker-current { padding: 0; color: var(--gs-mint-ink); background: transparent; font-size: var(--gs-text-meta, 12px); line-height: 1.5; }
+.chibi-picker-empty { margin: 16px 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body, 14px); line-height: 1.6; }
 @media (hover: hover) and (pointer: fine) {
-  .chibi-picker-idol:hover, .chibi-idol-picker :deep(.terminal-icon-button:hover) { border-color: #63c4bf; background: #e9f5ee; }
+  .chibi-picker-idol:hover, .chibi-idol-picker :deep(.terminal-icon-button:hover) { background: var(--gs-paper); }
 }
 @media (max-width: 600px), (pointer: coarse) {
   .chibi-picker-filters input, .chibi-picker-filters select { font-size: 16px; }
