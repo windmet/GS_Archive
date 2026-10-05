@@ -59,16 +59,13 @@
         :notice="userPreferenceNotice"
         :data-ready="archiveBootstrap.idols.length > 0"
         :selection-only="view === 'home' || view === 'idol_picker'"
-        :can-cancel="view === 'idol_picker' || (view === 'welcome' && Boolean(detailSourceRoute))"
+        :can-cancel="view === 'idol_picker' || view === 'welcome'"
         :target-label="idolPickerLabel"
         @cancel="cancelWelcomeOrPicker"
-        @choose-later="chooseStartupLater"
-        @choose-portal="choosePortalStartup"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
         @save-startup="storeUserPreferences"
         @settings-applied="userPreferences = loadArchiveUserPreferences().preferences"
-        @clear-preferences="clearUserPreferences"
       />
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
@@ -473,6 +470,15 @@
         <ArchiveLoadNotice v-else-if="loadNotice" :message="loadNotice.message" />
       </template>
     </ArchiveShell>
+    <ArchiveOnboarding
+      v-if="view === 'portal' && !userPreferences.onboardingComplete && archivePickerIdols.length"
+      :idols="archivePickerIdols"
+      :home-idol-ids="validArchiveHomeIdols"
+      :idol-name="idolDisplayName"
+      :idol-search="idolEntitySearchText"
+      :initial-favorite="userPreferences.preferredIdol || ''"
+      @finish="completeOnboarding"
+    />
 
     <!-- ====== STORY PLAYER ====== -->
     <PlayerSessionShell v-if="playerSessionOpen">
@@ -604,7 +610,6 @@ import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import {
-  clearArchiveUserPreferences,
   loadArchiveUserPreferences,
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
@@ -680,6 +685,8 @@ const chibiStageViewerLoader = () => import('./components/ChibiStageViewer.vue')
 const StoryViewer = defineAsyncComponent(storyViewerLoader)
 // Maintainer-only (?runtimeDebug=1): keep it out of the main bundle.
 const StoryReleaseSoakPanel = defineAsyncComponent(() => import('./components/player/StoryReleaseSoakPanel.vue'))
+// Only a first visit needs it.
+const ArchiveOnboarding = defineAsyncComponent(() => import('./components/archive/ArchiveOnboarding.vue'))
 const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
@@ -2326,16 +2333,16 @@ function openRootPortal() {
   })
 }
 
-function chooseStartupLater() {
-  if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
-  storeUserPreferences({ onboardingComplete: true })
-  openRootPortal()
-}
-
-function choosePortalStartup() {
-  storeUserPreferences({ startupPage: 'portal', onboardingComplete: true })
-  detailSourceRoute.value = ''
-  openRootPortal()
+// First visit: the archive is the default start; the onboarding sheet records the producer
+// name (stored by its own field), a favourite idol, and may send the visitor to that idol's home.
+function completeOnboarding({ preferredIdol = '', openHome = false } = {}) {
+  const idol = archivePickerIdols.value.some(row => row.id === preferredIdol) ? preferredIdol : ''
+  const next = { onboardingComplete: true }
+  if (userPreferences.value.startupPage === 'unset') next.startupPage = 'portal'
+  if (idol) next.preferredIdol = idol
+  if (idol && validArchiveHomeIdols.value.includes(idol)) next.startupIdol = idol
+  storeUserPreferences(next)
+  if (openHome && next.startupIdol) openGameHome(idol)
 }
 
 function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false, homeMode = 'spine' } = {}) {
@@ -2374,17 +2381,6 @@ function savePreferredIdol(idolCode) {
   storeUserPreferences({ preferredIdol })
 }
 
-function clearUserPreferences() {
-  legacyEntryStatus.value = ''
-  const result = clearArchiveUserPreferences()
-  userPreferences.value = result.preferences
-  userPreferenceNotice.value = result.issue || '启动与“我的偶像”设置已清除。'
-  homeSelectedId.value = ''
-  homeSelectedCue.value = ''
-  homeSelectedCostume.value = ''
-  commitView('welcome', { replace: true })
-}
-
 function openWelcomeSettings() {
   legacyEntryStatus.value = ''
   userPreferenceNotice.value = ''
@@ -2402,7 +2398,7 @@ function openIdolPicker(target) {
 function cancelWelcomeOrPicker() {
   legacyEntryStatus.value = ''
   if (detailSourceRoute.value) return restoreDetailSource(openRootPortal)
-  if (view.value === 'idol_picker') openRootPortal()
+  if (['idol_picker', 'welcome'].includes(view.value)) openRootPortal()
 }
 
 const homeVisits = new Map()

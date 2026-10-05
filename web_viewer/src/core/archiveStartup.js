@@ -40,7 +40,8 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
   if (preferences?.startupPage === 'portal' || preferences?.onboardingComplete) {
     return { route: { view: 'portal', ...(preferences?.portalDefaultScope === 'all' ? {portalScope:'all'} : {}) }, lightweight: true, source: 'preference' }
   }
-  return { route: { view: 'welcome' }, lightweight: true, source: 'new-user' }
+  // A new visitor starts in the archive; App shows the onboarding sheet over it.
+  return { route: { view: 'portal' }, lightweight: true, source: 'new-user' }
 }
 
 export function resolveArchiveHomeAction(preferences, validHomeIdols = []) {

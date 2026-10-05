@@ -20,7 +20,8 @@ assert.equal(isBareArchiveEntry('http://localhost/?view=home'), false)
 assert.equal(canResolveArchiveStartupBeforeData('http://localhost/', { ...unset, startupPage: 'home', homeMode: 'spine' }), false)
 assert.equal(canResolveArchiveStartupBeforeData('http://localhost/', { ...unset, startupPage: 'home', homeMode: 'card' }), false)
 assert.equal(canResolveArchiveStartupBeforeData('http://localhost/?view=home&home_idol=002sht', { ...unset, startupPage: 'home', homeMode: 'spine' }), true)
-assert.equal(resolveArchiveStartup('http://localhost/', unset, idols).route.view, 'welcome')
+assert.equal(resolveArchiveStartup('http://localhost/', unset, idols).route.view, 'portal', 'a new visitor starts in the archive')
+assert.equal(resolveArchiveStartup('http://localhost/', unset, idols).source, 'new-user', 'and is marked for onboarding')
 assert.equal(canResolveArchiveStartupBeforeData('http://localhost/', { ...unset, startupPage: 'portal', onboardingComplete: true }), true)
 for (let visit = 2; visit <= 3; visit++) {
   assert.deepEqual(resolveArchiveStartup('http://localhost/', { ...unset, onboardingComplete: true }, idols).route,
@@ -49,7 +50,7 @@ assert.equal(loadArchiveUserPreferences(storage).preferences.startupPage, 'porta
 assert.equal(loadArchiveUserPreferences(storage).preferences.startupIdol, '002sht', 'choosing the archive keeps the selected home idol available')
 assert.deepEqual(resolveArchiveStartup('http://localhost/', loadArchiveUserPreferences(storage).preferences, idols).route, { view: 'portal' })
 assert.equal(clearArchiveUserPreferences(storage).preferences.startupPage, 'unset')
-assert.equal(resolveArchiveStartup('http://localhost/', loadArchiveUserPreferences(storage).preferences, idols).route.view, 'welcome')
+assert.equal(resolveArchiveStartup('http://localhost/', loadArchiveUserPreferences(storage).preferences, idols).route.view, 'portal')
 const rejecting = { getItem: () => { throw new Error('blocked') }, setItem: () => { throw new Error('blocked') }, removeItem: () => { throw new Error('blocked') } }
 assert.match(loadArchiveUserPreferences(rejecting).issue, /本次选择/)
 saved = saveArchiveUserPreferences({ ...unset, startupPage: 'home', homeMode: 'card', onboardingComplete: true }, rejecting)
