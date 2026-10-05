@@ -7,7 +7,7 @@
         <p v-else-if="state.error" role="alert" class="domain-error">{{ state.error }}<button type="button" @click="preview.open(entityKey)">重试</button></p>
         <template v-else-if="state.detail">
           <CollectionEntryDetails :detail="state.detail" :kind="state.domain" :display-idol-name="displayIdolName" @open-card="emit('open-card',$event)" />
-          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">在藏品馆中查看来源与用途 <ChevronRight :size="16" /></button>
+          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">查看来源与用途 <ChevronRight :size="16" /></button>
         </template>
       </section>
     </div>

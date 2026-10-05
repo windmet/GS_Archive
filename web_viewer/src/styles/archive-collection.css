@@ -1,91 +1,84 @@
-.domain-page.collection-page { font-family:var(--gs-font-directory,Inter,'Noto Sans JP','Noto Sans SC',system-ui,sans-serif);font-size:var(--gs-text-body,14px);font-weight:var(--gs-weight-regular,400); }
-.collection-page .collection-directory{min-width:0}
-.collection-page .collection-filters{display:flex;align-items:end;gap:var(--gs-space-4,12px);flex-wrap:wrap;margin:var(--gs-space-4,12px) 0}
-.collection-page .collection-filters label{display:grid;gap:var(--gs-space-2,4px);font-size:var(--gs-text-meta,12px);color:#557080}
-.collection-page .collection-search{flex:1;min-width:180px}
-.collection-page .collection-filters input,.collection-page .collection-filters select{min-height:var(--gs-control-touch,44px);border:1px solid #ccdde6;background:#fff;border-radius:8px;padding:var(--gs-space-3,8px) var(--gs-space-4,12px);font:inherit;font-size:var(--gs-text-ui,13px);min-width:0;color:#233c50}
-.collection-page .collection-count{font-size:var(--gs-text-meta,12px);color:#637b8a;padding-bottom:var(--gs-space-4,12px)}
-.collection-page .collection-chips{display:flex;gap:var(--gs-space-3,8px);flex-wrap:wrap;margin:var(--gs-space-4,12px) 0}
-.collection-page .collection-chips button{padding:var(--gs-space-3,8px) var(--gs-space-4,12px);min-height:var(--gs-control-touch,44px);font:inherit;font-size:var(--gs-text-ui,13px);border:1px solid #d4e3eb;border-radius:20px;background:#fff;color:#466475;cursor:pointer}
-.collection-page .collection-chips button[aria-pressed=true]{background:#deefe9;border-color:#168771;color:#086e5c}
-.collection-page .collection-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:var(--gs-space-3,8px);margin-top:var(--gs-space-5,16px)}
-.collection-page .collection-cards>button{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:var(--gs-space-3,8px);min-width:0;padding:var(--gs-space-3,8px);border:0;border-radius:var(--gs-radius-control);background:#fff;text-align:left;color:#213b54;cursor:pointer}
-.collection-page .collection-cards>button:hover{border-color:#88c7b5}
-.collection-page .collection-cards>button[aria-pressed=true]{border-color:#19896e;background:#e8f7f1}
-.collection-page .collection-cards>button.physical{background:#fff6f4;border-bottom-color:#d57772}
-.collection-page .collection-cards>button.intelligent{background:#f2f7ff;border-bottom-color:#6da3cf}
-.collection-page .collection-cards>button.mental{background:#fffbed;border-bottom-color:#d6b861}
-.collection-page .collection-card-art{display:grid;place-items:center;height:64px;color:#248978}
-.collection-page .collection-card-art img{display:block;width:64px;height:64px;max-width:100%;object-fit:contain}
-.collection-page .collection-card-copy{min-width:0}
-.collection-page .collection-card-copy strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:var(--gs-text-meta,12px);font-weight:var(--gs-weight-semibold,600);white-space:normal;overflow:hidden;overflow-wrap:anywhere;line-height:1.2;height:2.4em}
-.collection-page .collection-card-copy small{display:block;color:#577281;font-size:var(--gs-text-meta,12px);line-height:1.5;margin-top:var(--gs-space-2,4px)}
-.collection-page .collection-badge{display:inline-block;font-size:var(--gs-text-caption,11px);color:#50756c;background:#edf5f2;border-radius:5px;padding:var(--gs-space-1,2px) var(--gs-space-2,4px);margin-top:var(--gs-space-2,4px)}
-.collection-page .collection-cards.is-honors{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-4,12px)}
-.collection-page .collection-cards.is-honors>button{padding:var(--gs-space-4,12px);gap:var(--gs-space-3,8px)}
-.collection-page .collection-cards.is-honors .collection-card-art{height:40px;justify-items:start}
-.collection-page .collection-cards.is-honors img{width:auto;height:40px;max-width:100%;object-fit:contain}
-.collection-page .collection-cards.is-honors strong{font-size:var(--gs-text-ui,13px)}
+/* Collection: items and honors share one catalogue page. Objects sit on the paper, not in boxes. */
+.domain-page.collection-page { font-family:var(--gs-font-body);font-size:var(--gs-text-body);color:var(--gs-ink); }
+.collection-page .collection-directory { min-width:0; }
+
+/* Toolbar: search with the count beside it, then one row of category filters. */
+.collection-page .collection-filters { display:flex;align-items:end;gap:var(--gs-space-4);flex-wrap:wrap;margin:0 0 var(--gs-space-4); }
+.collection-page .collection-filters label { display:grid;gap:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);color:var(--gs-ink-3); }
+.collection-page .collection-search { flex:1;min-width:200px; }
+.collection-page .collection-filters label>span { position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%); }
+.collection-page .collection-filters input,.collection-page .collection-filters select { min-height:var(--gs-control-touch);min-width:0;padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);background:var(--gs-surface);color:var(--gs-ink);font:inherit;font-size:var(--gs-text-ui); }
+.collection-page .collection-count { padding-bottom:var(--gs-space-4);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
+.collection-page .collection-chips { display:flex;gap:var(--gs-space-2);flex-wrap:wrap;margin:0 0 var(--gs-space-4); }
+.collection-page .collection-chips button { display:inline-flex;align-items:center;gap:6px;min-height:var(--gs-control-compact);padding:0 11px;border:1px solid var(--gs-line);border-radius:999px;background:var(--gs-surface);color:var(--gs-ink-2);font:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);cursor:pointer; }
+.collection-page .collection-chips button small { color:var(--gs-ink-3);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-medium); }
+.collection-page .collection-chips button[aria-pressed=true] { border-color:var(--gs-ink);background:var(--gs-ink);color:var(--gs-paper); }
+.collection-page .collection-chips button[aria-pressed=true] small { color:inherit; }
+.collection-page .collection-attributes button:not([aria-pressed=true])::before { content:"";width:8px;height:8px;border-radius:50%;background:currentColor; }
+.collection-page .collection-attributes button.physical { color:var(--gs-attr-physical); }
+.collection-page .collection-attributes button.intelligent { color:var(--gs-attr-intelli); }
+.collection-page .collection-attributes button.mental { color:var(--gs-attr-mental); }
+
+/* Items: icon on a quiet square, the full name beneath (long names wrap up to three lines). */
+.collection-page .collection-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:var(--gs-space-5) var(--gs-space-3);margin-top:var(--gs-space-5); }
+.collection-page .collection-cards>button { position:relative;display:flex;flex-direction:column;align-items:center;gap:var(--gs-space-3);min-width:0;padding:0;border:0;background:none;color:var(--gs-ink);font:inherit;text-align:center;cursor:pointer; }
+.collection-page .collection-card-art { position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1;border-radius:var(--gs-radius-panel);background:var(--gs-surface);color:var(--gs-mint-ink);transition:background .15s; }
+.collection-page .collection-card-art img { display:block;width:62%;height:62%;object-fit:contain; }
+.collection-page .collection-cards>button:hover .collection-card-art { background:var(--gs-mint-wash); }
+.collection-page .collection-cards>button[aria-pressed=true] .collection-card-art { box-shadow:inset 0 0 0 2px var(--gs-mint); }
+.collection-page .collection-cards>button:is(.physical,.intelligent,.mental) .collection-card-art::after { content:"";position:absolute;left:10px;bottom:10px;width:8px;height:8px;border-radius:50%; }
+.collection-page .collection-cards>button.physical .collection-card-art::after { background:var(--gs-attr-physical); }
+.collection-page .collection-cards>button.intelligent .collection-card-art::after { background:var(--gs-attr-intelli); }
+.collection-page .collection-cards>button.mental .collection-card-art::after { background:var(--gs-attr-mental); }
+.collection-page .collection-card-copy { width:100%;min-width:0; }
+.collection-page .collection-card-copy strong { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);line-height:1.35;overflow-wrap:anywhere; }
+.collection-page .collection-variant { position:absolute;z-index:1;top:6px;right:6px;min-width:20px;padding:1px 5px;border-radius:var(--gs-radius-media);background:var(--gs-ink);color:var(--gs-paper);font-family:var(--gs-font-stage);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-bold);line-height:1.4;text-align:center; }
+
+/* Honors: the title plate is the object; rows separated by hairlines. */
+.collection-page .collection-cards.is-honors { grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 var(--gs-space-6); }
+.collection-page .collection-cards.is-honors>button { display:grid;grid-template-columns:minmax(0,1fr);justify-items:start;align-content:start;gap:var(--gs-space-2);padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line);text-align:left; }
+.collection-page .collection-cards.is-honors .collection-card-art { width:auto;height:40px;aspect-ratio:auto;place-items:center start;border-radius:0;background:none;margin-bottom:var(--gs-space-2); }
+.collection-page .collection-cards.is-honors .collection-card-art img { width:auto;height:40px;max-width:100%; }
+.collection-page .collection-cards.is-honors>button:hover .collection-card-art { background:none; }
+.collection-page .collection-cards.is-honors>button:hover strong { color:var(--gs-mint-ink); }
+.collection-page .collection-cards.is-honors>button[aria-pressed=true] { box-shadow:inset 3px 0 0 var(--gs-mint);padding-left:var(--gs-space-4); }
+.collection-page .collection-cards.is-honors>button[aria-pressed=true] .collection-card-art { box-shadow:none; }
+.collection-page .collection-cards.is-honors .collection-card-copy { display:flex;flex-wrap:wrap;align-items:baseline;gap:2px var(--gs-space-3); }
+.collection-page .collection-cards.is-honors strong { flex-basis:100%;-webkit-line-clamp:2;font-size:var(--gs-text-ui); }
+.collection-page .collection-card-copy small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.5; }
+.collection-page .collection-badge { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.collection-page .collection-card-copy small+.collection-badge::before { content:"·";margin-right:var(--gs-space-3); }
+
+.collection-page .domain-pagination { gap:var(--gs-space-5);margin-top:var(--gs-space-6); }
+.collection-page .domain-pagination button { font-size:var(--gs-text-ui); }
+.collection-page button:focus-visible,.collection-page input:focus-visible,.collection-page select:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint-ink);outline-offset:2px; }
+
+@media(max-width:760px){
+ .domain-page.collection-page { padding:var(--gs-space-4) var(--gs-space-4) calc(var(--gs-space-7) + var(--gs-safe-bottom,env(safe-area-inset-bottom,0px))); }
+ .collection-page .collection-filters { display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--gs-space-3); }
+ .collection-page .collection-search { min-width:0; }
+ .collection-page .collection-count { padding:0; }
+ .collection-page.is-honors .collection-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .collection-page.is-honors .collection-search { grid-column:1/-1; }
+ .collection-page.is-honors .collection-count { display:none; }
+ .collection-page .collection-chips { flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin-inline:calc(-1 * var(--gs-space-4));padding-inline:var(--gs-space-4); }
+ .collection-page .collection-chips::-webkit-scrollbar { display:none; }
+ .collection-page .collection-chips button { flex:none;white-space:nowrap; }
+ .collection-page .collection-cards { grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-4) var(--gs-space-3); }
+ .collection-page .collection-cards.is-honors { grid-template-columns:1fr; }
+ .collection-page .collection-cards.is-honors .collection-card-art,.collection-page .collection-cards.is-honors .collection-card-art img { height:34px; }
+}
+@media(max-width:760px),(pointer:coarse){
+ .collection-page .collection-chips button,.collection-page .collection-filters input,.collection-page .collection-filters select { min-height:var(--gs-control-touch); }
+ .collection-page .collection-filters input,.collection-page .collection-filters select { font-size:var(--gs-text-subtitle); }
+}
+
+/* Floating tooltip, source notes and the detail inspector. */
 .archive-floating-tooltip strong,.archive-floating-tooltip span,.archive-floating-tooltip small{display:block;line-height:1.6}
 .archive-floating-tooltip small{margin-top:5px;color:#6a808c}
 .collection-source-meta{font-size:12px;color:#627b8a;margin-top:20px}
 .collection-source-meta summary{cursor:pointer;padding:8px 0}
-.collection-page button:focus-visible,.collection-page input:focus-visible,.collection-page select:focus-visible{outline:3px solid #048a6d;outline-offset:2px}
 .collection-inspector{overflow:auto;overscroll-behavior:contain;min-width:0;border:1px solid #dce7ef;background:#fff;color:#213b54;font-size:14px}.collection-inspector *,.collection-sheet-backdrop{box-sizing:border-box}.collection-inspector-header{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:#fff;border-bottom:1px solid #e5edf2}.collection-inspector .collection-inspector-header h2{margin:0;font-size:17px}.collection-inspector button,.collection-inspector select{min-height:44px;font:inherit;cursor:pointer}.collection-inspector-header button{display:flex;align-items:center;gap:6px;flex:none;padding:8px 12px;border:1px solid #d3e2e8;border-radius:8px;background:#fff;color:#466476}.collection-inspector button:focus-visible{outline:3px solid #048a6d;outline-offset:2px}.collection-inspector-body{padding:20px}.collection-inspector-body>.domain-panel{border:0;padding:0;border-radius:0}.collection-inspector-body>.domain-panel+.domain-panel{margin-top:20px;padding-top:20px;border-top:1px solid #e5edf2}.collection-inspector .domain-media-preview{padding:12px}.collection-inspector .domain-media-preview img{width:96px;height:96px;min-height:0;object-fit:contain}.collection-inspector.is-honors .domain-media-preview img{width:auto;height:48px;max-width:100%}.collection-sheet-backdrop{position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;background:#152b436b;padding:24px}.collection-inspector.is-sheet{width:min(100%,var(--gs-surface-detail-width,580px));max-height:84dvh;border-radius:16px;box-shadow:0 12px 50px #102a4026;padding-bottom:var(--gs-safe-bottom,env(safe-area-inset-bottom,0px))}
-@media(max-width:700px){.collection-page .collection-cards{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-3,8px)}.collection-page .collection-cards>button{padding:var(--gs-space-3,8px)}.collection-page .collection-card-art,.collection-page .collection-card-art img{height:56px}.collection-page .collection-card-copy strong{font-size:var(--gs-text-meta,12px)}.collection-page .collection-cards.is-honors{grid-template-columns:1fr}.collection-page .collection-filters label:not(.collection-search){flex:1;min-width:120px}.collection-page .collection-search{flex-basis:100%}.collection-sheet-backdrop{align-items:end;padding:30px 0 0}.collection-inspector.is-sheet{max-height:78dvh;border-radius:18px 18px 0 0}.collection-inspector-body{padding:16px}}
-
-.collection-page .collection-variant{position:absolute;top:5px;right:5px;min-width:18px;padding:var(--gs-space-1,2px) var(--gs-space-2,4px);border:1px solid #c5d8d2;border-radius:5px;background:#fffffff2;color:#21594e;font-size:var(--gs-text-caption,11px);line-height:1.3;font-weight:var(--gs-weight-bold,700);text-align:center}
 .collection-original{color:#627b8a;font-size:12px;line-height:1.5;white-space:pre-line;overflow-wrap:anywhere;margin:6px 0}
 .archive-floating-tooltip strong{display:block;height:auto;white-space:normal}
-.collection-page .collection-cards.is-honors strong{height:auto;min-height:1.2em}
-
-/* Attribute icons are a mobile alternative to the full labelled selector. */
-.collection-page .collection-attribute-dots{display:none}
-.collection-page .domain-tabs small{font-size:var(--gs-text-caption,11px);color:#648778}
-.collection-page .collection-card-copy strong{word-break:normal;overflow-wrap:normal}
-@media(max-width:700px){
- .domain-page.collection-page{padding:var(--gs-space-4,12px) var(--gs-space-4,12px) calc(var(--gs-space-7,24px) + var(--gs-safe-bottom,env(safe-area-inset-bottom,0px)));}
- .collection-page .domain-tabs{display:flex;flex-wrap:nowrap;gap:var(--gs-space-2,4px);padding:var(--gs-space-2,4px);background:#e8eff3;border-radius:9px;margin-bottom:var(--gs-space-3,8px);}
- .collection-page .domain-tabs button{flex:1;justify-content:center;min-height:36px;padding:var(--gs-space-2,4px) var(--gs-space-3,8px);border:0;background:transparent;font-size:var(--gs-text-ui,13px);border-radius:7px;}
- .collection-page .domain-tabs button[aria-pressed=true]{background:#fff;box-shadow:0 1px 4px #263e5010;}
- .collection-page .domain-tabs button svg{width:15px;height:15px;}
- .collection-page .collection-filters{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--gs-space-3,8px);margin:var(--gs-space-3,8px) 0;}
- .collection-page .collection-search{min-width:0;display:block;}
- .collection-page .collection-search>span{display:none;}
- .collection-page .collection-search input{display:block;width:100%;min-width:0;min-height:38px;font-size:var(--gs-text-meta,12px);padding:var(--gs-space-3,8px) var(--gs-space-3,8px);}
- .collection-page .collection-count,.collection-page .attributes{display:none;}
- .collection-page .collection-attribute-dots{display:flex;align-items:center;gap:var(--gs-space-1,2px);}
- .collection-page .collection-attribute-dots button{display:grid;place-items:center;min-height:44px;width:28px;padding:0;border:1px solid transparent;background:transparent;border-radius:7px;color:#8696a0;}
- .collection-page .collection-attribute-dots button.physical{color:#bc665b;}.collection-page .collection-attribute-dots button.intelligent{color:#527fac;}.collection-page .collection-attribute-dots button.mental{color:#b79928;}
- .collection-page .collection-attribute-dots button[aria-pressed=true]{border-color:currentColor;background:#fff;box-shadow:0 1px 5px #233d5015;}
- .collection-page .collection-chips{overflow-x:auto;flex-wrap:nowrap;white-space:nowrap;margin:var(--gs-space-3,8px) 0;gap:var(--gs-space-2,4px);scrollbar-width:none;}
- .collection-page .collection-chips button{flex:none;min-height:var(--gs-control-touch,44px);padding:var(--gs-space-2,4px) var(--gs-space-3,8px);font-size:var(--gs-text-meta,12px);}
- .collection-page .collection-cards{margin-top:var(--gs-space-4,12px);}
- .collection-page .collection-card-copy strong{font-size:var(--gs-text-meta,12px);text-align:center;}
- .collection-page .collection-card-art,.collection-page .collection-card-art img{height:50px;}
- .collection-page.is-honors .collection-filters{grid-template-columns:repeat(2,minmax(0,1fr));}
- .collection-page.is-honors .collection-search{grid-column:1/-1;}
- .collection-page.is-honors .collection-filters label:not(.collection-search){min-width:0;font-size:var(--gs-text-caption,11px);gap:var(--gs-space-2,4px);}
- .collection-page.is-honors .collection-filters select{width:100%;min-width:0;min-height:36px;font-size:var(--gs-text-caption,11px);padding:var(--gs-space-2,4px);}
- .collection-page .collection-cards.is-honors>button{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:var(--gs-space-3,8px);min-height:76px;padding:var(--gs-space-3,8px) var(--gs-space-4,12px);}
- .collection-page .collection-cards.is-honors .collection-card-art{height:40px;justify-items:center;}
- .collection-page .collection-cards.is-honors img{height:auto;max-height:40px;max-width:62px;}
- .collection-page .collection-cards.is-honors strong{text-align:left;font-size:var(--gs-text-meta,12px);height:auto;}
- .collection-page .collection-cards.is-honors .collection-card-copy small{font-size:var(--gs-text-caption,11px);line-height:1.3;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
- .collection-page .collection-cards.is-honors .collection-badge{font-size:var(--gs-text-caption,11px);margin-top:var(--gs-space-2,4px);}
- .collection-page .domain-pagination{margin-bottom:var(--gs-space-5,16px);}
-}
-
-/* Directory controls retain their desktop size; touch inputs share one contract. */
-.domain-page.collection-page button,.domain-page.collection-page label { font-weight:var(--gs-weight-semibold,600); }
-.collection-page .collection-filters input,.collection-page .collection-filters select { font-weight:var(--gs-weight-regular,400); }
-.collection-page .domain-tabs button { font-size:var(--gs-text-ui,13px);min-height:var(--gs-control-touch,44px); }
-.collection-page .domain-pagination { gap:var(--gs-space-5,16px);margin-top:var(--gs-space-6,20px); }
-.collection-page .domain-pagination button { font-size:var(--gs-text-ui,13px); }
-@media(max-width:700px), (pointer:coarse) {
- .collection-page button,.collection-page input,.collection-page select { min-height:var(--gs-control-touch,44px); }
- .collection-page .domain-tabs button,.collection-page .collection-chips button,.collection-page .collection-filters input,.collection-page .collection-filters select,.collection-page.is-honors .collection-filters select { min-height:var(--gs-control-touch,44px); }
- .collection-page .collection-filters input,.collection-page .collection-filters select,.collection-page.is-honors .collection-filters select { font-size:var(--gs-text-subtitle,16px); }
- .collection-page .collection-search,.collection-page .collection-search input { min-width:0; }
- .collection-page .collection-attribute-dots button { width:var(--gs-control-touch,44px);min-width:var(--gs-control-touch,44px);min-height:var(--gs-control-touch,44px); }
-}
+@media(max-width:760px){.collection-sheet-backdrop{align-items:end;padding:30px 0 0}.collection-inspector.is-sheet{max-height:78dvh;border-radius:18px 18px 0 0}.collection-inspector-body{padding:16px}}

@@ -51,6 +51,6 @@ export const itemBrowseGroups=[
   {key:'story-unlock',label:'剧情解锁',codes:[12]},
   {key:'exchange',label:'兑换资源',codes:[14]},
   {key:'event-materials',label:'活动专属物品',codes:[15,16,17]},
-  {key:'other',label:'其他 / 待分类',codes:[]},
+  {key:'other',label:'其他',codes:[]},
 ];
 export const itemBrowseGroup=code=>itemBrowseGroups.find(group=>group.codes.includes(code)) || itemBrowseGroups.at(-1);

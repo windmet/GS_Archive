@@ -22,7 +22,7 @@ export function honorSourceLabel(row,release) {
   const bond=honorBondSource(row)
   if(bond)return `偶像羁绊 Lv.${bond.level}`
   const summary=collectionSummary(row,'honors',release)
-  if(!summary)return '来源摘要暂不可用'
+  if(!summary)return ''
   const source=summary.sources[0]
   if(!source)return '来源未收录'
   const label=source.event?.title || rewardRelationLabel(source)

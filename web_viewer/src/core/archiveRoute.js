@@ -163,7 +163,8 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'gashas', label: '卡池' },
   { id: 'interactions', label: '通信' },
   { id: 'events', label: '活动' },
-  { id: 'collections', label: '藏品' },
+  { id: 'collections', label: '道具' },
+  { id: 'honors', label: '称号' },
   { id: 'photos', label: '摄影' },
   { id: 'experiments', label: '工具' },
   { id: 'resources', label: '资源' },
@@ -407,6 +408,8 @@ export function normalizeArchiveRoute(input = {}) {
 export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
+  // Items and honors share one catalogue page but are separate destinations in the navigation.
+  if (section === 'collections') return normalized.collection?.kind === 'honors' ? 'honors' : 'collections'
   if (section !== 'category') return section
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
@@ -455,7 +458,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   const home = { label: '资料馆', route: { view: 'portal' } }
   if(route.view==='picture_studio')return [home,{label:'摄影资料',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:({event_catalog:'活动一览',collection_catalog:'藏品馆',photo_catalog:'摄影资料'})[route.view]}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资料'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })

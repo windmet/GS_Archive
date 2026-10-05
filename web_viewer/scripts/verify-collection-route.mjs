@@ -20,7 +20,7 @@ assert.equal(normalizeCollectionRoute({collection:{kind:'honors',unit:'99abc',id
 assert.equal(normalizeCollectionRoute({collection:{kind:'honors',idol:'099xyz'}}).collection.idol,'')
 assert.equal(honorGroup({honorType:1}),'normal')
 assert.equal(collectionSummary({id:1},'honors','wrong-release'),null)
-assert.equal(honorSourceLabel({id:1},'wrong-release'),'来源摘要暂不可用')
+assert.equal(honorSourceLabel({id:1},'wrong-release'),'','a summary from another release is withheld, not explained')
 let details=0
 const session=createCollectionCatalogSession({catalog:async()=>[{id:'1'}],detail:async()=>{details++;return {entry:{id:'1',key:'honor:1'}}}},()=>{})
 await session.open('honors','',{selectDefault:false});assert.equal(details,0)

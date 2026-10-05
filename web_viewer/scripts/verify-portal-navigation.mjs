@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
-import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readHomeReturnRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
+import { ARCHIVE_NAVIGATION, archiveSectionForRoute, buildArchiveSourceQuery, buildArchiveUrl, buildPortalReturnQuery, readArchiveRoute, readArchiveSourceRoute, readHomeReturnRoute, readPortalReturnRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -11,11 +11,11 @@ import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/ar
 const maintainerGroups = buildNavigationGroups(true)
 const readerGroups = buildNavigationGroups(false)
 assert.deepEqual(readerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', '工具'])
-assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 2, 1])
-assert.deepEqual(maintainerGroups.map(group => group.items.length), [2, 2, 1, 2, 2, 2])
+assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 3, 1])
+assert.deepEqual(maintainerGroups.map(group => group.items.length), [2, 2, 1, 2, 3, 2])
 assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
 assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 2, 1], 'default module export is the reader view')
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 3, 1], 'default module export is the reader view')
 assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
@@ -45,7 +45,7 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
 assert.deepEqual(ARCHIVE_NAVIGATION.map(item=>item.id),
-  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','photos','experiments','resources'],
+  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','photos','experiments','resources'],
   'desktop taxonomy includes the published event, collection, photo and experiment destinations')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
@@ -166,3 +166,7 @@ for (let i=0;i<50;i++) {
   assert.ok(safeHome.homeFrom.length < 1000, 'repeated visits stay bounded without exponential nesting')
 }
 console.log('Home/Portal contexts: lens, query, cue/costume, explicit all-view, refresh, local-only bounded return passed')
+// Items and honors share the collection catalogue page but are separate destinations.
+assert.equal(archiveSectionForRoute({ view: 'collection_catalog', collection: { kind: 'items' } }), 'collections')
+assert.equal(archiveSectionForRoute({ view: 'collection_catalog', collection: { kind: 'honors' } }), 'honors')
+assert.equal(archiveSectionForRoute({ view: 'collection_catalog', entity: 'honor:1' }), 'honors', 'an honor deep link highlights 称号')

@@ -12,7 +12,7 @@ const DESTINATIONS = [
   { id: 'people', label: '偶像与卡片', ids: ['idols', 'cards'] },
   { id: 'songs', label: '歌曲', ids: ['songs'] },
   { id: 'history', label: '活动与卡池', ids: ['events', 'gashas'] },
-  { id: 'collection', label: '收藏', ids: ['collections', 'photos'] },
+  { id: 'collection', label: '收藏', ids: ['collections', 'honors', 'photos'] },
   { id: 'tools', label: '工具', ids: ['experiments', 'resources'] },
 ]
 

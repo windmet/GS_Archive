@@ -763,7 +763,7 @@ let componentLoadRevision = 0
 function primeArchiveRouteComponent(routeView) {
   const revision = ++componentLoadRevision
   const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
-    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'藏品馆',
+    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'收藏',
     picture_studio:'摄影工作台',photo_catalog:'摄影资料',story_catalog:'故事目录'}
   routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
@@ -1445,6 +1445,7 @@ const archiveSection = computed(() => archiveSectionForRoute({
   group: currentGroup.value?.id || '',
   scenario: view.value === 'player' ? currentScenarioFile.value : '',
   voice: view.value === 'player' ? currentPreviewCue.value : '',
+  collection: view.value === 'collection_catalog' ? currentCollectionState.value : undefined,
 }))
 
 const archiveTitle = computed(() => {
@@ -1453,7 +1454,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'experiments') return '工具'
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'collection_catalog') return '藏品馆'
+  if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
   if (view.value === 'photo_catalog') return '摄影资料'
   if (view.value === 'picture_studio') return '摄影工作台'
   if (view.value === 'event_catalog') return '活动一览'
@@ -2029,7 +2030,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','photos','experiments'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','experiments'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2045,15 +2046,15 @@ function navigateArchiveSection(section) {
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'experiments') { filterQuery.value = ''; commitView('experiments') }
   else if (section === 'resources') openArchiveStatus()
-  else if (['events','collections','photos'].includes(section)) openDomainCatalog(section)
+  else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
 }
 
 function openDomainCatalog(section, { idolCode = '' } = {}) {
   currentEventBrowseState.value=normalizeEventBrowseState()
-  currentCollectionState.value={kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
+  currentCollectionState.value={kind:section==='honors'?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
-  commitView(({events:'event_catalog',collections:'collection_catalog',photos:'photo_catalog'})[section])
+  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',photos:'photo_catalog'})[section])
 }
 function openCollectionEntity(key) {
   if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
