@@ -67,6 +67,7 @@
 ### 守护
 
 - `npm run verify:design-tokens`：逐文件棘轮，统计裸字号、低于 12px 的字号、十六进制颜色与非角色圆角，任何一项都不许增加；迁移后用 `--update` 下调基线。
+- 本地真实数据：dev 默认没有 read-model 目录，门户与各目录页会降级。验收前在 `readmodels/` 运行 `node tools/build_readmodels.mjs --repo <仓库根> --out <仓库外新目录> --data-revision <已发布 64 位修订> --media-epoch local-dev`（约 1 分钟），再以 `SIDEM_READMODEL_CANDIDATE=<该目录>` 启动 dev server；构建产物不进入仓库，生产构建也不读取该变量。门户卡面属性索引绑定已发布版本，本地版本下属性计数会显示为不可用。
 - 页面画廊 `qa/gallery/`：用 `public/data` 真实数据挂载各页面组件；`npm run gallery:capture -- <标签>` 在宽屏与手机两种宽度截图到 `.analysis/gallery/<标签>/`，空渲染、横向滚动或页面报错即失败。每个阶段以前后两组画廊截图验收。
 
 ## 页面信息顺序

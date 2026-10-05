@@ -44,20 +44,25 @@
       <div class="overview-toolbar-actions"><slot name="toolbar" /></div>
       </header>
       <slot name="notices" />
-      <div class="overview-metrics">
-      <nav class="overview-counts" aria-label="当前视角资料数量">
-        <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" :aria-label="`${count.label} ${formatCount(count.value)}，查看全部`" @click="openDirectory(count.id)">
-          <component :is="archiveNavigationIcons[count.id]" :size="17" aria-hidden="true" />
-          <span><strong>{{ formatCount(count.value) }}</strong><small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></span><span class="overview-count-label">{{ count.label }}</span>
+      <!-- Scale of the archive as one line of links, not a row of number tiles. -->
+      <p v-if="footprints.length" class="overview-footprint" aria-label="当前视角资料数量">
+        <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
+          <b>{{ formatCount(count.value) }}</b><template v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</template> {{ count.label }}
         </button>
+      </p>
+      <!-- Phones have no sidebar: the archive home doubles as the index of every destination. -->
+      <nav class="overview-directory" aria-label="全部栏目">
+        <div v-for="group in destinations" :key="group.id" class="overview-directory-row" :class="{ 'is-single': group.items.length === 1 }">
+          <h2 v-if="group.items.length > 1">{{ group.label }}</h2>
+          <div><button v-for="item in group.items" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)">{{ group.items.length === 1 ? group.label : item.label }}<ChevronRight :size="14" aria-hidden="true" /></button></div>
+        </div>
       </nav>
-      </div>
 
       <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
       <p v-if="desktopOverview.error" class="overview-error" role="status">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></p>
 
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
-        <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length }} UNITS</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
+        <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
         <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
           <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><img :src="getUnitLogoUrl(unit.id)" :alt="unit.title" loading="lazy" /></button>
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :size="28" decorative /></button></div>
@@ -70,7 +75,7 @@
               <ArchiveIdolAvatar v-else-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="88" :accent-color="preferredReference.accentColor" decorative />
               <Users v-else class="overview-all-mark" :size="76" aria-hidden="true" />
               </div><div class="overview-identity-copy">
-                <p class="overview-eyebrow" :class="{'is-favorite':preferredReference?.idolCode === savedIdolCode}">{{ preferredReference?.idolCode === savedIdolCode ? '我的担当' : preferredReference?.actionable ? '偶像档案' : '315 STARS' }}</p>
+                <p class="overview-eyebrow" :class="{'is-favorite':preferredReference?.idolCode === savedIdolCode}">{{ preferredReference?.idolCode === savedIdolCode ? '我的担当' : preferredReference?.actionable ? '偶像档案' : '全站档案' }}</p>
                 <h2 id="portal-workbench-title">{{ preferredReference?.actionable ? preferredName : '每一颗星的故事' }}</h2>
                 <p v-if="desktopOverview.kana" class="overview-kana">{{ desktopOverview.kana }}</p>
                 <p v-if="desktopOverview.preferredUnitName" class="overview-unit-name"><img v-if="unitLogoUrl && !unitLogoFailed" :src="unitLogoUrl" :alt="desktopOverview.preferredUnitName" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ desktopOverview.preferredUnitName }}</span></p>
@@ -134,6 +139,7 @@ import DomainMediaPreview from './DomainMediaPreview.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import { archiveNavigationIcons } from './archiveNavigationIcons.js'
+import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
 import PortalCardBento from './PortalCardBento.vue'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
@@ -201,8 +207,8 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 </script>
 
 <style scoped>
-.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:24px;scrollbar-width:thin; }
-.portal-overview { --portal-accent:color-mix(in srgb,var(--portal-idol-color,#33a8a5) 36%,#13232d);--portal-tint:color-mix(in srgb,var(--portal-idol-color,#33a8a5) 7%,#fff);--portal-line:color-mix(in srgb,var(--portal-idol-color,#33a8a5) 15%,#dce4e6);--portal-muted:color-mix(in srgb,var(--portal-idol-color,#33a8a5) 15%,#68777a);container-type:inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:#283d43;font-family:var(--gs-font-directory);font-size:13px;line-height:1.6; }
+.portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:var(--gs-space-7) var(--gs-space-8) var(--gs-space-9);scrollbar-width:thin; }
+.portal-overview { --portal-accent:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 36%,#13232d);--portal-tint:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 7%,#fff);--portal-line:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,#dce4e6);--portal-muted:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,#68777a);container-type:inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:#283d43;font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6; }
 .portal-overview *, .portal-overview-scroll { box-sizing:border-box; }
 .portal-overview button, .portal-overview input { font:inherit; }
 .portal-overview button { cursor:pointer; }
@@ -212,10 +218,10 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-toolbar { justify-content:space-between;min-height:44px;gap:var(--gs-space-5); }
 .overview-brand { flex:none;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);letter-spacing:-.03em; }
 .overview-brand b { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:.12em;margin-left:var(--gs-space-2); }
-.overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end;gap:4px;padding:4px;border:1px solid #ffffffa6;border-radius:14px;background:#ffffffc9; }
+.overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end;gap:var(--gs-space-1); }
 .overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
 .overview-icon-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:var(--gs-radius-field);background:transparent;color:var(--portal-accent); }
-.overview-brand h1 { margin:0;padding-left:14px;border-left:1px solid var(--portal-line);font-size:22px;line-height:1.3;font-weight:700;letter-spacing:-.02em; }
+.overview-brand h1 { margin:0;padding-left:14px;border-left:1px solid var(--portal-line);font-size:var(--gs-text-section);line-height:1.3;font-weight:700;letter-spacing:-.02em; }
 .overview-brand h1:focus { outline:none; }
 .overview-search { position:relative;margin-bottom:var(--gs-space-4); }
 .overview-search-form { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:4px 6px 4px 16px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffed;color:var(--portal-accent);box-shadow:0 6px 24px #26394709; }
@@ -226,7 +232,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-search-form input::-webkit-search-cancel-button { display:none; }
 .overview-search-submit { min-height:44px;padding:var(--gs-space-3) var(--gs-space-6);border:0;border-radius:var(--gs-radius-field);background:var(--portal-accent);color:#fff;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-search-form .overview-icon-button { border:0;background:transparent; }
-.overview-search-shortcuts { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;color:var(--portal-muted);font-size:12px; }
+.overview-search-shortcuts { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;color:var(--portal-muted);font-size:var(--gs-text-meta); }
 .overview-search-shortcuts > button { display:flex;align-items:center;min-height:36px;padding:4px 12px;border:1px solid color-mix(in srgb,var(--portal-line) 60%,transparent);border-radius:999px;background:#ffffff70;color:var(--portal-accent);overflow-wrap:anywhere;text-align:left; }
 .overview-search-results { position:absolute;z-index:12;left:0;right:0;top:60px;max-height:min(560px,calc(100dvh - 200px));overflow:auto;overscroll-behavior:contain;box-shadow:0 12px 32px #1c34452b;margin-top:0;padding:var(--gs-space-3) var(--gs-space-5);border:1px solid var(--portal-line);border-radius:var(--gs-radius-panel);background:#fffffff2; }
 .overview-search-collapse {display:flex;align-items:center;gap:4px;min-height:36px;margin-left:auto;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-muted);}
@@ -246,26 +252,21 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-result-copy > span { color:#6d8077;font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-search-results li > button > svg { flex:none; }
 .overview-result-kind { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:var(--gs-radius-field);background:var(--portal-tint);color:var(--portal-accent); }
-.overview-counts { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0 22px;padding:0;background:transparent; }
-.overview-counts > button { display:flex;align-items:center;gap:10px;min-width:0;min-height:56px;padding:8px 16px;border:1px solid #ffffffa6;border-radius:12px;background:#ffffffa8;color:var(--portal-accent);text-align:left;box-shadow:0 4px 16px #1d344005; }
-.overview-counts strong { font-size:24px;line-height:1.25;font-weight:650;font-variant-numeric:tabular-nums; }
-.overview-counts small { color:var(--portal-muted);font-size:12px;font-variant-numeric:tabular-nums; }
-.overview-count-label { margin-left:auto;color:var(--portal-muted);font-size:12px;white-space:nowrap; }
-.overview-panel { min-width:0;padding:20px;border:1px solid #ffffffb3;border-radius:16px;background:#ffffffd9;box-shadow:0 10px 25px -5px #1d34400a; }
-.overview-featured { display:grid;grid-template-columns:minmax(280px,32%) minmax(0,1fr);gap:24px;padding:20px 24px;background:radial-gradient(ellipse at 0 100%,color-mix(in srgb,var(--portal-idol-color) 8%,transparent),transparent 65%),#ffffffd1;border-color:#ffffffbd;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px); }
+.overview-panel { min-width:0;margin-top:var(--gs-space-section);padding-top:var(--gs-space-7);border-top:1px solid var(--gs-line); }
+.overview-featured { display:grid;grid-template-columns:minmax(280px,32%) minmax(0,1fr);gap:var(--gs-space-7); }
 .overview-personal, .overview-card-showcase { min-width:0; }
 .overview-personal { position:relative;align-self:stretch;display:flex;flex-direction:column;justify-content:center; }
 .overview-card-showcase { width:100%;max-width:none;padding-left:24px;border-left:1px solid color-mix(in srgb,var(--portal-idol-color) 10%,#dce4e660); }
-.overview-eyebrow { color:var(--portal-accent);font-size:11px;font-weight:650;letter-spacing:.06em; }
+.overview-eyebrow { color:var(--portal-accent);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
 .overview-section-heading { display:flex;justify-content:space-between;align-items:center;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4); }
-.overview-section-heading h2 { margin:0;font-size:16px;line-height:1.4;font-weight:650; }
+.overview-section-heading h2 { margin:0;font-size:var(--gs-text-section);line-height:1.4;font-weight:var(--gs-weight-bold); }
 .overview-section-heading > button { display:flex;align-items:center;gap:var(--gs-space-2);flex:none;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-identity { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0; }
 /* Only the named copy grows. The shared avatar root remains a square circle. */
 .overview-identity-copy { min-width:0; }
-.overview-identity-copy h2 { font-size:25px;line-height:1.3;overflow-wrap:anywhere; }
+.overview-identity-copy h2 { font-size:var(--gs-text-title);line-height:1.3;overflow-wrap:anywhere; }
 .overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:6px; }
-.overview-preferred-actions button { display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:12px;font-weight:500; }
+.overview-preferred-actions button { display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-meta);font-weight:500; }
 .overview-card-heading { margin-bottom:10px; }
 .overview-card-heading h3 { margin:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-song-list { display:grid;grid-template-columns:1fr;gap:0; }
@@ -273,7 +274,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-song + .overview-song { border-top:1px solid #edf1ed; }
 .overview-song-copy { flex:1;min-width:0; }
 .overview-song-detail { display:grid;gap:4px;width:100%;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-song strong { font-size:13px;line-height:1.45;font-weight:600;overflow-wrap:anywhere; }
+.overview-song strong { font-size:var(--gs-text-ui);line-height:1.45;font-weight:600;overflow-wrap:anywhere; }
 .overview-song small { font-size:var(--gs-text-meta);color:var(--portal-muted);overflow-wrap:anywhere; }
 .overview-song-detail > svg { flex:none;color:#739884; }
 .overview-song-cover { position:relative;flex:none;width:64px; }
@@ -292,7 +293,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px;align-items:stretch; }
 .overview-events { grid-column:1 / -1; }
 .overview-story-list { display:grid; }
-.overview-unit-name { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;color:var(--portal-muted);font-size:12px; }
+.overview-unit-name { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;color:var(--portal-muted);font-size:var(--gs-text-meta); }
 .overview-unit-name > img { flex:none;width:48px;height:28px;object-fit:contain; }
 .overview-story { display:flex;align-items:center;gap:12px;min-width:0;padding-block:10px; }
 .overview-story-mark { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:8px;background:var(--portal-tint);color:var(--portal-accent); }
@@ -302,16 +303,30 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-story-copy { flex:1; }
 .overview-story > button > .overview-story-cast { display:flex;align-items:center;gap:0;flex:none; }
 .overview-story-cast :deep(.idol-avatar-shell + .idol-avatar-shell) { margin-left:-5px; }
-.overview-story .overview-story-cast > small { display:grid;place-items:center;min-width:26px;height:24px;margin-left:4px;padding-inline:4px;border:1px solid var(--portal-line);border-radius:999px;background:var(--portal-tint);color:var(--portal-accent);font-size:10px;font-variant-numeric:tabular-nums; }
+.overview-story .overview-story-cast > small { display:grid;place-items:center;min-width:26px;height:24px;margin-left:4px;padding-inline:4px;border:1px solid var(--portal-line);border-radius:999px;background:var(--portal-tint);color:var(--portal-accent);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
 .overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
-.overview-story small, .overview-event small { color:#708278;font-size:11px;overflow-wrap:anywhere; }
+.overview-story small, .overview-event small { color:#708278;font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-story > button > svg, .overview-event > button > svg { flex:none;color:var(--portal-accent); }
 .overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
-.overview-event { display:flex;align-items:center;gap:12px;min-width:0;padding:12px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffff65; }
+.overview-event { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-top:1px solid var(--gs-line); }
 .overview-status, .overview-error, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:#6b8274;font-size:var(--gs-text-ui); }
 .overview-error { color:#875a40; }
 .overview-error > button { min-height:44px;margin-left:var(--gs-space-4);padding:var(--gs-space-2) var(--gs-space-3);border:1px solid #dbc9bd;border-radius:var(--gs-radius-control);background:#fff;color:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-footer { margin-top:var(--gs-space-6);padding:var(--gs-space-5) 0;color:#829387;font-size:var(--gs-text-meta); }
+.overview-footprint { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-6);margin:var(--gs-space-5) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.overview-footprint button { min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:inherit; }
+.overview-footprint b { margin-right:var(--gs-space-2);color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
+.overview-footprint button:hover b { color:var(--gs-mint-ink); }
+.overview-directory { display:none; }
+@media (max-width:760px) {
+  .overview-directory { display:grid;margin-top:var(--gs-space-7);border-top:1px solid var(--gs-line); }
+  .overview-directory-row { display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--gs-space-4);align-items:start;padding:var(--gs-space-3) 0;border-bottom:1px solid var(--gs-line); }
+  .overview-directory-row.is-single { grid-template-columns:1fr; }
+  .overview-directory-row h2 { margin:0;padding-top:12px;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium); }
+  .overview-directory-row div { display:flex;flex-wrap:wrap;gap:0 var(--gs-space-6); }
+  .overview-directory-row button { display:flex;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-ink);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
+  .overview-directory-row button svg { color:var(--gs-ink-3); }
+}
 .overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
 @media (hover:hover) and (pointer:fine) {
   .overview-icon-button:hover, .overview-search-shortcuts > button:hover, .overview-preferred-actions button:hover { background:var(--portal-tint); }
@@ -333,8 +348,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 @container (max-width:650px) {
   .overview-content-grid { grid-template-columns:1fr; }
   .overview-personal { display:flex; }
-  .overview-counts > div { padding-inline:10px; }
-  .overview-counts dd { font-size:20px; }
 }
 @media(max-width:900px) {
   .portal-overview-scroll { padding:16px; }
@@ -342,50 +355,46 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .overview-brand b { display:none; }
 }
 /* The view controller, typography and original art share the existing GS palette. */
-.overview-brand h1 { border:0;padding:0;font-size:24px; }
+.overview-brand h1 { border:0;padding:0;font-size:var(--gs-text-title); }
 .overview-scope-bar { display:flex;align-items:center;gap:12px;min-width:0;margin:16px 0 12px; }
 .overview-scope-trigger { display:flex;align-items:center;gap:10px;flex:none;min-height:52px;padding:6px 12px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffd9;color:var(--portal-accent); }
 .overview-scope-trigger > span { display:flex;align-items:baseline;gap:10px; }
-.overview-scope-trigger small { flex:none;white-space:nowrap;color:var(--portal-muted);font-size:11px; }
-.overview-scope-trigger strong { font-size:15px;font-weight:650; }
-.overview-scope-reset,.overview-save-idol { min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:12px; }
-.overview-scope-note { margin-left:auto;color:var(--portal-muted);font-size:12px; }
+.overview-scope-trigger small { flex:none;white-space:nowrap;color:var(--portal-muted);font-size:var(--gs-text-meta); }
+.overview-scope-trigger strong { font-size:var(--gs-text-subtitle);font-weight:650; }
+.overview-scope-reset,.overview-save-idol { min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-meta); }
+.overview-scope-note { margin-left:auto;color:var(--portal-muted);font-size:var(--gs-text-meta); }
 .overview-identity { position:relative;min-height:190px;gap:12px; }
 .overview-idol-art { position:absolute;left:-20px;bottom:-5px;width:75%;height:270px;object-fit:contain;object-position:left bottom;pointer-events:none;filter:drop-shadow(0 6px 10px #26384312); }
 .overview-identity-copy { position:relative;z-index:1; }
 .has-portrait .overview-identity-copy { margin-left:48%;padding:12px 0 12px 10px;border-radius:10px;background:linear-gradient(90deg,#ffffff00,#ffffffce 30%,#ffffff85); }
-.overview-identity-copy h2 { margin:8px 0 6px;font-size:27px;line-height:1.25;font-weight:650; }
-.overview-kana { margin:0 0 12px;font-size:12px;color:var(--portal-muted); }
+.overview-identity-copy h2 { margin:8px 0 6px;font-size:var(--gs-text-title);line-height:1.25;font-weight:650; }
+.overview-kana { margin:0 0 12px;font-size:var(--gs-text-meta);color:var(--portal-muted); }
 .overview-unit-name > img { width:min(120px,100%);height:40px; }
 .overview-preferred-actions { position:relative;z-index:1;gap:2px;justify-content:space-between;margin-top:12px;padding:3px;border:1px solid #ffffff9c;border-radius:12px;background:#ffffffc9; }
-.overview-preferred-actions button { gap:4px;padding:4px 5px;font-size:12px; }
+.overview-preferred-actions button { gap:4px;padding:4px 5px;font-size:var(--gs-text-meta); }
 .overview-save-idol { align-self:flex-start;margin-top:4px;padding-left:0; }
-.overview-section-heading h2 > small { margin-left:6px;color:var(--portal-muted);font-size:12px;font-weight:500; }
+.overview-section-heading h2 > small { margin-left:6px;color:var(--portal-muted);font-size:var(--gs-text-meta);font-weight:500; }
 .overview-story-tabs { display:flex;flex-wrap:wrap;gap:4px;margin:-6px 0 4px; }
-.overview-story-tabs button { min-height:36px;padding:4px 10px;border:0;border-radius:999px;background:transparent;color:var(--portal-muted);font-size:12px; }
+.overview-story-tabs button { min-height:36px;padding:4px 10px;border:0;border-radius:999px;background:transparent;color:var(--portal-muted);font-size:var(--gs-text-meta); }
 .overview-story-tabs button[aria-pressed=true] { color:var(--portal-accent);background:var(--portal-tint);box-shadow:inset 0 0 0 1px var(--portal-line); }
 .overview-story-tabs small { margin-left:3px;font-variant-numeric:tabular-nums; }
 .overview-song { min-height:100px; }
 .overview-story { min-height:80px; }
-.overview-relation { display:inline-flex;width:fit-content;padding:1px 6px;border-radius:5px;background:var(--portal-tint);color:var(--portal-accent)!important;font-size:10px!important; }
-.overview-dialog-note { margin:0 0 12px;color:var(--portal-muted);font-size:13px; }
+.overview-relation { display:inline-flex;width:fit-content;padding:1px 6px;border-radius:5px;background:var(--portal-tint);color:var(--portal-accent)!important;font-size:var(--gs-text-meta)!important; }
+.overview-dialog-note { margin:0 0 12px;color:var(--portal-muted);font-size:var(--gs-text-ui); }
 @media(hover:hover) and (pointer:fine) {
-  .overview-counts > button:hover,.overview-scope-trigger:hover { background:#ffffffeb;box-shadow:0 4px 16px #1d344014; }
   .overview-scope-reset:hover,.overview-save-idol:hover,.overview-story-tabs button:hover { background:var(--portal-tint); }
 }
 @container(max-width:1050px) {
   .overview-event-grid { grid-template-columns:1fr; }
   .overview-event-image { width:160px;height:90px; }
-  .overview-counts > button { padding:8px 10px;gap:7px;flex-wrap:wrap; }
-  .overview-count-label { margin-left:0; }
-  .overview-counts strong { font-size:22px; }
   .overview-scope-note { display:none; }
 }
 @container(max-width:900px) {
   .overview-featured { grid-template-columns:minmax(250px,38%) minmax(0,1fr);gap:16px; }
   .overview-card-showcase { padding:0 0 0 16px;border-top:0;border-left:1px solid var(--portal-line); }
   .overview-idol-art { height:240px; }
-  .overview-identity-copy h2 { font-size:23px; }
+  .overview-identity-copy h2 { font-size:var(--gs-text-section); }
   .overview-preferred-actions { flex-wrap:wrap;justify-content:flex-start; }
 }
 @container(max-width:720px) {
@@ -396,7 +405,6 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
   .has-portrait .overview-identity-copy { margin-left:45%; }
   .overview-preferred-actions { justify-content:center; }
   .overview-card-showcase { padding:16px 0 0;border-left:0;border-top:1px solid var(--portal-line); }
-  .overview-counts { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .overview-content-grid { grid-template-columns:1fr; }
 }
 
@@ -416,20 +424,20 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-featured.is-w-view {grid-template-columns:minmax(340px,38%) minmax(0,1fr);}
 .is-w-view .overview-identity {grid-template-columns:minmax(0,58%) minmax(0,1fr);}
 @container(max-width:900px){.overview-featured.is-w-view {grid-template-columns:1fr;}}
-.overview-unit-hub {margin:20px 0;}
+
 .overview-unit-matrix {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
-.overview-unit-tile {position:relative;min-width:0;height:100px;border:1px solid var(--portal-line);border-radius:10px;background:#ffffffa0;}
+.overview-unit-tile {position:relative;min-width:0;height:100px;border-radius:var(--gs-radius-media);}
 .overview-unit-logo {display:grid;place-items:center;width:100%;height:100%;padding:12px 18px 30px;border:0;border-radius:inherit;background:transparent;}
 .overview-unit-logo img {width:100%;height:100%;max-width:150px;object-fit:contain;}
 .overview-unit-members {position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
 .overview-unit-members button {border:0;background:transparent;padding:0;border-radius:50%;}
 @media(hover:hover) and (pointer:fine){.overview-unit-members {opacity:0;pointer-events:none;}.overview-unit-tile:hover .overview-unit-members,.overview-unit-tile:focus-within .overview-unit-members {opacity:1;pointer-events:auto;}.overview-unit-tile:hover {background:var(--portal-tint);}}
 .overview-main-index {display:grid;gap:12px;}
-.overview-main-index article {display:grid;grid-template-columns:110px minmax(0,1fr);min-height:84px;border:1px solid var(--portal-line);border-radius:10px;overflow:hidden;background:#ffffff80;}
+.overview-main-index article {display:grid;grid-template-columns:110px minmax(0,1fr);min-height:84px;border-radius:var(--gs-radius-media);overflow:hidden;}
 .overview-main-index button {display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:84px;padding:10px 14px;border:0;background:transparent;color:inherit;text-align:left;}
 .overview-main-index small {flex-basis:100%;color:var(--portal-muted);}
 .overview-main-index article:has(button:disabled) {grid-template-columns:1fr;opacity:.6;}
-@container(max-width:760px){.overview-unit-matrix {gap:6px;}.overview-unit-tile {height:84px;}.overview-segment > button {padding:8px;font-size:12px;}.overview-identity {grid-template-columns:minmax(0,42%) minmax(0,1fr);}.overview-identity-copy h2 {font-size:24px;}}
+@container(max-width:760px){.overview-unit-matrix {gap:6px;}.overview-unit-tile {height:84px;}.overview-segment > button {padding:8px;font-size:var(--gs-text-meta);}.overview-identity {grid-template-columns:minmax(0,42%) minmax(0,1fr);}.overview-identity-copy h2 {font-size:var(--gs-text-title);}}
 @media(prefers-reduced-motion:reduce){.portal-overview * {transition:none!important;animation:none!important;}}
 </style>
 <style scoped src="./portal-bento.css"></style>

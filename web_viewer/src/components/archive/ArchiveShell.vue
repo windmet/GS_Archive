@@ -1,34 +1,28 @@
 <template>
   <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
     <aside class="archive-sidebar" aria-label="资料馆导航">
-      <div class="archive-brand">
+      <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
         <img :src="getBrandMarkUrl()" alt="" />
-        <span>SideM<br />Archive</span>
-      </div>
+        <span class="archive-brand-name">SideM</span>
+        <span class="archive-brand-sub">资料馆</span>
+      </button>
       <nav class="archive-nav" aria-label="档案栏目">
-        <button
-          v-for="item in primaryNavigation.filter(item => item.id === 'home')"
-          :key="item.id"
-          :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
-          :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
-          @click="emit('navigate', item.id)"
-        >
-          <component :is="item.icon" :size="19" :stroke-width="1.8" />
-          <span>{{ item.label }}</span>
+        <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
+          <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>偶像主页</span>
         </button>
-        <button type="button" class="archive-overview-link" :class="{ active: activeSection === 'portal' }" :aria-current="activeSection === 'portal' ? 'page' : undefined" @click="emit('navigate', 'portal')"><LayoutGrid :size="19" :stroke-width="1.8" aria-hidden="true" /><span>资料馆</span></button>
-        <div v-for="group in navigationGroups" :key="group.id" class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }" role="group" :aria-labelledby="`nav-${group.id}`">
-          <h2>
-            <button :id="`nav-${group.id}`" type="button" class="archive-nav-group-trigger" :aria-expanded="openNavigationGroup === group.id" :aria-controls="`nav-items-${group.id}`" @click="openNavigationGroup = openNavigationGroup === group.id ? '' : group.id">
-              <component :is="group.icon" :size="19" :stroke-width="1.8" aria-hidden="true" /><span>{{ group.label }}</span><ChevronDown class="archive-nav-chevron" :size="14" aria-hidden="true" />
+        <template v-for="group in navigationGroups" :key="group.id">
+          <hr v-if="group.id === 'tools'" class="archive-nav-divider" />
+          <div class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }">
+            <button type="button" class="archive-nav-link" :class="{ active: activeNavigationGroup === group.id }"
+              :aria-current="activeNavigationGroup === group.id && group.items.length === 1 ? 'page' : undefined"
+              @click="openDestination(group)">
+              <component :is="group.icon" :size="18" :stroke-width="1.8" aria-hidden="true" /><span>{{ group.label }}</span>
             </button>
-          </h2>
-          <div v-show="openNavigationGroup === group.id" :id="`nav-items-${group.id}`" class="archive-nav-group-items">
-            <button v-for="item in group.items" :key="item.id" type="button" :class="{ active: navigationSection === item.id }" :aria-current="navigationSection === item.id ? 'page' : undefined" @click="emit('navigate', item.id)">
-              <component :is="item.icon" :size="16" :stroke-width="1.8" aria-hidden="true" /><span>{{ item.label }}</span>
-            </button>
+            <div v-if="group.items.length > 1 && activeNavigationGroup === group.id" class="archive-nav-sub" role="group" :aria-label="group.label">
+              <button v-for="item in group.items" :key="item.id" type="button" :class="{ active: navigationSection === item.id }" :aria-current="navigationSection === item.id ? 'page' : undefined" @click="emit('navigate', item.id)">{{ item.label }}</button>
+            </div>
           </div>
-        </div>
+        </template>
       </nav>
     </aside>
 
@@ -75,13 +69,14 @@
 
     <nav v-if="activeSection !== 'reader' && !immersiveTool" class="archive-mobile-nav" aria-label="移动资料馆导航">
       <button
-        v-for="item in primaryNavigation"
+        v-for="item in mobileNavigation"
         :key="item.id"
-        :class="{ active: (activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) }"
-        :aria-current="(activeSection === item.id || (activeSection === 'reader' && item.id === 'stories')) ? 'page' : undefined"
+        type="button"
+        :class="{ active: item.active }"
+        :aria-current="item.active ? 'page' : undefined"
         @click="emit('navigate', item.id)"
       >
-        <component :is="item.icon" :size="21" :stroke-width="1.8" />
+        <component :is="item.icon" :size="21" :stroke-width="1.8" aria-hidden="true" />
         <span>{{ item.label }}</span>
       </button>
     </nav>
@@ -89,13 +84,12 @@
 </template>
 
 <script setup>
-import { Home, LayoutGrid, Search, Users, CalendarDays, Camera, ChevronDown } from '@lucide/vue'
+import { BookOpen, Box, CalendarDays, Home, LayoutGrid, Music, Search, Users, Wrench } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
-import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -115,33 +109,41 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-// Same hierarchy and labels as the portal; only the group glyphs are shell-specific.
-const groupIcons = { core: Users, records: CalendarDays, tools: Camera }
-const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({
-  ...group,
-  icon: groupIcons[group.id],
-  items: group.items.map(item => ({ ...item, icon: archiveNavigationIcons[item.id] })),
-}))
+// Same destinations and labels as the portal; only the glyphs are shell-specific.
+const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, tools: Wrench }
+const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, icon: groupIcons[group.id] }))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
-const openNavigationGroup = ref('')
-watch(() => props.activeSection, () => { openNavigationGroup.value = activeNavigationGroup.value }, { immediate: true })
-const primaryNavigation = [
-  { id: 'home', label: '偶像主页', icon: Home },
-  { id: 'portal', label: '资料馆', icon: LayoutGrid },
-]
+
+// A destination opens its first section; its other sections appear beneath it while it is current.
+function openDestination(group) {
+  if (activeNavigationGroup.value === group.id && group.items.length > 1) return
+  emit('navigate', group.items[0].id)
+}
+
+// Phone bar: the four most-used destinations plus the archive home, which lists the rest.
+const mobileNavigation = computed(() => {
+  const current = activeNavigationGroup.value
+  return [
+    { id: 'home', label: '主页', icon: Home, active: props.activeSection === 'home' },
+    { id: 'stories', label: '故事', icon: BookOpen, active: current === 'stories' },
+    { id: 'idols', label: '偶像', icon: Users, active: current === 'people' },
+    { id: 'songs', label: '歌曲', icon: Music, active: current === 'songs' },
+    { id: 'portal', label: '资料馆', icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'tools'].includes(current) },
+  ]
+})
 </script>
 
 <style scoped>
 .archive-shell {
-  --archive-sidebar: 156px;
+  --archive-sidebar: 188px;
   --archive-inspector: 0px;
   --archive-topbar: 76px;
-  --archive-accent: #18a79d;
-  --archive-accent-soft: #eaf8f6;
-  --archive-ink: #18212b;
-  --archive-muted: #68727d;
-  --archive-border: #dfe4e8;
+  --archive-accent: var(--gs-mint-ink);
+  --archive-accent-soft: var(--gs-mint-wash);
+  --archive-ink: var(--gs-ink);
+  --archive-muted: var(--gs-ink-3);
+  --archive-border: var(--gs-line);
   --archive-safe-top: env(safe-area-inset-top, 0px);
   --archive-safe-left: env(safe-area-inset-left, 0px);
   --archive-safe-right: env(safe-area-inset-right, 0px);
@@ -150,9 +152,9 @@ const primaryNavigation = [
   grid-template-rows: var(--archive-topbar) minmax(0, 1fr);
   width: 100%;
   height: 100%;
-  background: #fff;
+  background: var(--gs-paper);
   color: var(--archive-ink);
-  font-family: var(--gs-font-directory);
+  font-family: var(--gs-font-body);
 }
 .archive-shell.has-inspector { --archive-inspector: min(340px, 28vw); }
 .archive-shell.is-home { --archive-topbar: 0px; }
@@ -161,74 +163,83 @@ const primaryNavigation = [
 .archive-shell.is-portal { --archive-topbar: 0px; }
 .archive-shell.is-portal .archive-topbar { display: none; }
 .archive-shell.is-portal .archive-content { grid-row: 1 / 3; }
-.archive-shell.is-home .archive-sidebar { background: #183548; }
-.archive-shell.is-home .archive-nav button.active { background: rgba(33,183,197,.13); }
-.archive-shell.is-home .archive-nav button.active::before { background: #21b7c5; }
+
+/* Navy chrome: the one dark surface of the archive. */
 .archive-sidebar {
   grid-row: 1 / -1;
-  background: #17212b;
-  color: #dbe2e7;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--gs-chrome);
+  color: var(--gs-chrome-ink);
 }
 .archive-brand {
-  height: 64px;
-  flex-shrink: 0;
   display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 0 18px;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.05;
+  align-items: baseline;
+  gap: var(--gs-space-3);
+  flex-shrink: 0;
+  margin: var(--gs-space-6) var(--gs-space-3) var(--gs-space-5);
+  padding: var(--gs-space-3) var(--gs-space-4);
+  border: 0;
+  border-radius: var(--gs-radius-control);
+  background: transparent;
+  color: var(--gs-chrome-ink-active);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
-.archive-brand img { width: 34px; height: 26px; object-fit: contain; filter: brightness(0) invert(1); }
-.archive-nav {display:flex;flex-direction:column;gap:0;padding:6px;min-height:0;overflow-y:auto;}
-.archive-nav-group {padding-top:4px;}
-.archive-nav-group h2 {margin:0;padding:0;}
-.archive-nav button {
+.archive-brand img { align-self: center; width: 26px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); }
+.archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; }
+.archive-brand-sub { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
+.archive-nav { display: flex; flex-direction: column; gap: var(--gs-space-1); min-height: 0; padding: 0 var(--gs-space-3) var(--gs-space-5); overflow-y: auto; }
+.archive-nav-link {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--gs-space-4);
   width: 100%;
-  min-height: 36px;
-  flex-shrink: 0;
-  padding: 0 14px;
+  min-height: var(--gs-control-toolbar);
+  padding: 0 var(--gs-space-4);
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--gs-radius-control);
   background: transparent;
-  color: #aeb8c0;
-  cursor: pointer;
+  color: inherit;
   font: inherit;
-  font-size: 13px;
+  font-size: var(--gs-text-ui);
   text-align: left;
+  cursor: pointer;
 }
-@media (hover: hover) and (pointer: fine) {
-  .archive-nav button:hover { background: #222f3a; color: #fff; }
-}
-.archive-nav button:active { background: #2a3742; color: #fff; }
-.archive-nav button.active { background: #2a3742; color: #fff; }
-.archive-nav button.active::before {
+.archive-nav-link svg { flex: none; }
+.archive-nav-link.active { color: var(--gs-chrome-ink-active); background: var(--gs-chrome-hover); font-weight: var(--gs-weight-semibold); }
+.archive-nav-link.active::before {
   content: "";
   position: absolute;
-  left: -6px;
-  top: 7px;
-  bottom: 7px;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
   width: 3px;
-  background: #35c2b8;
+  border-radius: var(--gs-radius-pill);
+  background: var(--gs-mint);
 }
-.archive-nav .archive-nav-group-trigger {min-height:44px;padding:0 10px;gap:9px;color:#d3dfe6;font-size:13px;font-weight:650;}
-.archive-nav-group-trigger > span {flex:1;min-width:0;}
-.archive-nav .archive-nav-chevron {flex:none;transform:rotate(-90deg);color:#8096a4;}
-.archive-nav-group-trigger[aria-expanded=true] .archive-nav-chevron {transform:none;}
-.archive-nav-group.is-active .archive-nav-group-trigger {color:#5bd4c6;background:#203340;}
-.archive-nav-group-items {padding:4px 0;}
-.archive-nav .archive-nav-group-items button {padding-left:20px;gap:9px;}
-.archive-nav button:focus-visible {outline:3px solid #35c2b8;outline-offset:-3px;}
-@media(pointer:coarse){.archive-nav button{min-height:44px;}}
+.archive-nav-sub { display: grid; gap: var(--gs-space-1); padding: var(--gs-space-2) 0 var(--gs-space-3) 42px; }
+.archive-nav-sub button {
+  min-height: var(--gs-control-compact);
+  padding: 0 var(--gs-space-3);
+  border: 0;
+  border-radius: var(--gs-radius-control);
+  background: transparent;
+  color: var(--gs-chrome-ink);
+  font: inherit;
+  font-size: var(--gs-text-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.archive-nav-sub button.active { color: var(--gs-chrome-ink-active); font-weight: var(--gs-weight-semibold); }
+.archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-chrome-hover); }
+@media (hover: hover) {
+  .archive-brand:hover, .archive-nav-link:hover, .archive-nav-sub button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
+}
+.archive-brand:focus-visible, .archive-nav-link:focus-visible, .archive-nav-sub button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -2px; }
 .archive-topbar {
   grid-column: 2 / -1;
   display: grid;
@@ -238,7 +249,7 @@ const primaryNavigation = [
   min-width: 0;
   padding: 0 18px;
   border-bottom: 1px solid var(--archive-border);
-  background: #fff;
+  background: var(--gs-paper);
 }
 .archive-topbar h1 {
   min-width: 0;
@@ -258,7 +269,7 @@ const primaryNavigation = [
   min-width: 0;
 }
 .archive-topbar {
-  --archive-back-ink: #168f87;
+  --archive-back-ink: var(--gs-mint-ink);
 }
 .archive-search {
   display: flex;
@@ -267,12 +278,12 @@ const primaryNavigation = [
   height: var(--gs-control-normal);
   min-width: 0;
   padding: 0 var(--gs-space-4);
-  border: 1px solid #d7dde2;
+  border: 1px solid var(--gs-line);
   border-radius: var(--gs-radius-control);
-  color: #8a949e;
-  background: #fff;
+  color: var(--gs-ink-3);
+  background: var(--gs-surface);
 }
-.archive-search:focus-within { border-color: #34b9b0; box-shadow: 0 0 0 2px rgba(24,167,157,0.12); }
+.archive-search:focus-within { border-color: var(--gs-ink-3); box-shadow: 0 0 0 var(--gs-focus-ring) var(--gs-mint); }
 .archive-header-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; min-width:0; }
 .archive-header-actions .archive-search { flex:1; }
 .archive-search input {
@@ -287,7 +298,7 @@ const primaryNavigation = [
   font-size: var(--gs-text-ui);
   font-weight: var(--gs-weight-regular);
 }
-.archive-content { grid-column: 2; min-width: 0; min-height: 0; overflow: hidden; background: #fff; }
+.archive-content { grid-column: 2; min-width: 0; min-height: 0; overflow: hidden; background: var(--gs-paper); }
 .archive-content :deep(.list-screen), .archive-content :deep(.home-screen) { height: 100%; }
 .archive-inspector {
   grid-column: 3;
@@ -296,7 +307,7 @@ const primaryNavigation = [
   min-height: 0;
   overflow-y: auto;
   border-left: 1px solid var(--archive-border);
-  background: #fbfcfc;
+  background: var(--gs-paper);
 }
 .archive-mobile-brand, .archive-mobile-nav { display: none; }
 .archive-search-toggle { display:none; }
@@ -362,14 +373,14 @@ const primaryNavigation = [
     align-items: center;
     gap: 9px;
     min-width: 0;
-    font-size: 1.05rem;
-    font-weight: 750;
+    font-size: var(--gs-text-subtitle);
+    font-weight: var(--gs-weight-bold);
   }
   .archive-mobile-brand img { width: 31px; height: 24px; object-fit: contain; }
   .archive-topbar :deep(.archive-back) { grid-row: 1; grid-column: 1; }
   .archive-topbar:has(.archive-back) .archive-mobile-brand { grid-column: 2; }
   .archive-heading { grid-row: 2; grid-column: 1; gap: 4px; }
-  .archive-topbar h1 { font-size: 1.15rem; }
+  .archive-topbar h1 { font-size: var(--gs-text-section); }
   .archive-search { grid-row: 2; grid-column: 2; height: var(--gs-control-touch); }
   .archive-search input { font-size: var(--gs-text-subtitle); }
   .archive-header-actions { display:contents; }
@@ -382,10 +393,10 @@ const primaryNavigation = [
     grid-column: 1;
     grid-row: 3;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-top: 1px solid var(--archive-border);
-    background: #fff;
+    background: var(--gs-surface);
     z-index: 20;
   }
   .archive-mobile-nav button {
@@ -397,16 +408,16 @@ const primaryNavigation = [
     min-width: 0;
     border: 0;
     background: transparent;
-    color: #69747e;
+    color: var(--gs-ink-3);
     font: inherit;
-    font-size: 0.8rem;
+    font-size: var(--gs-text-meta);
     min-height: 44px;
     cursor: pointer;
   }
-  .archive-mobile-nav button.active { color: var(--archive-accent); }
-  .archive-mobile-nav button:active { background: var(--archive-accent-soft); }
-  .archive-mobile-nav button:focus-visible { outline: 3px solid var(--archive-accent); outline-offset: -5px; }
-  .archive-mobile-nav button + button { border-left: 1px solid #e5eeee; }
+  .archive-mobile-nav button.active { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+  .archive-mobile-nav button.active svg { color: var(--gs-mint-ink); }
+  .archive-mobile-nav button:active { background: var(--gs-mint-wash); }
+  .archive-mobile-nav button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: -4px; }
 }
 /* Same grid cell as content: never cover the separate mobile navigation row.
    Explicitly place main as well: leaving it auto-placed would push it to a new

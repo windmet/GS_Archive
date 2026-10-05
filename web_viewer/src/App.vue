@@ -1451,7 +1451,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
-  if (view.value === 'experiments') return '实验室'
+  if (view.value === 'experiments') return '工具'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return '藏品馆'
   if (view.value === 'photo_catalog') return '摄影资料'

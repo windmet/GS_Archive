@@ -161,11 +161,11 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'idols', label: '偶像' },
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
-  { id: 'interactions', label: '互动' },
+  { id: 'interactions', label: '通信' },
   { id: 'events', label: '活动' },
   { id: 'collections', label: '藏品' },
   { id: 'photos', label: '摄影' },
-  { id: 'experiments', label: '实验室' },
+  { id: 'experiments', label: '工具' },
   { id: 'resources', label: '资源' },
 ])
 

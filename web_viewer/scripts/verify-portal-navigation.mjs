@@ -7,12 +7,15 @@ import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigatio
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/archiveNavigationGroups.js'
 
-// Readers never see the build-status section; maintainers get the full hierarchy.
+// Six reader destinations; readers never see the build-status section, maintainers get it under 工具.
 const maintainerGroups = buildNavigationGroups(true)
-assert.deepEqual(buildNavigationGroups(false).map(group => group.items.length), [4, 4, 2])
-assert.deepEqual(maintainerGroups.map(group => group.items.length), [4, 4, 3])
-assert.ok(!buildNavigationGroups(false).some(group => group.items.some(item => item.id === 'resources')))
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [4, 4, 2], 'default module export is the reader view')
+const readerGroups = buildNavigationGroups(false)
+assert.deepEqual(readerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', '工具'])
+assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 2, 1])
+assert.deepEqual(maintainerGroups.map(group => group.items.length), [2, 2, 1, 2, 2, 2])
+assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
+assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 2, 1], 'default module export is the reader view')
 assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [

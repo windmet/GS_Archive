@@ -6,10 +6,10 @@ import { buildPortalDesktopOverview, buildPortalSearchResults, PORTAL_SEARCH_DOM
 export function useArchivePortalData({ view, bootstrap, client, preferredIdol, scope = ref(''), searchQuery = ref(''),
   loadCards,
   idolName, idolSearch, cardTitle, cardSearch, songTitle }) {
-  const desktop = ref(false), loading = ref(false), error = ref('')
+  const loading = ref(false), error = ref('')
   const query = searchQuery, searchLoading = ref(false), searchError = ref('')
   const rowsByDomain = shallowRef({})
-  let media, mediaListener, disposed = false, revision = 0, searchRevision = 0, timer, searchController
+  let disposed = false, revision = 0, searchRevision = 0, timer, searchController
   // An empty scope follows the favorite; 'all' explicitly selects the whole archive.
   const scopeIdol = computed(() => scope.value === '' ? preferredIdol.value : bootstrap.idols.find(row => row.id === scope.value) || null)
   const preferredCode = computed(() => scopeIdol.value?.id || '')
@@ -28,7 +28,7 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
   function stopOverview() { ++revision; overviewController?.abort(); overviewController = null }
   async function refresh() {
     stopOverview()
-    if (view.value !== 'portal' || !desktop.value || disposed) return
+    if (view.value !== 'portal' || disposed) return
     const ticket = revision, code = preferredCode.value
     const owner = overviewController = new AbortController()
     projection.value = null; loading.value = true; error.value = ''
@@ -83,13 +83,14 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     clearTimeout(timer); searchController?.abort()
     searchLoading.value = false; searchError.value = ''
     if (!value.trim() || Object.keys(rowsByDomain.value).length === PORTAL_SEARCH_DOMAINS.length) return
-    if (view.value !== 'portal' || !desktop.value) return
+    if (view.value !== 'portal') return
     searchLoading.value = true
     timer = setTimeout(() => { void loadSearch(ticket) }, 220)
   })
-  watch([view, desktop, preferredCode], () => {
+  // One portal at every width: phones load the same overview as desktops.
+  watch([view, preferredCode], () => {
     stopOverview()
-    if (view.value === 'portal' && desktop.value) {
+    if (view.value === 'portal') {
       void refresh()
       if (query.value.trim() && Object.keys(rowsByDomain.value).length !== PORTAL_SEARCH_DOMAINS.length) {
         clearTimeout(timer)
@@ -99,14 +100,9 @@ export function useArchivePortalData({ view, bootstrap, client, preferredIdol, s
     }
     else { projection.value = null; rowsByDomain.value = {}; loading.value = false; clearTimeout(timer); ++searchRevision; searchController?.abort(); searchLoading.value = false }
   })
-  onMounted(() => {
-    media = window.matchMedia('(min-width: 761px)')
-    mediaListener = () => { desktop.value = media.matches }
-    mediaListener(); media.addEventListener('change', mediaListener)
-  })
+  onMounted(() => { if (view.value === 'portal') void refresh() })
   onBeforeUnmount(() => {
     disposed = true; stopOverview(); ++searchRevision; clearTimeout(timer); searchController?.abort()
-    media?.removeEventListener('change', mediaListener)
   })
   return { scopeIdol, selectScope, overview, search, updateSearch, refresh, expandCardPool }
 }

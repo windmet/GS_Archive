@@ -84,7 +84,8 @@ try {
       writeFileSync(path.join(out, file), Buffer.from(shot.data, 'base64'))
       const problems = []
       if (scene.gallery && state.gallery !== 'ready') problems.push(`scene state ${state.gallery || 'never ready'}`)
-      if (state.text < 40) problems.push('page rendered almost no text')
+      // A stage scene is judged by its canvas; its dialogue box may be closed at the captured step.
+      if (state.text < 40 && !scene.canvas) problems.push('page rendered almost no text')
       if (scene.canvas && !state.canvas) problems.push('stage canvas missing')
       if (state.overflow) problems.push('page scrolls sideways')
       if (!scene.gallery) errors = errors.filter(text => !/ReadModel|Expected JSON/.test(text)) // dev has no read-model catalog
