@@ -13,6 +13,8 @@ const STORY_CANDIDATE_ROOT = path.resolve(
 const CARD_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_CARD_CANDIDATE_ROOT || '.analysis/raw-migration/card',
 )
+// public/ folders that src/ imports as modules; see server.watch below.
+const WATCHED_PUBLIC_DIRS = ['translations/', 'data/editorial/']
 const BACKGROUND_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_BACKGROUND_CANDIDATE_ROOT || '.analysis/raw-migration/background',
 )
@@ -436,15 +438,19 @@ export default defineConfig({
     port: 5173,
     // Keep the file watcher off the archive corpus and build output. Windows
     // creates one native fs.watch handle per entry; ~74K public files plus the
-    // 285K-file .deploy tree made dev requests take 10-40s. public/ is served
-    // from disk on every request, so it needs no watching.
+    // 285K-file .deploy tree made dev requests take 10-40s. Files fetched from
+    // public/ are read from disk on every request, but the translation and
+    // editorial JSON that src/ imports as modules is transformed and cached,
+    // so those two small folders stay watched.
     watch: {
-      ignored: [
-        '**/public/**',
-        '**/.deploy/**',
-        '**/.analysis/**',
-        '**/dist/**',
-      ],
+      ignored: file => {
+        const path = file.replace(/\\/g, '/')
+        if (/\/(\.deploy|\.analysis|dist)(\/|$)/.test(path)) return true
+        const inPublic = path.split('/public/')[1]
+        if (inPublic === undefined) return false
+        // Watched folders and their parents (so the watcher can reach them) stay in.
+        return !WATCHED_PUBLIC_DIRS.some(dir => `${inPublic}/`.startsWith(dir) || dir.startsWith(`${inPublic}/`))
+      },
     },
   },
 })
