@@ -34,7 +34,7 @@
       <ChevronRight v-if="item.actionable !== false" :size="17" class="relation-arrow" aria-hidden="true" />
     </component>
   </div>
-  <ArchiveTechnicalDetails :key="evidenceItems.map(item => item.id).join('|')" v-if="!showEvidence && evidenceItems.length" label="关联资料来源 / 技术信息" :evidence="evidenceItems" />
+  <ArchiveTechnicalDetails :key="evidenceItems.map(item => item.id).join('|')" v-if="!showEvidence && evidenceItems.length" label="关联资料来源" :evidence="evidenceItems" />
 </template>
 
 <script setup>

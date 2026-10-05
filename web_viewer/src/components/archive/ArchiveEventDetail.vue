@@ -168,18 +168,8 @@
 
     <CollectionQuickView v-if="quickEntity" :client="client" :bootstrap="bootstrap" :entity-key="quickEntity" :display-idol-name="displayIdolName" @close="quickEntity=''" @open-entity="emit('open-entity',$event)" @open-card="emit('open-collection-card',$event)" />
 
-    <ArchiveTechnicalDetails :key="event.event_id" :evidence="view.provenance">
-      <section class="detail-section evidence-section" aria-labelledby="event-evidence-title">
-        <div class="section-heading"><h3 id="event-evidence-title">资料来源</h3></div>
-        <dl>
-          <div><dt>活动实体</dt><dd>Raw · table 112</dd></div>
-          <div><dt>活动详情</dt><dd>Raw · table {{ view.provenance.detailTable }}</dd></div>
-          <div><dt>累计 PT 报酬</dt><dd>Raw · table {{ [...new Set(view.rewards.general.map(row=>row.sourceTable))].join(' / ') }}</dd></div>
-          <div><dt>剧情阅读报酬</dt><dd>Raw · table 10 / 11 / 12 / 70</dd></div>
-          <div><dt>剧情文件</dt><dd>{{ event.file }}</dd></div>
-          <div><dt>归属判定</dt><dd>{{ event.classification_source }}</dd></div>
-        </dl>
-      </section>
+    <ArchiveTechnicalDetails :key="event.event_id" :evidence="{ provenance: view.provenance, file: event.file, classification: event.classification_source }">
+      <p>活动信息、累计 PT 报酬与剧情阅读报酬均来自游戏内主数据，未经改写。</p>
     </ArchiveTechnicalDetails>
   </article>
 </template>

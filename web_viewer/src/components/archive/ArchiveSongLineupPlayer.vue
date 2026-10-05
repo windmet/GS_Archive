@@ -72,7 +72,7 @@
 
     <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
       stage-clock :current-time="session.currentTime.value" :ready="session.ready.value" @seek="session.seek" />
-    <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
+    <ArchiveTechnicalDetails label="编成试听说明" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
       <p class="lineup-evidence">
         所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
       </p>

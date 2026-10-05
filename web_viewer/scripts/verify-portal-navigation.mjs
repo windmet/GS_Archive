@@ -5,10 +5,15 @@ import { ARCHIVE_NAVIGATION, buildArchiveSourceQuery, buildArchiveUrl, buildPort
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
-import { ARCHIVE_NAVIGATION_GROUPS } from '../src/core/archiveNavigationGroups.js'
+import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/archiveNavigationGroups.js'
 
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [4, 4, 3])
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
+// Readers never see the build-status section; maintainers get the full hierarchy.
+const maintainerGroups = buildNavigationGroups(true)
+assert.deepEqual(buildNavigationGroups(false).map(group => group.items.length), [4, 4, 2])
+assert.deepEqual(maintainerGroups.map(group => group.items.length), [4, 4, 3])
+assert.ok(!buildNavigationGroups(false).some(group => group.items.some(item => item.id === 'resources')))
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [4, 4, 2], 'default module export is the reader view')
+assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
   '?home_idol=003hok&home_cue=voice&home_costume=model',

@@ -109,7 +109,7 @@
       </div>
       <ArchiveLanguageSwitch />
       <button class="stage-icon-action" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
-      <button class="stage-icon-action" type="button" aria-label="打开舞台检查器" @click="inspectorOpen = true"><Settings2 :size="19" /></button>
+      <button class="stage-icon-action" type="button" aria-label="打开高级设置" @click="inspectorOpen = true"><Settings2 :size="19" /></button>
     </header>
 
     <main class="stage-workspace">
@@ -267,7 +267,7 @@
     </main>
 
     <ChibiIdolPicker :open="pickerPosition !== null" :position="pickerPosition || 0" :characters="characters" :idol-directory="idolDirectory" :selected-idol-code="slotByPosition(pickerPosition)?.characterId || ''" :idol-name="idolName" :idol-search="idolSearch" @close="pickerPosition = null" @select="selectStageIdol" />
-    <ArchiveTerminalDialog class="stage-dev-dialog" :open="inspectorOpen" title="舞台检查器" :title-id="inspectorTitleId" @close="inspectorOpen = false">
+    <ArchiveTerminalDialog class="stage-dev-dialog" :open="inspectorOpen" title="高级设置" :title-id="inspectorTitleId" @close="inspectorOpen = false">
           <div class="inspector-tools"><button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button><button class="rebuild-button" type="button" :disabled="booting" @click="rebuildStage"><RefreshCw :size="16" />重新加载编队</button></div>
 
           <section class="control-section playback-section">
@@ -278,7 +278,7 @@
               </div>
             </div>
             <fieldset class="layer-debug-controls">
-              <legend>图层调试</legend>
+              <legend>显示图层</legend>
               <label>
                 <input v-model="staticStageEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>静态舞台</span>
@@ -326,7 +326,7 @@
               <output>{{ environmentScale.toFixed(3) }}×</output>
             </label>
           </section>
-          <details class="control-section runtime-details">
+          <details v-if="MAINTAINER" class="control-section runtime-details">
             <summary>引擎运行时数据</summary>
             <dl class="runtime-summary">
               <div><dt>演出主体</dt><dd>{{ isSpecialSingle ? '社长单人剪影' : (activePositions.join(' / ') || '—') }}</dd></div>
@@ -347,7 +347,7 @@
             </dl>
             <p class="technical-note">均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</p>
           </details>
-          <section class="control-section statistics-section">
+          <section v-if="MAINTAINER" class="control-section statistics-section">
             <div class="song-facts">
               <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
               <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
@@ -418,6 +418,7 @@
 import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
 import ArchiveIdolAvatar from './archive/ArchiveIdolAvatar.vue'
 import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
+import { isMaintainerMode } from '../core/maintainerMode.js'
 import ChibiIdolPicker from './ChibiIdolPicker.vue'
 import ChibiSongPicker from './ChibiSongPicker.vue'
 import '../styles/archive-terminal.css'
@@ -512,6 +513,7 @@ const props = defineProps({
 })
 const stageRoot = ref(null), selectedPosition = ref(3), pickerPosition = ref(null)
 const panelTab = ref('lineup')
+const MAINTAINER = isMaintainerMode()
 const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref(false), pureMode = ref(false), pureExitButton = ref(null)
 const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId()
 const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)

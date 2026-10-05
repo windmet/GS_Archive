@@ -5,7 +5,7 @@ import { parseExpression } from '@babel/parser'
 import { baseParse, parserOptions } from '@vue/compiler-dom'
 import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { createSSRApp } from 'vue'
+import { createSSRApp, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
@@ -130,9 +130,24 @@ try {
   for (const song of presentations) {
     const html = await renderToString(createSSRApp(Detail, { song }))
     assert.ok(!/\b\d{3}[a-z]{3}\b|表\s*46|\bRAW\b|\bACB\b/.test(publicText(html)), song.id)
-    assert.ok(html.includes('data-technical-details'), song.id)
+    assert.ok(!html.includes('<pre'), `${song.id}: readers never receive raw evidence JSON`)
     assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(html), 'evidence is closed by default')
   }
+  // Raw evidence JSON is a maintainer tool; written-out sources stay visible to readers.
+  const { default: Technical } = await server.ssrLoadModule('/src/components/archive/ArchiveTechnicalDetails.vue')
+  const renderTechnical = (slot, evidence = { resource_id: 'x1' }) => renderToString(createSSRApp({
+    render: () => h(Technical, { evidence }, slot ? { default: () => h('p', '来源说明') } : undefined),
+  }))
+  const readerBare = await renderTechnical(false)
+  const readerWritten = await renderTechnical(true)
+  assert.ok(!readerBare.includes('data-technical-details'), 'no slot and no maintainer: nothing is rendered')
+  assert.ok(readerWritten.includes('data-technical-details') && readerWritten.includes('来源说明') && !readerWritten.includes('<pre') && !readerWritten.includes('resource_id'))
+  globalThis.location = { search: '?maintainer=1' }
+  try {
+    const maintainer = await renderTechnical(false)
+    assert.ok(maintainer.includes('data-technical-details') && maintainer.includes('resource_id'), 'maintainer mode exposes raw evidence')
+    assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(maintainer))
+  } finally { delete globalThis.location }
   async function checkPage(name, props, expected = []) {
     const { default: Component } = await server.ssrLoadModule(`/src/components/archive/${name}.vue`)
     const html = await renderToString(createSSRApp(Component, props))
@@ -200,7 +215,12 @@ try {
   const normal = await renderToString(createSSRApp(Relations, { items }))
   assert.ok(publicText(normal).includes('可播放'))
   assert.ok(!publicText(normal).includes('Derived'))
-  assert.ok(normal.includes('relation_basis') && normal.includes('1_3_source'), 'evidence remains accessible')
+  assert.ok(!normal.includes('relation_basis') && !normal.includes('1_3_source'), 'relation evidence is hidden from readers')
+  globalThis.location = { search: '?maintainer=1' }
+  try {
+    const maintainerView = await renderToString(createSSRApp(Relations, { items }))
+    assert.ok(maintainerView.includes('relation_basis') && maintainerView.includes('1_3_source'), 'evidence remains accessible to maintainers')
+  } finally { delete globalThis.location }
   const technical = await renderToString(createSSRApp(Relations, { items, showEvidence: true }))
   assert.ok(publicText(technical).includes('Derived'))
   assert.ok(publicText(technical).includes('1_3_source'))

@@ -76,9 +76,9 @@
       :audio-url="isSingleTrackMode ? currentSingleTrack?.url || '' : ''"
       :stage-clock="['solo', 'unit'].includes(mode)" :current-time="transportCurrentTime" :ready="transportReady && transportDuration > 0 && !audioError"
       @seek="seekPlayback({ target: { value: $event } })" />
-    <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听技术信息">
+    <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听说明">
       <p class="experimental-evidence">
-        对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
+        音画对齐：{{ syncLabel }}。{{ playbackEvidence }}
       </p>
     </ArchiveTechnicalDetails>
     <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>

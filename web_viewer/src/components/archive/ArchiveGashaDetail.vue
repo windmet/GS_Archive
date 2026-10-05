@@ -45,17 +45,13 @@
     </section>
 
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
-      <section class="detail-section evidence-section">
-        <div class="section-heading"><h3>资料来源</h3></div>
-        <dl class="evidence-grid">
-          <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'Raw · client_master_data table 173' }}</dd></div>
-          <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
-          <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`Curated · ${gasha.name_source?.source_label || 'wiki / banner 核对'}` }}</dd></div>
-          <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>道具译文提取 · {{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
-          <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
-          <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
-        </dl>
-      </section>
+      <dl class="evidence-grid">
+        <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'游戏内主数据' }}</dd></div>
+        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
+        <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
+        <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>{{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
+        <div><dt>服务端卡池信息</dt><dd>关服后未能保存</dd></div>
+      </dl>
     </ArchiveTechnicalDetails>
   </section>
 </template>
@@ -105,10 +101,10 @@ const relationDescription = computed(() => {
     : '根据突破素材与开放时间推定的关联，尚未确认实际招募内容。'
 })
 const relationEvidence = computed(() => {
-  if (isReprintRelation.value) return `Curated · 外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
+  if (isReprintRelation.value) return `外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
   return usesRelatedCards.value
-    ? `Grouped · 同逻辑卡池主公告 ${props.gasha?.primary_code || ''}`
-    : 'Derived · 精确时间与突破道具'
+    ? `同一卡池主公告 ${props.gasha?.primary_code || ''} 收录`
+    : '按开放时间与突破道具推定'
 })
 const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,

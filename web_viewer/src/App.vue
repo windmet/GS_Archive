@@ -492,17 +492,17 @@
     <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" ref="playbackFailure" class="playback-failure" role="alert" tabindex="-1">
       <p v-if="playbackError">演出暂时无法载入，请重试或返回。</p>
       <p v-else>当前段落的必要{{ playbackReadiness.reason === 'voice-renderable' ? '语音' : '画面' }}未能准备完成，请重试或返回。</p>
-      <details><summary>查看加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
+      <details v-if="MAINTAINER"><summary>加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
       <div class="playback-failure-actions">
         <button v-if="playbackController.canRetry.value" type="button" @click="playbackController.retry()">重试载入</button>
         <button v-else-if="playbackReadiness?.status === 'blocked'" type="button" @click="playbackController.retryCurrentStep()">重试当前段落</button>
         <button type="button" @click="playbackController.close()">返回</button>
       </div>
-      <details v-if="preloadStatus?.failed"><summary>查看失败资源</summary>
+      <details v-if="MAINTAINER && preloadStatus?.failed"><summary>失败资源</summary>
         <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
       </details>
     </section>
-    <details v-if="view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
+    <details v-if="MAINTAINER && view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
       <summary>预载诊断记录（{{ preloadStatus.failed }} 项）</summary>
       <p>以下是先前预载未成功的记录，不代表当前画面仍然缺失。当前段落状态以播放器提示为准。</p>
       <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
@@ -584,6 +584,7 @@ import {eventResources, storyEventResources} from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
+import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
 import { cardAttribute, storyMatchesIdol } from './presentation/CatalogIdolScope.js'
@@ -669,6 +670,7 @@ const entityTranslationRepository = new EntityTranslationRepository()
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
 const RUNTIME_DEBUG = URL_FLAGS.get('runtimeDebug') === '1'
+const MAINTAINER = isMaintainerMode()
 
 function localStorageValue(key) {
   try { return window.localStorage.getItem(key) } catch { return null }

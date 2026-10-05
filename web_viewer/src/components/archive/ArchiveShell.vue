@@ -89,24 +89,13 @@
 </template>
 
 <script setup>
-import {
-  BookMarked,
-  FolderOpen,
-  Home,
-  LayoutGrid,
-  Images,
-  MessageSquare,
-  Music,
-  Search,
-  Sparkles,
-  Users,
-  CalendarDays, Box, Camera, ChevronDown,
-} from '@lucide/vue'
+import { Home, LayoutGrid, Search, Users, CalendarDays, Camera, ChevronDown } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
-import { ARCHIVE_NAVIGATION } from '../../core/archiveRoute.js'
+import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
+import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
@@ -114,7 +103,7 @@ const props = defineProps({
   activeSection: { type: String, default: 'home' },
   title: { type: String, default: '' },
   searchable: { type: Boolean, default: false },
-  searchPlaceholder: { type: String, default: '搜索剧情、偶像或资源 ID' },
+  searchPlaceholder: { type: String, default: '搜索剧情、偶像或歌曲' },
   modelValue: { type: String, default: '' },
   showBack: { type: Boolean, default: false },
   hasInspector: { type: Boolean, default: false },
@@ -126,12 +115,13 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
-const iconBySection = { home: Home, stories: BookMarked, songs: Music, idols: Users, cards: Images, gashas: Sparkles, interactions: MessageSquare, resources: FolderOpen, events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles }
-const navigationGroups = [
-  { id: 'idol-archive', label: '偶像图鉴', icon: Users, ids: ['idols', 'cards', 'stories', 'songs', 'collections', 'interactions'] },
-  { id: 'operations', label: '运营年表', icon: CalendarDays, ids: ['events', 'gashas'] },
-  { id: 'workshop', label: '视听工坊', icon: Camera, ids: ['photos', 'experiments', 'resources'] },
-].map(group => ({ ...group, items: group.ids.map(id => ({ ...ARCHIVE_NAVIGATION.find(item => item.id === id), icon: iconBySection[id] })) }))
+// Same hierarchy and labels as the portal; only the group glyphs are shell-specific.
+const groupIcons = { core: Users, records: CalendarDays, tools: Camera }
+const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({
+  ...group,
+  icon: groupIcons[group.id],
+  items: group.items.map(item => ({ ...item, icon: archiveNavigationIcons[item.id] })),
+}))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
 const openNavigationGroup = ref('')
