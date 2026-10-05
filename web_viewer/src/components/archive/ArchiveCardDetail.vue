@@ -2,47 +2,54 @@
   <section class="screen list-screen" data-archive-scroll-container>
     <ArchiveListHeader v-if="!embedded" :title="displayCardTitle || '卡片详情'" @back="emit('back')" />
     <div v-if="card" class="card-detail">
-      <section class="card-hero">
+      <section class="card-hero" :class="`is-${stage.layout}`">
         <figure class="card-stage">
-          <button v-if="heroImage" class="card-stage-art" :class="{ 'is-landscape': heroImage.landscape }" type="button"
-            :disabled="heroImage.thumbnail" :title="heroImage.thumbnail ? '只有缩略图资源' : `查看${heroImage.label}原图`" @click="openLightbox(heroImage.src)">
-            <img :key="heroImage.src" :src="heroImage.src" :alt="`${displayCardTitle} ${heroImage.label}`" />
-            <Expand v-if="!heroImage.thumbnail" :size="17" aria-hidden="true" />
-          </button>
+          <div v-if="stage.items.length" class="card-stage-rail" :style="{ '--stage-count': stage.items.length }">
+            <button v-for="item in stage.items" :key="item.src" class="card-stage-art" :class="{ 'is-landscape': item.landscape }" type="button"
+              :disabled="item.thumbnail" :title="item.thumbnail ? '只有缩略图资源' : `查看${item.label}原图`" @click="openLightbox(item.src)">
+              <span class="card-stage-frame">
+                <img :src="item.src" :alt="`${displayCardTitle} ${item.label}`" />
+                <Expand v-if="!item.thumbnail" :size="17" aria-hidden="true" />
+              </span>
+              <span v-if="item.caption" class="card-stage-caption">{{ item.caption }}</span>
+            </button>
+          </div>
           <span v-else class="card-stage-missing"><ImageOff :size="24" aria-hidden="true" /><span>暂无卡面图像</span></span>
-          <figcaption class="card-stage-controls">
-            <div v-if="heroStates.length > 1" class="card-tabs" role="group" aria-label="卡面状态">
-              <button v-for="state in heroStates" :key="state.id" type="button" :aria-pressed="heroState === state.id" @click="heroState = state.id">{{ state.label }}</button>
-            </div>
+          <figcaption v-if="heroFrames.length > 1 || landscapeStates.length > 1 || stage.layout !== 'landscape'" class="card-stage-controls">
             <div v-if="heroFrames.length > 1" class="card-tabs" role="group" aria-label="画幅">
               <button v-for="frame in heroFrames" :key="frame.id" type="button" :aria-pressed="activeHeroFrame === frame.id" @click="heroFrame = frame.id">{{ frame.label }}</button>
             </div>
-            <div v-if="activeHeroFrame === 'portrait'" class="card-tabs art-mode-control" role="group" aria-label="卡面边框模式">
+            <div v-if="stage.layout === 'landscape' && landscapeStates.length > 1" class="card-tabs" role="group" aria-label="卡面状态">
+              <button v-for="state in landscapeStates" :key="state.id" type="button" :aria-pressed="activeLandscapeState === state.id" @click="heroState = state.id">{{ state.label }}</button>
+            </div>
+            <div v-if="stage.layout !== 'landscape' && !stage.items[0]?.thumbnail" class="card-tabs art-mode-control" role="group" aria-label="卡面边框模式">
               <button type="button" :aria-pressed="artMode === 'clean'" @click="emit('update:art-mode', 'clean')">无框</button>
               <button type="button" :aria-pressed="artMode === 'framed'" @click="emit('update:art-mode', 'framed')">带框</button>
             </div>
           </figcaption>
         </figure>
         <div class="card-identity">
-          <div class="card-marks">
-            <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
-            <span v-if="card.gameplay?.attribute?.name" class="card-attribute" :data-attribute="attributeKey">{{ attributeLabel(card.gameplay.attribute.name) }}</span>
-            <span v-if="rawCandidateActive" class="card-raw-candidate">待核对卡面</span>
-          </div>
-          <div>
+          <div class="card-heading">
+            <div class="card-marks">
+              <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
+              <span v-if="card.gameplay?.attribute?.name" class="card-attribute" :data-attribute="attributeKey">{{ attributeLabel(card.gameplay.attribute.name) }}</span>
+              <span v-if="rawCandidateActive" class="card-raw-candidate">待核对卡面</span>
+            </div>
             <h3 :title="card.title">{{ displayCardTitle }}</h3>
             <p v-if="card.title && card.title !== displayCardTitle" class="card-original-title" lang="ja">{{ card.title }}</p>
           </div>
-          <ArchiveIdolReference v-if="ownerReference" class="card-owner" :reference="ownerReference" :data-archive-focus-id="`card-owner:${card.resource_id}:head`" density="identity" @open="emit('open-idol', $event)" />
-          <p v-if="card.gameplay" class="card-metaline">
-            <span v-if="Number.isFinite(card.gameplay.life)"><b>{{ card.gameplay.life }}</b>Life</span>
-            <span v-if="card.gameplay.center_skill?.name">中心效果 {{ archiveText('center-skill', card.gameplay.center_skill.name) }}</span>
-            <span v-if="card.gameplay.skill?.name">技能 {{ archiveText('skill', card.gameplay.skill.name) }}</span>
-          </p>
-          <nav class="card-stepper" aria-label="同偶像卡片">
-            <button class="card-step" type="button" :disabled="!previousCard" :title="previousCard ? archiveText('card', previousCard.title, 'title') || '卡片' : '已经是第一张'" @click="emit('navigate-card', previousCard)"><ChevronLeft :size="18" aria-hidden="true" />上一张</button>
-            <button class="card-step" type="button" :disabled="!nextCard" :title="nextCard ? archiveText('card', nextCard.title, 'title') || '卡片' : '已经是最后一张'" @click="emit('navigate-card', nextCard)">下一张<ChevronRight :size="18" aria-hidden="true" /></button>
-          </nav>
+          <div class="card-facts">
+            <ArchiveIdolReference v-if="ownerReference" class="card-owner" :reference="ownerReference" :data-archive-focus-id="`card-owner:${card.resource_id}:head`" density="identity" @open="emit('open-idol', $event)" />
+            <p v-if="card.gameplay" class="card-metaline">
+              <span v-if="Number.isFinite(card.gameplay.life)"><b>{{ card.gameplay.life }}</b>Life</span>
+              <span v-if="card.gameplay.center_skill?.name">中心效果 {{ archiveText('center-skill', card.gameplay.center_skill.name) }}</span>
+              <span v-if="card.gameplay.skill?.name">技能 {{ archiveText('skill', card.gameplay.skill.name) }}</span>
+            </p>
+            <nav class="card-stepper" aria-label="同偶像卡片">
+              <button class="card-step" type="button" :disabled="!previousCard" :title="previousCard ? archiveText('card', previousCard.title, 'title') || '卡片' : '已经是第一张'" @click="emit('navigate-card', previousCard)"><ChevronLeft :size="18" aria-hidden="true" />上一张</button>
+              <button class="card-step" type="button" :disabled="!nextCard" :title="nextCard ? archiveText('card', nextCard.title, 'title') || '卡片' : '已经是最后一张'" @click="emit('navigate-card', nextCard)">下一张<ChevronRight :size="18" aria-hidden="true" /></button>
+            </nav>
+          </div>
         </div>
       </section>
 
@@ -337,11 +344,14 @@ const awakenedPortraitUrl = computed(() => getCardPortraitUrl(props.card?.resour
 const normalLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, false))
 const awakenedLandscapeUrl = computed(() => getCardLandscapeUrl(props.card?.resource_id, true))
 
-// The hero shows one artwork: the full SSR landscape when it exists, otherwise the card portrait.
+// The stage shows the card's artwork at once: both portraits side by side (普通 / 特训后), a
+// single-state portrait beside the title, or — for SSR — the landscape of the chosen state.
 const heroState = ref('normal'), heroFrame = ref('landscape')
-const heroStates = computed(() => props.card?.single_state
-  ? [{ id: 'awakened', label: '单卡面' }]
-  : [{ id: 'normal', label: '普通' }, { id: 'awakened', label: '特训后' }])
+const landscapeStates = computed(() => {
+  const status = props.assetStatus || {}
+  return [status.normal_landscape && { id: 'normal', label: '普通' }, status.awakened_landscape && { id: 'awakened', label: '特训后' }].filter(Boolean)
+})
+const activeLandscapeState = computed(() => landscapeStates.value.find(state => state.id === heroState.value)?.id || landscapeStates.value[0]?.id || '')
 const heroFrames = computed(() => {
   const status = props.assetStatus || {}
   return [
@@ -350,18 +360,22 @@ const heroFrames = computed(() => {
   ].filter(Boolean)
 })
 const activeHeroFrame = computed(() => heroFrames.value.some(frame => frame.id === heroFrame.value) ? heroFrame.value : heroFrames.value[0]?.id || 'portrait')
-const heroImage = computed(() => {
-  const status = props.assetStatus || {}, awakened = heroState.value === 'awakened' || Boolean(props.card?.single_state)
-  if (activeHeroFrame.value === 'landscape' && (awakened ? status.awakened_landscape : status.normal_landscape)) {
-    return { src: awakened ? awakenedLandscapeUrl.value : normalLandscapeUrl.value, label: awakened ? '特训后横图' : '普通横图', landscape: true }
+const stage = computed(() => {
+  const status = props.assetStatus || {}, single = Boolean(props.card?.single_state)
+  if (activeHeroFrame.value === 'landscape' && activeLandscapeState.value) {
+    const awakened = activeLandscapeState.value === 'awakened'
+    return { layout: 'landscape', items: [{ src: awakened ? awakenedLandscapeUrl.value : normalLandscapeUrl.value, label: awakened ? '特训后横图' : '普通横图', landscape: true }] }
   }
-  if (awakened ? status.awakened_portrait : status.normal_portrait) {
-    return { src: awakened ? awakenedPortraitUrl.value : normalPortraitUrl.value, label: awakened ? '特训后卡面' : '普通卡面' }
-  }
-  if (props.card && (awakened ? status.awakened_icon : status.normal_icon)) {
-    return { src: getCardIconUrl(props.card.resource_id, awakened), label: '缩略图', thumbnail: true }
-  }
-  return null
+  const portraits = [
+    !single && status.normal_portrait && { src: normalPortraitUrl.value, label: '普通卡面', caption: '普通' },
+    status.awakened_portrait && { src: awakenedPortraitUrl.value, label: single ? '卡面' : '特训后卡面', caption: single ? '' : '特训后' },
+  ].filter(Boolean)
+  if (portraits.length) return { layout: portraits.length > 1 ? 'pair' : 'single', items: portraits }
+  const icons = props.card ? [
+    !single && status.normal_icon && { src: getCardIconUrl(props.card.resource_id, false), label: '普通缩略图', caption: '普通', thumbnail: true },
+    status.awakened_icon && { src: getCardIconUrl(props.card.resource_id, true), label: '缩略图', caption: single ? '' : '特训后', thumbnail: true },
+  ].filter(Boolean) : []
+  return { layout: icons.length > 1 ? 'pair' : 'single', items: icons }
 })
 const attributeKey = computed(() => attributeKeyOf(props.card?.gameplay?.attribute?.name))
 
@@ -532,23 +546,34 @@ function openRelation(item) {
 .card-detail button, .card-detail select { font-family: inherit; }
 .card-detail button:focus-visible, .card-detail select:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 
-/* Hero */
-.card-hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: var(--gs-space-8); align-items: start; }
+/* Hero: a stage that shows the artwork at once, then the identity beneath it.
+   Portraits are 4:5 and SSR landscapes 16:9; the stage height follows the window. */
+.card-hero { --stage-h: clamp(320px, calc(100svh - 300px), 560px); display: grid; gap: var(--gs-space-7); min-width: 0; }
+.card-hero.is-single { grid-template-columns: minmax(0, calc(var(--stage-h) * .8)) minmax(0, 1fr); gap: var(--gs-space-8); align-items: start; }
 .card-stage { display: grid; gap: var(--gs-space-4); min-width: 0; margin: 0; }
-.card-stage-art { position: relative; display: block; width: 100%; padding: 0; border: 0; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; cursor: zoom-in; }
+.card-stage-rail { display: grid; grid-template-columns: repeat(var(--stage-count, 1), minmax(0, calc(var(--stage-h) * .8))); justify-content: center; gap: var(--gs-space-5); min-width: 0; }
+.is-landscape .card-stage-rail { grid-template-columns: minmax(0, calc(var(--stage-h) * 16 / 9)); }
+.is-single .card-stage-rail { justify-content: stretch; grid-template-columns: minmax(0, 1fr); }
+.card-stage-art { display: grid; gap: var(--gs-space-3); justify-items: center; min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; cursor: zoom-in; }
 .card-stage-art:disabled { cursor: default; }
-.card-stage-art img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: contain; }
-.card-stage-art.is-landscape img { aspect-ratio: 16 / 9; object-fit: cover; }
-.card-stage-art:not(.is-landscape) { max-width: 420px; }
-.card-stage-art > svg { position: absolute; right: var(--gs-space-3); bottom: var(--gs-space-3); padding: 6px; width: 30px; height: 30px; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 64%); color: #fff; opacity: 0; transition: opacity var(--gs-motion-feedback) var(--gs-motion-ease); }
-.card-stage-art:hover > svg, .card-stage-art:focus-visible > svg { opacity: 1; }
+.card-stage-frame { position: relative; display: block; width: 100%; border-radius: var(--gs-radius-media); background: var(--gs-line); overflow: hidden; }
+.card-stage-frame img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: contain; }
+.card-stage-art.is-landscape .card-stage-frame img { aspect-ratio: 16 / 9; object-fit: cover; }
+.card-stage-frame > svg { position: absolute; right: var(--gs-space-3); bottom: var(--gs-space-3); padding: 6px; width: 30px; height: 30px; border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 64%); color: #fff; opacity: 0; transition: opacity var(--gs-motion-feedback) var(--gs-motion-ease); }
+.card-stage-art:hover .card-stage-frame > svg, .card-stage-art:focus-visible .card-stage-frame > svg { opacity: 1; }
+.card-stage-caption { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); letter-spacing: .04em; }
 .card-stage-missing { display: grid; place-items: center; gap: var(--gs-space-3); aspect-ratio: 16 / 9; border-radius: var(--gs-radius-media); background: var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.card-stage-controls { display: flex; flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-7); }
+.card-stage-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gs-space-3) var(--gs-space-7); }
+.is-single .card-stage-controls { justify-content: start; }
 .card-tabs { display: flex; gap: var(--gs-space-5); border-bottom: 1px solid var(--gs-line); }
 .card-tabs button { min-height: var(--gs-control-normal); margin-bottom: -1px; padding: 0; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--gs-ink-3); font-size: var(--gs-text-ui); cursor: pointer; }
 .card-tabs button[aria-pressed="true"] { border-bottom-color: var(--gs-mint); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 
-.card-identity { display: grid; gap: var(--gs-space-6); align-content: start; min-width: 0; }
+/* Identity: heading on the left, owner/facts on the right under a wide stage; stacked beside a single portrait. */
+.card-identity { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--gs-space-6) var(--gs-space-8); align-items: start; min-width: 0; }
+.is-single .card-identity { grid-template-columns: minmax(0, 1fr); }
+.card-heading, .card-facts { display: grid; gap: var(--gs-space-4); align-content: start; min-width: 0; }
+.card-facts { gap: var(--gs-space-5); }
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -558,7 +583,7 @@ function openRelation(item) {
 .card-attribute[data-attribute="mental"] { color: var(--gs-attr-mental); }
 .card-raw-candidate { color: var(--gs-critical); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
-.card-original-title { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-body); }
+.card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-body); }
 .card-identity :deep(.card-owner) { padding: var(--gs-space-4) 0; border: 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
 .card-metaline { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-6); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .card-metaline b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
@@ -672,8 +697,13 @@ function openRelation(item) {
 .card-detail :deep(.idol-reference-copy small), .card-detail :deep(.relation-meta), .card-detail :deep(.relation-labels strong), .card-detail :deep(.relation-labels small) { font-size: var(--gs-text-meta); }
 
 @container card-detail (max-width: 760px) {
-  .card-hero, .gameplay-layout { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
-  .card-stage-art:not(.is-landscape) { max-width: 340px; }
+  .card-hero, .card-hero.is-single, .card-identity, .gameplay-layout { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
+  /* Narrow: portraits become a swipeable strip that peeks at the next state. */
+  .is-pair .card-stage-rail { display: flex; justify-content: start; gap: var(--gs-space-4); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; margin-inline: calc(-1 * var(--gs-space-5)); padding-inline: var(--gs-space-5); scroll-padding-inline: var(--gs-space-5); }
+  .is-pair .card-stage-rail::-webkit-scrollbar { display: none; }
+  .is-pair .card-stage-art { flex: 0 0 84%; scroll-snap-align: start; }
+  .is-single .card-stage-rail { max-width: 420px; }
+  .card-stage-controls, .is-single .card-stage-controls { justify-content: start; }
   .voice-row { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
   .voice-preview-btn { justify-self: start; }
 }
@@ -687,5 +717,5 @@ function openRelation(item) {
   .card-text-voice, .card-text-voice audio { width: 100%; }
   .asset-status-grid { grid-template-columns: minmax(0, 1fr); }
 }
-@media (prefers-reduced-motion: reduce) { .card-stage-art > svg { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .card-stage-frame > svg { transition: none; } }
 </style>
