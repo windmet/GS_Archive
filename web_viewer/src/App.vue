@@ -4895,9 +4895,9 @@ watch(view,next=> {
   for(const [catalog,detail,owners] of [
     [cardReadModelCatalog,cardReadModelDetail,['cards','card_detail','idols']],
     [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage']],
-    [idolReadModelCatalog,idolReadModelDetail,['idol_catalog','idol_detail','idols']],
+    [idolReadModelCatalog,idolReadModelDetail,['idol_detail','idols']],
     [unitReadModelCatalog,unitReadModelDetail,['unit_catalog','unit_detail']],
-    [gashaReadModelCatalog,gashaReadModelDetail,['gasha_catalog','gasha_detail']],
+    [gashaReadModelCatalog,gashaReadModelDetail,['gashas','gasha_detail']],
     [eventReadModelCatalog,eventReadModelDetail,['event_catalog','event_detail']],
     [seasonalReadModelCatalog,seasonalReadModelDetail,['seasonal_campaign']],
     [workReadModelCatalog,workReadModelDetail,['work_archive']],
