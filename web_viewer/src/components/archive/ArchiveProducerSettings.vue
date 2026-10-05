@@ -1,38 +1,61 @@
 <template>
   <section class="producer-settings" aria-labelledby="producer-settings-title" data-archive-scroll-container>
-    <header class="settings-header"><button type="button" @click="emit('cancel')"><ArrowLeft :size="18" />返回来源页</button><h1 id="producer-settings-title" ref="heading" tabindex="-1">制作人事务手册</h1><div><button type="button" @click="download"><Download :size="17" />导出配置</button><label class="import-control"><Upload :size="17" />导入配置<input type="file" accept=".json,application/json" aria-label="导入配置文件" @change="readImport" /></label></div></header>
-    <p v-if="notice || status" role="status" class="settings-notice">{{ status || notice }}</p>
-    <div class="settings-layout">
-      <aside class="producer-pass">
-        <div class="pass-heading"><ContactRound :size="36" /><span>315 PRODUCTION<small>PRODUCER PASS</small></span></div>
-        <div class="pass-person"><ArchiveIdolAvatar v-if="favorite" :idol-code="favorite.id" :size="76" :accent-color="favorite.color" decorative /><UserRound v-else :size="56" /><span><strong>{{ producerName ? `${producerName} P` : '制作人 P' }}</strong><small>本地制作人档案</small></span></div>
-        <dl><dt>我的担当</dt><dd>{{ favorite ? displayName(favorite) : '尚未设置' }}</dd><dt>所属组合</dt><dd>{{ favorite?.unitName || '315 Production' }}</dd></dl>
-        <button type="button" class="favorite-change" @click="favoriteOpen=true">选择永久担当<ChevronDown :size="16" /></button>
-        <p>设置保存在当前浏览器中。临时浏览其他偶像不会改变这里的担当。</p>
-        <span class="pass-local">LOCAL ARCHIVE · 315</span>
-      </aside>
-      <div class="settings-panels">
-        <section class="settings-panel"><h2><Monitor :size="18" />启动与显示</h2>
-          <label>默认启动页面<select aria-label="默认启动页面" :value="preferences.startupPage" @change="emit('save-startup',{startupPage:$event.target.value,onboardingComplete:true})"><option value="unset" disabled>尚未设置</option><option value="home">315 事务所 · 偶像主页</option><option value="portal">资料馆</option></select></label>
-          <label>主页展示方式<select aria-label="主页展示方式" :value="preferences.homeMode" @change="emit('save-startup',{homeMode:$event.target.value})"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
-          <label>默认主页偶像<select aria-label="默认主页偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup',{startupIdol:$event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option></select></label>
-          <label>资料馆默认视角<select aria-label="资料馆默认视角" :value="preferences.portalDefaultScope || 'favorite'" @change="emit('save-startup',{portalDefaultScope:$event.target.value})"><option value="favorite">我的担当档案</option><option value="all">全站档案大厅</option></select></label>
-          <label>资料语言<select aria-label="资料语言" :value="uiLocale" @change="saveArchiveLocale($event.target.value)"><option value="zh-CN">中文译文</option><option value="ja-JP">日本語原文</option></select></label>
-          <small>首页人物与永久担当独立保存。资料语言不改变剧情正文的阅读模式。</small>
-        </section>
-        <section class="settings-panel"><h2><ContactRound :size="18" />姓名与剧情</h2><ProducerNameSetting /><label>剧情正文<select aria-label="剧情正文" :value="player.story_content_mode" @change="savePlayer({story_content_mode:$event.target.value})"><option value="original">原文</option><option value="translation">中文译文</option><option value="bilingual">双语</option></select></label></section>
-        <section class="settings-panel"><h2><Volume2 :size="18" />声音与陪伴</h2><label>主页自动语音<input type="checkbox" aria-label="主页自动语音" :checked="home.autoVoice" @change="home=saveArchiveHomePreferences({...home,autoVoice:$event.target.checked})" /></label><label>主音量 <span class="volume-control"><input type="range" aria-label="主音量" min="0" max="1" step="0.01" :value="player.volumes.master" @input="savePlayer({volumes:{master:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.master*100) }}%</output></span></label><label>剧情 BGM<input type="range" aria-label="剧情 BGM 音量" min="0" max="1" step="0.01" :value="player.volumes.bgm" @input="savePlayer({volumes:{bgm:Number($event.target.value)}})" /></label><label>语音<input type="range" aria-label="语音音量" min="0" max="1" step="0.01" :value="player.volumes.voice" @input="savePlayer({volumes:{voice:Number($event.target.value)}})" /></label><small>主音量用于剧情、主页语音和歌曲单曲／谱面试听；主页自动语音仍需浏览器允许播放。</small></section>
-        <section class="settings-panel settings-backup"><h2><HardDrive :size="18" />本地备份</h2><p>配置文件包含姓名、永久担当、启动与显示、主页、声音和壁纸偏好。换设备后可导入恢复。</p><small>不包含游戏资源、阅读进度或收藏。请在清理浏览器网站数据前导出备份。</small><button class="reset-control" type="button" @click="resetOpen=true">重置本站偏好</button></section>
-      </div>
+    <div class="settings-body">
+      <header class="settings-head">
+        <button type="button" class="settings-back" aria-label="返回来源页" @click="emit('cancel')"><ArrowLeft :size="20" /></button>
+        <h1 id="producer-settings-title" ref="heading" tabindex="-1">制作人设置</h1>
+      </header>
+      <p v-if="notice || status" role="status" class="settings-notice">{{ status || notice }}</p>
+
+      <section class="settings-group" aria-labelledby="settings-producer">
+        <h2 id="settings-producer">制作人</h2>
+        <div class="settings-row settings-favorite">
+          <ArchiveIdolAvatar v-if="favorite" :idol-code="favorite.id" :size="48" :accent-color="favorite.color" decorative />
+          <span v-else class="settings-favorite-empty" aria-hidden="true"><UserRound :size="24" /></span>
+          <span class="settings-row-copy"><strong>{{ favorite ? displayName(favorite) : '尚未设置担当' }}</strong><small>{{ favorite?.unitName ? `我的担当 · ${favorite.unitName}` : '资料馆首页会围绕担当展开；临时浏览其他偶像不会改变它。' }}</small></span>
+          <button type="button" class="settings-button" @click="favoriteOpen=true">{{ favorite ? '更换担当' : '选择担当' }}</button>
+        </div>
+        <div class="settings-row settings-name"><ProducerNameSetting /></div>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settings-startup">
+        <h2 id="settings-startup">启动与显示</h2>
+        <label class="settings-row"><span>默认启动页面</span><select aria-label="默认启动页面" :value="preferences.startupPage" @change="emit('save-startup',{startupPage:$event.target.value,onboardingComplete:true})"><option value="unset" disabled>尚未设置</option><option value="home">315 事务所 · 偶像主页</option><option value="portal">资料馆</option></select></label>
+        <label class="settings-row"><span>主页展示方式</span><select aria-label="主页展示方式" :value="preferences.homeMode" @change="emit('save-startup',{homeMode:$event.target.value})"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
+        <label class="settings-row"><span>默认主页偶像</span><select aria-label="默认主页偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup',{startupIdol:$event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option></select></label>
+        <label class="settings-row"><span>资料馆默认视角</span><select aria-label="资料馆默认视角" :value="preferences.portalDefaultScope || 'favorite'" @change="emit('save-startup',{portalDefaultScope:$event.target.value})"><option value="favorite">我的担当档案</option><option value="all">全站档案大厅</option></select></label>
+        <label class="settings-row"><span>资料语言</span><select aria-label="资料语言" :value="uiLocale" @change="saveArchiveLocale($event.target.value)"><option value="zh-CN">中文译文</option><option value="ja-JP">日本語原文</option></select></label>
+        <label class="settings-row"><span>剧情正文</span><select aria-label="剧情正文" :value="player.story_content_mode" @change="savePlayer({story_content_mode:$event.target.value})"><option value="original">原文</option><option value="translation">中文译文</option><option value="bilingual">双语</option></select></label>
+        <p class="settings-note">首页人物与担当分开保存。资料语言只影响界面与资料，剧情正文单独设置。</p>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settings-sound">
+        <h2 id="settings-sound">声音</h2>
+        <label class="settings-row"><span>主页自动语音</span><input type="checkbox" aria-label="主页自动语音" :checked="home.autoVoice" @change="home=saveArchiveHomePreferences({...home,autoVoice:$event.target.checked})" /></label>
+        <label class="settings-row"><span>主音量</span><span class="volume-control"><input type="range" aria-label="主音量" min="0" max="1" step="0.01" :value="player.volumes.master" @input="savePlayer({volumes:{master:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.master*100) }}%</output></span></label>
+        <label class="settings-row"><span>剧情 BGM</span><span class="volume-control"><input type="range" aria-label="剧情 BGM 音量" min="0" max="1" step="0.01" :value="player.volumes.bgm" @input="savePlayer({volumes:{bgm:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.bgm*100) }}%</output></span></label>
+        <label class="settings-row"><span>语音</span><span class="volume-control"><input type="range" aria-label="语音音量" min="0" max="1" step="0.01" :value="player.volumes.voice" @input="savePlayer({volumes:{voice:Number($event.target.value)}})" /><output>{{ Math.round(player.volumes.voice*100) }}%</output></span></label>
+        <p class="settings-note">主音量用于剧情、主页语音和歌曲单曲／谱面试听；主页自动语音仍需浏览器允许播放。</p>
+      </section>
+
+      <section class="settings-group" aria-labelledby="settings-backup">
+        <h2 id="settings-backup">本地备份</h2>
+        <p class="settings-note">设置只保存在当前浏览器。配置文件包含姓名、担当、启动与显示、主页、声音和壁纸偏好，换设备后可导入恢复；不包含游戏资源、阅读进度或收藏。</p>
+        <div class="settings-actions">
+          <button type="button" class="settings-button" @click="download"><Download :size="16" />导出配置</button>
+          <label class="settings-button import-control"><Upload :size="16" />导入配置<input type="file" accept=".json,application/json" aria-label="导入配置文件" @change="readImport" /></label>
+          <button class="settings-button settings-reset" type="button" @click="resetOpen=true">重置本站偏好</button>
+        </div>
+      </section>
     </div>
-    <ArchiveTerminalDialog :open="favoriteOpen" title="选择永久担当" title-id="settings-favorite-title" @close="favoriteOpen=false"><ArchiveIdolPickerPanel compact :idols="preferredIdols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferences.preferredIdol || ''" @update:model-value="emit('save-preferred',$event);favoriteOpen=false" /><button type="button" class="terminal-text-button" @click="emit('save-preferred','');favoriteOpen=false">暂不设置担当</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、主页、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="terminal-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
-    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音、主页和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="terminal-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="favoriteOpen" title="选择担当" title-id="settings-favorite-title" @close="favoriteOpen=false"><ArchiveIdolPickerPanel :idols="preferredIdols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferences.preferredIdol || ''" @update:model-value="emit('save-preferred',$event);favoriteOpen=false" /><button type="button" class="settings-text-button" @click="emit('save-preferred','');favoriteOpen=false">暂不设置担当</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="Boolean(pendingImport)" title="恢复配置" title-id="settings-import-title" @close="pendingImport=null"><p>将恢复姓名、担当、启动、主页、语言、声音与壁纸偏好，替换当前对应设置。</p><p>制作人：{{ pendingImport?.player.producer_name || '未设置' }} · 担当：{{ displayName(preferredIdols.find(row=>row.id===pendingImport?.startup.preferredIdol)) || '未设置' }}</p><button class="settings-button settings-primary" type="button" @click="restore(pendingImport)">确认恢复</button></ArchiveTerminalDialog>
+    <ArchiveTerminalDialog :open="resetOpen" title="重置本站偏好" title-id="settings-reset-title" @close="resetOpen=false"><p>姓名、担当、启动、语言、声音、主页和壁纸偏好将恢复默认。阅读进度、收藏和缓存不受影响。</p><button class="settings-button settings-primary" type="button" @click="restore(defaultArchiveSettings())">确认重置偏好</button></ArchiveTerminalDialog>
   </section>
 </template>
 <script setup>
 import {computed,onMounted,ref} from 'vue'
-import {ArrowLeft,ChevronDown,ContactRound,Download,HardDrive,Monitor,Upload,UserRound,Volume2} from '@lucide/vue'
+import {ArrowLeft,Download,Upload,UserRound} from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
@@ -54,8 +77,48 @@ function restore(settings){try{applyArchiveSettings(settings);player.value=repos
 onMounted(()=>heading.value?.focus({preventScroll:true}))
 </script>
 <style scoped>
-.producer-settings{height:100%;overflow:auto;padding:28px 32px;color:#2c4550;background:linear-gradient(130deg,#edf4f8,#faf7f2);font:14px/1.6 var(--gs-font-directory);box-sizing:border-box;}
-.producer-settings *{box-sizing:border-box}.settings-header{max-width:1300px;margin:0 auto 24px;display:flex;align-items:center;gap:20px}.settings-header h1{flex:1;font-size:24px;margin:0}.settings-header>div{display:flex;gap:8px}.producer-settings button,.import-control{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:7px 12px;border:1px solid #d5e1e5;border-radius:8px;background:#ffffffb0;color:inherit;font:inherit;cursor:pointer}.import-control{position:relative}.import-control input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}.settings-layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;max-width:1300px;margin:auto;align-items:start}.producer-pass{position:sticky;top:0;overflow:hidden;padding:26px;border:1px solid #d8e4e8;border-radius:18px;background:linear-gradient(155deg,#fff,#f1f7f7 65%,#f7eedc);box-shadow:0 12px 40px #3a657710}.pass-heading{display:flex;align-items:center;gap:10px;padding-bottom:20px;border-bottom:1px solid #c7d7d8}.pass-heading img{width:44px}.pass-heading span{font-size:13px;font-weight:700;letter-spacing:1px}.pass-heading small{display:block;font-size:9px;color:#81969e;letter-spacing:2px}.pass-person{display:flex;gap:16px;align-items:center;margin:28px 0}.pass-person span{min-width:0}.pass-person strong{display:block;font-size:22px;overflow-wrap:anywhere}.pass-person small,.producer-pass p{font-size:12px;color:#7a8b91}.producer-pass dl{display:grid;grid-template-columns:72px 1fr;gap:12px;font-size:13px}.producer-pass dt{color:#83949b}.producer-pass dd{margin:0;overflow-wrap:anywhere}.favorite-change{width:100%;margin:16px 0}.pass-local{display:block;margin-top:28px;padding-top:16px;border-top:1px dashed #becdce;font-size:10px;letter-spacing:2px;color:#9a8452}.settings-panels{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.settings-panel{min-width:0;padding:22px;border-radius:14px;background:#ffffffc9;border:1px solid #e1eaed}.settings-panel:first-child{grid-column:1/-1}.settings-panel h2{display:flex;align-items:center;gap:8px;margin:0 0 18px;font-size:16px}.settings-panel label{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center;gap:16px;margin:12px 0}.settings-panel select{min-width:0;width:100%;min-height:40px;border:1px solid #d0dee3;border-radius:7px;padding:7px;background:#fff;color:inherit;font:inherit}.settings-panel input[type=checkbox]{width:36px;height:20px;justify-self:end;accent-color:#267b7d}.settings-panel input[type=range]{width:100%;accent-color:#267b7d}.settings-panel small{font-size:11px;color:#7b8d96}.settings-panel :deep(.producer-setting){padding:0;border:0;background:transparent}.settings-panel :deep(.producer-setting label){display:block;margin:0}.settings-panel :deep(.producer-setting input){min-height:40px}.settings-panel :deep(.producer-preview){padding:12px;background:#eef6f5;border-radius:8px}.settings-panel:has(.producer-setting) label{grid-template-columns:86px 1fr}.volume-control{display:flex;gap:8px;align-items:center}.volume-control output{min-width:34px;font-size:12px}.settings-backup{grid-column:1/-1}.settings-backup p{margin:0 0 8px}.reset-control{margin-top:16px!important;color:#9c5e51!important;display:flex!important}.settings-notice{max-width:1300px;margin:0 auto 16px;color:#267b7d}.producer-settings button:focus-visible,.import-control:focus-within,.producer-settings select:focus-visible{outline:2px solid #258a8a;outline-offset:3px}
-@media(max-width:1100px){.settings-layout{grid-template-columns:260px 1fr;gap:18px}.settings-panels{grid-template-columns:1fr}.settings-panel label{grid-template-columns:140px 1fr}.producer-settings{padding:24px}}
-@media(max-width:760px){.settings-header{flex-wrap:wrap;gap:12px}.settings-header h1{font-size:20px;flex-basis:60%}.settings-header>div{width:100%}.settings-layout{grid-template-columns:1fr}.producer-pass{position:static}.producer-settings{padding:16px}.settings-panel{padding:18px}.settings-panel label{grid-template-columns:1fr;gap:6px}.settings-panel input[type=checkbox]{justify-self:start}.settings-panel:first-child,.settings-backup{grid-column:auto}}
+/* Producer settings: an ordinary archive page. Group headings, then hairline rows of label and control. */
+.producer-settings { height: 100%; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); container: producer-settings / inline-size; }
+.settings-body { max-width: 760px; margin: 0 auto; padding: var(--gs-space-8) var(--gs-space-7) var(--gs-space-section); box-sizing: border-box; }
+.settings-head { display: flex; align-items: center; gap: var(--gs-space-3); }
+.settings-head h1 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); outline: none; }
+.settings-back { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin-left: calc(-1 * var(--gs-space-3)); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
+.settings-notice { margin: var(--gs-space-5) 0 0; padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.settings-group { margin-top: var(--gs-space-9); }
+.settings-group h2 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
+.settings-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); align-items: center; gap: var(--gs-space-5); min-height: 56px; padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
+.settings-row select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.settings-row input[type=checkbox] { justify-self: end; width: 20px; height: 20px; margin: 0; accent-color: var(--gs-mint-ink); }
+.settings-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--gs-mint-ink); }
+.volume-control { display: flex; align-items: center; gap: var(--gs-space-3); }
+.volume-control output { min-width: 40px; color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-variant-numeric: tabular-nums; text-align: right; }
+.settings-favorite { grid-template-columns: auto minmax(0, 1fr) auto; }
+.settings-favorite-empty { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--gs-line); color: var(--gs-ink-3); }
+.settings-row-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
+.settings-row-copy strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.settings-row-copy small, .settings-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
+.settings-note { margin: var(--gs-space-3) 0 0; }
+.settings-name { display: block; padding-block: var(--gs-space-4); }
+.settings-name :deep(.producer-setting) { padding: 0; border: 0; background: none; color: var(--gs-ink); }
+.settings-name :deep(input) { min-height: var(--gs-control-touch); border-color: var(--gs-line); border-radius: var(--gs-radius-field); font-size: var(--gs-text-subtitle); }
+.settings-name :deep(.producer-preview) { padding: var(--gs-space-2) 0 var(--gs-space-2) var(--gs-space-4); border-left: 2px solid var(--gs-mint); border-radius: 0; background: none; font-family: var(--gs-font-jp); }
+.settings-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
+.settings-button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
+.settings-primary { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.settings-reset { margin-left: auto; border-color: transparent; background: none; color: var(--gs-critical); }
+.import-control input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.settings-text-button { min-height: var(--gs-control-touch); margin-top: var(--gs-space-4); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; cursor: pointer; }
+.producer-settings :is(button, select, input):focus-visible, .import-control:focus-within { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@container producer-settings (max-width: 560px) {
+  .settings-body { padding: var(--gs-space-5) var(--gs-space-5) var(--gs-space-8); }
+  .settings-head h1 { font-size: var(--gs-text-section); }
+  .settings-group { margin-top: var(--gs-space-8); }
+  .settings-row { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
+  .settings-row:has(> input[type=checkbox]) { grid-template-columns: minmax(0, 1fr) auto; }
+  .settings-row select { min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
+  .settings-favorite { grid-template-columns: auto minmax(0, 1fr); }
+  .settings-favorite .settings-button { grid-column: 1 / -1; }
+  .settings-button { min-height: var(--gs-control-touch); }
+  .settings-reset { margin-left: 0; }
+}
 </style>

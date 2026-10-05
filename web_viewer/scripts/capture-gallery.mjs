@@ -82,7 +82,14 @@ socket.addEventListener('message', event => {
   if (message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails.exception?.description?.split('\n')[0] || message.params.exceptionDetails.text)
   if (message.method === 'Runtime.consoleAPICalled' && message.params.type === 'error') errors.push(message.params.args.map(arg => arg.value ?? arg.description ?? '').join(' ').split('\n')[0])
 })
-const send = (method, params = {}) => new Promise(resolve => { const id = ++sequence; pending.set(id, resolve); socket.send(JSON.stringify({ id, method, params })) })
+// A browser call that never answers (seen on the WebGL player under swiftshader) fails the
+// capture instead of hanging the whole gallery.
+const send = (method, params = {}) => new Promise((resolve, reject) => {
+  const id = ++sequence
+  const timer = setTimeout(() => { pending.delete(id); reject(new Error(`${method} timed out`)) }, 60000)
+  pending.set(id, value => { clearTimeout(timer); resolve(value) })
+  socket.send(JSON.stringify({ id, method, params }))
+})
 const evaluate = async expression => (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result?.value
 await send('Page.enable'); await send('Runtime.enable')
 
@@ -91,6 +98,7 @@ try {
   for (const scene of scenes) {
     for (const size of WIDTHS) {
       errors = []
+      try {
       await send('Emulation.setDeviceMetricsOverride', { width: size.width, height: size.height, deviceScaleFactor: 1, mobile: size.mobile })
       const preferences = 'preferences' in scene ? scene.preferences : RETURNING_READER
       const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: preferences
@@ -123,6 +131,12 @@ try {
       problems.push(...errors.map(text => `error: ${text}`))
       report.push({ scene: scene.id, width: size.name, file, ok: problems.length === 0, problems })
       console.log(`${problems.length ? 'FAIL' : 'ok  '} ${scene.id} ${size.name}${problems.length ? ' — ' + problems.join('; ') : ''}`)
+      } catch (error) {
+        // Record the stuck capture and move on from a blank page.
+        report.push({ scene: scene.id, width: size.name, file: '', ok: false, problems: [error.message] })
+        console.log(`FAIL ${scene.id} ${size.name} — ${error.message}`)
+        try { await send('Page.navigate', { url: 'about:blank' }) } catch {}
+      }
     }
   }
 } finally {

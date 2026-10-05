@@ -1,24 +1,24 @@
 <template>
   <ArchiveTerminalDialog class="wallpaper-picker" :open="open" title="SSR 卡面壁纸" title-id="wallpaper-title" @close="emit('close')">
     <div class="wallpaper-picker-content">
-    <div class="wallpaper-picker-tools"><p class="terminal-help">选一张喜欢的卡面作为背景。</p><button type="button" class="terminal-text-button" :aria-pressed="!preferences.wallpaperKey" @click="choose('')">使用默认背景</button></div>
+    <div class="wallpaper-picker-tools"><p class="wallpaper-help">选一张喜欢的卡面作为背景。</p><button type="button" class="wallpaper-text-button" :aria-pressed="!preferences.wallpaperKey" @click="choose('')">使用默认背景</button></div>
     <p v-if="loading" role="status">正在读取壁纸目录…</p>
-    <div v-else-if="error" role="status">{{ error }} <button type="button" class="terminal-text-button" @click="load(true)">重试</button></div>
+    <div v-else-if="error" role="status">{{ error }} <button type="button" class="wallpaper-text-button" @click="load(true)">重试</button></div>
     <template v-else>
-      <label class="terminal-search"><span>查找卡名或偶像</span><input v-model="query" type="search" placeholder="卡名 / 偶像姓名" enterkeyhint="search" /></label>
+      <label class="wallpaper-search"><span>查找卡名或偶像</span><input v-model="query" type="search" placeholder="卡名 / 偶像姓名" enterkeyhint="search" /></label>
       <div class="wallpaper-picker-filters">
         <label><span>卡面</span><select v-model="variantFilter"><option value="">全部卡面</option><option value="base">卡面 A</option><option value="p">卡面 B</option></select></label>
         <label><span>组合</span><select v-model="unitFilter" :disabled="!units.length"><option value="">全部组合</option><option v-for="unit in units" :key="unit.code" :value="unit.code">{{ unit.name }}</option></select></label>
       </div>
       <p v-if="matches.length" class="wallpaper-picker-count">已显示 {{ visible.length }} / {{ matches.length }} 张卡面</p>
-      <div class="terminal-wallpaper-grid">
+      <div class="wallpaper-grid">
         <button v-for="entry in visible" :key="entry.id" type="button" :aria-pressed="preferences.wallpaperKey === entry.id" :aria-label="`${cardLabel(entry.label)}，${idolLabel(entry)}，${entry.variantLabel}`" :title="`${cardLabel(entry.label)} · ${idolLabel(entry)} · ${entry.variantLabel}`" @click="choose(entry.id)">
-          <span class="wallpaper-thumbnail"><img :src="entry.landscape?.url || entry.portrait.url" alt="" loading="lazy" decoding="async" /><span class="wallpaper-variant">SSR</span><span v-if="preferences.wallpaperKey === entry.id" class="wallpaper-selected">✓ 已选</span></span>
+          <span class="wallpaper-thumbnail"><img :src="entry.landscape?.url || entry.portrait.url" alt="" loading="lazy" decoding="async" /><span class="wallpaper-variant">SSR</span><span v-if="preferences.wallpaperKey === entry.id" class="wallpaper-selected">已选</span></span>
           <strong>{{ cardLabel(entry.label) }}</strong><small class="wallpaper-details">{{ idolLabel(entry) }} · {{ idolMetadata.get(entry.idolCode)?.unitName }} · {{ entry.variantLabel }}</small>
         </button>
       </div>
-      <p v-if="!matches.length" class="terminal-help">{{ catalogue?.entries?.length ? '没有找到匹配的卡面，试试其他名称或筛选条件。' : '壁纸目录暂时为空。' }}</p>
-      <button v-if="matches.length > limit" type="button" class="terminal-secondary wallpaper-more" @click="limit += PAGE_SIZE">继续浏览 · 还有 {{ matches.length - visible.length }} 张</button>
+      <p v-if="!matches.length" class="wallpaper-help">{{ catalogue?.entries?.length ? '没有找到匹配的卡面，试试其他名称或筛选条件。' : '壁纸目录暂时为空。' }}</p>
+      <button v-if="matches.length > limit" type="button" class="wallpaper-more" @click="limit += PAGE_SIZE">继续浏览 · 还有 {{ matches.length - visible.length }} 张</button>
     </template>
     <p v-if="notice" role="status">{{ notice }}</p>
     </div>
@@ -70,41 +70,27 @@ function prepareOpeningFilters() {
 function choose(id) { if (select(id)) emit('close') }
 </script>
 <style scoped>
-.wallpaper-picker { color:var(--terminal-ink);font-family:var(--gs-font-directory);font-size:var(--gs-text-ui); }
-.wallpaper-picker :deep(.terminal-dialog-body) { padding:16px;scrollbar-width:thin; }
-.wallpaper-picker-content { container-type:inline-size;min-width:0; }
-.wallpaper-picker-tools { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px; }
-.wallpaper-picker-tools .terminal-help { margin:0;font-size:var(--gs-text-ui); }
-.wallpaper-picker-tools .terminal-text-button { min-height:44px;font-size:var(--gs-text-ui); }
-.wallpaper-picker-tools .terminal-text-button[aria-pressed=true] { color:var(--portal-accent,#177f78);font-weight:600; }
-.terminal-search { display:grid;gap:4px;font-size:var(--gs-text-ui); }
-.terminal-search input { min-width:0;min-height:44px;font-size:16px; }
-.wallpaper-picker-filters { display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:12px;margin-top:8px; }
-.wallpaper-picker-filters label { display:grid;gap:4px;min-width:0;font-size:var(--gs-text-ui); }
-.wallpaper-picker-filters select { width:100%;min-width:0;min-height:44px;padding:8px;border:1px solid #c7dcdd;border-radius:6px;background:#fff;color:var(--terminal-ink);font:inherit;font-size:16px; }
-.wallpaper-picker-count { margin:8px 0 0;color:var(--terminal-muted);font-size:var(--gs-text-meta); }
-.terminal-wallpaper-grid { grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:8px;padding-block:12px; }
-.terminal-wallpaper-grid > button { min-width:0;min-height:44px;gap:4px;padding:4px;border:0;border-radius:4px;background:transparent;touch-action:manipulation; }
-.terminal-wallpaper-grid > button[aria-pressed=true] { border:0;background:transparent; }
-.terminal-wallpaper-grid > button[aria-pressed=true] .wallpaper-thumbnail { box-shadow:0 0 0 2px var(--portal-accent,#177f78); }
-.wallpaper-thumbnail { position:relative;display:block;width:min(100%,64px);aspect-ratio:4 / 5;justify-self:center;overflow:hidden;border-radius:4px;background:#e8eff1; }
-.terminal-wallpaper-grid .wallpaper-thumbnail img { width:100%;height:100%;aspect-ratio:auto;object-fit:contain; }
-.wallpaper-variant { position:absolute;right:2px;top:2px;padding:1px 4px;border:1px solid #ffffffa6;border-radius:3px;background:#fffffff0;color:#314c55;font-size:11px;font-weight:600;line-height:1.4; }
-.wallpaper-idol { position:absolute;inset:auto 0 0;padding:2px 3px;background:#102c37bf;color:#fff;font-size:12px;line-height:1.4;font-weight:500;text-align:center;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere; }
-.terminal-wallpaper-grid strong { display:block;min-width:0;min-height:1.4em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--gs-text-meta);line-height:1.4;font-weight:400;color:var(--terminal-muted); }
-.terminal-wallpaper-grid > button:focus-visible, .wallpaper-more:focus-visible, .wallpaper-picker-filters select:focus-visible { outline:var(--gs-focus-ring) solid var(--portal-accent,#177f78);outline-offset:var(--gs-focus-offset); }
-.terminal-wallpaper-grid > button:active { background:var(--portal-tint,#edf8f5);transform:scale(.98); }
-.wallpaper-more { width:100%;min-height:44px;font-size:var(--gs-text-ui); }
-@container (max-width:440px) { .terminal-wallpaper-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-@media (hover:hover) and (pointer:fine) { .terminal-wallpaper-grid > button:hover { background:var(--portal-tint,#edf8f5); } }
-
-.terminal-wallpaper-grid {grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;grid-auto-rows:auto;}
-.terminal-wallpaper-grid > button {display:grid;align-content:start;gap:7px;padding:0 0 10px;background:#ffffff80;border-radius:10px;text-align:left;overflow:hidden;}
-.wallpaper-thumbnail {width:100%;aspect-ratio:1600/853;border-radius:10px 10px 0 0;}
-.wallpaper-variant {left:8px;right:auto;top:8px;background:#fff5d9c9;color:#876622;}
-.wallpaper-selected {position:absolute;top:8px;right:8px;background:#177f78;color:#fff;border-radius:5px;padding:2px 6px;font-size:11px;}
-.terminal-wallpaper-grid strong {padding:0 10px;white-space:normal;font-size:13px;color:var(--terminal-ink);font-weight:600;}
-.wallpaper-details {padding:0 10px;font-size:11px;color:var(--terminal-muted);line-height:1.5;}
-.terminal-wallpaper-grid > button[aria-pressed=true] {box-shadow:inset 0 0 0 2px var(--portal-accent,#177f78);background:#edf8f5;}
-@container(max-width:550px){.terminal-wallpaper-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
+.wallpaper-picker-content { container: wallpaper-picker / inline-size; min-width: 0; color: var(--gs-ink); font-size: var(--gs-text-ui); }
+.wallpaper-picker-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-2) var(--gs-space-4); margin-bottom: var(--gs-space-3); }
+.wallpaper-help { margin: 0; color: var(--gs-ink-3); }
+.wallpaper-text-button { min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; cursor: pointer; }
+.wallpaper-text-button[aria-pressed=true] { color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.wallpaper-search, .wallpaper-picker-filters label { display: grid; gap: var(--gs-space-2); min-width: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.wallpaper-search input, .wallpaper-picker-filters select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-subtitle); }
+.wallpaper-picker-filters { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: var(--gs-space-4); margin-top: var(--gs-space-3); }
+.wallpaper-picker-count { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.wallpaper-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); padding-block: var(--gs-space-4); }
+.wallpaper-grid > button { display: grid; align-content: start; gap: var(--gs-space-2); min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
+.wallpaper-thumbnail { position: relative; display: block; overflow: hidden; aspect-ratio: 1600 / 853; border-radius: var(--gs-radius-media); background: var(--gs-line); }
+.wallpaper-thumbnail img { width: 100%; height: 100%; object-fit: cover; }
+.wallpaper-grid > button[aria-pressed=true] .wallpaper-thumbnail { box-shadow: 0 0 0 2px var(--gs-mint); }
+.wallpaper-variant, .wallpaper-selected { position: absolute; top: var(--gs-space-3); padding: 0 6px; border-radius: var(--gs-radius-control); font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); line-height: 1.6; }
+.wallpaper-variant { left: var(--gs-space-3); background: rgb(19 33 58 / 72%); color: var(--gs-surface); }
+.wallpaper-selected { right: var(--gs-space-3); background: var(--gs-mint); color: var(--gs-ink); font-family: var(--gs-font-body); }
+.wallpaper-grid strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.wallpaper-details { color: var(--gs-ink-3); font-size: var(--gs-text-caption); line-height: 1.5; }
+.wallpaper-grid > button:hover strong { color: var(--gs-mint-ink); }
+.wallpaper-more { width: 100%; min-height: var(--gs-control-touch); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
+.wallpaper-picker-content :is(button, input, select):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@container wallpaper-picker (max-width: 550px) { .wallpaper-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 </style>

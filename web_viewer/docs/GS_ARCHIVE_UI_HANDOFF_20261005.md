@@ -127,7 +127,18 @@ npm run gallery:capture -- <label>     # 输出 .analysis/gallery/<label>/
   - 图在左的盒子卡，配红色播放圆钮：改成细线行。
 - **季节活动**（seasonal）：4 格统计；「共通导入」底色块；角色剧情列表本身还行。
 
-### 第 2 步：清理 `archive-terminal.css`，迁移设置页与偶像选择页
+### 第 2 步：清理 `archive-terminal.css`，迁移设置页与偶像选择页 ✅ 已完成
+
+- `src/styles/archive-terminal.css` 已删除。其中约一半规则（模式卡、应用图标、眉标、签名等）早已无人使用；其余搬回各自组件：
+  - 共用对话框 `ArchiveTerminalDialog.vue` 自带样式（浮层：表面底色、面板圆角、`--gs-shadow-float`，类名 `.terminal-dialog*` / `.terminal-icon-button` 作为合同保留，小人舞台、摄影、歌曲 Solo、壁纸各自的 `:deep` 覆盖照旧生效）。此前门户的「切换视角」对话框从未自己导入样式，全靠别的页面先加载过终端样式表。
+  - 壁纸背景 `ArchiveTerminalBackdrop.vue` 自带样式，未选壁纸时不渲染（「315」中性底图退役）。
+  - 壁纸选择器重写为一套令牌化样式（原先两套规则叠加）。
+- 偶像选择器 `ArchiveIdolPickerPanel.vue` 统一为「搜索 + 组合标签 + 按组合分组的头像」一种形态，令牌化；`compact` 属性与列表形态删除，引导里的 `:deep` 覆盖删除。新增 `npm run verify:idol-picker`（已做变异测试）。
+- 偶像选择页（`ArchiveWelcome` 选择部分）：纸面页面，底部固定确认栏；不再有壁纸与「SideM ARCHIVE」品牌头，壁纸入口只在门户。
+- 设置页：标题「制作人设置」，分组标题 + 细线设置行；通行证卡、渐变、`315 PRODUCTION / LOCAL ARCHIVE` 删除；导出 / 导入 / 重置移到最后的「本地备份」分组，手机首屏就是设置内容。
+- `ArchivePreferredIdolSlot.vue` 是死组件，已删除（`verify-terminal-idol-localization` 中对应的几行一并删除；该检查仍因偶像详情 h2 的色点 span 与仅维护者可见的证据块而失败，属基线）。
+
+原始要求（留作对照）：
 
 现在引导已经替掉旧启动页，是清理「终端」旧样式的最佳时机。
 

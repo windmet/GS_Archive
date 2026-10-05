@@ -140,7 +140,6 @@ const previousDocument = globalThis.document
 globalThis.document = { activeElement: null }
 try {
   const { default: Picker } = await server.ssrLoadModule('/src/components/archive/terminal/ArchiveIdolPickerPanel.vue')
-  const { default: Preferred } = await server.ssrLoadModule('/src/components/archive/terminal/ArchivePreferredIdolSlot.vue')
   const { default: Welcome } = await server.ssrLoadModule('/src/components/archive/ArchiveWelcome.vue')
   const { default: Card } = await server.ssrLoadModule('/src/components/archive/ArchiveCardDetail.vue')
   const { default: Song } = await server.ssrLoadModule('/src/components/archive/ArchiveSongDetail.vue')
@@ -317,8 +316,6 @@ try {
       assert.ok(html.includes(`已选：${displayed}`))
       checks++
     }
-    const slot = await render(Preferred, { idols, value: '029ass', idPrefix: 'regression', ...callbacks })
-    assert.ok(slot.includes(`<strong>${displayed}</strong>`))
     const welcome = await render(Welcome, { idols, selectionOnly: true, dataReady: true,
       preferences: { startupIdol: '029ass' }, ...callbacks })
     assert.ok(welcome.includes(`已选：${displayed}`))
@@ -387,8 +384,6 @@ try {
   assert.match(empty, /没有找到符合条件的偶像/)
   const fallback = await render(Picker, { idols, modelValue: '029ass' })
   assert.ok(fallback.includes(`<strong>${sourceNames['029ass']}</strong>`))
-  const unselected = await render(Preferred, { idols, value: 'missing', idPrefix: 'empty', ...callbacks })
-  assert.ok(unselected.includes('选择我的偶像'))
   const unselectedWelcome = await render(Welcome, { idols, selectionOnly: true, dataReady: true,
     preferences: { startupIdol: 'missing' }, ...callbacks })
   assert.ok(unselectedWelcome.includes('请选择一位偶像'))

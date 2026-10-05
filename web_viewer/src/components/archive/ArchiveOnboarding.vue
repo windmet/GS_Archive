@@ -18,7 +18,7 @@
       <section v-else-if="step === 1" class="onboarding-body">
         <h1 id="onboarding-title" ref="heading" tabindex="-1">选一位担当</h1>
         <p class="onboarding-lede">资料馆首页会围绕担当展开：他的故事、卡片、歌曲，以及随时能去的主页。以后可以在设置里更换。</p>
-        <ArchiveIdolPickerPanel v-model="favorite" class="onboarding-picker" compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
+        <ArchiveIdolPickerPanel v-model="favorite" class="onboarding-picker" :idols="idols" :idol-name="idolName" :idol-search="idolSearch" />
       </section>
 
       <section v-else class="onboarding-body onboarding-ready">
@@ -48,7 +48,6 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue'
 import ProducerNameSetting from './ProducerNameSetting.vue'
-import '../../styles/archive-terminal.css'
 
 // First visit: the archive opens behind this sheet, which asks for the producer name (many lines
 // address the producer) and a favourite idol, then points at that idol's home.
@@ -99,13 +98,10 @@ onMounted(() => { dialog.value?.showModal(); heading.value?.focus({ preventScrol
 .onboarding-actions .onboarding-primary { border-color: var(--gs-mint-ink); background: var(--gs-mint-ink); color: var(--gs-surface); }
 .onboarding button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: 2px; }
 
-/* The shared name field and idol picker, restated in the archive's quieter voice. */
+/* The shared name field, restated in the archive's quieter voice. */
 .onboarding-name { padding: 0; border: 0; background: none; color: var(--gs-ink); }
 .onboarding-name :deep(input) { min-height: var(--gs-control-touch); border-color: var(--gs-line); border-radius: var(--gs-radius-field); font-size: var(--gs-text-subtitle); }
 .onboarding-name :deep(.producer-preview) { padding: var(--gs-space-4) var(--gs-space-5); border-left: 3px solid var(--gs-mint); background: var(--gs-surface); font-family: var(--gs-font-jp); }
-.onboarding-picker :deep(.terminal-search input) { border-radius: var(--gs-radius-field); }
-.onboarding-picker :deep(.picker-avatar-grid) { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
-.onboarding-picker :deep(.picker-avatar-grid button[aria-pressed=true]) { border-color: var(--gs-mint); background: var(--gs-mint-wash); }
 
 @media (max-width: 760px) {
   .onboarding { width: 100vw; max-width: none; max-height: 92dvh; margin: auto 0 0; border-radius: var(--gs-radius-surface); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }

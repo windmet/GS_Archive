@@ -97,7 +97,6 @@
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
-import '../../styles/archive-terminal.css'
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'

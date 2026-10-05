@@ -53,7 +53,6 @@ import { computed, ref, useId, watch } from 'vue'
 import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
 import ArchiveIdolAvatar from './archive/ArchiveIdolAvatar.vue'
 import { chibiIdolSearchAliases } from '../presentation/ChibiIdolSearch.js'
-import '../styles/archive-terminal.css'
 
 const props = defineProps({
   open: Boolean,
