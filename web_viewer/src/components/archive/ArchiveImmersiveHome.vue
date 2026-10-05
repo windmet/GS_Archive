@@ -417,7 +417,7 @@ const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId 
 const homeAudioPreferences = new PlayerPreferencesRepository().load().volumes
 const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio, masterVolume: homeAudioPreferences.master, busVolumes: homeAudioPreferences })
 const homeStyle = computed(() => ({
-  '--idol-color': activeIdol.value?.color || '#21b7c5',
+  '--idol-color': activeIdol.value?.color || 'var(--gs-mint)',
   '--interface-alpha': (preferences.interfaceOpacity / 100).toFixed(2),
 }))
 const voicePlayer = useVoicePlayer({
