@@ -424,7 +424,7 @@ watch(
 .photo-grid.is-backgrounds{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
 .photo-grid.is-frames{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
 .photo-grid.is-filters{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));}
-.photo-grid>button{display:flex;flex-direction:column;align-items:stretch;align-self:start;gap:8px;min-width:0;min-height:44px;padding:8px;border:1px solid #dce7e5;border-radius:9px;background:#fff;color:#25444c;text-align:left;cursor:pointer;}
+.photo-grid>button{display:flex;flex-direction:column;align-items:stretch;align-self:start;gap:8px;min-width:0;min-height:44px;padding:0;border:0;border-radius:0;background:none;color:var(--gs-ink);text-align:left;cursor:pointer;}
 .photo-grid>button[aria-pressed=true]{border-color:#258f7a;background:#edf8f3;}
 .photo-grid>button:active{background:#edf8f3;}
 .photo-card-art{display:grid;place-items:center;width:100%;aspect-ratio:1;background:#f2f7f7;border-radius:5px;color:#65838a;overflow:hidden;}

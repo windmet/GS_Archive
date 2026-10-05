@@ -28,6 +28,13 @@ const APP = [
   { id: 'app-song', url: `${base}/?view=song_detail&song=brndnf`, readModel: true },
   { id: 'app-idol', url: `${base}/?view=idol_detail&idol=001tom`, readModel: true },
   { id: 'app-event', url: `${base}/?view=event_detail&event=410018`, readModel: true },
+  { id: 'app-song-list', url: `${base}/?view=song_catalog`, readModel: true },
+  { id: 'app-event-list', url: `${base}/?view=event_catalog`, readModel: true },
+  { id: 'app-gasha-list', url: `${base}/?view=gashas`, readModel: true },
+  { id: 'app-idol-list', url: `${base}/?view=idols`, readModel: true },
+  { id: 'app-collection-list', url: `${base}/?view=collection_catalog`, readModel: true },
+  { id: 'app-photo-list', url: `${base}/?view=photo_catalog`, readModel: true },
+  { id: 'app-story-list', url: `${base}/?view=story_catalog`, readModel: true },
 ]
 const WIDTHS = [{ name: 'desktop', width: 1280, height: 900, mobile: false }, { name: 'phone', width: 390, height: 844, mobile: true }]
 const scenes = [...GALLERY, ...APP].filter(scene => !only || only.includes(scene.id))
