@@ -167,7 +167,7 @@ function hero(t) {
   assert.equal(JSON.stringify(t.song), t.original, 'hero adaptation preserves projected source evidence')
   return header
 }
-for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['anwhre', 'Intelligent'], ['cfprde', 'Mental']]) {
+for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['anwhre', 'Intelli'], ['cfprde', 'Mental']]) {
   const t = fixture(code, { presentation: { playbackTrack: playback.songs[code] } }); await flush()
   const header = hero(t)
   const badge = all(header).find(item => Object.hasOwn(item.props, 'data-song-attribute'))

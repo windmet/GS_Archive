@@ -41,7 +41,7 @@ for (const [kind, fields] of Object.entries(translation.entries)) for (const [fi
 const skillRows = corpus.filter(row => row.kind === 'skill');
 assert.ok(skillRows.every(row => translation.entries.skill[row.field]?.[row.source]), 'All source skills must be covered');
 assert.ok(corpus.filter(row => row.kind === 'center-skill').every(row => translation.entries['center-skill'][row.field]?.[row.source]), 'All center skills must be covered');
-if(!hasRevision('skill','8秒ごとに32％の確率で4秒間、コンボスコアが18%アップ','description')) assert.equal(text('skill','8秒ごとに32％の確率で4秒間、コンボスコアが18%アップ','description'), '每 8 秒以 32% 的概率触发，持续 4 秒：连击得分提升 18%。');
+if(!hasRevision('skill','8秒ごとに32％の確率で4秒間、コンボスコアが18%アップ','description')) assert.equal(text('skill','8秒ごとに32％の確率で4秒間、コンボスコアが18%アップ','description'), '每8秒有32%的概率在4秒内，连击分数提升18%');
 if(!hasRevision('photo-spots','Café Parade店内')) assert.equal(text('photo-spots','Café Parade店内'),'Café Parade 店内');
 if(!hasRevision('photo-stickers','ステッカー SideMini 鷹城恭二')) assert.equal(text('photo-stickers','ステッカー SideMini 鷹城恭二'),'SideMini 鹰城恭二');
 if(!hasRevision('honor','2022/VDCPの硲 道夫の渡したチョコ数100個達成')) assert.match(text('honor','2022/VDCPの硲 道夫の渡したチョコ数100個達成'),/硲道夫.*100 个$/);

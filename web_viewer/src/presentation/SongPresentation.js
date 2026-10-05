@@ -1,6 +1,7 @@
 // Product-facing song data is projected from evidence plus the canonical identity dictionary.
 // Resource existence is not a playback guarantee. Keep collected media and playable media distinct.
 import { buildIdolReference } from './IdolReferencePresentation.js'
+import { attributeLabel } from './AttributeLabel.js'
 
 export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null, manifest = null } = {}) {
   if (!song) return null
@@ -31,7 +32,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
   const openAt = Number(song.open_at)
   return {
     id: song.song_code, title: song.title || '曲名待确认', kana: song.kana || '', jacketUrl: song.jacket_url,
-    attributeLabel: ({ physical: 'Physical', intelli: 'Intelli', mental: 'Mental', all: 'ALL' })[song.attribute?.key] || '待确认',
+    attributeLabel: attributeLabel(song.attribute?.key) || '待确认',
     gameplay: song.gameplay || null,
     parentId: song.parent_song_code,
     special: song.archive_status === 'special',

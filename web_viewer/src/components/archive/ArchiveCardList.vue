@@ -42,7 +42,7 @@
         <span>属性</span>
         <select aria-label="卡片属性" :value="currentAttribute" @change="emit('select-attribute', $event.target.value)">
           <option value="all">全部属性</option>
-          <option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute">{{ attribute }}</option>
+          <option v-for="attribute in ['Physical','Intelligence','Mental']" :key="attribute" :value="attribute">{{ attributeLabel(attribute) }}</option>
         </select>
       </label>
 
@@ -120,6 +120,7 @@ import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import { attributeLabel } from '../../presentation/AttributeLabel.js'
 
 defineProps({
   title: { type: String, default: '' },

@@ -26,7 +26,7 @@
         <div class="card-identity">
           <div class="card-marks">
             <span class="card-rarity">{{ card.rarity || 'CARD' }}</span>
-            <span v-if="card.gameplay?.attribute?.name" class="card-attribute" :data-attribute="attributeKey">{{ card.gameplay.attribute.name }}</span>
+            <span v-if="card.gameplay?.attribute?.name" class="card-attribute" :data-attribute="attributeKey">{{ attributeLabel(card.gameplay.attribute.name) }}</span>
             <span v-if="rawCandidateActive" class="card-raw-candidate">待核对卡面</span>
           </div>
           <div>
@@ -298,6 +298,7 @@ import {
   isRawCardCandidate,
 } from '../../utils/CardAssetResolver.js'
 import { presentCardAssetRows, presentCardCostumeGroups, presentCardCostumeFlavor } from '../../presentation/CardDetailSemantics.js'
+import { attributeLabel, attributeKey as attributeKeyOf } from '../../presentation/AttributeLabel.js'
 
 const props = defineProps({
   card: { type: Object, default: null },
@@ -362,7 +363,7 @@ const heroImage = computed(() => {
   }
   return null
 })
-const attributeKey = computed(() => String(props.card?.gameplay?.attribute?.name || '').toLowerCase().replace(/[^a-z].*$/, ''))
+const attributeKey = computed(() => attributeKeyOf(props.card?.gameplay?.attribute?.name))
 
 watch(() => props.card?.resource_id, () => {
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
@@ -553,7 +554,7 @@ function openRelation(item) {
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .card-attribute::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .card-attribute[data-attribute="physical"] { color: var(--gs-attr-physical); }
-.card-attribute[data-attribute="intelligence"], .card-attribute[data-attribute="intelli"], .card-attribute[data-attribute="intelligent"] { color: var(--gs-attr-intelli); }
+.card-attribute[data-attribute="intelli"] { color: var(--gs-attr-intelli); }
 .card-attribute[data-attribute="mental"] { color: var(--gs-attr-mental); }
 .card-raw-candidate { color: var(--gs-critical); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }

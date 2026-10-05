@@ -47,9 +47,9 @@ export const photoDescriptions = {
 
 export const itemNames = {
   'ゴーゴーゼリー':'Go Go 果冻','ゴーゴーゼリーSP':'Go Go 果冻 SP','ゴーゴーゼリーDX':'Go Go 果冻 DX',
-  'フィジカルバッジ':'体能徽章','フィジカルリング':'体能戒指','フィジカル\nアンクレット':'体能脚链',
-  'インテリバッジ':'智力徽章','インテリリング':'智力戒指','インテリアンクレット':'智力脚链',
-  'メンタルバッジ':'精神徽章','メンタルリング':'精神戒指','メンタルアンクレット':'精神脚链',
+  'フィジカルバッジ':'Physical徽章','フィジカルリング':'Physical戒指','フィジカル\nアンクレット':'Physical脚链',
+  'インテリバッジ':'Intelli徽章','インテリリング':'Intelli戒指','インテリアンクレット':'Intelli脚链',
+  'メンタルバッジ':'Mental徽章','メンタルリング':'Mental戒指','メンタルアンクレット':'Mental脚链',
   '希望のネックレス':'希望项链','絆のバングル':'羁绊手镯','彩光の欠片 N':'彩光碎片 N','彩光の欠片 R':'彩光碎片 R',
   '彩光の欠片 SR':'彩光碎片 SR','彩光の欠片 SSR':'彩光碎片 SSR','フェス限定彩光の欠片':'FES 限定彩光碎片',
   '初級レッスンノート':'初级练习笔记','中級レッスンノート':'中级练习笔记','上級レッスンノート':'高级练习笔记',
@@ -83,11 +83,11 @@ export const itemDescriptions = {
   'プラチナガシャを\n10回引けるチケット。':'可进行 10 次白金招募的票券。',
   'プラチナガシャを1回引けるチケット。\n入手当日のガシャ開催時間内のみ利用可能。':'可进行 1 次白金招募的票券。\n仅可在获得当天的招募开放时间内使用。',
 };
-const materialTypes = {'フィジカル': ['体能','充满活力'], 'インテリ':['智力','敏锐智慧'], 'メンタル':['精神','不屈意志']};
+const materialTypes = {'フィジカル': ['Physical','充满活力'], 'インテリ':['Intelli','敏锐智慧'], 'メンタル':['Mental','不屈意志']};
 const materialShapes = {'ピンバッジ':'徽章','リング':'戒指','アンクレット':'脚链'};
 export function itemMaterialDescriptionDraft(source) {
   const match = source.replace(/\n/g,'').match(/^(みなぎる活力|冴えわたる知性|折れない意志)を感じさせる(ピンバッジ|リング|アンクレット)。((?:フィジカル|インテリ|メンタル))タイプのアイドルがチェンジ！するために必要。$/);
-  return match ? `让人感受到${materialTypes[match[3]][1]}的${materialShapes[match[2]]}。\n用于${materialTypes[match[3]][0]}属性偶像的觉醒。` : null;
+  return match ? `让人感受到${materialTypes[match[3]][1]}的${materialShapes[match[2]]}。\n用于${materialTypes[match[3]][0]}偶像的觉醒。` : null;
 }
 
 export const skillNames = {
@@ -99,19 +99,21 @@ export const skillNames = {
   '判定強化＆ライフ回復':'判定强化与生命恢复','フォーカス':'专注','ライフ回復＆ダメージガード':'生命恢复与伤害防护',
   'ダブルエフェクト':'双重效果',
 };
-const attributeNames = {'フィジカル':'体能', 'インテリ':'智力', 'メンタル':'精神'};
-const centerSuffixes = {'グルーヴ':'律动','ステップ':'舞步','スタイル':'风姿','グリッター':'闪耀','パワー':'力量'};
+// Attribute and center-skill names keep the game's own Latin labels (Physical / Intelli / Mental),
+// matching the reviewed item and honor titles.
+const attributeNames = {'フィジカル':'Physical', 'インテリ':'Intelli', 'メンタル':'Mental'};
+const centerSuffixes = {'グルーヴ':'Groove','ステップ':'Step','スタイル':'Style','グリッター':'Glitter','パワー':'Power'};
 export function centerSkillDraft(source, field) {
   if (field === 'name') {
-    if (source === 'ALLグリッター') return '全属性闪耀';
+    if (source === 'ALLグリッター') return 'ALL Glitter';
     const match = source.match(/^(フィジカル|インテリ|メンタル)(グルーヴ|ステップ|スタイル|グリッター|パワー)(Ⅱ)?$/);
-    return match ? `${attributeNames[match[1]]}${centerSuffixes[match[2]]}${match[3] || ''}` : null;
+    return match ? `${attributeNames[match[1]]} ${centerSuffixes[match[2]]}${match[3] ? ` ${match[3]}` : ''}` : null;
   }
   const all = source.match(/^全タイプの全アピール値が(\d+)[%％]アップ$/);
-  if (all) return `所有属性偶像的全部表现值提升 ${all[1]}%。`;
+  if (all) return `全类型的全表现值提升${all[1]}%`;
   const match = source.match(/^(フィジカル|インテリ|メンタル)アイドルの(ボーカルアピール値|ダンスアピール値|ビジュアルアピール値|全アピール値|ライフ)が(\d+)[%％]アップ$/);
-  const stats = {'ボーカルアピール値':'歌唱表现值','ダンスアピール値':'舞蹈表现值','ビジュアルアピール値':'视觉表现值','全アピール値':'全部表现值','ライフ':'生命值'};
-  return match ? `${attributeNames[match[1]]}属性偶像的${stats[match[2]]}提升 ${match[3]}%。` : null;
+  const stats = {'ボーカルアピール値':'演唱表现值','ダンスアピール値':'舞蹈表现值','ビジュアルアピール値':'视觉表现值','全アピール値':'全表现值','ライフ':'生命值'};
+  return match ? `${attributeNames[match[1]]}偶像的${stats[match[2]]}提升${match[3]}%` : null;
 }
 
 // Exact title sources; speaker pronouns in actual dialogue remain out of scope.
@@ -136,13 +138,15 @@ export const bondHonorNames = {
 
 const number = '(?:\\d+(?:\\.\\d+)?|<[a-z][a-z0-9_]*>)';
 const effectRules = [
-  [new RegExp(`^(PERFECT(?:/GREAT)?(?:/GOOD)?)のスコアが(${number})[%％]アップ$`), (_, judgements, value) => `${judgements} 得分提升 ${value}%`],
-  [new RegExp(`^コンボスコアが(${number})[%％]アップ$`), (_, value) => `连击得分提升 ${value}%`],
-  [/^(GREAT(?:\/GOOD)?(?:\/FAST\/SLOW)?)をPERFECTに(?:する)?$/, (_, judgements) => `将 ${judgements} 判定提升为 PERFECT`],
-  [new RegExp(`^PERFECTでライフが(${number})回復$`), (_, value) => `每次 PERFECT 恢复 ${value} 点生命`],
-  [/^ライフが減少しない$/, () => '生命不会减少'],
-  [new RegExp(`^他のスキルのスコア・コンボボーナスの効果量を(${number})[%％]プラス$`), (_, value) => `其他技能的得分及连击加成效果额外增加 ${value}%`],
+  [new RegExp(`^(PERFECT(?:/GREAT)?(?:/GOOD)?)のスコアが(${number})[%％]アップ$`), (_, judgements, value) => `${judgements}的分数提升${value}%`],
+  [new RegExp(`^コンボスコアが(${number})[%％]アップ$`), (_, value) => `连击分数提升${value}%`],
+  [/^(GREAT(?:\/GOOD)?(?:\/FAST\/SLOW)?)をPERFECTに(?:する)?$/, (_, judgements) => `将${judgements}变为PERFECT`],
+  [new RegExp(`^PERFECTでライフが(${number})回復$`), (_, value) => `PERFECT时恢复${value}点生命值`],
+  [/^ライフが減少しない$/, () => '生命值不会减少'],
+  [new RegExp(`^他のスキルのスコア・コンボボーナスの効果量を(${number})[%％]プラス$`), (_, value) => `使其他技能的分数提升与连击加成效果量增加${value}%`],
 ];
+// "每9秒有33%的概率在5秒内，……" — clauses join with "并" before a conversion ("将…") and "且" otherwise.
+const joinEffects = effects => effects.reduce((text, effect, index) => index ? `${text}，${effect.startsWith('将') ? '并' : '且'}${effect}` : effect, '');
 export function skillDescriptionDraft(source) {
   const tutorial = source.match(/^チュートリアル用スキル_(.+)$/);
   if (tutorial && skillNames[tutorial[1]]) return `教学用技能：${skillNames[tutorial[1]]}`;
@@ -158,5 +162,7 @@ export function skillDescriptionDraft(source) {
     return null;
   });
   if (effects.some(value => value === null)) return null;
-  return `每 ${interval} 秒以 ${rate}% 的概率触发${cost ? `，消耗 ${cost} 点生命` : ''}，持续 ${duration} 秒：${focus ? '判定变严格，' : ''}${effects.join('；')}。`;
+  if (cost) return `每${interval}秒有${rate}%的概率消耗${cost}点生命值，并在${duration}秒内${joinEffects(effects)}`;
+  if (focus) return `每${interval}秒有${rate}%的概率在${duration}秒内判定变严格，但${joinEffects(effects)}`;
+  return `每${interval}秒有${rate}%的概率在${duration}秒内，${joinEffects(effects)}`;
 }

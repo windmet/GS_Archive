@@ -30,7 +30,7 @@ const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boo
 const encounter=computed(()=>portalDailyCard(props.cards,date,draw.value))
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
-const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intelligence',label:'Intelligence',color:'#446aa8'},{id:'Mental',label:'Mental',color:'#9b7f24'}]
+const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intelligence',label:'Intelli',color:'#446aa8'},{id:'Mental',label:'Mental',color:'#9b7f24'}]
 </script>
 <style scoped>
 .card-bento {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:224px 94px;gap:10px;min-width:0;}

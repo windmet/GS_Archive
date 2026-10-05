@@ -14,7 +14,7 @@
       </div>
       <div class="song-detail-meta">
         <div class="song-detail-badges">
-          <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel === 'Intelli' ? 'Intelligent' : song.attributeLabel || '待确认' }}</span>
+          <span class="badge badge-attribute" :data-song-attribute="song.attributeLabel">{{ song.attributeLabel }}</span>
           <span v-if="song.special" class="badge badge-special">特殊版本</span>
           <span class="badge badge-form">{{ song.formLabel }}</span>
         </div>
