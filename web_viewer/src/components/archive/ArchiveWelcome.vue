@@ -12,21 +12,15 @@
         </header>
         <div class="terminal-heading">
           <span class="terminal-kicker">GROWING STARS</span>
-          <h1 id="welcome-title" ref="heading" tabindex="-1">{{ selectionOnly ? '选择偶像' : step === 'idol' ? '选择首页偶像' : canCancel ? '启动设置' : '欢迎来到资料馆' }}</h1>
+          <h1 id="welcome-title" ref="heading" tabindex="-1">{{ selectionOnly ? '选择偶像' : step === 'idol' ? '选择首页偶像' : '欢迎来到资料馆' }}</h1>
           <p>{{ selectionOnly ? (targetLabel === '首页' ? '选择的偶像将用于首页，可随时更改。' : '只用于本次打开，不改变已保存的启动方式。') : step === 'idol' ? '选择会被保存为首页人物。下方可另外设置资料馆快捷入口。' : '先选下次打开的页面。本浏览器会记住选择，不再重复询问；可在资料馆的“启动设置”中更改。' }}</p>
         </div>
         <p v-if="notice" class="terminal-notice" role="status">{{ notice }}</p>
         <p v-if="wallpaper.notice.value" class="terminal-notice" role="status">{{ wallpaper.notice.value }}</p>
         <p v-if="backdropFailed" class="terminal-notice" role="status">卡面图片未能载入，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择或重试</button></p>
         <p v-if="wallpaper.unavailable.value || wallpaper.error.value" class="terminal-notice" role="status">壁纸暂时不可用，已显示默认背景。<button class="terminal-text-button" type="button" @click="wallpaperOpen = true">重新选择</button></p>
-        <div v-if="canCancel && !selectionOnly && step === 'mode'" class="welcome-preferences">
-          <label>默认启动页面<select aria-label="默认启动页面" :value="preferences.startupPage === 'home' ? 'home' : 'portal'" @change="emit('save-startup', {startupPage: $event.target.value, onboardingComplete: true})"><option value="home">偶像主页</option><option value="portal">资料馆</option></select></label>
-          <label>主页展示方式<select aria-label="主页展示方式" :value="preferences.homeMode" @change="emit('save-startup', {homeMode: $event.target.value})"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
-          <label>默认主页偶像<select aria-label="默认主页偶像" :value="preferences.startupIdol || ''" @change="emit('save-startup', {startupIdol: $event.target.value || null})"><option value="">打开时选择</option><option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idolName(idol.id) || idol.name }}</option></select></label>
-          <p>选择后立即保存到此浏览器。启动页、主页样式与我的担当分别保存；临时访问另一位偶像不会改变这些设置。</p>
-        </div>
-        <h2 v-if="!canCancel && !selectionOnly && step === 'mode'" class="welcome-section-title">下次打开哪里？</h2>
-        <div v-if="!canCancel && !selectionOnly && step === 'mode'" class="terminal-mode-list">
+        <h2 v-if="!selectionOnly && step === 'mode'" class="welcome-section-title">下次打开哪里？</h2>
+        <div v-if="!selectionOnly && step === 'mode'" class="terminal-mode-list">
           <button class="terminal-mode mode-portal" type="button" @click="emit('choose-portal')">
             <span class="mode-emblem" aria-hidden="true"><LayoutGrid :size="26" /></span>
             <span class="mode-copy"><small>ARCHIVE</small><strong>资料馆</strong><span>浏览故事、歌曲、卡片与偶像资料。<br />随时切换到带台词与语音的首页。</span><b>进入资料馆 <ChevronRight :size="16" /></b></span>
@@ -57,7 +51,7 @@
         <footer v-if="!selectionOnly && step === 'mode'" class="terminal-welcome-footer">
           <ProducerNameSetting />
           <ArchivePreferredIdolSlot :idols="preferredIdols.length ? preferredIdols : idols" :idol-name="idolName" :idol-search="idolSearch" :value="preferences.preferredIdol || ''" id-prefix="welcome" @save="emit('save-preferred', $event)" />
-          <button class="terminal-text-button" type="button" @click="emit('choose-later')">{{ canCancel ? '返回来源页' : '先浏览资料馆，下次直接打开' }}</button>
+          <button class="terminal-text-button" type="button" @click="emit('choose-later')">先浏览资料馆，下次直接打开</button>
           <details class="terminal-reset"><summary>更多设置</summary><button type="button" class="terminal-text-button" @click="emit('clear-preferences')">重置启动与“我的偶像”设置</button><small>不删除收藏、阅读位置或卡面壁纸。</small></details>
         </footer>
         <p class="terminal-signature">SideM Archive · 非官方资料存档</p>
@@ -110,8 +104,4 @@ function chooseIdol() {
 
 <style scoped>
 .welcome-section-title { font-size: 16px; margin: 20px 0 10px; color: #244558; }
-.welcome-preferences { display:grid;gap:16px;margin:24px 0; }
-.welcome-preferences label { display:grid;gap:6px;font-weight:600; }
-.welcome-preferences select { min-height:44px;width:100%;border:1px solid #c9dedc;border-radius:8px;padding:8px 12px;color:#244558;background:#fff;font:inherit; }
-.welcome-preferences p { color:#627782;font-size:13px; }
 </style>

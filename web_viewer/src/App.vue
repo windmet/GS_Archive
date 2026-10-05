@@ -600,7 +600,6 @@ import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
 import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
-import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
 import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterReadingPlan.js'
 import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
@@ -689,6 +688,8 @@ const immersiveHomeLoader = () => import('./components/archive/ArchiveImmersiveH
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
 const chibiStageViewerLoader = () => import('./components/ChibiStageViewer.vue')
 const StoryViewer = defineAsyncComponent(storyViewerLoader)
+// Maintainer-only (?runtimeDebug=1): keep it out of the main bundle.
+const StoryReleaseSoakPanel = defineAsyncComponent(() => import('./components/player/StoryReleaseSoakPanel.vue'))
 const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
@@ -988,17 +989,6 @@ const loadingMessage = computed(() => playbackBuffering.value || view.value === 
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
-const CATEGORIES = [
-  { id: 'main_story', name: '主线剧情' },
-  { id: 'event', name: '活动剧情' },
-  { id: 'idol', name: '偶像个人' },
-  { id: 'idol_chat', name: '短信聊天' },
-  { id: 'idol_phone', name: '电话聊天' },
-  { id: 'cards', name: '卡片档案' },
-  { id: 'episode_zero', name: '第零话' },
-  { id: 'extra', name: '额外剧情' },
-]
-
 const archiveStats = computed(() => homeReadModelIndex.value?.stats || [])
 const archiveHomeIdols = computed(() => homeReadModelIndex.value
   ? homeReadModelIndex.value.idols.map(idol => homeReadModelProfiles.value[idol.id] || idol)
@@ -1244,10 +1234,6 @@ const currentStoryVisualUrl = computed(() => {
   }
   return ''
 })
-
-function eventStoryIdolRawCandidateUrl(idolCode) {
-  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode)
-}
 
 const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
 const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
@@ -3296,29 +3282,6 @@ async function openMobileIdolStory(episodeId) {
   commitView('idol_story_archive')
 }
 
-function openUnitCatalog() {
-  const request = ++pendingUnitNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  unitReadModelStatus.value = '正在读取组合目录…'
-  loading.value = true
-  return prepareArchivePage('unit_catalog', loadUnitCatalog()).then(() => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    unitReadModelStatus.value = ''
-    captureDetailSource()
-    filterQuery.value = ''
-    currentCategoryId.value = 'idol'
-    currentCharacterId.value = ''
-    currentArchiveUnitCode.value = ''
-    commitView('unit_catalog')
-  }).catch(error => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[UnitReadModel] Failed to load unit catalog:', error)
-    unitReadModelStatus.value = '组合目录暂时无法读取，请重试。'
-  })
-}
-
 function openArchiveUnit(unit, { clearEventContext = false } = {}) {
   if (!unit) return
   const code = String(unit.unit_code || unit.unit_id || '')
@@ -3473,67 +3436,6 @@ function goBackToUnits() {
   currentEpisodeId.value = ''
   currentGroup.value = null
   commitView('episode_zero_units')
-}
-
-// Navigation.
-function openCategoryById(categoryId) {
-  const category = CATEGORIES.find(item => item.id === categoryId)
-  if (category) openCategory(category)
-}
-
-function openCategory(cat) {
-  filterQuery.value = ''
-  currentStoryDomain.value = ''
-  currentEventScope.value = 'all'
-  currentStoryAvailability.value = 'all'
-  currentStorySort.value = 'domain'
-  currentUnit.value = null
-  currentEpisodeId.value = ''
-  currentCardId.value = ''
-  currentIdolUnitFilter.value = ''
-  if (cat.id === 'idol') {
-    if (preferredArchiveIdol.value) openPrimaryIdol(preferredArchiveIdol.value.id)
-    else openIdolPicker('profile')
-  } else if (cat.id === 'cards') {
-    openPrimaryCards(preferredArchiveIdol.value?.id || '')
-  } else if (cat.id === 'idol_chat' || cat.id === 'idol_phone') {
-    if (preferredArchiveIdol.value) {
-      openMobileArchive({
-        idolCode: preferredArchiveIdol.value.id,
-        mode: cat.id === 'idol_phone' ? 'phone' : 'personal',
-      })
-    } else openIdolPicker('mobile')
-  } else if (cat.id === 'episode_zero') {
-    const request = ++pendingLegacyAliasNavigation
-    const revision = navigation.getRevision()
-    loadLegacyAliasDetail('legacy-zero', 'episode_zero').then(detail => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-      legacyZeroReadModelDetail.value = detail
-      legacyAliasStatus.value = ''
-      currentCategoryId.value = 'episode_zero'
-      commitView('episode_zero_units')
-    }).catch(error => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
-      console.error('[LegacyAliasReadModel] Failed to open episode zero:', error)
-      legacyAliasStatus.value = '第零话目录暂时无法读取，请重试。'
-    })
-  } else {
-    const request = ++pendingLegacyAliasNavigation
-    const revision = navigation.getRevision()
-    loadLegacyAliasDetail('legacy-groups', cat.id).then(detail => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-      legacyGroupReadModelDetail.value = detail
-      legacyAliasStatus.value = ''
-      currentCategoryId.value = cat.id
-      currentCharacterId.value = ''
-      currentGroup.value = null
-      commitView('groups')
-    }).catch(error => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
-      console.error('[LegacyAliasReadModel] Failed to open groups:', error)
-      legacyAliasStatus.value = '剧情分组暂时无法读取，请重试。'
-    })
-  }
 }
 
 function openPrimaryIdol(idolCode = '') {
@@ -3929,13 +3831,6 @@ function playCurrentEventEpisode(episode) {
 
 function startEpisodeQueue(episodes, index, returnView, options = {}) {
   return playbackController.startQueue(episodes, index, returnView, { ...options, continuation: returnView === 'story_collection' ? selectCollectionContinuation(currentStoryCollection.value, episodes[index]?.file, episodes[index]) : null })
-}
-
-function playbackEpisodes(returnView) {
-  if (returnView === 'story_collection') return (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
-  if (returnView === 'event_detail') return currentEventEpisodes.value
-  if (returnView === 'idol_story_archive') return (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
-  return []
 }
 
 async function selectPlayerEpisode(request) {
