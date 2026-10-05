@@ -22,6 +22,12 @@ const APP = [
   { id: 'app-welcome', url: `${base}/?view=welcome` },
   { id: 'app-portal', url: `${base}/?view=portal` },
   { id: 'app-player', url: `${base}/?view=player&scenario=001tom_101_2_1_001_01_00.json&noAudio=1`, canvas: true },
+  // Real read-model routes; need SIDEM_READMODEL_CANDIDATE on the dev server.
+  { id: 'app-card', url: `${base}/?view=card_detail&card=001tom_ssr01`, readModel: true },
+  { id: 'app-cards', url: `${base}/?view=cards&idol=001tom`, readModel: true },
+  { id: 'app-song', url: `${base}/?view=song_detail&song=brndnf`, readModel: true },
+  { id: 'app-idol', url: `${base}/?view=idol_detail&idol=001tom`, readModel: true },
+  { id: 'app-event', url: `${base}/?view=event_detail&event=410018`, readModel: true },
 ]
 const WIDTHS = [{ name: 'desktop', width: 1280, height: 900, mobile: false }, { name: 'phone', width: 390, height: 844, mobile: true }]
 const scenes = [...GALLERY, ...APP].filter(scene => !only || only.includes(scene.id))
@@ -88,7 +94,8 @@ try {
       if (state.text < 40 && !scene.canvas) problems.push('page rendered almost no text')
       if (scene.canvas && !state.canvas) problems.push('stage canvas missing')
       if (state.overflow) problems.push('page scrolls sideways')
-      if (!scene.gallery) errors = errors.filter(text => !/ReadModel|Expected JSON/.test(text)) // dev has no read-model catalog
+      // Without a local read-model candidate the plain app routes degrade by design; read-model scenes must not.
+      if (!scene.gallery && !scene.readModel) errors = errors.filter(text => !/ReadModel|Expected JSON/.test(text))
       problems.push(...errors.map(text => `error: ${text}`))
       report.push({ scene: scene.id, width: size.name, file, ok: problems.length === 0, problems })
       console.log(`${problems.length ? 'FAIL' : 'ok  '} ${scene.id} ${size.name}${problems.length ? ' — ' + problems.join('; ') : ''}`)

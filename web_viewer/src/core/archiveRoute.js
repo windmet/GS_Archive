@@ -483,7 +483,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (['cards', 'card_detail'].includes(route.view)) {
     const cards = {
-      label: '卡牌',
+      label: '卡片',
       route: breadcrumbRoute(route, 'cards', {
         idol: route.idol,
         card: '',
@@ -493,7 +493,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return route.view === 'cards' ? [home, { label: cards.label }] : [
       home,
       cards,
-      current('卡牌详情', route.card),
+      current('卡片详情', route.card),
     ]
   }
 

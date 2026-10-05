@@ -142,7 +142,7 @@ const cardBreadcrumbs = buildArchiveBreadcrumbs(
   },
   { title: '', id: '001tom_ssr01' },
 )
-assert.deepEqual(cardBreadcrumbs.map(item => item.label), ['资料馆', '卡牌', '001tom_ssr01'])
+assert.deepEqual(cardBreadcrumbs.map(item => item.label), ['资料馆', '卡片', '001tom_ssr01'])
 assert.equal(cardBreadcrumbs[1].route.query, 'Jupiter')
 assert.equal(cardBreadcrumbs[1].route.unitFilter, '1')
 assert.equal(cardBreadcrumbs[1].route.rarity, 'SSR')
