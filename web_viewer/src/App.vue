@@ -70,7 +70,6 @@
         @settings-applied="userPreferences = loadArchiveUserPreferences().preferences"
         @clear-preferences="clearUserPreferences"
       />
-      <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
         :selected-id="homeSelectedId"
@@ -152,7 +151,6 @@
         @open-song="openSong"
         @select-idol="selectPrimaryIdol"
       />
-      <p v-if="['idols', 'idol_detail'].includes(view) && idolReadModelStatus" class="idol-read-model-status" role="status">{{ idolReadModelStatus }}</p>
 
       <ArchiveCardDetail
         v-if="view === 'card_detail'"
@@ -219,7 +217,6 @@
         @update:query="updateArchiveFilter('filterQuery', $event)"
       />
 
-      <p v-if="view === 'song_detail' && (songReadModelStatus || legacyEntryStatus)" class="song-read-model-status" role="status">{{ songReadModelStatus || legacyEntryStatus }}</p>
       <ArchiveSongDetail
         v-if="view === 'song_detail' && currentSongPresentation"
         :key="currentSongPresentation.id"
@@ -263,7 +260,6 @@
         @query="updatePhotoCatalogQuery" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @ready="onPhotoCatalogReady" @open-studio="openPictureStudio" />
 
 
-      <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
       <ArchiveGroupList
         v-if="view === 'groups'"
         embedded
@@ -429,7 +425,6 @@
         @open-birthday="openIdolBirthdayArchive"
       />
 
-      <p v-if="view === 'mobile_archive' && mobileReadModelStatus" class="idol-read-model-status" role="status">{{ mobileReadModelStatus }}</p>
       <ArchiveMobileArchive
         v-if="view === 'mobile_archive'"
         :idol-data="mobileIdolReadModelDetail"
@@ -472,18 +467,10 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
-      <p v-if="!loading && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
-      <p v-if="!loading && gashaReadModelStatus && !['portal','gashas'].includes(view)" role="status">{{ gashaReadModelStatus }}</p>
-      <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
-      <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
-      <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
-      <p v-if="!loading && idolStoryReadModelStatus" role="status">{{ idolStoryReadModelStatus }}</p>
-      <p v-if="!loading && collectionReadModelStatus" role="status">{{ collectionReadModelStatus }}</p>
-      <p v-if="!loading && storyReadModelStatus" role="status">{{ storyReadModelStatus }}</p>
-      <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
-      <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
       <template #pending>
         <GsLoadingIndicator v-if="routePending" variant="inline" :message="routePendingMessage" />
+        <GsLoadingIndicator v-else-if="loadNotice?.kind === 'loading'" variant="inline" :message="loadNotice.message" />
+        <ArchiveLoadNotice v-else-if="loadNotice" :message="loadNotice.message" />
       </template>
     </ArchiveShell>
 
@@ -580,6 +567,7 @@
 <script setup>
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
 import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
+import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
 import {eventResources, storyEventResources} from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
@@ -954,6 +942,33 @@ const homeReadModelProfiles = shallowRef({})
 const homeEntryStatus = ref('')
 const recentHomeProfiles = []
 let pendingHomeNavigation = 0
+// One reader-facing message for whatever archive page is being read. Producers keep
+// their own status refs (each navigation function is tested against them); this is
+// the single place that decides which one is shown and how.
+const LEGACY_DIRECTORY_VIEWS = ['groups', 'files', 'episodes', 'episode_zero_units']
+const loadNotice = computed(() => {
+  const current = view.value
+  const scoped = [
+    [current === 'home', homeEntryStatus.value],
+    [['idols', 'idol_detail'].includes(current), idolReadModelStatus.value],
+    [current === 'song_detail', songReadModelStatus.value || legacyEntryStatus.value],
+    [LEGACY_DIRECTORY_VIEWS.includes(current), legacyAliasStatus.value],
+    [current === 'mobile_archive', mobileReadModelStatus.value],
+    [['unit_catalog', 'unit_detail'].includes(current), unitReadModelStatus.value],
+  ].filter(([applies]) => applies).map(([, message]) => message)
+  const ambient = loading.value ? [] : [
+    cardReadModelStatus.value,
+    ['portal', 'gashas'].includes(current) ? '' : gashaReadModelStatus.value,
+    eventReadModelStatus.value, seasonalReadModelStatus.value, workReadModelStatus.value,
+    idolStoryReadModelStatus.value, collectionReadModelStatus.value, storyReadModelStatus.value,
+    resourceReadModelStatus.value,
+  ]
+  const message = [...scoped, ...ambient].find(Boolean)
+  if (!message) return null
+  const inProgress = message.startsWith('正在')
+  // A full-page loading screen already covers in-progress reads; only failures stay visible.
+  return inProgress && loading.value ? null : { message, kind: inProgress ? 'loading' : 'error' }
+})
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
 const loading = ref(initialArchiveStartup.route.view === 'player' || !isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
@@ -4861,7 +4876,16 @@ onMounted(async () => {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
-  await restoreRoute(startup.route)
+  try {
+    await restoreRoute(startup.route)
+  } catch (error) {
+    // A failed first read must not leave a blank page: the portal degrades gracefully offline.
+    console.error('[ArchiveRoute] Failed to open the initial route:', error)
+    if (view.value !== '__boot__') return
+    loading.value = false
+    userPreferenceNotice.value = '该页面暂时无法打开，已回到资料馆。'
+    commitView('portal')
+  }
 })
 
 // App owns assembled catalogues only while their directory/detail is in use.
@@ -4994,10 +5018,6 @@ onBeforeUnmount(() => {
 .player-trace-panel { position: fixed; z-index: 130; top: calc(72px + env(safe-area-inset-top, 0px)); right: 8px; max-width: calc(100vw - 16px); padding: 8px 12px; border: 1px solid #9abab7; border-radius: 8px; background: #f7faf9; color: #193c44; font: 13px/1.5 system-ui; }
 .player-trace-panel button { min-height: 44px; }
 .player-trace-panel pre { max-height: 45dvh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
-.song-read-model-status { margin: 12px 24px; padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.idol-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.unit-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.home-read-model-status { position: absolute; top: 80px; left: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
 .playback-failure p { margin: 0 0 10px; }
 .playback-failure-actions { display: flex; gap: 12px; }

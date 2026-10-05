@@ -18,7 +18,6 @@
             :accent-color="idolFrameColor" :size="48" :ring-width="3" :alt="idolName" />
           <img v-else class="unit-logo" :src="unitLogo(selectedUnit)" :alt="unitName" />
           <div class="identity-copy">
-            <span class="identity-eyebrow">MOBILE ARCHIVE</span>
             <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
             <p>
               <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
@@ -52,7 +51,6 @@
     <main class="mobile-content">
       <div class="content-heading">
         <div>
-          <span>{{ activeTab.eyebrow }}</span>
           <h3>{{ activeTab.label }}</h3>
         </div>
         <strong>{{ contentSummary }}</strong>
@@ -174,10 +172,10 @@ const props = defineProps({
 const emit = defineEmits(['select-idol', 'select-unit', 'update:mode', 'play', 'play-random-topic', 'open-card', 'open-idol-story'])
 
 const tabs = [
-  { id: 'personal', label: '个人聊天', eyebrow: 'IDOL TALK', icon: MessageSquareText },
-  { id: 'phone', label: '电话通信', eyebrow: 'PHONE CALL', icon: Phone },
-  { id: 'unit', label: '组合聊天', eyebrow: 'UNIT TALK', icon: Users },
-  { id: 'random', label: '随机话题池', eyebrow: 'RANDOM TOPICS', icon: Shuffle },
+  { id: 'personal', label: '个人聊天', icon: MessageSquareText },
+  { id: 'phone', label: '电话通信', icon: Phone },
+  { id: 'unit', label: '组合聊天', icon: Users },
+  { id: 'random', label: '随机话题池', icon: Shuffle },
 ]
 const activeTab = computed(() => tabs.find(tab => tab.id === props.mode) || tabs[0])
 const cardById = computed(() => new Map((props.mode === 'unit' ? props.unitData : props.idolData)?.view?.cardRefs?.map(card => [Number(card.card_id), card]) || []))

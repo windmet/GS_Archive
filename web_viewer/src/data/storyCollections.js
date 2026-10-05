@@ -62,7 +62,7 @@ function buildCollection(structure, catalog) {
     domainLabel: domain === 'main' ? '主线剧情' : '组合前传',
     sectionId,
     title: structure.title || (domain === 'main' ? `第${sectionId}章` : sectionId),
-    eyebrow: domain === 'main' ? 'MAIN STORY' : 'UNIT EPISODE ZERO',
+    eyebrow: domain === 'main' ? '主线剧情' : '组合前传',
     description: domain === 'main'
       ? '从 315 Production 启程，按正式话目与分段浏览完整主线。'
       : '按组合整理的前传故事，记录成员相遇、磨合与共同启程。',
@@ -136,7 +136,7 @@ function buildExtraCollection(series, extraDomain, catalog) {
     sectionId: series.masterId,
     legacySectionIds: series.legacySectionIds || [],
     title: series.title,
-    eyebrow: 'EXTRA STORY',
+    eyebrow: '额外剧情',
     description: series.description,
     releaseAt: Number(series.releaseAt || chapters[0]?.releaseAt || 0),
     visualUrl: series.keyVisualUrl || '',
@@ -286,8 +286,8 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
       sectionId: subject.code,
       title: isSharedProducerEntry ? subject.displayName : `${subject.displayName || subject.code} 生日剧情`,
       eyebrow: isSharedProducerEntry
-        ? 'PRODUCER BIRTHDAY COMMON STORY'
-        : (subject.kind === 'npc' ? 'STAFF BIRTHDAY STORY' : 'IDOL BIRTHDAY STORY'),
+        ? '制作人生日公共篇'
+        : (subject.kind === 'npc' ? '工作人员生日剧情' : '偶像生日剧情'),
       description: isSharedProducerEntry
         ? '未绑定单一偶像的制作人生日公共篇；由山村贤引导，但 masterdata 的角色集合保持未指定，因此不并入山村贤个人生日档案。'
         : '生日档案收录独立的制作人生日问候与偶像生日祝福；若文件同时属于正式个人故事，本页只保留关系入口，完整章节以 Idol Episode 为准。',

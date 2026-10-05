@@ -1,6 +1,6 @@
 <template>
   <div class="story-synopsis-card">
-    <div class="synopsis-heading"><span>STORY</span><div v-if="switchable" role="group" aria-label="简介语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode',item.id)">{{ item.label }}</button></div></div>
+    <div class="synopsis-heading"><span>简介</span><div v-if="switchable" role="group" aria-label="简介语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode',item.id)">{{ item.label }}</button></div></div>
     <strong v-if="title">{{ title }}</strong>
     <p class="synopsis-primary" :lang="view.primary.locale">{{ reflowReadingText(view.primary.text,view.primary.locale) }}</p>
     <p v-if="view.secondary" class="synopsis-secondary" :lang="view.secondary.locale">{{ reflowReadingText(view.secondary.text,view.secondary.locale) }}</p>
