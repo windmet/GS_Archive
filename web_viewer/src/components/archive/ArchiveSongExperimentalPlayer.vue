@@ -1,6 +1,6 @@
 <template>
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
-    <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small>分轨混音 · 实验</small></div>
+    <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small v-if="maintainer">分轨混音 · 实验</small></div>
     <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
     <label class="song-mode-selector" data-vocal-setting-selector>
       <span>试听模式</span>
@@ -76,7 +76,7 @@
       :audio-url="isSingleTrackMode ? currentSingleTrack?.url || '' : ''"
       :stage-clock="['solo', 'unit'].includes(mode)" :current-time="transportCurrentTime" :ready="transportReady && transportDuration > 0 && !audioError"
       @seek="seekPlayback({ target: { value: $event } })" />
-    <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听说明">
+    <ArchiveTechnicalDetails v-if="maintainer && mode !== 'lineup'" label="试听说明">
       <p class="experimental-evidence">
         音画对齐：{{ syncLabel }}。{{ playbackEvidence }}
       </p>
@@ -102,6 +102,7 @@ import { useSongPerformanceSession } from '../../composables/useSongPerformanceS
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 
 const props = defineProps({
   song: { type: Object, required: true },
@@ -112,6 +113,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['open-stage', 'request-play'])
 const lineupPlayer = ref(null)
+// How the audition is decoded and clocked is a maintainer note, not reader copy.
+const maintainer = isMaintainerMode()
 defineExpose({ pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() } })
 
 const mode = ref('single')
@@ -258,7 +261,8 @@ async function togglePlayback() {
     await Promise.all(elements.map(audio => audio.play()))
     isPlaying.value = true
   } catch (error) {
-    audioError.value = `浏览器拒绝播放：${error.message || error}`
+    console.warn('[song-audition] play rejected', error)
+    audioError.value = '浏览器没有允许播放，请再点一次播放。'
     isPlaying.value = false
   }
 }
@@ -329,79 +333,54 @@ onBeforeUnmount(() => resetPlayback())
 </script>
 
 <style scoped>
-.experimental-player { border-color: #92d8d2; background: #fbfffe; }
-.experimental-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
-.experimental-controls label, .experimental-mix-controls label { display: grid; gap: 5px; color: #5c6771; font-size: 0.72rem; font-weight: 700; }
-.experimental-controls select { min-width: 190px; padding: 7px 9px; border: 1px solid #c9d8d8; border-radius: 5px; background: #fff; color: #26313a; font: inherit; }
-.experimental-player-panel { margin-top: 14px; padding: 12px; border: 1px solid #d7e9e7; border-radius: 6px; background: #f3fbfa; }
+/* Audition: sits on the paper like every other section; controls are plain archive controls. */
+.experimental-controls { display: flex; flex-wrap: wrap; gap: var(--gs-space-4); margin-top: var(--gs-space-4); }
+.experimental-controls label, .experimental-mix-controls label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.experimental-controls select { min-width: 190px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.experimental-player-panel { margin-top: var(--gs-space-4); }
 .experimental-player-panel audio { display: none; }
-.experimental-transport { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.experimental-play, .experimental-reset { padding: 7px 12px; border: 0; border-radius: 5px; cursor: pointer; font: inherit; font-size: 0.72rem; }
-.experimental-play { background: #158f87; color: #fff; }
-.experimental-reset { background: #dceeed; color: #316a67; }
-.experimental-seek { flex: 1 1 180px; min-width: 120px; accent-color: #158f87; }
-.experimental-time { min-width: 92px; color: #5c6771; font-variant-numeric: tabular-nums; font-size: 0.7rem; text-align: right; }
-.experimental-mix-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
-.experimental-mix-controls input { accent-color: #158f87; }
-.experimental-evidence { margin: 10px 0 0; color: #63736f; font-size: 0.7rem; line-height: 1.6; }
-.experimental-error { margin: 8px 0 0; color: #a04747; font-size: 0.72rem; }
-@media (max-width: 560px) {
-  .experimental-controls { display: grid; grid-template-columns: 1fr; }
-  .experimental-controls select { width: 100%; }
-  .experimental-mix-controls { grid-template-columns: 1fr; }
-  .experimental-time { width: 100%; text-align: left; }
-}
-</style>
-
-<style scoped>
-.song-block-heading { display: flex; gap: 8px; align-items: center; }
-.song-block-heading small { font-size: 11px; padding: 3px 6px; border-radius: 4px; color: #60717d; background: #eef4f7; }
-.song-mode-selector { display: grid; gap: var(--gs-space-3); min-width: 0; color: #245a64; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid #c7dcdf; border-radius: var(--gs-radius-field); background: white; color: #245a64; font: inherit; }
-.song-mode-selector select:focus-visible { outline: var(--gs-focus-ring) solid #007caa; outline-offset: 2px; }
-.solo-open { min-height: 44px; padding: 8px 12px; border: 1px solid #c7dcdf; border-radius: 6px; background: white; color: #245a64; font: inherit; font-size: 12px; cursor: pointer; }
-.solo-open { width: 100%; margin-top: 12px; text-align: left; }
-summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #245a64; font-size: 13px; }
-button:focus-visible { outline: 3px solid #007caa; outline-offset: 2px; }
+.experimental-mix-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-3); }
+.experimental-mix-controls input { accent-color: var(--gs-mint-ink); }
+.experimental-evidence { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.experimental-error { margin: var(--gs-space-3) 0 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }
+.song-block-heading { display: flex; gap: var(--gs-space-3); align-items: baseline; }
+.song-block-heading small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-mode-selector { display: grid; gap: var(--gs-space-2); min-width: 0; margin-top: var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.solo-open { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-3); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+.experimental-player :is(button, select, input, summary):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+/* Solo picker: a side drawer on wide screens, an 85dvh bottom sheet on phones. */
 .solo-drawer {
-  --solo-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
-  --solo-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
-  --solo-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
-  --solo-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
+  --solo-safe-top: var(--gs-safe-top);
+  --solo-safe-right: var(--gs-safe-right);
+  --solo-safe-bottom: var(--gs-safe-bottom);
+  --solo-safe-left: var(--gs-safe-left);
   --solo-header-safe-top: var(--solo-safe-top);
   --solo-inline-left: max(var(--gs-space-5), var(--solo-safe-left));
   --solo-inline-right: max(var(--gs-space-5), var(--solo-safe-right));
   position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box;
-  width: min(var(--gs-surface-drawer-width),100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh;
-  border: 0; border-left: 1px solid #bed3db; border-radius: 0; padding: 0;
-  font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular);
-  color: #254858; background: white;
+  width: min(var(--gs-surface-drawer-width), 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh;
+  padding: 0; border: 0; border-radius: 0;
+  background: var(--gs-surface); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body);
 }
-.solo-drawer::backdrop { background: #102b3d88; }
-.solo-drawer :deep(.terminal-dialog-header) {
-  min-width: 0;
-  padding: calc(var(--gs-space-4) + var(--solo-header-safe-top)) var(--solo-inline-right) var(--gs-space-4) var(--solo-inline-left);
-}
-/* The native window title keeps its established 20px surface role. */
-.solo-drawer :deep(.terminal-dialog-header h2) { min-width: 0; font-size: 20px; overflow-wrap: anywhere; }
-.solo-drawer :deep(.terminal-dialog-body) {
-  min-width: 0;
-  padding: var(--gs-space-5) var(--solo-inline-right) calc(var(--gs-space-5) + var(--solo-safe-bottom)) var(--solo-inline-left);
-}
+.solo-drawer :deep(.terminal-dialog-header) { min-width: 0; padding: calc(var(--gs-space-4) + var(--solo-header-safe-top)) var(--solo-inline-right) var(--gs-space-4) var(--solo-inline-left); }
+.solo-drawer :deep(.terminal-dialog-header h2) { min-width: 0; font-size: var(--gs-text-section); overflow-wrap: anywhere; }
+.solo-drawer :deep(.terminal-dialog-body) { min-width: 0; padding: var(--gs-space-5) var(--solo-inline-right) calc(var(--gs-space-5) + var(--solo-safe-bottom)) var(--solo-inline-left); }
 .solo-filters { display: grid; gap: var(--gs-space-4); }
-.solo-filters label { display: grid; gap: var(--gs-space-3); font-size: var(--gs-text-ui); }
-.solo-filters input, .solo-filters select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); border: 1px solid #afc8ce; padding: 8px 10px; box-sizing: border-box; border-radius: 6px; font: inherit; background: white; color: #254858; }
-.solo-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--gs-space-3); }
-.solo-list button { display: grid; gap: var(--gs-space-2); min-width: 0; min-height: 64px; border: 1px solid #cbdee4; padding: 10px; border-radius: 6px; text-align: left; color: #254858; background: #f5fafb; font: inherit; cursor: pointer; }
-.solo-list strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
-.solo-list small { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); white-space: normal; overflow-wrap: anywhere; color: #657f8a; }
-.solo-list button[aria-pressed=true] { border-color: #168f87; background: #e4f7f1; }
-@media(max-width:760px) {
+.solo-filters label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.solo-filters input, .solo-filters select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-subtitle); }
+.solo-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gs-space-5); }
+.solo-list button { display: grid; gap: var(--gs-space-1); min-width: 0; min-height: 56px; padding: var(--gs-space-3) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.solo-list strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.solo-list small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
+.solo-list button[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
+@media (max-width: 760px) {
   /* Only protect the top inset left uncovered by this 85dvh sheet's 15dvh gap. */
-  .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 14px 14px 0 0; }
-}
-@media(max-width:760px), (pointer:coarse) {
+  .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); }
+  .experimental-controls { display: grid; grid-template-columns: 1fr; }
+  .experimental-controls select { width: 100%; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
+  .experimental-mix-controls { grid-template-columns: 1fr; }
   .song-mode-selector select { font-size: var(--gs-text-subtitle); }
-  .solo-filters input, .solo-filters select { font-size: var(--gs-text-subtitle); }
 }
 </style>

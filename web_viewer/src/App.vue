@@ -89,7 +89,7 @@
         @open-chat="openHomeChat"
       />
 
-      <ArchiveExperiments v-if="view === 'experiments'" @charts="openSongCatalog" @photo="openPictureStudio()" @stage="openChibiStage()" />
+      <ArchiveExperiments v-if="view === 'experiments'" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -533,9 +533,10 @@
     <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
     </PlayerSessionShell>
 
-    <ArchiveExperimentFrame v-if="view === 'chart_lab'" :title="`谱面 · ${currentSongPresentation?.title || '正在读取'}`" :back-label="detailSourceRoute ? '返回来源页' : '返回歌曲'" @back="closeFullScreenExperiment">
-      <ArchiveChartLab v-if="view === 'chart_lab' && currentSongPresentation?.gameplay" :song="currentSongPresentation" />
-      <p v-else-if="view === 'chart_lab'" role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
+    <ArchiveExperimentFrame v-if="view === 'chart_lab'" title="谱面预览" :back-label="detailSourceRoute ? '返回来源页' : currentSongId ? '返回歌曲' : '返回工具'" @back="closeFullScreenExperiment">
+      <ArchiveChartLab v-if="!currentSongId || currentSongPresentation?.gameplay" :song="currentSongPresentation?.gameplay ? currentSongPresentation : null"
+        :songs="chartSongs" :status="songReadModelStatus" @select-song="selectChartSong" />
+      <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
     </ArchiveExperimentFrame>
     <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
@@ -591,6 +592,7 @@ import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoic
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
+import { SONG_PERFORMER_SCOPES } from './presentation/SongPresentation.js'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
 const preloadScenario = async (...args) => (await import('./utils/Preloader.js')).Preloader.preloadScenario(...args)
 import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
@@ -899,6 +901,7 @@ const legacyEntryStatus = ref('')
 const songReadModelCatalog = shallowRef(null)
 const songReadModelDetail = shallowRef(null)
 const songReadModelStatus = ref('')
+const chartManifest = shallowRef(null)
 let pendingSongNavigation = 0
 const idolReadModelCatalog = shallowRef(null)
 const idolReadModelDetail = shallowRef(null)
@@ -1441,6 +1444,20 @@ const stageOriginalPerformers = computed(() => songReadModelDetail.value?.id ===
 const stageSongDirectory = computed(() => Object.values(songReadModelCatalog.value?.songs || {}))
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.view : null)
+// Songs the chart tool can open: the chart manifest names them, the song catalogue (or a primary
+// song's variant list) supplies the title, jacket and unit.
+const chartSongs = computed(() => {
+  const charts = chartManifest.value?.songs
+  if (!charts) return []
+  const rows = Object.values(songReadModelCatalog.value?.songs || {})
+  const variants = new Map(rows.flatMap(row => (row.variants || []).map(variant => [variant.song_code, { row, variant }])))
+  return Object.entries(charts).map(([code, difficulties]) => {
+    const row = songReadModelCatalog.value?.songs?.[code], base = row || variants.get(code)?.row
+    if (!base) return null
+    return { code, title: row ? row.title : variants.get(code).variant.title || base.title, kana: base.kana || '',
+      jacketUrl: base.jacket_url || '', unitName: base.performance?.unitName || SONG_PERFORMER_SCOPES[base.performance?.scope]?.[0] || '', difficultyCount: Object.keys(difficulties).length, order: base.song_id || 0 }
+  }).filter(Boolean).sort((a, b) => a.order - b.order || a.code.localeCompare(b.code))
+})
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -1952,7 +1969,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     else if (route.view === 'idol_detail' && !currentIdolProfile.value) view.value = 'idols'
     else if (route.view === 'card_detail' && !currentCard.value) view.value = 'cards'
     else if (route.view === 'gasha_detail' && !currentGasha.value) view.value = 'gashas'
-    else if (['song_detail', 'chart_lab'].includes(route.view) && !currentSong.value) view.value = 'song_catalog'
+    else if (route.view === 'song_detail' && !currentSong.value) view.value = 'song_catalog'
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
@@ -2686,9 +2703,53 @@ function goArchiveBack() {
 }
 
 function openChartLab() { captureDetailSource(); filterQuery.value = ''; commitView('chart_lab') }
+// From the tools page the chart tool opens on its own song picker; it never detours through the song page.
+function openChartTool() {
+  captureDetailSource(); filterQuery.value = ''; currentSongId.value = ''
+  commitView('chart_lab')
+}
+async function prepareChartTool() {
+  await Promise.all([ensureSongCatalog(), ensureChartManifest()])
+}
+// However the tool is reached (tools page, song page, a reloaded link), its picker needs the list.
+watch(view, next => { if (next === 'chart_lab') void prepareChartTool() }, { immediate: true })
+async function ensureChartManifest() {
+  if (chartManifest.value) return true
+  try {
+    const response = await fetch('/data/song_charts/manifest.json')
+    if (!response.ok) throw new Error(`chart manifest ${response.status}`)
+    chartManifest.value = await response.json()
+    return true
+  } catch (error) {
+    console.error('[ChartTool] Failed to load chart manifest:', error)
+    songReadModelStatus.value = '谱面目录暂时无法读取，请重试。'
+    return false
+  }
+}
+// Switching songs inside the tool replaces the history entry: Back still leaves the tool.
+async function selectChartSong(songCode) {
+  if (!songCode || view.value !== 'chart_lab') return
+  const request = ++pendingSongNavigation
+  const revision = navigation.getRevision()
+  songReadModelStatus.value = '正在读取谱面…'
+  try {
+    const detail = await loadSongDetail(songCode)
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
+    songReadModelDetail.value = detail
+    songReadModelStatus.value = ''
+  } catch (error) {
+    if (request !== pendingSongNavigation || revision !== navigation.getRevision()) return
+    console.error('[ChartTool] Failed to load song detail:', error)
+    songReadModelStatus.value = '这首歌的谱面暂时无法读取，请重新选择。'
+    return
+  }
+  currentSongId.value = songCode
+  commitView('chart_lab', { replace: true })
+}
 function closeFullScreenExperiment() {
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
-  commitView(view.value === 'chart_lab' ? 'song_detail' : 'photo_catalog')
+  if (view.value === 'chart_lab') return commitView(currentSongId.value ? 'song_detail' : 'experiments')
+  commitView('photo_catalog')
 }
 
 async function openSpineLab() {
@@ -4896,7 +4957,8 @@ watch(view,next=> {
   if(['player','reader'].includes(next))return
   for(const [catalog,detail,owners] of [
     [cardReadModelCatalog,cardReadModelDetail,['cards','card_detail','idols']],
-    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage']],
+    // The chart tool owns the song detail it shows and the catalogue its picker lists.
+    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage','chart_lab']],
     [idolReadModelCatalog,idolReadModelDetail,['idol_detail','idols']],
     [unitReadModelCatalog,unitReadModelDetail,['unit_catalog','unit_detail']],
     [gashaReadModelCatalog,gashaReadModelDetail,['gashas','gasha_detail']],

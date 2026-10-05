@@ -116,14 +116,14 @@ function getSourceDimensions(){return {width:410,height:geometry.value.height}}
 defineExpose({getSvg,getSourceSvg,getSourceDimensions,scrollToTick})
 </script>
 <style scoped>
-.chart-scroll{height:620px;overflow:auto;background:#13212e;border:1px solid #35485a;border-radius:8px;overscroll-behavior:contain;overflow-anchor:none;touch-action:pan-x pan-y}
+.chart-scroll{height:620px;overflow:auto;background:#13212e;border:1px solid #35485a;border-radius:var(--gs-radius-media);overscroll-behavior:contain;overflow-anchor:none;touch-action:pan-x pan-y}
 .chart-drawing{position:relative;margin:0 auto;cursor:crosshair;overflow:hidden}
 .chart-columns .chart-drawing{margin:0}
 .chart-tile,.chart-column{position:absolute;display:block;left:0}
 .chart-column{top:0;border:1px solid #35485a;box-sizing:border-box}
 .column-label{height:32px;line-height:32px;padding:0 12px;color:#d7efee;font-size:12px;white-space:nowrap}
 .chart-cursor{position:absolute;left:18.8%;right:14%;height:2px;background:#fff1a2;pointer-events:none}
-.chart-reading-note{margin:8px 0 0;font-size:.73rem;color:#617380;line-height:1.6}
-.chart-scroll:focus-visible{outline:3px solid #1d938a;outline-offset:2px}
+.chart-reading-note{margin:var(--gs-space-3) 0 0;font-size:var(--gs-text-meta);color:var(--gs-ink-3);line-height:1.6}
+.chart-scroll:focus-visible{outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset)}
 @media(max-width:560px){.chart-scroll{height:460px}}
 </style>

@@ -29,25 +29,22 @@ const knownDuration = computed(() => Number.isFinite(props.duration) && props.du
 const time = value => { const n = Math.floor(Math.max(0, Number(value) || 0)); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}` }
 </script>
 <style scoped>
-.media-transport { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; padding: 12px 0; color: #315660; font-size: 13px; }
-button { min-height: 44px; padding: 8px 14px; border: 1px solid #bcd5d3; border-radius: 8px; background: #fff; color: #176f69; font: inherit; cursor: pointer; }
-button:first-child { background: #176f69; color: white; border-color: #176f69; }
-button:disabled, input:disabled { opacity: .5; cursor: default; }
-input { flex: 1 1 80px; min-width: 80px; min-height: 44px; accent-color: #168f87; }
-button:focus-visible, input:focus-visible { outline: 3px solid #39ada4; outline-offset: 2px; }
-.media-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
-</style>
-
-<style scoped>
-.media-restart { padding: 8px 12px; font-size: 20px; }
-.media-time { font-size: 11px; }
-.media-transport-music { display: grid; grid-template-columns: minmax(0,1fr); gap: var(--gs-space-4); font-family: var(--gs-font-directory); font-size: var(--gs-text-ui); }
+/* One transport for music and voice: on the paper, ink controls, stage light only for progress. */
+.media-transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; padding: var(--gs-space-4) 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
+button:first-child { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+button:disabled, input:disabled { opacity: .45; cursor: default; }
+input { flex: 1 1 80px; min-width: 80px; min-height: var(--gs-control-touch); accent-color: var(--gs-mint); }
+button:focus-visible, input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.media-restart { padding: 0 var(--gs-space-4); font-size: var(--gs-text-section); }
+.media-time { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.media-transport-music { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-4); font-family: var(--gs-font-body); }
 .media-music-progress { display: grid; min-width: 0; }
 .media-music-progress input { display: block; box-sizing: border-box; width: 100%; min-width: 0; margin: 0; padding: 0; }
-.media-music-time { display: flex; justify-content: space-between; gap: var(--gs-space-3); color: #60758a; font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.media-music-time { display: flex; justify-content: space-between; gap: var(--gs-space-3); color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .media-music-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--gs-space-4); min-width: 0; }
-.media-music-toggle { flex: none; box-sizing: border-box; width: 56px; height: 56px; min-height: 56px; padding: 0; border-radius: var(--gs-radius-pill); display: grid; place-items: center; }
-.media-music-restart { flex: none; box-sizing: border-box; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border-radius: var(--gs-radius-pill); display: grid; place-items: center; }
+.media-music-toggle { display: grid; flex: none; place-items: center; box-sizing: border-box; width: 56px; height: 56px; min-height: 56px; padding: 0; border-radius: var(--gs-radius-pill); }
+.media-music-restart { display: grid; flex: none; place-items: center; box-sizing: border-box; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border-radius: var(--gs-radius-pill); }
 .media-music-extra { min-width: 0; max-width: 100%; }
-.media-music-status { color: #60758a; font-size: var(--gs-text-meta); }
+.media-music-status { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 </style>

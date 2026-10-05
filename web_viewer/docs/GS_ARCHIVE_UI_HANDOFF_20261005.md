@@ -178,7 +178,20 @@ npm run gallery:capture -- <label>     # 输出 .analysis/gallery/<label>/
 | 歌曲详情 | 播放器是带阴影的卡片；「当前主数据：已开放」开发者口吻；「2021-10-06 实装」挤在属性行 | `ArchiveSongDetail.vue`，播放器见第 4 步 |
 | 活动详情 | 顶栏标题被截断；故事简介是底色块 | `ArchiveEventDetail.vue` |
 
-### 第 4 步：歌曲谱面与播放器系列
+### 第 4 步：歌曲谱面与播放器系列 ✅ 已完成
+
+- 播放条 `ArchiveMediaTransport` 本来就是三种播放器共用的组件，结构与 aria 合同不变（`verify-song-music-transport` 守护），只令牌化：墨色播放钮、细线重播、舞台光进度。
+- 歌曲详情的试听栏不再是浮起的卡片（`--gs-shadow-float` 删除），与其他分节一样是「标题 + 墨线」。
+- 维护者模式：分轨试听的「分轨混音 · 实验」标签、写着 AudioContext / sample 对齐的「试听说明」、五槽编成的「完整解码 / 1/√n 归一化」说明都只在 `?maintainer=1` 下显示（文案仍留在源码里，`verify-song-experimental-audio` 照常通过）。「浏览器拒绝播放：<错误原文>」改为读者语言，原文写进 console。
+- 实验播放器、五槽编成、Solo 抽屉、单曲、歌词、谱面预览外围控件、长轨说明全部令牌化；谱面画布与 HUD 是工具的深色舞台，难度四色是游戏语义，保留。
+- **谱面工具改为工具内选曲**（用户要求，2026-10-05）：原先工具页的「谱面预览」调用 `openSongCatalog`，且 `chart_lab` 路由要求 `song`、缺了就回退到歌曲目录，用户看到的是「点谱面却进了歌曲页」。现在：
+  - `chart_lab` 不再要求 `song`；工具页入口 `openChartTool` 打开谱面工具本身。
+  - 新组件 `ArchiveChartSongPicker.vue`（搜索 + 组合标签 + 带封面的细线曲目行），数据为 `song_charts/manifest.json` 的 61 首与歌曲目录的交集（愚人节变体从主版本 `variants` 取标题）；无组合的歌用 `SONG_PERFORMER_SCOPES`（从 `SongPresentation.js` 导出，单一来源）显示「自由编成 / 特别编成 / 特别演出」。
+  - 没选曲时整页就是选曲；选曲后顶部一行「当前曲目 + 切换曲目」，切换在宽屏是右侧抽屉、手机是底部弹层；切换用 replace 写历史，返回键仍直接离开工具。
+  - 顺带修好一个旧 bug：App 的资料归属监听不把 `chart_lab` 算作歌曲数据的拥有者，一进谱面工具就释放刚加载的歌曲详情，直接打开 `?view=chart_lab&song=…` 永远停在「正在读取」（旧代码因此再回退到歌曲目录）。
+  - `verify-archive-experiments` 改写原「无曲目回退歌曲目录」的断言，并新增入口、归属、选曲接线三条（已变异测试）。
+
+原始要求（留作对照）：
 
 把「工程工具」升级为统一的音乐工具 UI。
 

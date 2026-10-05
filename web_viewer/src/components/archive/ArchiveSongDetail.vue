@@ -218,8 +218,7 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .song-detail-body { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: var(--gs-space-8); padding-top: var(--gs-space-8); }
 /* The listening panel is the one floating surface: it carries playback state. */
 .song-listen-column { min-width: 0; font-size: var(--gs-text-subtitle); }
-.song-listen-column :deep(> *:first-child) { padding: var(--gs-space-6); border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
-.song-listen-column :deep(> *:first-child h3) { margin-top: 0; padding-bottom: 0; border: 0; font-size: var(--gs-text-subtitle); }
+/* The audition sits on the paper like every other section; no floating card. */
 .song-record-column { display: grid; gap: var(--gs-space-section); min-width: 0; }
 .song-block { min-width: 0; }
 .song-block-heading h3, .song-block > summary { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }

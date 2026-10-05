@@ -2,7 +2,7 @@
   <section class="experiments" data-archive-scroll-container>
     <h2>工具</h2>
     <div class="experiment-list">
-      <button type="button" @click="$emit('charts')"><Music :size="32" /><strong>谱面预览</strong><span>从歌曲选择谱面，全屏查看音符、调整速度并导出。</span></button>
+      <button type="button" @click="$emit('charts')"><Music :size="32" /><strong>谱面预览</strong><span>在工具里选曲，全屏查看音符、调整速度并导出。</span></button>
       <button type="button" @click="$emit('photo')"><Camera :size="32" /><strong>摄影工作台</strong><span>组合人物与素材，保存或导出构图。</span></button>
       <button type="button" @click="$emit('stage')"><Sparkles :size="32" /><strong>舞台小人</strong><span>编成演出、查看动作与演唱切换。</span></button>
     </div>

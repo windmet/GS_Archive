@@ -229,59 +229,87 @@ async function download(format = 'svg') {
 </script>
 
 <style scoped>
-.chart-preview { margin-top: 18px; border-top: 1px solid #dfe8ec; padding-top: 14px; }
-button, select, input[type=number] { box-sizing: border-box; border: 1px solid #b5c8cc; border-radius: 6px; font: inherit; font-size: .76rem; color: #295a60; background: #f7fbfb; }
-button { display: inline-flex; justify-content: center; align-items: center; gap: 6px; min-height: 36px; padding: 6px 10px; cursor: pointer; }
+/* Chart viewer: the canvas is the stage (dark, like the game); the controls around it are archive
+   controls on the paper. Difficulty colours are game semantics, like attribute colours. */
+.chart-preview { container: chart-preview / inline-size; margin-top: var(--gs-space-5); padding-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); color: var(--gs-ink); }
+button, select, input[type=number] { box-sizing: border-box; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); cursor: pointer; }
 button:disabled { opacity: .4; cursor: default; }
-button:not(:disabled):hover { border-color: #438d8a; background: #eaf4f2; }
-.chart-toolbar > button[aria-pressed=true] { background: #205d60; border-color: #205d60; color: #fff; }
-select { min-height: 36px; padding: 6px 8px; max-width: 100%; }
-input[type=number] { min-height: 32px; padding: 4px 7px; }
-.chart-open { min-height: 44px; }
-.chart-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
-.chart-difficulties, .chart-modes, .chart-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
-.chart-difficulties button { flex-direction: column; height: 44px; min-width: 76px; border-color: var(--diff-color); color: var(--diff-color); gap: 2px; padding: 5px 10px; font-size: .7rem; line-height: 1.2; white-space: nowrap; }
-.chart-difficulties small { font-size: .65rem; opacity: .85; }
-.difficulty-1 { --diff-color: #247145; }.difficulty-2 { --diff-color: #24649c; }.difficulty-3 { --diff-color: #936309; }.difficulty-4 { --diff-color: #994070; }
-.chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: #fff; }
-.chart-modes { height: 44px; padding: 2px; box-sizing: border-box; gap: 2px; border-radius: 6px; background: #eaf2f3; }
-.chart-modes button { min-height: 40px; height: 40px; border-color: transparent; background: transparent; font-size: .7rem; }
-.chart-modes button[aria-pressed=true] { background: #205d60; color: #fff; }
-.chart-actions { margin-left: auto; }.chart-actions button { height: 44px; font-size: .7rem; gap: 6px; }.chart-actions svg { flex-shrink: 0; }.chart-export-actions { display: flex; align-items: center; gap: 5px; }
-.chart-settings { position: fixed; z-index: 1200; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 15px; padding: 16px; border: 1px solid #b5cdcc; border-radius: 10px; background: #f8fcfb; box-shadow: 0 10px 35px #173e4638; color: #295a60; }
-.settings-heading { display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 1px solid #dde9e6; font-size: .83rem; }
-.settings-heading button { width: 32px; min-height: 32px; padding: 0; border: 0; background: transparent; }
-.chart-settings label { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 9px; font-size: .76rem; }
+button:not(:disabled):hover { border-color: var(--gs-ink-3); }
+.chart-toolbar > button[aria-pressed=true] { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+select { max-width: 100%; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); }
+input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-2); }
+.chart-open { min-height: var(--gs-control-touch); }
+.chart-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); margin-bottom: var(--gs-space-3); }
+.chart-difficulties, .chart-modes, .chart-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2); }
+.chart-difficulties button { flex-direction: column; gap: var(--gs-space-1); min-width: 76px; height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border-color: var(--diff-color); color: var(--diff-color); font-size: var(--gs-text-meta); line-height: 1.2; white-space: nowrap; }
+.chart-difficulties small { font-family: var(--gs-font-stage); font-size: var(--gs-text-caption); }
+.difficulty-1 { --diff-color: #247145; }
+.difficulty-2 { --diff-color: #24649c; }
+.difficulty-3 { --diff-color: #936309; }
+.difficulty-4 { --diff-color: #994070; }
+.chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: var(--gs-surface); }
+.chart-modes { box-sizing: border-box; height: var(--gs-control-touch); padding: 2px; gap: 2px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); }
+.chart-modes button { height: calc(var(--gs-control-touch) - 6px); min-height: 0; border: 0; border-radius: var(--gs-radius-pill); background: none; }
+.chart-modes button[aria-pressed=true] { background: var(--gs-ink); color: var(--gs-paper); }
+.chart-actions { margin-left: auto; }
+.chart-actions button { height: var(--gs-control-touch); gap: 6px; }
+.chart-actions svg { flex-shrink: 0; }
+.chart-export-actions { display: flex; align-items: center; gap: var(--gs-space-2); }
+.chart-settings { position: fixed; z-index: 1200; box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 15px; padding: 16px; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); color: var(--gs-ink); }
+.settings-heading { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-body); }
+.settings-heading button { width: var(--gs-control-touch); min-height: var(--gs-control-touch); padding: 0; border: 0; background: none; }
+.chart-settings label { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .chart-settings input[type=range] { width: 100%; min-width: 0; margin: 0; }
-.chart-settings .speed-setting { grid-template-columns: 76px 65px minmax(0, 1fr); gap: 8px; }
+.chart-settings .speed-setting { grid-template-columns: 76px 65px minmax(0, 1fr); gap: var(--gs-space-3); }
 .speed-setting input[type=number] { width: 65px; }
-.settings-audio { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #dde9e6; padding-top: 12px; }
-.setting-note { margin: -8px 0 0; font-size: .7rem; color: #6b8184; line-height: 1.6; }
-.chart-viewport { position: relative; border-radius: 8px; }
-.chart-hud { position: absolute; z-index: 2; top: 12px; left: 12px; display: flex; align-items: center; gap: 10px; margin: 0; padding: 6px 10px; border: 1px solid #9bc3d333; border-radius: 6px; background: #10212ad9; color: #dcebed; backdrop-filter: blur(6px); font-size: .68rem; pointer-events: none; }
-.chart-hud strong { color: #fff; font-size: .67rem; letter-spacing: .03em; }.chart-hud span { font-variant-numeric: tabular-nums; }
-.is-long .chart-hud { position: static; border-radius: 8px 8px 0 0; background: #13212e; padding: 8px 12px; border: 1px solid #35485a; border-bottom: 0; }
-.chart-transport { margin-top: 10px; padding: 10px 12px; border: 1px solid #c9dcdd; border-radius: 8px; background: #f1f7f7; }
-.chart-timeline { display: flex; align-items: center; gap: 12px; }
-.chart-time { font-size: .86rem; white-space: nowrap; font-variant-numeric: tabular-nums; color: #22565e; }.chart-time small { font-size: .73rem; color: #627981; }
+.settings-audio { display: flex; flex-direction: column; gap: var(--gs-space-3); padding-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); }
+.setting-note { margin: calc(-1 * var(--gs-space-3)) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.chart-viewport { position: relative; border-radius: var(--gs-radius-media); }
+.chart-hud { position: absolute; z-index: 2; top: 12px; left: 12px; display: flex; align-items: center; gap: 10px; margin: 0; padding: 6px 10px; border: 1px solid #9bc3d333; border-radius: var(--gs-radius-control); background: #10212ad9; color: #dcebed; backdrop-filter: blur(6px); font-size: var(--gs-text-meta); pointer-events: none; }
+.chart-hud strong { color: var(--gs-surface); font-size: var(--gs-text-meta); }
+.chart-hud span { font-variant-numeric: tabular-nums; }
+.is-long .chart-hud { position: static; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-radius: 0; border-top-left-radius: var(--gs-radius-media); border-top-right-radius: var(--gs-radius-media); background: var(--gs-chrome); }
+/* The transport sits on the paper under the canvas: a hairline, then time, then the step controls. */
+.chart-transport { margin-top: var(--gs-space-3); padding: var(--gs-space-3) 0 0; border-top: 1px solid var(--gs-line); }
+.chart-timeline { display: flex; align-items: center; gap: var(--gs-space-4); }
+.chart-time { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chart-time small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .chart-timeline > input[type=range] { flex: 1; width: 100%; min-width: 60px; margin: 0; }
-.tick-position { min-width: 156px; font-size: .67rem; color: #617980; font-variant-numeric: tabular-nums; }
-.tick-position span { color: #84949a; }.tick-position label { display: flex; align-items: center; justify-content: flex-end; gap: 5px; white-space: nowrap; }
-.tick-position input { width: 78px; font-size: .69rem; }.tick-readout { width: 100%; justify-content: flex-end; border-color: transparent; background: transparent; padding: 3px 0; font-size: .67rem; color: #617980; }
-.chart-navigation { display: flex; align-items: center; justify-content: center; margin-top: 8px; }
-.chart-step { display: flex; align-items: center; gap: 6px; }.chart-step button { width: 38px; height: 38px; padding: 0; border-color: transparent; background: transparent; }
-.chart-step .chart-play { width: 100px; height: 48px; margin: 0 6px; border-radius: 24px; border-color: #1e716b; background: #1e716b; color: #fff; font-size: .8rem; font-weight: 600; }.chart-step .chart-play:not(:disabled):hover { background: #145d58; }
-input[type=range] { min-height: 32px; accent-color: #167e79; cursor: pointer; }
-.chart-position-status, .chart-shortcuts { margin: 8px 0 0; color: #6a8288; font-size: .66rem; line-height: 1.7; }.chart-shortcuts { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px; }
-kbd { font-family: inherit; padding: 0 3px; border: 1px solid #d7e3e3; border-radius: 3px; color: #5b757d; background: #f7fafb; font-size: .61rem; }.chart-shortcuts > span { margin: 0 3px; color: #a0b2b6; }
-.chart-info { margin-top: 10px; padding: 10px 14px; background: #f2f6fa; border-radius: 8px; font-size: .74rem; line-height: 1.7; color: #597080; }.chart-info p { margin: 4px 0; }
-button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport:focus-visible { outline: 3px solid #1d938a; outline-offset: 2px; }
-@media (max-width: 560px) {
- .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: 4px; }.chart-difficulties button { height: 44px; min-width: 0; padding: 5px 2px; gap: 2px; font-size: .7rem; }.chart-difficulties small { font-size: .63rem; }
- .chart-toolbar { gap: 8px; }.chart-actions { margin-left: 0; gap: 5px; width: 100%; }.chart-actions > button { flex: 1; }.chart-actions button { height: 44px; padding: 6px; gap: 4px; }.chart-export-actions { width: 100%; justify-content: flex-end; }.chart-export-actions button { flex: 1; }
- .chart-hud { top: 8px; left: 8px; padding: 4px 7px; font-size: .6rem; gap: 7px; }.chart-hud strong { font-size: .58rem; }
- .chart-timeline { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; }.chart-timeline > input[type=range] { grid-row: 2; grid-column: 1 / -1; min-height: 44px; }.tick-position { min-width: 0; }.tick-position input { width: 76px; min-height: 36px; }.tick-readout { min-height: 44px; }
- .chart-navigation { margin-top: 0; }.chart-step { width: 100%; justify-content: center; gap: 4px; }.chart-step button { width: 44px; height: 44px; }.chart-step .chart-play { width: 96px; height: 48px; margin: 0 4px; }.chart-shortcuts { margin-top: 8px; font-size: .6rem; }
- .chart-settings select, .chart-settings input[type=range] { min-height: 44px; }.chart-settings { padding: 14px; }.settings-heading button { min-height: 44px; width: 44px; }
+.tick-position { min-width: 156px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.tick-position label { display: flex; align-items: center; justify-content: flex-end; gap: var(--gs-space-2); white-space: nowrap; }
+.tick-position input { width: 78px; font-size: var(--gs-text-meta); }
+.tick-readout { width: 100%; justify-content: flex-end; padding: var(--gs-space-1) 0; border-color: transparent; background: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.chart-navigation { display: flex; align-items: center; justify-content: center; margin-top: var(--gs-space-3); }
+.chart-step { display: flex; align-items: center; gap: var(--gs-space-2); }
+.chart-step button { width: var(--gs-control-normal); height: var(--gs-control-normal); padding: 0; border-color: transparent; background: none; color: var(--gs-ink-2); }
+.chart-step .chart-play { width: 100px; height: 48px; margin: 0 var(--gs-space-2); border-color: var(--gs-ink); border-radius: var(--gs-radius-pill); background: var(--gs-ink); color: var(--gs-paper); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+input[type=range] { min-height: var(--gs-control-compact); accent-color: var(--gs-mint); cursor: pointer; }
+.chart-position-status, .chart-shortcuts { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
+.chart-shortcuts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--gs-space-1); }
+kbd { padding: 0 var(--gs-space-1); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-ink-2); font-family: inherit; font-size: var(--gs-text-caption); }
+.chart-shortcuts > span { margin: 0 var(--gs-space-1); color: var(--gs-ink-3); }
+.chart-info { margin-top: var(--gs-space-3); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
+.chart-info p { margin: var(--gs-space-1) 0; }
+button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@container chart-preview (max-width: 560px) {
+  .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: var(--gs-space-2); }
+  .chart-difficulties button { min-width: 0; padding: 0 var(--gs-space-1); }
+  .chart-toolbar { gap: var(--gs-space-3); }
+  .chart-actions { width: 100%; margin-left: 0; gap: var(--gs-space-2); }
+  .chart-actions > button { flex: 1; padding: 0 var(--gs-space-2); }
+  .chart-export-actions { width: 100%; justify-content: flex-end; }
+  .chart-export-actions button { flex: 1; }
+  .chart-hud { top: var(--gs-space-3); left: var(--gs-space-3); gap: var(--gs-space-2); padding: var(--gs-space-1) var(--gs-space-3); }
+  .chart-timeline { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-1) var(--gs-space-3); }
+  .chart-timeline > input[type=range] { grid-row: 2; grid-column: 1 / -1; min-height: var(--gs-control-touch); }
+  .tick-position { min-width: 0; }
+  .tick-position input { width: 76px; min-height: var(--gs-control-normal); }
+  .tick-readout { min-height: var(--gs-control-touch); }
+  .chart-navigation { margin-top: 0; }
+  .chart-step { width: 100%; justify-content: center; gap: var(--gs-space-1); }
+  .chart-step button { width: var(--gs-control-touch); height: var(--gs-control-touch); }
+  .chart-step .chart-play { width: 96px; height: 48px; }
+  .chart-settings select, .chart-settings input[type=range] { min-height: var(--gs-control-touch); }
 }
 </style>

@@ -3,6 +3,13 @@
 import { buildIdolReference } from './IdolReferencePresentation.js'
 import { attributeLabel } from './AttributeLabel.js'
 
+// Who sings a song that belongs to no single unit: [label, explanation]. Shared with the chart tool.
+export const SONG_PERFORMER_SCOPES = Object.freeze({
+  configurable_formation: ['自由编成', '演唱成员随编成而变化，不表示全员同时合唱。'],
+  fixed_special_lineup: ['特别编成', '由以下成员共同演唱，不归属于单一组合。'],
+  unspecified_special: ['特别演出', '演唱成员尚未明确收录。'],
+})
+
 export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null, manifest = null } = {}) {
   if (!song) return null
   const units = new Map((identity?.units || []).map(entry => [entry.unit_code, entry]))
@@ -16,12 +23,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     return { id, displayName: units.get(id)?.unit_name || '组合待确认', actionable: Boolean(units.get(id)?.unit_name) }
   }
   const mapping = song.performance_mapping || {}
-  const scopes = {
-    configurable_formation: ['自由编成', '演唱成员随编成而变化，不表示全员同时合唱。'],
-    fixed_special_lineup: ['特别编成', '由以下成员共同演唱，不归属于单一组合。'],
-    unspecified_special: ['特别演出', '演唱成员尚未明确收录。'],
-  }
-  const scope = scopes[mapping.performer_scope] || ['演唱信息', '演唱范围尚待确认。']
+  const scope = SONG_PERFORMER_SCOPES[mapping.performer_scope] || ['演唱信息', '演唱范围尚待确认。']
   const experiment = audioExperiment ? {
     ...audioExperiment,
     solo_tracks: Object.fromEntries(Object.entries(audioExperiment.solo_tracks || {}).map(([key, track]) => [key, {

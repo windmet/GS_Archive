@@ -94,22 +94,22 @@ onBeforeUnmount(() => { ++generation })
 </script>
 
 <style scoped>
-.song-lyrics { margin-top: 14px; border: 1px solid #dce8ec; border-radius: var(--gs-radius-field); background: #fff; font-family: var(--gs-font-directory); }
-.song-lyrics summary { min-height: var(--gs-control-touch); display: flex; align-items: center; flex-wrap: wrap; gap: var(--gs-space-3); padding: var(--gs-space-3) var(--gs-space-4); color: #265a64; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.song-lyrics { margin-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); font-family: var(--gs-font-body); }
+.song-lyrics summary { min-height: var(--gs-control-touch); display: flex; align-items: center; flex-wrap: wrap; gap: var(--gs-space-3); padding: var(--gs-space-3) 0; color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .song-lyrics summary::before { content: '▸'; display: inline-block; transition: transform .15s ease; }
 .song-lyrics[open] summary::before { transform: rotate(90deg); }
-.song-lyrics summary span { color: #60758a; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.song-lyrics summary:focus-visible, .song-lyrics button:focus-visible { outline: var(--gs-focus-ring) solid #168f87; outline-offset: var(--gs-focus-offset); }
-.song-lyrics-body { padding: 0 var(--gs-space-4) var(--gs-space-4); color: #485e66; font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.7; }
+.song-lyrics summary span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.song-lyrics summary:focus-visible, .song-lyrics button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+.song-lyrics-body { padding: 0 0 var(--gs-space-4); color: var(--gs-ink-2); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.7; }
 .song-lyrics-note { margin: 0 0 var(--gs-space-4); }
-.song-lyrics-error { color: #a04747; }
-.song-lyrics-error button { min-height: var(--gs-control-touch); border: 0; background: none; color: #176f69; font: inherit; text-decoration: underline; cursor: pointer; }
+.song-lyrics-error { color: var(--gs-critical); }
+.song-lyrics-error button { min-height: var(--gs-control-touch); border: 0; background: none; color: var(--gs-mint-ink); font: inherit; text-decoration: underline; cursor: pointer; }
 .song-lyrics-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
 .song-lyrics-list li { white-space: pre-wrap; overflow-wrap: anywhere; }
 .song-lyrics-list button, .song-lyrics-list li > span { display: block; width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; box-sizing: border-box; border: 0; background: none; color: inherit; font: inherit; text-align: left; white-space: pre-wrap; }
 .song-lyrics-list button { cursor: pointer; }
 .song-lyrics-list button:disabled { cursor: default; }
-.song-lyrics-list li.active { color: #075b4a; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
-.lyrics-expand { min-height: var(--gs-control-touch); margin-top: var(--gs-space-3); padding: var(--gs-space-3) 0; border: 0; background: none; color: #176f69; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.song-lyrics-list li.active { color: var(--gs-ink); box-shadow: inset 2px 0 var(--gs-mint); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.lyrics-expand { min-height: var(--gs-control-touch); margin-top: var(--gs-space-3); padding: var(--gs-space-3) 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .song-lyrics summary::before { transition: none; } }
 </style>

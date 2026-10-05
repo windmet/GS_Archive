@@ -102,8 +102,9 @@ try {
       await send('Emulation.setDeviceMetricsOverride', { width: size.width, height: size.height, deviceScaleFactor: 1, mobile: size.mobile })
       const preferences = 'preferences' in scene ? scene.preferences : RETURNING_READER
       const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: preferences
-        ? `localStorage.setItem(${JSON.stringify(PREFERENCES_KEY)}, ${JSON.stringify(JSON.stringify(preferences))})`
-        : `localStorage.removeItem(${JSON.stringify(PREFERENCES_KEY)})` })
+        // Guarded: after a stuck capture the page is about:blank, where storage access throws.
+        ? `try { localStorage.setItem(${JSON.stringify(PREFERENCES_KEY)}, ${JSON.stringify(JSON.stringify(preferences))}) } catch {}`
+        : `try { localStorage.removeItem(${JSON.stringify(PREFERENCES_KEY)}) } catch {}` })
       await send('Page.navigate', { url: scene.url })
       const probe = `({ gallery: document.documentElement.dataset.galleryState || '', text: document.body.innerText.trim().length, canvas: document.querySelectorAll('canvas').length, waited: !${JSON.stringify(scene.waitFor || '')} || !!document.querySelector(${JSON.stringify(scene.waitFor || '')}), overflow: document.documentElement.scrollWidth > innerWidth + 1 })`
       let state = null

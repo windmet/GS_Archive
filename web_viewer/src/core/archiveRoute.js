@@ -147,7 +147,8 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
   song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
-  chart_lab: { section: 'experiments', required: ['song'], fallback: 'song_catalog' },
+  // Without a song the chart tool opens on its own song picker, like the Chibi stage.
+  chart_lab: { section: 'experiments', required: [] },
   experiments: { section: 'experiments', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
