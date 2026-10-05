@@ -434,16 +434,16 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Ignore massive asset directories from file watcher.
-    // The 32K+ voice files and 700+ spine models cause chokidar
-    // to hang the dev server on Windows.
+    // Keep the file watcher off the archive corpus and build output. Windows
+    // creates one native fs.watch handle per entry; ~74K public files plus the
+    // 285K-file .deploy tree made dev requests take 10-40s. public/ is served
+    // from disk on every request, so it needs no watching.
     watch: {
       ignored: [
-        '**/public/assets/voice/**',
-        '**/public/assets/spines/**',
-        '**/public/assets/bg/**',
-        '**/public/assets/lipsync/**',
+        '**/public/**',
+        '**/.deploy/**',
         '**/.analysis/**',
+        '**/dist/**',
       ],
     },
   },
