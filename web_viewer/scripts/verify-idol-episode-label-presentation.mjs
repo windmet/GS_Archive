@@ -37,7 +37,7 @@ for (const chapter of index.chapters) {
 }
 assert.ok(normalized > 0)
 assert.equal(read('public/data/masterdata/idol_episode_index.json'), raw, 'source catalog stays byte-identical')
-for (const file of ['ArchiveIdolStory.vue', 'ArchiveStoryCollection.vue', 'ArchiveMobileArchive.vue', 'ArchiveStoryReader.vue', 'ArchiveStoryDetail.vue', 'ArchiveStoryCatalog.vue']) {
+for (const file of ['ArchiveIdolStory.vue', 'ArchiveStoryCollection.vue', 'ArchiveMobileArchive.vue', 'ArchiveStoryReader.vue', 'ArchiveStoryDetail.vue', 'StoryDiscovery.vue']) {
   assert.match(read(`src/components/archive/${file}`), /presentIdolEpisodeLabel/, `${file} consumes the shared presenter`)
 }
 console.log(`Idol episode label presentation: ${normalized} real labels, birthday relation and Reader UI wiring passed`)

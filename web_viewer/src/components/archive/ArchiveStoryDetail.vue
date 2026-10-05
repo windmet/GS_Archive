@@ -57,7 +57,7 @@
     </section>
 
     <section v-if="characters.length" class="detail-section">
-      <div class="section-heading"><div><span>CAST</span><h3>登场角色</h3></div><strong>{{ characters.length }}</strong></div>
+      <div class="section-heading"><div><h3>登场角色</h3></div><strong>{{ characters.length }}</strong></div>
       <div class="character-list">
         <ArchiveIdolReference v-for="reference in characterReferences" :key="reference.idolCode" :reference="reference" @open="emit('open-idol', $event)" />
       </div>

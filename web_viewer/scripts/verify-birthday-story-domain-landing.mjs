@@ -98,6 +98,9 @@ assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes
 assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'birthday'/)
 assert.match(catalogSource, /card\.subject\.kind === 'shared' \? '公共篇'/)
-assert.match(catalogSource, /@media \(max-width: 620px\).*\.extra-card-grid, \.birthday-card-grid \{ grid-template-columns: 1fr;/s)
+assert.match(catalogSource, /class="story-row birthday-row"/)
+// Idols are listed by their display name in the reader's language, like every other page.
+assert.match(catalogSource, /card\.subject\.kind === 'idol' && props\.idolName\(card\.subject\.code\)/)
+assert.match(await readText('src/styles/archive-story.css'), /@container story-page \(max-width: 560px\)[\s\S]+\.story-page \.story-rows \{ grid-template-columns:1fr; \}/)
 
 console.log('Birthday story domain landing: 51 collections, 181 logical records, 2 unassigned producer-birthday entries and 29 cross-domain files verified')

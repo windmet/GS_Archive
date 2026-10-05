@@ -1,83 +1,63 @@
 <template>
-  <section class="work-page" data-archive-scroll-container :style="{ '--work-accent': idol?.color || '#168f87' }">
-    <header class="work-header">
+  <section class="work-page story-page" data-archive-scroll-container :style="{ '--gs-idol': idol?.color || 'var(--gs-mint)' }">
+    <header class="work-header story-head">
       <div class="idol-heading">
-        <ArchiveIdolAvatar v-if="idol?.idol_code" :idol-code="idol.idol_code" :accent-color="idol.color" :size="62" :ring-width="3" :alt="idol.display_name" />
+        <ArchiveIdolAvatar v-if="idol?.idol_code" :idol-code="idol.idol_code" :accent-color="idol.color" :size="56" :ring-width="3" :alt="name(idol)" />
         <div>
-          <h2>{{ idol?.display_name || '工作剧情' }}</h2>
-          <p>{{ idol?.work_type_name || 'お仕事' }}</p>
+          <h2>{{ idol ? name(idol) : '工作剧情' }}</h2>
+          <ul v-if="idol" class="story-footprint" aria-label="收录">
+            <li>{{ idol.work_type_name }}</li>
+            <li><b>{{ idol.short_stories.length }}</b>段短剧情</li>
+            <li><b>{{ idol.scene_lines.length }}</b>句场景台词</li>
+            <li><b>{{ totalVoices }}</b>段语音</li>
+          </ul>
         </div>
       </div>
       <div class="idol-controls">
-        <button title="上一位偶像" @click="moveIdol(-1)"><ChevronLeft :size="18" /></button>
-        <label>
-          <span>偶像</span>
-          <select :value="idol?.idol_code" @change="emit('select-idol', $event.target.value)">
-            <option v-for="entry in idols" :key="entry.idol_code" :value="entry.idol_code">
-              {{ entry.display_name }} · {{ shortType(entry.work_type_name) }}
-            </option>
-          </select>
-        </label>
-        <button title="下一位偶像" @click="moveIdol(1)"><ChevronRight :size="18" /></button>
+        <button class="story-icon-action" title="上一位偶像" aria-label="上一位偶像" @click="moveIdol(-1)"><ChevronLeft :size="18" /></button>
+        <select aria-label="偶像" :value="idol?.idol_code" @change="emit('select-idol', $event.target.value)">
+          <option v-for="entry in idols" :key="entry.idol_code" :value="entry.idol_code">
+            {{ name(entry) }} · {{ shortType(entry.work_type_name) }}
+          </option>
+        </select>
+        <button class="story-icon-action" title="下一位偶像" aria-label="下一位偶像" @click="moveIdol(1)"><ChevronRight :size="18" /></button>
       </div>
     </header>
 
-    <div v-if="idol" class="work-body">
-      <nav class="content-tabs" aria-label="工作内容">
-        <button :class="{ active: activeMode === 'stories' }" @click="emit('update:mode', 'stories')"><BookOpen :size="16" /> 工作短剧情</button>
-        <button :class="{ active: activeMode === 'lines' }" @click="emit('update:mode', 'lines')"><MessageSquareText :size="16" /> 场景台词</button>
+    <div v-if="idol" class="work-body story-section">
+      <nav class="story-chips" aria-label="工作内容">
+        <button :aria-pressed="activeMode === 'stories'" @click="emit('update:mode', 'stories')">工作短剧情 <small>{{ idol.short_stories.length }}</small></button>
+        <button :aria-pressed="activeMode === 'lines'" @click="emit('update:mode', 'lines')">场景台词 <small>{{ idol.scene_lines.length }}</small></button>
       </nav>
 
-      <section v-if="activeMode === 'stories'" class="content-section">
-        <div class="section-heading">
-          <div><h3>工作短剧情</h3></div>
-          <p>工作过程中出现的多段剧情</p>
-        </div>
-        <div class="story-grid">
-          <article v-for="story in idol.short_stories" :key="story.id" class="story-card">
-            <div class="story-visual">
-              <img :src="backgroundUrl(story.background_resource_id)" :alt="locationLabel(story)" />
-              <span>{{ locationLabel(story) }}</span>
-            </div>
-            <div class="story-copy">
-              <h4>{{ presentProducerAddressingText(story.title) }}</h4>
-              <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
-              <div class="story-footer">
-                <span>{{ story.dialogue_count }} 段对白 · {{ story.voice_count }} 段语音</span>
-                <button v-if="readingByFile.has(story.compiled_file)" class="reading-action" :aria-label="`阅读 ${story.title}`" @click="emit('read', story.compiled_file)"><BookOpen :size="16" />阅读</button>
-                <button :disabled="!story.compiled_exists" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
-              </div>
-            </div>
-          </article>
-        </div>
-      </section>
+      <ul v-if="activeMode === 'stories'" class="story-rows work-rows">
+        <li v-for="story in idol.short_stories" :key="story.id" class="story-row work-row">
+          <span class="story-row-thumb"><img :src="backgroundUrl(story.background_resource_id)" :alt="locationLabel(story)" loading="lazy" decoding="async" /></span>
+          <span class="story-row-copy">
+            <strong>{{ presentProducerAddressingText(story.title) }}</strong>
+            <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
+            <small>{{ [locationLabel(story), `${story.dialogue_count} 段对白`, `${story.voice_count} 段语音`].filter(Boolean).join(' · ') }}</small>
+          </span>
+          <span class="work-actions">
+            <button v-if="readingByFile.has(story.compiled_file)" class="story-action" :aria-label="`阅读 ${story.title}`" @click="emit('read', story.compiled_file)"><BookOpen :size="15" />阅读</button>
+            <button class="story-icon-action" :disabled="!story.compiled_exists" :aria-label="`播放 ${story.title}`" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
+          </span>
+        </li>
+      </ul>
 
-      <section v-else class="content-section">
-        <div class="section-heading">
-          <div><h3>工作场景台词</h3></div>
-          <p>单句语音与对应工作场景</p>
-        </div>
-        <div class="line-list">
-          <article v-for="line in idol.scene_lines" :key="line.id" class="line-row">
-            <img :src="backgroundUrl(line.background_resource_id)" :alt="locationLabel(line)" />
-            <div class="line-copy">
-              <span>{{ locationLabel(line) }}</span>
-              <p>{{ presentProducerAddressingText(line.dialogue_preview) }}</p>
-              <button v-if="readingByFile.has(line.compiled_file)" class="reading-action" :aria-label="`阅读 ${locationLabel(line)}`" @click="emit('read', line.compiled_file)"><BookOpen :size="16" />阅读</button>
-            </div>
-            <button :disabled="!line.compiled_exists" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="16" fill="currentColor" /></button>
-          </article>
-        </div>
-      </section>
-      <details class="work-extra"><summary>收录概况</summary>
-      <div class="work-overview">
-        <div><strong>{{ idol.short_stories.length }}</strong><span>短剧情</span></div>
-        <div><strong>{{ idol.scene_lines.length }}</strong><span>场景台词</span></div>
-        <div><strong>{{ totalVoices }}</strong><span>语音</span></div>
-        <div><strong>{{ namedLocations }}</strong><span>已命名场景</span></div>
-      </div>
-
-      </details>
+      <ul v-else class="story-rows work-rows">
+        <li v-for="line in idol.scene_lines" :key="line.id" class="story-row work-row">
+          <span class="story-row-thumb"><img :src="backgroundUrl(line.background_resource_id)" :alt="locationLabel(line)" loading="lazy" decoding="async" /></span>
+          <span class="story-row-copy">
+            <strong>{{ presentProducerAddressingText(line.dialogue_preview) }}</strong>
+            <small v-if="locationLabel(line)">{{ locationLabel(line) }}</small>
+          </span>
+          <span class="work-actions">
+            <button v-if="readingByFile.has(line.compiled_file)" class="story-action" :aria-label="`阅读 ${locationLabel(line) || '场景台词'}`" @click="emit('read', line.compiled_file)"><BookOpen :size="15" />阅读</button>
+            <button class="story-icon-action" :disabled="!line.compiled_exists" aria-label="播放场景台词" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="17" fill="currentColor" /></button>
+          </span>
+        </li>
+      </ul>
       <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="sourceEvidence ? { idol, sourceEvidence } : idol" />
     </div>
   </section>
@@ -88,19 +68,21 @@ import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import { BookOpen, ChevronLeft, ChevronRight, MessageSquareText, Play } from '@lucide/vue'
+import { BookOpen, ChevronLeft, ChevronRight, Play } from '@lucide/vue'
+import '../../styles/archive-story.css'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
   sourceEvidence: { type: Object, default: null },
   readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' },
-  mode: { type: String, default: 'stories' } })
+  mode: { type: String, default: 'stories' },
+  idolName: { type: Function, default: () => '' } })
 const emit = defineEmits(['read', 'select-idol', 'play', 'update:mode'])
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 const activeMode = computed(() => (props.mode === 'lines' || props.idol?.scene_lines.some(line => line.compiled_file === props.initialFile))
   ? 'lines' : 'stories')
 const totalVoices = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].reduce((sum, item) => sum + (item.voice_count || 0), 0))
-const namedLocations = computed(() => [...(props.idol?.short_stories || []), ...(props.idol?.scene_lines || [])].filter(item => item.background_name).length)
 
+function name(entry) { return props.idolName(entry.idol_code) || entry.display_name }
 function moveIdol(delta) {
   const index = props.idols.findIndex(entry => entry.idol_code === props.idol?.idol_code)
   if (index < 0 || !props.idols.length) return
@@ -109,18 +91,27 @@ function moveIdol(delta) {
 }
 function shortType(name = '') { return name.replace('のお仕事', '') }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '' }
-function locationLabel(entry) { return entry.background_name || '场景名称未收录' }
+// An unnamed location simply goes unmentioned.
+function locationLabel(entry) { return entry.background_name || '' }
 </script>
 
 <style scoped>
-.work-extra > summary { min-height: 44px; padding: 12px; box-sizing: border-box; cursor: pointer; color: #52616a; }
-.story-footer { flex-wrap: wrap; }
-.story-footer > span { flex: 1 1 100%; }
-.story-footer .reading-action, .line-copy .reading-action { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; width: auto; padding: 5px 9px; border: 1px solid #cadbd9; border-radius: 5px; background: #fff; color: var(--work-accent); font: inherit; font-size: 13px; cursor: pointer; }
-.work-page { height: 100%; overflow-x: hidden; overflow-y: auto; background: #f4f6f7; color: #26343c; }.work-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px max(24px, calc((100% - 1080px) / 2)); border-bottom: 1px solid #dfe5e7; background: #fff; }.idol-heading { display: flex; align-items: center; gap: 14px; min-width: 0; }.idol-heading span, .section-heading span { color: var(--work-accent); font-size: var(--gs-text-caption); font-weight: 800; }.idol-heading h2 { margin: 3px 0; font-size: 1.3rem; }.idol-heading p { margin: 0; color: #738087; font-size: var(--gs-text-meta); }.idol-controls { display: flex; align-items: end; gap: 6px; }.idol-controls > button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #d6dee1; border-radius: 5px; background: #fff; color: #4f5d64; cursor: pointer; }.idol-controls label { display: flex; flex-direction: column; gap: 4px; }.idol-controls label span { color: #7a878d; font-size: var(--gs-text-caption); }.idol-controls select { min-width: 230px; height: 34px; padding: 0 30px 0 10px; border: 1px solid #d5dde0; border-radius: 5px; background: #fff; color: #28363d; font: inherit; font-size: var(--gs-text-meta); }
-.work-body { max-width: 1080px; margin: 0 auto; padding: 18px 24px 38px; }.work-overview { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid #dfe5e7; border-radius: 6px; background: #fff; }.work-overview div { display: flex; flex-direction: column; gap: 2px; padding: 12px 15px; border-right: 1px solid #e5eaec; }.work-overview div:last-child { border-right: 0; }.work-overview strong { font-size: var(--gs-text-body); }.work-overview span { color: #7b888e; font-size: var(--gs-text-caption); }.content-tabs { display: flex; gap: 3px; margin: 18px 0 0; border-bottom: 1px solid #dce3e5; }.content-tabs button { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 13px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #718087; cursor: pointer; font: inherit; font-size: var(--gs-text-meta); }.content-tabs button.active { border-color: var(--work-accent); color: #26343c; font-weight: 800; }.content-section { padding-top: 18px; }.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 11px; }.section-heading h3 { margin: 3px 0 0; font-size: var(--gs-text-subtitle); }.section-heading p { margin: 0; color: #78858b; font-size: var(--gs-text-caption); }
-.story-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }.story-card { display: grid; grid-template-columns: 148px minmax(0,1fr); overflow: hidden; min-height: 150px; border: 1px solid #dce3e5; border-radius: 6px; background: #fff; }.story-visual { position: relative; min-height: 150px; background: #dfe5e7; }.story-visual img { width: 100%; height: 100%; object-fit: cover; }.story-visual span { position: absolute; right: 6px; bottom: 6px; left: 6px; overflow: hidden; padding: 4px 6px; border-radius: 3px; background: rgba(25,35,40,.78); color: #fff; font-size: var(--gs-text-caption); text-overflow: ellipsis; white-space: nowrap; }.story-copy { display: flex; flex-direction: column; min-width: 0; padding: 11px 12px; }.story-copy > small { color: var(--work-accent); font-family: ui-monospace, Consolas, monospace; font-size: var(--gs-text-caption); }.story-copy h4 { margin: 4px 0 6px; font-size: var(--gs-text-ui); line-height: 1.4; }.story-copy p { display: -webkit-box; overflow: hidden; margin: 0; color: #66757c; font-size: var(--gs-text-caption); line-height: 1.5; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }.story-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 8px; }.story-footer span { color: #879399; font-size: var(--gs-text-caption); }.story-footer button, .line-row > button { display: grid; flex: 0 0 auto; place-items: center; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--work-accent) 55%, #dce4e6); border-radius: 50%; background: #fff; color: var(--work-accent); cursor: pointer; }.story-footer button:disabled, .line-row > button:disabled { cursor: not-allowed; opacity: .4; }
-.line-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }.line-row { display: grid; grid-template-columns: 88px minmax(0,1fr) 32px; align-items: center; gap: 10px; min-height: 92px; padding: 7px; border: 1px solid #dce3e5; border-radius: 6px; background: #fff; }.line-row > img { width: 88px; height: 76px; border-radius: 4px; object-fit: cover; }.line-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }.line-copy span { overflow: hidden; color: var(--work-accent); font-size: var(--gs-text-caption); font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }.line-copy p { display: -webkit-box; overflow: hidden; margin: 0; font-size: var(--gs-text-caption); line-height: 1.4; white-space: pre-line; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }.line-copy small { overflow: hidden; color: #909ba0; font-family: ui-monospace, Consolas, monospace; font-size: var(--gs-text-caption); text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 900px) { .line-list { grid-template-columns: repeat(2,minmax(0,1fr)); }.story-card { grid-template-columns: 120px minmax(0,1fr); } }
-@media (max-width: 620px) { .work-header { align-items: start; flex-direction: column; padding: 14px 12px; }.idol-heading > .idol-avatar-shell { --idol-avatar-override-size: 52px; }.idol-controls { width: 100%; }.idol-controls label { flex: 1; }.idol-controls select { width: 100%; min-width: 0; }.work-body { padding: 10px 12px 28px; }.work-overview { grid-template-columns: repeat(2,minmax(0,1fr)); }.work-overview div:nth-child(2) { border-right: 0; }.work-overview div:nth-child(-n+2) { border-bottom: 1px solid #e5eaec; }.section-heading { align-items: start; flex-direction: column; }.story-grid, .line-list { grid-template-columns: 1fr; }.story-card { grid-template-columns: 116px minmax(0,1fr); }.line-row { grid-template-columns: 82px minmax(0,1fr) 32px; }.line-row > img { width: 82px; } }
+.work-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-5); }
+.idol-heading { display: flex; align-items: center; gap: var(--gs-space-5); min-width: 0; }
+.idol-heading h2 { font-size: var(--gs-text-section); }
+.idol-controls { display: flex; align-items: center; gap: var(--gs-space-2); }
+.idol-controls select { min-width: 220px; min-height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.work-body { padding-top: 0; }
+.work-rows { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+.work-row { --thumb: 96px; cursor: default; }
+.work-row .story-row-thumb { aspect-ratio: 4 / 3; }
+.work-actions { display: flex; align-items: center; gap: var(--gs-space-2); }
+
+@container story-page (max-width: 560px) {
+  .work-rows { grid-template-columns: 1fr; }
+  .idol-controls { width: 100%; }
+  .idol-controls select { flex: 1; min-width: 0; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
+  .work-row { --thumb: 64px; grid-template-columns: var(--thumb) minmax(0, 1fr); align-items: start; }
+  .work-actions { grid-column: 2; justify-content: end; }
+}
 </style>

@@ -142,7 +142,8 @@ try {
     initialFile: '', mode: 'lines',
     readingEntries: [{ document_id: 'line', source_file: 'line.json', status: 'ready' }],
   }))
-  assert.ok(workLinesHtml.includes('工作场景台词'), 'explicit Work tab survives a URL-only return without a selected file')
+  assert.match(workLinesHtml, /aria-pressed="true"[^>]*>场景台词/, 'explicit Work tab survives a URL-only return without a selected file')
+  assert.ok(workLinesHtml.includes('aria-label="阅读 Office"') && !workLinesHtml.includes('aria-label="阅读 Short"'), 'the lines tab shows lines, not stories')
   for (const [status, expected] of [
     ['loading', '正在载入正文'], ['empty', '没有可显示的正文'],
     ['not-generated', '尚未生成阅读正文'], ['error', '正文暂时无法载入'],

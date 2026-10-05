@@ -37,7 +37,7 @@ async function storyDomains() {
 
 const storyCatalog = domain => async () => ({
   component: await component('ArchiveStoryCatalog'),
-  props: { mode: 'portal', domain, ...(await storyDomains()) },
+  props: { mode: 'portal', domain, idolName: (await identity()).idolName, ...(await storyDomains()) },
 })
 
 export const SCENES = {
@@ -73,11 +73,11 @@ export const SCENES = {
   } },
   'work-story': { label: '工作剧情 · 天ヶ瀬 冬馬', async mount() {
     const [index] = await load(['masterdata/work_story_index.json'])
-    return { component: await component('ArchiveWorkStory'), props: { idol: index.idols[0] } }
+    return { component: await component('ArchiveWorkStory'), props: { idol: index.idols[0], idols: index.idols } }
   } },
   'seasonal': { label: '季节企划', async mount() {
     const [index] = await load(['masterdata/seasonal_campaign_index.json'])
-    return { component: await component('ArchiveSeasonalCampaign'), props: { campaign: index.campaigns[0] } }
+    return { component: await component('ArchiveSeasonalCampaign'), props: { campaign: index.campaigns[0], campaigns: index.campaigns } }
   } },
   'mobile-archive': { label: '通信 · 个人聊天', async mount() {
     // The read-model projection needs node:crypto; prepare.mjs writes its production shape.

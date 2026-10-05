@@ -95,7 +95,17 @@ npm run gallery:capture -- <label>     # 输出 .analysis/gallery/<label>/
    - **页面首屏**：返回加标题的顶栏之后，第一屏应该看到内容，不应该先是统计或说明文字。
 3. **修好截图集**：预置引导完成的偏好，并新增 `app-onboarding` 场景；再加一档 768 宽度。
 
-### 第 1 步：故事系列（最后一大块旧样式页面）
+### 第 1 步：故事系列 ✅ 已完成
+
+- 新增共用样式 `src/styles/archive-story.css`（`.story-page` 容器 + 页头 / 足迹句 / 图块 / 细线行 / 筛选标签 / 操作按钮），排布全部走 `@container story-page`。目录、合集、工作剧情、季节活动都已接入；后续页面可以照用。
+- 分类首页：统计格子改为足迹句，内容区不再重复顶栏标题（h2 仅供读屏）；章节是「图 + 下方标题」，额外 / 生日 / 更多故事都是细线行；生日偶像名走译名（`idolName`）。
+- 合集页：收起的话只是一行，展开后才有「阅读本话 / 连播演出」；操作说明删除；简介去掉底色盒子，只留 2px 舞台光引线；「正文未生成」改为「暂无文字版，可观看演出」；生日合集标题走译名（App 新传 `:idol-name`）。
+- 工作剧情：偶像下拉框在真实应用里正常，空白只是画廊没传 `idols`（已补）；「场景名称未收录」不再显示；盒子卡改细线行；「收录概况」四格改为足迹句；名字走译名。
+- 季节活动：四格统计改为足迹句（背景音乐收录状态删除）；「共通导入」改为列表首行；年份 / 季节 / 角色类别用统一筛选标签。
+- 检索：结果行去掉盒子和左侧彩条，手机保留 56px 缩略图；`StoryDiscovery` 的说明行改用 `presentIdolEpisodeLabel`（原先目录里唯一的调用是死代码，检查脚本名单随之改为 `StoryDiscovery.vue`）。
+- 遗留：剧情详情（`ArchiveStoryDetail.vue`）只删了 `CAST` 眉标，简介带与信息表还是旧样式；季节活动的参与者名单没有偶像代码，仍显示原名；工作剧情顶栏标题来自路由，仍是原名；生日合集里「个人故事共享入口」等话目标签来自数据层。
+
+原始问题清单（留作对照）：
 
 文件：`ArchiveStoryCatalog.vue`（536 行，包含主线、额外、生日各分类首页）、`ArchiveStoryCollection.vue`、`ArchiveStoryDetail.vue`、`StoryDiscovery.vue`、`EventStoryCard.vue`、`ArchiveWorkStory.vue`，以及 seasonal 场景。
 

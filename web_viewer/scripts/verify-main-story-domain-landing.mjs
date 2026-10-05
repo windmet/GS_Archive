@@ -48,9 +48,10 @@ assert.match(catalogSource, /:disabled="collection\.isPlaceholder"/)
 assert.match(catalogSource, /尚无已发布话目/)
 assert.match(catalogSource, /未公开/)
 assert.match(catalogSource, /@click="browse\('main', collection\.masterId\)"/)
-assert.match(
-  catalogSource,
-  /@media \(max-width: 620px\)[\s\S]+\.main-domain-grid \{ grid-template-columns: 1fr; \}/,
-)
+// Chapters are story tiles; on a narrow page (the container, not the viewport) they stack.
+const storyStyles = await readText('src/styles/archive-story.css')
+assert.match(catalogSource, /import '\.\.\/\.\.\/styles\/archive-story\.css'/)
+assert.match(catalogSource, /class="main-domain-landing"[\s\S]+class="story-tiles"/)
+assert.match(storyStyles, /@container story-page \(max-width: 560px\)[\s\S]+\.story-page \.story-tiles \{ grid-template-columns:1fr; \}/)
 
 console.log('Main story domain landing: route, 3 collections, placeholder and UI wiring verified')
