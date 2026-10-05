@@ -32,7 +32,7 @@ const time = value => { const n = Math.floor(Math.max(0, Number(value) || 0)); r
 /* One transport for music and voice: on the paper, ink controls, stage light only for progress. */
 .media-transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; padding: var(--gs-space-4) 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
-button:first-child { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+button:first-child { border-color: var(--gs-play-bg); background: var(--gs-play-bg); color: var(--gs-play-ink); }
 button:disabled, input:disabled { opacity: .45; cursor: default; }
 input { flex: 1 1 80px; min-width: 80px; min-height: var(--gs-control-touch); accent-color: var(--gs-mint); }
 button:focus-visible, input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

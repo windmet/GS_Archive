@@ -48,7 +48,7 @@ const matches = computed(() => props.songs.filter(song => (!unitFilter.value || 
 .chart-song-units { display: flex; gap: var(--gs-space-2); overflow-x: auto; margin-top: var(--gs-space-4); padding: var(--gs-space-1) 0; scrollbar-width: none; }
 .chart-song-units button { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; cursor: pointer; }
 .chart-song-units button small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
-.chart-song-units button[aria-pressed=true] { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.chart-song-units button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .chart-song-units button[aria-pressed=true] small { color: inherit; }
 .chart-song-status { margin: var(--gs-space-3) 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .chart-song-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); column-gap: var(--gs-space-7); margin: 0; padding: 0; list-style: none; }

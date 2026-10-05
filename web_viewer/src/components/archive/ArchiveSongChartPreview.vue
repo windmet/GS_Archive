@@ -236,7 +236,7 @@ button, select, input[type=number] { box-sizing: border-box; border: 1px solid v
 button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); cursor: pointer; }
 button:disabled { opacity: .4; cursor: default; }
 button:not(:disabled):hover { border-color: var(--gs-ink-3); }
-.chart-toolbar > button[aria-pressed=true] { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.chart-toolbar > button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 select { max-width: 100%; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); }
 input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-2); }
 .chart-open { min-height: var(--gs-control-touch); }
@@ -251,7 +251,7 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-difficulties button[aria-pressed=true] { background: var(--diff-color); color: var(--gs-surface); }
 .chart-modes { box-sizing: border-box; height: var(--gs-control-touch); padding: 2px; gap: 2px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); }
 .chart-modes button { height: calc(var(--gs-control-touch) - 6px); min-height: 0; border: 0; border-radius: var(--gs-radius-pill); background: none; }
-.chart-modes button[aria-pressed=true] { background: var(--gs-ink); color: var(--gs-paper); }
+.chart-modes button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .chart-actions { margin-left: auto; }
 .chart-actions button { height: var(--gs-control-touch); gap: 6px; }
 .chart-actions svg { flex-shrink: 0; }
@@ -283,7 +283,7 @@ input[type=number] { min-height: var(--gs-control-compact); padding: 0 var(--gs-
 .chart-navigation { display: flex; align-items: center; justify-content: center; margin-top: var(--gs-space-3); }
 .chart-step { display: flex; align-items: center; gap: var(--gs-space-2); }
 .chart-step button { width: var(--gs-control-normal); height: var(--gs-control-normal); padding: 0; border-color: transparent; background: none; color: var(--gs-ink-2); }
-.chart-step .chart-play { width: 100px; height: 48px; margin: 0 var(--gs-space-2); border-color: var(--gs-ink); border-radius: var(--gs-radius-pill); background: var(--gs-ink); color: var(--gs-paper); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.chart-step .chart-play { width: 100px; height: 48px; margin: 0 var(--gs-space-2); border-color: var(--gs-play-bg); border-radius: var(--gs-radius-pill); background: var(--gs-play-bg); color: var(--gs-play-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 input[type=range] { min-height: var(--gs-control-compact); accent-color: var(--gs-mint); cursor: pointer; }
 .chart-position-status, .chart-shortcuts { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
 .chart-shortcuts { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--gs-space-1); }

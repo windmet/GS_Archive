@@ -49,7 +49,7 @@ const selectedName = computed(() => {
 .idol-picker-units { display: flex; gap: var(--gs-space-2); overflow-x: auto; margin: var(--gs-space-4) 0 0; padding: var(--gs-space-1) 0; scrollbar-width: none; }
 .idol-picker-units button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; cursor: pointer; }
 .idol-picker-units button small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
-.idol-picker-units button[aria-pressed=true] { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.idol-picker-units button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .idol-picker-units button[aria-pressed=true] small { color: inherit; }
 .idol-picker-status { margin: var(--gs-space-3) 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .idol-picker-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--gs-space-5) var(--gs-space-7); }

@@ -27,7 +27,7 @@ onBeforeUnmount(() => query?.removeEventListener?.('change', sync))
 <style>
 .filter-inline { display: contents; }
 .filter-sheet-trigger { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.filter-sheet-trigger small { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--gs-radius-pill); background: var(--gs-ink); color: var(--gs-paper); font-size: var(--gs-text-caption); }
+.filter-sheet-trigger small { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-caption); }
 /* A bottom sheet on phones: full width, anchored to the bottom edge, rounded only on top. */
 .terminal-dialog.filter-sheet { width: 100%; max-width: none; max-height: 85dvh; margin: auto 0 0; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); }
 .filter-sheet .terminal-dialog-body { padding-bottom: calc(var(--gs-space-5) + var(--gs-safe-bottom)); }
@@ -35,5 +35,5 @@ onBeforeUnmount(() => query?.removeEventListener?.('change', sync))
 .filter-sheet-body label { display: grid !important; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .filter-sheet-body label > span { display: inline !important; }
 .filter-sheet-body select, .filter-sheet-body input { width: 100% !important; max-width: none !important; min-height: var(--gs-control-touch) !important; font-size: var(--gs-text-subtitle) !important; }
-.filter-sheet-done { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-6); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-ink); color: var(--gs-paper); font: inherit; font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.filter-sheet-done { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-6); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-weight: var(--gs-weight-semibold); cursor: pointer; }
 </style>

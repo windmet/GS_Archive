@@ -148,7 +148,7 @@ function formatDateTime(timestamp) {
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }
 .ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:var(--gs-text-ui); }
-.ticket-list { list-style:none;padding:0;display:grid;gap:0;border-top:1px solid var(--gs-ink); }
+.ticket-list { list-style:none;padding:0;display:grid;gap:0;border-top:1px solid var(--gs-rule); }
 .ticket-list li { min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
 .ticket-list button { display:block;width:100%;min-height:var(--gs-control-touch);background:transparent;border:0;color:#157a72;text-align:left;cursor:pointer;font:inherit;font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.6;overflow-wrap:anywhere; }
 .ticket-list p { font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);white-space:pre-wrap;color:#627680;line-height:1.7;margin:var(--gs-space-2) 0 0;overflow-wrap:anywhere; }

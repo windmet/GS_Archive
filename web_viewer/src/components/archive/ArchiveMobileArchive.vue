@@ -290,7 +290,7 @@ function timeWindow(topic) {
 .mobile-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: var(--gs-space-1); overflow-x: auto; box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: 0 var(--gs-space-7); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); overscroll-behavior-x: contain; scrollbar-width: none; }
 .mobile-tabs::-webkit-scrollbar { display: none; }
 .mobile-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 0; border-bottom: 2px solid transparent; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
-.mobile-tabs button.active { border-color: var(--gs-ink); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.mobile-tabs button.active { border-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 .mobile-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
 .mobile-content { box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-6) var(--gs-space-7) calc(var(--gs-space-8) + var(--gs-safe-bottom)); }
 .content-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-3); }
@@ -299,7 +299,7 @@ function timeWindow(topic) {
 .unlock-explainer { margin: 0 0 var(--gs-space-3); color: var(--gs-ink-2); }
 .unlock-explainer summary { display: list-item; box-sizing: border-box; min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); cursor: pointer; }
 .unlock-explainer p { margin: 0; padding: 0 0 var(--gs-space-3); font-size: var(--gs-text-ui); line-height: 1.7; }
-.conversation-list, .random-list { border-top: 1px solid var(--gs-ink); }
+.conversation-list, .random-list { border-top: 1px solid var(--gs-rule); }
 .conversation-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto var(--gs-control-touch); align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
 .conversation-row.focused { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
 .conversation-type { display: grid; place-items: center; padding-top: 2px; color: var(--gs-ink-3); }

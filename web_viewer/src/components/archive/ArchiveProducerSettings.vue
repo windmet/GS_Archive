@@ -85,7 +85,7 @@ onMounted(()=>heading.value?.focus({preventScroll:true}))
 .settings-back { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); margin-left: calc(-1 * var(--gs-space-3)); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .settings-notice { margin: var(--gs-space-5) 0 0; padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .settings-group { margin-top: var(--gs-space-9); }
-.settings-group h2 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
+.settings-group h2 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
 .settings-row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 320px); align-items: center; gap: var(--gs-space-5); min-height: 56px; padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
 .settings-row select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .settings-row input[type=checkbox] { justify-self: end; width: 20px; height: 20px; margin: 0; accent-color: var(--gs-mint-ink); }
@@ -104,7 +104,7 @@ onMounted(()=>heading.value?.focus({preventScroll:true}))
 .settings-name :deep(.producer-preview) { padding: var(--gs-space-2) 0 var(--gs-space-2) var(--gs-space-4); border-left: 2px solid var(--gs-mint); border-radius: 0; background: none; font-family: var(--gs-font-jp); }
 .settings-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
 .settings-button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
-.settings-primary { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.settings-primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }
 .settings-reset { margin-left: auto; border-color: transparent; background: none; color: var(--gs-critical); }
 .import-control input { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
 .settings-text-button { min-height: var(--gs-control-touch); margin-top: var(--gs-space-4); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; cursor: pointer; }

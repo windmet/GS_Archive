@@ -201,7 +201,7 @@ function fallbackCardIcon(event, resourceId) {
 .card-rarity-tabs { display: flex; flex-wrap: wrap; gap: var(--gs-space-2); margin-right: auto; }
 .card-rarity-tab { display: inline-flex; align-items: baseline; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); line-height: calc(var(--gs-control-compact) - 2px); cursor: pointer; }
 .card-rarity-tab small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
-.card-rarity-tab.active { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); font-weight: var(--gs-weight-semibold); }
+.card-rarity-tab.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
 .card-rarity-tab.active small { color: inherit; }
 .asset-filter { display: flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .asset-filter select { height: var(--gs-control-compact); max-width: 170px; padding: 0 var(--gs-space-7) 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }

@@ -70,7 +70,7 @@ function chooseIdol() {
 .idol-select-remember input { accent-color: var(--gs-mint-ink); }
 .idol-select-buttons { display: flex; gap: var(--gs-space-3); }
 .idol-select-buttons button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.idol-select-buttons .idol-select-primary { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.idol-select-buttons .idol-select-primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }
 .idol-select-buttons button:disabled { opacity: .45; cursor: default; }
 .idol-select :is(button, input):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @container idol-select (max-width: 560px) {

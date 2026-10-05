@@ -61,7 +61,7 @@ async function jumpToUnit(id){
 .idol-toolbar > span { color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
 .idol-view-switch { display: flex; gap: var(--gs-space-1); padding: var(--gs-space-1); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); }
 .idol-view-switch button { min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-pill); background: none; color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
-.idol-view-switch button[aria-pressed=true] { background: var(--gs-ink); color: var(--gs-paper); }
+.idol-view-switch button[aria-pressed=true] { background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .unit-rail { position: sticky; top: 0; z-index: 2; display: flex; gap: var(--gs-space-3); overflow-x: auto; padding-block: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); scrollbar-width: none; white-space: nowrap; }
 .unit-rail button { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .unit-rail button small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
@@ -71,7 +71,7 @@ async function jumpToUnit(id){
 .roster-filter select { min-width: 0; max-width: 100%; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .idol-sections { display: grid; gap: var(--gs-space-8); padding-block: var(--gs-space-6) var(--gs-space-section); }
 .idol-unit-section { min-width: 0; scroll-margin-top: calc(var(--idol-rail-control-height) + var(--gs-space-3) * 2 + var(--gs-space-3)); }
-.idol-unit-heading { display: flex; align-items: center; gap: var(--gs-space-4); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-ink); }
+.idol-unit-heading { display: flex; align-items: center; gap: var(--gs-space-4); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .idol-unit-heading > img { width: 80px; height: 32px; object-fit: contain; }
 .idol-unit-heading > span { display: flex; flex: 1; align-items: baseline; gap: var(--gs-space-3); min-width: 0; }
 .idol-unit-heading strong { overflow: hidden; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }

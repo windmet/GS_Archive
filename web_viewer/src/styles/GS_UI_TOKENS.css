@@ -10,7 +10,7 @@
 
 :root {
   /* Color. Neutrals lean toward 315 navy; mint is sampled from the in-game nameplate. */
-  --gs-ink: #13213a;              /* text, primary buttons */
+  --gs-ink: #13213a;              /* text only; never a fill (see roles below) */
   --gs-ink-2: #3c4859;            /* secondary text */
   --gs-ink-3: #6a7586;            /* captions, metadata */
   --gs-line: #e2e5eb;             /* hairlines; replaces boxed borders */
@@ -24,6 +24,16 @@
   --gs-chrome-ink-active: #ffffff;
   --gs-chrome-hover: rgb(255 255 255 / 7%);
   --gs-critical: #b8323b;         /* errors that block an action */
+  /* Roles. Components fill by role, never with --gs-ink: solid navy at full strength
+     against the light paper reads as glare when it repeats across chips and tabs. */
+  --gs-selected-bg: var(--gs-mint-wash);   /* chosen chip, tab, segment, row */
+  --gs-selected-ink: var(--gs-mint-ink);
+  --gs-selected-line: var(--gs-mint);      /* its border, or the underline of a tab */
+  --gs-action-bg: #2e4166;                 /* the one primary action on a screen; counts and badges */
+  --gs-action-ink: var(--gs-paper);
+  --gs-play-bg: var(--gs-mint);            /* play / pause: the stage light itself */
+  --gs-play-ink: var(--gs-ink);
+  --gs-rule: #c9ced8;                      /* section rules: one step above a hairline */
   /* Semantic, never decorative. */
   --gs-attr-physical: #c93b42;
   --gs-attr-intelli: #2c62c9;

@@ -796,7 +796,7 @@ function stopChoreography(reset = false) {
 .transport.disabled { pointer-events: none; opacity: 0.55; }
 .transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 44px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); cursor: pointer; }
 .transport button { border-color: transparent; }
-.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; color: var(--gs-paper); border-color: var(--gs-ink); background: var(--gs-ink); }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; color: var(--gs-play-ink); border-color: var(--gs-play-bg); background: var(--gs-play-bg); }
 .transport-divider { width: 1px; height: 38px; background: var(--line); }
 .transport-motion { min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
 .transport-motion span { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
@@ -837,7 +837,7 @@ h2 { margin: 0; color: var(--text); font-size: var(--gs-text-subtitle); font-wei
 .timeline-control { display: grid; gap: 7px; }
 .timeline-control input { width: 100%; margin: 0; accent-color: var(--accent); }
 .timeline-control span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; text-align: right; }
-.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; color: var(--gs-paper); background: var(--gs-ink); border: 1px solid var(--gs-ink); border-radius: var(--gs-radius-control); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; color: var(--gs-play-ink); background: var(--gs-play-bg); border: 1px solid var(--gs-play-bg); border-radius: var(--gs-radius-control); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .playback-section { display: grid; gap: 17px; }
 .playback-buttons { display: flex; gap: 10px; }
 .playback-buttons .wide-play { flex: 1; gap: 8px; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -854,7 +854,7 @@ h2 { margin: 0; color: var(--text); font-size: var(--gs-text-subtitle); font-wei
 @media (hover: hover) and (pointer: fine) {
   .stage-link:hover { background: var(--gs-chrome-hover); color: var(--gs-surface); }
   .text-button:hover, .transport button:hover, .playback-buttons button:hover { background: var(--gs-paper); }
-  .transport .primary-transport:hover, .choreography-play:hover { background: var(--gs-ink-2); }
+  .transport .primary-transport:hover, .choreography-play:hover { box-shadow: 0 0 0 4px var(--gs-mint-wash); }
 }
 
 @media (max-width: 860px) {

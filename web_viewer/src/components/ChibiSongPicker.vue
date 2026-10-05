@@ -127,7 +127,7 @@ function chooseVersion(id) {
 .song-category-filters { display: grid; flex: 0 0 auto; grid-template-columns: repeat(auto-fit, minmax(62px, 1fr)); gap: 4px; margin-top: 8px; }
 .song-category-filters button { min-width: 0; min-height: 44px; padding: 5px 7px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-3); background: var(--gs-surface); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
 .song-category-filters button span { margin-left: 3px; color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: 400; }
-.song-category-filters button[aria-pressed="true"] { border-color: var(--gs-ink); color: var(--gs-paper); background: var(--gs-ink); }
+.song-category-filters button[aria-pressed="true"] { border-color: var(--gs-selected-line); color: var(--gs-selected-ink); background: var(--gs-selected-bg); }
 .song-category-filters button[aria-pressed="true"] span { color: inherit; }
 .song-match-count { flex: 0 0 auto; margin: 8px 0 4px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.4; }
 .song-list { flex: 1 1 auto; min-width: 0; min-height: 44px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--gs-line) transparent; }

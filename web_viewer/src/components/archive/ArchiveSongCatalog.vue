@@ -204,7 +204,7 @@ const filteredSongs = computed(() => {
   font-weight: var(--gs-weight-semibold);
 }
 .song-filters button span { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
-.song-filters button.active { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.song-filters button.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .song-filters button.active span { color: inherit; }
 .song-search {
   display: inline-flex;

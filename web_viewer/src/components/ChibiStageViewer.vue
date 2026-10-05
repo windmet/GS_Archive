@@ -3768,7 +3768,7 @@ function formatTime(milliseconds) {
 .transport { flex: none; width: calc(100% - 24px); min-height: 68px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; margin: 0 12px 12px; padding: 8px 16px; box-sizing: border-box; border-radius: var(--gs-radius-panel); color: var(--gs-ink); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .transport.disabled { opacity: 0.62; }
 .transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); cursor: pointer; }
-.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--gs-play-bg); background: var(--gs-play-bg); color: var(--gs-play-ink); }
 .transport button:disabled { cursor: wait; }
 .transport-copy { display: grid; gap: 5px; }
 .transport-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
@@ -3779,7 +3779,7 @@ function formatTime(milliseconds) {
 .inspector-scroll { flex: 1 1 0; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
 .mobile-panel-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: none; gap: 0; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--gs-surface); }
 .mobile-panel-tabs button { min-width: 0; min-height: 48px; padding: 0 8px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--gs-ink-3); background: transparent; font-size: var(--gs-text-body); cursor: pointer; }
-.mobile-panel-tabs button[aria-pressed="true"] { color: var(--gs-ink); border-bottom-color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.mobile-panel-tabs button[aria-pressed="true"] { color: var(--gs-ink); border-bottom-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
 .inspector-scroll.is-song-panel { display: flex; flex-direction: column; overflow: hidden; }
 .song-section { flex: 1; height: 100%; min-height: 0; }
 .control-section { min-width: 0; padding: 12px 20px; box-sizing: border-box; border-bottom: 1px solid var(--line); }

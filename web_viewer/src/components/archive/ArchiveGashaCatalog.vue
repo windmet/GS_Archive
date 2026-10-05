@@ -102,7 +102,7 @@ function formatDate(timestamp) {
 .catalog-filter { display: flex; align-items: center; gap: var(--gs-space-4); padding-block: var(--gs-space-2) var(--gs-space-3); border-bottom: 1px solid var(--gs-line); }
 .category-tabs { display: flex; flex: 1; gap: var(--gs-space-3); min-width: 0; overflow-x: auto; padding: var(--gs-space-1) 0; scrollbar-width: none; }
 .category-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; font-size: var(--gs-text-ui); white-space: nowrap; }
-.category-tabs button.active { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.category-tabs button.active { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .category-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-variant-numeric: tabular-nums; }
 .category-tabs button.active small { color: inherit; }
 .result-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }

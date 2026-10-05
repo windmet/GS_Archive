@@ -364,7 +364,7 @@ function formatDateTime(timestamp) {
 .derived-badge { background: #fff2d6; color: #8b6413; }
 .episode-section { background: transparent; }
 .episode-count { color: #6f7e85; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); border-top: 1px solid var(--gs-ink); }
+.episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); border-top: 1px solid var(--gs-rule); }
 .episode-list button { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto 28px; align-items: center; gap: var(--gs-space-3); min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
 .episode-list button:disabled { cursor: not-allowed; opacity: .55; }
 .episode-number { color: var(--gs-mint-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }

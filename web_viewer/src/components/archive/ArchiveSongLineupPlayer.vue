@@ -258,7 +258,7 @@ onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 .lineup-gains label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .lineup-gains input { accent-color: var(--gs-mint-ink); }
 .lineup-stage-handoff { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-4); margin-top: var(--gs-space-4); padding-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); }
-.lineup-stage-handoff button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-ink); color: var(--gs-paper); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.lineup-stage-handoff button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .lineup-stage-handoff button:disabled { opacity: .45; cursor: wait; }
 .lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .lineup-evidence { margin-top: var(--gs-space-3); }

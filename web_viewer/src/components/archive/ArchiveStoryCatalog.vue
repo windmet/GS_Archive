@@ -356,7 +356,7 @@ function formatExtraDate(timestamp) {
 <style scoped>
 .catalog-switcher { position: sticky; top: 0; z-index: 30; display: flex; justify-content: center; gap: 2px; padding: 0 var(--gs-space-5); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); }
 .catalog-switcher button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 120px; min-height: var(--gs-control-touch); border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--gs-ink-3); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
-.catalog-switcher button.active { border-color: var(--gs-ink); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
+.catalog-switcher button.active { border-color: var(--gs-selected-line); color: var(--gs-ink); font-weight: var(--gs-weight-semibold); }
 
 .story-footprint .inline-count { margin-inline: var(--gs-space-2); }
 .story-tile.placeholder .story-tile-copy strong { color: var(--gs-ink-3); }

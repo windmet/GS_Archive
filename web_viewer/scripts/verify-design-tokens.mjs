@@ -47,18 +47,30 @@ export function measure(source) {
   return { raw, tiny, hex, radius, breakpoint }
 }
 
+// Hard rule, not a ratchet: --gs-ink is for text. Fills, borders and rules use the role
+// tokens (--gs-selected-*, --gs-action-*, --gs-play-*, --gs-rule), so solid navy cannot
+// creep back into chips and tabs.
+export function inkFills(source) {
+  return [...source.matchAll(/(?:^|[;{\s])((?:background|border|outline|box-shadow)[a-z-]*)\s*:[^;}\n]*var\(--gs-ink\)/g)].map(match => match[1])
+}
+assert.deepEqual(inkFills('a{color:var(--gs-ink);--x:var(--gs-ink)}b{background:var(--gs-ink)}c{border-bottom:1px solid var(--gs-ink);border-color:var(--gs-ink-2)}d{box-shadow:inset 0 0 0 1px var(--gs-ink)}'), ['background', 'border-bottom', 'box-shadow'])
+
 // Self-check so the counter cannot silently pass everything.
 assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0 })
 assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0 })
 assert.deepEqual(measure('@media (max-width: 760px), (pointer:coarse){}@media(min-width:761px) and (max-width:1100px){}@media (max-height: 600px){}@container (max-width: 520px){}@media (max-width: 700px){}@media (min-width:1101px) and (max-width:40em){}').breakpoint, 2)
 
 const current = {}
+const inkMisuse = []
 for (const file of walk(path.join(root, 'src'))) {
   const relative = path.relative(root, file).replaceAll('\\', '/')
   if (relative === 'src/styles/GS_UI_TOKENS.css') continue // the palette itself
-  const counts = measure(readFileSync(file, 'utf8'))
+  const source = readFileSync(file, 'utf8')
+  const counts = measure(source)
   if (METRICS.some(key => counts[key])) current[relative] = counts
+  for (const property of inkFills(source)) inkMisuse.push(`${relative}: ${property}`)
 }
+assert.deepEqual(inkMisuse, [], `--gs-ink is for text; use --gs-selected-*, --gs-action-*, --gs-play-* or --gs-rule:\n${inkMisuse.join('\n')}`)
 
 if (update) {
   writeFileSync(baselinePath, JSON.stringify(current, null, 2) + '\n')
