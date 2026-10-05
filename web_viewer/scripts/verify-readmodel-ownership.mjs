@@ -22,4 +22,26 @@ for (const [ref, view] of [['gashaReadModelCatalog', 'gashas'], ['cardReadModelC
   ['eventReadModelCatalog', 'event_catalog'], ['unitReadModelCatalog', 'unit_catalog'], ['storyReadModelCatalog', 'story_catalog']]) {
   assert.ok(ownersOf(ref).includes(view), `${ref} must survive on its own listing view '${view}'`)
 }
+// The story home (portal mode, no domain) renders chapters, events and unit prequels from the
+// full directory; only the main/extra/birthday landings may skip it.
+{
+  const vm = await import('node:vm')
+  const { ref } = await import('vue')
+  const start = app.indexOf('watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {')
+  const end = app.indexOf('\n})', start)
+  assert.ok(start >= 0 && end > start, 'story directory watcher exists')
+  const body = app.slice(app.indexOf('{', start) + 1, end)
+  function loads(viewName, mode, domain, idol) {
+    let calls = 0
+    const context = vm.createContext({ view: ref(viewName), currentStoryMode: ref(mode), currentStoryDomain: ref(domain), currentCharacterId: ref(idol),
+      navigation: { getLoadOptions: () => ({}) }, storyReadModelStatus: ref(''), loadStoryReadModelCatalog: () => { calls++; return Promise.resolve([]) } })
+    vm.runInContext(`(() => {${body}\n})()`, context)
+    return calls === 1
+  }
+  assert.equal(loads('story_catalog', 'portal', '', ''), true, 'story home loads the directory')
+  assert.equal(loads('story_catalog', 'search', 'event', ''), true)
+  assert.equal(loads('story_catalog', 'portal', 'main', '001tom'), true, 'idol scope always needs the directory')
+  for (const domain of ['main', 'extra', 'birthday']) assert.equal(loads('story_catalog', 'portal', domain, ''), false, `${domain} landing uses its own projection`)
+  assert.equal(loads('cards', 'portal', '', ''), false)
+}
 console.log(`Read-model ownership: ${entries.length} entries name only real views; each listing view keeps its catalogue`)

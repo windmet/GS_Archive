@@ -2870,8 +2870,11 @@ function openExternalStoryInternal(entry) {
     storyFile: target.storyFile, parent: 'external_story_resources' })
 }
 
+// The domain landings (main / extra / birthday) render from their own landing projections;
+// every other story view, including the default story home, reads the full directory.
 watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {
-  if (view.value !== 'story_catalog' || (currentStoryMode.value !== 'search' && !currentCharacterId.value)) return
+  const landingOnly = currentStoryMode.value === 'portal' && !currentCharacterId.value && currentStoryDomain.value
+  if (view.value !== 'story_catalog' || landingOnly) return
   const options = navigation.getLoadOptions()
   void loadStoryReadModelCatalog(options).catch(error => {
     if (!options.signal?.aborted) storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
