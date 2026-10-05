@@ -38,6 +38,7 @@
         </button>
       </div>
 
+      <ArchiveFilterSheet title="筛选卡片" title-id="card-filter-title" :active-count="activeFilterCount">
       <label class="asset-filter">
         <span>属性</span>
         <select aria-label="卡片属性" :value="currentAttribute" @change="emit('select-attribute', $event.target.value)">
@@ -63,6 +64,7 @@
           </option>
         </select>
       </label>
+      </ArchiveFilterSheet>
 
       <div class="card-layout-toggle" aria-label="视图模式">
         <button
@@ -104,10 +106,7 @@
           <span class="card-title" :title="archiveText('card', card.title, 'title')">{{ archiveText('card', card.title, 'title') || '卡名待确认' }}</span>
           <span class="card-owner-name">{{ idolName(card.character_id) || card.ownerReference?.displayName || '姓名待确认' }}</span>
         </span>
-        <span class="card-counts">
-          <span :aria-label="`${card.home_voice_count ?? card.home_voice_cues?.length ?? 0} 段触摸语音`"><Mic :size="12" aria-hidden="true" /> {{ card.home_voice_count ?? card.home_voice_cues?.length ?? 0 }}<span class="count-label"> 段语音</span></span>
-          <span :aria-label="`${card.scenario_count ?? card.scenario_entries?.length ?? 0} 篇剧情`"><BookOpen :size="12" aria-hidden="true" /> {{ card.scenario_count ?? card.scenario_entries?.length ?? 0 }}<span class="count-label"> 篇剧情</span></span>
-        </span>
+        <span class="card-counts">{{ cardCounts(card) }}</span>
         <ChevronRight class="card-row-arrow" :size="17" aria-hidden="true" />
       </button>
     </div>
@@ -115,14 +114,16 @@
 </template>
 
 <script setup>
-import { BookOpen, ChevronRight, LayoutGrid, List, Mic } from '@lucide/vue'
+import { computed } from 'vue'
+import { ChevronRight, LayoutGrid, List } from '@lucide/vue'
+import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import {archiveText} from './useArchiveCardTitle.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import { attributeLabel } from '../../presentation/AttributeLabel.js'
 
-defineProps({
+const props = defineProps({
   title: { type: String, default: '' },
   cards: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' },
@@ -168,6 +169,14 @@ const relationStateOptions = [
   { id: 'unrelated', label: '暂无直接关联' },
 ]
 
+const activeFilterCount = computed(() => [props.currentAttribute, props.currentAssetState, props.currentRelationState].filter(value => value !== 'all').length)
+// Counts read as words; a zero is simply left out.
+function cardCounts(card) {
+  const voices = card.home_voice_count ?? card.home_voice_cues?.length ?? 0
+  const stories = card.scenario_count ?? card.scenario_entries?.length ?? 0
+  return [voices && `${voices} 段语音`, stories && `${stories} 篇剧情`].filter(Boolean).join(' · ')
+}
+
 function fallbackCardIcon(event, resourceId) {
   const img = event?.target
   if (!img) return
@@ -209,8 +218,7 @@ function fallbackCardIcon(event, resourceId) {
 .card-main { display: grid; gap: var(--gs-space-1); min-width: 0; }
 .card-title { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .card-owner-name { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
-.card-counts { display: flex; align-items: center; gap: var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
-.card-counts > span { display: inline-flex; align-items: center; gap: var(--gs-space-1); }
+.card-counts { color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .card-row-arrow { display: none; }
 
 /* Grid: the card icon carries the tile; no frame around it. */
@@ -218,7 +226,6 @@ function fallbackCardIcon(event, resourceId) {
 .layout-grid .card-archive-row { display: flex; flex-direction: column; align-items: stretch; gap: var(--gs-space-2); min-height: 0; padding: 0; border: 0; }
 .layout-grid .card-thumb { width: 100%; height: auto; aspect-ratio: 1; }
 .layout-grid .card-rarity { font-size: var(--gs-text-ui); }
-.layout-grid .card-counts { gap: var(--gs-space-3); }
 @media (hover: hover) {
   .card-archive-row:hover .card-title { color: var(--gs-mint-ink); }
   .card-rarity-tab:hover:not(.active) { border-color: var(--gs-ink-3); }
@@ -232,21 +239,18 @@ function fallbackCardIcon(event, resourceId) {
   .card-idol-heading :deep(.idol-switcher label > span) { display: none; }
   .card-idol-heading :deep(.idol-switcher select) { min-width: 0; height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .card-idol-heading :deep(.idol-switcher > button) { width: var(--gs-control-touch); height: var(--gs-control-touch); flex-basis: var(--gs-control-touch); }
-  .embedded-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: var(--gs-space-2); padding: var(--gs-space-2) var(--gs-space-5) var(--gs-space-3); }
-  .card-rarity-tabs { grid-column: 1 / -1; flex-wrap: nowrap; margin: 0; overflow-x: auto; scrollbar-width: none; }
+  .embedded-filters { gap: var(--gs-space-3); padding: var(--gs-space-2) var(--gs-space-5) var(--gs-space-3); }
+  .card-rarity-tabs { flex: 1 0 100%; flex-wrap: nowrap; margin: 0; overflow-x: auto; scrollbar-width: none; }
+  .embedded-filters :deep(.filter-sheet-trigger) { margin-right: auto; }
   .card-rarity-tabs::-webkit-scrollbar { display: none; }
   .card-rarity-tab { flex: 0 0 auto; min-height: var(--gs-control-touch); line-height: calc(var(--gs-control-touch) - 2px); white-space: nowrap; }
-  .asset-filter { min-width: 0; }
-  .asset-filter > span { display: none; }
-  .asset-filter select { width: 100%; max-width: none; height: var(--gs-control-touch); font-size: var(--gs-text-ui); }
   .card-layout-toggle button { width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .card-archive-list { grid-template-columns: minmax(0, 1fr); padding: var(--gs-space-2) var(--gs-space-5) calc(var(--gs-space-8) + env(safe-area-inset-bottom)); }
   .card-archive-row { grid-template-columns: 56px minmax(0, 1fr) 18px; grid-template-rows: auto auto; gap: var(--gs-space-1) var(--gs-space-4); }
   .card-thumb { grid-row: 1 / 3; }
   .card-rarity { display: none; }
   .card-main { grid-column: 2; grid-row: 1; align-self: end; }
-  .card-counts { grid-column: 2; grid-row: 2; gap: var(--gs-space-3); }
-  .count-label { display: none; }
+  .card-counts { grid-column: 2; grid-row: 2; }
   .card-row-arrow { display: block; grid-column: 3; grid-row: 1 / 3; align-self: center; color: var(--gs-ink-3); }
   .card-archive-list.layout-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5) var(--gs-space-4); }
   .layout-grid .card-rarity { display: inline; }

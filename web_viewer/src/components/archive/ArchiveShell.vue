@@ -479,7 +479,9 @@ const mobileNavigation = computed(() => {
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) {grid-template-columns:44px minmax(0,1fr) 48px;}
  .is-compact-mobile .archive-heading {grid-column:2;grid-row:1;min-width:0;text-align:center;}
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) .archive-heading {grid-column:2;}
- .is-compact-mobile .archive-topbar h1 {font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+ /* A long entity name wraps to a second line inside the 48px bar instead of being cut off. */
+ .is-compact-mobile .archive-topbar h1 {display:-webkit-box;font-size:var(--gs-text-subtitle);line-height:1.3;overflow:hidden;white-space:normal;overflow-wrap:anywhere;-webkit-box-orient:vertical;-webkit-line-clamp:2;}
+ .is-compact-mobile .archive-heading {align-self:center;}
  .is-compact-mobile .archive-heading :deep(.archive-breadcrumb),.is-compact-mobile :deep(.archive-back span) {display:none;}
  .is-compact-mobile .archive-topbar :deep(.archive-back) {width:44px;padding:0;}
  .is-compact-mobile .archive-header-actions :deep(.archive-language-switch) {grid-column:4;grid-row:1;}

@@ -6,16 +6,12 @@
         <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
       </div>
       <div class="gasha-summary">
-        <div class="gasha-kicker">
-          <small class="curated">{{ categoryLabel(gasha.category) }}</small>
-          <small v-if="gasha.is_reprint" class="reprint">复刻</small>
-        </div>
         <h2>{{ gashaText(gasha.display_name) }}</h2>
         <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
+        <p class="gasha-category">{{ categoryLabel(gasha.category) }}<template v-if="gasha.is_reprint"> · 复刻</template></p>
         <dl>
           <div><dt>开放</dt><dd>{{ formatDateTime(gasha.start_at) }}</dd></div>
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
-          <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         </dl>
         <ArchiveSourceLink :url="gasha.name_source?.source_url" :label="gasha.name_source?.source_label || '名称核对来源'" />
       </div>
@@ -34,7 +30,7 @@
           <h3>关联卡片</h3>
           <p>{{ relationDescription }}</p>
         </div>
-        <span class="derived-badge">{{ relationBadge }} · {{ pickupCards.length }}</span>
+        <span class="relation-count">{{ pickupCards.length }} 张 · {{ relationBadge }}</span>
       </div>
       <ArchiveRelationList
         layout="grid"
@@ -45,6 +41,7 @@
 
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
       <dl class="evidence-grid">
+        <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'游戏内主数据' }}</dd></div>
         <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
         <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
@@ -108,14 +105,12 @@ const relationEvidence = computed(() => {
 const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,
   kind: 'card',
-  label: usesRelatedCards.value ? relationBadge.value : '卡池 Pickup',
+  label: usesRelatedCards.value ? relationBadge.value : '',
   title: cardText('card',card.card_title,'title') || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
   evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
   evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
   evidence: relationEvidence.value,
-  statusLabel: '已建档',
-  statusTone: 'available',
   resource: card.card_resource_id,
   imageUrl: getCardIconUrl(card.card_resource_id, true),
   imageAlt: card.card_title || '卡名待确认',
@@ -146,10 +141,6 @@ function formatDateTime(timestamp) {
 .gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: #eef1f2; }
 .gasha-banner img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .gasha-summary { min-width: 0; padding-top: var(--gs-space-2); }
-.gasha-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); color: #1c8880; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-heavy); }
-.gasha-kicker small { padding: var(--gs-space-1) 5px; border-radius: var(--gs-radius-control); background: #eef1f3; color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
-.gasha-kicker small.curated { background: #e8f7f5; color: #177b74; }
-.gasha-kicker small.reprint { background: #fff0db; color: #965f13; }
 .gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
 .gasha-original { color:#71818b;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
 .gasha-note { color:var(--gs-color-muted);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
@@ -173,10 +164,11 @@ function formatDateTime(timestamp) {
 .detail-section + .detail-section { margin-top: var(--gs-space-4); }
 .section-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-5); }
 .section-heading > div { flex: 1 1 240px; min-width: 0; }
-.section-heading > span:not(.derived-badge) { font-size: var(--gs-text-meta); }
+.section-heading > span { font-size: var(--gs-text-meta); }
+.gasha-category { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.relation-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
 .section-heading h3 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .section-heading p { margin: var(--gs-space-2) 0 0; color: var(--gs-color-muted); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.6; }
-.derived-badge { flex: 0 0 auto; max-width: 100%; padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); background: #fff2d6; color: #8b6413; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; }
 .evidence-grid div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid #edf0f2; }
 .evidence-grid dt { color: #7d898f; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }

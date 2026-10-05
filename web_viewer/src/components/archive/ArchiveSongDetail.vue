@@ -32,7 +32,7 @@
       <div class="song-record-column">
       <section v-if="song.gameplay" class="song-block song-gameplay">
         <div class="song-block-heading"><h3>难度与解锁</h3></div>
-        <p class="song-block-note">{{ song.gameplay.releaseCondition.label }}</p>
+        <p class="song-block-note">{{ releaseConditionLabel }}</p>
         <details class="song-history"><summary>实装与解锁历史</summary>
           <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">历史来源</a></p>
           <p class="song-block-note">{{ song.gameplay.history.historicalUnlock }}</p>
@@ -110,6 +110,11 @@ const implementationDateLabel = computed(() => {
   const fallback = props.song.openDate
   if (fallback === '初始收录') return fallback
   return !fallback || ['未收录', '特殊版本'].includes(fallback) ? '实装日期未收录' : `${fallback} 实装`
+})
+// The catalogue writes "当前主数据：已开放" for songs with no unlock step; readers just need to know that.
+const releaseConditionLabel = computed(() => {
+  const condition = props.song.gameplay?.releaseCondition
+  return condition?.storySectionId ? condition.label : '无需解锁'
 })
 const songPlayer = ref(null)
 const songScrollContainer = ref(null), songListenColumn = ref(null)
@@ -206,7 +211,7 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .badge-attribute[data-song-attribute="Physical"] { color: var(--gs-attr-physical); }
 .badge-attribute[data-song-attribute="Intelli"] { color: var(--gs-attr-intelli); }
 .badge-attribute[data-song-attribute="Mental"] { color: var(--gs-attr-mental); }
-.song-detail-date { margin-left: auto; color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.song-detail-date { margin-left: auto; color: var(--gs-ink-3); font-size: var(--gs-text-ui); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-parent-link { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .song-parent-link:hover { text-decoration: underline; }
 

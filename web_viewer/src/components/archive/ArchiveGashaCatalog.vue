@@ -1,20 +1,9 @@
 <template>
   <section class="gasha-catalog" data-archive-scroll-container :aria-busy="busy">
-    <div class="catalog-summary">
-      <div>
-        <strong>{{ loaded ? totalGashas : '—' }}</strong>
-        <span>卡池记录</span>
-      </div>
-      <div>
-        <strong>{{ loaded ? announcementCount : '—' }}</strong>
-        <span>公告记录</span>
-      </div>
-      <div>
-        <strong>{{ loaded ? pickupCount : '—' }}</strong>
-        <span>新卡关联</span>
-      </div>
-      <div><strong>{{ loaded ? supplementCount : '—' }}</strong><span>道具补录</span></div>
-    </div>
+    <ul class="catalog-footprint" aria-label="卡池收录">
+      <li><b>{{ loaded ? totalGashas : '—' }}</b>个卡池</li>
+      <li><b>{{ loaded ? announcementCount : '—' }}</b>条公告</li>
+    </ul>
 
     <div class="catalog-filter">
       <div class="category-tabs" role="group" aria-label="卡池类型">
@@ -30,7 +19,7 @@
           <small>{{ option.count }}</small>
         </button>
       </div>
-      <span class="result-count">{{ loaded ? `${gashas.length} / ${totalGashas}` : '结果数量尚未读取' }}</span>
+      <span v-if="loaded && gashas.length !== totalGashas" class="result-count">{{ gashas.length }} 个结果</span>
     </div>
 
     <p v-if="status || !loaded" class="catalog-status" role="status">{{ status || '正在读取卡池目录…' }}<button v-if="!loaded && !busy" type="button" @click="emit('retry')">重试卡池目录</button></p>
@@ -48,14 +37,9 @@
           <span v-else class="ticket-banner-label">抽取道具记录</span>
         </span>
         <span class="gasha-copy">
-          <span class="gasha-heading">
-            <strong :title="gasha.display_name">{{ gashaText(gasha.display_name) }}</strong>
-            <span class="gasha-badges">
-              <small class="type-badge">{{ categoryLabel(gasha.category) }}</small>
-              <small v-if="gasha.is_reprint" class="reprint-badge">复刻</small>
-            </span>
-          </span>
+          <strong :title="gasha.display_name">{{ gashaText(gasha.display_name) }}</strong>
           <span class="gasha-meta">
+            <span>{{ categoryLabel(gasha.category) }}<template v-if="gasha.is_reprint"> · 复刻</template></span>
             <span>{{ formatDate(gasha.start_at) }}</span>
             <span v-if="gasha.source_type!=='item-masterdata'">{{ pickupCardCount(gasha) }} 张关联卡</span>
             <span v-if="gasha.tickets?.length">{{ gasha.tickets.length }} 种抽取道具</span>
@@ -109,58 +93,39 @@ function formatDate(timestamp) {
 </script>
 
 <style scoped>
-.gasha-catalog { height: 100%; overflow-y: auto; background: var(--gs-paper); font-family: var(--gs-font-directory); font-size: var(--gs-text-body); }
+/* Gasha catalogue: a footprint line, one scrolling row of types, then hairline banner rows. */
+.gasha-catalog { height: 100%; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); container: gasha-catalog / inline-size; }
 .gasha-catalog button { font: inherit; }
-.catalog-summary { display: flex; flex-wrap: wrap; gap: var(--gs-space-7); padding: var(--gs-space-5) var(--gs-space-6); border-bottom: 1px solid #e3e8eb; background: #fff; }
-.catalog-summary div { display: flex; align-items: baseline; gap: 7px; }
-.catalog-summary strong { color: #1b7772; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-bold); font-variant-numeric: tabular-nums; }
-.catalog-summary span { color: #758088; font-size: var(--gs-text-meta); }
-.catalog-filter { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 20px; border-bottom: 1px solid #e3e8eb; background: #fff; }
-.category-tabs { display: flex; align-items: center; gap: 3px; min-width: 0; overflow-x: auto; }
-.category-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: var(--gs-space-2) var(--gs-space-3); border: 1px solid transparent; border-radius: var(--gs-radius-control); background: transparent; color: #657179; cursor: pointer; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); white-space: nowrap; }
-.category-tabs button.active { border-color: #aedbd7; background: #eaf7f5; color: var(--gs-mint-ink); }
-.category-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); font-variant-numeric: tabular-nums; }
-.category-tabs button.active small { color: #4d8d88; }
-.result-count { flex: 0 0 auto; color: #879299; font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
-.catalog-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); margin: 0; padding: var(--gs-space-5) var(--gs-space-6); color: #60758a; font-size: var(--gs-text-body); line-height: 1.6; }
-.catalog-status button { min-height: var(--gs-control-normal); padding: var(--gs-space-2) var(--gs-space-4); border: 1px solid #aedbd7; border-radius: var(--gs-radius-control); background: #fff; color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
-.gasha-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; padding: 16px 20px 28px; }
-.gasha-item { display: grid; grid-template-columns: 178px minmax(0, 1fr) 20px; align-items: center; gap: 13px; min-width: 0; min-height: 116px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: #27343b; cursor: pointer; text-align: left; transition: border-color 0.15s, box-shadow 0.15s; }
-.gasha-catalog button:focus-visible { outline: var(--gs-focus-ring) solid #00a876; outline-offset: var(--gs-focus-offset); }
+.catalog-footprint, .catalog-filter, .catalog-status, .gasha-grid { max-width: var(--gs-content-width); margin-inline: auto; padding-inline: var(--gs-space-7); box-sizing: border-box; }
+.catalog-footprint { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); margin-block: 0; padding-block: var(--gs-space-6) var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-ui); list-style: none; }
+.catalog-footprint b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+.catalog-filter { display: flex; align-items: center; gap: var(--gs-space-4); padding-block: var(--gs-space-2) var(--gs-space-3); border-bottom: 1px solid var(--gs-line); }
+.category-tabs { display: flex; flex: 1; gap: var(--gs-space-3); min-width: 0; overflow-x: auto; padding: var(--gs-space-1) 0; scrollbar-width: none; }
+.category-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; min-height: var(--gs-control-compact); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; font-size: var(--gs-text-ui); white-space: nowrap; }
+.category-tabs button.active { border-color: var(--gs-ink); background: var(--gs-ink); color: var(--gs-paper); }
+.category-tabs small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-variant-numeric: tabular-nums; }
+.category-tabs button.active small { color: inherit; }
+.result-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.catalog-status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-4); margin-block: 0; padding-block: var(--gs-space-5); color: var(--gs-ink-2); line-height: 1.6; }
+.catalog-status button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; }
+.gasha-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); column-gap: var(--gs-space-8); padding-block: var(--gs-space-2) var(--gs-space-9); }
+.gasha-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: inherit; cursor: pointer; text-align: left; }
+.gasha-item > svg { color: var(--gs-ink-3); }
+.banner-frame { display: block; overflow: hidden; aspect-ratio: 940 / 510; border-radius: var(--gs-radius-media); background: var(--gs-line); }
+.banner-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ticket-banner-label { display: grid; height: 100%; place-items: center; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.gasha-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
+.gasha-copy strong { display: -webkit-box; overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.gasha-meta { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.gasha-catalog button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 /* The horizontal rail clips an outer ring; keep this control's ring inside. */
 .category-tabs button:focus-visible { outline-offset: calc(-1 * var(--gs-focus-ring)); }
-.category-tabs button:active,.gasha-item:active,.catalog-status button:active { background: #eaf7f5; }
-@media (hover:hover) and (pointer:fine) {
-  .category-tabs button:not(.active):hover:not(:active) { background: #f3f6f7; color: #34454d; }
-  .gasha-item:hover { border-color: #85cbc6; }
-}
-.gasha-item > svg { color: #8a969c; }
-.banner-frame { display: block; width: 178px; aspect-ratio: 940 / 510; overflow: hidden; border: 1px solid #e6e8e9; border-radius: 4px; background: #eef1f2; }
-.banner-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.ticket-banner-label { display:grid;height:100%;place-items:center;color:#607e80;font-size:var(--gs-text-ui); }
-.gasha-copy { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.gasha-heading { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.gasha-heading strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); line-height: 1.45; text-overflow: ellipsis; white-space: nowrap; }
-.gasha-badges { display: flex; flex-wrap: wrap; gap: 4px; }
-.gasha-badges small { padding: 2px 5px; border-radius: 3px; font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
-.type-badge { background: var(--gs-mint-wash); color: #187b74; }
-.reprint-badge { background: #fff0db; color: #965f13; }
-.gasha-meta { display: flex; flex-wrap: wrap; gap: 5px 10px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.gasha-meta code { color: #5d6a72; font-size: var(--gs-text-meta); }
-@media (max-width: 760px),(pointer:coarse) {
-  .category-tabs button,.catalog-status button { min-width: var(--gs-control-touch); min-height: var(--gs-control-touch); }
-}
-@media (max-width: 760px) {
-  .catalog-summary { gap: 16px; padding: 12px; }
-  .catalog-filter { align-items: flex-start; padding: 8px 10px; }
-  .catalog-summary div { align-items: flex-start; flex-direction: column; gap: 1px; }
-  .gasha-grid { grid-template-columns: 1fr; padding: 10px 10px 22px; }
-  .gasha-item { grid-template-columns: 126px minmax(0, 1fr) 16px; min-height: 92px; padding: 8px; }
-  .banner-frame { width: 126px; }
-}
-@media (max-width: 430px) {
-  .gasha-item { grid-template-columns: minmax(0, 1fr) 18px; }
-  .banner-frame { grid-column: 1 / -1; width: 100%; }
-  .gasha-heading strong { white-space: normal; }
+@media (hover: hover) { .gasha-item:hover strong { color: var(--gs-mint-ink); } .category-tabs button:not(.active):hover { border-color: var(--gs-ink-3); } }
+@container gasha-catalog (max-width: 560px) {
+  .catalog-footprint, .catalog-filter, .catalog-status, .gasha-grid { padding-inline: var(--gs-space-5); }
+  .catalog-footprint { padding-top: var(--gs-space-4); }
+  .category-tabs button, .catalog-status button { min-height: var(--gs-control-touch); }
+  .gasha-grid { grid-template-columns: 1fr; }
+  .gasha-item { grid-template-columns: 96px minmax(0, 1fr) 16px; gap: var(--gs-space-4); }
 }
 </style>

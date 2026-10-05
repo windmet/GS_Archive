@@ -340,11 +340,11 @@ function formatDateTime(timestamp) {
 .event-summary dl div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid #edf0f2; }
 .event-summary dt { color: #849097; font-size: var(--gs-text-meta); }
 .event-summary dd { margin: 0; color: #36474f; font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.story-band { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: var(--gs-mint-wash); }
+.story-band { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: none; }
 .story-band > div { min-width: 0; }
-.story-band > div > span { color: #147d76; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.story-band > div > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .story-band h3 { margin: var(--gs-space-3) 0 var(--gs-space-2); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
-.story-band p { max-width: 800px; margin: 0; color: #405159; font-size: var(--gs-text-body); line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
+.story-band p { max-width: 800px; margin: 0; padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
 .story-actions { display: grid; flex: 0 0 auto; gap: var(--gs-space-3); min-width: 174px; max-width: 100%; }
 .story-actions > button, .story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid #158f87; border-radius: var(--gs-radius-control); background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
 .story-actions > button svg, .story-actions > a svg { flex: 0 0 auto; }

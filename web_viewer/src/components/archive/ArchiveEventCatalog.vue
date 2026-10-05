@@ -1,20 +1,22 @@
 <template>
   <article class="event-catalog" data-archive-scroll-container :aria-busy="busy">
     <ArchiveCatalogScope :idol="scopeIdol" :name="scopeIdol ? idolName(scopeIdol.id) : ''" @clear="emit('clear-idol')" />
-    <div class="catalog-summary"><div><strong>{{ ready ? rows.length : '—' }}</strong><span>历史活动</span></div><div><strong>{{ ready ? storyCount : '—' }}</strong><span>关联剧情</span></div><div><strong>{{ ready ? reprintCount : '—' }}</strong><span>复刻活动</span></div></div>
+    <ul class="catalog-footprint" aria-label="活动收录"><li><b>{{ ready ? rows.length : '—' }}</b>历史活动</li><li><b>{{ ready ? storyCount : '—' }}</b>段关联剧情</li><li v-if="ready && reprintCount"><b>{{ reprintCount }}</b>次复刻</li></ul>
     <p v-if="busy" role="status">正在读取活动一览…</p>
     <p v-if="error" role="alert">{{ error }} <button @click="load">重试</button></p>
     <div class="catalog-filter">
-      <label>搜索<input :value="query" placeholder="活动名称或编号" @input="emit('query',$event.target.value)" /></label>
-      <label>活动形式<select v-model="eventKind"><option value="">全部</option><option v-for="(label,id) in eventKindLabels" :key="id" :value="id">{{ label }}</option></select></label>
-      <label>排序<select v-model="sort"><option value="newest">最新优先</option><option value="oldest">最早优先</option></select></label>
+      <label class="catalog-search"><span>搜索</span><input :value="query" type="search" placeholder="活动名称或编号" @input="emit('query',$event.target.value)" /></label>
+      <ArchiveFilterSheet title="筛选活动" title-id="event-filter-title" :active-count="(eventKind ? 1 : 0) + (sort !== 'newest' ? 1 : 0)">
+        <label><span>活动形式</span><select v-model="eventKind"><option value="">全部</option><option v-for="(label,id) in eventKindLabels" :key="id" :value="id">{{ label }}</option></select></label>
+        <label><span>排序</span><select v-model="sort"><option value="newest">最新优先</option><option value="oldest">最早优先</option></select></label>
+      </ArchiveFilterSheet>
       <span>{{ ready ? `${filtered.length} 条结果` : busy ? '正在读取…' : '结果暂不可用' }}</span>
     </div>
     <div class="event-grid">
       <button v-for="row in visible" :key="row.id" type="button" class="event-item" :data-archive-focus-id="`event:${row.id}`" @click="select(row)">
         <EventResourceImage :binding="row.resources?.hero || row.image" :name="row.title" />
         <span class="event-copy"><strong>{{ row.title }}</strong>
-          <span class="badges"><small>{{ eventKindLabels[row.eventKind] }}</small><small v-if="row.isReprint" class="reprint">复刻</small></span>
+          <span class="event-meta">{{ eventKindLabels[row.eventKind] }}<template v-if="row.isReprint"> · 复刻</template></span>
           <span class="event-meta">{{ historicalDate(row.release_at) }}<template v-if="row.resources?.endAt"> — {{ historicalDate(row.resources.endAt) }}</template></span>
           <span class="event-meta">{{ row.resources?.episodeCount ? `${row.resources.episodeCount} 章剧情` : row.eventKind==='collection' ? '道具收集兑换' : ['valentine','whiteday'].includes(row.eventKind) ? '季节企划' : '暂无剧情记录' }} · {{ row.resources?.exchangeRewards ? `${row.resources.exchangeRewards.cards.length} 张兑换卡（Wiki）` : row.resources?.rewardCardCount ? `${row.resources.rewardCardCount} 张报酬卡` : row.eventKind==='collection' ? '兑换报酬待补录' : '暂无报酬卡记录' }}</span>
         </span><ChevronRight :size="16" />
@@ -31,6 +33,7 @@ import {eventKindLabels,historicalDate} from './DomainPresentation.mjs'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {eventResources} from '../../data/eventResourceGraph.js'
 import EventResourceImage from './EventResourceImage.vue'
+import ArchiveFilterSheet from './ArchiveFilterSheet.vue'
 import ArchiveCatalogScope from './ArchiveCatalogScope.vue'
 import { eventMatchesIdol, idolEventIds } from '../../presentation/CatalogIdolScope.js'
 const props=defineProps({scopeIdol:{type:Object,default:null},idolName:{type:Function,default:()=>''},loadIdol:Function,client:Object,bootstrap:Object,query:{type:String,default:''},browseState:{type:Object,default:()=>({kind:'',sort:'newest',page:0})}})
@@ -75,14 +78,38 @@ watch(()=>[ready.value,page.value,pages.value],([isReady,current,total])=>{if(is
 watch(()=>props.scopeIdol?.id,load,{immediate:true})
 </script>
 <style scoped>
-.event-catalog{height:100%;overflow-y:auto;background:var(--gs-paper);color:#27343b;font-family:var(--gs-font-directory);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular)}.catalog-summary{display:flex;gap:28px;padding:var(--gs-space-5) var(--gs-space-6);background:transparent;border-bottom:1px solid var(--gs-line)}.catalog-summary div{display:flex;gap:7px;align-items:baseline}.catalog-summary strong{color:#1b7772;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-bold)}.catalog-summary span,.catalog-filter>span{color:#758088;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular)}.catalog-filter{display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-4);padding:var(--gs-space-4) var(--gs-space-6);background:transparent;border-bottom:1px solid var(--gs-line)}.catalog-filter label{display:flex;gap:var(--gs-space-3);align-items:center;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold)}.catalog-filter input,.catalog-filter select{min-height:var(--gs-control-normal);max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);padding:6px 9px;font:inherit;background:var(--gs-surface);color:#34454d;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular)}.catalog-filter>span{margin-left:auto}.event-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:var(--gs-space-4);padding:16px 20px 28px}.event-item{display:grid;grid-template-columns:178px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);padding:var(--gs-space-3) 0;min-width:0;border:0;border-bottom:1px solid var(--gs-line);border-radius:0;background:none;color:inherit;text-align:left;cursor:pointer;font:inherit}.event-item:hover strong{color:var(--gs-mint-ink)}.event-copy{display:flex;flex-direction:column;gap:var(--gs-space-3);min-width:0}.event-copy strong{font-size:15px;line-height:1.5;overflow-wrap:anywhere;font-weight:var(--gs-weight-bold)}.badges{display:flex;gap:5px;flex-wrap:wrap}.badges small{color:var(--gs-mint-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold)}.badges .reprint{color:var(--gs-attr-mental)}.event-meta{font-size:var(--gs-text-meta);line-height:1.5;color:#75838b;font-weight:var(--gs-weight-regular)}.pagination{display:flex;justify-content:center;align-items:center;gap:var(--gs-space-5);padding:0 var(--gs-space-6) var(--gs-space-7);font-size:var(--gs-text-ui)}.pagination button{border:1px solid var(--gs-line);background:var(--gs-surface);border-radius:var(--gs-radius-control);padding:9px 14px;color:#187b74;cursor:pointer;font:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);min-height:var(--gs-control-normal)}.pagination button:disabled{opacity:.45;cursor:default}.empty{padding:var(--gs-space-6)}.event-catalog>p[role]{padding:var(--gs-space-4) var(--gs-space-6)}
-@media(max-width:760px){.catalog-summary{gap:18px;padding:var(--gs-space-4)}.catalog-summary div{flex-direction:column;gap:var(--gs-space-1)}.catalog-filter{padding:10px;gap:10px}.catalog-filter label{flex:1 1 140px;min-width:0;flex-wrap:wrap}.catalog-filter input,.catalog-filter select{width:100%;min-width:0}.event-grid{grid-template-columns:1fr;padding:10px}.event-item{grid-template-columns:126px minmax(0,1fr) 16px;gap:10px}}
-@media(max-width:430px){.event-item{grid-template-columns:minmax(0,1fr) 16px}.event-item>.resource-image{grid-column:1/-1}}
-
-.event-catalog>p[role] button{font:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);min-height:var(--gs-control-normal);}
-@media(max-width:760px), (pointer:coarse){
- .catalog-filter input,.catalog-filter select{min-height:var(--gs-control-touch);font-size:var(--gs-text-subtitle);}
- .pagination button,.event-catalog>p[role] button{min-height:var(--gs-control-touch);}
- .event-catalog>p[role] button{min-width:var(--gs-control-touch);}
+/* Event catalogue: footprint, one search line (other filters in the sheet on phones), hairline rows. */
+.event-catalog { height: 100%; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); container: event-catalog / inline-size; }
+.catalog-footprint, .catalog-filter, .event-grid, .pagination, .event-catalog > p[role], .empty { max-width: var(--gs-content-width); margin-inline: auto; padding-inline: var(--gs-space-7); box-sizing: border-box; }
+.catalog-footprint { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); margin-block: 0; padding-block: var(--gs-space-6) var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-ui); list-style: none; }
+.catalog-footprint b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+.catalog-filter { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-3) var(--gs-space-5); padding-block: var(--gs-space-2) var(--gs-space-4); border-bottom: 1px solid var(--gs-line); }
+.catalog-filter label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.catalog-filter .catalog-search { flex: 1 1 260px; }
+.catalog-search > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.catalog-filter input, .catalog-filter select { min-height: var(--gs-control-normal); max-width: 100%; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.catalog-filter > span { margin-left: auto; padding-bottom: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); column-gap: var(--gs-space-8); padding-block: var(--gs-space-2) var(--gs-space-8); }
+.event-item { display: grid; grid-template-columns: 160px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); min-width: 0; padding: var(--gs-space-4) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.event-item > svg { color: var(--gs-ink-3); }
+.event-item:hover strong { color: var(--gs-mint-ink); }
+.event-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
+.event-copy strong { display: -webkit-box; overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.event-meta { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
+.pagination { display: flex; justify-content: center; align-items: center; gap: var(--gs-space-5); padding-bottom: var(--gs-space-8); font-size: var(--gs-text-ui); }
+.pagination button, .event-catalog > p[role] button { min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.pagination button:disabled { opacity: .45; cursor: default; }
+.event-catalog > p[role], .empty { margin-block: 0; padding-block: var(--gs-space-4); color: var(--gs-ink-2); }
+.event-catalog :is(button, input, select):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@container event-catalog (max-width: 560px) {
+  .catalog-footprint, .catalog-filter, .event-grid, .pagination, .event-catalog > p[role], .empty { padding-inline: var(--gs-space-5); }
+  .catalog-footprint { padding-top: var(--gs-space-4); }
+  .catalog-filter { flex-wrap: nowrap; align-items: center; }
+  .catalog-filter .catalog-search { flex: 1 1 auto; min-width: 0; }
+  .catalog-filter input { width: 100%; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
+  .catalog-filter > span { display: none; }
+  .event-grid { grid-template-columns: 1fr; }
+  .event-item { grid-template-columns: 96px minmax(0, 1fr) 16px; }
+  .pagination button, .event-catalog > p[role] button { min-height: var(--gs-control-touch); }
 }
 </style>

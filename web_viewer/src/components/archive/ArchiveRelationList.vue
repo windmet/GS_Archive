@@ -16,7 +16,7 @@
       </span>
 
       <span class="relation-copy">
-        <span class="relation-labels">
+        <span v-if="item.label || item.statusLabel || (showEvidence && item.evidenceLabel)" class="relation-labels">
           <strong>{{ item.label }}</strong>
           <small v-if="showEvidence && item.evidenceLabel" class="evidence" :class="`tone-${item.evidenceTone || 'derived'}`">
             {{ item.evidenceLabel }}
