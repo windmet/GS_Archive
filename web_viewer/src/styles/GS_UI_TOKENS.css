@@ -1,22 +1,56 @@
-/* GS Archive foundation: variables only. Each surface opts into semantic roles. */
-:root {
-  --gs-font-portal: Inter, "Noto Sans SC", "Noto Sans JP", system-ui, sans-serif;
-  --gs-font-directory: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif;
+/* GS Archive foundation: the program-booklet language (docs/GS_UI_CONSTITUTION.md).
+   Flat paper, navy ink, one mint stage light. Variables only; surfaces opt in by role. */
 
-  --gs-text-caption: 11px;
+/* Stage face: Latin subset only, for rarity marks, episode numbers, dates and figures. */
+@font-face { font-family: "GS Stage"; font-style: normal; font-weight: 500; font-display: swap; src: url("./fonts/barlow-semi-condensed-500-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+@font-face { font-family: "GS Stage"; font-style: normal; font-weight: 600; font-display: swap; src: url("./fonts/barlow-semi-condensed-600-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+@font-face { font-family: "GS Stage"; font-style: normal; font-weight: 700; font-display: swap; src: url("./fonts/barlow-semi-condensed-700-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+@font-face { font-family: "GS Stage"; font-style: italic; font-weight: 600; font-display: swap; src: url("./fonts/barlow-semi-condensed-600-italic-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+@font-face { font-family: "GS Stage"; font-style: italic; font-weight: 700; font-display: swap; src: url("./fonts/barlow-semi-condensed-700-italic-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2212; }
+
+:root {
+  /* Color. Neutrals lean toward 315 navy; mint is sampled from the in-game nameplate. */
+  --gs-ink: #13213a;              /* text, primary buttons */
+  --gs-ink-2: #3c4859;            /* secondary text */
+  --gs-ink-3: #6a7586;            /* captions, metadata */
+  --gs-line: #e2e5eb;             /* hairlines; replaces boxed borders */
+  --gs-paper: #f5f6f8;            /* page ground */
+  --gs-surface: #ffffff;          /* only what floats: dialogs, popovers, bars */
+  --gs-mint: #12c48b;             /* stage light: selection, now playing, focus, progress */
+  --gs-mint-ink: #0a7a5b;         /* mint as text/link on paper (AA) */
+  --gs-mint-wash: #e3f8f0;        /* selected rows, hover on paper */
+  --gs-chrome: #13213a;           /* sidebar and other navy chrome */
+  --gs-chrome-ink: #c7cfdc;
+  --gs-chrome-ink-active: #ffffff;
+  --gs-chrome-hover: rgb(255 255 255 / 7%);
+  --gs-critical: #b8323b;         /* errors that block an action */
+  /* Semantic, never decorative. */
+  --gs-attr-physical: #c93b42;
+  --gs-attr-intelli: #2c62c9;
+  --gs-attr-mental: #a57400;
+  --gs-idol: #12c48b;             /* overridden per idol where content is about that idol */
+
+  /* Type. System CJK for reading; the stage face only for marks and figures. */
+  --gs-font-body: "Noto Sans SC", "Noto Sans JP", "PingFang SC", "Hiragino Sans", "Microsoft YaHei", system-ui, sans-serif;
+  --gs-font-jp: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", "Noto Sans SC", system-ui, sans-serif;
+  --gs-font-stage: "GS Stage", "Arial Narrow", "Noto Sans SC", system-ui, sans-serif;
+  --gs-font-portal: var(--gs-font-body);
+  --gs-font-directory: var(--gs-font-body);
+
+  --gs-text-caption: 12px;        /* readable floor; equals meta */
   --gs-text-meta: 12px;
   --gs-text-ui: 13px;
   --gs-text-body: 14px;
   --gs-text-subtitle: 16px;
-  --gs-text-section: 18px;
-  --gs-text-title: 22px;
-  /* Existing portal masthead, independent of directory and entity titles. */
-  --gs-text-portal: 26px;
+  --gs-text-section: 20px;
+  --gs-text-title: 28px;
+  --gs-text-portal: 28px;
+  --gs-text-display: 40px;
   --gs-weight-regular: 400;
   --gs-weight-medium: 500;
   --gs-weight-semibold: 600;
   --gs-weight-bold: 700;
-  --gs-weight-heavy: 800;
+  --gs-weight-heavy: 700;         /* 800 is retired; bold is the heaviest step */
 
   --gs-space-1: 2px;
   --gs-space-2: 4px;
@@ -27,35 +61,44 @@
   --gs-space-7: 24px;
   --gs-space-8: 32px;
   --gs-space-9: 40px;
+  --gs-space-section: 48px;       /* between sections on a page */
+
+  /* Shape follows role: content flows flat, media 4, controls 8, floats 12. */
+  --gs-radius-media: 4px;
+  --gs-radius-control: 8px;
+  --gs-radius-field: 8px;
+  --gs-radius-panel: 12px;        /* floating layers only */
+  --gs-radius-surface: 12px;
+  --gs-radius-pill: 999px;
+  --gs-shadow-float: 0 12px 40px rgb(19 33 58 / 14%), 0 2px 6px rgb(19 33 58 / 6%);
+  --gs-shadow-surface: var(--gs-shadow-float);
 
   --gs-control-compact: 32px;
   --gs-control-normal: 36px;
   --gs-control-toolbar: 40px;
   --gs-control-touch: 44px;
-  --gs-radius-control: 6px;
-  --gs-radius-field: 8px;
-  --gs-radius-panel: 12px;
-  --gs-radius-surface: 16px;
-  --gs-radius-pill: 999px;
-
   --gs-surface-settings-width: 420px;
   --gs-surface-detail-width: 580px;
   --gs-surface-selector-width: 720px;
   --gs-surface-drawer-width: 480px;
-  --gs-shadow-surface: 0 20px 70px #00152d55;
-  --gs-focus-ring: 3px;
-  --gs-focus-offset: 3px;
+  --gs-content-width: 1120px;
+  --gs-focus-ring: 2px;
+  --gs-focus-offset: 2px;
   --gs-motion-feedback: 120ms;
+  --gs-motion-ease: cubic-bezier(.2, .7, .2, 1);
 
-  /* Scope survives Teleport/native dialog. Consumer palettes may override aliases. */
-  --gs-color-ink: #152b43;
-  --gs-color-muted: #60758a;
-  --gs-color-accent: #00a876;
-  --gs-color-accent-bright: #00c992;
-  --gs-color-line: #d3dfe9;
-  --gs-color-paper: #f1f5fb;
+  /* Legacy aliases: same roles, new values. */
+  --gs-color-ink: var(--gs-ink);
+  --gs-color-muted: var(--gs-ink-3);
+  --gs-color-accent: var(--gs-mint-ink);
+  --gs-color-accent-bright: var(--gs-mint);
+  --gs-color-line: var(--gs-line);
+  --gs-color-paper: var(--gs-paper);
+
   --gs-safe-top: env(safe-area-inset-top, 0px);
   --gs-safe-right: env(safe-area-inset-right, 0px);
   --gs-safe-bottom: env(safe-area-inset-bottom, 0px);
   --gs-safe-left: env(safe-area-inset-left, 0px);
 }
+/* Breakpoints (media queries cannot read variables): narrow < 640px, medium 640-1023px, wide >= 1024px.
+   Layout follows width only; touch target size comes from the control tokens, not from pointer queries. */

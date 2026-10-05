@@ -193,8 +193,19 @@ try {
   await checkPage('ArchiveEventDetail', { view: {identity:{id:'test',eventCode:'test',title:'测试活动',kind:'theater'},period:{},media:{},provenance:{detailTable:113},rewards:{cards:[],general:[]},cast:[],cards:[],story:{entry:{event_id:'test',event_code:'test',title:'测试活动',exists:false}}} }, ['剧情暂未收录'])
   for (const campaign of json('masterdata/seasonal_campaign_index.json').campaigns) await checkPage('ArchiveSeasonalCampaign', { campaign })
   for (const idol of json('masterdata/work_story_index.json').idols) await checkPage('ArchiveWorkStory', { idol })
-  const archive = json('masterdata/mobile_archive_index.json')
-  for (const mode of ['personal', 'phone', 'unit', 'random']) await checkPage('ArchiveMobileArchive', { archive, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units, cards, idolEpisodes: json('masterdata/idol_episode_index.json') })
+  // The page takes read-model records; render it with the production projection so the
+  // check cannot pass on an empty page (it used to receive a retired `archive` prop).
+  const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
+  const mobileRecords = buildMobileRecords({
+    mobileArchive: json('masterdata/mobile_archive_index.json'), randomTalkPresentation: json('masterdata/random_talk_presentation_index.json'),
+    compiledIndex: json('compiled/index.json'), idolUnit: identity, archiveManifest: manifest, cardIndex: { cards }, idolEpisode: json('masterdata/idol_episode_index.json'),
+  }, await import('../src/data/idolCommunicationSelectors.js'))
+  const idolData = mobileRecords.idolRecords.find(record => record.id === '001tom')
+  const unitData = mobileRecords.unitRecords.find(record => record.id === '01jup')
+  for (const mode of ['personal', 'phone', 'unit', 'random']) {
+    const { visible } = await checkPage('ArchiveMobileArchive', { idolData, unitData, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units })
+    assert.ok(visible.trim().length > 40, `ArchiveMobileArchive ${mode} renders content`)
+  }
   await checkPage('ArchiveStoryDetail', { story: { id: 'sample', title: '测试剧情', resourceId: '1_1_resource', file: 'sample.json', exists: false }, idolName }, ['暂未收录'])
   const { buildStoryCatalog } = await import('../src/data/archiveSelectors.js')
   const { buildStoryCollections } = await import('../src/data/storyCollections.js')
