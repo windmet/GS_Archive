@@ -9,7 +9,7 @@
     </header>
     <div v-if="$slots.context" class="reader-context"><slot name="context" /></div>
     <div class="reader-desktop-toolbar">
-      <nav class="compact-episodes" aria-label="本话快速定位">
+      <nav v-if="segments.length > 1" class="compact-episodes" aria-label="本话快速定位">
         <button v-for="segment in segments" :key="segment.episodeKey || segment.documentId" :aria-current="(segment.documentId || segment.episodeKey) === activeDocumentId ? 'location' : undefined" :disabled="!segment.documentId && !allowUnlinked" :title="segmentLabel(segment)" @click="emit('select', segment)">{{ segmentLabel(segment) }}</button>
       </nav>
       <div class="compact-languages" role="group" aria-label="正文语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.short }}</button></div>
@@ -103,7 +103,7 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .compact-episodes { display:flex; gap:4px; flex:1; min-width:0; overflow-x:auto; scrollbar-width:thin; }
 .compact-episodes button { flex:none; padding:0 10px; border-radius:18px; font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .compact-episodes button[aria-current] { background:var(--reader-active); color:var(--reader-on-accent); }
-.compact-languages { display:flex; padding:2px; border-radius:8px; background:var(--reader-bg-card); border:1px solid var(--reader-border); }
+.compact-languages { display:flex; margin-inline-start:auto; padding:2px; border-radius:8px; background:var(--reader-bg-card); border:1px solid var(--reader-border); }
 .compact-languages button { min-height:36px; min-width:36px; padding:0 8px; border-radius:5px; }
 .compact-languages button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
 .compact-themes { display:flex; }
