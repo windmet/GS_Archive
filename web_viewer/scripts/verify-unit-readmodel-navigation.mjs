@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-const start = app.indexOf('function openUnitCatalog()')
+const start = app.indexOf('function openArchiveUnit(')
 const end = app.indexOf('\nfunction openUnitFromIdol(', start)
 assert.ok(start >= 0 && end > start)
 
@@ -61,11 +61,5 @@ const detail = (id, code) => ({ id, view: { entry: { unit: { unit_id: id, unit_c
   t.jobs.get('first').resolve(detail('1', 'first')); await retry
   assert.deepEqual(t.commits, ['unit_detail'])
 }
-{
-  const t = setup()
-  const catalog = t.context.openUnitCatalog()
-  t.jobs.get('catalog').resolve([]); await catalog
-  assert.deepEqual(t.commits, ['unit_catalog'])
-  assert.equal(t.context.currentCharacterId.value, '')
-}
-console.log('Unit read-model navigation: latest selection, route supersession, retry and catalog passed')
+assert.doesNotMatch(app, /function openUnitCatalog\(/, 'the unit catalog has no dedicated opener; it is reached by returning from unit detail')
+console.log('Unit read-model navigation: latest selection, route supersession and retry passed')
