@@ -178,7 +178,7 @@ const progressPercent = computed(() => {
   .episode-badge { display: none; }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .player-top-bar {
     top: calc(var(--player-space-2) + env(safe-area-inset-top));
     left: calc(var(--player-space-2) + env(safe-area-inset-left));

@@ -41,7 +41,7 @@ assert.match(spineStage, /debugControls:\s*\{\s*type:\s*Boolean,\s*default:\s*fa
 
 assert.match(advUi, /bottom:\s*var\(--player-dialogue-bottom\)/, 'ADV must use the shared dialogue safe area')
 assert.match(advUi, /max-height:\s*34vh/, 'desktop ADV must retain a bounded adaptive height')
-assert.match(advUi, /@media \(max-width:\s*699px\)/, 'ADV must include the mobile layout contract')
+assert.match(advUi, /@media \(max-width:\s*760px\)/, 'ADV must include the mobile layout contract')
 
 assert.match(iconButton, /:aria-pressed="toggle \? active : undefined"/, 'toggle controls must expose pressed state')
 assert.match(controlDock, /toggle @click="\$emit\('auto'\)"/, 'AUTO must opt into toggle semantics')

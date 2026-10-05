@@ -359,7 +359,7 @@ function handleViewingOfferKeydown(event) {
 }
 function updateViewingViewport() {
   const width = window.innerWidth, height = window.innerHeight
-  smallScreen.value = width <= 699 || (height <= 600 && width <= 1100)
+  smallScreen.value = width <= 760 || (height <= 600 && width <= 1100)
   shortLandscape.value = width > height && height <= 600 && width <= 1100
   portraitScreen.value = width < height
 }
@@ -1377,7 +1377,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   pointer-events: auto;
 }
 .ui-overlay.held-underlay > * { pointer-events: none; }
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .story-viewer-root {
     --player-edge: 10px;
     --player-topbar-height: 48px;
@@ -1481,7 +1481,7 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
 .complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 4px 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
 .complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .communication-complete-toast { right: 50%; bottom: var(--player-content-bottom); transform: translateX(50%); white-space: nowrap; }
   .communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translate(50%, 6px); }
 }

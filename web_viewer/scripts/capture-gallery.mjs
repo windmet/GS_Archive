@@ -1,5 +1,5 @@
-// Page gallery capture: screenshots every gallery scene and key app routes at desktop and
-// phone width with a real browser, and fails on empty renders or page errors.
+// Page gallery capture: screenshots every gallery scene and key app routes at desktop, tablet
+// and phone width with a real browser, and fails on empty renders or page errors.
 //   node scripts/capture-gallery.mjs <label> [--base=http://localhost:5175] [--only=card-detail,app-portal]
 // Needs a running dev server and a cached Playwright Chromium (no npm package required).
 import { spawn } from 'node:child_process'
@@ -8,6 +8,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { prepareGalleryData } from '../qa/gallery/prepare.mjs'
+import { ARCHIVE_USER_PREFERENCES_KEY as PREFERENCES_KEY, DEFAULT_ARCHIVE_USER_PREFERENCES } from '../src/data/archiveUserPreferences.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const args = process.argv.slice(2)
@@ -18,7 +19,11 @@ const only = option('only')?.split(',')
 
 const GALLERY = ['card-detail', 'card-list', 'song-detail', 'gasha-detail', 'story-main', 'story-extra', 'story-birthday', 'story-collection', 'work-story', 'seasonal', 'mobile-archive']
   .map(id => ({ id, url: `${base}/qa/gallery/?scene=${id}`, gallery: true }))
+// The browser profile is fresh, so a first visit would open the onboarding over every app
+// route. Scenes start as a returning reader; app-onboarding alone starts as a new visitor.
+const RETURNING_READER = { ...DEFAULT_ARCHIVE_USER_PREFERENCES, startupPage: 'portal', onboardingComplete: true }
 const APP = [
+  { id: 'app-onboarding', url: `${base}/?view=portal`, preferences: null, waitFor: 'dialog.onboarding[open]' },
   { id: 'app-welcome', url: `${base}/?view=welcome` },
   { id: 'app-portal', url: `${base}/?view=portal` },
   { id: 'app-player', url: `${base}/?view=player&scenario=001tom_101_2_1_001_01_00.json&noAudio=1`, canvas: true },
@@ -36,7 +41,12 @@ const APP = [
   { id: 'app-photo-list', url: `${base}/?view=photo_catalog`, readModel: true },
   { id: 'app-story-list', url: `${base}/?view=story_catalog`, readModel: true },
 ]
-const WIDTHS = [{ name: 'desktop', width: 1280, height: 900, mobile: false }, { name: 'phone', width: 390, height: 844, mobile: true }]
+// One capture per viewport tier: wide >1100, middle 761-1100 (sidebar still shown), phone <=760.
+const WIDTHS = [
+  { name: 'desktop', width: 1280, height: 900, mobile: false },
+  { name: 'tablet', width: 768, height: 1024, mobile: true },
+  { name: 'phone', width: 390, height: 844, mobile: true },
+]
 const scenes = [...GALLERY, ...APP].filter(scene => !only || only.includes(scene.id))
 
 function findChrome() {
@@ -82,16 +92,22 @@ try {
     for (const size of WIDTHS) {
       errors = []
       await send('Emulation.setDeviceMetricsOverride', { width: size.width, height: size.height, deviceScaleFactor: 1, mobile: size.mobile })
+      const preferences = 'preferences' in scene ? scene.preferences : RETURNING_READER
+      const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: preferences
+        ? `localStorage.setItem(${JSON.stringify(PREFERENCES_KEY)}, ${JSON.stringify(JSON.stringify(preferences))})`
+        : `localStorage.removeItem(${JSON.stringify(PREFERENCES_KEY)})` })
       await send('Page.navigate', { url: scene.url })
+      const probe = `({ gallery: document.documentElement.dataset.galleryState || '', text: document.body.innerText.trim().length, canvas: document.querySelectorAll('canvas').length, waited: !${JSON.stringify(scene.waitFor || '')} || !!document.querySelector(${JSON.stringify(scene.waitFor || '')}), overflow: document.documentElement.scrollWidth > innerWidth + 1 })`
       let state = null
       for (let i = 0; i < 120; i++) {
         await sleep(250)
-        state = await evaluate(`({ gallery: document.documentElement.dataset.galleryState || '', text: document.body.innerText.trim().length, canvas: document.querySelectorAll('canvas').length })`)
-        const ready = scene.gallery ? state?.gallery === 'ready' || state?.gallery === 'failed' : state?.text > 40 && (!scene.canvas || state.canvas > 0)
+        state = await evaluate(probe)
+        const ready = scene.gallery ? state?.gallery === 'ready' || state?.gallery === 'failed' : state?.text > 40 && state.waited && (!scene.canvas || state.canvas > 0)
         if (ready) break
       }
+      await send('Page.removeScriptToEvaluateOnNewDocument', { identifier })
       await sleep(1200) // let images and fonts settle
-      state = await evaluate(`({ gallery: document.documentElement.dataset.galleryState || '', text: document.body.innerText.trim().length, canvas: document.querySelectorAll('canvas').length, overflow: document.documentElement.scrollWidth > innerWidth + 1 })`)
+      state = await evaluate(probe)
       const shot = await send('Page.captureScreenshot', { format: 'png' })
       const file = `${scene.id}-${size.name}.png`
       writeFileSync(path.join(out, file), Buffer.from(shot.data, 'base64'))
@@ -100,6 +116,7 @@ try {
       // A stage scene is judged by its canvas; its dialogue box may be closed at the captured step.
       if (state.text < 40 && !scene.canvas) problems.push('page rendered almost no text')
       if (scene.canvas && !state.canvas) problems.push('stage canvas missing')
+      if (!state.waited) problems.push(`${scene.waitFor} never appeared`)
       if (state.overflow) problems.push('page scrolls sideways')
       // Without a local read-model candidate the plain app routes degrade by design; read-model scenes must not.
       if (!scene.gallery && !scene.readModel) errors = errors.filter(text => !/ReadModel|Expected JSON/.test(text))

@@ -14,5 +14,5 @@ defineEmits(['clear'])
 .catalog-idol-scope{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 20px;background:#edf7f6;color:#285a5a;font:inherit;}
 .catalog-idol-scope button{margin-left:auto;min-height:36px;padding:6px 12px;border:1px solid #bad8d5;border-radius:8px;background:#fff;color:inherit;font:inherit;cursor:pointer;}
 .catalog-idol-scope button:focus-visible{outline:2px solid #278e87;outline-offset:2px;}
-@media(max-width:700px){.catalog-idol-scope{padding:10px;}.catalog-idol-scope button{min-height:44px;}}
+@media(max-width:760px){.catalog-idol-scope{padding:10px;}.catalog-idol-scope button{min-height:44px;}}
 </style>

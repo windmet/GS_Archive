@@ -150,7 +150,7 @@ function formatDate(timestamp) {
 @media (max-width: 760px),(pointer:coarse) {
   .category-tabs button,.catalog-status button { min-width: var(--gs-control-touch); min-height: var(--gs-control-touch); }
 }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .catalog-summary { gap: 16px; padding: 12px; }
   .catalog-filter { align-items: flex-start; padding: 8px 10px; }
   .catalog-summary div { align-items: flex-start; flex-direction: column; gap: 1px; }

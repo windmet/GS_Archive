@@ -311,7 +311,7 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
   .verification-grid > div:nth-child(odd) { border-left: 0; }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 760px) {
   .status-screen { padding: 12px; }
   .status-summary { align-items: stretch; flex-direction: column; padding: 20px; }
   .status-summary button { width: 100%; }

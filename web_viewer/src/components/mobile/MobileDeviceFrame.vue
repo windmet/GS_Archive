@@ -50,7 +50,7 @@ defineProps({
   aspect-ratio: 0.72;
 }
 
-@media (min-width: 700px) and (max-width: 1099px) {
+@media (min-width: 761px) and (max-width: 1100px) {
   .mobile-device-frame {
     width: auto;
     border-radius: 28px;
@@ -62,7 +62,7 @@ defineProps({
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .mobile-device-frame {
     width: 100%;
     height: calc(100dvh - var(--player-content-top) - var(--player-content-bottom));
@@ -75,13 +75,13 @@ defineProps({
   }
 }
 
-@media (max-height: 760px) and (min-width: 700px) {
+@media (max-height: 760px) and (min-width: 761px) {
   .mobile-device-frame {
     max-height: 100%;
   }
 }
 /* Retain the original phone frame on narrow screens as well. */
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .mobile-device-frame.variant-call {
     box-sizing: border-box;
     width: calc(100% - 24px);

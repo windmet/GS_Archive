@@ -18,10 +18,13 @@ function walk(dir) {
   })
 }
 
-const METRICS = ['raw', 'tiny', 'hex', 'radius']
+const METRICS = ['raw', 'tiny', 'hex', 'radius', 'breakpoint']
+// Viewport tiers: phone <=760 (where the sidebar becomes the bottom nav), middle 761-1100,
+// wide >1100. Anything finer belongs to the component as an @container query.
+const TIER_WIDTHS = { max: ['760', '1100'], min: ['761', '1101'] }
 
 export function measure(source) {
-  let raw = 0, tiny = 0, radius = 0
+  let raw = 0, tiny = 0, radius = 0, breakpoint = 0
   for (const [, value] of source.matchAll(/font-size\s*:\s*([^;}\n]+)/g)) {
     const text = value.trim()
     if (/^var\(--gs-text-/.test(text)) continue
@@ -37,12 +40,17 @@ export function measure(source) {
   }
   // Colors come from the palette tokens; a literal hex is a private palette.
   const hex = [...source.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].filter(([text]) => [4, 5, 7, 9].includes(text.length)).length
-  return { raw, tiny, hex, radius }
+  for (const [prelude] of source.matchAll(/@media[^{]*/g)) {
+    const widths = [...prelude.matchAll(/\((max|min)-width\s*:\s*([^)]+)\)/g)]
+    if (widths.some(([, kind, value]) => !TIER_WIDTHS[kind].includes(value.trim().replace(/px$/, '')))) breakpoint++
+  }
+  return { raw, tiny, hex, radius, breakpoint }
 }
 
 // Self-check so the counter cannot silently pass everything.
-assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0 })
-assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2 })
+assert.deepEqual(measure('a{font-size:.6rem}b{font-size: 11px}c{font-size:var(--gs-text-meta)}d{font-size:13px}e{font-size:inherit}'), { raw: 3, tiny: 2, hex: 0, radius: 0, breakpoint: 0 })
+assert.deepEqual(measure('a{border-radius:6px;color:#13213a}b{border-radius:var(--gs-radius-control);background:#fff}c{border-radius:50%}d{border-radius:4px 4px 0 0}'), { raw: 0, tiny: 0, hex: 2, radius: 2, breakpoint: 0 })
+assert.deepEqual(measure('@media (max-width: 760px), (pointer:coarse){}@media(min-width:761px) and (max-width:1100px){}@media (max-height: 600px){}@container (max-width: 520px){}@media (max-width: 700px){}@media (min-width:1101px) and (max-width:40em){}').breakpoint, 2)
 
 const current = {}
 for (const file of walk(path.join(root, 'src'))) {
@@ -70,5 +78,5 @@ if (update) {
   }
   assert.deepEqual(regressions, [], `Use the GS_UI_TOKENS palette, type ladder (floor ${FLOOR_PX}px) and radius roles:\n${regressions.join('\n')}`)
   const total = Object.values(current).reduce((sum, c) => Object.fromEntries(METRICS.map(key => [key, sum[key] + c[key]])), zero)
-  console.log(`Design tokens: ${total.raw} literal font sizes (${total.tiny} below ${FLOOR_PX}px), ${total.hex} hex colors, ${total.radius} literal radii remain; none added${improved ? ` (${improved} files improved; run --update to lock in)` : ''}`)
+  console.log(`Design tokens: ${total.raw} literal font sizes (${total.tiny} below ${FLOOR_PX}px), ${total.hex} hex colors, ${total.radius} literal radii, ${total.breakpoint} off-tier breakpoints remain; none added${improved ? ` (${improved} files improved; run --update to lock in)` : ''}`)
 }

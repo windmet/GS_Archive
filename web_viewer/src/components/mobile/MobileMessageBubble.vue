@@ -243,14 +243,14 @@ function messageParts(text) {
   text-align: center;
 }
 
-@media (min-width: 700px) and (max-width: 1099px) {
+@media (min-width: 761px) and (max-width: 1100px) {
   .msg-body { max-width: 74%; }
   .chat-avatar { width: 38px; height: 38px; }
   .bubble-idol, .bubble-producer { padding: 10px 13px; border-radius: 15px; }
   .chat-stamp, .chat-stamp-fallback { width: 156px; }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .msg-body, .bubble-producer { max-width: 82%; }
   .chat-avatar { width: 36px; height: 36px; }
   .bubble-idol, .bubble-producer { padding: 9px 12px; border-radius: 14px; }

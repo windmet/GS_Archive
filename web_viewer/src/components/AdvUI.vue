@@ -144,7 +144,7 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
   50% { opacity: 1; }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .nameplate-outer { left: 16px; max-width: calc(100% - 32px); }
   .nameplate {
     height: 36px;

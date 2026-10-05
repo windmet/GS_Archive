@@ -195,7 +195,7 @@ const replyLabel = computed(() => `${localization.resolveUnit({ source: '',
   --localized-secondary-gap: 0.18em;
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .call-profile-layer {
     top: 12%;
   }
@@ -210,7 +210,7 @@ const replyLabel = computed(() => `${localization.resolveUnit({ source: '',
   }
 }
 
-@media (max-height: 760px) and (min-width: 700px) {
+@media (max-height: 760px) and (min-width: 761px) {
   .call-content-panel {
     padding-top: 9%;
   }

@@ -250,7 +250,7 @@ const countClass = computed(() => {
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .mobile-choice-rail {
     width: 100%;
     max-width: 420px;

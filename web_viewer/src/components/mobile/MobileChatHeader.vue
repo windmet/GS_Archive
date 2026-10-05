@@ -69,21 +69,21 @@ const titleStyle = computed(() => {
   text-overflow: ellipsis;
 }
 
-@media (min-width: 700px) and (max-width: 1099px) {
+@media (min-width: 761px) and (max-width: 1100px) {
   .mobile-chat-header {
     height: 68px;
     padding-top: 8px;
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .mobile-chat-header {
     height: 60px;
     padding-top: 0;
   }
 }
 
-@media (max-height: 760px) and (min-width: 700px) {
+@media (max-height: 760px) and (min-width: 761px) {
   .mobile-chat-header {
     height: 64px;
     padding-top: 6px;

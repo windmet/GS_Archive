@@ -46,7 +46,7 @@ const text = computed(() => {
   white-space: pre-wrap;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .caption {
     max-width: 86vw;
     padding: 14px 22px;

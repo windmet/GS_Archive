@@ -95,11 +95,11 @@ function cycleFocus(event) {
 .collection-quick-dialog button:focus-visible,
 .collection-quick-dialog :deep(.collection-entry-details button:focus-visible),
 .collection-quick-dialog :deep(.collection-source-meta > summary:focus-visible) { outline: var(--gs-focus-ring) solid #048a6d; outline-offset: var(--gs-focus-offset); }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .collection-quick-dialog :deep(.collection-entry-details) { padding: var(--gs-space-5); }
   .collection-quick-dialog :deep(.domain-meta > div) { gap: var(--gs-space-3); }
 }
-@media (max-width: 700px), (pointer: coarse) {
+@media (max-width: 760px), (pointer: coarse) {
   .collection-quick-dialog > .domain-error button,
   .collection-quick-dialog :deep(.collection-source-meta > summary),
   .collection-quick-dialog :deep(.domain-media-preview button) { min-height: var(--gs-control-touch); }
