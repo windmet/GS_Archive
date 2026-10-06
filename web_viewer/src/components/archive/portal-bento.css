@@ -41,8 +41,14 @@
 .overview-unit-tile {height:106px;overflow:hidden;background:color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface));}
 .overview-unit-logo {height:100%;padding:10px 12px 40px;}
 .overview-unit-logo img {max-width:118px;}
-.overview-unit-members {bottom:8px;opacity:1;pointer-events:auto;gap:0;}
-.overview-unit-members button + button {margin-left:-4px;}
+.overview-unit-members {bottom:8px;opacity:1;pointer-events:auto;gap:3px;}
+/* Members sit side by side while they fit. A narrow tile shrinks them; only a narrow tile with four
+   or more members (High×Joker, Café Parade at 320–390px) overlaps them, each ringed in the tile colour. */
+.overview-unit-tile {container:unit-tile / inline-size;}
+@container unit-tile (max-width:150px){.overview-unit-members {--idol-avatar-override-size:24px;}
+  .overview-unit-members:has(> :nth-child(4)) {gap:0;--idol-avatar-override-size:22px;}
+  .overview-unit-members:has(> :nth-child(4)) button + button {margin-left:-6px;}
+  .overview-unit-members:has(> :nth-child(4)) button {box-shadow:0 0 0 1.5px color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface));}}
 .is-global-grid {grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);}
 .overview-story-hub {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;}
 .overview-main-index {gap:8px;align-content:start;}
