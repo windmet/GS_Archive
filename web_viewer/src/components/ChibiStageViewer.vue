@@ -407,10 +407,16 @@
     </ArchiveTerminalDialog>
     <ArchiveTerminalDialog class="stage-dev-dialog stage-help-dialog" :open="helpOpen" title="观看与操作" :title-id="helpTitleId" @close="helpOpen = false">
       <p>选择演出曲目，点击头像槽位编辑偶像与衣装。原曲成员使用已收录名单，按当前脚本槽位排列。</p>
-      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>H</kbd></dt><dd>显示 / 隐藏界面</dd></div><div><dt><kbd>F</kbd></dt><dd>进入 / 退出全屏</dd></div></dl>
+      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>H</kbd></dt><dd>显示 / 隐藏界面；隐藏时把鼠标移到画面顶端可截图、全屏或恢复界面</dd></div><div><dt><kbd>F</kbd></dt><dd>进入 / 退出全屏</dd></div></dl>
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
     </ArchiveTerminalDialog>
-    <button v-if="pureMode" ref="pureExitButton" class="pure-exit" type="button" @click="togglePureMode">显示控制 <kbd>H</kbd></button>
+    <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
+         stage, shown when it reaches the top or a key moves focus there. -->
+    <div v-if="pureMode" class="pure-peek">
+      <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
+      <button class="stage-icon-action" type="button" :aria-label="fullscreenActive ? '退出全屏' : '进入全屏'" :disabled="fullscreenPending" @click="toggleFullscreen"><Minimize v-if="fullscreenActive" :size="19" /><Maximize v-else :size="19" /></button>
+      <button ref="pureExitButton" class="pure-exit" type="button" @click="togglePureMode">显示控制 <kbd>H</kbd></button>
+    </div>
   </div>
 </template>
 
@@ -3882,8 +3888,17 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .shortcut-list > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; }
 .shortcut-list dd { margin: 0; }
 kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
-.pure-exit { position: fixed; z-index: 8; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; opacity: .35; }
-.pure-exit:focus-visible { opacity: 1; }
+.pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
+.pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
+.pure-exit { min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
+/* Touch has no pointer to reach the edge: only the way back stays, faint. */
+@media (hover: none) {
+  .pure-peek { opacity: 1; background: none; pointer-events: none; }
+  .pure-peek .stage-icon-action { display: none; }
+  .pure-exit { pointer-events: auto; opacity: .35; }
+  .pure-exit:focus-visible { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .pure-peek { transition: none; } }
 .is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .rail-summary, .is-pure .position-rail, .is-pure .transport { display: none; }
 .is-pure { grid-template-rows: minmax(0, 1fr); }
 .is-pure .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); max-width: none; min-height: 0; height: 100%; padding: 0; }
@@ -3893,7 +3908,6 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
   .stage-icon-action:hover { background: var(--gs-chrome-hover); color: var(--gs-surface); }
   .lineup-actions button:not(:disabled):hover, .idol-change-action:not(:disabled):hover { background: var(--gs-paper); }
   .position-marker:not(:disabled):hover { border-color: var(--gs-ink-3); }
-  .pure-exit:hover { opacity: 1; }
 }
 
 /* Tabs keep one control task visible while the stage remains in place. */
