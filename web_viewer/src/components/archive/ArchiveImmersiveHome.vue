@@ -233,8 +233,10 @@
 
         <fieldset class="settings-segment">
           <legend>台词切换</legend>
-          <button type="button" :class="{ active: preferences.dialogueOrder === 'sequential' }" @click="preferences.dialogueOrder = 'sequential'">顺序</button>
-          <button type="button" :class="{ active: preferences.dialogueOrder === 'random' }" @click="preferences.dialogueOrder = 'random'">随机</button>
+          <div class="settings-segment-options">
+            <button type="button" :class="{ active: preferences.dialogueOrder === 'sequential' }" :aria-pressed="preferences.dialogueOrder === 'sequential'" @click="preferences.dialogueOrder = 'sequential'">顺序</button>
+            <button type="button" :class="{ active: preferences.dialogueOrder === 'random' }" :aria-pressed="preferences.dialogueOrder === 'random'" @click="preferences.dialogueOrder = 'random'">随机</button>
+          </div>
         </fieldset>
 
         <label class="settings-toggle">

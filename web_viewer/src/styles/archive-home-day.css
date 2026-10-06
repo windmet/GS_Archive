@@ -44,8 +44,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .scene-settings h3 { font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); margin: 0; }.scene-settings header p { font-size: var(--gs-text-meta); color: var(--gs-ink-3); margin: 5px 0 0; }
 .scene-settings header button { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--gs-ink-2); }
 .settings-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 18px; display: flex; flex-direction: column; gap: 18px; }
+/* Rows keep their height and the body scrolls; a shrinking row (the segment clips its overflow)
+   collapsed on short desktop windows and let its buttons spill over the next row. */
+.settings-body > * { flex-shrink: 0; }
 .settings-field, .settings-range { display: flex; flex-direction: column; gap: 7px; font-size: var(--gs-text-ui); color: var(--gs-ink-2); }
-.settings-field select, .settings-field input { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-subtitle); }
+.settings-field select, .settings-field input { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+/* Touch keeps 16px so iOS does not zoom the page into a focused field. */
+@media (pointer: coarse) { .settings-field select, .settings-field input { font-size: var(--gs-text-subtitle); } }
+.home-producer-settings { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
 .settings-backgrounds { margin: 0; padding: 0 0 17px; border: 0; border-bottom: 1px solid var(--gs-line); }
 .settings-backgrounds legend { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }.settings-backgrounds p { font-size: var(--gs-text-meta); line-height: 1.65; color: var(--gs-ink-2); }
 .settings-backgrounds small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
@@ -55,8 +61,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .background-grid button { display: grid; gap: 7px; align-content: start; min-height: 46px; padding: 7px; background: var(--gs-surface); color: var(--gs-ink); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); }
 .background-grid button[aria-pressed=true] { border-color: var(--gs-selected-line); box-shadow: inset 0 0 0 1px var(--gs-selected-line); background: var(--gs-selected-bg); }
 .background-grid img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--gs-radius-media); }.background-grid strong { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
-.settings-segment { display: grid; grid-template-columns: 1fr 1fr; padding: 0; margin: 0; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); overflow: hidden; }
-.settings-segment legend { color: var(--gs-ink-2); font-size: var(--gs-text-ui); padding-bottom: 8px; }.settings-segment button { min-height: 44px; border: 0; background: var(--gs-surface); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+/* Segment: label above, two options in one bordered strip, as the other fields read. */
+.settings-segment { min-width: 0; margin: 0; padding: 0; border: 0; }
+.settings-segment-options { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); overflow: hidden; }
+.settings-segment legend { padding: 0 0 7px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }.settings-segment button { min-height: 44px; border: 0; background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .settings-segment button.active { background: var(--gs-selected-bg); color: var(--gs-selected-ink); font-weight: var(--gs-weight-semibold); }
 .settings-toggle { display: grid; grid-template-columns: minmax(0, 1fr) 40px; align-items: center; gap: 12px; min-height: 44px; font-size: var(--gs-text-ui); }
 .settings-toggle span { display: flex; flex-direction: column; gap: 5px; }.settings-toggle small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
