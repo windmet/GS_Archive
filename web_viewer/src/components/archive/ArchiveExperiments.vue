@@ -22,20 +22,21 @@ import studioImage from '../../assets/tools/studio.webp'
 defineEmits(['charts', 'photo', 'stage'])
 // The three tools carry equal weight: one large picture of what each makes, a sentence and three
 // facts. Sizes are what a cold first open downloads (current request list × the deployed files'
-// bytes on the wire, 2026-10-06); re-measure when a tool's first screen or the deployed images change.
+// bytes on the wire, re-measured 2026-10-07 after pictures moved to q90 WebP); re-measure when a
+// tool's first screen or the deployed images change.
 const tools = [
   { id: 'charts', title: '谱面预览', image: chartImage, imageAlt: '谱面预览：DRIVE A LIVE EXPERT 的透视轨道',
     summary: '选一首歌，像在游戏里一样看音符落下，也可以展开成整首的长轨图逐段读。',
     points: ['透视轨道 / 长轨图两种看法', '4 档难度，可调播放速度和音符落速', '导出 PNG 或 SVG'],
-    size: '10 MB', sizeNote: '之后每首约 0.1 MB', heavy: true },
+    size: '3 MB', sizeNote: '之后每首不到 0.1 MB', heavy: false },
   { id: 'stage', title: '舞台小人', image: stageImage, imageAlt: '舞台小人：三位偶像的小人在舞台上跳舞',
     summary: '挑一首歌、编进想看的偶像，看小人们按游戏里的编舞唱跳一整首。',
     points: ['60 首曲目，最多 5 人同台', '切换演唱声部和服装', '纯净模式与舞台截图'],
-    size: '13 MB', sizeNote: '含一首歌的音频', heavy: true },
+    size: '12 MB', sizeNote: '含一首歌的音频', heavy: true },
   { id: 'photo', title: '摄影工作台', image: studioImage, imageAlt: '摄影工作台：两位偶像和贴纸摆在街景前',
     summary: '选地点、摆偶像、贴贴纸，拼一张自己的照片。',
     points: ['133 个地点，49 位偶像，184 张贴纸', '每位偶像可换服装、表情和动作', '保存构图下次接着编，或导出 PNG'],
-    size: '3 MB', sizeNote: '每加一位偶像约 2 MB', heavy: false },
+    size: '2.5 MB', sizeNote: '每加一位偶像约 2 MB', heavy: false },
 ]
 </script>
 <style scoped>
