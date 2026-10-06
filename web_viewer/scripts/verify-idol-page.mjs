@@ -26,7 +26,9 @@ for (const id of ids) {
   if (baseline) assert.deepEqual(result, baseline(id, data, cardsForCharacter))
   // The gameplay expansion adds metadata, without changing profile/membership/order.
   for(const entry of result[3]) assert.equal(entry.song,data.songs.songs[entry.song.song_code], 'new metadata stays on the source object')
-  const legacyProjection = [...result.slice(0,3),result[3].map(entry=>({...entry,song:Object.fromEntries(Object.entries(entry.song).filter(([key])=>!['attribute','gameplay'].includes(key)))}))]
+  // So does the standing order (performance_mapping.performer_slot_*), which only the chibi stage reads.
+  const legacyMapping = mapping => mapping && Object.fromEntries(Object.entries(mapping).filter(([key]) => !['performer_slot_idol_codes','performer_slot_basis'].includes(key)))
+  const legacyProjection = [...result.slice(0,3),result[3].map(entry=>({...entry,song:Object.fromEntries(Object.entries(entry.song).filter(([key])=>!['attribute','gameplay'].includes(key)).map(([key,value])=>[key,key==='performance_mapping'?legacyMapping(value):value]))}))]
   digest.update(JSON.stringify([id, legacyProjection]))
 }
 const hash = digest.digest('hex')
