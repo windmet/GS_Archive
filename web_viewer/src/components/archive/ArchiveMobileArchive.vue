@@ -137,6 +137,7 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { BookOpen, ChevronLeft, ChevronRight, CreditCard, FileWarning, MessageSquareText, Phone, Play, Shuffle, Unlock, Users } from '@lucide/vue'
+import { communicationUnlockAction } from '../../presentation/communicationUnlock.js'
 import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
@@ -222,11 +223,7 @@ function unlockCard(unlock) {
   return cardById.value.get(Number(unlock.condition?.param_a || 0)) || null
 }
 function unlockAction(unlock) {
-  const condition = unlock.condition || {}
-  if (condition.kind === 'card_acquired') return '获得'
-  if (condition.kind === 'card_awakened') return '特训完成'
-  if (condition.kind === 'card_limit_break') return `突破 ${condition.param_b || 4} 次`
-  return '开放条件待确认'
+  return communicationUnlockAction(unlock.condition)
 }
 function unlockText(unlock) {
   const card = unlockCard(unlock)

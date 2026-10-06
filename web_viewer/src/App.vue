@@ -1884,6 +1884,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
       const detail = await loadStoryReadModelDetail(route.story)
       if (!intent.isCurrent()) return
+      // Old links to a phone call as a "card story" land on the call in the communication archive.
+      if (route.view === 'story_detail' && detail.story.domain === 'card_scenarios') return openStoryPhone(detail.story)
       storyReadModelDetail.value = detail
       route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
     }
@@ -3228,7 +3230,7 @@ function playIdolStoryEpisode({ section, episode }) {
   if (index >= 0) startEpisodeQueue(queue, index, 'idol_story_archive')
 }
 
-async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId = '', fromSection = false } = {}) {
+async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId = '', scenarioFile = '', fromSection = false } = {}) {
   return navigation.run(async intent => {
     if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('mobile')
     const selectedMode = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
@@ -3250,7 +3252,12 @@ async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId 
     currentCharacterId.value = idolCode
     currentMobileMode.value = selectedMode
     currentArchiveUnitCode.value = mobile.unitCode
-    currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
+    // A story-side link knows the call by its compiled file; the archive focuses it by record id.
+    const fileScenario = scenarioFile && !scenarioId
+      ? [...(mobile.idol?.view?.phoneBundles || []), ...(mobile.idol?.view?.personalBundles || [])]
+        .flatMap(bundle => bundle.scenarios).find(scenario => scenario.compiled_file === scenarioFile)
+      : null
+    currentMobileScenarioId.value = String(scenarioId || fileScenario?.id || '')
     currentStoryDomain.value = 'mobile_archive'
     currentStoryMode.value = 'portal'
     commitView('mobile_archive')
@@ -3460,6 +3467,7 @@ function openUnitCards() {
 }
 
 function openCatalogStory(entry) {
+  if (entry?.domain === 'card_scenarios') return openStoryPhone(entry)
   if (entry?.eventRelation) {
     const resource=storyEventResources(entry)
     if(resource?.firstReadingId&&resource.storyFile===entry.file)return openStoryReader(resource.firstReadingId,{event:resource.id,parentView:'story_catalog',storyType:'event',story:entry.file})
@@ -3470,6 +3478,7 @@ function openCatalogStory(entry) {
 
 function openStoryDetail(entry, parentView = '') {
   if (!entry?.file) return
+  if (entry.domain === 'card_scenarios') return openStoryPhone(entry)
   const file = entry.file
   const request = ++pendingStoryDetailNavigation
   navigation.invalidate()
@@ -3808,7 +3817,7 @@ async function openPortalResult(result) {
       if (target.gateway === 'idol_story') return openIdolStoryArchive()
       if (target.gateway === 'work') return openWorkArchive()
       if (target.gateway === 'seasonal_campaign') return openSeasonalCampaign()
-      if (['card_scenarios','birthday','extra'].includes(target.gateway)) {
+      if (['birthday','extra'].includes(target.gateway)) {
         captureDetailSource()
         return openStoryCatalog({domain:target.gateway})
       }
@@ -3869,6 +3878,12 @@ function openCardScenario(entry) {
   if (entry?.compiled_file) {
     return loadScenario(entry.compiled_file, 'card_detail')
   }
+}
+
+// The card_scenarios story domain is the communication archive's phone calls (all 342 are
+// idol_phone records, mostly unlocked by a card), so they open there rather than as a story.
+function openStoryPhone(story) {
+  return openMobileArchive({ idolCode: story?.characters?.[0] || '', mode: 'phone', scenarioFile: story?.file || '' })
 }
 
 async function previewCardVoice(cue) {

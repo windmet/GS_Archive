@@ -235,18 +235,18 @@
         </div>
       </section>
 
-      <section v-if="card.scenario_entries?.length" class="card-detail-section">
-        <h4>卡片小剧情 / 电话</h4>
+      <section v-if="communicationRows.length" class="card-detail-section">
+        <h4>通信</h4>
         <div class="scenario-link-list">
           <button
-            v-for="entry in card.scenario_entries"
-            :key="entry.resource_id"
+            v-for="row in communicationRows"
+            :key="row.id"
             class="scenario-link-btn"
-            :disabled="!entry.compiled_file"
-            @click="emit('open-scenario', entry)"
+            :disabled="!row.compiled_file"
+            @click="emit('open-scenario', row)"
           >
-            <span>{{ cardScenarioTitle(entry) }}</span>
-            <small>{{ [entry.communication_label, scenarioSubtitle(entry)].filter(Boolean).join(' · ') }}</small>
+            <span>{{ row.title }}</span>
+            <small>{{ row.compiled_file ? row.label : `${row.label} · 暂未收录` }}</small>
           </button>
         </div>
       </section>
@@ -294,7 +294,7 @@ import {archiveText} from './useArchiveCardText.js'
 import {gashaText} from './useArchiveGashaText.js'
 const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
-import { cardScenarioTitle } from '../../presentation/CardPresentation.js'
+import { cardCommunicationLabel, cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { cardVoicePreviewStep } from '../../data/cardVoicePreview.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
@@ -320,6 +320,12 @@ const props = defineProps({
   gashaRelation: { type: Object, default: null },
   limitbreakMaterial: { type: Object, default: null },
 })
+// What the card opens in 通信: calls after limit break, training or acquisition, and the chat
+// after scouting it. None of these is an ADV story.
+const communicationRows = computed(() => (props.card?.scenario_entries || []).map(entry => ({
+  id: entry.resource_id, title: cardScenarioTitle(entry), compiled_file: entry.compiled_file,
+  label: cardCommunicationLabel(entry),
+})))
 const emit = defineEmits([
   'back',
   'preview-voice',
@@ -469,10 +475,6 @@ function openLightbox(src) {
   if (index < 0) return
   lightboxIndex.value = index
   lightboxOpen.value = true
-}
-
-function scenarioSubtitle(entry) {
-  return entry?.compiled_file ? '可观看' : '暂未收录剧情'
 }
 
 function eventScopeLabel(event) {

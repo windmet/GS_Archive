@@ -145,7 +145,7 @@ const verificationItems = computed(() => {
       tone: Number(homeVoices.ratio || 0) === 1 ? 'ok' : 'warn',
     },
     {
-      label: '卡片剧情',
+      label: '卡片电话',
       value: `${(Number(cardScenarios.ratio || 0) * 100).toFixed(1)}%`,
       detail: `${formatCount(cardScenarios.available)} / ${formatCount(cardScenarios.references)} links`,
       tone: Number(cardScenarios.ratio || 0) === 1 ? 'ok' : 'warn',
@@ -185,7 +185,7 @@ const coverageItems = computed(() => {
     ['卡片详情资料', { available: coverage.card_details?.cards, total: props.manifest?.counts?.cards, ratio: coverage.card_details?.cards / (props.manifest?.counts?.cards || 1) }],
     ['卡池 Banner', { available: coverage.gashas?.banner_assets, total: coverage.gashas?.total, ratio: coverage.gashas?.banner_assets / (coverage.gashas?.total || 1) }],
     ['首页语音关联', coverage.card_home_voices],
-    ['卡片剧情关联', coverage.card_scenarios],
+    ['卡片电话关联', coverage.card_scenarios],
     ['双态卡普通语音', { available: coverage.card_text_voices?.normal_available, total: coverage.card_text_voices?.normal_expected, ratio: coverage.card_text_voices?.normal_ratio }],
     ['特训卡面语音', { available: coverage.card_text_voices?.awakened_available, total: coverage.card_text_voices?.total_cards, ratio: coverage.card_text_voices?.awakened_ratio }],
     ['双态卡普通图', { available: coverage.card_icons?.normal_available, total: coverage.card_icons?.normal_expected, ratio: coverage.card_icons?.normal_ratio }],

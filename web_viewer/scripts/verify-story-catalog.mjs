@@ -60,9 +60,27 @@ for (const overlay of [null, presentation]) {
   const actual = buildStoryCatalog(generated, overlay)
   verifyCollections(master, generated, actual)
   assert.equal(actual.length, expected.length)
+  // Deliberate departure from v0: card_scenarios are phone calls (labelled 电话) whose source rows put the
+  // call's first line in officialTitle and the room id in releaseAt. They must show the call's
+  // own title (the last of titles) with an unknown date; every other field keeps parity.
+  const phoneFields = ['domainLabel', 'officialTitle', 'title', 'subtitle', 'searchText', 'releaseAt']
+  const omit = entry => Object.fromEntries(Object.entries(entry).filter(([key]) => !phoneFields.includes(key)))
+  let phones = 0
   for (const [index, entry] of expected.entries()) {
-    assert.deepEqual(actual[index], entry, `catalog property/order parity: ${entry.id}`)
+    if (entry.domain !== 'card_scenarios') {
+      assert.deepEqual(actual[index], entry, `catalog property/order parity: ${entry.id}`)
+      continue
+    }
+    phones++
+    const phone = actual[index]
+    assert.deepEqual(omit(phone), omit(entry), `phone property/order parity: ${entry.id}`)
+    assert.equal(phone.domainLabel, '电话', `phone is labelled as a call: ${entry.id}`)
+    assert.equal(phone.title, entry.titles.at(-1), `phone shows its own title: ${entry.id}`)
+    assert.notEqual(phone.title, entry.title, `phone title is no longer the first line: ${entry.id}`)
+    assert.ok(Number.isNaN(phone.releaseAt), `phone room id is not a release date: ${entry.id}`)
+    assert.ok(phone.searchText.includes(phone.title.toLowerCase()), `phone title is searchable: ${entry.id}`)
   }
+  assert.equal(phones, 342, 'all phone calls are checked')
 }
 assert.throws(() => validateStoryCatalog(master), /named v1/)
 for (const mutate of [

@@ -15,7 +15,7 @@ const normalizeSearch = value => text(value).normalize('NFKC').toLocaleLowerCase
 const sourceText = (callback, source, ...args) => typeof callback === 'function' ? text(callback(source, ...args)) || source : source
 const safeAssetUrl = value => typeof value === 'string' && /^\/assets\/[a-zA-Z0-9_./-]+\.(?:png|webp|jpg|jpeg)$/u.test(value) && !value.includes('..')
 const storyLabels = { main: '主线剧情', event: '活动剧情', unit_story: '组合剧情', idol_story: '个人剧情',
-  card_scenarios: '卡片剧情', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情' }
+  card_scenarios: '电话', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情' }
 
 function requireValue(condition, message) {
   if (!condition) throw new TypeError(`Portal read model: ${message}`)

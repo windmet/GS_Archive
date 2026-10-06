@@ -6,7 +6,7 @@ import { validateStoryCollectionStructure, validateEventEpisodeStructure } from 
 
 export const STORY_DOMAIN_LABELS = {
   main: '主线剧情', event: '活动剧情', unit_story: '组合前传', idol_story: '个人剧情',
-  card_scenarios: '卡片剧情', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情',
+  card_scenarios: '电话', work: '工作剧情', birthday: '生日剧情', extra: '额外剧情',
 }
 const DOMAIN_ORDER = new Map(Object.keys(STORY_DOMAIN_LABELS).map((domain, index) => [domain, index]))
 
@@ -54,6 +54,13 @@ export function buildStoryCatalog(data, presentationData = null) {
       playableStartIndex: presentation?.playable_start_index || 0,
       playableStepCount: presentation?.playable_step_count ?? source.summary?.step_count ?? 0,
       titleCards: presentation?.title_cards || [], episodes: presentation?.episodes || [],
+    }
+    // card_scenarios are the communication archive's phone calls. Their source rows carry the
+    // call's first line as officialTitle, the call's own title last in titles, and the room id
+    // where a release time belongs; present the title and leave the date unknown.
+    if (source.domain === 'card_scenarios') {
+      entry.officialTitle = entry.titles.at(-1) || entry.officialTitle
+      entry.releaseAt = Number.NaN
     }
     const title = entry.officialTitle || entry.preplaySynopsis?.title || entry.titles[0] || entry.resourceIds[0] || entry.file
     const secondary = entry.titles.filter(candidate => candidate && candidate !== title && candidate !== entry.episodeLabel)

@@ -1,6 +1,6 @@
-import { CreditCard, Languages, UserRound, Briefcase, Cake, Sparkles, CalendarRange } from '@lucide/vue'
+import { Languages, UserRound, Briefcase, Cake, Sparkles, CalendarRange } from '@lucide/vue'
+// Phone calls (the card_scenarios domain) belong to 通信, not here; they stay searchable as 电话.
 export const storyGateways = Object.freeze([
-  {id:'card_scenarios',label:'卡片剧情',icon:CreditCard},
   {id:'external_story_resources',label:'社区中文剧情',icon:Languages,unit:'条',action:'external-resources'},
   {id:'idol_story',label:'个人故事',icon:UserRound,action:'idol-story'},
   {id:'work',label:'工作剧情',icon:Briefcase,unit:'人',action:'work'},
