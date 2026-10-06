@@ -1,9 +1,9 @@
 <template>
   <article class="domain-page photo-page" data-archive-scroll-container :aria-busy="busy">
-    <p class="domain-intro">查阅摄影地点、场景和偶像的表情、动作配置。</p>
+    <p class="domain-intro">查阅摄影地点（含各时段场景）和偶像的表情、动作配置。</p>
     <nav ref="tabsElement" class="domain-tabs" aria-label="摄影分类">
       <button
-        v-for="tab in photoTabs"
+        v-for="tab in visibleTabs"
         :key="tab.id"
         :data-archive-focus-id="`photo-tab:${tab.id}`"
         type="button"
@@ -38,6 +38,10 @@
             </select>
           </label>
         </div>
+        <nav v-if="photoTab === 'spots' && variants.length" class="photo-variants" aria-label="时段与天气">
+          <button type="button" :aria-pressed="!variant" @click="setVariant('')">全部</button>
+          <button v-for="entry in variants" :key="entry.id" type="button" :aria-pressed="variant === entry.id" @click="setVariant(entry.id)">{{ entry.label }} <small>{{ entry.count }}</small></button>
+        </nav>
         <p class="domain-count">{{ activeDataReady ? `${filtered.length} 条资料` : busy ? '正在读取…' : error ? '结果暂不可用' : '— 条资料' }}</p>
         <div ref="gridElement" class="photo-grid" :class="{ 'is-backgrounds': ['spots', 'scenes'].includes(photoTab), 'is-frames': photoTab === 'frames', 'is-filters': photoTab === 'filters' }">
           <button
@@ -74,7 +78,7 @@
             <span class="photo-card-copy">
               <strong>{{ photoName(row) }}</strong>
               <small v-if="photoTab === 'scenes'">{{ sceneSpotName(row) }}</small>
-              <small v-else-if="photoTab === 'spots'">{{ materials?.sceneIdsBySpotId?.[row.id]?.length || 0 }} 个场景</small>
+              <small v-else-if="photoTab === 'spots'">{{ spotVariantLine(row) }}</small>
             </span>
           </button>
         </div>
@@ -102,6 +106,7 @@
         :resource-description="resourceDescription"
         :initial-grant="initialGrant"
         :scenes="photoTab === 'spots' ? scenesForSpot : []"
+        :active-scene="activeSceneId"
         :scene-media="materialMedia"
         @close="closeDetail"
         @open-studio="emit('open-studio', $event)"
@@ -165,6 +170,37 @@ const photoTabs = [
   { id: "frames", label: "相框" },
   { id: "filters", label: "滤镜" },
 ];
+// Scenes are the time-of-day variants of a spot, and every spot's own picture is one of them, so
+// they are browsed inside their spot rather than as a second, overlapping tab. `scenes:<id>` still
+// routes: it opens the owning spot with that scene selected.
+const visibleTabs = photoTabs.filter((tab) => tab.id !== "scenes");
+const sceneSelection = ref(""), variant = ref("");
+const sceneById = computed(() => new Map((materials.value?.scenes || []).map((row) => [row.id, row])));
+const spotScenes = (spot) => (materials.value?.sceneIdsBySpotId?.[spot?.id] || []).map((id) => sceneById.value.get(id)).filter(Boolean);
+// "通常1"/"通常2" are both 通常 for filtering.
+const variantKey = (name) => String(name || "").replace(/\d+$/, "");
+const spotVariantKeys = (spot) => [...new Set(spotScenes(spot).map((row) => variantKey(row.name)))];
+const variants = computed(() => {
+  const counts = new Map();
+  for (const spot of materials.value?.spots || []) for (const key of spotVariantKeys(spot)) counts.set(key, (counts.get(key) || 0) + 1);
+  return [...counts].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1])
+    .map(([id, count]) => ({ id, count, label: archiveText("photo-scenes", id) || id }));
+});
+function spotVariantLine(spot) {
+  const scenes = spotScenes(spot);
+  return scenes.length > 4 ? `${scenes.length} 个场景` : [...new Set(scenes.map((row) => archiveText("photo-scenes", row.name) || row.name))].join(" · ");
+}
+function setVariant(id) {
+  interactionRevision++;
+  variant.value = id;
+  page.value = 0;
+}
+const sceneOwnerId = computed(() => {
+  const id = Number(sceneSelection.value);
+  const spot = id && (materials.value?.spots || []).find((row) => materials.value.sceneIdsBySpotId?.[row.id]?.includes(id));
+  return spot ? String(spot.id) : "";
+});
+const effectiveSelection = computed(() => photoSelection.value || sceneOwnerId.value);
 const actorId = computed(() => props.photoIdol || actors.value[0]?.id || "");
 const loadingActorName = computed(() => {
   const entry = actors.value.find(row => row.id === loadingActorId.value);
@@ -186,17 +222,18 @@ const filtered = computed(() => {
   const q = props.query.trim().toLocaleLowerCase();
   return photoRows.value.filter(
     (row) =>
-      !q ||
+      (photoTab.value !== "spots" || !variant.value || spotVariantKeys(row).includes(variant.value)) && (!q ||
       String(
         archiveSearchText(`photo-${photoTab.value}`, row.name) + ' ' + photoName(row) + ' ' + sceneSpotName(row) + ' ' +
           (photoTab.value === 'scenes' ? archiveSearchText('photo-spots', spotForScene(row)?.name) : '') +
+          (photoTab.value === 'spots' ? spotScenes(row).map((scene) => archiveSearchText('photo-scenes', scene.name)).join(' ') : '') +
           " " +
           row.id +
           " " +
           (row.resourceId || row.animationName || ""),
       )
         .toLocaleLowerCase()
-        .includes(q),
+        .includes(q)),
   );
 });
 const pages = computed(() => Math.ceil(filtered.value.length / 25)),
@@ -205,8 +242,8 @@ const pages = computed(() => Math.ceil(filtered.value.length / 25)),
   );
 const photoEntry = computed(
     () =>
-      photoSelection.value
-        ? photoRows.value.find((row) => String(row.id) === photoSelection.value) || null
+      effectiveSelection.value
+        ? photoRows.value.find((row) => String(row.id) === effectiveSelection.value) || null
         : null,
   ),
   selectedId = computed(() => String(photoEntry.value?.id || ""));
@@ -242,6 +279,13 @@ const initialGrant = computed(() => {
 const scenesForSpot = computed(() => {
   const ids = materials.value?.sceneIdsBySpotId?.[photoEntry.value?.id] || [];
   return (materials.value?.scenes || []).filter((row) => ids.includes(row.id));
+});
+// The scene shown in a spot's dialog: the one asked for, else the spot's own picture.
+const activeSceneId = computed(() => {
+  const scenes = scenesForSpot.value;
+  if (!scenes.length) return null;
+  return (scenes.find((row) => String(row.id) === sceneSelection.value) ||
+    scenes.find((row) => row.backgroundResourceId === photoEntry.value?.resourceId) || scenes[0]).id;
 });
 function photoName(row) {
   if (['faces','poses'].includes(photoTab.value)) {
@@ -327,7 +371,7 @@ async function load() {
       selectQuietly(`${photoTab.value}:${photoSelection.value}`);
     }
     const position = filtered.value.findIndex(
-      (row) => String(row.id) === photoSelection.value,
+      (row) => String(row.id) === effectiveSelection.value,
     );
     page.value = position >= 0 ? Math.floor(position / 25) : 0;
     busy.value = false;
@@ -344,11 +388,12 @@ function select(row) {
   interactionRevision++;
   quietSelectionKey = '';
   photoSelection.value = String(row.id);
+  sceneSelection.value = "";
   detailOpen.value = true;
   emit("photo-entity", `${photoTab.value}:${row.id}`);
 }
 async function closeDetail() {
-  const tab = photoTab.value, key = `photo:${tab}:${photoSelection.value}`;
+  const tab = photoTab.value, key = `photo:${tab}:${selectedId.value}`;
   const revision = ++interactionRevision;
   pendingCloseRevision = revision;
   quietSelectionKey = '';
@@ -369,18 +414,21 @@ function selectRelatedScene(id) {
 function applyPhotoSelection(key) {
   const quiet = quietSelectionKey === key;
   quietSelectionKey = '';
-  const [kind, id] = (key || "").split(":");
+  const [rawKind, rawId] = (key || "").split(":");
+  // A scene opens inside its spot; the spot is resolved from the materials (sceneOwnerId).
+  const scene = rawKind === "scenes", kind = scene ? "spots" : rawKind, id = scene ? "" : rawId;
   const closeEcho = key === '' && pendingCloseRevision > 0 && pendingCloseRevision === interactionRevision;
   pendingCloseRevision = 0;
-  if(!closeEcho && (kind !== photoTab.value || id !== photoSelection.value))interactionRevision++;
+  if(!closeEcho && (kind !== photoTab.value || id !== photoSelection.value || (scene && rawId !== sceneSelection.value)))interactionRevision++;
   pendingTabSelection.value = false;
-  if (photoTabs.some((tab) => tab.id === kind)) {
+  if (visibleTabs.some((tab) => tab.id === kind)) {
     photoTab.value = kind;
     photoSelection.value = id;
+    sceneSelection.value = scene ? rawId : "";
     detailOpen.value = !quiet;
-    const position = filtered.value.findIndex((row) => String(row.id) === id);
+    const position = filtered.value.findIndex((row) => String(row.id) === effectiveSelection.value);
     page.value = position >= 0 ? Math.floor(position / 25) : 0;
-  } else { photoSelection.value = ""; detailOpen.value = false; }
+  } else { photoSelection.value = ""; sceneSelection.value = ""; detailOpen.value = false; }
 }
 function switchPhotoTab(tab) {
   if (photoTab.value === tab) return;
@@ -389,6 +437,7 @@ function switchPhotoTab(tab) {
   photoTab.value = tab;
   page.value = 0;
   photoSelection.value = "";
+  sceneSelection.value = "";
   pendingTabSelection.value = !photoRows.value[0];
   if (photoRows.value[0])
     selectQuietly(`${tab}:${photoRows.value[0].id}`);
@@ -418,6 +467,11 @@ watch(
 .photo-page .domain-tools{gap:var(--gs-space-4);margin-bottom:var(--gs-space-5);}
 .photo-page .domain-tools label{min-width:0;flex:1 1 140px;gap:var(--gs-space-2);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
 .photo-page .domain-tools input,.photo-page .domain-tools select{padding:var(--gs-space-3) var(--gs-space-4);border-radius:var(--gs-radius-field);font-weight:var(--gs-weight-regular);}
+.photo-variants{display:flex;flex-wrap:wrap;gap:var(--gs-space-2);margin:0 0 var(--gs-space-4);}
+.photo-variants button{display:inline-flex;align-items:center;gap:6px;padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);cursor:pointer;white-space:nowrap;}
+.photo-variants button small{color:var(--gs-ink-3);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-regular);}
+.photo-variants button[aria-pressed=true]{border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);}
+.photo-variants button[aria-pressed=true] small{color:inherit;}
 .photo-page .domain-count{margin-bottom:var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium);}
 .photo-directory{min-width:0;}
 .photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px;}
@@ -444,6 +498,7 @@ watch(
 @media(max-width:760px), (pointer:coarse){
  .photo-page .domain-tools input,.photo-page .domain-tools select{font-size:var(--gs-text-subtitle);}
 }
+@media(max-width:760px){.photo-variants{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * var(--gs-space-4));padding-inline:var(--gs-space-4);}.photo-variants button{flex:none;}}
 @media(max-width:760px){.photo-page .domain-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:6px;}.photo-page .domain-tabs button{flex:none;}.photo-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.photo-grid>button{padding:6px;gap:6px;}.photo-grid.is-backgrounds,.photo-grid.is-frames{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.photo-grid.is-filters{grid-template-columns:repeat(2,minmax(0,1fr));}.photo-card-copy strong{font-size:12px;}.photo-page .domain-tools{margin-bottom:12px;}}
 @media(max-width:360px){.photo-grid:not(.is-backgrounds):not(.is-frames):not(.is-filters){grid-template-columns:repeat(3,minmax(0,1fr));}}
 </style>

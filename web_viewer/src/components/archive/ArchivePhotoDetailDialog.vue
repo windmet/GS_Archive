@@ -3,18 +3,17 @@
     <p v-if="spotName" class="photo-detail-context">{{ spotName }}</p>
     <DomainMediaPreview v-if="kind !== 'filters'" class="photo-detail-preview" :class="{ 'is-background': ['spots', 'scenes'].includes(kind), 'is-transparent': !['spots', 'scenes'].includes(kind) }" :binding="previewBinding" :name="name" />
     <p v-if="kind === 'filters'" class="domain-muted">原始滤镜参数尚未解析；摄影工作台提供网页近似效果。</p>
-    <p v-if="binding?.effectStatus === 'effect-not-rendered'" class="domain-muted">当前仅展示背景图，场景效果尚未重建。</p>
+    <p v-if="activeBinding?.effectStatus === 'effect-not-rendered'" class="domain-muted">当前仅展示背景图，场景效果尚未重建。</p>
     <p class="domain-description">{{ description || '查看对应场景或预设。' }}</p>
-    <button type="button" class="domain-action" :data-archive-focus-id="`photo-studio:${kind}:${entry.id}`" @click="emit('open-studio', `${kind}:${entry.id}`)"><Camera :size="18" aria-hidden="true" />在摄影工作台打开</button>
-    <section v-if="kind === 'spots'" class="photo-related-scenes" aria-label="关联场景">
-      <h3>关联场景</h3>
+    <button type="button" class="domain-action" :data-archive-focus-id="`photo-studio:${studioKey}`" @click="emit('open-studio', studioKey)"><Camera :size="18" aria-hidden="true" />在摄影工作台打开</button>
+    <section v-if="kind === 'spots' && scenes.length > 1" class="photo-related-scenes" aria-label="场景">
+      <h3>场景 <small>{{ scenes.length }}</small></h3>
       <div class="photo-scene-grid">
-        <button v-for="scene in scenes" :key="scene.id" type="button" :aria-label="`查看场景 ${sceneName(scene)}`" @click="emit('scene', scene.id)">
+        <button v-for="scene in scenes" :key="scene.id" type="button" :aria-label="`切换到场景 ${sceneName(scene)}`" :aria-pressed="scene.id === activeScene" @click="emit('scene', scene.id)">
           <span class="photo-scene-art"><img v-if="sceneMedia?.[`scenes:${scene.id}`]?.image?.url && !failedScenes.has(scene.id)" :src="sceneMedia[`scenes:${scene.id}`].image.url" alt="" loading="lazy" decoding="async" @error="failedScenes.add(scene.id)" /><ImageOff v-else :size="24" aria-hidden="true" /></span>
           <strong>{{ sceneName(scene) }}</strong>
         </button>
       </div>
-      <p v-if="!scenes.length" class="domain-muted">没有关联的场景配置。</p>
     </section>
     <section v-if="kind === 'frames' && frameLayers.length" class="photo-frame-layers" aria-label="原始相框图层">
       <h3>原始相框图层</h3>
@@ -47,13 +46,28 @@ const props = defineProps({
   open: Boolean, kind: String, entry: { type: Object, required: true }, binding: Object,
   name: String, spotName: String, description: String, resourceDescription: Boolean,
   initialGrant: { default: null }, scenes: { type: Array, default: () => [] }, sceneMedia: Object,
+  activeScene: { type: Number, default: null },
 });
 const emit = defineEmits(['close', 'open-studio', 'scene']);
 const titleId = `photo-detail-title-${getCurrentInstance().uid}`;
 const failedScenes = ref(new Set());
-const previewBinding = computed(() => props.kind === 'stickers' && props.binding?.full?.url ? props.binding.full : props.binding?.image);
+// A spot shows whichever of its scenes is selected, and opens that scene in the studio.
+const sceneKey = computed(() => props.kind === 'spots' && props.activeScene != null ? `scenes:${props.activeScene}` : '');
+const activeBinding = computed(() => (sceneKey.value && props.sceneMedia?.[sceneKey.value]) || props.binding);
+const studioKey = computed(() => sceneKey.value || `${props.kind}:${props.entry.id}`);
+const previewBinding = computed(() => props.kind === 'stickers' && activeBinding.value?.full?.url ? activeBinding.value.full : activeBinding.value?.image);
 const frameLayers = computed(() => Array.isArray(props.binding?.layers) ? props.binding.layers : []);
-const sceneName = scene => archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`;
+const baseSceneName = scene => archiveText('photo-scenes', scene.name) || `场景 ${scene.id}`;
+// A spot can carry two scenes of the same name (two 日中 backgrounds); number the repeats.
+const sceneNames = computed(() => {
+  const seen = new Map()
+  return new Map(props.scenes.map(scene => {
+    const base = baseSceneName(scene), count = (seen.get(base) || 0) + 1
+    seen.set(base, count)
+    return [scene.id, count > 1 ? `${base} ${count}` : base]
+  }))
+});
+const sceneName = scene => sceneNames.value.get(scene.id) || baseSceneName(scene);
 </script>
 <style scoped>
 .photo-detail-dialog { width:min(760px,calc(100% - 32px));max-width:calc(100% - 32px);max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding:0;border:1px solid #cddfe3;border-radius:12px;background:#fff;color:#243d4b;font-family:var(--gs-font-directory);font-size:var(--gs-text-body,14px); }
@@ -79,6 +93,8 @@ const sceneName = scene => archiveText('photo-scenes', scene.name) || `场景 ${
 .photo-scene-art { display:grid;place-items:center;width:100%;aspect-ratio:16/9;background:#edf4f4;border-radius:7px 7px 0 0;overflow:hidden;color:#71888c; }
 .photo-scene-art img { display:block;width:100%;height:100%;object-fit:contain; }
 .photo-scene-grid strong { padding:0 8px;font-size:13px;line-height:1.5;overflow-wrap:anywhere; }
+.photo-scene-grid button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.photo-related-scenes h3 small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .photo-frame-layers > div { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px; }
 .photo-frame-layers :deep(.domain-media-preview) { margin:0; }
 .photo-frame-layers :deep(img) { min-height:0;max-height:260px;object-fit:contain; }
