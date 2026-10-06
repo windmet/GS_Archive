@@ -30,7 +30,7 @@ const third=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.id
 const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boolean).length)
 // The encounter is never the lead card already shown beside it.
 const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==lead.value?.id),date,draw.value))
-// Phones show a second encounter beside the lead (two small cards stacked); desktop keeps one.
+// A second encounter sits beside the first, both as pictures next to the lead.
 const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,draw.value);return next?.image?.url ? next : null})
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
@@ -105,6 +105,28 @@ const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intellig
   .encounter-card strong,.encounter-next strong {font-size:var(--gs-text-meta);}
   .encounter-next strong {position:absolute;inset:auto 0 0;padding:16px 6px 6px;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 82%,transparent));color:var(--gs-surface);}
   .bento-filters {grid-column:1 / -1;grid-row:3;display:grid;gap:8px;padding:0;border:0;background:none;}
+  .bento-filters > span {display:none;}
+  .attribute-links,.rarity-links {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:0;}
+  .attribute-links button,.rarity-links button {min-height:36px;border-radius:var(--gs-radius-pill);text-align:center;font-size:var(--gs-text-meta);}
+}
+/* Desktop: the same hugging frames — cover, never a blurred fill. 卡面探索 shows the lead at the
+   landscape art's own 15:8, two encounter cards beside it in portrait, the filters under them. */
+@media (min-width:761px){
+  .is-global {grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,.5fr));grid-template-rows:minmax(0,1fr) auto;}
+  .is-global .bento-lead {grid-column:1;grid-row:1 / span 2;align-self:start;aspect-ratio:15 / 8;}
+  .bento-lead:before {display:none;}
+  .bento-lead picture > img,.bento-portrait img {object-fit:cover;object-position:top;}
+  .bento-encounter {grid-column:2;grid-row:1;position:relative;padding:0;overflow:hidden;background:var(--gs-paper);}
+  .bento-encounter header span,.bento-encounter > small {display:none;}
+  .bento-encounter header {position:absolute;top:2px;right:2px;z-index:1;}
+  .bento-encounter header button {color:var(--gs-surface);}
+  .encounter-card {height:100%;padding:0;}
+  .encounter-card img,.encounter-next img {width:100%;height:100%;object-fit:cover;object-position:top;}
+  .encounter-card > span,.encounter-next strong {position:absolute;inset:auto 0 0;padding:24px 10px 8px;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 82%,transparent));color:var(--gs-surface);}
+  .encounter-card > span small,.encounter-card > svg {display:none;}
+  .encounter-next {grid-column:3;grid-row:1;position:relative;display:block;padding:0;overflow:hidden;background:var(--gs-paper)!important;}
+  .encounter-next strong {font-size:var(--gs-text-meta);}
+  .bento-filters {grid-column:2 / -1;grid-row:2;display:grid;gap:8px;padding:0;border:0;background:none;}
   .bento-filters > span {display:none;}
   .attribute-links,.rarity-links {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:0;}
   .attribute-links button,.rarity-links button {min-height:36px;border-radius:var(--gs-radius-pill);text-align:center;font-size:var(--gs-text-meta);}

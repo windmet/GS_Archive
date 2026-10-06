@@ -137,28 +137,25 @@
 .is-global-grid .overview-story-gateways {align-content:stretch;grid-template-rows:repeat(3,minmax(0,1fr));}
 /* Phones: 资料馆 and the tools share the first row; the scope chip takes the second at its full width. */
 @media (max-width:760px){.overview-toolbar {grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2);}.overview-brand {display:contents;}.overview-breadcrumb-divider {display:none;}.overview-toolbar-actions {grid-column:3;grid-row:1;}.overview-lens-trigger {grid-column:1 / -1;grid-row:2;justify-self:start;max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);}.overview-lens-trigger span {max-width:none;}.overview-toolbar > .overview-search {grid-column:1 / -1;grid-row:3;max-width:none;}}
-/* 担当 hero (phones): the idol's light wash, the autograph in the idol's ink behind the figure, the
-   figure placed by where the person stands, the copy on the left and a light pill to the homepage. */
-.overview-signature {display:none;}
-@media (max-width:760px){
+/* 担当 hero, every width: the idol's light wash, the autograph in the idol's ink behind the figure,
+   the figure placed by where the person stands, the copy on the left and a light pill to the homepage.
+   On desktop it fills the left column beside the featured cards, or spans the row once they stack. */
 .overview-personal {position:relative;display:flex;flex-direction:column;align-items:stretch;gap:var(--gs-space-3);}
 .overview-identity {position:relative;display:block;height:228px;min-height:0;overflow:hidden;border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%);}
 .overview-identity::before {content:'';position:absolute;inset:0 0 auto;z-index:3;height:3px;background:var(--hero-light,var(--gs-mint));}
 .overview-portrait-slot {position:absolute;inset:0;}
 .overview-identity .overview-idol-art {position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;height:300px;object-fit:contain;filter:none;}
-.overview-signature {display:block;position:absolute;left:96px;top:10px;z-index:1;width:250px;height:232px;opacity:.28;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance;}
+.overview-signature {display:block;position:absolute;right:12px;top:10px;z-index:1;width:250px;height:232px;opacity:.28;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance;}
 .overview-identity-copy,.has-portrait .overview-identity-copy {position:relative;z-index:3;width:170px;margin:0;padding:20px 16px;border-radius:0;background:none;}
 .overview-identity .overview-eyebrow {display:flex;align-items:center;gap:8px;margin:0;color:var(--hero-ink,var(--gs-ink-3));font-size:var(--gs-text-meta);letter-spacing:.08em;}
 .overview-identity .overview-eyebrow::before {content:'';width:16px;height:2px;background:var(--hero-light,var(--gs-mint));}
 .overview-identity-copy h2 {margin:6px 0 4px;font-size:var(--gs-text-section);}
 .overview-home-action {position:absolute;top:180px;left:16px;z-index:4;display:inline-flex;align-items:center;gap:2px;min-height:32px;padding:0 12px;border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb,var(--hero-light,var(--gs-mint)) 20%,var(--gs-surface));color:var(--hero-ink,var(--gs-ink));font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
-.overview-preferred-actions {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0;padding:0;border:0;background:none;}
+.overview-preferred-actions {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:420px;margin:0;padding:0;border:0;background:none;}
 .overview-preferred-actions button {flex-direction:column;justify-content:center;gap:6px;min-height:var(--gs-control-touch);padding:var(--gs-space-2) 0;font-size:var(--gs-text-meta);}
 .overview-art-theme,.overview-producer-badge {align-self:flex-start;min-height:32px;padding:0;border:0;background:none;color:var(--gs-ink-2);font-size:var(--gs-text-meta);}
-}
-/* Phones: chapters as cards whose border hugs banner and title; the story kinds and the song list as
-   plain rows; song categories as one row of chips instead of a column that squeezed the titles. */
-@media (max-width:760px){
+/* Chapters as cards whose border hugs banner and title; the story kinds and the song list as plain
+   rows; song categories as one row of chips instead of a column that squeezed the titles. */
 .overview-main-index article {display:block;min-height:0;overflow:hidden;border:1px solid var(--gs-rule);border-radius:var(--gs-radius-control);background:var(--gs-surface);}
 .overview-main-index button {display:block;width:100%;min-height:0;padding:0;}
 .overview-main-index article :deep(.domain-media-preview) {display:block;margin:0;}
@@ -176,4 +173,11 @@
 .is-global-grid .overview-music .overview-story-tabs button[aria-pressed=true] {border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);box-shadow:none;}
 .is-global-grid .overview-song {min-height:0;}
 .overview-song strong {overflow-wrap:normal;word-break:normal;}
+/* Desktop: the story kinds sit beside the chapter cards as a list; songs run in two columns under the
+   chips so a row is not a title stranded at one end of the page. */
+@media (min-width:761px){
+.is-global-grid .overview-story-gateways {grid-template-rows:none;align-content:start;}
+.overview-story-gateways button,.is-global-grid .overview-story-gateways button {min-height:56px;padding:0 var(--gs-space-2);}
+.is-global-grid .overview-song-list {grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-7);}
+.is-global-grid .overview-song,.is-global-grid .overview-song + .overview-song {border-top:0;border-bottom:1px solid var(--gs-line);}
 }
