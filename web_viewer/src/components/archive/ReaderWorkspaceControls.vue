@@ -1,7 +1,8 @@
 <template>
   <div class="reader-workspace-controls">
+    <!-- One language choice in the reader: the text's own (原文 / 译文 / 双语). The archive-wide
+         switch for names and descriptions is hidden here so the two do not nest. -->
     <header class="reader-compact-header">
-      <ArchiveLanguageSwitch />
       <button class="icon-button" aria-label="返回来源目录" title="返回来源目录" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
       <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}{{ title || '剧情阅读' }}</span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
       <button class="desktop-search icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
@@ -12,7 +13,7 @@
       <nav v-if="segments.length > 1" class="compact-episodes" aria-label="本话快速定位">
         <button v-for="segment in segments" :key="segment.episodeKey || segment.documentId" :aria-current="(segment.documentId || segment.episodeKey) === activeDocumentId ? 'location' : undefined" :disabled="!segment.documentId && !allowUnlinked" :title="segmentLabel(segment)" @click="emit('select', segment)">{{ segmentLabel(segment) }}</button>
       </nav>
-      <div class="compact-languages" role="group" aria-label="正文语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.short }}</button></div>
+      <div class="compact-languages" role="group" aria-label="正文语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode', item.id)">{{ item.label }}</button></div>
       <div class="compact-themes" role="group" aria-label="阅读主题"><button v-for="theme in READER_THEMES" :key="theme.id" :title="theme.label" :aria-label="theme.label" :aria-pressed="readerTheme === theme.id" @click="setReaderTheme(theme.id)"><span :style="{background:theme.swatch}" /></button></div>
     </div>
     <nav class="reader-floating-dock" aria-label="阅读浮动导航">
@@ -40,7 +41,6 @@
   </div>
 </template>
 <script setup>
-import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Search, Settings2, UserRound, X } from '@lucide/vue'
 import ReaderControlBar from './ReaderControlBar.vue'
@@ -50,7 +50,7 @@ import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { readerSegmentNeighbour } from '../../presentation/ReaderControls.js'
 const props = defineProps({ title:String, subtitle:String, segments:{type:Array,default:()=>[]}, documentId:String, activeDocumentId:String, chapterNavigation:{type:Object,default:null}, mode:String, searchable:{type:Boolean,default:true}, allowUnlinked:Boolean })
 const emit = defineEmits(['back','chapter','select','mode'])
-const modes = [{id:'original',short:'日'},{id:'translation',short:'中'},{id:'bilingual',short:'双'}]
+const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 const dialog = ref(null), heading = ref(null), panel = ref('')
 let opener = null
 const chapterLabel = computed(() => props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.label || '')
@@ -104,7 +104,7 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 .compact-episodes button { flex:none; padding:0 10px; border-radius:18px; font-size:12px; white-space:nowrap; font-variant-numeric:tabular-nums; }
 .compact-episodes button[aria-current] { background:var(--reader-active); color:var(--reader-on-accent); }
 .compact-languages { display:flex; margin-inline-start:auto; padding:2px; border-radius:8px; background:var(--reader-bg-card); border:1px solid var(--reader-border); }
-.compact-languages button { min-height:36px; min-width:36px; padding:0 8px; border-radius:5px; }
+.compact-languages button { min-height:36px; min-width:36px; padding:0 12px; border-radius:5px; white-space:nowrap; }
 .compact-languages button[aria-pressed=true] { background:var(--reader-active); color:var(--reader-on-accent); }
 .compact-themes { display:flex; }
 .compact-themes button { display:grid; place-items:center; width:36px; padding:0; }
@@ -138,5 +138,4 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
 
 <style scoped>
 .reader-compact-header { flex-wrap:wrap; }
-.reader-compact-header :deep(.archive-language-switch) { order:5; margin-left:auto; }
 </style>
