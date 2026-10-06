@@ -132,6 +132,25 @@ send('pointerdown', { pointerId: 9, clientX: 280, clientY: 370 });
 blur.dispatchEvent(new Event('resize')); assert.equal(canvas.capture.size, 0);
 assert.equal(stage.gestures.points.size, 0, 'Device rotation cancels contacts in the old coordinate system');
 const final = { ...stage.row('a') }; input.dispose(); send('wheel', { clientX: 320, clientY: 200, deltaY: -100, deltaMode: 0 }); assert.deepEqual(stage.row('a'), final);
+// Empty canvas: a clean tap clears the selection; a drag, a pinch starting there, or a cancelled
+// contact keeps it.
+{
+  delete canvas.parentElement;
+  canvas.getBoundingClientRect = () => ({ left: 100, top: 50, width: 640, height: 360 });
+  stage.pointerIntent = () => (stage.selectedId ? { id: stage.selectedId, mode: 'blank' } : null);
+  const blank = bindStudioCanvasInput(canvas, stage, blur);
+  const reset = () => { stage.selectedId = 'a'; };
+  send('pointerdown', { pointerId: 20, clientX: 120, clientY: 60 }); send('pointermove', { pointerId: 20, clientX: 121, clientY: 61 }); send('pointerup', { pointerId: 20 });
+  assert.equal(stage.selectedId, '', 'A tap on empty canvas hides the selection frame');
+  reset(); send('pointerdown', { pointerId: 21, clientX: 120, clientY: 60 }); send('pointermove', { pointerId: 21, clientX: 180, clientY: 90 }); send('pointerup', { pointerId: 21 });
+  assert.equal(stage.selectedId, 'a', 'A drag across empty canvas keeps the selection');
+  reset(); send('pointerdown', { pointerId: 22, clientX: 120, clientY: 60 }); send('pointerdown', { pointerId: 23, clientX: 300, clientY: 200 });
+  send('pointerup', { pointerId: 22 }); send('pointerup', { pointerId: 23 });
+  assert.equal(stage.selectedId, 'a', 'A pinch that starts on empty canvas keeps the selection');
+  reset(); send('pointerdown', { pointerId: 24, clientX: 120, clientY: 60 }); send('pointercancel', { pointerId: 24 });
+  assert.equal(stage.selectedId, 'a', 'A cancelled contact is not a tap');
+  blank.dispose(); reset();
+}
 display.destroy();
 // New editor gestures: every visible corner scales, locked/hidden rows reject
 // pointer and keyboard transforms, and Shift snaps the actual angle.

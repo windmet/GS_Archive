@@ -9,11 +9,15 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
       y: (event.clientY - rect.top) * 720 / rect.height };
   };
   const captured = new Set();
+  // A press on empty canvas stays bound to the selection (a pinch may start there), so only a
+  // clean tap — one pointer, no travel, no second finger — clears the selection.
+  let blankTap = null;
   const release = id => {
     captured.delete(id);
     if (view.hasPointerCapture(id)) view.releasePointerCapture(id);
   };
   const cancel = restore => {
+    blankTap = null;
     stage.gestures.cancel(restore);
     stage.endInteraction?.();
     for (const id of [...captured]) release(id);
@@ -23,6 +27,7 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
     if (event.button !== 0) return;
     const p = point(event);
     const intent = stage.gestures.points.size ? null : stage.pointerIntent(p, event.pointerType);
+    blankTap = intent?.mode === 'blank' ? { pointerId: event.pointerId, ...p } : null;
     if (intent?.id && !stage.gestures.points.size) stage.onSelect(intent.id);
     if (!stage.gestures.down(event.pointerId, p, intent)) return;
     event.preventDefault();
@@ -33,6 +38,7 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
   };
   const move = event => {
     const p = point(event);
+    if (blankTap && (blankTap.pointerId !== event.pointerId || Math.hypot(p.x - blankTap.x, p.y - blankTap.y) > 8)) blankTap = null;
     stage.snapEnabled = !event.altKey;
     if (stage.gestures.move(event.pointerId, p, { shiftKey: event.shiftKey })) { event.preventDefault(); return; }
     if (event.pointerType === 'mouse' && !stage.gestures.points.size) {
@@ -41,7 +47,12 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
         : intent.mode === 'scale' ? 'nwse-resize' : intent.mode === 'rotate' ? 'grab' : 'move';
     }
   };
-  const up = event => { stage.gestures.up(event.pointerId); if (!stage.gestures.points.size) stage.endInteraction?.(); release(event.pointerId); view.style.cursor = 'default'; };
+  const up = event => {
+    const tap = event.type === 'pointerup' && blankTap?.pointerId === event.pointerId;
+    blankTap = null;
+    stage.gestures.up(event.pointerId); if (!stage.gestures.points.size) stage.endInteraction?.(); release(event.pointerId); view.style.cursor = 'default';
+    if (tap && !stage.gestures.points.size) stage.onSelect('');
+  };
   const wheel = event => {
     const delta = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 720 : 1);
     if (!stage.adjustSelected({ point: point(event),
