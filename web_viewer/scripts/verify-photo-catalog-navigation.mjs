@@ -5,6 +5,8 @@ import * as Vue from 'vue'
 import { parse, compileScript } from '@vue/compiler-sfc'
 import { DomainRepository } from '../readmodels/runtime/DomainRepository.mjs'
 import { studioPresetPresentation } from '../src/presentation/studio-preset-labels.mjs'
+import * as photoStickerGroups from '../src/presentation/photoStickerGroups.js'
+import * as photoSpotScenes from '../src/presentation/photoSpotScenes.js'
 import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchiveSourceRoute, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveViewContext, captureArchiveViewState, saveArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
@@ -102,8 +104,10 @@ const emptyComponent = { render: () => null }
 const modules = {
   vue: Vue,
   '@lucide/vue': { Camera: emptyComponent, SlidersHorizontal: emptyComponent, ImageOff: emptyComponent, X: emptyComponent },
-  './useArchivePhotoText.js': { archiveText: (kind, value) => value || '', archiveSearchText: (kind, value) => value || '' },
+  './useArchivePhotoText.js': { archiveText: (kind, value) => value || '', archiveSearchText: (kind, value) => value || '', loadArchivePhotoNames: () => {} },
   '../../presentation/studio-preset-labels.mjs': { studioPresetPresentation },
+  '../../presentation/photoStickerGroups.js': { ...photoStickerGroups },
+  '../../presentation/photoSpotScenes.js': { ...photoSpotScenes },
   '../../presentation/ArchiveGeneralTextCore.mjs': { isArchiveResourceDescription: () => false },
   '../../../readmodels/runtime/DomainRepository.mjs': { DomainRepository },
   '../../styles/archive-domains.css': {},
@@ -211,7 +215,8 @@ const clickGrid = async (t, key) => {
   row.focus(); row.props.onClick(); await flush()
   return row
 }
-const kinds = [['spots', '地点'], ['scenes', '场景'], ['faces', '表情'], ['poses', '动作'], ['stickers', '贴纸'], ['frames', '相框'], ['filters', '滤镜']]
+// Scenes are a spot's time-of-day variants and open inside their spot, so they have no tab of their own.
+const kinds = [['spots', '地点'], ['faces', '表情'], ['poses', '动作'], ['stickers', '贴纸'], ['frames', '相框'], ['filters', '滤镜']]
 const sourceSnapshot = JSON.stringify([material, materialMedia, [...actors], [...actorMedia]])
 
 {
@@ -237,10 +242,13 @@ for (const [kind, label] of kinds) {
   const opener = await clickGrid(t, key)
   assert.ok(dialog(t), 'user selection opens a native dialog: ' + kind)
   assert.equal(opener.props['aria-pressed'], true)
-  assert.equal(studioButton(t).dataset.archiveFocusId, 'photo-studio:' + key)
+  // A spot reaches the studio through one of its own scenes (the one showing the spot's picture).
+  if (kind === 'spots' && material.sceneIdsBySpotId[row.id]?.length) assert.ok(material.sceneIdsBySpotId[row.id].map(id => 'photo-studio:scenes:' + id).includes(studioButton(t).dataset.archiveFocusId), 'spot opens the studio on one of its scenes')
+  else assert.equal(studioButton(t).dataset.archiveFocusId, 'photo-studio:' + key)
   const binding = ['faces', 'poses'].includes(kind) ? actorMedia.get('1').entries[key] : materialMedia[key]
   const thumb = all(opener).find(item => item.type === 'img')
-  if (binding?.image?.url) assert.equal(thumb.props.src, binding.image.url, 'grid uses exact thumbnail binding')
+  // Background tiles show the game's own small thumbnail of the bound picture (photoBackgroundThumbnailUrl).
+  if (binding?.image?.url) assert.equal(thumb.props.src, kind === 'spots' ? photoSpotScenes.photoBackgroundThumbnailUrl(binding.image.url) : binding.image.url, 'grid uses exact thumbnail binding')
   else assert.equal(thumb, undefined, 'unbound filters do not invent an image')
   const preview = all(dialog(t)).find(item => hasClass(item, 'photo-detail-preview'))
   const previewImg = preview && all(preview).find(item => item.type === 'img')
@@ -271,12 +279,12 @@ for (const [kind, label] of kinds) {
   const row = material.scenes.find(item => item.id === 29)
   const owner = material.spots.find(item => material.sceneIdsBySpotId[item.id]?.includes(row.id))
   const t = fixture({ photoEntity: 'scenes:29' }); await flush()
-  assert.ok(owner); assert.ok(text(dialog(t)).includes(owner.name), 'scene context is the actual group FK, not a guessed category')
+  assert.ok(owner); assert.equal(text(activeTab(t)), '地点', 'a scene deep link opens inside its spot')
+  assert.ok(text(dialog(t)).includes(owner.name), 'scene context is the actual group FK, not a guessed category')
   assert.ok(text(dialog(t)).includes('场景效果'), 'known weather-effect limitation remains visible')
-  t.state.query = owner.name; await flush()
-  const expected = material.scenes.filter(item => (item.name + ' ' + item.id + ' ' + material.spots.find(spot => material.sceneIdsBySpotId[spot.id]?.includes(item.id))?.name).includes(owner.name))
-  assert.equal(count(t), expected.length + ' 条资料', 'scene search includes its real parent spot')
-  assert.equal(detailTitle(t), row.name, 'search retains an already-open valid detail')
+  assert.equal(studioButton(t).dataset.archiveFocusId, 'photo-studio:scenes:29', 'the studio opens the chosen scene, not the spot default')
+  t.state.query = row.name; await flush()
+  assert.ok(gridButtons(t).some(item => item.dataset.archiveFocusId === 'photo:spots:' + owner.id), 'spot search includes the names of its scenes')
   t.dispose()
 }
 {
@@ -287,7 +295,7 @@ for (const [kind, label] of kinds) {
   assert.equal(all(related).find(item => item.type === 'img').props.src, materialMedia['scenes:' + id].image.url)
   related.props.onClick(); await flush()
   assert.equal(t.state.photoEntity, 'scenes:' + id)
-  assert.equal(text(activeTab(t)), '场景')
+  assert.equal(text(activeTab(t)), '地点', 'a related scene stays inside its spot')
   assert.equal(studioButton(t).dataset.archiveFocusId, 'photo-studio:scenes:' + id)
   t.dispose()
 }
@@ -407,19 +415,17 @@ for (const mode of ['button', 'escape', 'cancel', 'backdrop']) {
 {
   const t = fixture({ photoEntity: '' }); await flush()
   tabButton(t, '下一页').props.onClick(); await flush()
-  const oldSpot = await clickGrid(t, 'spots:38')
-  const sceneId = material.sceneIdsBySpotId[38][0]
+  const spot = await clickGrid(t, 'spots:38')
+  const sceneId = material.sceneIdsBySpotId[38].at(-1)
   const scene = material.scenes.find(row => row.id === sceneId)
-  const related = all(dialog(t)).find(item => item.type === 'button' && item.props['aria-label'] === '查看场景 ' + scene.name)
+  const related = all(dialog(t)).find(item => item.type === 'button' && item.props['aria-label'] === '切换到场景 ' + scene.name)
   assert.ok(related, 'actual outdoor-stage scene relation exists')
   related.props.onClick(); await flush()
-  const sameNumber = gridButtons(t).find(item => item.dataset.archiveFocusId === 'photo:scenes:38')
-  assert.ok(sameNumber, 'actual scene directory includes numeric 38 in another domain')
-  assert.ok(sameNumber !== oldSpot, 'cross-category numeric coincidence cannot reuse the old opener DOM node')
-  assert.equal(oldSpot.isConnected, false)
+  assert.equal(t.state.photoEntity, 'scenes:' + sceneId); assert.equal(text(activeTab(t)), '地点')
+  assert.ok(dialog(t), 'switching scene keeps the spot open')
+  assert.equal(spot.isConnected, true, 'the spot tile stays the opener while its scene changes')
   closeButton(t).props.onClick(); await flush()
-  const selectedScene = gridButtons(t).find(item => item.dataset.archiveFocusId === 'photo:scenes:' + sceneId)
-  assert.equal(t.root.activeElement, selectedScene, 'related-scene close focuses its own typed grid entry, not numeric 38 from the prior category')
+  assert.equal(t.root.activeElement, spot, 'closing a scene focuses its spot, never a numeric twin from another category')
   assert.equal(t.root.focuses.at(-1).options.preventScroll, true); assert.equal(t.state.photoEntity, '')
   t.dispose()
 }
@@ -430,8 +436,9 @@ for (const mode of ['button', 'escape', 'cancel', 'backdrop']) {
   await t.parent.closeFullScreenExperiment(); await flush()
   assert.equal(t.state.photoEntity, 'scenes:29'); assert.ok(dialog(t))
   closeButton(t).props.onClick(); await flush()
-  const selected = gridButtons(t).find(item => item.dataset.archiveFocusId === 'photo:scenes:29')
-  assert.equal(t.root.activeElement, selected, 'cold deep link → Studio → return → close has a connected typed grid focus target')
+  const owner = material.spots.find(item => material.sceneIdsBySpotId[item.id]?.includes(29))
+  const selected = gridButtons(t).find(item => item.dataset.archiveFocusId === 'photo:spots:' + owner.id)
+  assert.ok(selected); assert.equal(t.root.activeElement, selected, 'cold deep link → Studio → return → close has a connected typed grid focus target')
   assert.equal(t.root.focuses.at(-1).options.preventScroll, true)
   assert.equal(readArchiveRoute(t.window.location.href).photoEntity, '')
   t.dispose()
@@ -453,16 +460,19 @@ for (const mode of ['tab', 'query', 'unmount']) {
   if (mode === 'unmount') assert.equal(t.root.focuses.length, focuses, 'unmount revokes queued close focus')
   else { assert.equal(t.root.activeElement, expected, mode + ': newer interaction revokes queued close focus'); t.dispose() }
 }
+// Spot 2 reaches the studio through one of its scenes; the later focus checks use that real CTA id.
+let spot2StudioFocus = ''
 {
   const selected = material.spots.find(row => row.id === 2), t = fixture({ photoEntity: 'spots:2', query: selected.name }); await flush()
-  const cta = studioButton(t); cta.focus()
+  const cta = studioButton(t); cta.focus(); spot2StudioFocus = cta.dataset.archiveFocusId
+  assert.ok(material.sceneIdsBySpotId[2].map(id => 'photo-studio:scenes:' + id).includes(spot2StudioFocus))
   all(t.root).find(item => hasClass(item, 'photo-page')).scrollTop = 315
   cta.props.onClick(); await flush()
   const studio = readArchiveRoute(t.window.location.href), source = readArchiveSourceRoute(studio.sourceRoute)
-  assert.equal(studio.view, 'picture_studio'); assert.equal(studio.photoEntity, 'spots:2')
-  assert.equal(source.query, selected.name); assert.equal(source.photoEntity, 'spots:2')
+  assert.equal(studio.view, 'picture_studio'); assert.equal('photo-studio:' + studio.photoEntity, spot2StudioFocus)
+  assert.equal(source.query, selected.name); assert.equal('photo-studio:' + source.photoEntity, spot2StudioFocus, 'return lands on the scene the studio used')
   const delayed = t.pause('1'); await t.parent.closeFullScreenExperiment(); await flush()
-  assert.equal(t.state.query, selected.name); assert.equal(t.state.photoEntity, 'spots:2'); assert.equal(t.ready.length, 1)
+  assert.equal(t.state.query, selected.name); assert.equal('photo-studio:' + t.state.photoEntity, spot2StudioFocus); assert.equal(t.ready.length, 1)
   delayed.resolve(); await flush()
   assert.equal(t.ready.length, 2); assert.ok(dialog(t))
   assert.equal(t.root.focuses.at(-1)?.item, studioButton(t)); assert.equal(t.root.focuses.at(-1).options.preventScroll, true)
@@ -472,10 +482,10 @@ for (const mode of ['tab', 'query', 'unmount']) {
   t.dispose()
 }
 for (const mode of ['leaveOnReady', 'disposeOnReady', 'queryOnReady']) {
-  const t = fixture({ photoEntity: 'spots:2' }, { saved: { scrollTop: 315, focusId: 'photo-studio:spots:2' }, [mode]: true })
+  const t = fixture({ photoEntity: 'spots:2' }, { saved: { scrollTop: 315, focusId: spot2StudioFocus }, [mode]: true })
   const delayed = t.pause('1'); await flush(); delayed.resolve(); await flush()
   assert.equal(t.ready.length, 1)
-  assert.equal(t.root.focuses.some(entry => entry.item.dataset?.archiveFocusId === 'photo-studio:spots:2'), false, mode + ': actual App ready cannot restore obsolete focus')
+  assert.equal(t.root.focuses.some(entry => entry.item.dataset?.archiveFocusId === spot2StudioFocus), false, mode + ': actual App ready cannot restore obsolete focus')
   if (mode === 'queryOnReady') assert.equal(t.state.query, '__no_matching_photo__')
   t.dispose()
 }
@@ -502,4 +512,4 @@ assert.equal(JSON.stringify([material, materialMedia, [...actors], [...actorMedi
   assert.equal(text(activeTab(t)), '表情', 'closing does not replace the current tab')
   t.dispose()
 }
-console.log('Photo catalog: seven actual-source grids, explicit typed dialog selection and quiet tab/actor keys, exact full/layer media bindings, parent-spot search, pagination, typed close focus across numeric-ID categories and cold Studio returns, filtered fallback/new-interaction cancellation, retained controls, identity/error/abort/retry guards and actual App Studio route/one-shot return passed. Memory-renderer/source evidence; Browser/resource/GPU acceptance is separate.')
+console.log('Photo catalog: six actual-source grids (scenes inside their spot), explicit typed dialog selection and quiet tab/actor keys, exact full/layer media bindings, parent-spot search, pagination, typed close focus across numeric-ID categories and cold Studio returns, filtered fallback/new-interaction cancellation, retained controls, identity/error/abort/retry guards and actual App Studio route/one-shot return passed. Memory-renderer/source evidence; Browser/resource/GPU acceptance is separate.')
