@@ -99,15 +99,20 @@ function titleParts(title){const query=props.query.trim();if(!query)return [{tex
 </style>
 
 <style scoped>
-.filter-deck{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 var(--gs-space-4);}
-.discovery-tools{grid-column:1;grid-row:1;}.advanced-filters{display:contents;}
-.facet-tools{grid-column:2;grid-row:1;display:flex;align-items:center;gap:var(--gs-space-4);}
+/* Desktop keeps one row in view (search, the filter toggle, count and view); the conditions open
+   beneath it on request, as on phones, so a filtered entry never parks a tall panel over the list. */
+.filter-deck{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:0 var(--gs-space-5);}
+.discovery-tools{grid-column:1;grid-row:1;}
+.advanced-filters{display:none;grid-column:1/-1;grid-row:2;}
+.advanced-filters.is-open{display:block;max-height:calc(100dvh - 260px);overflow-y:auto;padding-top:var(--gs-space-4);}
+.facet-tools{display:flex;align-items:center;gap:var(--gs-space-4);}
 .facet-tools>button{display:flex;align-items:center;gap:6px;min-height:var(--gs-control-toolbar);}
-.series-tabs,.idol-picker,.filter-deck :deep(.catalog-toolbar),.result-controls,.translation-filter{grid-column:1/-1;}
+.mobile-filter-toggle[aria-expanded=true]{background:var(--gs-selected-bg)!important;border-color:var(--gs-selected-line)!important;color:var(--gs-selected-ink)!important;}
 .filter-deck :deep(.catalog-toolbar label){font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
 .filter-deck :deep(.catalog-toolbar label > span){font-size:var(--gs-text-meta);}
 .filter-deck :deep(.catalog-toolbar select){min-height:var(--gs-control-normal);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-regular);}
-.translation-filter{grid-column:1;margin-top:var(--gs-space-4);}.result-controls{grid-column:2;}.mobile-filter-toggle{display:none!important;}
+.translation-filter{margin-top:var(--gs-space-4);}.result-controls{grid-column:2;grid-row:1;margin-top:0;}.mobile-filter-toggle{flex-shrink:0;}
+@media(max-width:1100px){.result-controls{grid-column:1/-1;grid-row:2;margin-top:var(--gs-space-3);}.advanced-filters{grid-row:3;}}
 .mobile-row-meta{display:none;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium);line-height:1.4;}
 @media(max-width:760px){
  .filter-deck{display:block;position:sticky;top:44px;padding:var(--gs-space-3) var(--gs-space-4);background:var(--gs-paper);z-index:20;}
