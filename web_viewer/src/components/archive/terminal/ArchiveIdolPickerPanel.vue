@@ -10,9 +10,10 @@
       <section v-for="group in groups" :key="group.id">
         <h3>{{ group.name }}</h3>
         <div class="idol-picker-grid">
-          <button v-for="idol in group.idols" :key="idol.id" type="button" :aria-label="`${displayName(idol)} · ${group.name}`" :aria-pressed="modelValue===idol.id" :data-idol-code="idol.id" @click="emit('update:modelValue',idol.id)">
+          <button v-for="idol in group.idols" :key="idol.id" type="button" :aria-label="`${displayName(idol)} · ${group.name}${counts[idol.id] ? ` · 画面中 ${counts[idol.id]}` : ''}`" :aria-pressed="modelValue===idol.id" :disabled="disabled" :data-idol-code="idol.id" @click="emit('update:modelValue',idol.id)">
             <ArchiveIdolAvatar :idol-code="idol.id" :accent-color="idol.color" :size="48" decorative :fallback-text="displayName(idol).slice(0, 1) || '?'" />
             <strong>{{ displayName(idol) }}</strong>
+            <small v-if="counts[idol.id]" class="idol-picker-count" aria-hidden="true">×{{ counts[idol.id] }}</small>
           </button>
         </div>
       </section>
@@ -27,6 +28,8 @@ import ArchiveIdolAvatar from '../ArchiveIdolAvatar.vue'
 const props = defineProps({
   idols: { type: Array, default: () => [] }, modelValue: { type: String, default: '' },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' },
+  // Pickers that add rather than choose (the studio) show how many of each idol are already placed.
+  counts: { type: Object, default: () => ({}) }, disabled: Boolean,
 })
 const emit = defineEmits(['update:modelValue'])
 const query = ref(''), unitFilter = ref('')
@@ -52,10 +55,13 @@ const selectedName = computed(() => {
 .idol-picker-units button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .idol-picker-units button[aria-pressed=true] small { color: inherit; }
 .idol-picker-status { margin: var(--gs-space-3) 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.idol-picker-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--gs-space-5) var(--gs-space-7); }
+.idol-picker-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: var(--gs-space-5) var(--gs-space-7); }
 .idol-picker-groups h3 { margin: 0 0 var(--gs-space-2); padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .idol-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--gs-space-1); }
 .idol-picker-grid button { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; padding: var(--gs-space-3) var(--gs-space-1); border: 1px solid transparent; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); font: inherit; cursor: pointer; }
+.idol-picker-grid button { position: relative; }
+.idol-picker-grid button:disabled { opacity: .45; cursor: default; }
+.idol-picker-count { position: absolute; top: 2px; right: 4px; min-width: 18px; padding: 0 4px; border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-caption); line-height: 18px; text-align: center; }
 .idol-picker-grid button strong { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); line-height: 1.4; text-align: center; overflow-wrap: anywhere; }
 .idol-picker-grid button[aria-pressed=true] { border-color: var(--gs-mint); background: var(--gs-mint-wash); color: var(--gs-ink); }
 .idol-picker button:focus-visible, .idol-picker input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }

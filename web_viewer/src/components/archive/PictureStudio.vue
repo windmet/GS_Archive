@@ -21,14 +21,21 @@
     <aside id="studio-focus-menu" ref="drawerHost" v-show="focused && menuOpen" class="studio-focus-drawer" :data-tab="drawerTab" aria-label="摄影工作台菜单">
       <div class="studio-drawer-heading"><strong>摄影菜单</strong><button type="button" @click="closeMenu">收起菜单</button></div>
       <ArchiveLanguageSwitch class="studio-menu-language" />
-      <nav aria-label="摄影菜单分区" class="studio-drawer-tabs">
-        <button v-for="tab in drawerTabs" :key="tab.id" type="button" :aria-pressed="drawerTab === tab.id" @click="drawerTab = tab.id">{{ tab.label }}</button>
+      <div class="studio-drawer-body">
+      <nav aria-label="摄影菜单分区" class="studio-drawer-rail">
+        <template v-for="tab in drawerTabs" :key="tab.id">
+          <span v-if="tab.id === 'objects'" class="studio-rail-rule" aria-hidden="true"></span>
+          <button type="button" :aria-pressed="drawerTab === tab.id || (tab.id === 'objects' && drawerTab === 'edit')" @click="showDrawerTab(tab.id)">{{ tab.label }}<small v-if="tab.count">{{ tab.count }}</small></button>
+        </template>
       </nav>
-      <div v-show="drawerTab === 'materials'" ref="materialsHost"></div>
+      <div class="studio-drawer-content">
+      <div v-show="isMaterialTab(drawerTab)" ref="materialsHost"></div>
       <div v-show="drawerTab === 'objects' || drawerTab === 'edit'"><div ref="controlsHost"></div></div>
       <div v-show="drawerTab === 'files'">
         <div class="studio-fullscreen-actions"><button v-if="!immersive.active.value" type="button" :disabled="immersive.pending.value" @click="immersive.enter(studioShell)"><Maximize :size="18" />横屏全屏</button><button v-else type="button" @click="immersive.leave()"><Minimize :size="18" />退出全屏</button></div>
         <div ref="toolsHost"></div>
+      </div>
+      </div>
       </div>
     </aside>
     <h2>摄影工作台</h2>
@@ -137,183 +144,79 @@
           class="domain-panel studio-library"
           aria-label="摄影素材库"
         >
-          <nav class="studio-library-tabs" aria-label="摄影素材种类">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              type="button"
-              :aria-pressed="libraryTab === tab.id"
-              @click="
-                libraryTab = tab.id;
-                materialPage = 0;
-              "
-            >
-              {{ tab.label }}
-            </button>
+          <nav v-if="!focused" class="studio-library-tabs" aria-label="摄影素材种类">
+            <button v-for="tab in materialTabs" :key="tab.id" type="button" :aria-pressed="libraryTab === tab.id" @click="libraryTab = tab.id">{{ tab.label }}</button>
           </nav>
-          <template v-if="libraryTab === 'background'">
-            <label class="studio-field"
-              >地点<select
-                :value="draft.background.spotId"
-                @change="setSpot($event.target.value)"
-              >
-                <option
-                  v-for="spot in materials.spots"
-                  :key="spot.id"
-                  :value="spot.id"
-                >
-                  {{ materialName('spots', spot) }}
-                </option>
-              </select></label
-            >
-            <label class="studio-field"
-              >背景缩放<input
-                v-model.number="draft.background.zoom"
-                type="number"
-                min="1"
-                max="3"
-                step=".05"
-            /></label>
-            <div class="studio-backgrounds">
-              <button
-                v-for="scene in scenes"
-                :key="scene.id"
-                type="button"
-                :aria-pressed="draft.background.sceneId === scene.id"
-                @click="draft.background.sceneId = scene.id"
-              >
-                <img
-                  v-if="media[`scenes:${scene.id}`]?.image?.url"
-                  :src="media[`scenes:${scene.id}`].image.url"
-                  :alt="materialName('scenes', scene)"
-                  loading="lazy"
-                /><span>{{ materialName('scenes', scene) }}</span>
-              </button>
+          <template v-if="libraryTab === 'spots'">
+            <label class="studio-search"><Search :size="17" /><input v-model="spotSearch" type="search" aria-label="搜索地点" placeholder="搜索地点或时段…" /></label>
+            <div v-if="spotVariants.length" class="studio-chips" role="group" aria-label="按时段与天气筛选">
+              <button type="button" :aria-pressed="!spotVariant" @click="spotVariant = ''">全部</button>
+              <button v-for="entry in spotVariants" :key="entry.id" type="button" :aria-pressed="spotVariant === entry.id" @click="spotVariant = entry.id">{{ entry.label }}</button>
             </div>
+            <div class="studio-spot-grid" :style="{ '--studio-spot-columns': spotColumns }">
+              <template v-for="item in spotGridItems" :key="item.key">
+                <button v-if="item.spot" type="button" class="studio-spot" :aria-pressed="draft.background.spotId === item.spot.id" @click="chooseSpot(item.spot)">
+                  <span class="studio-spot-art"><img v-if="media[`spots:${item.spot.id}`]?.image?.url" :src="media[`spots:${item.spot.id}`].image.url" alt="" loading="lazy" decoding="async" /><ImageOff v-else :size="20" /></span>
+                  <span>{{ materialName('spots', item.spot) }}</span>
+                </button>
+                <div v-else class="studio-spot-scenes" role="group" :aria-label="`${currentSpotName}的场景`">
+                  <span>{{ currentSpotName }} · {{ scenes.length }} 个场景</span>
+                  <div class="studio-chips">
+                    <button v-for="scene in scenes" :key="scene.id" type="button" :aria-pressed="draft.background.sceneId === scene.id" @click="draft.background.sceneId = scene.id">{{ materialName('scenes', scene) }}</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <p v-if="!filteredSpots.length" class="studio-status">没有匹配的地点。</p>
+            <label class="studio-zoom">背景缩放<span><input type="range" min="1" max="3" step=".05" aria-label="背景缩放" :value="draft.background.zoom ?? 1" @input="draft.background.zoom = Number($event.target.value)" /><output>{{ Math.round((draft.background.zoom ?? 1) * 100) }}%</output></span></label>
           </template>
           <template v-else-if="libraryTab === 'actors'">
-            <div class="studio-add-person">
-              <label class="studio-field"
-                >人物<select v-model="personToAdd">
-                  <option
-                    v-for="actor in actors"
-                    :key="actor.id"
-                    :value="actor.id"
-                  >
-                    {{ actor.nameJa }}
-                  </option>
-                </select></label
-              ><button
-                type="button"
-                :disabled="busy || personBusy || draft.actors.length >= 6"
-                @click="addPersonAndEdit"
-              >
-                <Plus :size="18" />添加人物
-              </button>
-            </div>
-            <p class="studio-status">
-              {{
-                personBusy
-                  ? "正在读取人物资料…"
-                  : "可添加同一偶像的多个实例，每张构图最多 6 人。"
-              }}
-            </p>
-            <div v-if="libraryPerson" class="studio-faces">
-              <img
-                v-for="face in libraryPerson.actor.faces.slice(0, 3)"
-                :key="face.id"
-                :src="
-                  libraryPerson.media.entries[`faces:${face.id}`]?.image?.url
-                "
-                :alt="faceName(libraryPerson, face)"
-              />
-            </div>
+            <p class="studio-status" role="status">{{ personBusy ? '正在读取人物资料…' : `点头像加入画面；同一位可以加多次。画面中 ${draft.actors.length} / ${STUDIO_LIMITS.actors} 人` }}</p>
+            <ArchiveIdolPickerPanel class="studio-idol-picker" :idols="pickerIdols" :idol-name="idolName" :idol-search="idolSearch" :counts="actorCounts" :disabled="busy || personBusy || draft.actors.length >= STUDIO_LIMITS.actors" model-value="" @update:model-value="addPerson" />
           </template>
           <template v-else-if="libraryTab === 'stickers'">
-            <label class="studio-search"
-              ><Search :size="17" /><input
-                v-model="stickerSearch"
-                aria-label="搜索贴纸"
-                placeholder="搜索贴纸…"
-                @input="materialPage = 0"
-            /></label>
-            <div class="studio-sticker-grid">
-              <button
-                v-for="sticker in visibleStickers"
-                :key="sticker.id"
-                type="button"
-                :aria-label="`添加贴纸 ${materialName('stickers',sticker)}`"
-                :disabled="draft.stickers.length >= 32"
-                @click="addSticker(sticker.id)"
-              >
-                <img
-                  v-if="
-                    media[`stickers:${sticker.id}`]?.image?.url &&
-                    !failedThumbnails.has(sticker.id)
-                  "
-                  :src="media[`stickers:${sticker.id}`].image.url"
-                  alt=""
-                  loading="lazy"
-                  @error="
-                    failedThumbnails = new Set([
-                      ...failedThumbnails,
-                      sticker.id,
-                    ])
-                  "
-                /><ImageOff v-else :size="24" /><span>{{
-                  materialName('stickers',sticker)
-                }}</span>
+            <label class="studio-search"><Search :size="17" /><input v-model="stickerSearch" type="search" aria-label="搜索贴纸" placeholder="搜索贴纸…" /></label>
+            <div class="studio-chips" role="group" aria-label="贴纸分类">
+              <button type="button" :aria-pressed="!stickerGroup" @click="stickerGroup = ''">全部 <small>{{ materials.stickers.length }}</small></button>
+              <button v-for="group in stickerGroups" :key="group.id" type="button" :aria-pressed="stickerGroup === group.id" @click="stickerGroup = group.id">{{ group.label }} <small>{{ group.count }}</small></button>
+            </div>
+            <p class="studio-status">画面中 {{ draft.stickers.length }} / {{ STUDIO_LIMITS.stickers }} 张</p>
+            <section v-for="section in stickerSections" :key="section.id" class="studio-material-section" :aria-label="section.label">
+              <h4 class="studio-material-heading">{{ section.label }}</h4>
+              <div class="studio-sticker-grid">
+                <button
+                  v-for="sticker in section.rows"
+                  :key="sticker.id"
+                  type="button"
+                  :title="materialName('stickers', sticker)"
+                  :aria-label="`添加贴纸 ${materialName('stickers', sticker)}${stickerCounts[sticker.id] ? `（画面中 ${stickerCounts[sticker.id]}）` : ''}`"
+                  :disabled="draft.stickers.length >= STUDIO_LIMITS.stickers"
+                  @click="addRecentSticker(sticker.id)"
+                >
+                  <img v-if="media[`stickers:${sticker.id}`]?.image?.url && !failedThumbnails.has(sticker.id)" :src="media[`stickers:${sticker.id}`].image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails = new Set([...failedThumbnails, sticker.id])" /><ImageOff v-else :size="24" />
+                  <small v-if="stickerCounts[sticker.id]" class="studio-material-count" aria-hidden="true">{{ stickerCounts[sticker.id] }}</small>
+                </button>
+              </div>
+            </section>
+            <p v-if="!stickerSections.length" class="studio-status">没有匹配的贴纸。</p>
+          </template>
+          <template v-else-if="libraryTab === 'frames'">
+            <div class="studio-preview-grid" role="group" aria-label="相框">
+              <button type="button" :aria-pressed="!draft.frameId" @click="draft.frameId = null"><span class="studio-preview-art is-empty">无</span><span>不加相框</span></button>
+              <button v-for="frame in frameRows" :key="frame.id" type="button" :aria-pressed="draft.frameId === frame.id" @click="draft.frameId = frame.id">
+                <span class="studio-preview-art"><img v-if="media[`frames:${frame.id}`]?.image?.url" :src="media[`frames:${frame.id}`].image.url" alt="" loading="lazy" decoding="async" /><ImageOff v-else :size="20" /></span><span>{{ frame.label }}</span>
               </button>
             </div>
-            <p v-if="!filteredStickers.length" class="studio-status">
-              没有匹配的贴纸。
-            </p>
-            <nav
-              v-if="filteredStickers.length > 16"
-              class="domain-pagination"
-              aria-label="贴纸素材分页"
-            >
-              <button :disabled="materialPage === 0" @click="materialPage--">
-                上一页</button
-              ><span
-                >{{ materialPage + 1 }} /
-                {{ Math.ceil(filteredStickers.length / 16) }}</span
-              ><button
-                :disabled="(materialPage + 1) * 16 >= filteredStickers.length"
-                @click="materialPage++"
-              >
-                下一页
-              </button>
-            </nav>
+            <p class="studio-boundary">相框使用原始锚点，尺寸仍为网页近似。</p>
           </template>
           <template v-else>
-            <label class="studio-field"
-              >相框<select v-model="draft.frameId">
-                <option :value="null">无</option>
-                <option
-                  v-for="frame in materials.frames"
-                  :key="frame.id"
-                  :value="frame.id"
-                >
-                  {{ materialName('frames', frame) }}
-                </option>
-              </select></label
-            >
-            <label class="studio-field"
-              >滤镜<select v-model="draft.filterId">
-                <option :value="null">无</option>
-                <option
-                  v-for="filter in materials.filters"
-                  :key="filter.id"
-                  :value="filter.id"
-                >
-                  {{ materialName('filters', filter) }}
-                </option>
-              </select></label
-            >
-            <p class="studio-boundary">
-              相框使用原始锚点，尺寸仍为网页近似；滤镜为网页近似，场景天气效果尚未重建。
-            </p>
+            <div class="studio-preview-grid" role="group" aria-label="滤镜">
+              <button type="button" :aria-pressed="!draft.filterId" @click="draft.filterId = null"><span class="studio-preview-art"><img v-if="sceneImage" :src="sceneImage" alt="" loading="lazy" decoding="async" /></span><span>原图</span></button>
+              <button v-for="filter in materials.filters" :key="filter.id" type="button" :aria-pressed="draft.filterId === filter.id" @click="draft.filterId = filter.id">
+                <span class="studio-preview-art"><img v-if="sceneImage" :src="sceneImage" alt="" loading="lazy" decoding="async" :style="{ filter: studioFilterCss(filter.resourceId) }" /></span><span>{{ materialName('filters', filter) }}</span>
+              </button>
+            </div>
+            <p class="studio-boundary">滤镜为网页近似，预览用当前场景；场景天气效果尚未重建。</p>
           </template>
         </section>
         </Teleport>
@@ -324,7 +227,7 @@
         <h3 class="studio-layer-heading"><Layers :size="18" />图层 <span>{{ objects.length }}</span></h3>
         <p class="studio-status">上方在前。人物和贴纸分别调整顺序。</p>
         <div class="studio-object-list">
-          <div v-if="draft.frameId" class="studio-background-layer"><Image :size="18" /><span>画框 · 最前景</span><small>在画面效果中更换</small></div>
+          <div v-if="draft.frameId" class="studio-background-layer"><Image :size="18" /><span>画框 · 最前景</span><small>在「相框」中更换</small></div>
           <template v-for="group in layerGroups" :key="group.kind">
           <h4 v-if="group.rows.length" class="studio-layer-group">{{ group.label }}</h4>
           <div
@@ -362,12 +265,14 @@
             </button>
           </div>
           </template>
-          <p v-if="!objects.length" class="studio-layer-empty">画布还没有人物或贴纸。点击「素材」添加。</p>
-          <div class="studio-background-layer"><Image :size="18" /><span>背景</span><small>在素材中更换</small></div>
+          <p v-if="!objects.length" class="studio-layer-empty">画布还没有人物或贴纸。在「人物」「贴纸」中添加。</p>
+          <div class="studio-background-layer"><Image :size="18" /><span>背景</span><small>在「地点」中更换</small></div>
         </div>
         <button v-if="!focused" type="button" class="studio-undo-delete" :disabled="!canUndoDelete" @click="undoDelete"><Undo2 :size="17" />撤销删除</button>
+        <button v-if="focused && selected" type="button" class="studio-undo-delete" @click="drawerTab = 'edit'"><Pencil :size="16" />编辑 {{ objectName(selected) }}</button>
         </section>
         <section v-if="selected" v-show="!focused || drawerTab === 'edit'" class="studio-layer-editor" aria-label="编辑所选图层">
+          <button v-if="focused" type="button" class="studio-edit-back" @click="drawerTab = 'objects'"><ArrowLeft :size="16" />图层</button>
           <h3 class="studio-selected-title">
             图层属性：{{ objectName(selected) }}
           </h3>
@@ -472,6 +377,11 @@ import { useStudioComposition } from "./useStudioComposition.js";
 import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js';
 import { studioPresetPresentation } from '../../presentation/studio-preset-labels.mjs';
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
+import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue';
+import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
+import { photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
+import { STUDIO_LIMITS } from '../../core/StudioDocument.mjs';
+import { studioFilterCss } from '../../core/PictureStudioPolicy.mjs';
 import "../../styles/archive-domains.css";
 import "../../styles/picture-studio.css";
 const emit = defineEmits(['back']);
@@ -481,13 +391,14 @@ const props = defineProps({
   bootstrap: Object,
   photoIdol: { type: String, default: "" },
   photoEntity: { type: String, default: "" },
+  idolName: { type: Function, default: () => "" },
+  idolSearch: { type: Function, default: () => "" },
 });
 const canvas = ref(null), fileInput = ref(null);
 const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
 const materialsHost = ref(null), controlsHost = ref(null), toolsHost = ref(null);
 const focused = ref(props.standalone);
 const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref('edit');
-const drawerTabs = [{ id: 'materials', label: '素材' }, { id: 'objects', label: '图层' }, { id: 'edit', label: '编辑' }, { id: 'files', label: '保存' }];
 const variantTab = ref('faces');
 const variantTabs = [{ id: 'poses', label: '动作' }, { id: 'faces', label: '表情' }];
 const framingPresets = [
@@ -561,47 +472,133 @@ function onDocumentFile(event) {
   void importDocument(file);
 }
 function exportAndShow() { drawerTab.value = 'files'; menuOpen.value = true; void exportPng(); }
-const libraryTab = ref("actors"),
+const libraryTab = ref("spots"),
   stickerSearch = ref(""),
-  materialPage = ref(0),
-  personToAdd = ref(props.photoIdol || "1"),
-  libraryPerson = shallowRef(null),
+  stickerGroup = ref(""),
+  spotSearch = ref(""),
+  spotVariant = ref(""),
   personBusy = ref(false),
   failedThumbnails = shallowRef(new Set());
-const tabs = [
-  { id: "background", label: "背景" },
+const materialTabs = [
+  { id: "spots", label: "地点" },
   { id: "actors", label: "人物" },
   { id: "stickers", label: "贴纸" },
-  { id: "effects", label: "画面效果" },
+  { id: "frames", label: "相框" },
+  { id: "filters", label: "滤镜" },
 ];
+const isMaterialTab = (id) => materialTabs.some((tab) => tab.id === id);
+// One column of categories: materials, then the layers and the file. Editing a layer is a state
+// of 图层 (reached from a layer or the selection bar), not a category of its own.
+const drawerTabs = computed(() => [
+  ...materialTabs.map((tab) => ({
+    ...tab,
+    count: tab.id === "actors" ? `${draft.value.actors.length}/${STUDIO_LIMITS.actors}`
+      : tab.id === "stickers" ? `${draft.value.stickers.length}/${STUDIO_LIMITS.stickers}` : "",
+  })),
+  { id: "objects", label: "图层" },
+  { id: "files", label: "保存" },
+]);
+function showDrawerTab(id) {
+  drawerTab.value = id;
+  if (isMaterialTab(id)) libraryTab.value = id;
+}
 const transformFields = [
   { key: "x", label: "水平位置 X", min: -1, max: 2, step: 0.01 },
   { key: "y", label: "垂直位置 Y", min: -1, max: 3, step: 0.01 },
   { key: "scale", label: "大小", min: 0.1, max: 5, step: 0.05 },
   { key: "rotation", label: "旋转", min: -180, max: 180, step: 1 },
 ];
-const scenes = computed(
-  () =>
-    materials.value?.scenes.filter((row) =>
-      materials.value.sceneIdsBySpotId[draft.value.background.spotId]?.includes(
-        row.id,
-      ),
-    ) || [],
-);
-const filteredStickers = computed(
-  () =>
-    materials.value?.stickers.filter((row) =>
-      `${archiveSearchText('photo-stickers', row.name)} ${row.id}`
-        .toLocaleLowerCase()
-        .includes(stickerSearch.value.trim().toLocaleLowerCase()),
-    ) || [],
-);
-const visibleStickers = computed(() =>
-  filteredStickers.value.slice(
-    materialPage.value * 16,
-    (materialPage.value + 1) * 16,
-  ),
-);
+const currentSpot = computed(() => materials.value?.spots.find((row) => row.id === draft.value.background.spotId) || null);
+const currentSpotName = computed(() => materialName("spots", currentSpot.value));
+const scenes = computed(() => photoSpotScenes(materials.value, currentSpot.value));
+const sceneImage = computed(() => media.value?.[`scenes:${draft.value.background.sceneId}`]?.image?.url || media.value?.[`spots:${draft.value.background.spotId}`]?.image?.url || "");
+const spotVariants = computed(() => photoSpotVariants(materials.value, (id) => archiveText("photo-scenes", id)));
+const filteredSpots = computed(() => {
+  const q = spotSearch.value.trim().toLocaleLowerCase();
+  return (materials.value?.spots || []).filter((spot) =>
+    (!spotVariant.value || photoSpotVariantKeys(materials.value, spot).includes(spotVariant.value)) &&
+    (!q || `${archiveSearchText("photo-spots", spot.name)} ${photoSpotScenes(materials.value, spot).map((scene) => archiveSearchText("photo-scenes", scene.name)).join(" ")} ${spot.id}`
+      .toLocaleLowerCase().includes(q)));
+});
+// The chosen spot's scenes open on the row below it; a chosen spot outside the filter shows them first.
+const spotColumns = computed(() => (focused.value ? 2 : 3));
+const spotGridItems = computed(() => {
+  const rows = filteredSpots.value, items = rows.map((spot) => ({ key: `spot:${spot.id}`, spot }));
+  if (!currentSpot.value || !scenes.value.length) return items;
+  const index = rows.indexOf(currentSpot.value), columns = spotColumns.value;
+  const at = index < 0 ? 0 : Math.min(rows.length, (Math.floor(index / columns) + 1) * columns);
+  items.splice(at, 0, { key: "scenes" });
+  return items;
+});
+function chooseSpot(spot) {
+  if (draft.value.background.spotId !== spot.id) setSpot(spot.id);
+  const scene = spotVariant.value && photoSpotScene(materials.value, spot, spotVariant.value);
+  if (scene) draft.value.background.sceneId = scene.id;
+}
+// People: the archive's one idol picker, limited to idols with studio data; a click adds one.
+const pickerIdols = computed(() => {
+  const codes = new Set(actors.value.map((row) => row.idolCode));
+  const idols = (props.bootstrap?.idols || []).filter((idol) => codes.has(idol.id));
+  return idols.length ? idols : actors.value.map((row) => ({ id: row.idolCode || row.id, name: row.nameJa }));
+});
+const actorCounts = computed(() => {
+  const counts = {};
+  for (const row of draft.value.actors) {
+    const code = actors.value.find((actor) => actor.id === String(row.idolId))?.idolCode;
+    if (code) counts[code] = (counts[code] || 0) + 1;
+  }
+  return counts;
+});
+async function addPerson(code) {
+  const row = actors.value.find((actor) => actor.idolCode === code || actor.id === code);
+  if (!row || personBusy.value) return;
+  personBusy.value = true;
+  try { await addActor(row.id); } finally { personBusy.value = false; }
+}
+// Stickers: browsed by group (photoStickerGroups.js), with the ones this viewer used last on top.
+const RECENT_STICKERS_KEY = "gs-studio-recent-stickers", RECENT_STICKER_LIMIT = 8;
+const recentStickerIds = ref(readRecentStickers());
+function readRecentStickers() {
+  try { const value = JSON.parse(localStorage.getItem(RECENT_STICKERS_KEY) || "[]"); return Array.isArray(value) ? value.map(Number).filter(Number.isInteger) : []; }
+  catch { return []; }
+}
+function addRecentSticker(id) {
+  addSticker(id);
+  recentStickerIds.value = [Number(id), ...recentStickerIds.value.filter((row) => row !== Number(id))].slice(0, RECENT_STICKER_LIMIT);
+  try { localStorage.setItem(RECENT_STICKERS_KEY, JSON.stringify(recentStickerIds.value)); } catch { /* per-viewer convenience only */ }
+}
+const stickerCounts = computed(() => {
+  const counts = {};
+  for (const row of draft.value.stickers) counts[row.stickerId] = (counts[row.stickerId] || 0) + 1;
+  return counts;
+});
+const filteredStickers = computed(() => {
+  const q = stickerSearch.value.trim().toLocaleLowerCase();
+  return (materials.value?.stickers || []).filter((row) =>
+    (!stickerGroup.value || photoStickerGroup(row) === stickerGroup.value) &&
+    (!q || `${archiveSearchText("photo-stickers", row.name)} ${row.id}`.toLocaleLowerCase().includes(q)));
+});
+const stickerGroups = computed(() => PHOTO_STICKER_GROUPS
+  .map((group) => ({ ...group, count: (materials.value?.stickers || []).filter((row) => photoStickerGroup(row) === group.id).length }))
+  .filter((group) => group.count));
+const stickerSections = computed(() => {
+  const rows = filteredStickers.value;
+  const sections = PHOTO_STICKER_GROUPS
+    .map((group) => ({ id: group.id, label: group.label, rows: rows.filter((row) => photoStickerGroup(row) === group.id) }))
+    .filter((section) => section.rows.length);
+  if (stickerGroup.value || stickerSearch.value.trim()) return sections;
+  const recent = recentStickerIds.value.map((id) => materials.value?.stickers.find((row) => row.id === id)).filter(Boolean);
+  return recent.length ? [{ id: "recent", label: "最近用过", rows: recent }, ...sections] : sections;
+});
+// Two frames share each of two names (they differ in colour); the later one gets a number.
+const frameRows = computed(() => {
+  const seen = new Map();
+  return (materials.value?.frames || []).map((frame) => {
+    const name = materialName("frames", frame), count = (seen.get(name) || 0) + 1;
+    seen.set(name, count);
+    return { ...frame, label: count > 1 ? `${name} ${count}` : name };
+  });
+});
 const objects = computed(() => [
   ...draft.value.actors,
   ...draft.value.stickers,
@@ -657,22 +654,16 @@ watch(selectedId, async () => {
 });
 const currentVariant = computed(() => selectedActor.value?.actor[variantTab.value].find(row => row.id === selected.value?.[variantTab.value === 'faces' ? 'faceId' : 'poseId']));
 function variantName(view, kind, row) { return row ? studioPresetPresentation(view, kind, row).label : '未选择'; }
-function faceName(view, row) { return variantName(view, 'faces', row); }
 function materialName(kind, row) { return archiveText(`photo-${kind}`, row?.name).replace('ステッカー ', ''); }
 function variantTitle(view, kind, row) {
   if (!row) return '';
   const value = studioPresetPresentation(view, kind, row);
   return `${value.label} · ${value.number} · ${value.source || row.iconResourceId}`;
 }
-async function addPersonAndEdit() {
-  const before = selectedId.value;
-  await addActor(personToAdd.value);
-  if (selectedId.value !== before) { drawerTab.value = 'edit'; variantTab.value = 'faces'; }
-}
 function objectName(row) {
+  const actor = row.idolId && actors.value.find((entry) => entry.id === String(row.idolId));
   return row.idolId
-    ? actors.value.find((actor) => actor.id === String(row.idolId))?.nameJa ||
-        String(row.idolId)
+    ? (actor && (props.idolName(actor.idolCode, actor.nameJa) || actor.nameJa)) || String(row.idolId)
     : materialName('stickers',materials.value?.stickers.find(sticker => sticker.id === row.stickerId)) || String(row.stickerId);
 }
 function objectThumbnail(row) {
@@ -686,20 +677,5 @@ function atEdge(row, direction) {
     index = rows.findIndex((object) => object.instanceId === row.instanceId);
   return index + direction < 0 || index + direction >= rows.length;
 }
-let personRequest = 0;
-async function previewPerson() {
-  if (busy.value || libraryTab.value !== "actors") return;
-  const id = ++personRequest;
-  personBusy.value = true;
-  try {
-    const value = await actorView(personToAdd.value);
-    if (id === personRequest) libraryPerson.value = value;
-  } catch (cause) {
-    if (id === personRequest) error.value = cause.message;
-  } finally {
-    if (id === personRequest) personBusy.value = false;
-  }
-}
-watch([personToAdd, libraryTab, busy], previewPerson);
 onMounted(() => { loadArchivePhotoNames(); return load(); });
 </script>

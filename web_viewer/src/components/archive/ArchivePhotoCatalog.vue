@@ -132,6 +132,7 @@ import ArchivePhotoDetailDialog from "./ArchivePhotoDetailDialog.vue";
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
 import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
+import { photoSceneSpot, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
 import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import "../../styles/archive-domains.css";
@@ -188,17 +189,9 @@ function setStickerGroup(id) {
   stickerGroup.value = id;
   page.value = 0;
 }
-const sceneById = computed(() => new Map((materials.value?.scenes || []).map((row) => [row.id, row])));
-const spotScenes = (spot) => (materials.value?.sceneIdsBySpotId?.[spot?.id] || []).map((id) => sceneById.value.get(id)).filter(Boolean);
-// "通常1"/"通常2" are both 通常 for filtering.
-const variantKey = (name) => String(name || "").replace(/\d+$/, "");
-const spotVariantKeys = (spot) => [...new Set(spotScenes(spot).map((row) => variantKey(row.name)))];
-const variants = computed(() => {
-  const counts = new Map();
-  for (const spot of materials.value?.spots || []) for (const key of spotVariantKeys(spot)) counts.set(key, (counts.get(key) || 0) + 1);
-  return [...counts].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1])
-    .map(([id, count]) => ({ id, count, label: archiveText("photo-scenes", id) || id }));
-});
+const spotScenes = (spot) => photoSpotScenes(materials.value, spot);
+const spotVariantKeys = (spot) => photoSpotVariantKeys(materials.value, spot);
+const variants = computed(() => photoSpotVariants(materials.value, (id) => archiveText("photo-scenes", id)));
 function spotVariantLine(spot) {
   const scenes = spotScenes(spot);
   return scenes.length > 4 ? `${scenes.length} 个场景` : [...new Set(scenes.map((row) => archiveText("photo-scenes", row.name) || row.name))].join(" · ");
@@ -209,8 +202,7 @@ function setVariant(id) {
   page.value = 0;
 }
 const sceneOwnerId = computed(() => {
-  const id = Number(sceneSelection.value);
-  const spot = id && (materials.value?.spots || []).find((row) => materials.value.sceneIdsBySpotId?.[row.id]?.includes(id));
+  const spot = sceneSelection.value && photoSceneSpot(materials.value, sceneSelection.value);
   return spot ? String(spot.id) : "";
 });
 const effectiveSelection = computed(() => photoSelection.value || sceneOwnerId.value);
@@ -290,10 +282,7 @@ const initialGrant = computed(() => {
       )
     : null;
 });
-const scenesForSpot = computed(() => {
-  const ids = materials.value?.sceneIdsBySpotId?.[photoEntry.value?.id] || [];
-  return (materials.value?.scenes || []).filter((row) => ids.includes(row.id));
-});
+const scenesForSpot = computed(() => photoSpotScenes(materials.value, photoEntry.value));
 // The scene shown in a spot's dialog: the one asked for, else the spot's own picture.
 const activeSceneId = computed(() => {
   const scenes = scenesForSpot.value;
@@ -311,11 +300,7 @@ function photoName(row) {
   return `${photoTabs.find((tab) => tab.id === photoTab.value)?.label} ${row.id}`;
 }
 function spotForScene(row) {
-  if (photoTab.value !== 'scenes' || !row) return null;
-  const matches = (materials.value?.spots || []).filter(spot =>
-    materials.value.sceneIdsBySpotId?.[spot.id]?.includes(row.id),
-  );
-  return matches.length === 1 ? matches[0] : null;
+  return photoTab.value === 'scenes' && row ? photoSceneSpot(materials.value, row.id) : null;
 }
 function sceneSpotName(row) {
   const spot = spotForScene(row);

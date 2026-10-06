@@ -22,6 +22,7 @@ import {
   STUDIO_HEIGHT as H,
   studioExportSize,
   studioAnimationPlan,
+  STUDIO_WEB_FILTERS,
 } from "./PictureStudioPolicy.mjs";
 
 /** Per-instance requests, textures, animation state and transforms; no Player cache. */
@@ -544,12 +545,12 @@ export class StudioCompositionStage {
     this.filter = null;
     this.render();
     if (!resourceId) return;
+    const plan = STUDIO_WEB_FILTERS[resourceId];
+    if (!plan) throw Error("此滤镜没有网页近似实现");
     const filter = new PIXI.ColorMatrixFilter();
-    if (["sepia", "sepia_light"].includes(resourceId)) filter.sepia();
-    else if (["gray", "mono"].includes(resourceId)) filter.desaturate();
-    else throw Error("此滤镜没有网页近似实现");
-    const strength =
-        resourceId === "sepia_light" ? 0.35 : resourceId === "gray" ? 0.6 : 1,
+    if (plan.kind === "sepia") filter.sepia();
+    else filter.desaturate();
+    const strength = plan.strength,
       identity = [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0];
     filter.matrix = filter.matrix.map(
       (v, i) => identity[i] + (v - identity[i]) * strength,
