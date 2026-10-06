@@ -129,3 +129,5 @@
 @container(max-width:620px){.overview-unit-matrix {grid-template-columns:repeat(3,minmax(0,1fr));}.overview-brand {flex-wrap:wrap;}.overview-personal {display:flex;}.overview-scope-actions {grid-template-columns:1fr;}.is-global-grid .overview-story-hub {grid-template-columns:1fr;}}
 
 .is-global-grid .overview-story-gateways {align-content:stretch;grid-template-rows:repeat(3,minmax(0,1fr));}
+/* Phones: 资料馆 and the tools share the first row; the scope chip takes the second at its full width. */
+@media (max-width:760px){.overview-toolbar {grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2);}.overview-brand {display:contents;}.overview-breadcrumb-divider {display:none;}.overview-toolbar-actions {grid-column:3;grid-row:1;}.overview-lens-trigger {grid-column:1 / -1;grid-row:2;justify-self:start;max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);}.overview-lens-trigger span {max-width:none;}.overview-toolbar > .overview-search {grid-column:1 / -1;grid-row:3;max-width:none;}}

@@ -1,8 +1,8 @@
-import { BookOpen, FolderOpen, Home, Images, MessageCircle, Music, Sparkles, Users, CalendarDays, Box, Camera } from '@lucide/vue'
+import { BookOpen, FolderOpen, Home, Images, MessageCircle, Music, Sparkles, Users, CalendarDays, Box, Camera, Medal, Wrench } from '@lucide/vue'
 
 // Shared visual vocabulary; section identity and labels remain in archiveRoute.
 export const archiveNavigationIcons = {
   home: Home, stories: BookOpen, songs: Music, idols: Users,
   cards: Images, gashas: Sparkles, interactions: MessageCircle, resources: FolderOpen,
-  events:CalendarDays, collections:Box, photos:Camera, experiments:Sparkles,
+  events:CalendarDays, collections:Box, honors:Medal, photos:Camera, experiments:Wrench,
 }

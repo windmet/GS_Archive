@@ -47,15 +47,12 @@
       <!-- Scale of the archive as one line of links, not a row of number tiles. -->
       <p v-if="footprints.length" class="overview-footprint" aria-label="当前视角资料数量">
         <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
-          <b>{{ formatCount(count.value) }}</b><template v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</template> {{ count.label }}
+          <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
       </p>
       <!-- Phones have no sidebar: the archive home doubles as the index of every destination. -->
       <nav class="overview-directory" aria-label="全部栏目">
-        <div v-for="group in destinations" :key="group.id" class="overview-directory-row" :class="{ 'is-single': group.items.length === 1 }">
-          <h2 v-if="group.items.length > 1">{{ group.label }}</h2>
-          <div><button v-for="item in group.items" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)">{{ group.items.length === 1 ? group.label : item.label }}<ChevronRight :size="14" aria-hidden="true" /></button></div>
-        </div>
+        <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
       </nav>
 
       <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
@@ -166,6 +163,8 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown',closeSearchOuts
 const heading = ref(null)
 defineExpose({ focusHeading: () => heading.value?.focus({ preventScroll: true }) })
 const footprints = computed(() => props.desktopOverview.footprints || [])
+// Phones have no sidebar: every section, in sidebar order, as one grid of icons.
+const directoryItems = destinations.flatMap(group => group.items)
 const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
 const birthdayTheme=ref(false)
@@ -319,13 +318,17 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-footprint button:hover b { color:var(--gs-mint-ink); }
 .overview-directory { display:none; }
 @media (max-width:760px) {
-  .overview-directory { display:grid;margin-top:var(--gs-space-7);border-top:1px solid var(--gs-line); }
-  .overview-directory-row { display:grid;grid-template-columns:88px minmax(0,1fr);gap:var(--gs-space-4);align-items:start;padding:var(--gs-space-3) 0;border-bottom:1px solid var(--gs-line); }
-  .overview-directory-row.is-single { grid-template-columns:1fr; }
-  .overview-directory-row h2 { margin:0;padding-top:12px;color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-medium); }
-  .overview-directory-row div { display:flex;flex-wrap:wrap;gap:0 var(--gs-space-6); }
-  .overview-directory-row button { display:flex;align-items:center;gap:var(--gs-space-1);min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-ink);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
-  .overview-directory-row button svg { color:var(--gs-ink-3); }
+  /* The stats as four equal columns, number over label. (The header rows live in portal-bento.css.) */
+  .overview-footprint { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:var(--gs-space-5);border-block:1px solid var(--gs-line); }
+  .overview-footprint button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:var(--gs-space-3) 2px;text-align:center; }
+  .overview-footprint button + button { border-left:1px solid var(--gs-line); }
+  .overview-footprint b { margin:0;font-size:var(--gs-text-subtitle);line-height:1.2;white-space:nowrap; }
+  .overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-regular); }
+  .overview-footprint span { color:var(--gs-ink-3);font-size:var(--gs-text-meta);white-space:nowrap; }
+  /* Every section as one grid of icons. */
+  .overview-directory { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-1) 0;margin-top:var(--gs-space-4); }
+  .overview-directory button { display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;min-height:var(--gs-control-touch);padding:var(--gs-space-3) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
+  .overview-directory button svg { color:var(--gs-mint-ink); }
 }
 .overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
 @media (hover:hover) and (pointer:fine) {
