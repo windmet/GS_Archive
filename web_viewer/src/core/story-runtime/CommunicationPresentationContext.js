@@ -72,7 +72,9 @@ export function communicationOwnerId(scenarioId) {
  * @returns {{mode: 'talk'|'call'|null, phase: 'dialogue'|'choice'|'reply', unitCode: string|null, primaryCharaId: string, isGroup: boolean}}
  */
 export function resolveCommunicationContext({ step, stepIndex, historyStack, steps, scenarioId }) {
-  let isGroup = String(scenarioId || '').startsWith('8_2_')
+  // A unit chat is compiled both as `8_2_…` and under a member as `1_x_<idol>_8_2_…`; both are
+  // group threads and keep the unit's theme.
+  let isGroup = /(?:^|_)8_2_/.test(String(scenarioId || ''))
   const explicitMode = modeFromStep(step)
   const phase = step?.type === 'choice' ? 'choice' : 'dialogue'
 
