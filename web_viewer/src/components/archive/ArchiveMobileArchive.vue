@@ -6,26 +6,25 @@
     :data-focused-scenario-id="String(focusedScenarioId || '')"
     :style="{ '--mobile-accent': accentColor }"
   >
-    <header class="mobile-hero" :class="{ 'is-unit': mode === 'unit' }" :style="heroMediaStyle">
-      <div class="hero-media" aria-hidden="true">
-        <img v-if="heroMedia.src" class="hero-media-blur" :src="heroMedia.src" alt="" />
-        <img v-if="heroMedia.src && mode !== 'unit'" class="hero-media-main" :src="heroMedia.src" alt="" />
+    <div class="mobile-layout">
+    <!-- The room's call card, composed as the game's call screen: the room picture (a keepsake
+         for an idol, the unit's own pattern for a unit), the owner at its centre, the picker
+         on the pale lower band the picture leaves for text. -->
+    <header class="mobile-hero" :class="{ 'is-unit': mode === 'unit', 'no-art': !heroMedia.src }">
+      <img v-if="heroMedia.src" class="call-card-art" :src="heroMedia.src" alt="" />
+      <div class="mobile-identity">
+        <ArchiveIdolAvatar v-if="mode !== 'unit'" class="mobile-idol-avatar" :idol-code="selectedIdol" variant="mobile"
+          :accent-color="idolFrameColor" :size="76" :ring-width="3" :alt="idolName" />
+        <img v-else class="unit-logo" :src="unitLogo(selectedUnit)" :alt="unitName" />
+        <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
       </div>
-      <div class="hero-content">
-        <div class="mobile-identity">
-          <ArchiveIdolAvatar v-if="mode !== 'unit'" class="mobile-idol-avatar" :idol-code="selectedIdol" variant="mobile"
-            :accent-color="idolFrameColor" :size="48" :ring-width="3" :alt="idolName" />
-          <img v-else class="unit-logo" :src="unitLogo(selectedUnit)" :alt="unitName" />
-          <div class="identity-copy">
-            <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
-            <p>
-              <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
-                <span v-if="part.type === 'text'">{{ part.text }}</span>
-                <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
-              </template>
-            </p>
-          </div>
-        </div>
+      <div class="call-card-lower">
+        <p class="call-card-note">
+          <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
+            <span v-if="part.type === 'text'">{{ part.text }}</span>
+            <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
+          </template>
+        </p>
         <div class="mobile-selector">
           <button title="上一项" @click="moveSelection(-1)"><ChevronLeft :size="18" /></button>
           <label>
@@ -39,7 +38,8 @@
       </div>
     </header>
 
-    <nav class="mobile-tabs" aria-label="Mobile 分类">
+    <div class="mobile-main">
+    <nav class="mobile-tabs" aria-label="通信分类">
       <button v-for="tab in visibleTabs" :key="tab.id" :class="{ active: mode === tab.id }" :aria-pressed="mode === tab.id" @click="emit('update:mode', tab.id)">
         <component :is="tab.icon" :size="16" />
         <span>{{ tab.label }}</span>
@@ -91,6 +91,7 @@
             </div>
             <h4 v-if="callTitle(bundle)" class="call-title">{{ callTitle(bundle) }}</h4>
             <component :is="callTitle(bundle) ? 'p' : 'h4'" :class="{ 'call-line': callTitle(bundle) }"><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></component>
+            <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
           <button class="conversation-play" :disabled="!bundle.exists" :title="bundle.exists ? '播放通信' : '本地脚本缺失'" @click="emit('play', bundle.file)">
@@ -129,6 +130,8 @@
       <p v-if="!contentCount" class="empty-state">当前分类没有可展示记录。</p>
       <ArchiveTechnicalDetails :key="`${mode}:${selectedIdol}:${selectedUnit}`" :evidence="{ bundles, randomBundles: mode === 'random' ? randomBundles : [], sourceTables: mode === 'random' ? [104, 105] : undefined, randomIntros: mode === 'random' ? idolData?.view?.randomIntros || [] : [], sourceEvidence: mode === 'unit' ? unitData?.view?.sourceEvidence : idolData?.view?.sourceEvidence }" />
     </main>
+    </div>
+    </div>
   </article>
 </template>
 
@@ -178,7 +181,16 @@ const randomTopicCount = computed(() => randomBundles.value.reduce((sum, bundle)
 const randomIntroCount = computed(() => props.idolData?.view?.randomIntros?.length || 0)
 const contentSummary = computed(() => props.mode === 'random'
   ? `${randomTopicCount.value} 个话题 · ${contentCount.value} 组`
-  : `${contentCount.value} 条记录`)
+  : props.mode === 'phone' ? phoneSummary.value : `${contentCount.value} 条记录`)
+// The phone tab's footprint: calls, the cards that open them, and calls with others on the line.
+const phoneSummary = computed(() => {
+  const cards = new Set(bundles.value.flatMap(bundle => bundle.cardIds || [])).size
+  const shared = bundles.value.filter(bundle => bundle.guests?.length).length
+  return [`${contentCount.value} 通电话`, cards && `来自 ${cards} 张卡片`, shared && `${shared} 通有其他人在场`].filter(Boolean).join(' · ')
+})
+function guestNames(bundle) {
+  return bundle.guests.map(code => props.idols.find(entry => entry.idol_code === code)?.display_name || code).join('、')
+}
 const idol = computed(() => props.idols.find(entry => entry.idol_code === props.selectedIdol) || {})
 const unit = computed(() => props.units.find(entry => entry.unit_code === props.selectedUnit) || {})
 const idolName = computed(() => idol.value.display_name || '姓名待确认')
@@ -191,7 +203,6 @@ const personalRoom = computed(() => props.idolData?.view?.room)
 const roomSubtitle = computed(() => props.mode === 'unit' ? '组合聊天室' : (personalRoom.value?.profile_text || ''))
 const roomSubtitleParts = computed(() => projectCommunicationInlineContent(roomSubtitle.value))
 const heroMedia = computed(() => resolveMobileHeroMedia({ mode: props.mode, idolCode: props.selectedIdol, unitCode: props.selectedUnit }))
-const heroMediaStyle = computed(() => ({ '--hero-focal-x': `${heroMedia.value.focalX * 100}%`, '--hero-focal-y': `${heroMedia.value.focalY * 100}%` }))
 const selectionOptions = computed(() => props.mode === 'unit'
   ? props.units.map(entry => ({ value: entry.unit_code, label: entry.unit_name }))
   : props.idols.map(entry => ({ value: entry.idol_code, label: entry.display_name })))
@@ -270,26 +281,39 @@ function timeWindow(topic) {
 </script>
 
 <style scoped>
-/* Communication: a picture strip, then identity and the picker on paper; tabs; hairline rows. */
+/* Communication: the room's call card beside its content on wide screens, above it on narrow ones.
+   The card follows the game's call screen: room picture, owner at the centre, picker on the
+   pale band the picture leaves for text. Tabs and rows stay on paper with hairlines. */
 .mobile-archive { container: mobile-archive / inline-size; height: 100%; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
-.mobile-hero { position: relative; isolation: isolate; background: var(--gs-paper); }
-.hero-media { position: relative; height: 132px; overflow: hidden; background: var(--gs-line); pointer-events: none; }
-.hero-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--hero-focal-x) var(--hero-focal-y); }
-.hero-media-blur { filter: blur(16px) saturate(.9); }
-.hero-media-main { -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%); mask-image: linear-gradient(90deg, transparent 0%, #000 45%, #000 100%); }
-.hero-content { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--gs-space-4) var(--gs-space-6); box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-5) var(--gs-space-7) var(--gs-space-4); }
-.mobile-identity { display: flex; flex: 1 1 320px; align-items: center; gap: var(--gs-space-4); min-width: 0; }
-.identity-copy { min-width: 0; padding-bottom: var(--gs-space-1); }
-.mobile-identity > img.unit-logo { flex: 0 0 auto; width: 96px; height: 64px; border-radius: var(--gs-radius-media); background: var(--gs-surface); object-fit: contain; }
-.mobile-identity h2 { margin: var(--gs-space-2) 0 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
-.mobile-identity p { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-1); margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
-.mobile-identity p:empty { display: none; }
-.mobile-identity p img { width: 20px; height: 20px; object-fit: contain; }
-.mobile-selector { display: grid; grid-template-columns: var(--gs-control-touch) minmax(0, 1fr) var(--gs-control-touch); align-items: center; gap: var(--gs-space-2); flex: 0 1 340px; min-width: 0; }
-.mobile-selector > button { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
+.mobile-layout { box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; }
+.mobile-main { min-width: 0; }
+.mobile-hero { position: relative; isolation: isolate; overflow: hidden; height: 300px; background: var(--gs-line); }
+.mobile-hero.is-unit { background: var(--gs-chrome); color: var(--gs-chrome-ink-active); }
+.call-card-art { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.mobile-identity { position: absolute; top: var(--gs-space-6); left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: var(--gs-space-3); padding: 0 var(--gs-space-5); }
+.mobile-identity > img.unit-logo { width: 132px; height: 88px; border-radius: var(--gs-radius-media); background: var(--gs-surface); object-fit: contain; }
+.mobile-identity h2 { max-width: 100%; margin: 0; padding: var(--gs-space-1) var(--gs-space-5); border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; overflow-wrap: anywhere; text-align: center; }
+.call-card-lower { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: var(--gs-space-3); padding: var(--gs-space-7) var(--gs-space-5) var(--gs-space-4); background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gs-paper) 82%, transparent) 55%); }
+.is-unit .call-card-lower { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gs-chrome) 82%, transparent) 55%); }
+.call-card-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-1); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
+.call-card-note:empty { display: none; }
+.call-card-note img { width: 20px; height: 20px; object-fit: contain; }
+.is-unit .call-card-note { color: var(--gs-chrome-ink); }
+.mobile-selector { display: grid; grid-template-columns: var(--gs-control-touch) minmax(0, 1fr) var(--gs-control-touch); align-items: center; gap: var(--gs-space-2); min-width: 0; }
+.mobile-selector > button { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: color-mix(in srgb, var(--gs-surface) 72%, transparent); color: var(--gs-ink-2); cursor: pointer; }
 .mobile-selector label { min-width: 0; }
 .mobile-selector label span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.mobile-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.mobile-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-field); background: color-mix(in srgb, var(--gs-surface) 90%, transparent); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+/* Wide: the card sits beside the content and stays in view while the rows scroll. */
+@container mobile-archive (min-width: 900px) {
+  .mobile-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); align-items: start; gap: var(--gs-space-8); padding: var(--gs-space-6) var(--gs-space-7) 0; }
+  .mobile-hero { position: sticky; top: var(--gs-space-6); height: auto; aspect-ratio: 688 / 1000; border-radius: var(--gs-radius-panel); }
+  .mobile-identity { top: 13%; }
+  /* The picture's own pale band carries the text here, so no fade is needed. */
+  .call-card-lower, .is-unit .call-card-lower { top: 56%; justify-content: center; padding-top: var(--gs-space-4); background: none; }
+  .mobile-main .mobile-tabs { padding-inline: 0; }
+  .mobile-main .mobile-content { padding-inline: 0; }
+}
 .mobile-tabs { position: sticky; top: 0; z-index: 3; display: flex; gap: var(--gs-space-1); overflow-x: auto; box-sizing: border-box; max-width: var(--gs-content-width); margin: 0 auto; padding: 0 var(--gs-space-7); border-bottom: 1px solid var(--gs-line); background: var(--gs-paper); overscroll-behavior-x: contain; scrollbar-width: none; }
 .mobile-tabs::-webkit-scrollbar { display: none; }
 .mobile-tabs button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 0; border-bottom: 2px solid transparent; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
@@ -316,6 +340,10 @@ function timeWindow(topic) {
 /* Opening conditions are a line of quiet text; only ones that lead somewhere are links. */
 .unlock-list { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); min-width: 0; }
 .unlock-list:empty { display: none; }
+/* Others on the line: named beside their faces; the call stays its owner's. */
+.call-guests { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
+.call-guest-faces { display: inline-flex; }
+.call-guest-faces > * + * { margin-left: -6px; }
 .unlock-list button, .unlock-condition { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; font: inherit; font-size: var(--gs-text-meta); line-height: 1.6; text-align: left; }
 .unlock-list button { min-height: var(--gs-control-compact); color: var(--gs-mint-ink); cursor: pointer; }
 .unlock-condition { color: var(--gs-ink-3); }
@@ -351,10 +379,8 @@ function timeWindow(topic) {
   .conversation-meta { grid-column: 2; }
 }
 @container mobile-archive (max-width: 560px) {
-  .hero-media { height: 96px; }
-  .hero-content { padding: var(--gs-space-4) var(--gs-space-5) var(--gs-space-3); }
-  .mobile-identity h2 { font-size: var(--gs-text-section); }
-  .mobile-selector { flex: 1 1 100%; }
+  .mobile-hero { height: 280px; }
+  .mobile-identity { top: var(--gs-space-5); }
   .mobile-selector select { min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .mobile-tabs { padding: 0 var(--gs-space-3); }
   .mobile-content { padding: var(--gs-space-5) var(--gs-space-5) calc(var(--gs-space-7) + var(--gs-safe-bottom)); }

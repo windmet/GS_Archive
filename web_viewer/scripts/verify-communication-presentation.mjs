@@ -100,4 +100,20 @@ cancellation.cleanup()
     'v-if="guestSpeaker" class="dialogue-speaker"',
   ]) assert.ok(callScene.includes(marker), `call scene keeps the owner room: ${marker}`)
 }
+// The communication read model names who else is on a call, per call, from the story catalog.
+{
+  const { readFileSync } = await import('node:fs')
+  const read = path => JSON.parse(readFileSync(new URL('../public/data/' + path, import.meta.url), 'utf8'))
+  const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
+  const records = buildMobileRecords({ mobileArchive: read('masterdata/mobile_archive_index.json'),
+    randomTalkPresentation: read('masterdata/random_talk_presentation_index.json'), compiledIndex: read('compiled/index.json'),
+    idolUnit: read('masterdata/idol_unit_dictionary.json'), archiveManifest: read('archive_manifest.json'),
+    cardIndex: read('masterdata/card_index.json'), idolEpisode: read('masterdata/idol_episode_index.json'),
+    storyCatalog: read('masterdata/story_catalog.json') }, await import('../src/data/idolCommunicationSelectors.js'))
+  const phones = records.idolRecords.flatMap(record => record.view.phoneBundles.map(bundle => [record.id, bundle]))
+  const shared = phones.filter(([, bundle]) => bundle.guests.length)
+  assert.deepEqual(shared.map(([owner, bundle]) => [owner, bundle.file, bundle.guests]),
+    [['040ren', '040ren_403_2_4_040_03_09_c.json', ['023har', '044ame']]], 'only Ren’s card call has others on the line')
+  assert.ok(phones.every(([owner, bundle]) => !bundle.guests.includes(owner)), 'the owner is never listed as a guest')
+}
 console.log('Communication presentation: standalone, ADV/call/ADV, chat/choice/ADV, assets, Reader stamps and stale readiness passed; calls stay in the owner room')

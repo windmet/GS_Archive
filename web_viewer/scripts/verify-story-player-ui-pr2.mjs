@@ -158,10 +158,11 @@ assert.match(viewer, /:next-disabled="episodeFinished \|\| currentStep\.type ===
 assert.match(dock, /:disabled="nextDisabled"/, 'the shared player dock must expose a disabled completed-state advance control')
 assert.match(zhLocale, /player\.complete\.communication/, 'Chinese UI locale must name non-blocking communication completion')
 assert.match(jaLocale, /player\.complete\.communication/, 'Japanese UI locale must name non-blocking communication completion')
-assert.match(archiveMobile, /class="hero-media"/, 'mobile archive hero must own a fixed media shell')
-assert.match(archiveMobile, /class="hero-media-blur"/, 'mobile archive hero must own a softened fill layer')
-assert.match(archiveMobile, /mode !== 'unit'" class="hero-media-main"/, 'unit archive mode must not apply personal portrait cropping')
-assert.match(archiveMobile, /object-position: var\(--hero-focal-x\) var\(--hero-focal-y\)/, 'both image layers must share one focal point')
+// The room is a call card: the whole room picture (keepsake or unit pattern) from the top,
+// the owner at its centre; wide screens keep the picture's own proportion beside the rows.
+assert.match(archiveMobile, /class="call-card-art" :src="heroMedia\.src"/, 'mobile archive room card must show the room picture')
+assert.match(archiveMobile, /\.call-card-art \{[^}]*object-position: center top;/, 'the room picture is read from its top, where the keepsake is')
+assert.match(archiveMobile, /aspect-ratio: 688 \/ 1000;/, 'wide screens keep the call picture in its own proportion')
 assert.doesNotMatch(archiveMobile, /background-position:/, 'breakpoints must not define independent image coordinates')
 assert.deepEqual(resolveMobileHeroMedia({ mode: 'personal', idolCode: '038tak', unitCode: '01jup' }), {
   src: '/assets/idols/mobile_bg/image_chara_mobile_background_038tak.png',
