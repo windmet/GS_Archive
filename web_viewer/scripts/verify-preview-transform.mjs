@@ -6,6 +6,8 @@ import {
   PREVIEW_WEBP_EXCLUDED_PREFIXES,
   COPY_TRANSFORM,
   LOSSLESS_WEBP_TRANSFORM,
+  LOSSY_WEBP_TRANSFORM,
+  PREVIEW_LOSSY_WEBP_PREFIXES,
   isPreviewLosslessWebpCandidate,
   resolvePreviewObjectKey,
   previewTransformKind,
@@ -24,6 +26,16 @@ for (const prefix of PREVIEW_WEBP_EXCLUDED_PREFIXES) {
   assert.ok(prefix.endsWith('/'), `Excluded prefixes must end with a slash: ${prefix}`)
 }
 assert.ok(PREVIEW_WEBP_EXCLUDED_PREFIXES.includes('assets/brand/'), 'brand PNG must stay untransformed as the PNG control probe')
+// Lossy prefixes name real picture families, and never anything composited at runtime.
+for (const prefix of PREVIEW_LOSSY_WEBP_PREFIXES) {
+  assert.ok(prefix.endsWith('/') && manifest.entries.some(entry => entry.request_key.startsWith(prefix)), `Lossy prefix matches nothing in the corpus: ${prefix}`)
+  assert.ok(!PREVIEW_WEBP_EXCLUDED_PREFIXES.includes(prefix), `Lossy prefix is excluded from WebP: ${prefix}`)
+}
+for (const key of ['assets/spines/001tom/comu.png', 'assets/card-art/portrait/c.png', 'assets/cards/icons/i.png',
+  'assets/live-chibi/costumes/x/cos.png', 'assets/idols/a.png', 'assets/emojis/e.png', 'assets/stamps/s.png', 'data/fx_extracted/t.png', 'assets/events/logos/image_event_logo_10014.png'])
+  assert.equal(previewTransformKind(key), LOSSLESS_WEBP_TRANSFORM, `${key} is composited at runtime and stays lossless`)
+for (const key of ['assets/bg/room.png', 'assets/events/banners/b.png', 'assets/stories/birthday/x.png', 'assets/gasha/g.png', 'assets/songs/jacket_drvalv.png'])
+  assert.equal(previewTransformKind(key), LOSSY_WEBP_TRANSFORM, `${key} is a bulk-loaded picture and ships lossy`)
 
 // The load-bearing coverage check: after this pass no PNG may remain untransformed
 // except the named exclusions. Without it a prefix added to the corpus later would
@@ -54,7 +66,7 @@ assert.equal(resolvePreviewObjectKey('assets/brand/logo.png'), 'assets/brand/log
 assert.equal(resolvePreviewObjectKey('assets/card-art/portrait/card.jpg'), 'assets/card-art/portrait/card.jpg', 'only PNG is transformed')
 assert.equal(resolvePreviewObjectKey('data/compiled/x.json'), 'data/compiled/x.json', 'JSON is never transformed')
 assert.equal(resolvePreviewObjectKey('assets/spines/a/comu.atlas'), 'assets/spines/a/comu.atlas', 'atlas text is never transformed')
-assert.equal(previewTransformKind('assets/bg/room.png'), LOSSLESS_WEBP_TRANSFORM)
+assert.equal(resolvePreviewObjectKey('assets/songs/jacket_drvalv.png'), 'assets/songs/jacket_drvalv.webp', 'lossy keeps the same physical key')
 assert.equal(previewTransformKind('assets/spines/a/comu.atlas'), COPY_TRANSFORM)
 assert.equal(isPreviewLosslessWebpCandidate('assets/spines/a/texture.webp'), false, 'an existing WebP must not be re-resolved')
 // Idempotence: resolving twice must not produce a different key.
@@ -73,6 +85,7 @@ for (const [name, source, importPath] of [
 ]) {
   assert.ok(source.includes(importPath), `${name} must import the shared transform module (${importPath})`)
   assert.ok(source.includes('resolvePreviewObjectKey'), `${name} must call resolvePreviewObjectKey`)
+  if (name === 'exporter') assert.ok(source.includes('lossy: item.transform === LOSSY_WEBP_TRANSFORM'), 'the exporter encodes lossy exactly where the policy says')
   assert.ok(!/\.png['"]?\s*\)?\s*\.replace\([^)]*webp/i.test(source) || source.includes('resolvePreviewObjectKey'), `${name} must not hand-roll PNG->WebP rewriting`)
 }
 // The Function must not infer the content type from the extension in the URL,

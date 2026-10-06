@@ -5,7 +5,7 @@ import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
-import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
+import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM, LOSSY_WEBP_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
 import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless-webp.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
@@ -206,7 +206,7 @@ async function stage(item) {
   const target = path.join(stageRoot, ...item.object_key.split('/'))
   await fs.mkdir(path.dirname(target), { recursive: true })
   if (item.transform === COPY_TRANSFORM) await fs.copyFile(item.source, target)
-  else await encodeLosslessWebp({ source: item.source, target })
+  else await encodeLosslessWebp({ source: item.source, target, lossy: item.transform === LOSSY_WEBP_TRANSFORM })
   const content = await fs.readFile(target)
   item.deployed_size = content.length
   item.sha256 = createHash('sha256').update(content).digest('hex')
@@ -265,7 +265,7 @@ totals.deployed_bytes = deployedBytes
 totals.saved_bytes = sourceBytes - deployedBytes
 totals.ratio = sourceBytes ? Number((deployedBytes / sourceBytes).toFixed(4)) : 0
 await fs.writeFile(manifestPath, JSON.stringify({ schema_version: 2, totals, missing: missingEntries, entries }, null, 2) + '\n')
-console.log(`Exported ${entries.length} objects (${convertedPngs} lossless WebP) to ${stageRoot}; manifest ${manifestPath}`)
+console.log(`Exported ${entries.length} objects (${convertedPngs} WebP, ${entries.filter(item => item.transform === LOSSY_WEBP_TRANSFORM).length} of them lossy q90) to ${stageRoot}; manifest ${manifestPath}`)
 
 // The encoder pool holds live child processes, and a live child keeps Node's
 // event loop non-empty. Without this the export finishes all its work, writes

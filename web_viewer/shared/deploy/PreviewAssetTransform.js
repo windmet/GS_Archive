@@ -19,6 +19,19 @@ export const PREVIEW_WEBP_EXCLUDED_PREFIXES = Object.freeze([
 
 export const COPY_TRANSFORM = 'copy'
 export const LOSSLESS_WEBP_TRANSFORM = 'webp-lossless-alpha0-rgb0'
+export const LOSSY_WEBP_TRANSFORM = 'webp-q90-alpha-lossless-exact'
+
+// Opaque, painted pictures that readers load in bulk (story and studio backgrounds, event and
+// story covers, gacha banners, song jackets) ship as lossy WebP at q90: about a sixth of the
+// lossless bytes with no visible change at the player's 1.67x scale. Some of them carry
+// transparency; their alpha stays lossless and fully transparent pixels keep zeroed RGB (`exact`),
+// so edges do not fringe. Everything composited at runtime (Spine, chibi, cards, icons, stickers)
+// stays lossless, and so do event logos: small transparent lettering, where colour subsampling
+// visibly softens saturated text and the saving is negligible (2.6 MiB in all). Same physical
+// `.webp` key as the lossless transform: only the bytes differ.
+export const PREVIEW_LOSSY_WEBP_PREFIXES = Object.freeze([
+  'assets/bg/', 'assets/events/banners/', 'assets/events/characters/', 'assets/stories/', 'assets/gasha/', 'assets/songs/',
+])
 export const GZIP_TRANSFORM = 'gzip-v1'
 export const PREVIEW_GZIP_PREFIXES = Object.freeze([
   'data/compiled/', 'assets/lipsync/', 'assets/live-chibi/motions/',
@@ -66,7 +79,12 @@ export function resolvePreviewObjectKey(requestKey, { gzip = false, dataRevision
     : requestKey
 }
 
+export function isPreviewLossyWebpCandidate(requestKey) {
+  return isPreviewLosslessWebpCandidate(requestKey) && PREVIEW_LOSSY_WEBP_PREFIXES.some(prefix => requestKey.startsWith(prefix))
+}
+
 export function previewTransformKind(requestKey, { gzip = false } = {}) {
   if (gzip && isPreviewGzipCandidate(requestKey)) return GZIP_TRANSFORM
+  if (isPreviewLossyWebpCandidate(requestKey)) return LOSSY_WEBP_TRANSFORM
   return isPreviewLosslessWebpCandidate(requestKey) ? LOSSLESS_WEBP_TRANSFORM : COPY_TRANSFORM
 }

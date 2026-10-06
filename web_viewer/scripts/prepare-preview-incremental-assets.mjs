@@ -8,7 +8,7 @@ import {loadPreviewUploadedBaseline} from './lib/preview-uploaded-baseline.mjs'
 import {encodeStructuredGzip} from './lib/structured-gzip.mjs'
 import {encodeLosslessWebp, runPool, shutdownEncoderPool} from './lib/lossless-webp.mjs'
 import {isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
-  previewTransformKind, LOSSLESS_WEBP_TRANSFORM} from '../shared/deploy/PreviewAssetTransform.js'
+  previewTransformKind, LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM} from '../shared/deploy/PreviewAssetTransform.js'
 import {PREVIEW_BUCKET_LIMIT_BYTES, projectIncrementalUsage} from './lib/upload-storage-budget.mjs'
 
 // Local staging only. No network mutations and no removal of prior packages.
@@ -60,11 +60,15 @@ await runPool(inventory.entries,4,async entry=>{
 const dataRevision=createHash('sha256').update(JSON.stringify(inventory.entries
   .filter(entry=>isPreviewDataSnapshotKey(entry.request_key))
   .map(entry=>[entry.request_key,entry.source_sha256]))).digest('hex')
+// One-off rollout of the lossy picture transform: those objects already sit in the bucket under the
+// same key with an unchanged source, so the new/changed rule alone would never re-encode them.
+const reencodeLossy=args.includes('--reencode-lossy')
 const selected=[]
 for (const entry of inventory.entries) {
   const gzip=isPreviewGzipCandidate(entry.request_key)
   const objectKey=resolvePreviewObjectKey(entry.request_key,{gzip,dataRevision})
-  if (!remoteKeys.has(objectKey) || oldSources.get(entry.request_key)!==entry.source_sha256) {
+  if (!remoteKeys.has(objectKey) || oldSources.get(entry.request_key)!==entry.source_sha256
+    || (reencodeLossy && previewTransformKind(entry.request_key,{gzip})===LOSSY_WEBP_TRANSFORM)) {
     selected.push({...entry,object_key:objectKey,transform:previewTransformKind(entry.request_key,{gzip})})
   }
 }
@@ -76,8 +80,8 @@ try {
     const target=path.join(stage,...entry.object_key.split('/'))
     assert(entry.object_key.split('/').every(part=>part && part!=='.' && part!=='..' && !part.includes('\\')))
     await fs.mkdir(path.dirname(target),{recursive:true})
-    if (entry.transform===LOSSLESS_WEBP_TRANSFORM) {
-      await encodeLosslessWebp({source:entry.source,target})
+    if (entry.transform===LOSSLESS_WEBP_TRANSFORM || entry.transform===LOSSY_WEBP_TRANSFORM) {
+      await encodeLosslessWebp({source:entry.source,target,lossy:entry.transform===LOSSY_WEBP_TRANSFORM})
       assert.equal((await hashFile(entry.source)).sha256,entry.source_sha256,'PNG source changed during encoding')
       entry.deployed_content_type='image/webp'
     } else {

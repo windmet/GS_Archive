@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto'
 import {hashFile} from './lib/preview-source-baseline.mjs'
 import {runPool} from './lib/lossless-webp.mjs'
 import {checkStorageBudget, readLiveStorageUsage, projectIncrementalUsage} from './lib/upload-storage-budget.mjs'
-import {isPreviewGzipCandidate, resolvePreviewObjectKey, previewTransformKind, LOSSLESS_WEBP_TRANSFORM} from '../shared/deploy/PreviewAssetTransform.js'
+import {isPreviewGzipCandidate, resolvePreviewObjectKey, previewTransformKind, LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM} from '../shared/deploy/PreviewAssetTransform.js'
 
 // Copy an explicitly validated incremental batch. Never sync or delete objects.
 const [manifestFile, remote, mode='--plan']=process.argv.slice(2)
@@ -23,6 +23,7 @@ const images=JSON.parse(await fs.readFile(path.join(directory,'image-validation.
 assert.equal(images.manifest_sha256,createHash('sha256').update(raw).digest('hex'),'Stale image verification')
 assert.equal(images.dimensions_and_visible_pixels_preserved,true)
 assert.equal(images.converted_pngs,manifest.entries.filter(e=>e.transform===LOSSLESS_WEBP_TRANSFORM).length)
+assert.equal(images.lossy_pictures ?? 0,manifest.entries.filter(e=>e.transform===LOSSY_WEBP_TRANSFORM).length,'Lossy pictures were not validated')
 assert.equal(images.lossless_terminal_derivatives,manifest.entries.filter(e=>e.request_key.startsWith('assets/terminal/') && e.object_key.endsWith('.webp')).length)
 const stage=path.join(directory,manifest.stage)
 assert.equal(await fs.realpath(stage),stage)

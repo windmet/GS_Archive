@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { isPreviewDataSnapshotKey, isPreviewGzipCandidate, resolvePreviewObjectKey,
-  previewTransformKind } from '../../shared/deploy/PreviewAssetTransform.js'
+  previewTransformKind, LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM } from '../../shared/deploy/PreviewAssetTransform.js'
 
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
 const hashPattern = /^[a-f0-9]{64}$/
@@ -141,7 +141,10 @@ export async function loadPreviewUploadedBaseline({ baselineFile, overlayFiles =
       const gzip = isPreviewGzipCandidate(entry.request_key)
       assert.equal(entry.object_key, resolvePreviewObjectKey(entry.request_key, { gzip, dataRevision: manifest.dataRevision }),
         'Uploaded physical object key violates transform policy')
-      assert.equal(entry.transform, previewTransformKind(entry.request_key, { gzip }), 'Uploaded transform policy mismatch')
+      // Pictures now shipped lossy were uploaded lossless before 2026-10-06 under the same key.
+      const policy = previewTransformKind(entry.request_key, { gzip })
+      assert(entry.transform === policy || (policy === LOSSY_WEBP_TRANSFORM && entry.transform === LOSSLESS_WEBP_TRANSFORM),
+        'Uploaded transform policy mismatch')
       nextSources.set(entry.request_key, entry.source_sha256)
     }
     assert.equal(manifest.totals.deployed_bytes, deployedBytes, 'Uploaded byte total mismatch')
