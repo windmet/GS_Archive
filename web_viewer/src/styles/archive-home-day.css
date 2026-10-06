@@ -57,7 +57,12 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .settings-backgrounds small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
 .background-auto, .background-more { min-height: 44px; padding: 7px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); margin-bottom: 12px; }
 .background-auto[aria-pressed=true] { background: var(--gs-selected-bg); border-color: var(--gs-selected-line); color: var(--gs-selected-ink); }
-.background-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.background-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+.background-variants { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.background-variants button { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font-size: var(--gs-text-meta); cursor: pointer; }
+.background-variants small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.background-variants button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.background-variants button[aria-pressed=true] small { color: inherit; }
 .background-grid button { display: grid; gap: 7px; align-content: start; min-height: 46px; padding: 7px; background: var(--gs-surface); color: var(--gs-ink); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); }
 .background-grid button[aria-pressed=true] { border-color: var(--gs-selected-line); box-shadow: inset 0 0 0 1px var(--gs-selected-line); background: var(--gs-selected-bg); }
 .background-grid img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--gs-radius-media); }.background-grid strong { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }

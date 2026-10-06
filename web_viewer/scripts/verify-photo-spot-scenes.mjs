@@ -1,12 +1,23 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { photoSceneSpot, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants, photoVariantKey } from '../src/presentation/photoSpotScenes.js'
+import { readFileSync, existsSync } from 'node:fs'
+import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants, photoSceneSpot, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants, photoVariantKey } from '../src/presentation/photoSpotScenes.js'
 import { STUDIO_WEB_FILTERS, studioFilterCss } from '../src/core/PictureStudioPolicy.mjs'
 
 // Spots own their scenes. The photo catalogue and the studio's material picker read that structure
 // through one module; the studio's filter previews and its stage read one filter table.
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const materials = JSON.parse(read('public/data/masterdata/domains/photo_materials.json'))
+const backgrounds = JSON.parse(read('public/data/terminal/backgrounds.json')).entries
+const backgroundVariants = JSON.parse(read('public/data/masterdata/background_variants.json')).variants
+for (const background of backgrounds) {
+  const thumbnail = photoBackgroundThumbnailUrl(background.url)
+  assert.ok(thumbnail.startsWith('/assets/bg/thumbs/'), `background ${background.id} uses its original thumbnail`)
+  assert.ok(existsSync(new URL(`../public${thumbnail}`, import.meta.url)), `background ${background.id} thumbnail exists`)
+}
+const homeVariants = rankPhotoVariants(backgrounds.map(row => photoVariantKeys(backgroundVariants[row.id])))
+assert.equal(homeVariants.find(row => row.id === '夜')?.count, 14, 'home night filter covers all 14 published backgrounds')
+assert.equal(photoBackgroundThumbnailUrl('/assets/terminal/custom.webp'), '/assets/terminal/custom.webp', 'derivative URLs remain unchanged')
+assert.equal(photoBackgroundThumbnailUrl(''), '', 'missing pictures remain empty')
 assert.ok(materials.spots.length > 100 && materials.scenes.length > materials.spots.length, 'real spot and scene corpus')
 
 let linked = 0

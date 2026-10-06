@@ -204,9 +204,13 @@
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
           <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
           <label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <div v-if="backgroundVariants.length" class="background-variants" role="group" aria-label="按时段与天气筛选">
+            <button type="button" :aria-pressed="!backgroundVariant" @click="backgroundVariant = ''">全部</button>
+            <button v-for="entry in backgroundVariants" :key="entry.id" type="button" :aria-pressed="backgroundVariant === entry.id" @click="backgroundVariant = entry.id">{{ entry.label }} <small>{{ entry.count }}</small></button>
+          </div>
           <div class="background-grid">
             <button v-for="background in visibleBackgrounds" :key="background.id" type="button" :aria-pressed="preferences.background === background.id" @click="preferences.background = background.id">
-              <img v-if="background.thumbnail" :src="background.thumbnail" alt="" loading="lazy" decoding="async" />
+              <img v-if="background.url || background.thumbnail" :src="photoBackgroundThumbnailUrl(background.url) || background.thumbnail" alt="" loading="lazy" decoding="async" @error="backgroundThumbnailFailed($event, background)" />
               <strong>{{ archiveNamedBackground(background.label) }}</strong>
             </button>
           </div>
@@ -299,6 +303,8 @@ import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPref
 import {archiveText} from './useArchiveCostumeText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
+import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
   loadArchiveHomePreferences,
   resetArchiveHomePreferences,
@@ -364,11 +370,20 @@ const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume =>
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
 const backgroundEntries = ref([])
+// The picker shows the game's own background thumbnail; the archive's derivative is the fallback.
+function backgroundThumbnailFailed(event, background) {
+  if (background.thumbnail && !event.target.src.endsWith(background.thumbnail)) event.target.src = background.thumbnail
+}
 const backgroundReady = ref(false), backgroundLoading = ref(false), backgroundError = ref('')
 const backgroundQuery = ref(''), backgroundLimit = ref(12)
-const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
+// Time-of-day chips: the photo catalogue's variant rule over each background's photo-studio scenes.
+const backgroundVariantIndex = ref({}), backgroundVariant = ref('')
+const backgroundKeys = entry => photoVariantKeys(backgroundVariantIndex.value[entry.id])
+const backgroundVariants = computed(() => rankPhotoVariants(backgroundEntries.value.map(backgroundKeys), id => photoText('photo-scenes', id)))
+const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => (!backgroundVariant.value || backgroundKeys(entry).includes(backgroundVariant.value)) &&
+  archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
-watch(backgroundQuery, () => { backgroundLimit.value = 12 })
+watch([backgroundQuery, backgroundVariant], () => { backgroundLimit.value = 12 })
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
 const selectedBackground = computed(() => resolveHomeBackground(preferences.background, backgroundEntries.value,
   activeCue.value?.background || activeIdol.value?.representativeBg || '', backgroundReady.value))
@@ -377,8 +392,11 @@ async function loadBackgroundCatalogue(retry = false) {
   backgroundLoading.value = true; backgroundError.value = ''
   void loadArchiveNames('photos').catch(error => console.warn('Background names unavailable', error))
   try {
-    const catalogue = await loadTerminalManifest('backgrounds', { retry })
+    const [catalogue, variants] = await Promise.all([loadTerminalManifest('backgrounds', { retry }),
+      fetch('/data/masterdata/background_variants.json').then(response => response.ok ? response.json() : null).catch(() => null)])
     if (homeDisposed) return
+    // Without the index the picker still works, just without chips.
+    backgroundVariantIndex.value = variants?.kind === 'background-variants' ? variants.variants || {} : {}
     backgroundEntries.value = catalogue.entries; backgroundReady.value = true
   } catch {
     if (!homeDisposed) backgroundError.value = '场景目录暂时不可用。现有首页仍可继续使用。'

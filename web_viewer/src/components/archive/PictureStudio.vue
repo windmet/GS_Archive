@@ -157,7 +157,7 @@
             <div class="studio-spot-grid" :style="{ '--studio-spot-columns': spotColumns }">
               <template v-for="item in spotGridItems" :key="item.key">
                 <button v-if="item.spot" type="button" class="studio-spot" :aria-pressed="draft.background.spotId === item.spot.id" @click="chooseSpot(item.spot)">
-                  <span class="studio-spot-art"><img v-if="media[`spots:${item.spot.id}`]?.image?.url" :src="media[`spots:${item.spot.id}`].image.url" alt="" loading="lazy" decoding="async" /><ImageOff v-else :size="20" /></span>
+                  <span class="studio-spot-art"><img v-if="media[`spots:${item.spot.id}`]?.image?.url" :src="thumbnail(media[`spots:${item.spot.id}`].image.url)" alt="" loading="lazy" decoding="async" @error="fullPicture($event, media[`spots:${item.spot.id}`].image.url)" /><ImageOff v-else :size="20" /></span>
                   <span>{{ materialName('spots', item.spot) }}</span>
                 </button>
                 <div v-else class="studio-spot-scenes" role="group" :aria-label="`${currentSpotName}的场景`">
@@ -212,9 +212,9 @@
           </template>
           <template v-else>
             <div class="studio-preview-grid" role="group" aria-label="滤镜">
-              <button type="button" :aria-pressed="!draft.filterId" @click="draft.filterId = null"><span class="studio-preview-art"><img v-if="sceneImage" :src="sceneImage" alt="" loading="lazy" decoding="async" /></span><span>原图</span></button>
+              <button type="button" :aria-pressed="!draft.filterId" @click="draft.filterId = null"><span class="studio-preview-art"><img v-if="sceneImage" :src="thumbnail(sceneImage)" alt="" loading="lazy" decoding="async" @error="fullPicture($event, sceneImage)" /></span><span>原图</span></button>
               <button v-for="filter in materials.filters" :key="filter.id" type="button" :aria-pressed="draft.filterId === filter.id" @click="draft.filterId = filter.id">
-                <span class="studio-preview-art"><img v-if="sceneImage" :src="sceneImage" alt="" loading="lazy" decoding="async" :style="{ filter: studioFilterCss(filter.resourceId) }" /></span><span>{{ materialName('filters', filter) }}</span>
+                <span class="studio-preview-art"><img v-if="sceneImage" :src="thumbnail(sceneImage)" alt="" loading="lazy" decoding="async" :style="{ filter: studioFilterCss(filter.resourceId) }" @error="fullPicture($event, sceneImage)" /></span><span>{{ materialName('filters', filter) }}</span>
               </button>
             </div>
             <p class="studio-boundary">滤镜为网页近似，预览用当前场景；场景天气效果尚未重建。</p>
@@ -380,7 +380,7 @@ import { studioPresetPresentation } from '../../presentation/studio-preset-label
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import ArchiveIdolPickerPanel from './terminal/ArchiveIdolPickerPanel.vue';
 import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
-import { photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
+import { photoBackgroundThumbnailUrl as thumbnail, photoSpotScene, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
 import { STUDIO_LIMITS } from '../../core/StudioDocument.mjs';
 import { studioFilterCss } from '../../core/PictureStudioPolicy.mjs';
 import "../../styles/archive-domains.css";
@@ -522,6 +522,8 @@ const transformFields = [
 const currentSpot = computed(() => materials.value?.spots.find((row) => row.id === draft.value.background.spotId) || null);
 const currentSpotName = computed(() => materialName("spots", currentSpot.value));
 const scenes = computed(() => photoSpotScenes(materials.value, currentSpot.value));
+// A thumbnail that fails to load is replaced once by the full picture.
+function fullPicture(event, url) { if (event.target.src !== new URL(url, location.href).href) event.target.src = url; }
 const sceneImage = computed(() => media.value?.[`scenes:${draft.value.background.sceneId}`]?.image?.url || media.value?.[`spots:${draft.value.background.spotId}`]?.image?.url || "");
 const spotVariants = computed(() => photoSpotVariants(materials.value, (id) => archiveText("photo-scenes", id)));
 const filteredSpots = computed(() => {

@@ -32,16 +32,31 @@ export const photoVariantKey = (name) => String(name || '').replace(/\d+$/, '')
 
 export const photoSpotVariantKeys = (materials, spot) => [...new Set(photoSpotScenes(materials, spot).map((row) => photoVariantKey(row.name)))]
 
-// Variants shared by more than one spot, most common first; `label` translates a variant key.
-export function photoSpotVariants(materials, label = (id) => id) {
+// Variants shared by more than one item, most common first; `label` translates a variant key.
+// Every picker that filters backgrounds by time of day ranks its chips through this.
+export function rankPhotoVariants(keyLists, label = (id) => id) {
   const counts = new Map()
-  for (const spot of materials?.spots || []) for (const key of photoSpotVariantKeys(materials, spot)) counts.set(key, (counts.get(key) || 0) + 1)
+  for (const keys of keyLists) for (const key of new Set(keys)) counts.set(key, (counts.get(key) || 0) + 1)
   return [...counts].filter(([, count]) => count > 1).sort((a, b) => b[1] - a[1])
     .map(([id, count]) => ({ id, count, label: label(id) || id }))
 }
+
+export const photoSpotVariants = (materials, label) =>
+  rankPhotoVariants((materials?.spots || []).map((spot) => photoSpotVariantKeys(materials, spot)), label)
+
+// Raw scene variants ("通常1", "夜") to the keys chips filter by.
+export const photoVariantKeys = (variants = []) => [...new Set(variants.map(photoVariantKey))]
 
 // The scene a spot opens on: the one for the active variant if it has one, else its first.
 export function photoSpotScene(materials, spot, variant = '') {
   const scenes = photoSpotScenes(materials, spot)
   return (variant && scenes.find((row) => photoVariantKey(row.name) === variant)) || scenes[0] || null
+}
+
+// The game ships a 300×160 thumbnail for every background (image_bg_s/<name>_s.png, deployed under
+// /assets/bg/thumbs/). Grids show those; a background picked for the canvas or a detail view still
+// loads the full picture. Callers fall back to the full URL if a thumbnail fails to load.
+export function photoBackgroundThumbnailUrl(url) {
+  const match = /^\/assets\/bg\/([^/]+)\.png$/.exec(String(url || ''))
+  return match ? `/assets/bg/thumbs/${match[1]}_s.png` : url || ''
 }

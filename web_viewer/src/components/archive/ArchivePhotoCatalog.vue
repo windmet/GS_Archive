@@ -69,12 +69,7 @@
                 alt=""
                 loading="lazy"
                 decoding="async"
-                @error="
-                  failedThumbnails = new Set([
-                    ...failedThumbnails,
-                    `${photoTab}:${row.id}`,
-                  ])
-                "
+                @error="thumbnailFailed(row)"
               />
               <SlidersHorizontal v-else-if="photoTab === 'filters'" :size="26" aria-hidden="true" />
               <Camera v-else :size="26" aria-hidden="true" />
@@ -132,7 +127,7 @@ import ArchivePhotoDetailDialog from "./ArchivePhotoDetailDialog.vue";
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
 import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
-import { photoSceneSpot, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
+import { photoBackgroundThumbnailUrl, photoSceneSpot, photoSpotScenes, photoSpotVariantKeys, photoSpotVariants } from '../../presentation/photoSpotScenes.js';
 import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import "../../styles/archive-domains.css";
@@ -260,8 +255,17 @@ function binding(row) {
       : materialMedia.value
   )?.[`${photoTab.value}:${row.id}`];
 }
+// Spots and scenes show the game's background thumbnail; if one fails, the full picture is tried
+// once before the placeholder icon.
+const fullPictures = shallowRef(new Set());
 function thumbnail(row) {
-  return binding(row)?.image?.url;
+  const url = binding(row)?.image?.url, key = `${photoTab.value}:${row.id}`;
+  return ["spots", "scenes"].includes(photoTab.value) && !fullPictures.value.has(key) ? photoBackgroundThumbnailUrl(url) : url;
+}
+function thumbnailFailed(row) {
+  const key = `${photoTab.value}:${row.id}`;
+  if (["spots", "scenes"].includes(photoTab.value) && !fullPictures.value.has(key)) fullPictures.value = new Set([...fullPictures.value, key]);
+  else failedThumbnails.value = new Set([...failedThumbnails.value, key]);
 }
 const photoBinding = computed(() =>
   photoEntry.value ? binding(photoEntry.value) : null,
