@@ -14,10 +14,13 @@
 .collection-page .collection-chips button small { color:var(--gs-ink-3);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-medium); }
 .collection-page .collection-chips button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
 .collection-page .collection-chips button[aria-pressed=true] small { color:inherit; }
-.collection-page .collection-attributes button:not([aria-pressed=true])::before { content:"";width:8px;height:8px;border-radius:50%;background:currentColor; }
-.collection-page .collection-attributes button.physical { color:var(--gs-attr-physical); }
-.collection-page .collection-attributes button.intelligent { color:var(--gs-attr-intelli); }
-.collection-page .collection-attributes button.mental { color:var(--gs-attr-mental); }
+/* Attribute: one light wash of the attribute colour, on the filter and on the item alike.
+   A dot plus a coloured label on every tile split the eye across many small anchors. */
+.collection-page :is(.collection-attributes button, .collection-cards>button):is(.physical,.intelligent,.mental) { --attr-wash:var(--gs-surface); }
+.collection-page :is(.collection-attributes button, .collection-cards>button).physical { --attr-wash:color-mix(in srgb, var(--gs-attr-physical) 9%, var(--gs-surface)); }
+.collection-page :is(.collection-attributes button, .collection-cards>button).intelligent { --attr-wash:color-mix(in srgb, var(--gs-attr-intelli) 9%, var(--gs-surface)); }
+.collection-page :is(.collection-attributes button, .collection-cards>button).mental { --attr-wash:color-mix(in srgb, var(--gs-attr-mental) 11%, var(--gs-surface)); }
+.collection-page .collection-attributes button:is(.physical,.intelligent,.mental):not([aria-pressed=true]) { background:var(--attr-wash); }
 
 /* Items: icon on a quiet square, the full name beneath (long names wrap up to three lines). */
 .collection-page .collection-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:var(--gs-space-5) var(--gs-space-3);margin-top:var(--gs-space-5); }
@@ -26,13 +29,10 @@
 .collection-page .collection-card-art img { display:block;width:62%;height:62%;object-fit:contain; }
 .collection-page .collection-cards>button:hover .collection-card-art { background:var(--gs-mint-wash); }
 .collection-page .collection-cards>button[aria-pressed=true] .collection-card-art { box-shadow:inset 0 0 0 2px var(--gs-mint); }
-.collection-page .collection-cards>button:is(.physical,.intelligent,.mental) .collection-card-art::after { content:"";position:absolute;left:10px;bottom:10px;width:8px;height:8px;border-radius:50%; }
-.collection-page .collection-cards>button.physical .collection-card-art::after { background:var(--gs-attr-physical); }
-.collection-page .collection-cards>button.intelligent .collection-card-art::after { background:var(--gs-attr-intelli); }
-.collection-page .collection-cards>button.mental .collection-card-art::after { background:var(--gs-attr-mental); }
+.collection-page .collection-cards>button:is(.physical,.intelligent,.mental) .collection-card-art { background:var(--attr-wash); }
 .collection-page .collection-card-copy { width:100%;min-width:0; }
 .collection-page .collection-card-copy strong { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);line-height:1.35;overflow-wrap:anywhere; }
-.collection-page .collection-variant { position:absolute;z-index:1;top:6px;right:6px;min-width:20px;padding:1px 5px;border-radius:var(--gs-radius-media);background:var(--gs-action-bg);color:var(--gs-action-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-bold);line-height:1.4;text-align:center; }
+.collection-page .collection-variant { position:absolute;z-index:1;top:6px;right:6px;min-width:20px;padding:1px 5px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-ink-2);font-family:var(--gs-font-stage);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-semibold);line-height:1.4;text-align:center; }
 
 /* Honors: the title plate is the object; rows separated by hairlines. */
 .collection-page .collection-cards.is-honors { grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 var(--gs-space-6); }
