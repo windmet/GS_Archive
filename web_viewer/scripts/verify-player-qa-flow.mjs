@@ -48,5 +48,7 @@ for (const [index, step] of chat.steps.entries()) if (step.type === 'talk') {
   assert.equal(context.threadTitle, 'THE 虎牙道'); assert.equal(context.unitCode, '13the'); assert.equal(context.isGroup, true)
 }
 const privateStep = { type: 'talk', chara_id: '047shu' }
-assert.equal(resolveCommunicationContext({ step: privateStep, steps: [privateStep], stepIndex: 0 }).unitCode, null)
+// A one-on-one chat is not a group, but it still sits in its owner's unit room (background, theme).
+const privateContext = resolveCommunicationContext({ step: privateStep, steps: [privateStep], stepIndex: 0 })
+assert.equal(privateContext.isGroup, false); assert.equal(privateContext.unitCode, '16cfi')
 console.log('Real phone branches: both runtime paths, Reader unique units, bounded rejection, row guard, canonical chapter and RAW thread identity passed')
