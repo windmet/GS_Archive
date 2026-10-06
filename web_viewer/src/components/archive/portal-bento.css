@@ -156,3 +156,24 @@
 .overview-preferred-actions button {flex-direction:column;justify-content:center;gap:6px;min-height:var(--gs-control-touch);padding:var(--gs-space-2) 0;font-size:var(--gs-text-meta);}
 .overview-art-theme,.overview-producer-badge {align-self:flex-start;min-height:32px;padding:0;border:0;background:none;color:var(--gs-ink-2);font-size:var(--gs-text-meta);}
 }
+/* Phones: chapters as cards whose border hugs banner and title; the story kinds and the song list as
+   plain rows; song categories as one row of chips instead of a column that squeezed the titles. */
+@media (max-width:760px){
+.overview-main-index article {display:block;min-height:0;overflow:hidden;border:1px solid var(--gs-rule);border-radius:var(--gs-radius-control);background:var(--gs-surface);}
+.overview-main-index button {display:block;width:100%;min-height:0;padding:0;}
+.overview-main-index article :deep(.domain-media-preview) {display:block;margin:0;}
+.overview-main-index article :deep(img) {display:block;width:100%;height:auto;aspect-ratio:906 / 210;object-fit:cover;}
+.overview-main-index button > span {display:flex;align-items:center;gap:var(--gs-space-2);padding:var(--gs-space-3);font-size:var(--gs-text-ui);}
+.overview-main-index button > span small {flex:1;flex-basis:auto;}
+.overview-story-gateways,.is-global-grid .overview-story-gateways {grid-template-columns:1fr;gap:0;border-top:1px solid var(--gs-line);}
+.overview-story-gateways button,.is-global-grid .overview-story-gateways button {min-height:48px;padding:0;gap:12px;border-bottom:1px solid var(--gs-line);border-radius:0;background:none;color:var(--gs-ink);}
+.overview-story-gateways button > svg:first-child {color:var(--gs-ink-3);}
+.overview-story-gateways button > span {display:flex;align-items:center;justify-content:space-between;}
+.overview-story-gateways button small {color:var(--gs-ink-3);font-size:var(--gs-text-meta);}
+.is-global-grid .overview-music {display:block;}
+.is-global-grid .overview-music .overview-story-tabs {flex-direction:row;flex-wrap:nowrap;overflow-x:auto;margin:0 0 var(--gs-space-2);padding:0;border-right:0;gap:6px;scrollbar-width:none;}
+.is-global-grid .overview-music .overview-story-tabs button {flex:none;min-height:36px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);white-space:nowrap;}
+.is-global-grid .overview-music .overview-story-tabs button[aria-pressed=true] {border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink);box-shadow:none;}
+.is-global-grid .overview-song {min-height:0;}
+.overview-song strong {overflow-wrap:normal;word-break:normal;}
+}
