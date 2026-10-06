@@ -701,7 +701,8 @@
 .studio-order-tools { border-top: 1px solid var(--gs-line); padding-top: 12px; }
 @media (max-width: 900px) and (min-height: 600px) {
   .studio-focus-drawer { top: auto; bottom: 0; left: 0; right: 0; width: auto; height: min(55dvh, 420px); box-sizing: border-box; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
-  .studio-page.has-drawer .studio-canvas { top: 112px; bottom: calc(min(55dvh, 420px) + 16px); width: 100%; height: min(calc(var(--studio-screen-height) - min(55dvh, 420px) - 128px), calc(var(--studio-screen-width) * .5625)); }
+  /* Width follows the same height cap, so a short phone shrinks the picture instead of squashing it. */
+  .studio-page.has-drawer .studio-canvas { top: 112px; bottom: calc(min(55dvh, 420px) + 16px); width: min(100%, calc((var(--studio-screen-height) - min(55dvh, 420px) - 128px) * 1.777778)); height: min(calc(var(--studio-screen-height) - min(55dvh, 420px) - 128px), calc(var(--studio-screen-width) * .5625)); }
   .studio-variant-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .studio-layer-editor { gap: 6px; }
   .studio-layer-editor .studio-selected-title { display: none; }
