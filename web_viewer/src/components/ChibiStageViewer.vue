@@ -238,7 +238,7 @@
             </div>
 
             <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
-            <small class="lineup-note">{{ originalStageLineup ? '原曲成员按脚本槽位排列，可调整' : '点击舞台下方头像选择出演成员' }}</small>
+            <small class="lineup-note">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSlotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
             <div v-if="editingSlot" class="slot-editor">
               <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
                 <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
@@ -510,6 +510,7 @@ const props = defineProps({
   idolName: { type: Function, default: () => '' },
   idolSearch: { type: Function, default: () => '' },
   originalPerformers: { type: Array, default: () => [] },
+  originalSlotOrdered: { type: Boolean, default: false },
 })
 const stageRoot = ref(null), selectedPosition = ref(3), pickerPosition = ref(null)
 const panelTab = ref('lineup')
@@ -806,7 +807,7 @@ const activePositions = computed(() => {
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
 const editingSlot = computed(() => activeSlots.value.find(slot => slot.position === selectedPosition.value) || activeSlots.value[0] || null)
-const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, props.originalPerformers, characters.value, props.idolDirectory))
+const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, props.originalPerformers, characters.value, props.idolDirectory, { slotOrdered: props.originalSlotOrdered }))
 const sharedQuickCostumes = computed(() => universalStageCostumes(characters.value, props.idolDirectory))
 const costumeSyncPlan = computed(() => editingSlot.value ? planStageCostumeSync(
   lineup.value, characters.value, activePositions.value, editingSlot.value.characterId, editingSlot.value.costumeId,

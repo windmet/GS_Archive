@@ -560,6 +560,7 @@
       :idol-name="idolDisplayName"
       :idol-search="idolEntitySearchText"
       :original-performers="stageOriginalPerformers"
+      :original-slot-ordered="stageOriginalSlotOrdered"
       :song-directory="stageSongDirectory"
       :stage-target-id="stageTargetId"
       :stage-song-code="currentSongId"
@@ -1465,8 +1466,12 @@ const currentSong = computed(() => songReadModelDetail.value?.id === currentSong
 const stageAudioExperiments = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : '')) && songReadModelDetail.value?.experimental
   ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
   : {})
-const stageOriginalPerformers = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : ''))
-  ? songReadModelDetail.value.song?.performance_mapping?.performer_idol_codes || [] : [])
+// The stage's 原曲成员: performer-slot order when table 46 records it, else the member list.
+const stagePerformanceMapping = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : ''))
+  ? songReadModelDetail.value.song?.performance_mapping || null : null)
+const stageOriginalSlotOrdered = computed(() => Boolean(stagePerformanceMapping.value?.performer_slot_idol_codes?.length))
+const stageOriginalPerformers = computed(() => stageOriginalSlotOrdered.value
+  ? stagePerformanceMapping.value.performer_slot_idol_codes : stagePerformanceMapping.value?.performer_idol_codes || [])
 const stageSongDirectory = computed(() => Object.values(songReadModelCatalog.value?.songs || {}))
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.view : null)

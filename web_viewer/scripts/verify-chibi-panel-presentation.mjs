@@ -99,6 +99,10 @@ for (const idol of idolDirectory) {
 const unitByCode = unitCode => unitSongs.find(song => song.songCode === 'drvalv' && song.vocalSetting.unitCode === unitCode)
 const unitJupiter = unitByCode('01jup')
 assert.deepEqual(buildOriginalStageLineup(unitJupiter, [], characters, idolDirectory), ['', '002sht', '001tom', '003hok', ''])
+// A recorded slot order (table 46 fields 30-34) decides who stands where; a partial or foreign one is ignored.
+assert.deepEqual(buildOriginalStageLineup(unitJupiter, ['003hok', '001tom', '002sht'], characters, idolDirectory, { slotOrdered: true }), ['', '001tom', '003hok', '002sht', ''])
+assert.deepEqual(buildOriginalStageLineup(unitJupiter, ['003hok', '001tom'], characters, idolDirectory, { slotOrdered: true }), ['', '002sht', '001tom', '003hok', ''])
+assert.deepEqual(buildOriginalStageLineup(unitJupiter, ['003hok', '001tom', '002sht'], characters, idolDirectory), ['', '002sht', '001tom', '003hok', ''], 'Unordered codes never reorder a unit song')
 assert.deepEqual(buildOriginalStageLineup(unitByCode('03alt'), [], characters, idolDirectory), ['', '008rei', '007kei', '', ''])
 assert.deepEqual(buildOriginalStageLineup(unitByCode('08hig'), [], characters, idolDirectory),
   ['023har', '021jun', '020hay', '022nat', '024shk'])

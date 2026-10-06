@@ -256,6 +256,14 @@ def build_catalog(
             idol = idols_by_numeric_id.get(str(idol_id))
             if idol and idol.get("idol_code"):
                 explicit_idol_codes.append(idol["idol_code"])
+        # Table 46 fields 30-34 in slot order (performer slot 1 first): the original standing order.
+        slot_idol_codes = []
+        for idol_id in meta.get("performer_slot_order") or []:
+            idol = idols_by_numeric_id.get(str(idol_id))
+            if idol and idol.get("idol_code"):
+                slot_idol_codes.append(idol["idol_code"])
+        if len(slot_idol_codes) != len(meta.get("performer_slot_order") or []):
+            slot_idol_codes = []
         if explicit_idol_codes:
             performer_idol_codes = explicit_idol_codes
             performer_basis = "table46_explicit"
@@ -308,6 +316,8 @@ def build_catalog(
                 "explicit_performer_idol_codes": explicit_idol_codes,
                 "performer_idol_codes": performer_idol_codes,
                 "performer_basis": performer_basis,
+                "performer_slot_idol_codes": slot_idol_codes,
+                "performer_slot_basis": "table46_slot_order" if slot_idol_codes else "none",
                 "table_46_row_count": meta.get("table_46_row_count") or 0,
             },
             "jacket_url": jacket.get("url") if jacket else None,

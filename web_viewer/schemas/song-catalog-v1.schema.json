@@ -507,6 +507,19 @@
                   "none"
                 ]
               },
+              "performer_slot_idol_codes": {
+                "description": "Table 46 fields 30-34 in slot order (performer slot 1 first): who stands where in the original.",
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9]{3}[a-z0-9]{3}$" },
+                "maxItems": 5,
+                "uniqueItems": true
+              },
+              "performer_slot_basis": {
+                "enum": [
+                  "table46_slot_order",
+                  "none"
+                ]
+              },
               "table_46_row_count": {
                 "type": "integer",
                 "minimum": 1
