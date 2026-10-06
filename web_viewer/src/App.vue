@@ -16,11 +16,21 @@
       :search-placeholder="archiveSearchPlaceholder"
       :show-back="archiveShowBack"
       :breadcrumbs="archiveBreadcrumbs"
-      :stage-idol="stageLightIdol"
-      :stage-idol-name="stageLightIdol ? idolDisplayName(stageLightIdol.id) || stageLightIdol.name : ''"
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
+      <template #sidebar-identity>
+        <ArchiveStageIdolSwitch
+          :idol="preferredArchiveIdol"
+          :name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+          :stage-light="Boolean(stageLightIdol)"
+          :idols="archivePickerIdols"
+          :idol-name="idolDisplayName"
+          :idol-search="idolEntitySearchText"
+          @save-preferred="savePreferredIdol"
+          @save-startup="storeUserPreferences"
+        />
+      </template>
       <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :chapter-navigation="readingChapterNavigation" @chapter="selectReaderChapter" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
         :related-event="currentEventId" @open-event="openEventDetail({event_id:currentEventId},'reader')"
         :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
@@ -602,6 +612,7 @@ import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
+import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import { chapterReadingPlan, createChapterReadingSession } from './core/ChapterReadingPlan.js'
 import { readerChapterNavigation } from './core/ReaderChapterNavigation.js'
 import { readerScopeForViewport } from './core/ReaderViewport.js'

@@ -37,8 +37,17 @@ for (const role of ['--gs-selected-bg: var(--gs-mint-wash)', '--gs-selected-ink:
 const app = read('src/App.vue')
 assert.match(app, /stageLight === 'idol' \? preferredArchiveIdol\.value : null/)
 assert.match(app, /document\.documentElement[\s\S]{0,200}for \(const token of STAGE_LIGHT_TOKENS\)[\s\S]{0,200}removeProperty\(token\)/)
-assert.match(app, /:stage-idol="stageLightIdol"/)
-assert.match(read('src/components/archive/ArchiveShell.vue'), /has-stage-idol[\s\S]*inset 0 3px var\(--gs-mint\)/)
+// The 担当 in the sidebar is its own switch (colour on/off, change 担当) and shows as the avatar
+// ring only; the sidebar carries no coloured strip (too bright on navy).
+assert.match(app, /<template #sidebar-identity>[\s\S]{0,200}<ArchiveStageIdolSwitch[\s\S]{0,400}:stage-light="Boolean\(stageLightIdol\)"[\s\S]{0,300}@save-preferred="savePreferredIdol"[\s\S]{0,100}@save-startup="storeUserPreferences"/)
+const shell = read('src/components/archive/ArchiveShell.vue')
+assert.match(shell, /<slot name="sidebar-identity" \/>/)
+assert.doesNotMatch(shell, /\.archive-sidebar[^{]*\{[^}]*(box-shadow|border-top|background)[^}]*var\(--gs-mint/)
+const stageSwitch = read('src/components/archive/ArchiveStageIdolSwitch.vue')
+assert.match(stageSwitch, /:accent-color="ring"/)
+assert.match(stageSwitch, /props\.stageLight \? idolStageLight\(props\.idol\?\.color\)/)
+assert.match(stageSwitch, /stageLight: \$event\.target\.checked \? 'idol' : 'mint'/)
+assert.match(stageSwitch, /<ArchiveIdolPickerPanel[\s\S]{0,200}@update:model-value="emit\('save-preferred', \$event\)/)
 assert.match(read('src/components/archive/ArchiveProducerSettings.vue'), /stageLight:\$event\.target\.checked \? 'idol' : 'mint'/)
 
 // Errors never rely on the critical colour alone.

@@ -1,15 +1,12 @@
 <template>
   <div class="archive-shell" :class="{ 'is-compact-mobile': compactMobile, 'is-reader': activeSection === 'reader', 'is-tool': immersiveTool, 'is-home-focus': homeFocus && activeSection === 'home', 'has-inspector': hasInspector, 'is-home': activeSection === 'home', 'is-portal': activeSection === 'portal' || activeSection === 'reader' }">
-    <aside class="archive-sidebar" :class="{ 'has-stage-idol': stageIdol }" aria-label="资料馆导航">
+    <aside class="archive-sidebar" aria-label="资料馆导航">
       <button type="button" class="archive-brand" :aria-current="activeSection === 'portal' ? 'page' : undefined" title="资料馆首页" @click="emit('navigate', 'portal')">
         <img :src="getBrandMarkUrl()" alt="" />
         <span class="archive-brand-name">SideM</span>
         <span class="archive-brand-sub">资料馆</span>
       </button>
-      <div v-if="stageIdol" class="archive-stage-idol">
-        <ArchiveIdolAvatar :idol-code="stageIdol.id" :size="32" :ring-width="2" :gap="2" :accent-color="stageRing" decorative />
-        <span><strong>{{ stageIdolName }}</strong><small>担当</small></span>
-      </div>
+      <slot name="sidebar-identity" />
       <nav class="archive-nav" aria-label="档案栏目">
         <button type="button" class="archive-nav-link" :class="{ active: activeSection === 'home' }" :aria-current="activeSection === 'home' ? 'page' : undefined" @click="emit('navigate', 'home')">
           <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>偶像主页</span>
@@ -92,9 +89,7 @@ import { BookOpen, Box, CalendarDays, Home, LayoutGrid, Music, Search, Users, Wr
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
-import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { getBrandMarkUrl } from '../../utils/AssetResolver.js'
-import { idolStageLight } from '../../presentation/idolStageLight.js'
 import { ARCHIVE_NAVIGATION_GROUPS } from '../../core/archiveNavigationGroups.js'
 import { computed, ref, watch } from 'vue'
 
@@ -108,11 +103,7 @@ const props = defineProps({
   showBack: { type: Boolean, default: false },
   hasInspector: { type: Boolean, default: false },
   breadcrumbs: { type: Array, default: () => [] },
-  // The 担当 whose colour is the stage light, or null when the default mint applies.
-  stageIdol: { type: Object, default: null },
-  stageIdolName: { type: String, default: '' },
 })
-const stageRing = computed(() => idolStageLight(props.stageIdol?.color)?.light || '')
 const mobileSearchOpen = ref(Boolean(props.modelValue))
 watch(() => props.activeSection, () => { mobileSearchOpen.value = Boolean(props.modelValue) })
 watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = true })
@@ -198,14 +189,6 @@ const mobileNavigation = computed(() => {
   text-align: left;
   cursor: pointer;
 }
-/* The 担当 stage light reaches the chrome only as solid colour: a top strip and the avatar
-   ring. A translucent wash over the navy mixes into a muddy tone, so there is none. */
-.archive-sidebar.has-stage-idol { box-shadow: inset 0 3px var(--gs-mint); }
-.archive-stage-idol { display: flex; align-items: center; gap: var(--gs-space-4); margin: calc(-1 * var(--gs-space-3)) var(--gs-space-3) var(--gs-space-5); padding: 0 var(--gs-space-4); }
-.archive-stage-idol :deep(.idol-avatar-shell) { background: var(--gs-chrome); }
-.archive-stage-idol > span { display: flex; flex-direction: column; min-width: 0; }
-.archive-stage-idol strong { overflow: hidden; color: var(--gs-chrome-ink-active); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.archive-stage-idol small { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
 .archive-brand img { align-self: center; width: 26px; height: 20px; object-fit: contain; filter: brightness(0) invert(1); }
 .archive-brand-name { font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-style: italic; font-weight: var(--gs-weight-bold); letter-spacing: .02em; line-height: 1; }
 .archive-brand-sub { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
