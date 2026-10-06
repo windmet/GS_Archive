@@ -1,7 +1,7 @@
 import {shallowRef} from 'vue';
 import {uiLocale} from '../../localization/ui/UiLocaleStore.js';
 import {archiveGeneralText, archiveBackgroundLabel} from '../../presentation/ArchiveGeneralTextCore.mjs';
-import translationRelease from '../../../config/translation-release.json';
+import translationRelease from '../../../config/translation-release.json' with {type:'json'};
 import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
 
 // Shell titles and catalogue search need these names without eagerly loading metadata.

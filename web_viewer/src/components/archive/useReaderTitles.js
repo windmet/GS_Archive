@@ -1,7 +1,7 @@
 import { computed, onScopeDispose, shallowRef, watch } from 'vue'
 import { readerTitle, validateReaderTitles } from '../../presentation/ReaderTitle.js'
 import { uiLocale } from '../../utils/LanguageStore.js'
-import translationRelease from '../../../config/translation-release.json'
+import translationRelease from '../../../config/translation-release.json' with {type:'json'}
 import { createBoundedTextTransport } from '../../utils/BoundedTextTransport.js'
 const index = shallowRef(null)
 const transport = createBoundedTextTransport({maxBytes:256*1024,cacheBytes:256*1024,maxEntries:1})
