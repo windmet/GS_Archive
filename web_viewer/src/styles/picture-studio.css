@@ -567,6 +567,8 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
+  /* Focused, the page does not scroll; the archive-wide stable gutter would leave an empty strip. */
+  scrollbar-gutter: auto;
   background: #0b1424;
   font-family: var(--gs-font-body);
 }
