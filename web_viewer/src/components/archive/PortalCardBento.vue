@@ -1,7 +1,7 @@
 <template>
   <div v-if="lead" class="card-bento" :class="{'is-global':global}">
     <button class="bento-lead" type="button" :data-archive-focus-id="`portal-card-art:${lead.id}`" :style="{'--card-art':`url(${(lead.landscape || lead.image).url})`}" :aria-label="`打开卡片 ${lead.title}`" @click="emit('open',lead)">
-      <img :src="(lead.landscape || lead.image).url" :alt="lead.title" decoding="async" />
+      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="lead.image.url" /><img :src="(lead.landscape || lead.image).url" :alt="lead.title" decoding="async" /></picture>
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
     <template v-if="!global">
@@ -10,7 +10,8 @@
       <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
     </template>
     <template v-else>
-      <div class="bento-encounter"><header><Sparkles :size="16" /><span>今日相遇</span><button type="button" aria-label="再遇见一张卡片" @click="draw++; emit('expand')"><Shuffle :size="16" /></button></header><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button><small>从档案中遇见一颗星</small></div>
+      <div class="bento-encounter"><header><Sparkles :size="16" /><span>今日相遇</span><button type="button" aria-label="再遇见一张卡片" @click="draw++; emit('expand')"><Shuffle :size="16" /></button></header><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button><small>从档案中遇见一颗星</small></div>
+      <button v-if="encounterNext" class="encounter-next" type="button" :data-archive-focus-id="`portal-card:${encounterNext.id}`" :aria-label="`打开卡片 ${encounterNext.title}`" @click="emit('open',encounterNext)"><img :src="encounterNext.image.url" alt="" /><strong>{{ encounterNext.idolName }}</strong></button>
       <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
     </template>
   </div>
@@ -27,7 +28,10 @@ const lead=computed(()=>{const pool=props.cards.filter(row=>row.landscape?.url);
 const secondary=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.image?.url))
 const third=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.id!==secondary.value?.id && row.image?.url))
 const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boolean).length)
-const encounter=computed(()=>portalDailyCard(props.cards,date,draw.value))
+// The encounter is never the lead card already shown beside it.
+const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==lead.value?.id),date,draw.value))
+// Phones show a second encounter beside the lead (two small cards stacked); desktop keeps one.
+const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,draw.value);return next?.image?.url ? next : null})
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
 const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intelligence',label:'Intelli',color:'#446aa8'},{id:'Mental',label:'Mental',color:'#9b7f24'}]
@@ -73,4 +77,36 @@ const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intellig
 @container(max-width:850px){.card-bento {grid-template-rows:210px 94px;}.is-global {grid-template-rows:168px 150px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}}
 
 .bento-note,.bento-directory {border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--portal-idol-color) 6%,#ffffffa0)!important;}
+.bento-lead picture {position:relative;display:block;width:100%;height:100%;min-height:0;}
+.bento-lead picture > img {width:100%;height:100%;object-fit:contain;}
+.encounter-next {display:none;}
+/* Phones: a bento of pictures whose frames hug the art — the lead in portrait, two cards beside it,
+   filters below. No padding inside a frame, no blurred fill around a picture. */
+@media (max-width:760px){
+  .card-bento,.is-global {grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:142px 142px;gap:8px;}
+  .card-bento button {border-radius:var(--gs-radius-control);}
+  .bento-lead {grid-column:1;grid-row:span 2;}
+  .bento-lead:before {display:none;}
+  .bento-lead picture > img {object-fit:cover;object-position:top;}
+  .bento-portrait,.bento-note,.encounter-next {position:relative;display:block;padding:0;overflow:hidden;border:1px solid var(--portal-line)!important;background:var(--gs-paper)!important;}
+  .bento-portrait img,.bento-note > img,.encounter-next img {width:100%;height:100%;object-fit:cover;object-position:top;}
+  .bento-note {grid-column:2;}
+  .bento-note > span,.bento-note > svg {display:none;}
+  .bento-directory {grid-column:1 / -1;grid-row:3;}
+  .bento-encounter {position:relative;padding:0;overflow:hidden;background:var(--gs-paper);}
+  .bento-encounter header span,.bento-encounter > small {display:none;}
+  .bento-encounter header {position:absolute;top:2px;right:2px;z-index:1;}
+  .bento-encounter header button {color:var(--gs-surface);}
+  .encounter-card {height:100%;padding:0;}
+  .encounter-card img {width:100%;height:100%;object-fit:cover;object-position:top;}
+  .encounter-card > span {position:absolute;inset:auto 0 0;padding:16px 6px 6px;background:linear-gradient(transparent,#102330d0);color:var(--gs-surface);}
+  .encounter-card > span small,.encounter-card > span strong,.encounter-card > svg {display:none;}
+  .encounter-card > span::after {content:attr(data-idol);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
+  .encounter-card strong,.encounter-next strong {font-size:var(--gs-text-meta);}
+  .encounter-next strong {position:absolute;inset:auto 0 0;padding:16px 6px 6px;background:linear-gradient(transparent,#102330d0);color:var(--gs-surface);}
+  .bento-filters {grid-column:1 / -1;grid-row:3;display:grid;gap:8px;padding:0;border:0;background:none;}
+  .bento-filters > span {display:none;}
+  .attribute-links,.rarity-links {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:0;}
+  .attribute-links button,.rarity-links button {min-height:36px;border-radius:var(--gs-radius-pill);text-align:center;font-size:var(--gs-text-meta);}
+}
 </style>
