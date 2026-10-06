@@ -182,5 +182,14 @@ display.destroy();
   assert.equal(stage.pointerIntent({ x: 400, y: 300 }).mode, 'move', 'Transparent selected-box interior is draggable');
   stage.selectedRow = () => ({ ...row(), locked: true });
   assert.equal(stage.pointerIntent(controls.corners[0]).mode, 'blank');
+  // Phone (390 css px): the rotate handle lies inside the top-right corner's touch circle. A tap on
+  // the rotate handle must rotate, a tap on the corner must scale — normal size and zoomed past the edge.
+  stage.selectedRow = () => ({ ...row(), locked: false });
+  for (const bounds of [{ x: 500, y: 150, width: 260, height: 520 }, { x: 300, y: -200, width: 1200, height: 1100 }]) {
+    const phone = studioSelectionControls(bounds, 390);
+    stage.selectionControls = () => phone;
+    assert.equal(stage.pointerIntent(phone.rotate, 'touch').mode, 'rotate', 'Touching the rotate handle rotates');
+    assert.equal(stage.pointerIntent(phone.corners[1], 'touch').mode, 'scale', 'Touching the corner still scales');
+  }
 }
 console.log('Studio gestures: native capture/disposal, CSS coordinate mapping, drag→pinch→drag continuity, midpoint-preserving scale/rotation, limits, cancellation, handles, wheel/keyboard and attachment/alpha hit tests passed; physical touch still requires device acceptance');

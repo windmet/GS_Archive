@@ -168,11 +168,13 @@ export class StudioCompositionStage {
     const controls = this.selectionControls();
     if (controls && !this.selectedRow()?.locked) {
       const radius = (pointerType === 'mouse' ? 10 : 22) * controls.unit;
-      for (const corner of controls.corners)
-        if (Math.hypot(point.x - corner.x, point.y - corner.y) <= radius)
-          return { id: this.selectedId, mode: 'scale', center: controls.center };
-      if (Math.hypot(point.x - controls.rotate.x, point.y - controls.rotate.y) <= radius)
-        return { id: this.selectedId, mode: 'rotate', center: controls.center };
+      // The nearest handle wins. On a phone the rotate handle sits inside the corner handle's touch
+      // circle (56 vs 72 units at 390px), so testing corners first turned every rotate tap into a resize.
+      const handle = [...controls.corners.map(at => ({ at, mode: 'scale' })), { at: controls.rotate, mode: 'rotate' }]
+        .map(entry => ({ ...entry, distance: Math.hypot(point.x - entry.at.x, point.y - entry.at.y) }))
+        .filter(entry => entry.distance <= radius)
+        .sort((a, b) => a.distance - b.distance)[0];
+      if (handle) return { id: this.selectedId, mode: handle.mode, center: controls.center };
       if (pointerType === 'mouse')
         for (const corner of controls.corners)
           if ((point.x < controls.rect.x || point.x > controls.rect.right || point.y < controls.rect.y || point.y > controls.rect.bottom) && Math.hypot(point.x - corner.x, point.y - corner.y) <= 25 * controls.unit)
