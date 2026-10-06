@@ -63,9 +63,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .background-variants small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
 .background-variants button[aria-pressed=true] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
 .background-variants button[aria-pressed=true] small { color: inherit; }
-.background-grid button { display: grid; gap: 7px; align-content: start; min-height: 46px; padding: 7px; background: var(--gs-surface); color: var(--gs-ink); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); }
-.background-grid button[aria-pressed=true] { border-color: var(--gs-selected-line); box-shadow: inset 0 0 0 1px var(--gs-selected-line); background: var(--gs-selected-bg); }
-.background-grid img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--gs-radius-media); }.background-grid strong { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
+/* The frame hugs the picture: thumbnail edge to edge, the name below it in the same border. */
+.background-grid button { display: grid; align-content: start; min-height: 46px; padding: 0; overflow: hidden; background: var(--gs-surface); color: var(--gs-ink); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); text-align: left; }
+.background-grid button[aria-pressed=true] { border-color: var(--gs-selected-line); outline: 2px solid var(--gs-selected-line); outline-offset: -2px; background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.background-grid img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.background-grid strong { padding: 6px 8px 8px; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
 /* Segment: label above, two options in one bordered strip, as the other fields read. */
 .settings-segment { min-width: 0; margin: 0; padding: 0; border: 0; }
 .settings-segment-options { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); overflow: hidden; }
