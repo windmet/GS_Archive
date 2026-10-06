@@ -18,3 +18,10 @@ export function storyEventResources(entry){
   if(entry?.sectionId&&String(entry.sectionId)!==code)return null
   return event&&(!entry?.eventRelation?.event_id||String(entry.eventRelation.event_id)===event.id)?event:null
 }
+/** The series is shown beside the title, so the title drops its "GROWING …" prefix. */
+export function storyEventTitle(entry){
+  return String(entry?.title||'').replace(/^GROWING (SIGN@L|SELECTION)\s*-\s*/,'').replace(/-$/,'')
+}
+export function storyEventCast(resource){
+  return (resource?.storyCast||[]).map(code=>storyIdolRoster.find(idol=>idol.code===code)).filter(Boolean)
+}

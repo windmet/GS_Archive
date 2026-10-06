@@ -36,6 +36,7 @@
                 v-if="!collection.isPlaceholder && index < 2"
                 :src="mainVisual(index)"
                 :alt="collection.title"
+                class="main-art" :style="mainArtStyle(index)"
                 loading="eager" :fetchpriority="index === 0 ? 'high' : 'auto'"
                 width="1456" height="553"
               />
@@ -148,8 +149,8 @@
     <div v-else-if="mode === 'portal'" class="story-portal">
       <section class="story-section main-story-section" aria-labelledby="main-story-title">
         <div class="story-section-head">
-          <h2 id="main-story-title">主线剧情</h2>
-          <button class="story-more" @click="openDomain('main')">{{ domainCount('main') }} 篇 · 查看全部 <ArrowRight :size="15" /></button>
+          <h2 id="main-story-title">主线剧情 <small>{{ domainCount('main') }} 篇</small></h2>
+          <button class="story-more" @click="openDomain('main')">查看全部 <ArrowRight :size="15" /></button>
         </div>
         <div class="story-tiles">
           <button
@@ -159,7 +160,7 @@
             @click="browse('main', chapter.id)"
           >
             <span class="story-tile-media">
-              <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label"
+              <img v-if="index < 2" :src="mainVisual(index)" :alt="chapter.label" class="main-art" :style="mainArtStyle(index)"
                 loading="eager" :fetchpriority="index === 0 ? 'high' : 'auto'" width="1456" height="553" />
               <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
@@ -171,6 +172,32 @@
         </div>
       </section>
 
+      <section class="story-section unit-section" aria-labelledby="unit-story-title">
+        <div class="story-section-head">
+          <h2 id="unit-story-title">组合前传 <small>{{ unitGateways.length }} 组</small></h2>
+          <button class="story-more" @click="browse('unit_story')">查看全部 <ArrowRight :size="15" /></button>
+        </div>
+        <div class="unit-grid" aria-label="组合前传">
+          <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
+            <img :src="unitVisual(unit.id)" alt="" loading="lazy" decoding="async" width="446" height="150" />
+            <span><strong>{{ unit.label }}</strong><small>{{ unit.entries.length }} 篇</small></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="story-section event-section" aria-labelledby="event-story-title">
+        <div class="story-section-head">
+          <h2 id="event-story-title">活动剧情 <small>{{ eventCount }} 部</small></h2>
+          <button class="story-more" @click="browse('event')">查看全部 {{ eventCount }} 部 <ArrowRight :size="15" /></button>
+        </div>
+        <div v-if="featuredEvents.length" class="event-feature">
+          <EventStoryCard :entry="featuredEvents[0]" :idol-name="idolName" @read="emit('select',$event)" @event="emit('open-event',$event)" />
+          <div class="event-feature-rows">
+            <EventStoryRow v-for="entry in featuredEvents.slice(1)" :key="entry.id" :entry="entry" :idol-name="idolName" @read="emit('select',$event)" />
+          </div>
+        </div>
+      </section>
+
       <section class="story-section" aria-labelledby="quick-archives-title">
         <div class="story-section-head"><h2 id="quick-archives-title">更多故事</h2></div>
         <div class="story-rows">
@@ -178,29 +205,6 @@
             <span class="gateway-icon" aria-hidden="true"><component :is="gateway.icon" :size="20" /></span>
             <span class="story-row-copy"><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}</small></span>
             <ChevronRight :size="18" aria-hidden="true" />
-          </button>
-        </div>
-      </section>
-
-      <section class="story-section event-section" aria-labelledby="event-story-title">
-        <div class="story-section-head">
-          <h2 id="event-story-title">活动剧情</h2>
-          <button class="story-more" @click="browse('event')">查看全部 <ArrowRight :size="15" /></button>
-        </div>
-        <div class="reading-card-grid">
-          <EventStoryCard v-for="entry in featuredEvents" :key="entry.id" :entry="entry" :idol-name="idolName" @read="emit('select',$event)" @event="emit('open-event',$event)" />
-        </div>
-      </section>
-
-      <section class="story-section unit-section" aria-labelledby="unit-story-title">
-        <div class="story-section-head">
-          <h2 id="unit-story-title">组合前传</h2>
-          <div class="unit-actions"><button aria-label="上一组组合前传" @click="scrollUnits(-1)"><ChevronLeft :size="17" /></button><button aria-label="下一组组合前传" @click="scrollUnits(1)"><ChevronRight :size="17" /></button><button class="story-more" @click="browse('unit_story')">查看全部（{{ unitGateways.length }}） <ArrowRight :size="15" /></button></div>
-        </div>
-        <div ref="unitTrack" class="unit-grid" aria-label="组合前传横向列表">
-          <button v-for="unit in unitGateways" :key="unit.id" @click="browse('unit_story', unit.id)">
-            <img :src="unitVisual(unit.id)" :alt="unit.label" loading="lazy" decoding="async" width="446" height="150" />
-            <small>{{ unit.entries.length }} 篇</small>
           </button>
         </div>
       </section>
@@ -259,12 +263,13 @@
 <script setup>
 import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
-import { ArrowRight, BookOpen, Cake, ChevronLeft, ChevronRight, LayoutGrid, Search, X } from '@lucide/vue'
+import { ArrowRight, BookOpen, Cake, ChevronRight, LayoutGrid, Search, X } from '@lucide/vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import EventStoryCard from './EventStoryCard.vue'
+import EventStoryRow from './EventStoryRow.vue'
 import StoryDiscovery from './StoryDiscovery.vue'
 import '../../styles/archive-story.css'
 
@@ -292,8 +297,6 @@ const props = defineProps({
 })
 const emit = defineEmits([
   'clear-idol','select', 'open-event', 'browse', 'open-seasonal', 'open-work', 'open-idol-story', 'open-external-resources', 'load-more', 'clear-section', 'update:mode', 'update:domain', 'update:event-scope', 'update:availability', 'update:sort','update:search-query'])
-const unitTrack=ref(null)
-function scrollUnits(direction){const track=unitTrack.value;if(track)track.scrollBy({left:direction*track.clientWidth*.8,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 
 const groupEntries = domain => {
   const groups = new Map()
@@ -307,7 +310,10 @@ const groupEntries = domain => {
 }
 const mainSections = computed(() => groupEntries('main'))
 const unitGateways = computed(() => groupEntries('unit_story'))
-const featuredEvents = computed(() => props.allEntries.filter(entry => entry.domain === 'event').sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 6))
+// The newest event leads with its key visual; the next four follow as compact rows.
+const eventEntries = computed(() => props.allEntries.filter(entry => entry.domain === 'event'))
+const eventCount = computed(() => eventEntries.value.length)
+const featuredEvents = computed(() => [...eventEntries.value].sort((a, b) => b.releaseAt - a.releaseAt).slice(0, 5))
 const extraCards = computed(() => [...(props.extraDomain?.collections || [])]
   .sort((left, right) => left.releaseAt - right.releaseAt || left.masterId.localeCompare(right.masterId)))
 const officialExtraCards = computed(() => extraCards.value.filter(card => card.official))
@@ -341,6 +347,12 @@ function count(value) { return Number.isFinite(value) ? value.toLocaleString('zh
 function birthdayName(card) { return (card.subject.kind === 'idol' && props.idolName(card.subject.code)) || card.subject.displayName }
 function extraMeta(card) { return `${formatExtraDate(card.releaseAt)} · ${card.logicalEntryCount} 章` }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
+// The 1456×553 main buttons have transparent flanks; [left, width] of each opaque art area.
+const MAIN_ART = [[178, 1138], [226, 1005]]
+function mainArtStyle(index) {
+  const [left, width] = MAIN_ART[index] || [0, 1456]
+  return { width: `${1456 / width * 100}%`, left: `${-left / width * 100}%` }
+}
 function unitVisual(id) {
   const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
   return `/assets/stories/units/image_unit_story_button_${codes[Number(id) - 1] || codes[0]}.png`
@@ -366,13 +378,23 @@ function formatExtraDate(timestamp) {
 .birthday-mark, .gateway-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--gs-line); color: var(--gs-ink-2); }
 .gateway-icon { background: none; color: var(--gs-ink-2); }
 
-.reading-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--gs-space-7) var(--gs-space-5); }
-.unit-actions { display: flex; flex-shrink: 0; align-items: center; gap: var(--gs-space-2); }
-.unit-actions > button:not(.story-more) { display: grid; place-items: center; width: var(--gs-control-compact); height: var(--gs-control-compact); padding: 0; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink-2); cursor: pointer; }
-.unit-actions > .story-more { margin-left: var(--gs-space-3); }
-.unit-grid { display: flex; gap: var(--gs-space-4); overflow-x: auto; padding: var(--gs-space-1) 0 var(--gs-space-4); scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
-.unit-grid button { display: flex; flex: 0 0 23%; flex-direction: column; gap: var(--gs-space-2); min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink-3); cursor: pointer; font: inherit; font-size: var(--gs-text-meta); text-align: left; scroll-snap-align: start; }
-.unit-grid img { display: block; width: 100%; height: auto; border-radius: var(--gs-radius-media); }
+/* Main-story art fills the tile by its own opaque area (see MAIN_ART), centred vertically. */
+.story-tile-media:has(.main-art) { position: relative; }
+.story-tile-media .main-art { position: absolute; top: 50%; max-width: none; height: auto; translate: 0 -50%; }
+.story-section-head h2 small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
+
+/* Unit prequels: all sixteen banners on the page, four to a row. */
+.unit-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-6) var(--gs-space-5); }
+.unit-grid button { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; padding: 0; border: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
+.unit-grid img { display: block; width: 100%; height: auto; aspect-ratio: 446 / 150; border-radius: var(--gs-radius-media); }
+.unit-grid button > span { display: flex; justify-content: space-between; gap: var(--gs-space-3); min-width: 0; font-size: var(--gs-text-ui); }
+.unit-grid strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.unit-grid small { flex: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+@media (hover: hover) { .unit-grid button:hover strong { color: var(--gs-mint-ink); } }
+
+/* Events: the newest leads at 1.5 parts, four compact rows beside it. */
+.event-feature { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-items: start; gap: var(--gs-space-7); }
+.event-feature-rows { display: flex; flex-direction: column; border-top: 1px solid var(--gs-line); }
 
 .catalog-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: var(--gs-space-4); }
 .catalog-toolbar label { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 120px; }
@@ -384,9 +406,17 @@ function formatExtraDate(timestamp) {
 
 /* Clear the bottom navigation the shell shows on phones. */
 @media (max-width: 760px) { .story-catalog { padding-bottom: 70px; } }
+@container story-page (max-width: 900px) {
+  /* Sixteen units stay four to a row (three would orphan one); chapters sit two-up. */
+  .main-story-section .story-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .unit-grid { gap: var(--gs-space-5) var(--gs-space-4); }
+  .event-feature { grid-template-columns: 1fr; gap: var(--gs-space-5); }
+}
 @container story-page (max-width: 560px) {
-  .unit-grid button { flex-basis: 76%; }
-  .unit-actions > button:not(.story-more) { display: none; }
+  /* Phones: the units become a two-row strip that scrolls sideways; events show one lead and three rows. */
+  .unit-grid { grid-auto-columns: 160px; grid-auto-flow: column; grid-template-columns: none; grid-template-rows: repeat(2, auto); gap: var(--gs-space-5) var(--gs-space-4); overflow-x: auto; margin-right: calc(-1 * var(--gs-space-5)); padding: 0 var(--gs-space-5) var(--gs-space-2) 0; overscroll-behavior-x: contain; scrollbar-width: none; }
+  .main-story-section .story-tiles { grid-template-columns: 1fr; }
+  .event-feature-rows > :nth-child(n+4) { display: none; }
   .catalog-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .catalog-toolbar label { min-width: 0; }
 }

@@ -22,11 +22,12 @@
 .story-page .story-section-head > small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);white-space:nowrap; }
 .story-page .story-more { display:inline-flex;flex-shrink:0;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:var(--gs-mint-ink);cursor:pointer;font:inherit;font-size:var(--gs-text-ui);white-space:nowrap; }
 
-/* Tiles: a picture with its caption beneath, no frame. */
+/* Tiles: a picture with its caption beneath, no frame. The main-story buttons are 1456 wide
+   with transparent flanks; the art itself is 1138×553, so the tile crops to it. */
 .story-page .story-tiles { display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--gs-space-6) var(--gs-space-5); }
 .story-page .story-tile { display:flex;flex-direction:column;gap:var(--gs-space-3);min-width:0;padding:0;border:0;background:none;color:inherit;cursor:pointer;font:inherit;text-align:left; }
 .story-page .story-tile:disabled { cursor:default; }
-.story-page .story-tile-media { display:grid;place-items:center;overflow:hidden;aspect-ratio:1456 / 553;border-radius:var(--gs-radius-media);background:var(--gs-chrome);color:var(--gs-chrome-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-style:italic; }
+.story-page .story-tile-media { display:grid;place-items:center;overflow:hidden;aspect-ratio:1138 / 553;border-radius:var(--gs-radius-media);background:var(--gs-chrome);color:var(--gs-chrome-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-title);font-style:italic; }
 .story-page .story-tile-media img { width:100%;height:100%;object-fit:cover;transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
 .story-page .story-tile:hover:not(:disabled) img { transform:scale(1.02); }
 .story-page .story-tile-copy { display:flex;flex-direction:column;gap:var(--gs-space-1);min-width:0; }
