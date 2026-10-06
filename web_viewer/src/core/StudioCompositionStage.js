@@ -569,9 +569,11 @@ export class StudioCompositionStage {
   }
   async setImages(key, bindings = []) {
     const signature = JSON.stringify(bindings.map((b) => b?.url));
-    if (this.images.get(key)?.signature === signature) return;
+    // Asking again for what is on screen still supersedes a load in flight (A → B → A).
+    if (this.images.get(key)?.signature === signature) { this.owner(key); return; }
     const owner = this.owner(key);
-    this.clearImages(key);
+    // The current picture stays until the new one has loaded and decoded, then they swap in one
+    // frame; clearing first showed the bare canvas (a white flash) for the whole download.
     const loaded = [];
     try {
       for (const binding of bindings) {
@@ -597,6 +599,7 @@ export class StudioCompositionStage {
         }
       }
       if (!owner.current()) throw new DOMException("Aborted", "AbortError");
+      this.clearImages(key);
       this.images.set(key, { signature, loaded });
       for (const entry of loaded)
         (key === "background"

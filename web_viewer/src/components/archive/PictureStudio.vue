@@ -53,6 +53,7 @@
           <div ref="canvas" class="studio-canvas" data-studio-rotation="0"></div>
           <details class="studio-canvas-help"><summary><CircleHelp :size="15" />操作提示</summary><p>拖动所选对象移动；四角缩放，圆柄旋转；双指缩放、旋转。</p><p>滚轮调整对象大小，Shift＋滚轮旋转。方向键微调，＋/− 调整大小，[ / ] 旋转；Esc 取消拖动。</p></details>
           <output v-if="interaction && (interaction.mode === 'rotate' || interaction.aligned)" class="studio-interaction-feedback">{{ interaction.mode === 'rotate' ? `${interaction.rotation}°` : '已对齐' }}</output>
+          <output v-else-if="slowRender" class="studio-interaction-feedback" role="status">正在载入素材…</output>
           <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
           <div class="studio-session-tools">
           <div v-if="selected && !focused" class="studio-quick-tools" aria-label="所选对象快捷操作">
@@ -466,6 +467,16 @@ const {
   retry,
 } = useStudioComposition(props, canvas);
 watch(focused, cancelInteraction);
+// The canvas keeps the current picture while new material loads; a load that takes noticeably long
+// says so, a quick one does not flash a message.
+const slowRender = ref(false);
+let slowRenderTimer = 0;
+watch(rendering, value => {
+  clearTimeout(slowRenderTimer);
+  if (value) slowRenderTimer = setTimeout(() => { slowRender.value = true; }, 300);
+  else slowRender.value = false;
+});
+onScopeDispose(() => clearTimeout(slowRenderTimer));
 function onDocumentFile(event) {
   const file = event.target.files?.[0];
   event.target.value = "";
