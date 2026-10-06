@@ -66,9 +66,9 @@
         </article></div>
       </section>
       <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable, 'is-w-view': birthdayTheme && ['012yus','013kys'].includes(preferredReference?.idolCode)}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
-          <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}">
+          <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
             <header class="overview-identity">
-              <div class="overview-portrait-slot"><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :style="{transform: birthdayTheme && preferredReference?.idolCode === '012yus' ? 'translateX(8%)' : birthdayTheme && preferredReference?.idolCode === '013kys' ? 'translateX(-12%)' : undefined}" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
+              <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :style="{transform: birthdayTheme && preferredReference?.idolCode === '012yus' ? 'translateX(8%)' : birthdayTheme && preferredReference?.idolCode === '013kys' ? 'translateX(-12%)' : undefined}" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
               <ArchiveIdolAvatar v-else-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="88" :accent-color="preferredReference.accentColor" decorative />
               <Users v-else class="overview-all-mark" :size="76" aria-hidden="true" />
               </div><div class="overview-identity-copy">
@@ -79,7 +79,7 @@
               </div>
             </header>
             <button v-if="desktopOverview.birthdayPortrait" class="overview-art-theme" type="button" :aria-pressed="birthdayTheme" @click="birthdayTheme = !birthdayTheme; portraitFailed=false">{{ birthdayTheme ? '生日主题 · 切换原版立绘' : '原版立绘 · 切换生日主题' }}</button>
-            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">打开他的主页<ArrowUpRight :size="16" /></button>
+            <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">进入主页<ChevronRight :size="16" aria-hidden="true" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
             <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
             <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
@@ -140,7 +140,9 @@ import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNav
 import PortalCardBento from './PortalCardBento.vue'
 import {portalTimeline} from '../../presentation/PortalBento.js'
 import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
-import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { idolStageLight } from '../../presentation/idolStageLight.js'
+import idolVisualFocus from '../../presentation/idolVisualFocus.json'
 
 const props = defineProps({
   canGoBack: Boolean,
@@ -199,6 +201,22 @@ const quickSearchTerms = computed(() => props.preferredReference?.actionable
   ? [...new Set([props.desktopOverview.preferredUnitName, preferredName.value].filter(value => typeof value === 'string' && value.trim()))] : [])
 const preferredActionIcons = { profile: ContactRound, story: BookOpen, cards: Layers, work: BriefcaseBusiness, mobile: MessageCircle }
 const unitLogoUrl = computed(() => props.desktopOverview.preferredUnitCode ? getUnitLogoUrl(props.desktopOverview.preferredUnitCode) : '')
+// The 担当 hero on phones: the idol's light wash, ink and light (idolStageLight keeps every colour
+// readable), the autograph behind the figure, and the figure placed by where the person stands in the
+// picture (idolVisualFocus) rather than by the picture's edge.
+const HERO_FIGURE_HEIGHT = 300
+const heroStyle = computed(() => {
+  if (!props.preferredReference?.actionable) return undefined
+  const light = idolStageLight(props.preferredReference.accentColor)
+  const portrait = activePortrait.value
+  const focus = portrait ? idolVisualFocus.focusX[portrait.url] ?? 0.5 : 0.5
+  const width = portrait?.width && portrait?.height ? HERO_FIGURE_HEIGHT * portrait.width / portrait.height : HERO_FIGURE_HEIGHT * 0.66
+  return {
+    '--hero-wash': light?.wash, '--hero-ink': light?.ink, '--hero-light': light?.light,
+    '--hero-sign': `url(${getCharaSignUrl(props.preferredReference.idolCode)})`,
+    '--hero-figure-left': `calc(76% - ${Math.round(focus * width)}px)`,
+  }
+})
 const unitLogoFailed = ref(false)
 watch(unitLogoUrl, () => { unitLogoFailed.value = false })
 function formatCount(value) { return typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : '—' }
