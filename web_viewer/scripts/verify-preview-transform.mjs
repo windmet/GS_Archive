@@ -59,6 +59,8 @@ assert.equal(resolvePreviewObjectKey('assets/card-art/portrait/card.png'), 'asse
 assert.equal(resolvePreviewObjectKey('assets/spines/001/chara.png'), 'assets/spines/001/chara.webp')
 assert.equal(resolvePreviewObjectKey('assets/live-chibi/costumes/x/cos.png'), 'assets/live-chibi/costumes/x/cos.webp')
 assert.equal(resolvePreviewObjectKey('assets/bg/room.png'), 'assets/bg/room.webp', 'backgrounds are now in scope')
+assert.equal(previewTransformKind('assets/bg/thumbs/bg202_eduprogramset_in_01_s.png'), LOSSLESS_WEBP_TRANSFORM, 'small original picker artwork preserves fine lines losslessly')
+assert.equal(resolvePreviewObjectKey('assets/bg/thumbs/bg202_eduprogramset_in_01_s.png'), 'assets/bg/thumbs/bg202_eduprogramset_in_01_s.webp', 'thumbnail runtime URL retains the PNG to WebP mapping')
 assert.equal(resolvePreviewObjectKey('assets/cards/icons/i.png'), 'assets/cards/icons/i.webp')
 assert.equal(resolvePreviewObjectKey('data/fx_extracted/tex.png'), 'data/fx_extracted/tex.webp', 'data PNGs are in scope')
 assert.equal(resolvePreviewObjectKey('assets/card-art/portrait/CARD.PNG'), 'assets/card-art/portrait/CARD.webp', 'extension match must be case-insensitive')

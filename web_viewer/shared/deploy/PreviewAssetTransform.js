@@ -80,7 +80,10 @@ export function resolvePreviewObjectKey(requestKey, { gzip = false, dataRevision
 }
 
 export function isPreviewLossyWebpCandidate(requestKey) {
-  return isPreviewLosslessWebpCandidate(requestKey) && PREVIEW_LOSSY_WEBP_PREFIXES.some(prefix => requestKey.startsWith(prefix))
+  // The game's 300x160 picker thumbnails carry fine lines and small lettering.
+  // Keep these compact originals lossless; full-sized painted backgrounds use q90.
+  return isPreviewLosslessWebpCandidate(requestKey) && !requestKey.startsWith('assets/bg/thumbs/')
+    && PREVIEW_LOSSY_WEBP_PREFIXES.some(prefix => requestKey.startsWith(prefix))
 }
 
 export function previewTransformKind(requestKey, { gzip = false } = {}) {
