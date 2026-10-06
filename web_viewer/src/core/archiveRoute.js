@@ -581,7 +581,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
-  if (route.view === 'mobile_archive') return [home, current('Mobile 通信', route.idol)]
+  if (route.view === 'mobile_archive') return [home, current('通信', route.idol)]
 
   const fallbackDomains = {
     groups: '剧情',

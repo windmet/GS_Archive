@@ -1521,7 +1521,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
-  if (view.value === 'mobile_archive') return 'Mobile 通信'
+  if (view.value === 'mobile_archive') return '通信'
   if (view.value === 'gashas') return '卡池档案'
   if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value) || '卡池详情'
   if (view.value === 'song_catalog') return '歌曲档案'
@@ -3239,7 +3239,7 @@ async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId 
     catch (error) {
       if (intent.isCurrent()) {
         console.error('[MobileReadModel] Failed to open archive:', error)
-        legacyEntryStatus.value = 'Mobile 通信暂时无法读取，请重试。'
+        legacyEntryStatus.value = '通信暂时无法读取，请重试。'
       }
       return
     }
@@ -4764,7 +4764,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
         } catch (error) {
           if (!intent.isCurrent() || request !== restoreRequest) return
           console.error('[MobileReadModel] Failed to restore mobile route:', error)
-          mobileReadModelStatus.value = 'Mobile 通信暂时无法读取，请重新选择。'
+          mobileReadModelStatus.value = '通信暂时无法读取，请重新选择。'
           route = { view: 'idol_picker', pickTarget: 'mobile' }
         }
       }

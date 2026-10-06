@@ -89,7 +89,8 @@
                 <span v-else class="unlock-condition" :title="unlockTitle(unlock)"><Unlock :size="13" aria-hidden="true" /><span>{{ unlockText(unlock) }}</span></span>
               </template>
             </div>
-            <h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
+            <h4 v-if="callTitle(bundle)" class="call-title">{{ callTitle(bundle) }}</h4>
+            <component :is="callTitle(bundle) ? 'p' : 'h4'" :class="{ 'call-line': callTitle(bundle) }"><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></component>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
           <button class="conversation-play" :disabled="!bundle.exists" :title="bundle.exists ? '播放通信' : '本地脚本缺失'" @click="emit('play', bundle.file)">
@@ -243,6 +244,11 @@ function unlockTitle(unlock) {
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
 }
+// Only calls carry a real title; a chat's scenario title is an internal label or the mission
+// that opens it, so chats keep their first line as the heading.
+function callTitle(bundle) {
+  return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
+}
 function kindLabel(kind) { return kind === 'unit_talk' ? '组合聊天' : kind === 'idol_phone' ? '电话' : '偶像聊天' }
 function playRandomTopic(bundle, topic) {
   if (!topic.presentation) return
@@ -303,6 +309,9 @@ function timeWindow(topic) {
 .conversation-copy { display: grid; gap: var(--gs-space-2); min-width: 0; }
 .conversation-copy > small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .conversation-copy h4 { margin: 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.7; overflow-wrap: anywhere; }
+.conversation-copy h4.call-title { font-family: var(--gs-font-jp); font-weight: var(--gs-weight-semibold); line-height: 1.5; }
+.conversation-copy .call-line { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.conversation-copy .call-line .inline-emoji,
 .conversation-copy h4 .inline-emoji, .random-bundle h4 .inline-emoji { display: inline-block; width: 1.5em; height: 1.5em; margin-inline: 2px; vertical-align: -.3em; object-fit: contain; }
 /* Opening conditions are a line of quiet text; only ones that lead somewhere are links. */
 .unlock-list { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); min-width: 0; }
