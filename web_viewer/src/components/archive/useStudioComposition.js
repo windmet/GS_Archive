@@ -99,6 +99,9 @@ export function useStudioComposition(props, canvas) {
     stage?.adjustSelected({ factor, angle });
   }
   function cancelInteraction() { stage?.input.cancel(false); }
+  // The viewer's snap setting (alignment guides and 0°/90° rotation); applied when the stage exists.
+  let snapPreference = true;
+  function setSnapPreference(on) { snapPreference = on !== false; if (stage) stage.snapPreference = snapPreference; }
   function poseFor(view, row) {
     const pose = verifiedStudioPreset(
         view.media,
@@ -464,6 +467,7 @@ export function useStudioComposition(props, canvas) {
         onTransform: transform,
         onInteraction: value => { interaction.value = value; },
       });
+      stage.snapPreference = snapPreference;
       const catalog = await repository.catalog("photos", {
         signal: controller.signal,
       });
@@ -564,6 +568,7 @@ export function useStudioComposition(props, canvas) {
     addSticker,
     adjustSelected,
     cancelInteraction,
+    setSnapPreference,
     remove,
     canUndoDelete,
     undoDelete,

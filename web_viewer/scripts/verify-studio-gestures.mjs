@@ -160,6 +160,16 @@ display.destroy();
   g.down(1, { x: 740, y: 360 }, { id: 'a', mode: 'rotate', center });
   g.move(1, { x: 738, y: 382 }, { shiftKey: true }); near(get().rotation, 15);
   g.cancel(true); assert.deepEqual(get(), row());
+  // Rotation locks to 0/90/180/270 within 5° when snapping is on; off, or Shift's 15° steps, win.
+  const at = deg => ({ x: 640 + 100 * Math.cos(deg * Math.PI / 180), y: 360 + 100 * Math.sin(deg * Math.PI / 180) });
+  g.down(1, at(0), { id: 'a', mode: 'rotate', center });
+  g.move(1, at(88), { snap: true }); near(get().rotation, 90); assert.equal(g.rotationSnapped, true, '88° locks to 90°');
+  g.move(1, at(80), { snap: true }); near(get().rotation, 80); assert.equal(g.rotationSnapped, false, '80° is outside the snap band');
+  g.move(1, at(88), { snap: false }); near(get().rotation, 88); assert.equal(g.rotationSnapped, false, 'Snap off keeps the exact angle');
+  g.move(1, at(-3), { snap: true }); near(get().rotation, 0);
+  g.move(1, at(88), { snap: true, shiftKey: true }); near(get().rotation, 90);
+  g.move(1, at(97), { snap: true, shiftKey: true }); near(get().rotation, 90, 'Shift steps by 15°, not to the 90° lock');
+  g.cancel(true); assert.deepEqual(get(), row());
   for (const state of ['locked', 'hidden']) {
     const blocked = new StudioGestures({ getRow: () => ({ ...row(), [state]: true }), onTransform: () => assert.fail('Protected layer changed') });
     assert.equal(blocked.down(1, center, { id: 'a' }), false);

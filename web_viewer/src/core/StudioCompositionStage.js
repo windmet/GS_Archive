@@ -211,7 +211,7 @@ export class StudioCompositionStage {
     if (actor) this.setActorTransform(id, row);
     else this.setStickerTransform(id, row);
     this.onTransform(id, patch);
-    if (this.gestures?.points.size) this.onInteraction?.({ mode: this.gestures.mode, rotation: Math.round(row.rotation), aligned: this.guides.length > 0 });
+    if (this.gestures?.points.size) this.onInteraction?.({ mode: this.gestures.mode, rotation: Math.round(row.rotation), aligned: this.guides.length > 0, snapped: !!this.gestures.rotationSnapped });
     this.render();
     return patch;
   }

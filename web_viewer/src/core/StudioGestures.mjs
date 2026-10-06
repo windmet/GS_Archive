@@ -57,7 +57,18 @@ export class StudioGestures {
     const applied = this.onTransform(this.id, patch);
     if (applied) this.current = { ...this.current, ...applied };
   }
-  move(pointerId, point, { shiftKey = false } = {}) {
+  // Within this many degrees of 0/90/180/270 a rotation locks there (snap on, Shift not held).
+  static ROTATION_SNAP = 5;
+  snapAngle(angle, { shiftKey, snap }) {
+    this.rotationSnapped = false;
+    if (shiftKey) return Math.round((this.base.rotation + angle) / 15) * 15 - this.base.rotation;
+    if (!snap) return angle;
+    const final = this.base.rotation + angle, nearest = Math.round(final / 90) * 90;
+    if (Math.abs(final - nearest) > StudioGestures.ROTATION_SNAP) return angle;
+    this.rotationSnapped = true;
+    return nearest - this.base.rotation;
+  }
+  move(pointerId, point, { shiftKey = false, snap = false } = {}) {
     if (!this.points.has(pointerId)) return false;
     if (!this.getRow(this.id) || this.getRow(this.id).locked || this.getRow(this.id).hidden) { this.cancel(); return false; }
     this.points.set(pointerId, { ...point });
@@ -66,7 +77,7 @@ export class StudioGestures {
       const before = vector(...this.start), after = vector(...points);
       if (length(before) < 8) { if (length(after) >= 8) this.rebase(); return true; }
       this.emit(studioTransformAround(this.base, midpoint(...this.start), midpoint(...points),
-        length(after) / length(before), studioRotation(degrees(after) - degrees(before))));
+        length(after) / length(before), this.snapAngle(studioRotation(degrees(after) - degrees(before)), { shiftKey, snap })));
     } else if (this.mode === 'move') {
       this.emit(studioTransformPatch({
         x: this.base.x + (point.x - this.start[0].x) / W,
@@ -75,8 +86,7 @@ export class StudioGestures {
     } else if (this.mode === 'scale' || this.mode === 'rotate') {
       const before = vector(this.center, this.start[0]), after = vector(this.center, point);
       if (length(before) < 8) return true;
-      let angle = studioRotation(degrees(after) - degrees(before));
-      if (shiftKey) angle = Math.round((this.base.rotation + angle) / 15) * 15 - this.base.rotation;
+      const angle = this.mode === 'rotate' ? this.snapAngle(studioRotation(degrees(after) - degrees(before)), { shiftKey, snap }) : 0;
       this.emit(studioTransformAround(this.base, this.center, this.center,
         this.mode === 'scale' ? length(after) / length(before) : 1,
         this.mode === 'rotate' ? angle : 0));

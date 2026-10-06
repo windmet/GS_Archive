@@ -39,8 +39,9 @@ export function bindStudioCanvasInput(view, stage, blurTarget = window) {
   const move = event => {
     const p = point(event);
     if (blankTap && (blankTap.pointerId !== event.pointerId || Math.hypot(p.x - blankTap.x, p.y - blankTap.y) > 8)) blankTap = null;
-    stage.snapEnabled = !event.altKey;
-    if (stage.gestures.move(event.pointerId, p, { shiftKey: event.shiftKey })) { event.preventDefault(); return; }
+    // Snapping (alignment guides, 0°/90° rotation) follows the viewer's setting; Alt bypasses it.
+    stage.snapEnabled = stage.snapPreference !== false && !event.altKey;
+    if (stage.gestures.move(event.pointerId, p, { shiftKey: event.shiftKey, snap: stage.snapEnabled })) { event.preventDefault(); return; }
     if (event.pointerType === 'mouse' && !stage.gestures.points.size) {
       const intent = stage.pointerIntent(p, event.pointerType);
       view.style.cursor = !intent || intent.mode === 'blank' ? 'default'

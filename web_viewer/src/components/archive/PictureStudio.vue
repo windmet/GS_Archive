@@ -52,7 +52,7 @@
         <section class="domain-panel studio-canvas-panel" aria-label="摄影预览">
           <div ref="canvas" class="studio-canvas" data-studio-rotation="0"></div>
           <details class="studio-canvas-help"><summary><CircleHelp :size="15" />操作提示</summary><p>拖动所选对象移动；四角缩放，圆柄旋转；双指缩放、旋转。</p><p>滚轮调整对象大小，Shift＋滚轮旋转。方向键微调，＋/− 调整大小，[ / ] 旋转；Esc 取消拖动。</p></details>
-          <output v-if="interaction && (interaction.mode === 'rotate' || interaction.aligned)" class="studio-interaction-feedback">{{ interaction.mode === 'rotate' ? `${interaction.rotation}°` : '已对齐' }}</output>
+          <output v-if="interaction && (interaction.mode === 'rotate' || interaction.aligned || interaction.snapped)" class="studio-interaction-feedback">{{ interaction.mode === 'rotate' || interaction.snapped ? `${interaction.rotation}°${interaction.snapped ? ' · 已吸附' : ''}` : '已对齐' }}</output>
           <output v-else-if="slowRender" class="studio-interaction-feedback" role="status">正在载入素材…</output>
           <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
           <div class="studio-session-tools">
@@ -66,6 +66,7 @@
           <p role="status" class="studio-status">
             {{ rendering ? "正在更新构图…" : status }}
           </p>
+          <label class="studio-snap-toggle"><input v-model="snapOn" type="checkbox" />吸附<small>对齐线与 0°/90° 旋转；按住 Alt 临时关闭</small></label>
           <div class="studio-toolbar">
             <button
               type="button"
@@ -447,6 +448,7 @@ const {
   addSticker,
   adjustSelected,
   cancelInteraction,
+  setSnapPreference,
   remove,
   canUndoDelete,
   undoDelete,
@@ -467,6 +469,10 @@ const {
   retry,
 } = useStudioComposition(props, canvas);
 watch(focused, cancelInteraction);
+// Snapping is a per-viewer convenience, remembered in this browser only.
+const SNAP_KEY = 'gs-studio-snap';
+const snapOn = ref((() => { try { return localStorage.getItem(SNAP_KEY) !== 'off'; } catch { return true; } })());
+watch(snapOn, on => { setSnapPreference(on); try { localStorage.setItem(SNAP_KEY, on ? 'on' : 'off'); } catch { /* convenience only */ } }, { immediate: true });
 // The canvas keeps the current picture while new material loads; a load that takes noticeably long
 // says so, a quick one does not flash a message.
 const slowRender = ref(false);
