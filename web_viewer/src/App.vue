@@ -659,6 +659,7 @@ import {
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
+import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
 import { playbackPreferencesForReadingMode } from './core/ReaderPlaybackPreferences.js'
 import {
   setStoryLanguagePreferences,
@@ -3883,7 +3884,9 @@ function openCardScenario(entry) {
 // The card_scenarios story domain is the communication archive's phone calls (all 342 are
 // idol_phone records, mostly unlocked by a card), so they open there rather than as a story.
 function openStoryPhone(story) {
-  return openMobileArchive({ idolCode: story?.characters?.[0] || '', mode: 'phone', scenarioFile: story?.file || '' })
+  // The call's owner, not its first listed speaker: Ren's card call also lists Haruna and Amehiko.
+  const idolCode = communicationOwnerId(story?.file) || story?.characters?.[0] || ''
+  return openMobileArchive({ idolCode, mode: 'phone', scenarioFile: story?.file || '' })
 }
 
 async function previewCardVoice(cue) {

@@ -54,6 +54,15 @@ function charaIdFromScenario(scenarioId) {
 }
 
 /**
+ * The idol whose room a one-to-one call or chat belongs to, read from the scenario id
+ * (`040ren_403_…`, `1_x_029ass_…`). Others can speak in it (Haruna and Amehiko in one of
+ * Ren's card calls), but the room — background, theme, caller card — stays its owner's.
+ */
+export function communicationOwnerId(scenarioId) {
+  return charaIdFromScenario(String(scenarioId || '').replace(/\.json$/, ''))
+}
+
+/**
  * @param {object} input
  * @param {object} input.step current step
  * @param {number} input.stepIndex current step index
@@ -119,7 +128,7 @@ export function resolveCommunicationContext({ step, stepIndex, historyStack, ste
   } else if (mode === 'talk' && !isGroup) {
     unitCode = null
   }
-  return { mode, phase, unitCode, primaryCharaId, isGroup,
+  return { mode, phase, unitCode, primaryCharaId, isGroup, ownerCharaId: scenarioCharaId,
     threadId: proven ? thread.id : null, threadTitle: proven && isGroup ? (thread.title || UNIT_CODE_TO_NAME[unitCode] || '') : '',
     threadProvenance: proven ? thread.provenance : null }
 }
