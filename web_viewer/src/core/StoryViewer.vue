@@ -142,14 +142,13 @@
     <div v-if="episodeFinished && !completionDismissed && !HIDE_UI && !uiHidden" class="episode-complete" role="region" aria-label="观看导航">
       <div class="complete-panel">
         <strong>{{ communicationCompleted ? uiText('player.complete.communication') : uiText('player.complete.episode') }}</strong>
+        <p v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</p>
+        <p v-else-if="!nextTarget?.available && queueStatus !== 'error'">{{ nextTarget?.reason || '当前观看范围已结束' }}</p>
         <div class="complete-actions">
-          <span v-if="queueStatus === 'idle' || queueStatus === 'loading'" role="status">{{ uiText('player.queue.loading') }}</span>
-          <button v-else-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
-          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
-          <span v-else-if="nextTarget">{{ nextTarget.reason }}</span>
-          <span v-else>当前观看范围已结束</span>
           <button @click="continueReview">继续回看</button>
-          <button @click="emit('back')">{{ returnLabel }}</button>
+          <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
+          <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
+          <button :class="{ primary: !nextTarget?.available }" @click="emit('back')">{{ returnLabel }}</button>
         </div>
       </div>
     </div>
@@ -1468,23 +1467,17 @@ defineExpose({ goNext, goPrev, goToStep, currentStepIndex, freezeScene, setPlayb
   outline: 2px solid var(--player-focus-outer);
   outline-offset: 2px;
 }
-.episode-complete { position: absolute; left: var(--player-edge); right: var(--player-edge); bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 8px + env(safe-area-inset-bottom)); z-index: 35; }
-.communication-complete-toast { position: absolute; right: var(--player-edge); bottom: var(--player-content-bottom); z-index: 24; display: inline-flex; align-items: center; gap: 7px; max-width: min(320px, calc(100vw - 32px)); min-height: 38px; padding: 0 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: rgba(250,252,252,.94); color: #2c4545; box-shadow: 0 10px 28px rgba(0,0,0,.2); font-size: .78rem; font-weight: 700; pointer-events: none; }
-.communication-complete-toast span { color: #0d9c75; font-size: 1rem; }
-.communication-complete-fade-enter-active, .communication-complete-fade-leave-active { transition: opacity var(--player-motion-fast) var(--player-ease-standard), transform var(--player-motion-fast) var(--player-ease-standard); }
-.communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translateY(6px); }
-.complete-panel { box-sizing: border-box; width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,.6); border-radius: 6px; background: rgba(250,252,252,.97); color: #26343c; text-align: center; box-shadow: 0 18px 45px rgba(0,0,0,.28); }
-.complete-panel > span { color: #0d9c75; font-size: .66rem; font-weight: 800; }
-.complete-panel > strong { display: block; margin: 0 0 6px; font-size: 1.05rem; }
-.complete-panel p { margin: 8px 0 0; color: #64727a; }
-.complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.complete-panel button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 4px 14px; border: 1px solid #d6dfe2; border-radius: 5px; background: #fff; color: #26343c; cursor: pointer; font: inherit; }
-.complete-panel button.primary { border-color: #0d9c75; background: #0d9c75; color: #fff; }
-
-@media (max-width: 760px) {
-  .communication-complete-toast { right: 50%; bottom: var(--player-content-bottom); transform: translateX(50%); white-space: nowrap; }
-  .communication-complete-fade-enter-from, .communication-complete-fade-leave-to { opacity: 0; transform: translate(50%, 6px); }
-}
+/* End of a story or a chat: the archive's one floating surface, centred above the dock.
+   Title, one quiet status line, then the actions; the main one is navy. */
+.episode-complete { position: absolute; left: var(--player-edge); right: var(--player-edge); bottom: calc(var(--player-dock-bottom) + var(--player-dock-height) + 12px + env(safe-area-inset-bottom)); z-index: 35; display: flex; justify-content: center; pointer-events: none; }
+.complete-panel { box-sizing: border-box; width: min(440px, 100%); padding: var(--gs-space-5) var(--gs-space-6); border-radius: var(--gs-radius-panel); background: var(--gs-surface); color: var(--gs-ink); text-align: center; box-shadow: var(--gs-shadow-float); pointer-events: auto; }
+.complete-panel > strong { display: block; font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
+.complete-panel > p { margin: var(--gs-space-1) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
+.complete-panel > .complete-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
+.complete-panel button { display: inline-flex; flex: 1 1 140px; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); white-space: nowrap; }
+.complete-panel button.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); font-weight: var(--gs-weight-semibold); }
+.complete-panel button:disabled { opacity: .5; cursor: default; }
+.complete-panel button:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 .menu-slide-enter-active, .menu-slide-leave-active { transition: transform 180ms ease, opacity 180ms ease; }
 .menu-slide-enter-from, .menu-slide-leave-to { transform: translateX(100%); opacity: 0; }
 

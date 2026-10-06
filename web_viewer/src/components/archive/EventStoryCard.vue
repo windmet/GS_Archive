@@ -10,7 +10,7 @@
         <h3>{{ title }}</h3>
       </div>
       <div class="cast-avatars" aria-label="登场偶像">
-        <img v-for="idol in cast" :key="idol.code" :src="getCharaIconUrl(idol.code)" :alt="idolName(idol.code) || idol.name" :title="idolName(idol.code) || idol.name" loading="lazy" width="30" height="30" />
+        <ArchiveIdolAvatar v-for="idol in cast" :key="idol.code" :idol-code="idol.code" :size="30" :ring-width="0" :gap="0" :alt="idolName(idol.code) || idol.name" :title="idolName(idol.code) || idol.name" />
       </div>
     </div>
     <footer>
@@ -22,7 +22,7 @@
 <script setup>
 import {computed} from 'vue'
 import {BookOpen,CalendarRange} from '@lucide/vue'
-import {getCharaIconUrl} from '../../utils/AssetResolver.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import {storyEventResources,storyEventTitle,storyEventCast} from '../../data/eventResourceGraph.js'
 import EventResourceImage from './EventResourceImage.vue'
 const props=defineProps({entry:Object,idolName:{type:Function,default:()=>''}})
@@ -43,8 +43,8 @@ const cast=computed(()=>storyEventCast(resource.value))
 .story-card-copy h3 { margin: 0; font-family: var(--gs-font-jp); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
 .reading-specs { margin: 0 0 var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .cast-avatars { display: flex; flex-shrink: 0; align-items: center; }
-.cast-avatars img { width: 30px; height: 30px; margin-left: -4px; border: 2px solid var(--gs-paper); border-radius: 50%; background: var(--gs-line); object-fit: cover; }
-.cast-avatars img:first-child { margin-left: 0; }
+.cast-avatars > * { border-radius: 50%; box-shadow: 0 0 0 2px var(--gs-paper); }
+.cast-avatars > * + * { margin-left: -4px; }
 footer { display: flex; align-items: center; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
 .event-archive-action { display: inline-flex; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
 @media (hover: hover) {

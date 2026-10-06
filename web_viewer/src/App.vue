@@ -528,7 +528,7 @@
       :has-next-episode="hasNextPlaybackEpisode"
       :next-target="playbackController.nextTarget.value"
       :position-label="[playbackController.continuation.value?.currentLabel, presentIdolEpisodeLabel({ sourceName:playbackController.queue.current.value?.label, format:'player' })].filter(Boolean).join(' · ')"
-      :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通讯目录' : '返回来源目录'"
+      :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通信' : '返回来源目录'"
       :transition-pending="loading && Boolean(playbackController.pendingEntry.value)"
       :recovery-open="Boolean(playbackError || playbackReadiness?.status === 'blocked') && !loading"
       :queue-status="playbackController.queueStatus.value"

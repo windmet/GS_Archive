@@ -42,6 +42,10 @@
           <button type="button" :aria-pressed="!variant" @click="setVariant('')">全部</button>
           <button v-for="entry in variants" :key="entry.id" type="button" :aria-pressed="variant === entry.id" @click="setVariant(entry.id)">{{ entry.label }} <small>{{ entry.count }}</small></button>
         </nav>
+        <nav v-if="photoTab === 'stickers' && stickerGroups.length" class="photo-variants" aria-label="贴纸分类">
+          <button type="button" :aria-pressed="!stickerGroup" @click="setStickerGroup('')">全部</button>
+          <button v-for="entry in stickerGroups" :key="entry.id" type="button" :aria-pressed="stickerGroup === entry.id" @click="setStickerGroup(entry.id)">{{ entry.label }} <small>{{ entry.count }}</small></button>
+        </nav>
         <p class="domain-count">{{ activeDataReady ? `${filtered.length} 条资料` : busy ? '正在读取…' : error ? '结果暂不可用' : '— 条资料' }}</p>
         <div ref="gridElement" class="photo-grid" :class="{ 'is-backgrounds': ['spots', 'scenes'].includes(photoTab), 'is-frames': photoTab === 'frames', 'is-filters': photoTab === 'filters' }">
           <button
@@ -127,6 +131,7 @@ import { Camera, SlidersHorizontal } from "@lucide/vue";
 import ArchivePhotoDetailDialog from "./ArchivePhotoDetailDialog.vue";
 import {archiveText, archiveSearchText, loadArchivePhotoNames} from './useArchivePhotoText.js';
 import {studioPresetPresentation} from '../../presentation/studio-preset-labels.mjs';
+import { PHOTO_STICKER_GROUPS, photoStickerGroup } from '../../presentation/photoStickerGroups.js';
 import {isArchiveResourceDescription} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import { DomainRepository } from "../../../readmodels/runtime/DomainRepository.mjs";
 import "../../styles/archive-domains.css";
@@ -174,7 +179,15 @@ const photoTabs = [
 // they are browsed inside their spot rather than as a second, overlapping tab. `scenes:<id>` still
 // routes: it opens the owning spot with that scene selected.
 const visibleTabs = photoTabs.filter((tab) => tab.id !== "scenes");
-const sceneSelection = ref(""), variant = ref("");
+const sceneSelection = ref(""), variant = ref(""), stickerGroup = ref("");
+const stickerGroups = computed(() => PHOTO_STICKER_GROUPS
+  .map((group) => ({ ...group, count: (materials.value?.stickers || []).filter((row) => photoStickerGroup(row) === group.id).length }))
+  .filter((group) => group.count));
+function setStickerGroup(id) {
+  interactionRevision++;
+  stickerGroup.value = id;
+  page.value = 0;
+}
 const sceneById = computed(() => new Map((materials.value?.scenes || []).map((row) => [row.id, row])));
 const spotScenes = (spot) => (materials.value?.sceneIdsBySpotId?.[spot?.id] || []).map((id) => sceneById.value.get(id)).filter(Boolean);
 // "通常1"/"通常2" are both 通常 for filtering.
@@ -222,7 +235,8 @@ const filtered = computed(() => {
   const q = props.query.trim().toLocaleLowerCase();
   return photoRows.value.filter(
     (row) =>
-      (photoTab.value !== "spots" || !variant.value || spotVariantKeys(row).includes(variant.value)) && (!q ||
+      (photoTab.value !== "spots" || !variant.value || spotVariantKeys(row).includes(variant.value)) &&
+      (photoTab.value !== "stickers" || !stickerGroup.value || photoStickerGroup(row) === stickerGroup.value) && (!q ||
       String(
         archiveSearchText(`photo-${photoTab.value}`, row.name) + ' ' + photoName(row) + ' ' + sceneSpotName(row) + ' ' +
           (photoTab.value === 'scenes' ? archiveSearchText('photo-spots', spotForScene(row)?.name) : '') +

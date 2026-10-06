@@ -8,7 +8,7 @@
       <strong>{{ title }}</strong>
       <small>{{ [resource?.series, `全 ${resource?.episodeCount || 0} 话`].filter(Boolean).join(' · ') }}</small>
       <span class="cast-avatars" :aria-label="`登场偶像：${cast.map(idol => idolName(idol.code) || idol.name).join('、')}`">
-        <img v-for="idol in cast" :key="idol.code" :src="getCharaIconUrl(idol.code)" alt="" loading="lazy" width="22" height="22" />
+        <ArchiveIdolAvatar v-for="idol in cast" :key="idol.code" :idol-code="idol.code" :size="22" :ring-width="0" :gap="0" decorative />
       </span>
     </span>
     <ChevronRight :size="18" aria-hidden="true" />
@@ -17,7 +17,7 @@
 <script setup>
 import {computed} from 'vue'
 import {BookOpen,ChevronRight} from '@lucide/vue'
-import {getCharaIconUrl} from '../../utils/AssetResolver.js'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import {storyEventResources,storyEventTitle,storyEventCast} from '../../data/eventResourceGraph.js'
 const props=defineProps({entry:Object,idolName:{type:Function,default:()=>''}})
 const emit=defineEmits(['read'])
@@ -31,7 +31,7 @@ const cast=computed(()=>storyEventCast(resource.value))
 .event-story-row .story-row-thumb { aspect-ratio: 2 / 1; }
 .event-story-row .story-row-copy strong { display: block; overflow: hidden; font-family: var(--gs-font-jp); text-overflow: ellipsis; white-space: nowrap; }
 .cast-avatars { display: flex; align-items: center; margin-top: var(--gs-space-1); }
-.cast-avatars img { width: 22px; height: 22px; margin-left: -4px; border: 2px solid var(--gs-paper); border-radius: 50%; background: var(--gs-line); object-fit: cover; }
-.cast-avatars img:first-child { margin-left: 0; }
+.cast-avatars > * { border-radius: 50%; box-shadow: 0 0 0 2px var(--gs-paper); }
+.cast-avatars > * + * { margin-left: -4px; }
 @container story-page (max-width: 560px) { .story-row.event-story-row { --thumb: 96px; } }
 </style>

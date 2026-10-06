@@ -1,5 +1,5 @@
 <template>
-  <span class="idol-avatar-shell" :style="avatarStyle">
+  <span class="idol-avatar-shell" :class="{ 'is-plain': !ringWidth }" :style="avatarStyle">
     <span class="idol-avatar-clip">
       <img v-if="imageUrl && !imageFailed" :src="imageUrl" :alt="decorative ? '' : alt" loading="lazy" decoding="async" @error="onImageError" />
       <span v-else class="idol-avatar-fallback" aria-hidden="true">{{ fallbackText }}</span>
@@ -43,7 +43,11 @@ function onImageError() { imageFailed.value = true; emit('error') }
 
 <style scoped>
 .idol-avatar-shell { --idol-avatar-size: var(--idol-avatar-override-size, var(--idol-avatar-base-size)); display: inline-block; flex: 0 0 var(--idol-avatar-size); width: var(--idol-avatar-size); height: var(--idol-avatar-size); box-sizing: border-box; padding: var(--idol-avatar-gap); border: var(--idol-avatar-ring) solid var(--idol-avatar-color); border-radius: 50%; background: #eef1f3; vertical-align: middle; }
-.idol-avatar-clip { display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; }
+.idol-avatar-clip { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; border-radius: 50%; }
+/* Without a colour ring the icon still gets a frame: three inset rings over the crop
+   (dark blue-grey, light blue, near white), so the cut edge never reads as a stray square. */
+.idol-avatar-shell.is-plain { padding: 0; border: 0; }
+.idol-avatar-shell.is-plain .idol-avatar-clip::after { content: ''; position: absolute; inset: 0; border-radius: 50%; box-shadow: var(--gs-avatar-frame); pointer-events: none; }
 .idol-avatar-clip img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(var(--idol-avatar-scale)); }
 .idol-avatar-fallback { display: grid; place-items: center; width: 100%; height: 100%; color: #526e73; font-size: max(12px, calc(var(--idol-avatar-size) * .35)); font-weight: 700; }
 </style>

@@ -141,7 +141,11 @@ assert.equal(takeruBirthdayCall?.release_condition?.param_a, 2380208, 'Takeru bi
 assert.deepEqual(unresolvedStoryEpisodeIds, [], 'every mobile idol-story condition must resolve to a named story episode')
 
 assert.match(chat, /MobileDeviceFrame :surface-style="deviceSurfaceStyle"/, 'Talk background must be consumed inside the phone')
-assert.match(chat, /IDOL_ID_TO_NAME\[context\.value\.primaryCharaId\]/, 'direct Talk choice deep links must retain their participant title')
+assert.match(chat, /const owner = context\.value\.ownerCharaId \|\| context\.value\.primaryCharaId/, 'direct Talk choice deep links must retain their participant title')
+assert.match(chat, /if \(IDOL_ID_TO_NAME\[owner\]\) return IDOL_ID_TO_NAME\[owner\]/, 'a chat with no posted line yet is named by its owner')
+// A unit chat is named by its unit, never by a list of speakers.
+assert.match(chat, /if \(context\.value\.isGroup && UNIT_CODE_TO_NAME\[unitCode\.value\]\) return UNIT_CODE_TO_NAME\[unitCode\.value\]/, 'unit chats are titled by the unit')
+assert.doesNotMatch(chat, /' 他'/, 'chat titles never fall back to "A 他"')
 assert.match(chat, /isProducer\(rawSpeaker, charaId\)/, 'speakerless authored character messages must not be projected as producer replies')
 assert.match(chat, /speaker_identity\?\.entity_id/, 'Talk messages must consume explicit speaker identity before name inference')
 assert.doesNotMatch(call, /MobileSceneLayout :bg-url=/, 'Call personal art must not be duplicated across the viewport')

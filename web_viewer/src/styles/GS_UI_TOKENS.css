@@ -82,6 +82,9 @@
   --gs-radius-pill: 999px;
   --gs-shadow-float: 0 12px 40px rgb(19 33 58 / 14%), 0 2px 6px rgb(19 33 58 / 6%);
   --gs-shadow-surface: var(--gs-shadow-float);
+  /* Idol icon frame (SSR Portraits viewer): three inset rings, outside to inside, drawn over a
+     circle-cropped icon so the square tile's own frame never shows at the edge. */
+  --gs-avatar-frame: inset 0 0 0 0.24px #5c627e, inset 0 0 0 1.36px #b7c7e2, inset 0 0 0 1.84px #f3f5fc;
 
   --gs-control-compact: 32px;
   --gs-control-normal: 36px;

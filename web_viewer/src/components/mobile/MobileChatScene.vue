@@ -171,23 +171,16 @@ const deviceSurfaceStyle = computed(() => {
 })
 
 const chatTitle = computed(() => {
+  // The room names the chat, as in the game: a unit chat by its unit, a one-to-one chat by its
+  // owner. Never a list of whoever has spoken so far.
   if (context.value.threadTitle) return context.value.threadTitle
-  const sid = props.scenarioId || ''
-  if (sid.startsWith('8_2_')) {
-    const uc = unitCode.value
-    if (uc && UNIT_CODE_TO_NAME[uc]) return UNIT_CODE_TO_NAME[uc]
-  }
-  const names = new Set()
-  for (const msg of historyMessages.value) {
-    if (!msg.isProducer && msg.speaker) names.add(cleanSpeaker(msg.speaker))
-  }
-  const arr = Array.from(names)
-  if (arr.length === 0) {
-    const inheritedName = IDOL_ID_TO_NAME[context.value.primaryCharaId]
-    return inheritedName || 'トーク'
-  }
-  if (arr.length === 1) return arr[0]
-  if (arr.length === 2) return arr.join('、')
-  return arr[0] + ' 他'
+  if (context.value.isGroup && UNIT_CODE_TO_NAME[unitCode.value]) return UNIT_CODE_TO_NAME[unitCode.value]
+  const owner = context.value.ownerCharaId || context.value.primaryCharaId
+  // The owner's name as the chat itself shows it (translated when available).
+  const ownLine = historyMessages.value.find(msg => msg.charaId === owner && msg.speaker)
+  if (ownLine) return cleanSpeaker(ownLine.speaker)
+  if (IDOL_ID_TO_NAME[owner]) return IDOL_ID_TO_NAME[owner]
+  const firstSpeaker = historyMessages.value.find(msg => !msg.isProducer && msg.speaker)
+  return firstSpeaker ? cleanSpeaker(firstSpeaker.speaker) : 'トーク'
 })
 </script>

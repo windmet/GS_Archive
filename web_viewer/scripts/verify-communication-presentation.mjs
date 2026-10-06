@@ -100,6 +100,24 @@ cancellation.cleanup()
     'v-if="guestSpeaker" class="dialogue-speaker"',
   ]) assert.ok(callScene.includes(marker), `call scene keeps the owner room: ${marker}`)
 }
+// Every chat sits on a unit's background, as in the game: a one-to-one chat on its owner's unit,
+// a story chat among members of one unit on that unit, titled as the unit's group chat.
+{
+  const { readFileSync } = await import('node:fs')
+  const { resolveCommunicationContext } = await import('../src/core/story-runtime/CommunicationPresentationContext.js')
+  const chatContext = file => {
+    const doc = JSON.parse(readFileSync(new URL(`../public/data/compiled/${file}`, import.meta.url), 'utf8'))
+    const index = doc.steps.findIndex(step => step.type === 'talk')
+    return resolveCommunicationContext({ step: doc.steps[index], stepIndex: index, historyStack: [], steps: doc.steps, scenarioId: doc.scenario_id })
+  }
+  const minori = chatContext('1_x_011min_1_8_011_01.json')
+  assert.equal(minori.isGroup, false, 'a private chat is one-to-one')
+  assert.equal(minori.unitCode, '04bei', 'Minori’s private chat sits on Beit’s background')
+  const cfirst = chatContext('1_3_10001_01.json')
+  assert.equal(cfirst.isGroup, true, 'Shu, Momohito and Eishin chatting in their event story is a group chat')
+  assert.equal(cfirst.unitCode, '16cfi', 'their chat sits on C.FIRST’s background')
+}
+
 // The communication read model names who else is on a call, per call, from the story catalog.
 {
   const { readFileSync } = await import('node:fs')
