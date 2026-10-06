@@ -56,7 +56,7 @@
         </span>
         <span v-else class="song-card-code">封面未收录</span>
         <span class="song-card-copy">
-          <small>{{ song.kana }}</small>
+          <!-- The reading stays searchable and shows on the song's own page; on the shelf it crowded every title. -->
           <strong :title="song.title">{{ song.title }}</strong>
           <span class="song-performers" :title="performerLabel(song)">{{ performerSummary(song) }}</span>
           <span v-if="song.credits" class="song-credits">{{ song.credits }}</span>
@@ -262,7 +262,6 @@ const filteredSongs = computed(() => {
 }
 .song-card-jacket img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .song-card-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; }
-.song-card-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
 .song-card-copy strong { font-size: var(--gs-text-subtitle); line-height: 1.4; overflow-wrap: anywhere; white-space: normal; font-weight: var(--gs-weight-semibold); }
 .song-credits { color: var(--gs-ink-3); font-size: var(--gs-text-caption); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; font-weight: var(--gs-weight-regular); }
 .song-performers { color: var(--gs-ink-2); font-size: var(--gs-text-meta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--gs-weight-regular); }
@@ -289,7 +288,7 @@ const filteredSongs = computed(() => {
   .song-card { grid-template-columns: 52px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; }
   .song-card-jacket, .song-card-code { width: 52px; height: 52px; border-radius: 7px; }
   .song-card-copy { gap: var(--gs-space-1); }
-  .song-card-copy small, .song-credits { display: none; }
+  .song-credits { display: none; }
   .song-performers { font-size: var(--gs-text-meta); line-height: 15px; }
   .song-badges { gap: var(--gs-space-2); }
   .badge { line-height: 1.4; padding: 0 var(--gs-space-2); }
