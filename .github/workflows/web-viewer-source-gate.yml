@@ -397,6 +397,9 @@ jobs:
       - name: Verify compiled migration
         run: npm run verify:compiled-migration
 
+      - name: Verify the source-only verifier batch and coverage ledger
+        run: npm run verify:source-batch
+
       - name: Compile source and generate startup/cutover audits
         run: npm run build:check
 
