@@ -10,6 +10,7 @@ import { restoreProducerAddressingAfterTranslation, protectProducerAddressingFor
 const drafts = [
   { dir: 'B002-main-r31-edited-20261001', documents: 59, units: 999 },
   { dir: 'B003-main-r33-edited-20261007', documents: 63, units: 991 },
+  { dir: 'B004-main-r33-edited-20261007', documents: 30, units: 500 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
