@@ -64,6 +64,7 @@
     "verify-song-chart-presentation.mjs",
     "verify-song-chart-timing.mjs",
     "verify-song-detail-presentation.mjs",
+    "verify-song-domain-landing.mjs",
     "verify-song-experimental-audio.mjs",
     "verify-song-jackets.mjs",
     "verify-song-lyrics-presentation.mjs",
@@ -173,12 +174,6 @@
       "scripts": [
         "verify-chibi-reference-video.py",
         "verify-live-chibi-stage-object-audit.py"
-      ]
-    },
-    "pending": {
-      "reason": "Fails at HEAD: these assert App.vue source text. Rewrite them as behaviour checks before splitting App.vue, then move them into batch.",
-      "scripts": [
-        "verify-song-domain-landing.mjs"
       ]
     }
   }

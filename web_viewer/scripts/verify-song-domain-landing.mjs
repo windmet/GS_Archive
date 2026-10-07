@@ -1,17 +1,18 @@
 import assert from 'node:assert/strict'
-import vm from 'node:vm'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readArchiveRoute } from '../src/core/archiveRoute.js'
+import { readArchiveRoute, buildArchiveUrl, buildArchiveBreadcrumbs, ARCHIVE_NAVIGATION } from '../src/core/archiveRoute.js'
+import { ARCHIVE_SOURCES } from '../src/data/ArchiveDataRepository.js'
+import { verifySongLandingBehavior } from './lib/song-landing-behavior.mjs'
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
 const readViewerFile = relativePath => readFile(path.join(viewerRoot, relativePath), 'utf8')
 
-const [catalog, appComponent, catalogComponent, detailComponent, idolDetailComponent, unitDetailComponent, routeSource, shellComponent, repositorySource, jacketIndex, unitDictionary] =
+const [catalog, appComponent, catalogComponent, detailComponent, idolDetailComponent, unitDetailComponent, jacketIndex, unitDictionary] =
   await Promise.all([
     readViewerFile('public/data/song_catalog.json').then(JSON.parse),
     readViewerFile('src/App.vue'),
@@ -19,9 +20,6 @@ const [catalog, appComponent, catalogComponent, detailComponent, idolDetailCompo
     readViewerFile('src/components/archive/ArchiveSongDetail.vue'),
     readViewerFile('src/components/archive/ArchiveIdolDetail.vue'),
     readViewerFile('src/components/archive/ArchiveUnitDetail.vue'),
-    readViewerFile('src/core/archiveRoute.js'),
-    readViewerFile('src/components/archive/ArchiveShell.vue'),
-    readViewerFile('src/data/ArchiveDataRepository.js'),
     readViewerFile('public/data/song_jacket_index.json').then(JSON.parse),
     readViewerFile('public/data/masterdata/idol_unit_dictionary.json').then(JSON.parse),
   ])
@@ -101,18 +99,6 @@ assert.equal(hrkzbnMovie.movie_finish_offset, 3500)
 // Unit-effect variants on the three layered songs
 assert.equal(catalog.songs.grwsml.choreography.live_effect_variants.includes('tutorial'), true)
 
-// App wiring: dispatch, open handlers, route sync, load assignment
-assert.match(appComponent, /v-if="view === 'song_catalog'"/)
-assert.match(appComponent, /v-if="view === 'song_detail' && currentSongPresentation"/)
-assert.match(appComponent, /:catalog="songReadModelCatalog"/)
-assert.match(appComponent, /:song="currentSongPresentation"/)
-assert.match(detailComponent, /v-if="song\.stageCandidate"/)
-assert.doesNotMatch(detailComponent, /fetchSongTimelineManifest/,
-  'song detail must receive stage entry from its bounded leaf')
-assert.match(appComponent, /@open="openSong"/)
-assert.match(appComponent, /function openSongCatalog\(\)/)
-assert.match(appComponent, /function openSong\(songCode\)/)
-assert.match(appComponent, /currentSongId\.value = route\.song \|\| ''/)
 const songNavigation = useArchiveNavigationState()
 songNavigation.view.value = 'song_detail'
 songNavigation.currentSongId.value = 'drvalv'
@@ -122,63 +108,7 @@ assert.equal(songNavigation.currentArchiveRoute().songScope, '3dmv')
 songNavigation.view.value = 'cards'
 assert.equal(songNavigation.currentArchiveRoute().song, '')
 assert.equal(songNavigation.currentArchiveRoute().songScope, 'all')
-assert.match(appComponent, /function openSongRelatedStory\(relation\)/)
-assert.match(appComponent, /songReadModelCatalog\.value = catalog/)
-assert.match(appComponent, /rows\.length !== index\.count/)
-assert.match(appComponent, /else if \(section === 'songs'\) openSongCatalog\(\)/)
-assert.match(appComponent, /song_detail: \(\) => \{[\s\S]*?const parent = songParentView\.value[\s\S]*?commitView\('song_catalog'\)/)
-assert.match(appComponent, /const currentIdolSongs = computed/)
-assert.match(appComponent, /const currentArchiveUnitSongs = computed/)
-assert.match(appComponent, /songParentView\.value = 'idol_detail'/)
-assert.match(appComponent, /songParentView\.value = 'unit_detail'/)
-
-const projectionStart = appComponent.indexOf('const currentSong = computed(')
-const projectionEnd = appComponent.indexOf('const archiveSection = computed(', projectionStart)
-assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
-const projectionContext = vm.createContext({
-  computed: fn => ({ get value() { return fn() } }),
-  songReadModelDetail: { value: { id: 'drvalv', song: { title: 'DRIVE A LIVE' },
-    view: { title: 'DRIVE A LIVE' }, experimental: { form: 'layered' } } },
-  currentSongId: { value: 'drvalv' }, view: { value: 'song_detail' },
-})
-const [currentSong, stageAudioExperiments, currentSongPresentation] = vm.runInContext(
-  `${appComponent.slice(projectionStart, projectionEnd)}\n;[currentSong, stageAudioExperiments, currentSongPresentation]`, projectionContext)
-assert.equal(currentSong.value.title, 'DRIVE A LIVE')
-assert.equal(currentSongPresentation.value.title, 'DRIVE A LIVE')
-projectionContext.currentSongId.value = 'brndnf'
-assert.equal(currentSong.value, null, 'old song metadata must not appear while another leaf loads')
-assert.equal(currentSongPresentation.value, null)
-assert.equal(Object.keys(stageAudioExperiments.value).length, 0)
-projectionContext.currentSongId.value = ''
-projectionContext.view.value = 'chibi_stage'
-assert.equal(Object.keys(stageAudioExperiments.value).length, 1, 'default stage retains DRIVE A LIVE experiment')
-
-let resolveSong
-let revision = 0
-const recoveryContext = vm.createContext({
-  view: { value: 'song_detail' }, currentSongId: { value: 'brndnf' },
-  songReadModelDetail: { value: null }, songReadModelStatus: { value: '' },
-  pendingSongNavigation: 0,
-  navigation: { getRevision: () => revision, isDisposed: () => false },
-  loadSongDetail: () => new Promise(resolve => { resolveSong = resolve }),
-  watch: (_sources, callback) => { recoveryContext.recoverSong = callback },
-  console: { error: () => {} },
-})
-const watcherStart = appComponent.indexOf('watch([view, currentSongId]')
-const watcherEnd = appComponent.indexOf('watch([view, currentCharacterId]', watcherStart)
-assert.ok(watcherStart >= 0 && watcherEnd > watcherStart)
-vm.runInContext(appComponent.slice(watcherStart, watcherEnd), recoveryContext)
-recoveryContext.recoverSong(['song_detail', 'brndnf'])
-resolveSong({ id: 'brndnf', song: { title: 'BRAND NEW FIELD' }, view: { title: 'BRAND NEW FIELD' } })
-await new Promise(resolve => setImmediate(resolve))
-assert.equal(recoveryContext.songReadModelDetail.value.id, 'brndnf')
-recoveryContext.songReadModelDetail.value = null
-recoveryContext.currentSongId.value = 'drvalv'
-recoveryContext.recoverSong(['song_detail', 'drvalv'])
-revision++
-resolveSong({ id: 'drvalv' })
-await new Promise(resolve => setImmediate(resolve))
-assert.equal(recoveryContext.songReadModelDetail.value, null, 'late song leaf must not replace a newer route')
+await verifySongLandingBehavior({ appComponent, catalogComponent, detailComponent, idolDetailComponent, unitDetailComponent, catalog, unitDictionary })
 
 // Jacket relation: every catalog song carries a published RAW cover URL
 assert.equal(Object.keys(jacketIndex.entries).length, 61)
@@ -191,18 +121,6 @@ assert.match(
   /^\/assets\/songs\/jacket_drvalv\.png$/,
   'jacket URL must follow the published asset convention',
 )
-
-// Catalog page: filter pills, search, song_id ordering, jacket thumbnail, open emit
-assert.match(catalogComponent, /song-filters[\s\S]*3DMV[\s\S]*MV LIVE[\s\S]*分轨演唱[\s\S]*演出语音[\s\S]*特殊版本/)
-assert.match(catalogComponent, /placeholder="搜索曲名、读音或演唱者"/)
-assert.match(catalogComponent, /emit\('open', song\.song_code\)/)
-assert.match(catalogComponent, /\.sort\(\(a, b\) => \(a\.song_id \|\| 0\) - \(b\.song_id \|\| 0\)\)/)
-assert.match(catalogComponent, /song\.variant_kind === 'primary'/)
-assert.match(catalogComponent, /aria-pressed/)
-assert.match(catalogComponent, /aria-label="搜索歌曲"/)
-assert.match(catalogComponent, /hasMovie\(song, '3dmv'\)/)
-assert.match(catalogComponent, /song\.jacket_url/)
-assert.match(catalogComponent, /loading="lazy"/)
 
 // Unit-name reverse lookup: every catalog unit code must resolve through
 // idol_unit_dictionary.units (table 24 UnitMaster), which the detail page
@@ -228,42 +146,17 @@ assert.equal(catalog.songs.flslgt.performance_mapping.performer_scope, 'fixed_sp
 assert.equal(catalog.songs.drvalv.performance_mapping.performer_scope, 'configurable_formation')
 assert.equal(catalog.songs.brndnf.performance_mapping.performer_scope, 'fixed_unit')
 
-// Detail consumes the presentation contract. Identity, media/evidence and rendered boundary
-// assertions live in verify-archive-presentation.mjs, using all production song records.
-assert.match(detailComponent, /song\.jacketUrl/)
-assert.match(detailComponent, /song-detail-jacket/)
-assert.match(detailComponent, /ArchiveTechnicalDetails/)
-assert.doesNotMatch(detailComponent, /IdolNameMap|function unitName/)
-assert.match(detailComponent, /emit\('open-related-story', entry\.payload\)/)
-assert.match(detailComponent, /emit\('open-unit', song\.unit\.id\)/)
-assert.match(detailComponent, /ArchiveIdolReference :reference="performerReference\(entry\.reference\)" density="portrait" :data-archive-focus-id="performerFocusId\(entry\)" @open="emit\('open-idol', \$event\)"/)
-assert.match(detailComponent, /ArchiveIdolReference :reference="performerReference\(entry\.reference\)" :show-image="false" :data-archive-focus-id="audioFocusId\(group, entry\)" @open="emit\('open-idol', \$event\)"/)
-assert.match(detailComponent, /rel="noopener noreferrer external"/)
-
-// Reverse navigation: idol and unit pages expose the semantic table-46 song relations.
-assert.match(idolDetailComponent, /演唱歌曲/)
-assert.match(idolDetailComponent, /entry\.evidenceLabel/)
-assert.match(idolDetailComponent, /emit\('open-song', entry\.song\.song_code\)/)
-assert.match(unitDetailComponent, /组合歌曲/)
-assert.match(unitDetailComponent, /ArchiveTechnicalDetails/)
-assert.match(unitDetailComponent, /emit\('open-song', song\.song_code\)/)
-
-// Route module: contracts, navigation entry, breadcrumbs, query serialization
-assert.match(routeSource, /song_catalog: \{ section: 'songs', required: \[\] \}/)
-assert.match(routeSource, /song_detail: \{ section: 'songs', required: \['song'\], fallback: 'song_catalog' \}/)
-assert.match(routeSource, /\{ id: 'songs', label: '歌曲' \}/)
-assert.match(routeSource, /\{ label: '歌曲', route: breadcrumbRoute\(route, 'song_catalog', \{ song: '' \}\) \}/)
-assert.match(routeSource, /if \(normalized\.song\) url\.searchParams\.set\('song', normalized\.song\)/)
-assert.match(routeSource, /song: clean\(params\.get\('song'\)\)/)
-assert.match(routeSource, /songScope: params\.get\('song_scope'\)/)
-
-// Shell: songs entry on sidebar and mobile nav
-assert.match(shellComponent, /songs: Music/)
-assert.match(shellComponent, /id: 'portal', label: '资料馆'/)
-
-// Repository: song catalog and jacket index registered with payload validation
-assert.match(repositorySource, /songCatalog: '\/data\/song_catalog\.json'/)
-assert.match(repositorySource, /songJacketIndex: '\/data\/song_jacket_index\.json'/)
+// Public route and repository contracts are values and round trips, not source formatting.
+assert.equal(ARCHIVE_NAVIGATION.find(entry => entry.id === 'songs')?.label, '歌曲')
+const restored = readArchiveRoute(buildArchiveUrl('http://localhost/', detailRoute))
+assert.equal(restored.song, 'drvalv')
+assert.equal(restored.view, 'song_detail')
+const breadcrumb = buildArchiveBreadcrumbs(detailRoute, { title: 'DRIVE A LIVE' }).find(entry => entry.route?.view === 'song_catalog')
+assert.ok(breadcrumb)
+assert.equal(breadcrumb.label, '歌曲')
+assert.equal(breadcrumb.route.song, '')
+assert.equal(ARCHIVE_SOURCES.songCatalog, '/data/song_catalog.json')
+assert.equal(ARCHIVE_SOURCES.songJacketIndex, '/data/song_jacket_index.json')
 validateArchivePayload('songCatalog', catalog)
 validateArchivePayload('songJacketIndex', jacketIndex)
 assert.throws(() => validateArchivePayload('songCatalog', { ...catalog, schema_version: 0 }))
