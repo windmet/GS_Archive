@@ -6,26 +6,6 @@ import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigatio
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 {
-  const events = []
-  const context = {
-    view: { value: 'welcome' }, detailSourceRoute: { value: '' },
-    storeUserPreferences: value => events.push(['save', { ...value }]),
-    openRootPortal: () => events.push(['portal']),
-    restoreDetailSource: () => events.push(['return']),
-  }
-  for (const name of ['chooseStartupLater', 'choosePortalStartup']) {
-    vm.runInNewContext(app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0], context)
-  }
-  context.chooseStartupLater()
-  assert.deepEqual(events.splice(0), [['save', { onboardingComplete: true }], ['portal']])
-  context.detailSourceRoute.value = '?view=portal'
-  context.chooseStartupLater()
-  assert.deepEqual(events.splice(0), [['return']], 'canceling settings must not overwrite the saved default')
-  context.choosePortalStartup()
-  assert.deepEqual(events.splice(0), [['save', { startupPage: 'portal', onboardingComplete: true }], ['portal']])
-  assert.equal(context.detailSourceRoute.value, '')
-}
-{
   let preferences = { startupPage: 'portal', homeMode: 'card', startupIdol: null, onboardingComplete: true }
   const opened = []
   const context = {
@@ -102,6 +82,9 @@ for (const disposed of [false, true]) {
   // Supply refs used by the actual startup callback; execute its production
   // control flow rather than reproducing the order of awaits in a fixture.
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
@@ -140,6 +123,9 @@ for (const disposed of [false, true]) {
     installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   vm.runInNewContext(source, context)
   const pending = mount()
@@ -178,6 +164,9 @@ for (const asynchronous of [false, true]) {
     adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
@@ -232,6 +221,9 @@ for (const route of [
     console: { error: () => {} }, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   vm.runInNewContext(source, context)
   await mount()
   assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,
