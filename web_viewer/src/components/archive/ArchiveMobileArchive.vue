@@ -56,8 +56,12 @@
       </div>
 
       <aside v-if="mode === 'random'" class="random-explainer">
-        <strong>这是游戏的随机话题候选池，不是连续剧情或聊天记录</strong>
-        <p>游戏会按时间与条件随机选择话题和开场语。这里按收录顺序预览，不代表玩家实际经历的聊天顺序。共 {{ randomTopicCount }} 个候选话题、{{ randomIntroCount }} 句开场语。</p>
+        <strong>随机话题：偶像在聊天里随机聊起的日常小话题</strong>
+        <p>游戏里打开聊天时，偶像会先说一句随机的开场语，再从下面的话题中抽一个聊。能不能抽到，取决于每个话题标注的时段和「再登场间隔」。这里收录了全部 {{ randomIntroCount }} 句开场语和 {{ randomTopicCount }} 个话题，分 {{ randomBundles.length }} 组列出；它们之间没有剧情先后。</p>
+        <ul>
+          <li>点话题右侧的 <Play :size="12" fill="currentColor" aria-hidden="true" />：只看这一个话题。</li>
+          <li>点组名右侧的 <Play :size="12" fill="currentColor" aria-hidden="true" />：把这一组按脚本顺序连着看。游戏里不会这样连续出现。</li>
+        </ul>
       </aside>
 
       <details v-if="mode !== 'random'" class="unlock-explainer">
@@ -104,15 +108,15 @@
       <div v-else class="random-list">
         <article v-for="bundle in randomBundles" :key="bundle.id" class="random-bundle">
           <header>
-            <div><small>随机话题</small><h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
-            <button :disabled="!bundle.exists" title="按脚本顺序预览话题池" @click="emit('play', bundle.file)"><Play :size="17" fill="currentColor" /></button>
+            <div><small>话题组 · {{ bundle.topics.length }} 个话题</small><h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
+            <button :disabled="!bundle.exists" aria-label="按脚本顺序连着看这一组" title="按脚本顺序连着看这一组" @click="emit('play', bundle.file)"><Play :size="17" fill="currentColor" /></button>
           </header>
           <div class="topic-grid">
             <button
               v-for="(topic, index) in bundle.topics"
               :key="topic.id"
               :disabled="!topic.presentation"
-              :title="topic.presentation ? '预览此话题' : '未解析话题边界'"
+              :title="topic.presentation ? '只看这一个话题' : '这个话题的起止位置未能确定，暂时无法单独播放'"
               @click="playRandomTopic(bundle, topic)"
             >
               <span>{{ String(index + 1).padStart(2, '0') }}</span>
@@ -136,6 +140,7 @@
 </template>
 
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
@@ -250,7 +255,7 @@ function unlockTitle(unlock) {
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${archiveCardFullTitle(card)} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 · ${story.sectionName}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
+  if (story) return `个人故事 · ${chapterLabel(story.sectionName)}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
@@ -356,6 +361,8 @@ function timeWindow(topic) {
 .random-explainer { margin: 0 0 var(--gs-space-5); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); }
 .random-explainer strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .random-explainer p { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
+.random-explainer ul { margin: var(--gs-space-2) 0 0; padding-left: 1.2em; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
+.random-explainer li svg { vertical-align: -1px; color: var(--gs-mint-ink); }
 .random-bundle { border-bottom: 1px solid var(--gs-line); }
 .random-bundle > header { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-4); padding: var(--gs-space-4) 0; }
 .random-bundle header > div { min-width: 0; }
