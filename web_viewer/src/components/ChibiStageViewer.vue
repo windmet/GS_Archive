@@ -119,8 +119,7 @@
           <div class="performance-identity"><strong :title="selectedSong ? songOptionLabel(selectedSong) : ''">{{ selectedSong ? songOptionLabel(selectedSong) : '—' }}</strong><small>{{ isSpecialSingle ? '社长特别演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</small></div>
           <div class="performance-actions">
             <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-            <button class="stage-icon-action" type="button" aria-label="进入纯净模式" title="纯净模式 · H" @click="togglePureMode"><EyeOff :size="19" /></button>
-            <button class="stage-icon-action" type="button" :aria-label="fullscreenActive ? '退出全屏' : '进入全屏'" :disabled="fullscreenPending" @click="toggleFullscreen"><Minimize v-if="fullscreenActive" :size="19" /><Maximize v-else :size="19" /></button>
+            <button class="stage-icon-action" type="button" aria-label="沉浸观看" title="沉浸观看 · 隐藏界面并全屏 · F" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
           </div>
         </div>
 
@@ -258,7 +257,7 @@
             </div>
             <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
-            <div class="viewing-actions"><button type="button" @click="togglePureMode"><EyeOff :size="16" />纯净观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
+            <div class="viewing-actions"><button type="button" @click="toggleImmersive"><Maximize :size="16" />沉浸观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
           </section>
           <ArchiveErrorNote v-if="audioError" class="audio-error">{{ audioError }}</ArchiveErrorNote>
           <p v-if="panelNotice || fullscreenNoticeText" class="panel-notice" role="status">{{ panelNotice || fullscreenNoticeText }} <a v-if="snapshotUrl" :href="snapshotUrl" :download="snapshotFilename">保存 PNG</a></p>
@@ -407,15 +406,14 @@
     </ArchiveTerminalDialog>
     <ArchiveTerminalDialog class="stage-dev-dialog stage-help-dialog" :open="helpOpen" title="观看与操作" :title-id="helpTitleId" @close="helpOpen = false">
       <p>选择演出曲目，点击头像槽位编辑偶像与衣装。原曲成员使用已收录名单，按当前脚本槽位排列。</p>
-      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>H</kbd></dt><dd>显示 / 隐藏界面；隐藏时把鼠标移到画面顶端可截图、全屏或恢复界面</dd></div><div><dt><kbd>F</kbd></dt><dd>进入 / 退出全屏</dd></div></dl>
+      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>F</kbd> <kbd>H</kbd></dt><dd>沉浸观看：隐藏界面并全屏；把鼠标移到画面顶端可截图或退出，<kbd>Esc</kbd> 也可退出</dd></div></dl>
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
     </ArchiveTerminalDialog>
     <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
          stage, shown when it reaches the top or a key moves focus there. -->
     <div v-if="pureMode" class="pure-peek">
       <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-      <button class="stage-icon-action" type="button" :aria-label="fullscreenActive ? '退出全屏' : '进入全屏'" :disabled="fullscreenPending" @click="toggleFullscreen"><Minimize v-if="fullscreenActive" :size="19" /><Maximize v-else :size="19" /></button>
-      <button ref="pureExitButton" class="pure-exit" type="button" @click="togglePureMode">显示控制 <kbd>H</kbd></button>
+      <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸 <kbd>F</kbd></button>
     </div>
   </div>
 </template>
@@ -437,14 +435,13 @@ import { colorLayersAt } from '../core/chibiColorLayers.js'
 import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
-import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId } from 'vue'
+import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
   CircleHelp,
   Camera,
   ChevronDown,
-  EyeOff,
   Maximize,
   Minimize,
   Settings2,
@@ -525,7 +522,7 @@ const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref
 const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId()
 const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
 const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
-const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，可使用纯净模式观看。' : '')
+const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
 const snapshotUrl = ref(''), snapshotFilename = ref('')
 let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
@@ -1210,6 +1207,24 @@ async function applySharedCostume(id) {
   await rebuildStage()
   if (!stageDisposed && selectedSong.value?.id === songId) costumeNotice.value = `已为 ${activeSlots.value.length} 位出演成员换为${stageCostumeLabel(costume)}。`
 }
+// 沉浸观看 is one feature: hide the controls and go fullscreen together, and leave both together.
+// Fullscreen is requested first, inside the user gesture; where the browser refuses it (iOS
+// Safari), the controls are still hidden. Leaving fullscreen through the browser ends it too.
+let immersiveFullscreen = false
+async function toggleImmersive() {
+  if (pureMode.value) {
+    immersiveFullscreen = false
+    if (fullscreenActive.value) void leaveFullscreen()
+    await togglePureMode()
+    return
+  }
+  const fullscreen = enterFullscreen(stageRoot.value)
+  await togglePureMode()
+  immersiveFullscreen = await fullscreen
+}
+watch(fullscreenActive, (active, was) => {
+  if (was && !active && pureMode.value && immersiveFullscreen) { immersiveFullscreen = false; void togglePureMode() }
+})
 async function togglePureMode() {
   if (!pureMode.value) {
     pureReturnFocus = document.activeElement
@@ -1222,10 +1237,6 @@ async function togglePureMode() {
   await nextTick()
   if (pureMode.value) pureExitButton.value?.focus({ preventScroll: true })
   else if (pureReturnFocus?.isConnected) { pureReturnFocus.focus({ preventScroll: true }); pureReturnFocus = null }
-}
-async function toggleFullscreen() {
-  if (fullscreenActive.value) await leaveFullscreen()
-  else await enterFullscreen(stageRoot.value)
 }
 async function exportStageSnapshot() {
   if (!app || !stageReady.value || snapshotBusy.value) return
@@ -1261,8 +1272,7 @@ function handleStageShortcut(event) {
   const key = event.key.toLowerCase()
   // Preserve native Space activation on focused controls in the regular UI.
   if (key === ' ' && target?.closest?.('button') && !pureMode.value) return
-  if (key === 'h' || (key === 'escape' && pureMode.value)) { event.preventDefault(); void togglePureMode() }
-  else if (key === 'f') { event.preventDefault(); void toggleFullscreen() }
+  if (key === 'h' || key === 'f' || (key === 'escape' && pureMode.value)) { event.preventDefault(); void toggleImmersive() }
   else if (key === ' ' && (stageStarting.value || (stageTransportReady.value && !preloading.value))) { event.preventDefault(); void toggleStage() }
   else if (['arrowleft', 'arrowright'].includes(key) && stageTransportReady.value && !preloading.value && !shortcutSeeking) {
     event.preventDefault()
@@ -3890,7 +3900,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
 .pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
 .pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
-.pure-exit { min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
+.pure-exit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
 /* Touch has no pointer to reach the edge: only the way back stays, faint. */
 @media (hover: none) {
   .pure-peek { opacity: 1; background: none; pointer-events: none; }
