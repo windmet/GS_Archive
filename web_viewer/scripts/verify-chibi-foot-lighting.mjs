@@ -43,11 +43,11 @@ const ref=value=>({value})
 const bodyRuntimes=new Map([[2,{spine:{}}],[3,{spine:{}}]])
 let spots=[],pins=[],gradientCalls=0
 const tintControls=ref(new Map())
-const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions',`return () => {${bodyBranch}\n}`)(
+const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions','playing','inspectorOpen',`return () => {${bodyBranch}\n}`)(
  ref(state),()=>new Map(spots.map((s,i)=>[i,s])),()=>new Map(pins.map((s,i)=>[i,s])),ref(5200),
  c=>c?parseInt(c.slice(1),16):0x221d23,bodyRuntimes,
  (a,b,f)=>f===0?a:f===1?b:0x808080,tintControls,(a,b)=>b??a,
- ()=>{gradientCalls++},{},ref(''),ref([2,3]))
+ ()=>{gradientCalls++},{},ref(''),ref([2,3]),ref(false),ref(false))
 const environment={alpha:1,beamColor:'#ffffff',asset:'Pinspotlight',environmentColor:'#000000',environmentOpacity:1000}
 spots=[environment];pins=[environment];applyBody()
 assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Free/offstage environment does not black out the face')
