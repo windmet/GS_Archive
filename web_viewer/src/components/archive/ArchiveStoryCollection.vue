@@ -210,19 +210,6 @@ function externalResourcesForChapter(chapterId) {
 .collection-relations .story-row { --thumb: 96px; max-width: 480px; border-top: 1px solid var(--gs-line); }
 .source-link { display: inline-flex; align-items: center; gap: 6px; min-height: var(--gs-control-compact); color: var(--gs-mint-ink); font-size: var(--gs-text-meta); text-decoration: none; }
 
-.chapter-list { margin: 0; padding: 0; list-style: none; }
-.chapter-row { border-bottom: 1px solid var(--gs-line); }
-.chapter-toggle { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto 20px; align-items: center; gap: var(--gs-space-4); width: 100%; min-height: 64px; padding: var(--gs-space-3) 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; text-align: left; }
-.chapter-toggle > svg { color: var(--gs-ink-3); }
-.chapter-number { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-style: italic; font-variant-numeric: tabular-nums; }
-.chapter-row.expanded .chapter-number { color: var(--gs-mint-ink); }
-.chapter-identity { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
-.chapter-identity small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.chapter-identity strong { overflow: hidden; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
-.chapter-toggle:hover .chapter-identity strong { color: var(--gs-mint-ink); }
-.chapter-row.unavailable .chapter-identity strong { color: var(--gs-ink-3); }
-.chapter-stats { color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
-.chapter-panel { padding: 0 0 var(--gs-space-6) 56px; }
 .canonical-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-4); margin: var(--gs-space-2) 0 var(--gs-space-4); }
 .canonical-note p { flex: 1 1 320px; margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
 .canonical-note strong { display: block; color: var(--gs-ink); }
@@ -230,25 +217,8 @@ function externalResourcesForChapter(chapterId) {
 .chapter-row .chapter-synopsis { --reader-bg-card: transparent; --reader-accent: var(--gs-mint); --reader-text-main: var(--gs-ink-2); margin: var(--gs-space-2) 0 var(--gs-space-4); padding: var(--gs-space-1) 0 var(--gs-space-1) var(--gs-space-5); border-left-width: 2px; border-radius: 0; }
 .chapter-row .chapter-synopsis :deep(.synopsis-heading), .chapter-row .chapter-synopsis :deep(strong) { display: none; }
 .chapter-row .chapter-synopsis :deep(p) { font-size: var(--gs-text-body); }
-.chapter-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-4); }
-.episode-list { margin: 0; padding: 0; border-top: 1px solid var(--gs-line); list-style: none; }
-.episode-entry { display: flex; align-items: center; min-width: 0; border-bottom: 1px solid var(--gs-line); }
-.episode-reading-main { display: grid; flex: 1; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; color: inherit; text-decoration: none; }
-a.episode-reading-main:hover strong { color: var(--gs-mint-ink); }
-.episode-number { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-variant-numeric: tabular-nums; }
-.episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
-.episode-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.episode-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
-
 @container story-page (max-width: 760px) {
   .collection-hero { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-5); }
   .collection-hero:has(.collection-avatar) { grid-template-columns: auto minmax(0, 1fr); }
-}
-@container story-page (max-width: 560px) {
-  .chapter-toggle { grid-template-columns: 28px minmax(0, 1fr) 20px; gap: var(--gs-space-3); }
-  .chapter-stats { display: none; }
-  .chapter-identity strong { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-  .chapter-panel { padding-left: 0; }
-  .chapter-actions > * { flex: 1 1 140px; }
 }
 </style>
