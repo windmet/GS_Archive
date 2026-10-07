@@ -100,16 +100,23 @@ node readmodels/tools/verify_artifacts.mjs <暂存目录>/rm-20261007
 - [ ] `verify_artifacts` 通过。
 - [ ] 本地预览抽查（可选但建议）：`SIDEM_READMODEL_CANDIDATE=<暂存目录>/rm-20261007 node node_modules/vite/bin/vite.js --configLoader native --port 5177 --strictPort`，打开小人舞台，选一首有站位的歌（例如 High×Joker 的 jfhtmk），确认「原曲成员」的顺序是 四季、隼人、旬、夏来、春名。用完关掉 5177。
 
-**更新随代码打包的启动数据**：打包工具要求代码里的 inline bootstrap 和候选 read-model 完全一致。
+**把代码里所有绑定 read-model release 的文件一起改到新 release**（参照 10-05 的 `68a260c9`，那次改了前三项）。少一项，第 4 步的 `build:check` 或 CI 批量检查就会失败。2026-10-07 第一次执行就停在这里：当时只改了 bootstrap，见 `docs/QA_RELEASE_20261007_STOP_REPORT.md`。
+
+| 文件 | 怎么改 | 谁会检查 |
+|---|---|---|
+| `readmodels/bootstrap.inline.json` | `cp <暂存目录>/rm-20261007/bootstrap.inline.json readmodels/` | 打包工具：inline bootstrap 必须与候选一致 |
+| `readmodels/contracts/routes.json` | 只改 `release` 字段为新 release，并在 `note` 末尾追加一句「Release binding updated on 2026-10-07 for the signature/standing-order test deploy; route, parity and device claims are unchanged.」。**不改任何路由的状态或证据** | `build:check` 的构建审计：`Route ledger release differs from bootstrap` |
+| `public/data/assets/portal_card_facets.json` | `node scripts/generate-portal-card-facets.mjs <暂存目录>/rm-20261007` | 门户 bento 检查 |
+| `config/collection-browse.v1.json` | `node scripts/generate-collection-browse.mjs --models <暂存目录>/rm-20261007` | `verify-ipad-collection-repair`（CI 批量检查） |
 
 ```
-cp <暂存目录>/rm-20261007/bootstrap.inline.json readmodels/bootstrap.inline.json
-node scripts/generate-collection-browse.mjs --models <暂存目录>/rm-20261007
 node scripts/verify-ipad-collection-repair.mjs
-git add readmodels/bootstrap.inline.json config/collection-browse.v1.json && git commit -m "chore: inline bootstrap and collection sidecar follow the 2026-10-07 read-model"
+git add readmodels/bootstrap.inline.json readmodels/contracts/routes.json public/data/assets/portal_card_facets.json config/collection-browse.v1.json
+git commit -m "chore: bind the 2026-10-07 read-model release"
 ```
-- [ ] `config/collection-browse.v1.json` 的 `release` 必须和新的 bootstrap 一致，否则 `verify-ipad-collection-repair`（现在已在 CI 的批量检查里）会失败。10-05 那次重建就漏了这一步。
-（如果内容没变化，就跳过提交。）
+- [ ] 四个文件里的 release 都等于新 bootstrap 的 `release`。
+- [ ] `git diff readmodels/contracts/routes.json` 只有 `release` 和 `note` 两行变化。
+- [ ] 若 `portal_card_facets.json` 除 release 外还有大量变化，先停下回报（说明卡片数据变了，不只是重新绑定）。
 
 ---
 
