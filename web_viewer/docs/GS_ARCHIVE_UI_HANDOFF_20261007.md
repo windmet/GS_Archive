@@ -181,3 +181,39 @@ npm run verify:external-story-resources && npm run verify:external-story-resourc
 ### 5.2 全量基线
 
 上一份交接的 38 个全量失败里，`verify-photo-catalog-navigation` 已修。其余仍在，且都属于 §2.1 表里的那几类。只有不在名单里的新失败才算回归。
+
+---
+
+## 6. 2026-10-07 当天进展（接续窗口）
+
+### CI 门
+- 原来的 4 个红项和后来发现的问题都已修好（`3b0ab9fd` `0a97fb0a` `9f574186` `e79ed93f` `b21921bf` `e1b81854`）。
+- **本机主检出跑绿不等于 CI 绿**：主检出挂着语料，而且是 CRLF。`verify:archive-presentation` 和 `verify:communication-assets` 原先只在本机能过，因为它们读了 gitignore 的 `compiled/index.json`。复现 CI 的方法见记忆「CI clean-checkout recipe」：LF worktree + `python -S`。
+- 在 LF 干净检出里，最后一次全量跑是 115 步中 112 步通过。剩下 2 步是同一个回归，已在 `e1b81854` 修好，单独复跑通过。修好后**没有再跑一次全量**，下个窗口先在 LF 检出里复跑一遍。
+
+### CI 覆盖（§2.1）
+- `config/verifier-coverage.json` 是唯一名单，分两部分：
+  - 批量检查 98 个，通过 `npm run verify:source-batch` 在 CI 里跑；
+  - 本地专用的，分组写明原因：corpus / external / python-deps / pending。
+- `verify-verifier-coverage` 守门：新写的 `verify-*` 如果既不在 CI 里、也不在名单里，就会失败。
+- 交接表里的修复：
+  - 3 个依赖白名单过时的检查，改成直接用真实模块；
+  - `event-view-consumer` 修好；
+  - 额外剧情索引和集合 sidecar 用生成器重建（内容不变，只有绑定字段更新）；
+  - 搜索本地化改用 LF 归一化哈希。
+- pending 剩 6 个：
+  - 5 个是匹配 App.vue 源码文本的检查，留待 §2.3；
+  - `verify-translation-strict-v2`：它校验 09-29 的选项发布。这 399 个文件被 `2026-09-30-raw-selection-flow-001` 有意重发，选项跳转被修复，所以选项目标与回滚档案一致这一条不可能再成立。**怎么处理需要用户决定**：认可后续发布，或把它标记为历史检查。
+
+### 内核边界（§2.2）已完成
+- `src/core` 不再引用资料馆组件或展示层：
+  - 语言开关改走 `language-switch` 插槽；
+  - 剧集标签改由宿主传入 `formatEpisodeLabel` / `formatLabel`；
+  - `PlayerLanguageStatus.js` 移到 `components/player`。
+- `verify-core-boundary` 已在批量检查里，**没有豁免**。
+- 浏览器检查：菜单里的界面语言行仍有资料馆开关，无报错。
+- **旧问题，不是这次引入的**：从个人故事连播时，播放菜单里「下一段 · 2010102」显示的是剧集 id。原因是个人故事的剧集记录没有 `label` 字段，控制器就退回用 id。待修。
+
+### 发布
+- 发布窗口已完成 R2 上传和 read-model 重建（release `c6e0c04c…`，dataRevision `98825488…`），在第 4 步停下，记录见 `QA_RELEASE_20261007_STOP_REPORT.md`。
+- 停下的原因是清单漏写了 `routes.json` 等 release 绑定，清单已补（`06e05667`）。从第 3 步的「绑定」小节接着做即可，无需重新上传。
