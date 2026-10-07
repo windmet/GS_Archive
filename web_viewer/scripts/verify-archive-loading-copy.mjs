@@ -7,6 +7,7 @@ import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { createSSRApp } from 'vue'
 import { renderToString } from '@vue/server-renderer'
+import { verifyLoadingBehavior } from './lib/loading-behavior-contract.mjs'
 
 const source = name => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8')
 // SFC rendering needs Vue transformation, not the archive's media middleware/watcher.
@@ -71,62 +72,16 @@ try {
     checks++
   }
 
-  const loading = source('components/LoadingScreen.vue')
-  assert.match(loading, /8000/)
-  assert.ok(loading.includes('加载较慢，可继续等待，或取消后重试。'))
-  assert.ok(loading.includes('@click.stop="$emit(\'cancel\')"'))
-  assert.match(loading, /onUnmounted\(\(\) => clearTimeout\(slowTimer\)\)/)
-  assert.ok(loading.includes('criticalPreloadProgress'))
-  const indicator = source('components/GsLoadingIndicator.vue')
-  assert.match(indicator, /prefers-reduced-motion: reduce/)
-  assert.match(indicator, /animation: gs-loading-orbit/)
-  checks++
-
-  const app = source('App.vue')
-  assert.match(app, /loadingPurpose\.value === 'stage' \? '正在准备舞台…' : '正在读取资料馆数据…'/)
-  for (const attr of [':message="loadingMessage"', ':status="preloadStatus"', ':readiness="playbackReadiness"', '@cancel="playbackController.close()"']) assert.ok(app.includes(attr))
-  assert.ok(app.includes(':visible="(hardLoading || playbackBuffering) && view !== \'reader\' && !(view === \'player\' && !loading && playbackReadiness?.status === \'waiting\' && playbackReadiness?.hasFrame)"'))
-  assert.ok(app.includes('<template #pending>'))
-  assert.ok(app.includes('routePending && !archiveShellVisible'))
-  assert.ok(!app.includes('class="archive-route-pending"'))
-  const shell = source('components/archive/ArchiveShell.vue')
-  assert.ok(shell.includes('<slot name="pending" />'))
-  assert.ok(shell.includes('.archive-content { grid-row: 2; }'))
-  assert.ok(shell.includes('@media (max-width: 760px)'))
-  checks++
-
-  const story = source('core/StoryViewer.vue')
-  assert.ok(story.includes('v-if="localBuffering && !HIDE_UI"'))
-  assert.ok(story.includes(':message="localBufferingText"'))
-  assert.ok(story.includes(':message="uiText(\'player.complete.loadingNext\')"'))
-  assert.ok(story.includes(':message="uiText(\'player.loading\')"'))
-  assert.ok(story.includes('.complete-panel > .complete-actions'))
-  assert.ok(!story.includes('.complete-panel div {'))
-  assert.ok(story.includes('setStoryRuntimePaused'), 'Keep the new continuous-audio pause policy')
-  checks++
-  for (const name of ['SpineViewer', 'ChibiStageViewer']) {
-    const code = source(`components/${name}.vue`)
-    assert.ok(code.includes('<GsLoadingIndicator :message="statusText" tone="dark" />'))
-    assert.ok(code.includes('v-else-if="errorText" class="stage-state error-state"'))
+  await verifyLoadingBehavior({ source, render, LoadingScreen })
+  const { default: Reader } = await server.ssrLoadModule('/src/components/archive/ArchiveStoryReader.vue')
+  for (const status of ['loading', 'error', 'empty']) {
+    const html = await render(Reader, { state: { status, document: null, entries: [], error: 'controlled failure' }, mode: 'original' })
+    assert.equal(html.includes('正在载入正文…'), status === 'loading')
+    assert.equal(html.includes('正文暂时无法载入'), status === 'error')
+    assert.equal(html.includes('这个分段没有可显示的正文。'), status === 'empty')
+    checks++
   }
-  const lab = source('components/SpineViewer.vue')
-  assert.match(lab, /!manifest \? \(loading \? '正在读取动作库…' : '动作库载入失败'\)/)
-  checks++
-
-  const reader = source('components/archive/ArchiveStoryReader.vue')
-  assert.ok(reader.includes('message="正在载入正文…"'))
-  assert.ok(reader.includes('v-else-if="state.status === \'error\'"'))
-  // c6a6e19 already consolidated Reader notices. The former assertions for
-  // two superseded expressions would fail even before this visual patch.
-  assert.ok(reader.includes('v-if="state.status === \'ready\' && mode !== \'original\'"'))
-  assert.ok(reader.includes('v-if="translationLoadFailed"'))
-  const translations = reader.slice(reader.indexOf('const translationStatus = computed'), reader.indexOf('const searchText'))
-  const positions = ['if (localization.loading.value)', 'if (translationLoadFailed.value)', 'if (fallbackCount.value)'].map(text => translations.indexOf(text))
-  assert.ok(positions.every(p => p >= 0) && positions[0] < positions[1] && positions[1] < positions[2])
-  assert.ok(translations.includes('正在读取译文，暂时显示原文。'))
-  assert.ok(translations.includes('译文暂时无法载入，当前显示原文。'))
-  checks++
-  console.log(`Loading skin: ${checks} SFC/source checks passed. This is not device or full-route acceptance.`)
+  console.log(`Loading: ${checks} SSR cases plus production route, curtain, timer and translation behavior passed; layout, animation, device and full-route QA remain separate.`)
 } finally {
   await server.close()
 }
