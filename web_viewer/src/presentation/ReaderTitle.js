@@ -1,12 +1,32 @@
 const HASH = /^sha256:[a-f0-9]{64}$/
+export const READER_TITLE_BYTE_BUDGET = 64 * 1024
+export const READER_TITLE_SHARD_COUNT = 16
+export function readerTitleShardKey(id) {
+  let hash = 2166136261
+  for (const char of String(id)) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619)
+  return ((hash >>> 0) % READER_TITLE_SHARD_COUNT).toString(16).padStart(2, '0')
+}
 export function validateReaderTitles(value) {
-  if (value?.schema_version !== 1 || value.locale !== 'zh-CN' || !Array.isArray(value.titles) || !value.documents || typeof value.documents !== 'object') throw Error('Invalid Reader title index')
+  if (![1, 2].includes(value?.schema_version) || value.locale !== 'zh-CN' || !Array.isArray(value.titles) || !value.documents || typeof value.documents !== 'object' || Array.isArray(value.documents)) throw Error('Invalid Reader title index')
+  if (value.schema_version === 2) {
+    if (!value.shards || Object.keys(value.shards).length !== READER_TITLE_SHARD_COUNT) throw Error('Invalid Reader title shards')
+    for (let n = 0; n < READER_TITLE_SHARD_COUNT; n++) {
+      const key = n.toString(16).padStart(2, '0'), shard = value.shards[key]
+      if (shard?.file !== `reader-titles/${key}.json` || !HASH.test(shard.sha256) || !Number.isInteger(shard.bytes) || shard.bytes <= 0 || shard.bytes >= READER_TITLE_BYTE_BUDGET) throw Error('Invalid Reader title shard binding')
+    }
+  }
   for (const title of value.titles) {
     if (!title || typeof title.source !== 'string' || !title.source || typeof title.text !== 'string' || !title.text || !HASH.test(title.source_hash) || !title.unit_id?.startsWith('story-text:v1:')) throw Error('Invalid Reader title binding')
   }
   for (const [id, record] of Object.entries(value.documents)) {
     if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || !Number.isInteger(record.title) || !value.titles[record.title]) throw Error('Invalid Reader document title binding')
   }
+  return value
+}
+export function validateReaderTitleShard(value, index, key) {
+  if (value?.schema_version !== 1 || value.locale !== index.locale || value.key !== key || !index.shards?.[key]) throw Error('Invalid Reader title shard')
+  validateReaderTitles({ schema_version: 1, locale: index.locale, titles: index.titles, documents: value.documents })
+  if (Object.keys(value.documents).some(id => readerTitleShardKey(id) !== key)) throw Error('Misrouted Reader title binding')
   return value
 }
 // Pages without reading entries (the portal) know only the story file. A title unit names its

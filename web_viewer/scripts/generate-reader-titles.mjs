@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
-import { validateReaderTitles } from '../src/presentation/ReaderTitle.js'
+import { validateReaderTitles, validateReaderTitleShard, readerTitleShardKey, READER_TITLE_BYTE_BUDGET, READER_TITLE_SHARD_COUNT } from '../src/presentation/ReaderTitle.js'
 const root = new URL('../public/',import.meta.url)
 const hash = bytes => `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 const manifest = JSON.parse(await fs.readFile(new URL('data/reading/manifest.json',root),'utf8'))
@@ -33,9 +33,29 @@ for (const entry of manifest.entries) {
   const title = translated.get(entry.logical_id)
   if (title !== undefined && titles[title].source === entry.title) documents[entry.document_id] = {revision:entry.sha256,title}
 }
-const output = `${JSON.stringify(validateReaderTitles({schema_version:1,locale:'zh-CN',titles,documents}),null,2)}\n`
+const payloads = {}, shards = {}
+for (let n = 0; n < READER_TITLE_SHARD_COUNT; n++) {
+  const key = n.toString(16).padStart(2, '0')
+  const shardDocuments = Object.fromEntries(Object.entries(documents).filter(([id]) => readerTitleShardKey(id) === key))
+  const text = `${JSON.stringify({schema_version:1,locale:'zh-CN',key,documents:shardDocuments},null,2)}\n`
+  const bytes = Buffer.byteLength(text)
+  if (bytes >= READER_TITLE_BYTE_BUDGET) throw Error(`Reader title shard ${key} exceeds byte budget`)
+  shards[key] = {file:`reader-titles/${key}.json`,sha256:hash(text),bytes}
+  payloads[key] = text
+}
+const index = validateReaderTitles({schema_version:2,locale:'zh-CN',titles,documents:{},shards})
+for (const [key, text] of Object.entries(payloads)) validateReaderTitleShard(JSON.parse(text), index, key)
+const output = `${JSON.stringify(index,null,2)}\n`
+if (Buffer.byteLength(output) >= READER_TITLE_BYTE_BUDGET) throw Error('Reader title index exceeds byte budget')
 const target = new URL('translations/zh-CN/reader-titles.json',root)
 if (process.argv.includes('--check')) {
   if(await fs.readFile(target,'utf8') !== output) throw Error('Reader title index differs from bound sources')
 } else await fs.writeFile(target,output)
+if (!process.argv.includes('--check')) await fs.mkdir(new URL('translations/zh-CN/reader-titles/',root),{recursive:true})
+for (const [key, text] of Object.entries(payloads)) {
+  const file = new URL(`translations/zh-CN/${shards[key].file}`,root)
+  if (process.argv.includes('--check')) {
+    if (await fs.readFile(file,'utf8') !== text) throw Error(`Reader title shard ${key} differs from bound sources`)
+  } else await fs.writeFile(file,text)
+}
 console.log(`Reader titles: ${titles.length} translated titles, ${Object.keys(documents).length} document bindings, ${Buffer.byteLength(output)} bytes (${fileURLToPath(target)})`)
