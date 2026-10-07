@@ -79,11 +79,11 @@
     <section v-if="idol.hobby || idol.specialty" class="idol-notes" aria-label="兴趣与特技">
       <div v-if="idol.hobby">
         <h3>兴趣</h3>
-        <p>{{ idol.hobby }}</p>
+        <p>{{ profileText('hobby') }}</p>
       </div>
       <div v-if="idol.specialty">
         <h3>特技</h3>
-        <p>{{ idol.specialty }}</p>
+        <p>{{ profileText('specialty') }}</p>
       </div>
     </section>
     <ArchiveTechnicalDetails :key="idol.idol_code" :evidence="{ idol, songs: songs.map(entry => ({ song_code: entry.song.song_code, title: entry.song.title, evidenceLabel: entry.evidenceLabel, performance_mapping: entry.song.performance_mapping })) }" />
@@ -91,6 +91,7 @@
 </template>
 
 <script setup>
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, Camera, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -117,14 +118,16 @@ const displayedIdolName = computed(() => props.idol
   ? props.idolName(props.idol.idol_code, props.idol.display_name) || props.idol.display_name
   : '')
 
+void loadArchiveNames('profiles').catch(() => {})
+const profileText = field => props.idol?.[field] ? archiveNamedText('idol-profile', props.idol[field], field) : ''
 const facts = computed(() => [
   { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
   { label: '生日', value: props.idol?.birthday },
   { label: '身高', value: props.idol?.height ? `${props.idol.height} cm` : '' },
   { label: '体重', value: props.idol?.weight ? `${props.idol.weight} kg` : '' },
-  { label: '出身', value: props.idol?.birthplace },
+  { label: '出身', value: profileText('birthplace') },
   { label: 'CV', value: props.idol?.cv },
-  { label: '前职', value: props.idol?.former_job },
+  { label: '前职', value: profileText('former_job') },
   { label: '组合', value: props.idol?.unit_name },
 ])
 

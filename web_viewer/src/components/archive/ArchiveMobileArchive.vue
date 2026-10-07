@@ -137,6 +137,7 @@
 </template>
 
 <script setup>
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { presentMissionText } from '../../presentation/missionText.js'
 import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
@@ -206,7 +207,9 @@ const accentColor = computed(() => (props.mode === 'unit'
   ? normalizeIdolAccentColor(unit.value.unit_color)
   : idolFrameColor.value) || '#168f87')
 const personalRoom = computed(() => props.idolData?.view?.room)
-const roomSubtitle = computed(() => props.mode === 'unit' ? '组合聊天室' : (personalRoom.value?.profile_text || ''))
+void loadArchiveNames('profiles').catch(() => {})
+const roomSubtitle = computed(() => props.mode === 'unit' ? '组合聊天室'
+  : personalRoom.value?.profile_text ? archiveNamedText('mobile-status', personalRoom.value.profile_text, 'text') : '')
 const roomSubtitleParts = computed(() => projectCommunicationInlineContent(roomSubtitle.value))
 const heroMedia = computed(() => resolveMobileHeroMedia({ mode: props.mode, idolCode: props.selectedIdol, unitCode: props.selectedUnit }))
 const selectionOptions = computed(() => props.mode === 'unit'

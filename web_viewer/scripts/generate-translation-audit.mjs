@@ -15,7 +15,7 @@ const units=sourceUnits(root), drafts=read('public/translations/zh-CN/archive-ge
 const batches=planBatches(units), batchByKey=new Map(batches.flatMap(b=>b.rows.map(r=>[r.key,b.batch_id])))
 const tally=()=>({total:0,draft:0,reviewed:0,final:0,missing:0,stale:0,uncertain:0,keptSource:0})
 const groups=new Map(), group=(id,label)=>{if(!groups.has(id))groups.set(id,{id,label,...tally()});return groups.get(id)}
-const labels={card:'卡面标题',costume:'衣装名称与说明',item:'道具',honor:'称号',skill:'技能','skill-category':'技能分类','center-skill':'中心技能',background:'背景','background-variant':'背景差分','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影地点','photo-scenes':'摄影场景','photo-frames':'摄影相框'}
+const labels={card:'卡面标题',costume:'衣装名称与说明',item:'道具',honor:'称号',skill:'技能','skill-category':'技能分类','center-skill':'中心技能',background:'背景','background-variant':'背景差分','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影地点','photo-scenes':'摄影场景','photo-frames':'摄影相框','idol-profile':'偶像资料','unit-profile':'组合简介','mobile-status':'通信签名','work':'工作剧情名称'}
 const details=units.map(u=>{
  const revision=revisions.get(u.key), translation=drafts[u.kind]?.[u.field]?.[u.source]||''
  if(revision)assert.equal(translation,revision.translation,'Revisions not generated into published metadata')

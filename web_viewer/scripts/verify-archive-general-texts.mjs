@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
-import {sourceUnits,loadGeneralRevisions} from './lib/general-translation-batches.mjs';
+import {sourceUnits,loadGeneralRevisions,shards} from './lib/general-translation-batches.mjs';
 import {resolveArchiveGeneralText as text, honorBondSource} from '../src/presentation/ArchiveGeneralText.mjs';
 import {domainInlineParts} from '../src/presentation/DomainInlineText.mjs';
 import {historicalPeriod} from '../src/components/archive/DomainPresentation.mjs';
@@ -13,7 +13,8 @@ const translation = read('public/translations/zh-CN/archive-general.json');
 const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()));
 const hasRevision=(kind,source,field='name')=>[...revisions.values()].some(r=>r.kind===kind&&r.field===field&&r.source===source);
 for(const row of revisions.values())assert.equal(text(row.kind,row.source,row.field),row.translation,'Imported revisions must override initial drafts');
-const shardNames=['photos','costumes','cards','skills','items','honors'];
+// The shard list is the one the batches and the generator use.
+const shardNames=Object.keys(shards);
 const shardEntries={};
 for (const name of shardNames) {
   const shard=read(`public/translations/zh-CN/archive-general/${name}.json`);

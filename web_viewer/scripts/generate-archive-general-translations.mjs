@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
-import {sourceUnits,loadGeneralRevisions} from './lib/general-translation-batches.mjs';
+import {sourceUnits,loadGeneralRevisions,shards} from './lib/general-translation-batches.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
 import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../translation/studio/general/photo-drafts.mjs';
@@ -16,6 +16,8 @@ const corpus = archiveGeneralTextCorpus(root);
 const cardDrafts = read('translation/studio/general/card-drafts.json');
 const costumeDescriptions = read('translation/studio/general/costume-descriptions.json');
 const itemExtraDescriptions = read('translation/studio/general/item-descriptions.json');
+const profileDrafts = read('translation/studio/general/profile-drafts.json');
+const PROFILE_KINDS = new Set(['idol-profile', 'unit-profile', 'mobile-status', 'work']);
 const idols = read('public/data/masterdata/idol_unit_dictionary.json').idols;
 const chineseIdols = read('public/translations/zh-CN/entities/idols.json').entries;
 const honorRows = read('public/data/masterdata/domains/honor_catalog.json').entries;
@@ -39,7 +41,9 @@ const entries = {}, missing = [];
 const cornerColors = {'ホワイト':'白色','ブラック':'黑色','グラスグリーン':'草绿','オレンジ':'橙色','スカイブルー':'天蓝','レッド':'红色','イエロー':'黄色','ピンク':'粉色'};
 for (const row of corpus) {
   let translation = null;
-  if (row.kind === 'background-variant') {
+  if (PROFILE_KINDS.has(row.kind)) {
+    translation = profileDrafts[row.kind]?.[row.field]?.[row.source];
+  } else if (row.kind === 'background-variant') {
     translation = backgroundVariantNames[row.source] || photoUnitNames.get(row.source);
   } else if (row.kind === 'background' || row.kind.startsWith('photo-')) {
     translation = (row.field === 'description' ? photoDescriptions : commonNames)[row.source];
@@ -75,12 +79,7 @@ fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', stat
   scope: 'metadata-only', excluded: ['dialogue','unit-story','work-communication','home-dialogue'], entries}, null, 2) + '\n');
 const shardDirectory = path.join(root,'public/translations/zh-CN/archive-general');
 fs.mkdirSync(shardDirectory,{recursive:true});
-const shards = {
-  photos: kind => kind === 'background' || kind === 'background-variant' || kind.startsWith('photo-'),
-  costumes: kind => kind === 'costume', cards: kind => kind === 'card',
-  skills: kind => ['skill','skill-category','center-skill'].includes(kind),
-  items: kind => kind === 'item', honors: kind => kind === 'honor',
-};
+// One shard map for batches and published shards (general-translation-batches.mjs).
 for (const [name, select] of Object.entries(shards)) {
   fs.writeFileSync(path.join(shardDirectory,`${name}.json`),JSON.stringify({schemaVersion:1,status:'draft',
     entries:Object.fromEntries(Object.entries(entries).filter(([kind])=>select(kind)))},null,2)+'\n');

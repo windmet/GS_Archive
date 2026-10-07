@@ -35,6 +35,15 @@ export function archiveGeneralTextCorpus(root) {
     if (!['filters', 'stickers', 'spots', 'scenes', 'frames'].includes(group)) continue;
     for (const row of items) for (const field of ['name', 'description']) add(`photo-${group}`, row.id, field, row[field]);
   }
+  // Profile fields: idol profile, unit introduction, the 通信 room status and work-story labels.
+  const dictionary = load('idol_unit_dictionary.json');
+  for (const idol of dictionary.idols) for (const field of ['hobby', 'specialty', 'former_job', 'birthplace']) add('idol-profile', idol.idol_code, field, idol[field]);
+  for (const unit of dictionary.units) add('unit-profile', unit.unit_code, 'description', unit.description);
+  for (const room of load('mobile_archive_index.json').rooms.personal) add('mobile-status', room.idol_code, 'text', room.profile_text);
+  for (const idol of load('work_story_index.json').idols) {
+    add('work', idol.work_type_id, 'type', idol.work_type_name);
+    for (const story of idol.short_stories) add('work', story.id, 'title', story.title);
+  }
   const backgrounds = load('background_catalog.json').backgrounds;
   for (const [key, row] of Object.entries(backgrounds)) {
     for (const name of row.names || []) add('background', row.resource_id || row.resourceId || key, 'name', name);

@@ -8,7 +8,7 @@ import {validateItemIdolNames} from './item-idol-name-policy.mjs'
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
-export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item',honors:k=>k==='honor'}
+export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k)}
 export function sourceUnits(root) {
   const unique = new Map()
   for (const row of archiveGeneralTextCorpus(root)) {

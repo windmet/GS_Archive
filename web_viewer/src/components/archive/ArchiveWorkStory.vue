@@ -6,7 +6,7 @@
         <div>
           <h2>{{ idol ? name(idol) : '工作剧情' }}</h2>
           <ul v-if="idol" class="story-footprint" aria-label="收录">
-            <li>{{ idol.work_type_name }}</li>
+            <li>{{ archiveNamedText('work', idol.work_type_name, 'type') }}</li>
             <li><b>{{ idol.short_stories.length }}</b>段短剧情</li>
             <li><b>{{ idol.scene_lines.length }}</b>句场景台词</li>
             <li><b>{{ totalVoices }}</b>段语音</li>
@@ -34,13 +34,13 @@
         <li v-for="story in idol.short_stories" :key="story.id" class="story-row work-row">
           <span class="story-row-thumb"><img :src="backgroundUrl(story.background_resource_id)" :alt="locationLabel(story)" loading="lazy" decoding="async" /></span>
           <span class="story-row-copy">
-            <strong>{{ presentProducerAddressingText(story.title) }}</strong>
+            <strong>{{ workTitle(story) }}</strong>
             <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
             <small>{{ [locationLabel(story), `${story.dialogue_count} 段对白`, `${story.voice_count} 段语音`].filter(Boolean).join(' · ') }}</small>
           </span>
           <span class="work-actions">
-            <button v-if="readingByFile.has(story.compiled_file)" class="story-action" :aria-label="`阅读 ${story.title}`" @click="emit('read', story.compiled_file)"><BookOpen :size="15" />阅读</button>
-            <button class="story-icon-action" :disabled="!story.compiled_exists" :aria-label="`播放 ${story.title}`" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
+            <button v-if="readingByFile.has(story.compiled_file)" class="story-action" :aria-label="`阅读 ${workTitle(story)}`" @click="emit('read', story.compiled_file)"><BookOpen :size="15" />阅读</button>
+            <button class="story-icon-action" :disabled="!story.compiled_exists" :aria-label="`播放 ${workTitle(story)}`" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
           </span>
         </li>
       </ul>
@@ -90,7 +90,10 @@ function moveIdol(delta) {
   const next = props.idols[(index + delta + props.idols.length) % props.idols.length]
   emit('select-idol', next.idol_code)
 }
-function shortType(name = '') { return name.replace('のお仕事', '') }
+// Work labels (type and short-story titles) come from the profile overlay; the picker shows the type alone.
+void loadArchiveNames('profiles').catch(() => {})
+function shortType(name = '') { return archiveNamedText('work', name, 'type').replace(/のお仕事$| 工作$/, '') }
+function workTitle(story) { return presentProducerAddressingText(archiveNamedText('work', story.title, 'title')) }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '' }
 // An unnamed location simply goes unmentioned.
 // Locations are background names, already translated with the photo/background overlay.

@@ -11,7 +11,7 @@
     </header>
 
     <section class="unit-description">
-      <p>{{ unit.description }}</p>
+      <p>{{ archiveNamedText('unit-profile', unit.description, 'description') }}</p>
     </section>
 
     <section class="unit-section unit-card-summary" aria-labelledby="unit-cards-title">
@@ -116,6 +116,8 @@
 </template>
 
 <script setup>
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
+void loadArchiveNames('profiles').catch(() => {})
 import { computed } from 'vue'
 import { ChevronRight, Images, Music, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
