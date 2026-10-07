@@ -19,11 +19,8 @@
         <h2>{{ mode === 'unit' ? unitName : idolName }}</h2>
       </div>
       <div class="call-card-lower">
-        <p class="call-card-note">
-          <template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`">
-            <span v-if="part.type === 'text'">{{ part.text }}</span>
-            <img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" />
-          </template>
+        <p class="call-card-note" :class="{ 'is-empty': !roomSubtitle }">
+          <span class="call-card-note-text"><template v-for="(part, index) in roomSubtitleParts" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></span>
         </p>
         <div class="mobile-selector">
           <button title="上一项" @click="moveSelection(-1)"><ChevronLeft :size="18" /></button>
@@ -300,9 +297,12 @@ function timeWindow(topic) {
 .mobile-identity h2 { max-width: 100%; margin: 0; padding: var(--gs-space-1) var(--gs-space-5); border-radius: var(--gs-radius-pill); background: var(--gs-action-bg); color: var(--gs-action-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; overflow-wrap: anywhere; text-align: center; }
 .call-card-lower { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: var(--gs-space-3); padding: var(--gs-space-7) var(--gs-space-5) var(--gs-space-4); background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gs-paper) 82%, transparent) 55%); }
 .is-unit .call-card-lower { background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gs-chrome) 82%, transparent) 55%); }
-.call-card-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-1); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.5; white-space: pre-line; overflow-wrap: anywhere; }
-.call-card-note:empty { display: none; }
-.call-card-note img { width: 20px; height: 20px; object-fit: contain; }
+/* The room's status line: ordinary text with the game's emoji inline, at most three authored lines.
+   Three lines are always reserved and the text sits on their bottom, so the picker below never
+   moves when switching between a one-line and a three-line status. */
+.call-card-note { --note-line: 1.65; display: flex; flex-direction: column; justify-content: flex-end; height: calc(3em * var(--note-line)); margin: 0; overflow: hidden; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: var(--note-line); }
+.call-card-note-text { display: block; white-space: pre-line; overflow-wrap: anywhere; }
+.call-card-note-text img { display: inline-block; width: 1.35em; height: 1.35em; margin-inline: .1em; vertical-align: -.32em; object-fit: contain; }
 .is-unit .call-card-note { color: var(--gs-chrome-ink); }
 .mobile-selector { display: grid; grid-template-columns: var(--gs-control-touch) minmax(0, 1fr) var(--gs-control-touch); align-items: center; gap: var(--gs-space-2); min-width: 0; }
 .mobile-selector > button { display: grid; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: color-mix(in srgb, var(--gs-surface) 72%, transparent); color: var(--gs-ink-2); cursor: pointer; }
