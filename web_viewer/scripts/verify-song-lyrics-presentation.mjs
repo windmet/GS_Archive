@@ -66,7 +66,21 @@ const imports = {
   '../../utils/songPerformanceData.js': { fetchSongBaseTimeline: fetchTimeline },
   '../../utils/songLyrics.js': { authoredSongLyrics, activeSongLyric, sharesSongAudio },
 }
+// The real error note supplies the alert role and wraps the message and retry button.
+const noteFile = 'src/components/archive/ArchiveErrorNote.vue'
+const note = new vm.SourceTextModule(compileScript(parse(read(noteFile), { filename: noteFile }).descriptor,
+  { id: 'lyrics-error-note', inlineTemplate: true }).content, { context })
+const noteImports = { vue: Vue, '@lucide/vue': { CircleAlert: { render: () => null } } }
+const synthetic = (table, specifier) => {
+  assert.ok(Object.hasOwn(table, specifier), `Unexpected production dependency: ${specifier}`)
+  const exports = table[specifier]
+  return new vm.SyntheticModule(Object.keys(exports), function () {
+    for (const [name, value] of Object.entries(exports)) this.setExport(name, value)
+  }, { context })
+}
+await note.link(specifier => synthetic(noteImports, specifier))
 await module.link(specifier => {
+  if (specifier === './ArchiveErrorNote.vue') return note
   assert.ok(Object.hasOwn(imports, specifier), `Unexpected production dependency: ${specifier}`)
   const exports = imports[specifier]
   return new vm.SyntheticModule(Object.keys(exports), function () {
