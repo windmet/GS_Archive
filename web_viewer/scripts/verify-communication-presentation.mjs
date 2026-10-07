@@ -120,11 +120,14 @@ cancellation.cleanup()
 
 // The communication read model names who else is on a call, per call, from the story catalog.
 {
-  const { readFileSync } = await import('node:fs')
+  const { existsSync, readFileSync } = await import('node:fs')
   const read = path => JSON.parse(readFileSync(new URL('../public/data/' + path, import.meta.url), 'utf8'))
+  // compiled/index.json is gitignored corpus and only supplies group titles; CI runs without it.
+  const compiledIndex = () => existsSync(new URL('../public/data/compiled/index.json', import.meta.url)) ? read('compiled/index.json')
+    : (console.log('compiled/index.json not mounted: group titles fall back to source names'), { characters: [], categories: [] })
   const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
   const records = buildMobileRecords({ mobileArchive: read('masterdata/mobile_archive_index.json'),
-    randomTalkPresentation: read('masterdata/random_talk_presentation_index.json'), compiledIndex: read('compiled/index.json'),
+    randomTalkPresentation: read('masterdata/random_talk_presentation_index.json'), compiledIndex: compiledIndex(),
     idolUnit: read('masterdata/idol_unit_dictionary.json'), archiveManifest: read('archive_manifest.json'),
     cardIndex: read('masterdata/card_index.json'), idolEpisode: read('masterdata/idol_episode_index.json'),
     storyCatalog: read('masterdata/story_catalog.json') }, await import('../src/data/idolCommunicationSelectors.js'))

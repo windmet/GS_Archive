@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { parse } from '@vue/compiler-sfc'
 import { parseExpression } from '@babel/parser'
 import { baseParse, parserOptions } from '@vue/compiler-dom'
@@ -12,6 +12,10 @@ import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const json = path => JSON.parse(read(`public/data/${path}`))
+// compiled/index.json is gitignored corpus; it only supplies group titles. Without it (CI) the
+// projection runs with an empty index and every assertion below still applies.
+const compiledIndex = () => existsSync(new URL('../public/data/compiled/index.json', import.meta.url)) ? json('compiled/index.json')
+  : (console.log('compiled/index.json not mounted: group titles fall back to source names'), { characters: [], categories: [] })
 const catalog = json('song_catalog.json')
 const identity = json('masterdata/idol_unit_dictionary.json')
 const manifest = json('archive_manifest.json')
@@ -198,7 +202,7 @@ try {
   const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
   const mobileRecords = buildMobileRecords({
     mobileArchive: json('masterdata/mobile_archive_index.json'), randomTalkPresentation: json('masterdata/random_talk_presentation_index.json'),
-    compiledIndex: json('compiled/index.json'), idolUnit: identity, archiveManifest: manifest, cardIndex: { cards }, idolEpisode: json('masterdata/idol_episode_index.json'),
+    compiledIndex: compiledIndex(), idolUnit: identity, archiveManifest: manifest, cardIndex: { cards }, idolEpisode: json('masterdata/idol_episode_index.json'),
   }, await import('../src/data/idolCommunicationSelectors.js'))
   const idolData = mobileRecords.idolRecords.find(record => record.id === '001tom')
   const unitData = mobileRecords.unitRecords.find(record => record.id === '01jup')
