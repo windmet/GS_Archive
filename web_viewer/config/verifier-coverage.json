@@ -140,7 +140,8 @@
         "verify-studio-animation-state.mjs",
         "verify-studio-composition.mjs",
         "verify-studio-preset-labels.mjs",
-        "verify-terminal-idol-localization.mjs"
+        "verify-terminal-idol-localization.mjs",
+        "verify-translation-strict-v2.mjs"
       ]
     },
     "external": {
@@ -169,14 +170,13 @@
       ]
     },
     "pending": {
-      "reason": "Fails at HEAD. Five assert App.vue source text (rewrite as behaviour checks before splitting App.vue). verify-translation-strict-v2 reads the corpus and checks the 2026-09-29 choice release, whose 399 files were deliberately re-published by 2026-09-30-raw-selection-flow-001 (choice targets repaired); deciding how it should treat superseded files is open.",
+      "reason": "Fails at HEAD: these assert App.vue source text. Rewrite them as behaviour checks before splitting App.vue, then move them into batch.",
       "scripts": [
         "verify-archive-loading-copy.mjs",
         "verify-idol-communication-readiness.mjs",
         "verify-idol-navigation-ux.mjs",
         "verify-song-domain-landing.mjs",
-        "verify-song-playback-audio.mjs",
-        "verify-translation-strict-v2.mjs"
+        "verify-song-playback-audio.mjs"
       ]
     }
   }
