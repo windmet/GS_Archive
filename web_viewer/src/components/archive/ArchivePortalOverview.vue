@@ -123,7 +123,7 @@
         <div class="overview-scope-actions"><button type="button" :aria-pressed="!preferredReference?.actionable" @click="chooseScope('')"><Users :size="18" />全站档案大厅</button><button v-if="savedIdolCode" type="button" @click="chooseScope(savedIdolCode)"><ArchiveIdolAvatar :idol-code="savedIdolCode" :size="28" decorative />我的担当 · {{ idolName(savedIdolCode, idols.find(row=>row.id===savedIdolCode)?.name) }}</button></div>
         <ArchiveIdolPickerPanel compact :idols="idols" :idol-name="idolName" :idol-search="idolSearch" :model-value="preferredReference?.idolCode || ''" @update:model-value="chooseScope" />
       </ArchiveTerminalDialog>
-      <footer class="overview-footer">SideM Archive · 非官方资料存档</footer>
+      <footer class="overview-footer">SideM Archive · 非官方资料存档 · <button type="button" class="overview-footer-link" @click="emit('navigate', 'about')">关于本站</button></footer>
     </div>
   </div>
 </template>
@@ -331,6 +331,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-error { color:#875a40; }
 .overview-error > button { min-height:44px;margin-left:var(--gs-space-4);padding:var(--gs-space-2) var(--gs-space-3);border:1px solid #dbc9bd;border-radius:var(--gs-radius-control);background:#fff;color:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
 .overview-footer { margin-top:var(--gs-space-6);padding:var(--gs-space-5) 0;color:#829387;font-size:var(--gs-text-meta); }
+.overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer; }
 .overview-footprint { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-6);margin:var(--gs-space-5) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .overview-footprint button { min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:inherit; }
 .overview-footprint b { margin-right:var(--gs-space-2);color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }

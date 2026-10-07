@@ -101,6 +101,7 @@
         @open-chat="openHomeChat"
       />
 
+      <ArchiveAbout v-if="view === 'about'" />
       <ArchiveExperiments v-if="view === 'experiments'" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
@@ -722,6 +723,7 @@ const archiveRouteLoaders = {
   collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
   photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
   experiments: () => import('./components/archive/ArchiveExperiments.vue'),
+  about: () => import('./components/archive/ArchiveAbout.vue'),
   chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
   picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
@@ -757,6 +759,7 @@ const ArchiveEventCatalog = defineArchivePage(archiveRouteLoaders.event_catalog)
 const ArchiveCollectionCatalog = defineArchivePage(archiveRouteLoaders.collection_catalog)
 const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
 const ArchiveExperiments = defineArchivePage(archiveRouteLoaders.experiments)
+const ArchiveAbout = defineArchivePage(archiveRouteLoaders.about)
 const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
 const PictureStudio = defineArchivePage(archiveRouteLoaders.picture_studio)
 const ArchiveStoryCatalog = defineArchivePage(archiveRouteLoaders.story_catalog)
@@ -1518,6 +1521,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
   if (view.value === 'experiments') return '工具'
+  if (view.value === 'about') return '关于本站'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
   if (view.value === 'photo_catalog') return '摄影资料'
@@ -2097,7 +2101,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','experiments'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','experiments','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2112,6 +2116,7 @@ function navigateArchiveSection(section) {
   }
   else if (section === 'gashas') openGashaCatalog()
   else if (section === 'experiments') { filterQuery.value = ''; commitView('experiments') }
+  else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'resources') openArchiveStatus()
   else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
 }
@@ -4702,7 +4707,7 @@ async function loadSongDetail(songCode, options = navigation.getLoadOptions?.() 
 function isBootstrapRoute(route) {
   if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['experiments', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['experiments', 'about', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||

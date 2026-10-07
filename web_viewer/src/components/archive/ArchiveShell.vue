@@ -25,6 +25,7 @@
           </div>
         </template>
       </nav>
+      <button type="button" class="archive-sidebar-about" :aria-current="activeSection === 'about' ? 'page' : undefined" @click="emit('navigate', 'about')">关于本站</button>
     </aside>
 
     <ArchivePageChrome v-if="!['portal', 'reader'].includes(activeSection)" class="archive-topbar" :can-go-back="showBack" back-class="archive-back" @back="emit('back')">
@@ -237,6 +238,9 @@ const mobileNavigation = computed(() => {
 }
 .archive-nav-sub button.active { color: var(--gs-chrome-ink-active); font-weight: var(--gs-weight-semibold); }
 .archive-nav-divider { margin: var(--gs-space-4) var(--gs-space-4); border: 0; border-top: 1px solid var(--gs-chrome-hover); }
+/* 关于本站 sits at the foot of the sidebar, quieter than the destinations above it. */
+.archive-sidebar-about { margin: auto var(--gs-space-4) var(--gs-space-5); min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-chrome-ink); font: inherit; font-size: var(--gs-text-meta); text-align: left; cursor: pointer; opacity: .78; }
+.archive-sidebar-about:hover, .archive-sidebar-about[aria-current='page'] { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); opacity: 1; }
 @media (hover: hover) {
   .archive-brand:hover, .archive-nav-link:hover, .archive-nav-sub button:hover { background: var(--gs-chrome-hover); color: var(--gs-chrome-ink-active); }
 }

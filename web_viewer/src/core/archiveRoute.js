@@ -82,6 +82,7 @@ const VALID_VIEWS = new Set([
   'song_detail',
   'chart_lab',
   'experiments',
+  'about',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -150,6 +151,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   // Without a song the chart tool opens on its own song picker, like the Chibi stage.
   chart_lab: { section: 'experiments', required: [] },
   experiments: { section: 'experiments', required: [] },
+  about: { section: 'about', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
   chibi_stage: { section: 'resources', required: [] },
@@ -579,6 +581,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (route.view === 'archive_status') return [home, { label: '资源' }]
+  if (route.view === 'about') return [home, { label: '关于本站' }]
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
