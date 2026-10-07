@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { computed, ref } from 'vue'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-const source = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
-assert.ok(app.includes("else if (section === 'idols') openIdolDirectory()"))
-assert.match(app, /if \(destination === 'profile'\) \{[\s\S]*?openIdolReadModel\(idolCode, \{ captureSource: true, resetContext: true \}\)/,
-  'preferred-idol shortcut must remain a separate action')
+const source = (start, end) => {
+  const from = app.indexOf(start), to = app.indexOf(end, from)
+  assert.ok(from >= 0 && to > from, `Missing production region: ${start}`)
+  return app.slice(from, to)
+}
 
 for (const preferred of [null, { id: '002sht' }]) {
   const views = []
   const state = {
     view: { value: 'idol_detail' }, detailSourceRoute: { value: '' },
+    gashaReadModelStatus: { value: 'old status' },
     filterQuery: { value: 'old query' }, currentCategoryId: { value: 'cards' },
     currentCharacterId: { value: '002sht' }, currentIdolUnitFilter: { value: '01jup' },
     currentGroup: { value: { id: 'old' } }, currentCardId: { value: 'old-card' },
@@ -30,11 +33,34 @@ for (const preferred of [null, { id: '002sht' }]) {
   assert.equal(state.filterQuery.value, '')
   assert.equal(state.currentIdolUnitFilter.value, '')
   assert.equal(state.currentCardId.value, '')
+  assert.equal(state.gashaReadModelStatus.value, '')
+  assert.equal(state.currentGroup.value, null)
+}
+// Execute the real shortcut dispatcher. Its collaborators record destinations;
+// no replacement dispatcher or duplicated decision logic is used in the test.
+{
+  const opened = []
+  const state = {
+    preferredArchiveIdol: { value: { id: '002sht' } },
+    archiveBootstrap: { idols: [{ id: '001tom' }, { id: '002sht' }] },
+    openIdolReadModel: (id, options) => opened.push([id, { ...options }]),
+  }
+  vm.runInNewContext(source('function openPreferredDestination(', 'function openArchivePortal('), state)
+  state.openPreferredDestination('profile')
+  state.openPreferredDestination({ action: 'profile', idolCode: '001tom' })
+  assert.deepEqual(opened, [
+    ['002sht', { captureSource: true, resetContext: true }],
+    ['001tom', { captureSource: true, resetContext: true }],
+  ])
+  state.openPreferredDestination({ action: 'profile', idolCode: 'unknown' })
+  state.preferredArchiveIdol.value = null
+  state.openPreferredDestination('profile')
+  assert.equal(opened.length, 2, 'missing or unknown idols must not navigate')
 }
 {
   const state = {
-    computed: fn => ({ get value() { return fn() } }),
-    currentCategoryId: { value: 'idol' },
+    computed,
+    currentCategoryId: ref('idol'),
     archiveBootstrap: { idols: [
       { id: '001tom', name: '冬馬', unitId: '1' },
       { id: '002sht', name: '翔太', unitId: '1' },

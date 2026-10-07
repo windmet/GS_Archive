@@ -34,7 +34,9 @@
     "verify-floating-overlay-position.mjs",
     "verify-home-portal-visits.mjs",
     "verify-idol-communication-index.mjs",
+    "verify-idol-communication-readiness.mjs",
     "verify-idol-episode-label-presentation.mjs",
+    "verify-idol-navigation-ux.mjs",
     "verify-idol-picker.mjs",
     "verify-idol-stage-light.mjs",
     "verify-idol-story-interface.mjs",
@@ -175,8 +177,6 @@
       "reason": "Fails at HEAD: these assert App.vue source text. Rewrite them as behaviour checks before splitting App.vue, then move them into batch.",
       "scripts": [
         "verify-archive-loading-copy.mjs",
-        "verify-idol-communication-readiness.mjs",
-        "verify-idol-navigation-ux.mjs",
         "verify-song-domain-landing.mjs",
         "verify-song-playback-audio.mjs"
       ]

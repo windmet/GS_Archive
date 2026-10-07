@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createIdolCommunicationReadiness } from '../src/data/idolCommunicationReadiness.js'
+import vm from 'node:vm'
+import { ref, watch, nextTick, effectScope } from 'vue'
+import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
 const deferred = () => {
   let resolve
@@ -51,9 +54,74 @@ await abandoned
 expectState('idle', '')
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-assert.doesNotMatch(app, /idolCommunicationReadiness\.enter\(idolCode\)/,
-  'idol detail must not fetch old communication indexes after its read-model cutover')
-assert.match(app, /watch\(\[view, currentCharacterId\],[\s\S]*?loadIdolDetail\(idolCode\)/)
-assert.doesNotMatch(app.match(/if \(\[([\s\S]*?)\]\.includes\(route\.view\)\)/)?.[1] || '', /'idol_detail'/,
-  'idol detail route should render before communication indexes arrive')
+const bootstrap = { EXTERNAL_STORY_RESOURCES_ENABLED: false }
+vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrap)
+assert.equal(bootstrap.isBootstrapRoute({ view: 'idol_detail', idol: '001tom' }), true,
+  'idol detail must not wait for the legacy archive batch')
+
+const start = app.indexOf('watch([view, currentCharacterId],')
+const end = app.indexOf('\nwatch(cardLayout,', start)
+assert.ok(start >= 0 && end > start, 'production idol-detail watcher must be available')
+const scope = effectScope()
+const loads = []
+const errors = []
+const state = {
+  ref, watch, view: ref('portal'), currentCharacterId: ref(''),
+  idolReadModelDetail: ref(null), idolReadModelStatus: ref(''), pendingIdolNavigation: 0,
+  navigation: createArchiveNavigationCoordinator(),
+  loadIdolDetail: id => {
+    let resolve, reject
+    const promise = new Promise((yes, no) => { resolve = yes; reject = no })
+    loads.push({ id, resolve, reject })
+    return promise
+  },
+  idolCommunicationReadiness: { enter: () => { throw Error('legacy communication fetch is forbidden') } },
+  console: { error: (...args) => errors.push(args) },
+}
+const flush = async () => { await nextTick(); await Promise.resolve(); await Promise.resolve() }
+const enter = async (id, view = 'idol_detail') => {
+  state.currentCharacterId.value = id
+  state.view.value = view
+  await flush()
+}
+try {
+  scope.run(() => vm.runInNewContext(app.slice(start, end), state))
+  await enter('001tom', 'portal')
+  assert.equal(loads.length, 0)
+  await enter('001tom')
+  assert.equal(loads.length, 1, 'entering idol detail requests its bounded leaf')
+  assert.equal(loads[0].id, '001tom')
+  assert.ok(state.idolReadModelStatus.value)
+  await enter('002sht')
+  loads[0].resolve({ id: '001tom' })
+  await flush()
+  assert.equal(state.idolReadModelDetail.value, null, 'stale detail must not publish')
+  loads[1].resolve({ id: '002sht' })
+  await flush()
+  assert.equal(state.idolReadModelDetail.value?.id, '002sht')
+  assert.equal(state.idolReadModelStatus.value, '')
+  await enter('002sht', 'portal')
+  await enter('002sht')
+  assert.equal(loads.length, 2, 'matching cached leaf must not reload')
+  await enter('001tom')
+  loads[2].reject(Error('controlled read failure'))
+  await flush()
+  assert.equal(errors.length, 1)
+  assert.match(state.idolReadModelStatus.value, /重试/)
+  await enter('', 'portal')
+  await enter('001tom')
+  loads[3].resolve({ id: '001tom' })
+  await flush()
+  assert.equal(state.idolReadModelDetail.value?.id, '001tom', 'returning retries a failed leaf')
+  for (const invalidate of [() => state.navigation.invalidate(), () => state.navigation.dispose()]) {
+    await enter('002sht')
+    invalidate()
+    loads.at(-1).resolve({ id: '002sht' })
+    await flush()
+    assert.equal(state.idolReadModelDetail.value?.id, '001tom', 'invalidated navigation must not publish')
+    await enter('', 'portal')
+  }
+} finally {
+  scope.stop()
+}
 console.log('Idol communication readiness utility races and production leaf cutover passed')
