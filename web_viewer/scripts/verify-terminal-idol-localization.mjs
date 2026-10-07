@@ -120,7 +120,11 @@ function withState(component, values) {
 }
 const render = (component, props) => renderToString(createSSRApp(component, props))
 const elementText = (html, tag) => [...html.matchAll(new RegExp(`<${tag}\\b[^>]*>([^]*?)<\\/${tag}>`, 'g'))]
-  .map(match => match[1].trim())
+  .map(match => match[1].replace(/<[^>]*>/g, '').trim())
+// Nested decorative markup (for example the idol color swatch) is not text.
+// Keep descendant text, so a wrong or duplicated name still fails the assertions.
+assert.deepEqual(elementText('<h2>Name<span class="idol-color"></span></h2>', 'h2'), ['Name'])
+assert.deepEqual(elementText('<h2>Name<span>Wrong</span></h2>', 'h2'), ['NameWrong'])
 const decodeHtml = value => value.replace(/&(?:quot|#39|lt|gt|amp);/g, entity => ({
   '&quot;': '"', '&#39;': "'", '&lt;': '<', '&gt;': '>', '&amp;': '&',
 })[entity])
@@ -137,6 +141,7 @@ let renderedLocale, previousRenderedLocale
 // The native dialog's immediate focus watcher runs during SSR; there is no DOM
 // element or audio playback. Supply only its inert focus origin for these renders.
 const previousDocument = globalThis.document
+const previousLocation = globalThis.location
 globalThis.document = { activeElement: null }
 try {
   const { default: Picker } = await server.ssrLoadModule('/src/components/archive/terminal/ArchiveIdolPickerPanel.vue')
@@ -154,6 +159,11 @@ try {
   const idolProps = { idol: profile, events: idolEvents, songs: idolSongs }
   const unitProps = { unit: unitEntry.unit, members: unitEntry.members,
     identity: dictionary, manifest, cardStats: unitEntry.cardStats, eventRelations: unitEntry.eventRelations }
+  globalThis.location = { search: '?maintainer=0' }
+  const readerIdolHtml = await render(Idol, { ...idolProps, ...callbacks })
+  assert.equal(elementText(readerIdolHtml, 'pre').length, 0, 'reader mode does not expose raw technical evidence')
+  // Evidence preservation assertions below explicitly exercise the maintainer view.
+  globalThis.location = { search: '?maintainer=1' }
   async function verifyEntityDetails(expectedName, nameCallbacks = callbacks) {
     let idolState, unitState
     const idolHtml = await render(withState(Idol, state => { idolState = state }), { ...idolProps, ...nameCallbacks })
@@ -242,7 +252,10 @@ try {
       assert.equal(item.evidenceTone, 'derived', 'localizing a name does not promote evidence')
     })
     assert.equal(eventState.rewardCards.value, eventView.rewards.cards)
-    assert.deepEqual(technicalEvidence(html, 'eventId'), eventView.provenance,
+    assert.deepEqual(technicalEvidence(html, 'provenance'), JSON.parse(JSON.stringify({
+      provenance: eventView.provenance, file: eventView.story.entry.file,
+      classification: eventView.story.entry.classification_source,
+    })),
       'the actual source block retains canonical event provenance')
     const firstEpisode = eventView.episodes[0]
     const first = eventView.readingEntries.find(entry => entry.status === 'ready' && entry.source_file === firstEpisode.file)
@@ -262,7 +275,10 @@ try {
       if (failedMedia) value.DomainMediaPreview = withState(Media, { failed: true })
     }), { view, displayIdolName: context.idolDisplayName })
     assert.equal(state.rewardCards.value, view.rewards.cards, 'the reward leaf remains the canonical card array')
-    assert.deepEqual(technicalEvidence(html, 'eventId'), view.provenance)
+    assert.deepEqual(technicalEvidence(html, 'provenance'), JSON.parse(JSON.stringify({
+      provenance: view.provenance, file: view.story.entry.file,
+      classification: view.story.entry.classification_source,
+    })))
     const region = rewardRegion(html)
     const badges = [...region.matchAll(/<span\b[^>]*class="reward-rarity"[^>]*>([^]*?)<\/span>/g)].map(match => decodeHtml(match[1]))
     assert.deepEqual(badges, [...view.rewards.cards, ...(state.exchangeRewards.value?.cards || [])]
@@ -312,14 +328,14 @@ try {
       assert.match(html, /1 位偶像/)
       assert.match(html, /data-idol-code="029ass"/)
       assert.ok(!html.includes('data-idol-code="007kei"'))
-      assert.ok(html.includes(`<strong>${displayed}</strong>`))
+      assert.ok(elementText(html, 'strong').map(decodeHtml).includes(displayed))
       assert.ok(html.includes(`已选：${displayed}`))
       checks++
     }
     const welcome = await render(Welcome, { idols, selectionOnly: true, dataReady: true,
       preferences: { startupIdol: '029ass' }, ...callbacks })
     assert.ok(welcome.includes(`已选：${displayed}`))
-    assert.ok(welcome.includes(`<strong>${displayed}</strong>`), 'Welcome passes the name callback to its picker')
+    assert.ok(elementText(welcome, 'strong').map(decodeHtml).includes(displayed), 'Welcome passes the name callback to its picker')
     assert.match(welcome, /<button[^>]*aria-pressed="true"[^>]*data-idol-code="029ass"/)
     checks++
     const ownerName = context.idolDisplayName('001tom', owner.displayName)
@@ -328,10 +344,10 @@ try {
       assert.equal(displayedOwner.value[key], owner[key], `owner preserves ${key}`)
     }
     const cardHtml = await render(Card, { card, ownerReference: displayedOwner.value, embedded: true })
-    assert.equal(elementText(cardHtml, 'strong').filter(text => text === ownerName).length, 2)
-    for (const location of ['head', 'relation']) {
-      assert.equal((cardHtml.match(new RegExp(`data-archive-focus-id="card-owner:${card.resource_id}:${location}"`, 'g')) || []).length, 1)
-    }
+    assert.equal(elementText(cardHtml, 'strong').map(decodeHtml).filter(text => text === ownerName).length, 1,
+      'card identity shows its canonical owner once')
+    assert.equal((cardHtml.match(new RegExp(`data-archive-focus-id="card-owner:${card.resource_id}:head"`, 'g')) || []).length, 1)
+    assert.ok(cardHtml.includes(`aria-label="查看${ownerName}的偶像资料"`))
     const performers = await render(Song, { song: altessimo, ...callbacks })
     for (const code of ['007kei', '008rei']) {
       assert.ok(performers.includes(`aria-label="查看${context.idolDisplayName(code)}的偶像资料"`))
@@ -383,7 +399,7 @@ try {
   assert.match(empty, /0 位偶像/)
   assert.match(empty, /没有找到符合条件的偶像/)
   const fallback = await render(Picker, { idols, modelValue: '029ass' })
-  assert.ok(fallback.includes(`<strong>${sourceNames['029ass']}</strong>`))
+  assert.ok(elementText(fallback, 'strong').map(decodeHtml).includes(sourceNames['029ass']))
   const unselectedWelcome = await render(Welcome, { idols, selectionOnly: true, dataReady: true,
     preferences: { startupIdol: 'missing' }, ...callbacks })
   assert.ok(unselectedWelcome.includes('请选择一位偶像'))
@@ -490,5 +506,7 @@ try {
   if (renderedLocale) renderedLocale.value = previousRenderedLocale
   if (previousDocument === undefined) delete globalThis.document
   else globalThis.document = previousDocument
+  if (previousLocation === undefined) delete globalThis.location
+  else globalThis.location = previousLocation
   await server.close()
 }
