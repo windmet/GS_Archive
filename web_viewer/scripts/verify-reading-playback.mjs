@@ -15,6 +15,7 @@ import { playbackPreferencesForReadingMode } from '../src/core/ReaderPlaybackPre
 import { createChapterReadingSession } from '../src/core/ChapterReadingPlan.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { storyContentMode, saveStoryContentMode } from '../src/utils/LanguageStore.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url))
 const manifest = JSON.parse(read('public/data/reading/manifest.json'))
@@ -87,6 +88,7 @@ const context = { ...state, navigation, readingPlaybackTarget, readArchiveSource
   chapterReadingSession: createChapterReadingSession({ repository: {}, publish: () => {} }),
   captureActiveArchiveView: () => {},
   primeArchiveRouteComponent: () => {},
+  storyContentMode, saveStoryContentMode,
   syncArchiveRoute: () => { url = buildArchiveUrl(url, state.currentArchiveRoute()) },
   readingSession: createReadingSession({ repository: { manifest: async () => manifest,
     load: async () => ({ status: 'ready', document }) }, publish: value => { state.readingState.value = value } }),

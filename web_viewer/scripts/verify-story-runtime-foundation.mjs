@@ -607,7 +607,7 @@ function verifyPlayerStateRepositories() {
   assert.equal(saved.auto_enabled, true)
   assert.equal(saved.auto_delay_ms, 10000)
   assert.equal(saved.skip_mode, 'all')
-  assert.equal(saved.schema_version, 2)
+  assert.equal(saved.schema_version, 3)
   assert.equal(saved.ui_locale, 'ja-JP')
   assert.equal(saved.story_content_mode, 'bilingual')
   assert.equal(saved.bilingual_primary, 'translation')
@@ -630,6 +630,16 @@ function verifyPlayerStateRepositories() {
     'loading an old v2 payload must rewrite the retired preference out of storage',
   )
 
+  // v3: story text defaults to Chinese; a v2 'original' was the old default and moves to it.
+  assert.equal(new PlayerPreferencesRepository({ storage: memoryStorage({}) }).load().story_content_mode, 'translation')
+  for (const [stored, expected] of [['original', 'translation'], ['bilingual', 'bilingual'], ['translation', 'translation']]) {
+    const v2Storage = memoryStorage({ 'sidem-story-player-preferences': JSON.stringify({ schema_version: 2, story_content_mode: stored, producer_name: 'P' }) })
+    const upgraded = new PlayerPreferencesRepository({ storage: v2Storage }).load()
+    assert.equal(upgraded.story_content_mode, expected, `v2 ${stored}`)
+    assert.equal(upgraded.producer_name, 'P', 'other v2 settings survive the upgrade')
+    assert.equal(JSON.parse(v2Storage.getItem('sidem-story-player-preferences')).schema_version, 3, 'the upgrade is written back')
+  }
+
   const migrationStorage = memoryStorage({
     'sidem-story-player-preferences': JSON.stringify({
       schema_version: 1,
@@ -641,21 +651,21 @@ function verifyPlayerStateRepositories() {
     }),
   })
   const migrated = new PlayerPreferencesRepository({ storage: migrationStorage }).load()
-  assert.equal(migrated.schema_version, 2)
+  assert.equal(migrated.schema_version, 3)
   assert.equal(migrated.ui_locale, 'zh-CN')
   assert.equal(migrated.story_content_mode, 'translation')
   assert.equal(migrated.story_translation_locale, 'zh-CN')
   assert.equal(migrated.bilingual_primary, 'translation')
   assert.equal(migrated.auto_enabled, true)
   assert.equal(migrated.auto_delay_ms, 1200)
-  assert.equal(JSON.parse(migrationStorage.getItem('sidem-story-player-preferences')).schema_version, 2)
+  assert.equal(JSON.parse(migrationStorage.getItem('sidem-story-player-preferences')).schema_version, 3)
 
   const savedLegacy = preferences.save({
     schema_version: 1,
     language_mode: 'BILINGUAL',
     auto_delay_ms: 1400,
   })
-  assert.equal(savedLegacy.schema_version, 2)
+  assert.equal(savedLegacy.schema_version, 3)
   assert.equal(savedLegacy.story_content_mode, 'bilingual')
   assert.equal(savedLegacy.bilingual_primary, 'original')
   assert.equal(savedLegacy.auto_delay_ms, 1400)

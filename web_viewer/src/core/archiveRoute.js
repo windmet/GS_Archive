@@ -381,7 +381,8 @@ export function normalizeArchiveRoute(input = {}) {
   if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
-    route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    // Empty: follow the visitor's saved story-text choice. Only a mode that differs from it is in the URL.
+    route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : ''
     route.readingScope = input.readingScope === 'chapter' ? 'chapter' : ''
     route.readingRev = /^sha256:[a-f0-9]{64}$/.test(input.readingRev || '') ? input.readingRev : ''
     if (!route.reading) route.view = 'story_catalog'
@@ -682,7 +683,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
-    if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
+    if (normalized.readingMode) url.searchParams.set('reading_mode', normalized.readingMode)
     if (normalized.readingScope) url.searchParams.set('reading_scope', normalized.readingScope)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {

@@ -3,7 +3,7 @@ import { setUiLocale, uiLocale } from '../localization/ui/UiLocaleStore.js'
 import { PlayerPreferencesRepository } from '../core/story-runtime/PlayerPreferencesRepository.js'
 
 export { uiLocale }
-export const storyContentMode = ref('original')
+export const storyContentMode = ref('translation')
 export const storyTranslationLocale = ref('zh-CN')
 export const bilingualPrimary = ref('original')
 const producerPreferences = new PlayerPreferencesRepository()
@@ -15,6 +15,14 @@ export function saveProducerName(value) {
 }
 
 // Update only the shared locale; retain story mode, addressing and playback.
+// The reader and the player share one story-text choice; switching it anywhere is remembered.
+export function saveStoryContentMode(mode) {
+  if (!['original', 'translation', 'bilingual'].includes(mode)) return storyContentMode.value
+  const saved = producerPreferences.update({ story_content_mode: mode, bilingual_primary: mode === 'translation' ? 'translation' : 'original' })
+  setStoryLanguagePreferences(saved)
+  return saved.story_content_mode
+}
+
 export function saveArchiveLocale(locale) {
   const saved = producerPreferences.update({ui_locale: locale})
   setUiLocale(saved.ui_locale)

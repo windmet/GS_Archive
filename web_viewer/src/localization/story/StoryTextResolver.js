@@ -4,7 +4,7 @@ const VALID_MODES = new Set(['original', 'translation', 'bilingual'])
 const VALID_PRIMARY = new Set(['original', 'translation'])
 
 const DEFAULT_PREFERENCES = Object.freeze({
-  story_content_mode: 'original',
+  story_content_mode: 'translation',
   story_translation_locale: 'zh-CN',
   bilingual_primary: 'original',
   missing_translation_policy: 'fallback-source',

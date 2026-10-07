@@ -668,7 +668,9 @@ import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferen
 import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
 import { playbackPreferencesForReadingMode } from './core/ReaderPlaybackPreferences.js'
 import {
+  saveStoryContentMode,
   setStoryLanguagePreferences,
+  storyContentMode,
   storyTranslationLocale,
   uiLocale,
 } from './utils/LanguageStore.js'
@@ -1802,7 +1804,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
         ? view.value === 'reader' ? readerCollectionDetail.value : view.value === 'story_collection' ? collectionReadModelDetail.value : null : null
       readingDocumentId.value = route.reading
       readingRowId.value = route.readingRow || ''
-      readingMode.value = route.readingMode || 'original'
+      readingMode.value = route.readingMode || storyContentMode.value
       readingRevision.value = route.readingRev || ''
       readingScope.value = route.readingScope || ''
       chapterReadingSession.close()
@@ -2192,7 +2194,7 @@ function openPictureStudio(key) {
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
   const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
     sourceRoute: returnSourceRoute || buildArchiveSourceQuery(currentArchiveRoute()) }
-  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value, readingScope: source.readingScope ?? context.readingScope ?? '' }, { restoring: false })
+  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingScope: source.readingScope ?? context.readingScope ?? '' }, { restoring: false })
   // Publish the requested route immediately, including while text is loading.
   syncArchiveRoute()
   await pending
@@ -2274,7 +2276,7 @@ function closeStoryReader() {
 
 function returnToReader() {
   const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-    readingMode: readingMode.value, readingRev: readingRevision.value, readingScope:readingScope.value,
+    readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevision.value, readingScope:readingScope.value,
     category: currentEventId.value ? currentCategoryId.value : '',
     unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
     parentView: currentEventId.value ? eventParentView.value : '',
@@ -2363,7 +2365,7 @@ async function openReaderPlayback(rowId, { intent: inherited, route, fullDocumen
 }
 
 function updateReadingMode(mode) {
-  readingMode.value = mode
+  readingMode.value = saveStoryContentMode(mode)
   syncArchiveRoute({ replace: true })
 }
 

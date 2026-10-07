@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { storyContentMode } from '../utils/LanguageStore.js'
 import { ownsArchiveSource } from './archiveRoute.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 
@@ -75,7 +76,7 @@ export function useArchiveNavigationState() {
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-        readingMode: readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
+        readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,

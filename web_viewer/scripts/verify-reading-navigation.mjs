@@ -12,6 +12,7 @@ import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { readerChapterNavigation } from '../src/core/ReaderChapterNavigation.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { storyContentMode, saveStoryContentMode } from '../src/utils/LanguageStore.js'
 
 const route = readArchiveRoute('http://localhost/?view=reader&reading=1_4_001_01_d&reading_mode=bilingual&reading_row=1_4_001_01_d:step-9:text')
 assert.equal(route.view, 'reader')
@@ -19,7 +20,13 @@ assert.deepEqual(readArchiveRoute(buildArchiveUrl('http://localhost/?scenario=ol
 assert.deepEqual(readPortalReturnRoute(buildPortalReturnQuery(route)), route)
 assert.equal(buildArchiveUrl('http://localhost/?reading=x&reading_mode=translation', { view: 'home' }).search, '?view=home')
 assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=../../RAW').view, 'story_catalog')
-assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_mode=bad').readingMode, 'original')
+// No or an invalid reading_mode means "the visitor's saved story-text choice" (empty); explicit modes round-trip.
+assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x&reading_mode=bad').readingMode, '')
+assert.equal(readArchiveRoute('http://localhost/?view=reader&reading=x').readingMode, '')
+assert.equal(buildArchiveUrl('http://localhost/', { view: 'reader', reading: 'x', readingMode: '' }).search, '?view=reader&reading=x')
+for (const mode of ['original', 'translation', 'bilingual']) {
+  assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', { view: 'reader', reading: 'x', readingMode: mode })).readingMode, mode)
+}
 for (const query of [
   'story_type=unit_story&story_section=13&story=1_1_013the_03.json',
   'story_type=birthday&story=1_x_001tom_1_8_001_01.json',
@@ -67,7 +74,7 @@ const context = { ...useArchiveNavigationState(), navigation, readingSession: se
   readerCollectionDetail: { value:null }, loadCollectionDetail: async () => { throw Error('optional directory unavailable') },
   chapterReadingState: { value:null }, chapterReadingSession: createChapterReadingSession({ repository, publish: () => {} }),
   readingPlaybackNotice: { value: '' }, currentScenario: { value: { old: true } }, loading: { value: true }, loadingPurpose: { value: 'archive-data' },
-  captureActiveArchiveView: () => {}, primeArchiveRouteComponent: () => {} }
+  captureActiveArchiveView: () => {}, primeArchiveRouteComponent: () => {}, storyContentMode, saveStoryContentMode }
 context.playbackController = { reset: () => { context.currentScenario.value = null } }
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const bootstrapContext = { EXTERNAL_STORY_RESOURCES_ENABLED: false }
@@ -183,4 +190,18 @@ const display = resolveStoryText({ source: 'text', speaker: readingPresentationS
   entityNames: { 'zh-CN': { '047shu': 'must not reveal' } }, preferences: { story_content_mode: 'translation' } })
 assert.equal(display.speaker.display, '？？？')
 assert.equal(unknown.speaker.entityId, '047shu')
+// Switching the reader's language is the site-wide story-text choice: it is saved, and a mode equal
+// to the saved choice stays out of the URL. Runs App.vue's own updateReadingMode (storage writes are
+// covered by the preferences repository checks).
+{
+  const syncs = []
+  const modeContext = { readingMode: { value: storyContentMode.value }, saveStoryContentMode, syncArchiveRoute: options => syncs.push(options) }
+  vm.runInNewContext(app.match(/function updateReadingMode\([^]*?\n\}/)[0], modeContext)
+  modeContext.updateReadingMode('original')
+  assert.equal(storyContentMode.value, 'original', 'the reader choice becomes the saved story-text mode')
+  assert.equal(modeContext.readingMode.value, 'original')
+  assert.equal(syncs.length, 1)
+  modeContext.updateReadingMode('translation')
+  assert.equal(storyContentMode.value, 'translation')
+}
 console.log('Reading navigation verified: route round trips, portal return, stale success/error, page states and identity privacy')

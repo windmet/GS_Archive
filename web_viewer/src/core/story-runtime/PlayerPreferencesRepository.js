@@ -1,10 +1,11 @@
 const STORAGE_KEY = 'sidem-story-player-preferences'
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 
 export const DEFAULT_PLAYER_PREFERENCES = Object.freeze({
   schema_version: SCHEMA_VERSION,
   ui_locale: 'zh-CN',
-  story_content_mode: 'original',
+  // Story text defaults to the Chinese translation; segments without one fall back to the source.
+  story_content_mode: 'translation',
   story_translation_locale: 'zh-CN',
   producer_name: '',
   bilingual_primary: 'original',
@@ -82,6 +83,12 @@ function migrateV1(input) {
   })
 }
 
+// v2 stored 'original' whenever any preference was saved, so it cannot tell a choice from the old
+// default. v3 makes Chinese the default; a v2 'original' moves to it, other modes are kept.
+export function migrateV2PlayerPreferences(input) {
+  return normalize({ ...input, story_content_mode: input?.story_content_mode === 'original' ? 'translation' : input?.story_content_mode })
+}
+
 export class PlayerPreferencesRepository {
   constructor({ storage, key = STORAGE_KEY } = {}) {
     if (storage === undefined) {
@@ -96,8 +103,8 @@ export class PlayerPreferencesRepository {
       const raw = this.storage?.getItem?.(this.key)
       if (!raw) return clone(DEFAULT_PLAYER_PREFERENCES)
       const parsed = JSON.parse(raw)
-      if (parsed?.schema_version === 1) {
-        const migrated = migrateV1(parsed)
+      if (parsed?.schema_version === 1 || parsed?.schema_version === 2) {
+        const migrated = parsed.schema_version === 1 ? migrateV1(parsed) : migrateV2PlayerPreferences(parsed)
         try { this.storage?.setItem?.(this.key, JSON.stringify(migrated)) } catch (_) {}
         return clone(migrated)
       }
