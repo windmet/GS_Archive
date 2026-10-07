@@ -33,3 +33,5 @@
 - 卡片归属按当前单一身份入口检查文本、canonical focus id 和可访问名称，不再要求已移除的重复入口。
 
 主检出 SSR 验证通过。隔离 LF 检出因缺少完整语料（先缺 compiled/index，补充 646 KiB 索引后仍缺 photo costume 证据）不能执行此 corpus 检查；未复制媒体库，不声称有干净检出通过记录。该限制与前述 105 项 source batch 通过是两套不同证据。
+
+主检出旁的临时检查副本把真实名称回调改为 `WRONG NAME` 后，生产 SSR 名字断言确实失败；未修改产品文件，临时脚本已删除。日志：上述审计目录的 `terminal-wrong-name-mutation.log`。
