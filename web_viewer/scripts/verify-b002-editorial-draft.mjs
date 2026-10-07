@@ -14,6 +14,7 @@ const drafts = [
   { dir: 'B005-unit-story-r33-edited-20261007', documents: 86, units: 995 },
   { dir: 'B006-unit-story-r33-edited-20261007', documents: 88, units: 999 },
   { dir: 'B007-unit-story-r33-edited-20261007', documents: 81, units: 997 },
+  { dir: 'B008-unit-story-r33-edited-20261007', documents: 83, units: 997 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
