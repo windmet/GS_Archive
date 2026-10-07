@@ -116,6 +116,10 @@ assert.match(san('わたなべさんとしんげんさん', '渡边和信玄先�
 assert.equal(san('またたくさんのお客さん、皆さん、スタッフさん', '还有很多客人、大家、工作人员'), null)
 assert.equal(san('サンキュー！　お前さんたち', 'Thank you！你们几个'), null)
 assert.equal(san('にゃこさんと番長さん、賢アニさん', '喵子和番长、贤哥'), null)
+// B003 false positives: old man, roles, かのん's animal words, 賛成 in kana.
+assert.equal(san('おじいさんとじいさん、トレーナーさん、主催者さん', '老爷爷和老头、指导老师、主办方'), null)
+assert.equal(san('うさぎさんとひよこさん。かのんもさんせい！', '小兔子和小鸡。花音也赞成！'), null)
+assert.match(san('おーい、享介さんよぉ！', '喂——，享介！'), /dropped \(0\/1\)/u)
 assert.equal(san('先生、行こう！', '先生，我们走！'), 'せんせい rendered as 先生')
 assert.equal(san('先生、行こう！', '老师，我们走！'), null)
 assert(checkStudioRows([{ rid: 'T1', kind: 'dialogue', source_text: '恭二さん。', protected_source: '恭二さん。' }],
