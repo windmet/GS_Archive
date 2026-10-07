@@ -104,8 +104,11 @@ node readmodels/tools/verify_artifacts.mjs <暂存目录>/rm-20261007
 
 ```
 cp <暂存目录>/rm-20261007/bootstrap.inline.json readmodels/bootstrap.inline.json
-git add readmodels/bootstrap.inline.json && git commit -m "chore: inline bootstrap follows the 2026-10-07 read-model"
+node scripts/generate-collection-browse.mjs --models <暂存目录>/rm-20261007
+node scripts/verify-ipad-collection-repair.mjs
+git add readmodels/bootstrap.inline.json config/collection-browse.v1.json && git commit -m "chore: inline bootstrap and collection sidecar follow the 2026-10-07 read-model"
 ```
+- [ ] `config/collection-browse.v1.json` 的 `release` 必须和新的 bootstrap 一致，否则 `verify-ipad-collection-repair`（现在已在 CI 的批量检查里）会失败。10-05 那次重建就漏了这一步。
 （如果内容没变化，就跳过提交。）
 
 ---
