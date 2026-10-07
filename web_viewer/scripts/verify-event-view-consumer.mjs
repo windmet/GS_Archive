@@ -27,6 +27,7 @@ function setup() {
   ]);
   const calls = [];
   const context = vm.createContext({
+    navigation: { getLoadOptions: () => ({}) },
     loadEventCatalog: async () => [{ id: "410001", detail: { url: "detail" } }],
     readModelClient: {
       load: async (descriptor, options) => {
