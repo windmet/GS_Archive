@@ -769,3 +769,9 @@
 .studio-snap-toggle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 44px; color: var(--gs-ink); font-size: var(--gs-text-ui); }
 .studio-snap-toggle input { width: 18px; height: 18px; margin: 0; accent-color: var(--gs-mint); }
 .studio-snap-toggle small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+/* Touch screens have no wheel, Shift, Alt or arrow keys: show the gestures there instead. */
+.studio-page .hint-touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .studio-page .hint-touch { display: revert; }
+  .studio-page .hint-pointer { display: none; }
+}

@@ -51,7 +51,7 @@
       <div class="studio-preview-column">
         <section class="domain-panel studio-canvas-panel" aria-label="摄影预览">
           <div ref="canvas" class="studio-canvas" data-studio-rotation="0"></div>
-          <details class="studio-canvas-help"><summary><CircleHelp :size="15" />操作提示</summary><p>拖动所选对象移动；四角缩放，圆柄旋转；双指缩放、旋转。</p><p>滚轮调整对象大小，Shift＋滚轮旋转。方向键微调，＋/− 调整大小，[ / ] 旋转；Esc 取消拖动。</p></details>
+          <details class="studio-canvas-help"><summary><CircleHelp :size="15" />操作提示</summary><p class="hint-touch">点一下选中对象，拖动移动；拖四角缩放，拖圆柄旋转；两指捏合可同时缩放和旋转。</p><p class="hint-pointer">拖动所选对象移动；四角缩放，圆柄旋转。</p><p class="hint-pointer">滚轮调整对象大小，Shift＋滚轮旋转。方向键微调，＋/− 调整大小，[ / ] 旋转；Esc 取消拖动。</p></details>
           <output v-if="interaction && (interaction.mode === 'rotate' || interaction.aligned || interaction.snapped)" class="studio-interaction-feedback">{{ interaction.mode === 'rotate' || interaction.snapped ? `${interaction.rotation}°${interaction.snapped ? ' · 已吸附' : ''}` : '已对齐' }}</output>
           <output v-else-if="slowRender" class="studio-interaction-feedback" role="status">正在载入素材…</output>
           <Teleport :to="toolsHost || 'body'" :disabled="!focused || !toolsHost">
@@ -66,7 +66,7 @@
           <p role="status" class="studio-status">
             {{ rendering ? "正在更新构图…" : status }}
           </p>
-          <label class="studio-snap-toggle"><input v-model="snapOn" type="checkbox" />吸附<small>对齐线与 0°/90° 旋转；按住 Alt 临时关闭</small></label>
+          <label class="studio-snap-toggle"><input v-model="snapOn" type="checkbox" />吸附<small class="hint-pointer">对齐线与 0°/90° 旋转；按住 Alt 临时关闭</small><small class="hint-touch">对齐线与 0°/90° 旋转；需要自由摆放时关闭</small></label>
           <div class="studio-toolbar">
             <button
               type="button"
