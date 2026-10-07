@@ -187,9 +187,9 @@
           <span>{{ uiText('player.settings.skipRange') }}</span>
           <select v-model="skipMode" @change="saveSkipMode"><option value="readOnly">{{ uiText('player.settings.readOnly') }}</option><option value="all">{{ uiText('player.settings.all') }}</option></select>
         </label>
-        <div class="menu-setting">
+        <div v-if="$slots['language-switch']" class="menu-setting">
           <span>{{ uiText('player.settings.uiLanguage') }}</span>
-          <ArchiveLanguageSwitch />
+          <slot name="language-switch" />
         </div>
         <label class="menu-setting"><span>{{ uiText('player.settings.producerName') }}</span><input class="producer-name-input" :value="producerName" type="text" autocomplete="off" :placeholder="uiText('player.settings.producerNamePlaceholder')" @input="saveProducerName($event.target.value)" /></label>
         <button @click="uiHidden = true; menuOpen = false"><EyeOff :size="19" /><span>{{ uiText('player.settings.hideUi') }}</span></button>
@@ -224,7 +224,6 @@
 </template>
 
 <script setup>
-import ArchiveLanguageSwitch from '../components/archive/ArchiveLanguageSwitch.vue'
 import { setStoryRuntimePaused, transferOverlayPause } from './story-runtime/StoryPausePolicy.js'
 import { usePlayerSession } from '../composables/PlayerSession.js'
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount, onUnmounted, reactive, nextTick, defineAsyncComponent } from 'vue'
@@ -238,7 +237,6 @@ import SynopsisUI from '../components/SynopsisUI.vue'
 import TextTimeUI from '../components/TextTimeUI.vue'
 import StoryBacklog from '../components/StoryBacklog.vue'
 import { BookOpenText, Eye, EyeOff, FastForward, LogOut, Play, SkipForward, X } from '@lucide/vue'
-import { presentIdolEpisodeLabel } from '../presentation/idolEpisodeLabel.js'
 import PlayerEpisodePicker from '../components/player/PlayerEpisodePicker.vue'
 import PlayerMenuPanel from '../components/player/PlayerMenuPanel.vue'
 import PlayerTopBar from '../components/player/PlayerTopBar.vue'
@@ -265,7 +263,7 @@ import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { getStepSceneState, projectStepSceneState } from './story-runtime/StepSceneState.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
-import { playerLanguageStatus } from '../presentation/PlayerLanguageStatus.js'
+import { playerLanguageStatus } from '../components/player/PlayerLanguageStatus.js'
 import { ReadProgressRepository, createReadKey } from './story-runtime/ReadProgressRepository.js'
 import { PlaybackModeController } from './story-runtime/PlaybackModeController.js'
 import { releaseSoakRecorder } from './story-runtime/ReleaseSoakRecorder.js'
@@ -285,6 +283,8 @@ const props = defineProps({
   endStep: { type: Number, default: null },
   nextTarget: { type: Object, default: null },
   positionLabel: { type: String, default: '' },
+  // The host formats episode labels; the player kernel does not know archive presentation.
+  formatEpisodeLabel: { type: Function, default: label => label },
   returnLabel: { type: String, default: '返回来源目录' },
   hasNextEpisode: { type: Boolean, default: false },
   continuousPlayback: { type: Boolean, default: false },
@@ -408,7 +408,7 @@ const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
 const completionDismissed = ref(false)
 let automaticNextRequested = false
-const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${presentIdolEpisodeLabel({ sourceName: props.nextTarget.label, format:'player' })}` : '')
+const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${props.formatEpisodeLabel(props.nextTarget.label)}` : '')
 function requestNextEpisode({ automatic = false } = {}) {
   if (props.transitionPending || (automatic && automaticNextRequested)) return
   if (automatic) automaticNextRequested = true

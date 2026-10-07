@@ -1,14 +1,14 @@
 import { computed, ref } from 'vue'
 
-import { presentIdolEpisodeLabel } from '../presentation/idolEpisodeLabel.js'
-const queueEntry = ({ file, startStep, endStep, id, label, exists }) => ({ file, startStep, endStep, id, label: presentIdolEpisodeLabel({ sourceName: label }), exists })
+const queueEntry = formatLabel => ({ file, startStep, endStep, id, label, exists }) => ({ file, startStep, endStep, id, label: formatLabel(label), exists })
 const entryKey = entry => JSON.stringify([entry.id, entry.file, entry.startStep ?? null, entry.endStep ?? null])
 const boundary = value => Number(value) > 0 ? Number(value) : null
 
 /** Owns queue membership and cursor. Product pages provide ordered episodes;
  * navigation owns loading, return routes, and superseding asynchronous work.
+ * The host supplies the label presentation; the kernel keeps source labels otherwise.
  */
-export function useEpisodeQueue() {
+export function useEpisodeQueue({ formatLabel = label => label } = {}) {
   const entries = ref([]), cursor = ref(-1)
   const revision = ref(0)
   const current = computed(() => entries.value[cursor.value] || null)
@@ -20,7 +20,7 @@ export function useEpisodeQueue() {
   function clear() { entries.value = []; cursor.value = -1; revision.value++ }
   function start(episodes, index) {
     if (!Number.isInteger(index) || !episodes[index]?.file) { clear(); return null }
-    entries.value = episodes.map(queueEntry)
+    entries.value = episodes.map(queueEntry(formatLabel))
     if (new Set(entries.value.map(entryKey)).size !== entries.value.length) { clear(); throw Error('Ambiguous episode queue identity') }
     cursor.value = index
     revision.value++

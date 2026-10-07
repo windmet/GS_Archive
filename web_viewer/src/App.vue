@@ -540,7 +540,10 @@
       @ready="onPlayerReady"
       @next-episode="playNextEpisode"
       @update:continuous-playback="playbackController.setContinuous($event)"
-    />
+      :format-episode-label="playerEpisodeLabel"
+    >
+      <template #language-switch><ArchiveLanguageSwitch /></template>
+    </StoryViewer>
 
     <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
     </PlayerSessionShell>
@@ -590,6 +593,7 @@
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
 import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
 import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
+import ArchiveLanguageSwitch from './components/archive/ArchiveLanguageSwitch.vue'
 import {eventResources, storyEventResources} from './data/eventResourceGraph.js'
 import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
@@ -601,6 +605,7 @@ import { cardAttribute, storyMatchesIdol } from './presentation/CatalogIdolScope
 import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
 import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
+import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
@@ -1024,7 +1029,9 @@ const playbackController = useStoryPlaybackController({
   preloadAssets: (plan, progress, options) => preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: restorePlaybackDestination, resolveQueue: loadPlayerQueue,
   resolveReaderSource: resolveReaderContinuationSource,
+  queue: useEpisodeQueue({ formatLabel: label => presentIdolEpisodeLabel({ sourceName: label }) }),
 })
+const playerEpisodeLabel = label => presentIdolEpisodeLabel({ sourceName: label, format: 'player' })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
   preloadStatus, playbackBuffering, playbackReadiness } = playbackController
 const playerSessionOpen = computed(() => view.value === 'player' || Boolean(playbackController.pendingEntry.value))

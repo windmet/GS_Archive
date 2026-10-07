@@ -20,7 +20,7 @@ import {
 } from '../src/localization/story/TranslationRepository.js'
 import { resolveText } from '../src/utils/TextHelper.js'
 import { playbackPreferencesForReadingMode } from '../src/core/ReaderPlaybackPreferences.js'
-import { playerLanguageStatus } from '../src/presentation/PlayerLanguageStatus.js'
+import { playerLanguageStatus } from '../src/components/player/PlayerLanguageStatus.js'
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 import { verifyChatStampIdentity } from './verify-player-communication-ui.mjs'
 
