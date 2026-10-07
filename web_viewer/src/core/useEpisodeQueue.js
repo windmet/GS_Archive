@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 
-const queueEntry = formatLabel => ({ file, startStep, endStep, id, label, exists }) => ({ file, startStep, endStep, id, label: formatLabel(label), exists })
+const queueEntry = formatLabel => ({ file, startStep, endStep, id, label, name, exists }) => ({ file, startStep, endStep, id, label: formatLabel(label || name), exists })
 const entryKey = entry => JSON.stringify([entry.id, entry.file, entry.startStep ?? null, entry.endStep ?? null])
 const boundary = value => Number(value) > 0 ? Number(value) : null
 

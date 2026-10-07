@@ -1,8 +1,11 @@
 import assert from 'node:assert/strict'
 import { ref } from 'vue'
+import { readFileSync } from 'node:fs'
+import { buildIdolStoryPage } from '../src/data/idolCommunicationSelectors.js'
+import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
-import { queueEpisodeLabel } from '../src/presentation/idolEpisodeLabel.js'
+import { queueEpisodeLabel, playerEpisodeLabel } from '../src/presentation/idolEpisodeLabel.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
@@ -23,6 +26,24 @@ function setup(overrides = {}) {
   return { state, navigation, controller, requests, writes, returns, errors, reply }
 }
 const pickerEpisodes = [{id:'one',file:'one.json',label:'エピソード1'}, {id:'two',file:'two.json',label:'エピソード2'}, {id:'three',file:'three.json',label:'エピソード3'}]
+{
+  const read = name => JSON.parse(readFileSync(new URL(`../public/data/masterdata/${name}.json`, import.meta.url), 'utf8'))
+  const page = buildIdolStoryPage(read('idol_episode_index'), {},
+    buildStoryCatalog(read('story_catalog'), read('story_presentation_index')), {}, '001tom')
+  const episodes = page.sections.find(section => section.id === 20101).episodes.filter(episode => episode.exists && episode.file)
+  assert.equal(episodes[1].id, 2010102)
+  assert.equal(episodes[1].name, 'エピソード2')
+  const t = setup()
+  const initial = t.controller.startQueue(episodes, 0, 'idol_story_archive')
+  t.reply(); await initial
+  assert.equal(playerEpisodeLabel(t.controller.nextTarget.value.label), 'EP02', 'real personal-story next target uses its episode name, not numeric id')
+  t.controller.reset()
+  const queue = useEpisodeQueue({ formatLabel: queueEpisodeLabel })
+  assert.ok(queue.restore(episodes, episodes[0].file, episodes[0]))
+  assert.equal(playerEpisodeLabel(queue.peekNext().label), 'EP02', 'restored queue uses the same name fallback')
+  queue.start([{ ...episodes[0], label: 'Explicit label' }], 0)
+  assert.equal(queue.current.value.label, 'Explicit label', 'explicit labels retain priority over names')
+}
 {
   const t=setup()
   const initial=t.controller.startQueue(pickerEpisodes,0,'story_collection',{entryIntent:'chapter'})
