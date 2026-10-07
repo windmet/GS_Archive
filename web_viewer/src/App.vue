@@ -448,6 +448,7 @@
         :selected-unit="currentArchiveUnitCode"
         :mode="currentMobileMode"
         :focused-scenario-id="currentMobileScenarioId"
+        :idol-name-from-source="idolDisplayNameFromSource"
         @select-idol="selectMobileIdol"
         @select-unit="selectMobileUnit"
         @update:mode="setMobileMode"
@@ -1643,6 +1644,14 @@ function idolTranslatedName(id) {
     entityId: id,
     locale: storyTranslationLocale.value,
   })?.name || ''
+}
+
+// A source (Japanese) idol name as it appears inside game text, shown in the reader's language.
+const idolCodeBySourceName = computed(() => new Map(Object.entries(bootstrapIdolDictionary.by_idol_code || {})
+  .map(([code, row]) => [String(row.display_name || '').replace(/\s+/g, ''), code])))
+function idolDisplayNameFromSource(sourceName) {
+  const code = idolCodeBySourceName.value.get(String(sourceName || '').replace(/\s+/g, ''))
+  return code ? idolDisplayName(code, sourceName) : sourceName
 }
 
 function idolDisplayName(id, fallbackSourceName = '') {

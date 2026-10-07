@@ -137,6 +137,8 @@
 </template>
 
 <script setup>
+import { presentMissionText } from '../../presentation/missionText.js'
+import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -160,6 +162,8 @@ const props = defineProps({
   selectedUnit: { type: String, default: '' },
   mode: { type: String, default: 'personal' },
   focusedScenarioId: { type: [String, Number], default: '' },
+  // Source (Japanese) idol name -> the name in the reader's language; App's idol dictionary.
+  idolNameFromSource: { type: Function, default: source => source },
 })
 const emit = defineEmits(['select-idol', 'select-unit', 'update:mode', 'play', 'play-random-topic', 'open-card', 'open-idol-story'])
 
@@ -246,7 +250,8 @@ function unlockText(unlock) {
   if (story) return `「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
-  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
+  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
+    ? presentMissionText(unlock.text, { locale: uiLocale.value, name: props.idolNameFromSource }) : '开放条件待确认'
 }
 function unlockTitle(unlock) {
   const card = unlockCard(unlock)
@@ -255,7 +260,8 @@ function unlockTitle(unlock) {
   if (story) return `个人故事 · ${chapterLabel(story.sectionName)}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
-  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind) ? unlock.text : '开放条件待确认'
+  return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
+    ? presentMissionText(unlock.text, { locale: uiLocale.value, name: props.idolNameFromSource }) : '开放条件待确认'
 }
 // Only calls carry a real title; a chat's scenario title is an internal label or the mission
 // that opens it, so chats keep their first line as the heading.
