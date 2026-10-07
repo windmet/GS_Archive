@@ -116,7 +116,7 @@ git commit -m "chore: bind the 2026-10-07 read-model release"
 ```
 - [ ] 四个文件里的 release 都等于新 bootstrap 的 `release`。
 - [ ] `git diff readmodels/contracts/routes.json` 只有 `release` 和 `note` 两行变化。
-- [ ] 若 `portal_card_facets.json` 除 release 外还有大量变化，先停下回报（说明卡片数据变了，不只是重新绑定）。
+- [ ] `portal_card_facets.json`：卡片详情文件里本身带 release，所以 826 个 `detailSha256` 会全部变化，这是正常的。要核对的是：把详情里的 release 换回旧值后哈希全部吻合，且每张卡的属性不变（2026-10-07 已按此核对，证据 `.analysis/release-20261007/facet-binding-comparison.json`）。有任何一张对不上才停下回报。
 
 ---
 
