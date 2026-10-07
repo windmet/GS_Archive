@@ -1,8 +1,8 @@
 import fs from 'node:fs'
 import assert from 'node:assert/strict'
-import {createHash} from 'node:crypto'
+import {editorialSourceHash} from './lib/editorial-source-hash.mjs'
 const index=JSON.parse(fs.readFileSync('public/data/editorial/story-search-localization.json'))
-for(const [file,hash] of Object.entries(index.sources))assert.equal(createHash('sha256').update(fs.readFileSync(file)).digest('hex'),hash,`Stale search localization: ${file}`)
+for(const [file,hash] of Object.entries(index.sources))assert.equal(editorialSourceHash(fs.readFileSync(file)),hash,`Stale search localization: ${file}`)
 const manifest=JSON.parse(fs.readFileSync('public/data/reading/manifest.json')).entries
 const audit=new Map(JSON.parse(fs.readFileSync('config/translation-audit/stories.json')).map(row=>[row.id,row]))
 for(const [file,status] of Object.entries(index.rows)){

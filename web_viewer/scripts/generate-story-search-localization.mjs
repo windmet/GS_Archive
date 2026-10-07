@@ -1,5 +1,5 @@
 import fs from 'node:fs'
-import {createHash} from 'node:crypto'
+import {editorialSourceHash} from './lib/editorial-source-hash.mjs'
 const files=['public/data/reading/manifest.json','config/translation-audit/stories.json','public/data/masterdata/story_catalog.json']
 const bytes=files.map(file=>fs.readFileSync(file))
 const [manifest,audit,catalog]=bytes.map(value=>JSON.parse(value))
@@ -12,6 +12,6 @@ for(const entry of catalog.entries){
  const complete=translated>0&&docs.length>0&&valid.length===docs.length&&valid.every(row=>!row.missing&&!row.stale)
  rows[entry.file]=complete?'translated':translated?'partial':docs.length&&valid.length===docs.length?'original':'unknown'
 }
-const value={sources:Object.fromEntries(files.map((file,i)=>[file,createHash('sha256').update(bytes[i]).digest('hex')])),rows}
+const value={sources:Object.fromEntries(files.map((file,i)=>[file,editorialSourceHash(bytes[i])])),rows}
 fs.writeFileSync('public/data/editorial/story-search-localization.json',JSON.stringify(value)+'\n')
 console.log(Object.values(rows).reduce((counts,status)=>(counts[status]=(counts[status]||0)+1,counts),{}))
