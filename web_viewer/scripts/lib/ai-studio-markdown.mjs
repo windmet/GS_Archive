@@ -139,6 +139,19 @@ export function checkNamedSan(source, translated, trialPolicy = null) {
   return null
 }
 
+// R3.3 §7 punctuation, mechanical part only; ～ vs —— by tone stays a human judgement except calm drawls.
+export function checkPunctuation(source, translated, languageText = translated) {
+  const issues = []
+  if (/(?<!—)—(?!—)|—{3,}/u.test(translated)) issues.push('dash must be ——')
+  if (/…。/u.test(translated)) issues.push('…… followed by 。')
+  if (/‘/u.test(translated.replace(/“[^”]*”/gu, ''))) issues.push('‘’ used as main quote')
+  if (/ー/u.test(languageText)) issues.push('Japanese long mark ー')
+  if (/(?<![A-Za-z])・|・(?![A-Za-z])/u.test(languageText)) issues.push('Japanese middle dot ・')
+  if (/[ぁ-ゖ][ー～〜]+[？?。]*$/u.test(source.trim()) && /—[？?。]*$/u.test(translated.trim()))
+    issues.push('calm drawl should be ～')
+  return issues
+}
+
 export function checkStudioRows(rows, translations, { trialPolicy = null } = {}) {
   const blocking = [], review = []
   for (const row of rows) {
@@ -168,6 +181,7 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
     }
     const honorific = checkNamedSan(row.source_text, translated, trialPolicy)
     if (honorific) review.push(`${row.rid}: ${honorific}`)
+    for (const issue of checkPunctuation(row.source_text, translated, languageText)) review.push(`${row.rid}: ${issue}`)
     const displayLength = Array.from(translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '制作人')).length
     if (row.kind === 'choice' && displayLength > 36) review.push(`${row.rid}: long choice (${displayLength})`)
   }

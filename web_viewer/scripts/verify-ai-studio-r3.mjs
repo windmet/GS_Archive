@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { loadStudioPolicy, projectDocumentContext, studioPolicyManifest, voiceRoster } from './lib/ai-studio-projection.mjs'
-import { renderStudioInput, parseStudioResult, checkStudioRows, checkNamedSan } from './lib/ai-studio-markdown.mjs'
+import { renderStudioInput, parseStudioResult, checkStudioRows, checkNamedSan, checkPunctuation } from './lib/ai-studio-markdown.mjs'
 import { makeQualityRequest, mergeQualityPatch } from './lib/ai-studio-quality.mjs'
 
 const policy = await loadStudioPolicy({ version: 3 })
@@ -116,6 +116,16 @@ assert.match(san('わたなべさんとしんげんさん', '渡边和信玄先�
 assert.equal(san('またたくさんのお客さん、皆さん、スタッフさん', '还有很多客人、大家、工作人员'), null)
 assert.equal(san('サンキュー！　お前さんたち', 'Thank you！你们几个'), null)
 assert.equal(san('にゃこさんと番長さん、賢アニさん', '喵子和番长、贤哥'), null)
+// R3.3 §7 punctuation: mechanical rules flag, B001 reviewed forms pass.
+assert.deepEqual(checkPunctuation('おー！', '哦——！'), [])
+assert.deepEqual(checkPunctuation('ありがとー！', '谢谢你—！'), ['dash must be ——'])
+assert.deepEqual(checkPunctuation('まぁ……。', '哎……。'), ['…… followed by 。'])
+assert.deepEqual(checkPunctuation('『男極KING』', '一起拿下‘男极KING’吧！'), ['‘’ used as main quote'])
+assert.deepEqual(checkPunctuation('「『男極』だ」', '“这是‘男极’”'), [])
+assert.deepEqual(checkPunctuation('おはよー。', '早——。'), ['calm drawl should be ～'])
+assert.deepEqual(checkPunctuation('おはよー。', '早～'), [])
+assert.deepEqual(checkPunctuation('ARROW・B', 'ARROW・B的演唱会'), [])
+assert.deepEqual(checkPunctuation('アイドル大運動会・会場', '偶像大运动会・会场'), ['Japanese middle dot ・'])
 // B003 false positives: old man, roles, かのん's animal words, 賛成 in kana.
 assert.equal(san('おじいさんとじいさん、トレーナーさん、主催者さん', '老爷爷和老头、指导老师、主办方'), null)
 assert.equal(san('うさぎさんとひよこさん。かのんもさんせい！', '小兔子和小鸡。花音也赞成！'), null)
