@@ -9,6 +9,14 @@ export function validateReaderTitles(value) {
   }
   return value
 }
+// Pages without reading entries (the portal) know only the story file. A title unit names its
+// story (story-text:v1:<story>:...), so the story id plus the exact source title still binds it.
+export function readerStoryTitle(index, storyFile, source, locale = 'zh-CN') {
+  if (locale === 'ja-JP' || !index || !source) return source
+  const story = String(storyFile || '').replace(/\.json$/, '')
+  const title = story && index.titles.find(row => row.source === source && row.unit_id.startsWith(`story-text:v1:${story}:`))
+  return title?.text || source
+}
 export function readerTitle(index, entry, source, locale = 'zh-CN') {
   if (locale === 'ja-JP') return source
   const binding = index?.documents?.[entry?.document_id]

@@ -65,6 +65,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
@@ -92,7 +93,9 @@ function moveIdol(delta) {
 function shortType(name = '') { return name.replace('のお仕事', '') }
 function backgroundUrl(id) { return id ? `/assets/bg/${id}.png` : '' }
 // An unnamed location simply goes unmentioned.
-function locationLabel(entry) { return entry.background_name || '' }
+// Locations are background names, already translated with the photo/background overlay.
+void loadArchiveNames('photos').catch(() => {})
+function locationLabel(entry) { return entry.background_name ? archiveNamedText('background', entry.background_name) : '' }
 </script>
 
 <style scoped>
