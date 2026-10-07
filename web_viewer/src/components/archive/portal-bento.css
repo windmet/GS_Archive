@@ -181,3 +181,12 @@
 .is-global-grid .overview-song-list {grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-7);}
 .is-global-grid .overview-song,.is-global-grid .overview-song + .overview-song {border-top:0;border-bottom:1px solid var(--gs-line);}
 }
+/* 担当 hero credit: the unit logo sits above the name, left-aligned with it, so the copy reads
+   unit -> person like a programme credit and stays in one block at the top; the homepage pill keeps
+   the bottom. (The logo used to float between the kana and the pill at 40px, tied to neither.) */
+.overview-identity .overview-identity-copy {display:flex;flex-direction:column;}
+.overview-identity .overview-eyebrow {order:0;}
+.overview-identity .overview-unit-name {order:1;margin:var(--gs-space-3) 0 0;}
+.overview-identity .overview-identity-copy h2 {order:2;margin:6px 0 4px;}
+.overview-identity .overview-kana {order:3;margin:0;}
+.overview-identity .overview-unit-name > img {width:auto;max-width:112px;height:28px;object-fit:contain;object-position:left center;}
