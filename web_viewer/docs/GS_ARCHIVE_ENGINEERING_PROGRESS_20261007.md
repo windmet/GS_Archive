@@ -20,12 +20,27 @@
 - 反向测试在 `.analysis/engineering-20261007/mutations/` 的源代码副本上运行，未修改工作区 App.vue。两个正向基线通过；7 个错误变体均触发断言失败：错误目录目的地、快捷入口丢失来源、旧筛选残留、不请求详情、不发布详情、禁用缓存判断、允许陈旧结果发布。
 - 反向结果：`.analysis/engineering-20261007/mutations/results.json`；本地执行器在 `E:\Web_build\GS_Archive_engineering_20261007\mutate-idol-verifiers.mjs`。
 
+## 4.2 第二批：歌曲音频检查
+
+- `verify-song-playback-audio.mjs` 保留 61 首完整混音的身份、来源哈希、精确 cue、派生证据及实验音轨边界校验；移除过时的 App 全局音频数据、原生 controls 和 CSS 文本匹配。
+- 执行 App 的真实 `currentSongPresentation` 投影及真实 SongPresentation，SSR 渲染真实详情/播放器：56 个普通播放器各使用对应音轨、metadata 预载和播放条，5 个实验播放器优先使用实验入口；缺少音轨时不生成播放器，详情过期时不提供错误音轨。
+- 移入 `batch` 后，在 `36dca2ce` 的干净 LF 检出叠加本批脚本/名单执行 **103/103 通过**。日志：`E:\Web_build\GS_Archive_engineering_20261007\song-audio-batch.log`。
+- 反向测试仅改隔离工作树：陈旧详情、丢失音轨、错误音轨 URL、禁用实验入口、错误预载方式 5 个变体均断言失败，恢复后重新通过。记录：`E:\Web_build\GS_Archive_engineering_20261007\song-audio-mutations\results.json`。
+- 这是数据、生产投影与 SSR 输出验证，不是音频解码、真实播放、布局或 Browser 验收；未改前端运行代码。
+
+## 4.7 terminal 定向修复
+
+- 新访客预期从 Home 修正为 Portal，同时保留显式 Home URL 和已保存 Home 偏好的验证。
+- 原检查还遗漏了 `153d8a1c` 已实现的独立称号导航入口，检查名单补上 `honors`；没有更改导航实现、语料或发布基线文件。
+- 主检出和干净 LF 检出均 **40 项通过**；将新访客改回 Home、忽略显式 Home URL、移除称号入口均被反向测试拦截。
+- 记录：`E:\Web_build\GS_Archive_engineering_20261007\terminal-mutations\results.json`。此脚本仍单独运行，未声称它已进入顶层 verifier batch。
+
 ## 后续与 UI 边界
 
-- 4.2 仍有加载提示、歌曲入口、歌曲音频三个检查待改造；不能把本批当作五项全部完成。
+- 4.2 已完成 3/5，仍有加载提示、歌曲入口两个检查待改造。
 - 4.3 App.vue 逻辑拆分涉及前端并要求前后截图；按最新用户要求先记录，优先推进工具、数据与检查，当前未执行。
 - 4.4 个人故事下一段标签：仍待数据/队列修复与真实数据断言；最终菜单显示属于浏览器验收，不能用源码测试冒充。
-- 4.5 日文巡检入口修复、4.7 的 38 项本地语料检查及 terminal 默认入口断言仍待执行。
+- 4.5 日文巡检入口修复、4.7 的 38 项本地语料检查仍待执行；terminal 默认入口断言已完成上述定向修复。
 - 4.6 页面 lang 与 4.8 问卷/反馈入口保留给用户及 UI 窗口；没有问卷链接，不填写猜测链接。
 
 ## 磁盘事件

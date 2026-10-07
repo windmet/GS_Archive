@@ -37,9 +37,19 @@ test('pinned background does not follow actor/cue',()=>{const entries=[{id:'bg05
 test('pending catalogue does not erase pinned ID',()=>assert.equal(resolveHomeBackground('bg058_photostudio_in_01',[],'bg001',false),'bg058_photostudio_in_01'))
 test('missing scene falls back, does not mutate preference',()=>{const pref='bg058_photostudio_in_01';assert.equal(resolveHomeBackground(pref,[],'bg001',true),'bg001');assert.equal(pref,'bg058_photostudio_in_01')})
 test('cue mode explicitly follows source',()=>assert.equal(resolveHomeBackground('cue',[{id:'bg058'}],'bg001'),'bg001'))
-test('card startup selects Home; explicit route wins',()=>{assert.equal(resolveArchiveStartup('/',{homeMode:'card'}).route.view,'home');assert.equal(resolveArchiveStartup('/?view=home&home_idol=040ren',{homeMode:'card'},['040ren']).route.homeIdol,'040ren')})
+test('new visitor opens Portal regardless of Home appearance',()=>{
+ for(const homeMode of ['card','spine']) {
+  const result=resolveArchiveStartup('/',{homeMode})
+  assert.equal(result.route.view,'portal');assert.equal(result.source,'new-user');assert.equal(result.lightweight,true)
+ }
+})
+test('saved Home preference and explicit Home route remain available',()=>{
+ assert.equal(resolveArchiveStartup('/',{homeMode:'card',startupPage:'home',startupIdol:'040ren'},['040ren']).route.homeIdol,'040ren')
+ const explicit=resolveArchiveStartup('/?view=home&home_idol=040ren',{startupPage:'portal'},['040ren'])
+ assert.equal(explicit.route.view,'home');assert.equal(explicit.route.homeIdol,'040ren');assert.equal(explicit.source,'explicit')
+})
 test('current published portal navigation retained',()=>assert.deepEqual(ARCHIVE_NAVIGATION.map(section=>section.id),
- ['home','stories','songs','idols','cards','gashas','interactions','events','collections','photos','experiments','resources']))
+ ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','photos','experiments','resources']))
 let calls=0
 const fetcher=async()=>{calls++;return{ok:true,text:async()=>JSON.stringify(menu([record]))}}
 await Promise.all([loadTerminalManifest('wallpapers',{retry:true,fetcher}),loadTerminalManifest('wallpapers',{fetcher})]);assert.equal(calls,1);checks++;console.log('PASS catalogue single flight')

@@ -68,6 +68,7 @@
     "verify-song-lyrics-presentation.mjs",
     "verify-song-music-transport.mjs",
     "verify-song-note-rendering.mjs",
+    "verify-song-playback-audio.mjs",
     "verify-song-track-presentation.mjs",
     "verify-speaker-display-names.mjs",
     "verify-spine-atlas-pages.mjs",
@@ -177,8 +178,7 @@
       "reason": "Fails at HEAD: these assert App.vue source text. Rewrite them as behaviour checks before splitting App.vue, then move them into batch.",
       "scripts": [
         "verify-archive-loading-copy.mjs",
-        "verify-song-domain-landing.mjs",
-        "verify-song-playback-audio.mjs"
+        "verify-song-domain-landing.mjs"
       ]
     }
   }
