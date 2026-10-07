@@ -32,7 +32,9 @@ const audit=JSON.parse(fs.readFileSync('config/translation-audit/summary.json','
 assert.equal(audit.general.unique,units.length);assert.equal(audit.reader.documents,stories.length)
 for(const g of audit.groups){assert.equal(g.total,g.draft+g.reviewed+g.final+g.missing+g.stale);if(!g.id.startsWith('story:'))assert.equal(g.total,details.filter(r=>r.kind===g.id).length)}
 assert.equal(audit.groups.filter(g=>g.id.startsWith('story:')).reduce((n,g)=>n+g.total,0),audit.reader.units)
-assert.equal(audit.groups.find(g=>g.id==='story:main').reviewed,993);assert.equal(audit.groups.find(g=>g.id==='story:main').draft,999)
+// Snapshot of the committed audit: reviewed is the B001 baseline; draft moves with each draft release
+// (999 -> 1990 after the 2026-10-07 R3.3 drafts) and must be updated together with the regenerated audit.
+assert.equal(audit.groups.find(g=>g.id==='story:main').reviewed,993);assert.equal(audit.groups.find(g=>g.id==='story:main').draft,1990)
 assert(stories.every(d=>d.url.startsWith('?view=reader&reading=')))
 const liveRevisions=loadGeneralRevisions(process.cwd(),units)
 for(const row of details) {
