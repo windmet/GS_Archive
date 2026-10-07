@@ -18,3 +18,7 @@ export function presentIdolEpisodeLabel({ sourceName = '', kind = '', ordinal = 
   }
   return source
 }
+
+// Host-side formatters handed to the story player kernel (queue entries and the "next" label).
+export const queueEpisodeLabel = label => presentIdolEpisodeLabel({ sourceName: label })
+export const playerEpisodeLabel = label => presentIdolEpisodeLabel({ sourceName: label, format: 'player' })

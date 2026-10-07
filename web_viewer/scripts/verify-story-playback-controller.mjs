@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { ref } from 'vue'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
+import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
+import { queueEpisodeLabel } from '../src/presentation/idolEpisodeLabel.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 
@@ -8,7 +10,8 @@ function setup(overrides = {}) {
   const requests = [], writes = [], returns = [], errors = []
   const state = { ...useArchiveNavigationState(), loading: ref(false), preloadProgress: ref(0) }
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { state.loading.value = false } })
-  const controller = useStoryPlaybackController({ state, navigation,
+  // The host (App.vue) formats queue labels with the same presenter.
+  const controller = useStoryPlaybackController({ state, navigation, queue: useEpisodeQueue({ formatLabel: queueEpisodeLabel }),
     prepare: (file, options) => new Promise((resolve, reject) => requests.push({ file, options, resolve, reject })),
     loadPlayer: async () => {}, preloadAssets: async () => {},
     syncRoute: () => writes.push(state.currentArchiveRoute()),

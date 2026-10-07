@@ -630,7 +630,7 @@ import { useArchivePortalData } from './components/archive/useArchivePortalData.
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
 import { STAGE_LIGHT_TOKENS, idolStageLightProperties } from './presentation/idolStageLight.js'
-import { presentIdolEpisodeLabel } from './presentation/idolEpisodeLabel.js'
+import { presentIdolEpisodeLabel, queueEpisodeLabel, playerEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
 import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import {
@@ -1029,9 +1029,8 @@ const playbackController = useStoryPlaybackController({
   preloadAssets: (plan, progress, options) => preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: restorePlaybackDestination, resolveQueue: loadPlayerQueue,
   resolveReaderSource: resolveReaderContinuationSource,
-  queue: useEpisodeQueue({ formatLabel: label => presentIdolEpisodeLabel({ sourceName: label }) }),
+  queue: useEpisodeQueue({ formatLabel: queueEpisodeLabel }),
 })
-const playerEpisodeLabel = label => presentIdolEpisodeLabel({ sourceName: label, format: 'player' })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
   preloadStatus, playbackBuffering, playbackReadiness } = playbackController
 const playerSessionOpen = computed(() => view.value === 'player' || Boolean(playbackController.pendingEntry.value))
