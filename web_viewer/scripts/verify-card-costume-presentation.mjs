@@ -10,13 +10,15 @@ import * as semantics from '../src/presentation/CardDetailSemantics.js'
 import { reflowArchiveText } from '../src/presentation/ArchiveText.js'
 import { presentProducerAddressingText } from '../src/presentation/ProducerAddressingText.js'
 import { presentCardSkillDescription } from '../src/presentation/CardSkillDescriptionPresenter.js'
-import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
+import * as CardPresentation from '../src/presentation/CardPresentation.js'
+const { cardScenarioTitle } = CardPresentation
 import { cardVoicePreviewStep } from '../src/data/cardVoicePreview.js'
 import * as cardAssets from '../src/utils/CardAssetResolver.js'
 import { getVoiceUrl } from '../src/utils/AssetResolver.js'
 import { archiveText } from '../src/components/archive/useArchiveCardText.js'
 import { gashaText } from '../src/components/archive/useArchiveGashaText.js'
 import { uiLocale } from '../src/localization/ui/UiLocaleStore.js'
+import * as AttributeLabel from '../src/presentation/AttributeLabel.js'
 
 // Real card/translation projections and compiled SFC, with a memory host.
 // CSS visibility, image/media decoding and Browser layout are separate QA.
@@ -213,11 +215,12 @@ const imports = {
   '../../presentation/ProducerAddressingText.js': { presentProducerAddressingText },
   '../../presentation/CardSkillDescriptionPresenter.js': { presentCardSkillDescription },
   '../../presentation/CardDetailSemantics.js': semantics,
-  '../../presentation/CardPresentation.js': { cardScenarioTitle },
+  '../../presentation/CardPresentation.js': { ...CardPresentation },
   '../../data/cardVoicePreview.js': { cardVoicePreviewStep },
   '../../utils/AssetResolver.js': { getVoiceUrl },
   '../../utils/CardAssetResolver.js': cardAssets,
   './useArchiveCardText.js': { archiveText }, './useArchiveGashaText.js': { gashaText },
+  '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',
     'ArchiveTechnicalDetails', 'ArchiveRelationList'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
 }
