@@ -60,7 +60,9 @@ export function createCompressedVoiceCache({
     tracePlayer('voice-http-body', { url, bytes: bytes.byteLength })
     signal.throwIfAborted()
     if (bytes.byteLength < 1000 || /(?:text\/html|application\/xhtml\+xml)/i.test(contentType)) {
-      throw Object.assign(new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`), { diagnostics })
+      throw Object.assign(new Error(`Not an audio file: ${contentType} (${bytes.byteLength} bytes)`), {
+        diagnostics, code: 'VOICE_NOT_AUDIO',
+      })
     }
     if (/^audio\//i.test(contentType)) remember(url, response, bytes, diagnostics)
     return { bytes, diagnostics }

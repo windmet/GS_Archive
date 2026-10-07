@@ -115,7 +115,10 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
               return data
             } catch (error) {
               if (error.diagnostics) attempt.transport = error.diagnostics
-              if (requestSignal.aborted || ![404, 410].includes(error.status) || index + 1 === urls.length) throw error
+              // SPA hosts can return their HTML shell with HTTP 200 for a
+              // missing file. Try the evidenced filename aliases in that case.
+              const unavailable = [404, 410].includes(error.status) || error.code === 'VOICE_NOT_AUDIO'
+              if (requestSignal.aborted || !unavailable || index + 1 === urls.length) throw error
             }
           }
           throw new Error('No voice URL candidate')
