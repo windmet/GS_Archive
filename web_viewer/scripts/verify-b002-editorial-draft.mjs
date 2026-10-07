@@ -6,13 +6,14 @@ import { parseStudioResult, renderStudioInput, checkStudioRows } from './lib/ai-
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { restoreProducerAddressingAfterTranslation, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
 
-// Editorial drafts replay original model output → optional ID remap → logged edits → public overlays.
+// Editorial drafts replay original model output → optional ID remap / metadata row fill → logged edits → public overlays.
 const drafts = [
   { dir: 'B002-main-r31-edited-20261001', documents: 59, units: 999 },
   { dir: 'B003-main-r33-edited-20261007', documents: 63, units: 991 },
   { dir: 'B004-main-r33-edited-20261007', documents: 30, units: 500 },
   { dir: 'B005-unit-story-r33-edited-20261007', documents: 86, units: 995 },
   { dir: 'B006-unit-story-r33-edited-20261007', documents: 88, units: 999 },
+  { dir: 'B007-unit-story-r33-edited-20261007', documents: 81, units: 997 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
@@ -42,6 +43,14 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
     assert.equal(sha256(startText), remap.output_sha256)
     assert.equal(sha256(startText), receipt.remapped_output_sha256)
     assert.notDeepEqual(parseStudioResult(originalBytes.toString('utf8'), ids).errors, [], 'Remap recorded for output that needed none')
+  }
+  // The only permitted row fill: invisible choice metadata the model skipped, copied verbatim from source.
+  for (const fill of receipt.row_fills || []) {
+    const row = batch.rows.find(r => r.rid === fill.rid)
+    assert.equal(row.kind, 'choice_metadata')
+    assert.equal(fill.text, row.source_text)
+    assert(parseStudioResult(startText, ids).missing.includes(fill.rid), `Fill recorded for a row the model returned: ${fill.rid}`)
+    startText = startText.replace(/\n*$/u, `\n| ${fill.rid} | ${fill.text} |\n`)
   }
   const before = parseStudioResult(startText, ids)
   const after = parseStudioResult(editedBytes.toString('utf8'), ids)

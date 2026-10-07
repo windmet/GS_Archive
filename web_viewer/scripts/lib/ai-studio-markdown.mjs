@@ -124,7 +124,7 @@ export function parseStudioResult(markdown, expectedIds) {
 // R3.3: a named さん keeps an honorific (先生／小姐／女士); groups, roles, family and the Producer do not.
 const SAN = /([\p{Script=Han}々ァ-ヶー]{1,8}|[ぁ-ゖ]{2,6})(さん(?!せい|ぽ|ざん|かく)|サン(?!キュ|ド))/gu
 // Kin, roles, shops, groups (おふたりさん), animals and childish さん words are not named persons; サンド is a sandwich.
-const NOT_A_NAME = /^(?:.*(?:皆|みな|客|店員|母|父|兄|姉|叔|祖|奥|前|番長|主催者|プロデューサー|プロダクション|事務所|スタッフ|カメラマン|屋|トレーナー|コーチ|マネージャー|ちゃん|たく|沢山|おやっ|じい|じじ|ばあ|ジイ|ジジ|バア|オッ|おっ|オジ|オバ|アニ|アネ|うさぎ|ひよこ|ねこ|猫|いぬ|くま|ぞう|ふたり)|おはよう|おつかれ|お疲れ|おまえ|おじ|おば|おにい|おねえ|かあ|とう|にい|ねえ)$/u
+const NOT_A_NAME = /^(?:.*(?:皆|みな|客|店員|母|父|兄|姉|叔|祖|奥|前|番長|主催者|プロデューサー|プロダクション|事務所|スタッフ|カメラマン|屋|子|贔屓|芸人|生徒|社長|トレーナー|コーチ|マネージャー|ちゃん|たく|沢山|おやっ|じい|じじ|ばあ|ジイ|ジジ|バア|オッ|おっ|オジ|オバ|アニ|アネ|うさぎ|ひよこ|ねこ|猫|いぬ|くま|ぞう|ふたり)|おはよう|おつかれ|お疲れ|おまえ|おじ|おば|おにい|おねえ|かあ|とう|にい|ねえ)$/u
 export function checkNamedSan(source, translated, trialPolicy = null) {
   const items = trialPolicy?.items || []
   // Frozen さん forms (道流さん, 番長さん) and non-person terms (the cat にゃこ) follow their own entries.
