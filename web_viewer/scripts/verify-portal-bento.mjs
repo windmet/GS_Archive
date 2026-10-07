@@ -56,8 +56,10 @@ assert.notEqual(portalDailyCard(overview.collections.cards,'2026-10-04',1).id,da
 assert.equal(portalDailyCard([],'2026-10-04'),null)
 const gatewayCounts={seasonalCount:index('stories').seasonalCount,workCount:index('stories').workCount,idolStoryCount:bootstrap.idols.length}
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
-assert.equal(gateways.length,6)
-assert.deepEqual(gateways.map(row=>storyGatewayCount(row,stories,gatewayCounts)),[342,49,49,152,44,4])
+// Card stories (342 phone calls) moved to 通信 in 49c90f2d and are no longer a story gateway.
+assert.equal(gateways.length,5)
+assert.ok(!gateways.some(row=>row.id==='card_scenarios'))
+assert.deepEqual(gateways.map(row=>storyGatewayCount(row,stories,gatewayCounts)),[49,49,152,44,4])
 const timeline=portalTimeline([{id:'a',releaseAt:1633046400,subtitle:'date',image:{url:'/assets/a.png'}},{id:'b',releaseAt:1680393600,subtitle:'date',image:{url:'/assets/b.png'}}])
 assert.deepEqual(timeline.map(row=>row.id),['a','b'])
 assert.deepEqual(timeline.map(row=>row.timelineDate),['2021.10.01','2023.04.02'])
