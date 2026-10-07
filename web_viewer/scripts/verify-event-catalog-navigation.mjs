@@ -6,6 +6,7 @@ import { parse, compileScript } from '@vue/compiler-sfc'
 import { DomainRepository } from '../readmodels/runtime/DomainRepository.mjs'
 import { eventResources } from '../src/data/eventResourceGraph.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
+import * as CatalogIdolScope from '../src/presentation/CatalogIdolScope.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
@@ -77,11 +78,15 @@ const renderer = Vue.createRenderer({
 const errors = []
 const componentContext = vm.createContext({ AbortController, console: { ...console, error: (...args) => errors.push(args) } })
 const empty = { render: () => null }
+const passthrough = { inheritAttrs: false, setup: (_, { slots }) => () => slots.default?.() }
 const modules = {
   vue: Vue, '@lucide/vue': { ChevronRight: empty }, './EventResourceImage.vue': { default: empty },
   './DomainPresentation.mjs': { eventKindLabels, historicalDate },
   '../../../readmodels/runtime/DomainRepository.mjs': { DomainRepository },
   '../../data/eventResourceGraph.js': { eventResources },
+  // Real scope filter; child shells render their slot so the filter controls stay under test.
+  '../../presentation/CatalogIdolScope.js': { ...CatalogIdolScope },
+  './ArchiveFilterSheet.vue': { default: passthrough }, './ArchiveCatalogScope.vue': { default: empty },
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveEventCatalog.vue'))
 const module = new vm.SourceTextModule(compileScript(descriptor, { id: 'event-catalog-navigation', inlineTemplate: true }).content, { context: componentContext })
@@ -153,6 +158,8 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
     return { rows }
   } }
   const app = renderer.createApp({ render: () => state.view.value === 'event_catalog' ? Vue.h(Component, {
+    // Passed explicitly: a cross-realm Function default would be invoked as a factory.
+    idolName: () => '',
     client, bootstrap: { domains: { events: { url: 'index' } } }, query: state.filterQuery.value, browseState: state.currentEventBrowseState.value,
     onQuery: context.updateEventCatalogQuery,
     onBrowse: value => { browseEvents.push(value); context.updateEventBrowse(value) },
