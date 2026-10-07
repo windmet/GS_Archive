@@ -1,3 +1,4 @@
+import { chapterLabel } from './chapterLabel.js'
 const SOURCE_KINDS = [
   [/^スモールトーク\s*0?(\d+)$/u, 'SMALL TALK'],
   [/^エピソード\s*0?(\d+)$/u, 'EPISODE'],
@@ -16,7 +17,7 @@ export function presentIdolEpisodeLabel({ sourceName = '', kind = '', ordinal = 
     const match = source.match(pattern)
     if (match) return display(label, Number(match[1]))
   }
-  return source
+  return chapterLabel(source)
 }
 
 // Host-side formatters handed to the story player kernel (queue entries and the "next" label).

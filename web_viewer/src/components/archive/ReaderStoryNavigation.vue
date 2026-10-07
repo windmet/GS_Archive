@@ -8,12 +8,13 @@
     <details v-if="chapterNavigation?.chapters.length > 1" :open="expandChapters" class="reader-chapter-picker" :class="{'expanded-chapters':expandChapters}">
       <summary>切换话目</summary>
       <nav aria-label="其他话目" class="reader-chapter-list">
-        <button v-for="chapter in chapterNavigation.chapters" :key="chapter.id" :data-chapter-id="chapter.id" :aria-current="chapter.id === chapterNavigation.chapterId ? 'page' : undefined" :disabled="!chapter.documentId || !chapter.storyFile" @click="emit('chapter', chapter.id)">{{ chapter.label }} · {{ presentProducerAddressingText(displayTitle({document_id:chapter.documentId,sha256:chapter.revision},chapter.title)) }}{{ chapter.documentId ? '' : '（暂无阅读正文）' }}</button>
+        <button v-for="chapter in chapterNavigation.chapters" :key="chapter.id" :data-chapter-id="chapter.id" :aria-current="chapter.id === chapterNavigation.chapterId ? 'page' : undefined" :disabled="!chapter.documentId || !chapter.storyFile" @click="emit('chapter', chapter.id)">{{ chapterLabel(chapter.label) }} · {{ presentProducerAddressingText(displayTitle({document_id:chapter.documentId,sha256:chapter.revision},chapter.title)) }}{{ chapter.documentId ? '' : '（暂无阅读正文）' }}</button>
       </nav>
     </details>
   </div>
 </template>
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { useReaderTitles } from './useReaderTitles.js'

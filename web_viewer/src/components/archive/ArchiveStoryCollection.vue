@@ -54,7 +54,7 @@
           <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter)">
             <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
             <span class="chapter-identity">
-              <small>{{ chapter.label }}</small>
+              <small>{{ chapterLabel(chapter.label) }}</small>
               <strong>{{ chapterTitle(chapter) }}</strong>
             </span>
             <span class="chapter-stats">{{ chapter.episodeCount }} 段 · {{ chapter.voiceCount }} 段语音</span>
@@ -64,7 +64,7 @@
 
           <div v-if="expandedChapterId === chapter.id" class="chapter-panel">
             <div v-if="chapter.canonicalRelation" class="canonical-note">
-              <p><strong>{{ chapter.canonicalRelation.sectionName }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>本篇就是 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，完整章节与连续播放在个人故事页。</p>
+              <p><strong>{{ chapterLabel(chapter.canonicalRelation.sectionName) }}「{{ chapter.canonicalRelation.sectionTitle }}」</strong>本篇就是 {{ chapter.canonicalRelation.episodeNames.map(sourceName => presentIdolEpisodeLabel({ sourceName })).join('、') }}，完整章节与连续播放在个人故事页。</p>
               <button class="story-action" @click="emit('open-idol-story', chapter.canonicalRelation)"><BookOpen :size="16" />去个人故事阅读</button>
             </div>
             <CollectionStorySynopsis class="chapter-synopsis" :key="chapter.id" :entry="chapter.episodes.map(readingEntry).find(Boolean)" :load-document="loadReadingDocument" :fallback="chapter.synopsis" :title="chapter.synopsis?.title || chapter.title" />
@@ -110,6 +110,7 @@
 </template>
 
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'

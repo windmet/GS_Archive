@@ -84,6 +84,7 @@
 </template>
 
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
@@ -109,7 +110,7 @@ const characters = computed(() => (props.story?.characters || []).filter(charact
 const characterReferences = computed(() => props.projectedCastReferences || characters.value.map(character =>
   buildIdolReference(character, props.identity, props.manifest, `story:${props.story?.file || ''}`)))
 const relatedStories = computed(() => props.related.slice(0, 24))
-const collectionTitle = computed(() => props.story?.sectionLabel ? `${props.story.sectionLabel}的故事` : '同类故事')
+const collectionTitle = computed(() => props.story?.sectionLabel ? `${chapterLabel(props.story.sectionLabel)}的故事` : '同类故事')
 </script>
 
 <style scoped>

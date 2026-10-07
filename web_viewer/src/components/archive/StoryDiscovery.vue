@@ -32,13 +32,14 @@
         <span class="row-language" :class="language(entry)">{{ languageLabel(entry) }}</span><span class="read-action">{{ entry.exists?'阅读':'未收录' }}<ArrowRight :size="15" /></span>
       </button>
     </div>
-    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ entry.sectionLabel }} {{ entry.episodeLabel }}</small></td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ entry.title }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${entry.title}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
+    <div v-else class="table-wrap"><table><thead><tr><th>章节 / 类型</th><th>标题</th><th>登场偶像</th><th>译文</th><th>操作</th></tr></thead><tbody><tr v-for="entry in visible" :key="entry.id"><td>{{ entry.domainLabel }}<small>{{ chapterLabel(entry.sectionLabel) }} {{ chapterLabel(entry.episodeLabel) }}</small></td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" @click="emit('select',entry)">{{ entry.title }}</button></td><td :title="castNames(entry)">{{ castNames(entry) }}</td><td>{{ languageLabel(entry) }}</td><td><button :data-archive-focus-id="`story:${entry.id}`" :disabled="!entry.exists&&!entry.eventRelation" :aria-label="`阅读 ${entry.title}`" @click="emit('select',entry)"><ArrowRight :size="15" /></button></td></tr></tbody></table></div>
     <p v-if="!filtered.length" class="empty-results">没有符合条件的剧情。</p>
     <div v-if="compact && filtered.length" class="mobile-more"><p role="status">已显示 {{ visible.length }} / {{ filtered.length }} 篇</p><button v-if="visible.length<filtered.length" @click="state.mobileLimit+=40">加载更多 · 剩余 {{ filtered.length-visible.length }} 篇</button><p v-else>已显示全部结果</p></div>
     <nav v-else-if="!compact" class="result-pagination" aria-label="检索结果分页"><button :disabled="page===1" @click="page--">上一页</button><span>{{ page }} / {{ pages }}</span><button :disabled="page===pages" @click="page++">下一页</button></nav>
   </section>
 </template>
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import {computed,ref,watch,onMounted,onBeforeUnmount} from 'vue'
 import {Search,UserRound,BookOpen,ArrowRight,List,Table2,SlidersHorizontal} from '@lucide/vue'
 import {storyDiscoveryState as state} from '../../data/storyDiscoveryState.js'
@@ -67,7 +68,7 @@ function mobileCast(entry){
 }
 const language=entry=>localization.rows[entry.file]||'unknown'
 const languageLabel=entry=>({translated:'中文已译',partial:'部分已译',original:'日文原文',unknown:'尚未核对'}[language(entry)])
-const description=entry=>entry.preplaySynopsis?.text||[entry.sectionLabel,entry.episodeLabel&&presentIdolEpisodeLabel({sourceName:entry.episodeLabel}),entry.unitName].filter(Boolean).join(' · ')
+const description=entry=>entry.preplaySynopsis?.text||[chapterLabel(entry.sectionLabel),entry.episodeLabel&&presentIdolEpisodeLabel({sourceName:entry.episodeLabel}),entry.unitName].filter(Boolean).join(' · ')
 function cover(entry){const resource=storyEventResources(entry);if(resource?.storyCover)return resource.storyCover.url;if(entry.domain==='main'&&['101','102'].includes(entry.sectionId))return `/assets/stories/main/image_story_main_button_${String(Number(entry.sectionId)-100).padStart(2,'0')}.png`;return ''}
 function toggleIdol(code){state.idols=state.idols.includes(code)?state.idols.filter(value=>value!==code):[...state.idols,code]}
 function clear(){state.series='';state.idols=[];state.unit='';state.language='';emit('update:query','');emit('series-change');emit('reset-filters')}

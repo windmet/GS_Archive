@@ -72,7 +72,7 @@
         >
           <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
           <span class="episode-copy">
-            <strong>{{ episode.label }}</strong>
+            <strong>{{ chapterLabel(episode.label) }}</strong>
           </span>
           <span class="episode-stats">
             <span>{{ episode.dialogueCount }} 段对白</span>
@@ -80,7 +80,7 @@
           </span>
           <Play :size="16" fill="currentColor" />
         </button>
-        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${episode.label}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
+        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${chapterLabel(episode.label)}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
           @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="16" />阅读</button>
         </div>
       </div>
@@ -174,6 +174,7 @@
 </template>
 
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
 import { BookOpen, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'

@@ -46,7 +46,8 @@ try {
   const navProps = {documentId:'first',segments:[{documentId:'first',label:'エピソード1',status:'ready'},{documentId:'second',label:'エピソード2',status:'ready'}],
     chapterNavigation:{chapterId:'one',chapters:[{id:'one',label:'第1話',title:'One',documentId:'first',storyFile:'one.json'},{id:'two',label:'第2話',title:'Two',documentId:'second',storyFile:'two.json'},{id:'missing',label:'第3話',title:'Missing',documentId:'',storyFile:'three.json'}]}}
   const navHtml = await renderToString(createSSRApp(StoryNavigation,navProps))
-  assert.ok(navHtml.includes('切换话目') && navHtml.includes('第2話 · Two'))
+  // Source label 第2話 is shown with the Chinese chapter word in the Chinese UI.
+  assert.ok(navHtml.includes('切换话目') && navHtml.includes('第2话 · Two'))
   assert.ok(navHtml.includes('data-chapter-id="missing"') && /data-chapter-id="missing"[^>]*disabled/.test(navHtml), 'unavailable chapter cannot be selected')
   assert.ok(navHtml.includes('EP 01') && navHtml.includes('EP 02') && navHtml.includes('aria-current="location"'))
   const coldReaderHtml = await renderToString(createSSRApp(Reader,{state:{status:'loading',entries:[{document_id:'first',logical_id:'one',episode_label:'EPISODE 01'}],document:null},documentId:'first',mode:'original',chapterNavigation:navProps.chapterNavigation}))

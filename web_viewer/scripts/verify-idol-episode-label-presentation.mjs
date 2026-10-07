@@ -1,13 +1,24 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { presentIdolEpisodeLabel } from '../src/presentation/idolEpisodeLabel.js'
+import { presentChapterLabel } from '../src/presentation/chapterLabel.js'
+import { setUiLocale } from '../src/localization/ui/UiLocaleStore.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 assert.equal(presentIdolEpisodeLabel({ sourceName: 'スモールトーク1' }), 'SMALL TALK 01')
 assert.equal(presentIdolEpisodeLabel({ sourceName: 'エピソード5' }), 'EPISODE 05')
 assert.equal(presentIdolEpisodeLabel({ sourceName: 'source', kind: 'small_talk', ordinal: 3 }), 'SMALL TALK 03')
 assert.equal(presentIdolEpisodeLabel({ sourceName: 'source', kind: 'episode', ordinal: 12 }), 'EPISODE 12')
-assert.equal(presentIdolEpisodeLabel({ sourceName: '第1話' }), '第1話')
+// Chapter words follow the archive UI language (user decision 2026-10-07); subtitles stay source text.
+assert.equal(presentIdolEpisodeLabel({ sourceName: '第1話' }), '第1话')
+assert.equal(presentChapterLabel('第１２話 - 次のステージ'), '第12话 - 次のステージ')
+assert.equal(presentChapterLabel('プロローグ'), '序章')
+assert.equal(presentChapterLabel('エピローグ'), '尾声')
+assert.equal(presentChapterLabel('第3章'), '第3章')
+assert.equal(presentChapterLabel('第1話', 'ja-JP'), '第1話')
+setUiLocale('ja-JP')
+assert.equal(presentIdolEpisodeLabel({ sourceName: '第1話' }), '第1話', 'the Japanese UI keeps the source label')
+setUiLocale('zh-CN')
 assert.equal(presentIdolEpisodeLabel({ sourceName: '不明な表記' }), '不明な表記')
 assert.equal(presentIdolEpisodeLabel({}), '')
 for (const sourceName of ['エピソード8','EPISODE 08']) {
@@ -17,7 +28,7 @@ for (const sourceName of ['エピソード8','EPISODE 08']) {
 }
 for (const format of ['full','reader','player']) {
   assert.equal(presentIdolEpisodeLabel({sourceName:'スモールトーク1',format}),'SMALL TALK 01')
-  assert.equal(presentIdolEpisodeLabel({sourceName:'PROLOGUE',format}),'PROLOGUE')
+  assert.equal(presentIdolEpisodeLabel({sourceName:'PROLOGUE',format}),'序章', 'the main story prologue reads 序章 in the Chinese UI')
   assert.equal(presentIdolEpisodeLabel({sourceName:'Unknown EPISODE 1',format}),'Unknown EPISODE 1')
 }
 

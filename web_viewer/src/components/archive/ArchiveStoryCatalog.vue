@@ -165,7 +165,7 @@
               <span v-else aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</span>
             </span>
             <span class="story-tile-copy">
-              <strong>{{ chapter.label }}</strong>
+              <strong>{{ chapterLabel(chapter.label) }}</strong>
               <small>{{ chapter.entries.length }} 篇剧情</small>
             </span>
           </button>
@@ -247,7 +247,7 @@
           </select>
         </label>
         <button v-if="section" class="section-filter" @click="emit('clear-section')">
-          {{ sectionLabel }} <X :size="14" />
+          {{ chapterLabel(sectionLabel) }} <X :size="14" />
         </button>
         <span class="catalog-count">{{ filteredTotal }} 条结果</span>
       </div>
@@ -261,6 +261,7 @@
 </template>
 
 <script setup>
+import { chapterLabel } from '../../presentation/chapterLabel.js'
 import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed } from 'vue'
