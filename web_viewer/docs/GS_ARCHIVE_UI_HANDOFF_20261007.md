@@ -217,3 +217,14 @@ npm run verify:external-story-resources && npm run verify:external-story-resourc
 ### 发布
 - 发布窗口已完成 R2 上传和 read-model 重建（release `c6e0c04c…`，dataRevision `98825488…`），在第 4 步停下，记录见 `QA_RELEASE_20261007_STOP_REPORT.md`。
 - 停下的原因是清单漏写了 `routes.json` 等 release 绑定，清单已补（`06e05667`）。从第 3 步的「绑定」小节接着做即可，无需重新上传。
+
+### 2026-10-07 晚些时候
+- 在 LF 干净检出里全量跑 CI 门：115 步中 113 步通过，1 步是 `npm ci`，跳过。唯一失败的是翻译流程检查里写死的主线草稿行数，已在 `77a49180` 修好，并在干净检出里单独复跑通过。
+- 已完成的小改动（都做过浏览器检查）：
+  - 小人舞台的 F 和 H 合并为「沉浸观看」；
+  - 摄影台在触屏上只显示手势提示；
+  - 中文界面下章节名显示为 第N话 / 序章 / 尾声（`presentation/chapterLabel.js`）；
+  - 个人剧情页改用设计令牌和 `ArchiveIdolAvatar`；
+  - 通信里随机话题的说明重写。
+- 阅读器头像规则已放宽：日文原名精确命中偶像名表或 NPC 名表即可显示头像（`412b6309`）。
+- 翻译窗口发布草稿后要一起重新生成：审计、搜索本地化、reader-titles、manifest，并更新 `verify-general-translation-workflow` 里写死的行数。共享记忆里已写明。
