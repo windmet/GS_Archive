@@ -29,6 +29,7 @@
     "verify-event-story-navigation.mjs",
     "verify-event-view-consumer.mjs",
     "verify-extra-story-domain-landing.mjs",
+    "verify-extra-story-visuals.mjs",
     "verify-floating-overlay-position.mjs",
     "verify-home-portal-visits.mjs",
     "verify-idol-communication-index.mjs",
@@ -36,6 +37,7 @@
     "verify-idol-picker.mjs",
     "verify-idol-stage-light.mjs",
     "verify-idol-story-interface.mjs",
+    "verify-ipad-collection-repair.mjs",
     "verify-live-chibi-object-controls.py",
     "verify-main-story-domain-landing.mjs",
     "verify-mobile-archive-identity.mjs",
@@ -78,6 +80,7 @@
     "verify-story-playback-range.mjs",
     "verify-story-player-ui-pr1.mjs",
     "verify-story-presentation.mjs",
+    "verify-story-search-localization.mjs",
     "verify-story-slide-visibility.py",
     "verify-story-spine-order.mjs",
     "verify-story-spine-preload.mjs",
@@ -165,16 +168,13 @@
       ]
     },
     "pending": {
-      "reason": "Fails at HEAD without the corpus: App.vue source-text assertions or stale recorded hashes. Fix, then move into batch.",
+      "reason": "Fails at HEAD. Five assert App.vue source text (rewrite as behaviour checks before splitting App.vue). verify-translation-strict-v2 reads the corpus and checks the 2026-09-29 choice release, whose 399 files were deliberately re-published by 2026-09-30-raw-selection-flow-001 (choice targets repaired); deciding how it should treat superseded files is open.",
       "scripts": [
         "verify-archive-loading-copy.mjs",
-        "verify-extra-story-visuals.mjs",
         "verify-idol-communication-readiness.mjs",
         "verify-idol-navigation-ux.mjs",
-        "verify-ipad-collection-repair.mjs",
         "verify-song-domain-landing.mjs",
         "verify-song-playback-audio.mjs",
-        "verify-story-search-localization.mjs",
         "verify-translation-strict-v2.mjs"
       ]
     }
