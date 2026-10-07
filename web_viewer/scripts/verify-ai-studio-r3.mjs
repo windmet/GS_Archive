@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { loadStudioPolicy, projectDocumentContext, studioPolicyManifest, voiceRoster } from './lib/ai-studio-projection.mjs'
-import { renderStudioInput, parseStudioResult, checkStudioRows } from './lib/ai-studio-markdown.mjs'
+import { renderStudioInput, parseStudioResult, checkStudioRows, checkNamedSan } from './lib/ai-studio-markdown.mjs'
 import { makeQualityRequest, mergeQualityPatch } from './lib/ai-studio-quality.mjs'
 
 const policy = await loadStudioPolicy({ version: 3 })
@@ -96,6 +96,20 @@ assert(!name.review.some(item => item.includes('kana')))
 const grammar = checkStudioRows([{ rid: 'T1', source_text: 'タケルっす', protected_source: 'タケルっす', kind: 'dialogue' }],
   new Map([['T1', 'タケルっす']]), { trialPolicy: policy.trial })
 assert(grammar.review.some(item => item.includes('kana')))
+// R3.3: named さん keeps 先生 (B001 reviewed convention); せんせい is 老师.
+assert(policy.prompt.includes('R3.3') && policy.prompt.includes('男性人名＋さん'))
+const san = (source, text) => checkNamedSan(source, text, policy.trial)
+assert.match(san('圭さん、麗くん、よろしく', '圭、丽君，请多关照'), /dropped \(0\/1\)/u)
+assert.equal(san('圭さん、麗くん、よろしく', '圭先生、丽君，请多关照'), null)
+assert.equal(san('わたなべさんとしんげんさん', '渡边先生和信玄先生'), null)
+assert.match(san('わたなべさんとしんげんさん', '渡边和信玄先生'), /dropped \(1\/2\)/u)
+assert.equal(san('またたくさんのお客さん、皆さん、スタッフさん', '还有很多客人、大家、工作人员'), null)
+assert.equal(san('サンキュー！　お前さんたち', 'Thank you！你们几个'), null)
+assert.equal(san('にゃこさんと番長さん、賢アニさん', '喵子和番长、贤哥'), null)
+assert.equal(san('先生、行こう！', '先生，我们走！'), 'せんせい rendered as 先生')
+assert.equal(san('先生、行こう！', '老师，我们走！'), null)
+assert(checkStudioRows([{ rid: 'T1', kind: 'dialogue', source_text: '恭二さん。', protected_source: '恭二さん。' }],
+  new Map([['T1', '恭二。']]), { trialPolicy: policy.trial }).review.some(item => item.includes('honorific')))
 
 const qualityBatch = { ...batch, rows: [
   { ...batch.rows[0], rid: 'T000057' },

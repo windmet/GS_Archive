@@ -121,6 +121,23 @@ export function parseStudioResult(markdown, expectedIds) {
   return { translations, missing, errors }
 }
 
+// R3.3: a named さん keeps an honorific (先生／小姐／女士); groups, roles, family and the Producer do not.
+const SAN = /([\p{Script=Han}々ァ-ヶー]{1,8}|[ぁ-ゖ]{2,6})(さん|サン(?!キュ))/gu
+const NOT_A_NAME = /^(?:.*(?:皆|みな|客|店員|母|父|兄|姉|叔|祖|奥|前|番長|プロデューサー|プロダクション|事務所|スタッフ|ちゃん|たく|沢山|おやっ|ジイ|ジジ|バア|オッ|オジ|オバ|アニ|アネ)|おはよう|おつかれ|お疲れ|おまえ|おじ|おば|おにい|おねえ|かあ|とう|にい|ねえ)$/u
+export function checkNamedSan(source, translated, trialPolicy = null) {
+  const items = trialPolicy?.items || []
+  // Frozen さん forms (道流さん, 番長さん) and non-person terms (the cat にゃこ) follow their own entries.
+  const frozen = items.map(item => item.source_form).filter(form => form?.endsWith('さん'))
+  const terms = items.filter(item => item.target_term && item.source_form).map(item => item.source_form)
+  const named = [...source.matchAll(SAN)].filter(match => !NOT_A_NAME.test(match[1])
+    && !terms.some(form => match[1].endsWith(form))
+    && !frozen.some(form => source.slice(match.index).startsWith(form) || form.endsWith(match[0])))
+  const kept = (translated.match(/先生|小姐|女士/gu) || []).length
+  if (named.length > kept) return `honorific さん dropped (${kept}/${named.length})`
+  if (!named.length && source.includes('先生') && translated.includes('先生')) return 'せんせい rendered as 先生'
+  return null
+}
+
 export function checkStudioRows(rows, translations, { trialPolicy = null } = {}) {
   const blocking = [], review = []
   for (const row of rows) {
@@ -148,6 +165,8 @@ export function checkStudioRows(rows, translations, { trialPolicy = null } = {})
         && !translated.includes(item.chosen_rendering))
         review.push(`${row.rid}: trial term ${item.key} needs review`)
     }
+    const honorific = checkNamedSan(row.source_text, translated, trialPolicy)
+    if (honorific) review.push(`${row.rid}: ${honorific}`)
     const displayLength = Array.from(translated.replace(/\{\{GS_ADDRESS:[^{}]*\}\}/gu, '制作人')).length
     if (row.kind === 'choice' && displayLength > 36) review.push(`${row.rid}: long choice (${displayLength})`)
   }

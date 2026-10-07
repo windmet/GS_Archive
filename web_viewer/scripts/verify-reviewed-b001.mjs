@@ -57,4 +57,18 @@ for (const { item, overlay } of reviewed) {
 }
 assert.equal(expected.size, 0)
 assert.equal(units, 993)
+// Post-review corrections are logged edits; each must be live and leave the unit reviewed.
+for (const record of receipt.post_review_corrections || []) {
+  const bytes = await fs.readFile(path.join(reviewDir, record.file))
+  assert.equal(sha256(bytes), record.sha256, `Correction log drift: ${record.file}`)
+  const log = JSON.parse(bytes)
+  assert.equal(log.length, record.units)
+  for (const edit of log) {
+    const entry = reviewed.find(({ item }) => item.scenario_id === edit.scenario_id)?.overlay.entries[edit.unit_id]
+    assert(entry, `Corrected unit missing: ${edit.unit_id}`)
+    assert.notEqual(edit.before, edit.after)
+    assert.equal(entry.source_hash, edit.source_hash)
+    assert.equal(entry.text, edit.after, `Correction not applied: ${edit.rid}`)
+  }
+}
 console.log('B001 reviewed publication verified: 52 documents, 42 catalogues, 993 source-bound units')

@@ -1,0 +1,52 @@
+[
+  {
+    "rid": "T000089",
+    "scenario_id": "1_4_001_01",
+    "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_c:cmd-000037:dialogue:000",
+    "source_hash": "sha256:75b54490f9dbf1e2322362b61e861cfd4ac3dce675c8506818c0e3dcf5363068",
+    "source": "ほら、窓の外を見て。気持ちの良さそうな日差しが、\n僕たちに「もっと怠けろ」って言ってるよ？",
+    "before": "你看，望向窗外。那副令人感到舒适的阳光，\n不是在对我们说“再多偷一会儿懒”吗？",
+    "after": "你看，望向窗外。那暖洋洋的阳光，\n不是在对我们说“再多偷一会儿懒”吗？",
+    "reason": "Measure word: 副 does not fit 阳光"
+  },
+  {
+    "rid": "T000122",
+    "scenario_id": "1_4_001_01",
+    "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_d:cmd-000134:choice_short:000",
+    "source_hash": "sha256:619694b02e14ec5dc6f82d92813ef50f2cff54da52743d8d8ea4732641ab0fd5",
+    "source": "Verse……ヴァース？",
+    "before": "Verse……瓦斯？",
+    "after": "Verse……是Verse吗？",
+    "reason": "Mishearing joke: 瓦斯 is unrelated to Verse"
+  },
+  {
+    "rid": "T000198",
+    "scenario_id": "1_4_001_01",
+    "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_h:cmd-000117:dialogue:000",
+    "source_hash": "sha256:5c582ec649b8920945a2be836136d340b9dfe45d45615866c11234bc5700cfc3",
+    "source": "ありがとうございます！\n精一杯、プロデュースさせて頂きます。",
+    "before": "非常感谢！\n我一定会竭尽全力制作各位的。",
+    "after": "非常感谢！\n我一定会竭尽全力，当好各位的制作人。",
+    "reason": "プロデュース rendered as the producer role, not 制作各位"
+  },
+  {
+    "rid": "T000229",
+    "scenario_id": "1_4_001_01",
+    "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_j:cmd-000062:dialogue:000",
+    "source_hash": "sha256:0a9fbefe3925a68e91ccbbd611b70438ee6136a181ce91d53a57941362f1e90a",
+    "source": "えー、恥ずかしいな。\nでも先生だから、特別にサービスしてあげるね？",
+    "before": "哎呀，好害羞啊。\n不过因为是老师，就特意给你个杀必死福利吧？",
+    "after": "哎呀，好害羞啊。\n不过因为是老师，就给你一点特别福利吧？",
+    "reason": "Redundant 杀必死 slang"
+  },
+  {
+    "rid": "T000254",
+    "scenario_id": "1_4_001_02_a",
+    "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000141:dialogue:000",
+    "source_hash": "sha256:f2925abf65d049e185f1eee6de2279df26f805b2cc5d72eea507a18420f8384b",
+    "source": "315プロダクションをてぇまにした、\n新しい落語を披露するでにゃんすよ～！",
+    "before": "就由我来表演一段以315 Production为题材的\n新落语给喵家听吧～！",
+    "after": "就由我来表演一段以315 Production为题材的\n新落语喵～！",
+    "reason": "Cat tic must not alter ordinary words (喵家)"
+  }
+]
