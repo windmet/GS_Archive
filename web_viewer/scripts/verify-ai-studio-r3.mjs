@@ -7,7 +7,7 @@ const policy = await loadStudioPolicy({ version: 3 })
 assert.equal(policy.trial.schema, 'GS-TRIAL-POLICY-V2')
 assert.equal(policy.trial.editorial_status, 'frozen-for-trial')
 assert.equal(policy.trial.public_approval, false)
-assert.equal(policy.trial.revision, 'R3.2')
+assert.equal(policy.trial.revision, 'R3.3')
 assert(policy.voice.profiles.every(profile => profile.required && profile.forbidden))
 const sourceRow = (id, text, speaker = { kind: 'none' }, extra = {}) => ({
   kind: 'dialogue', source_text: text, speaker,
@@ -96,6 +96,16 @@ assert(!name.review.some(item => item.includes('kana')))
 const grammar = checkStudioRows([{ rid: 'T1', source_text: 'タケルっす', protected_source: 'タケルっす', kind: 'dialogue' }],
   new Map([['T1', 'タケルっす']]), { trialPolicy: policy.trial })
 assert(grammar.review.some(item => item.includes('kana')))
+// R3.3 男極 event terms: per-line hints, and the nested division name satisfies both entries.
+const league = projectDocumentContext([sourceRow('league', '『男極ッ！アイドルリーグ』のライブパフォーマンス部門')], policy)[0]
+assert(league.mentions.some(m => m.policy_key === 'menkyoku-league-full' && m.chosen_rendering === '男极！偶像联赛'))
+assert(league.mentions.some(m => m.policy_key === 'div-live-performance'))
+const leagueRow = { rid: 'T1', kind: 'dialogue', source_text: '『男極ッ！アイドルリーグ』のライブパフォーマンス部門',
+  protected_source: '『男極ッ！アイドルリーグ』のライブパフォーマンス部門', context: league }
+assert.deepEqual(checkStudioRows([leagueRow], new Map([['T1', '“男极！偶像联赛”的现场表现力部门']]), { trialPolicy: policy.trial }).review, [])
+assert(checkStudioRows([leagueRow], new Map([['T1', '“男极ッ！偶像联盟”的现场表现力部门']]), { trialPolicy: policy.trial })
+  .review.some(item => item.includes('menkyoku-league-full')))
+assert(!policy.trial.pending_terms.some(term => term.startsWith('男極')))
 // R3.3: named さん keeps 先生 (B001 reviewed convention); せんせい is 老师.
 assert(policy.prompt.includes('R3.3') && policy.prompt.includes('男性人名＋さん'))
 const san = (source, text) => checkNamedSan(source, text, policy.trial)

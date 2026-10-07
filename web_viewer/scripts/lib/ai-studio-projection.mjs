@@ -16,7 +16,7 @@ export async function loadStudioPolicy({ version = 2 } = {}) {
   const selected = version === 3 ? {
     ...files,
     voice: 'translation/studio/policy/voice-profiles.trial.v1.1.json',
-    trial: 'translation/studio/policy/trial-policy.v2.2.json',
+    trial: 'translation/studio/policy/trial-policy.v2.3.json',
     prompt: 'translation/studio/policy/translation-r3.3.md',
     names: 'translation/studio/policy/idol-names.v1.json',
   } : files

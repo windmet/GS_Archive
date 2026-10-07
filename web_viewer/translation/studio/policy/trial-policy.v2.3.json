@@ -1,0 +1,1126 @@
+{
+  "schema": "GS-TRIAL-POLICY-V2",
+  "editorial_status": "frozen-for-trial",
+  "public_approval": false,
+  "provenance": "GS_Archive_R3_Quality_Review.zip/name-edits.json; 10 source-bound タケル→武 corrections recorded as user-confirmed in supplied review; B002 audit attachment a6dcb7b0-f1be-4f56-af27-18f5f7d219dc, exact current source checked; new choices are editorial trial only; 2026-10-01 user B002 review and explicit 渡边实 selection",
+  "items": [
+    {
+      "key": "producer-chan",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "Producer addressing with explicit ちゃん outside macro",
+      "chosen_rendering": "酱",
+      "required": "Do not add P after producer_name_with_p; forbid body-size nickname 小不点",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "producer-pii",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "花園百々人 explicit ぴぃちゃん",
+      "chosen_rendering": "P酱",
+      "required": "Keep the preceding producer_name marker; P here comes from literal pii",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "w-kantoku",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "蒼井悠介/享介 explicitly addressing Producer as 監督",
+      "chosen_rendering": "监督",
+      "required": "Editorial trial default, not a claim that 教练 is inherently wrong; do not apply to unrelated sports coaches",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "producer-shisho",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "円城寺道流 explicitly addressing Producer as 師匠",
+      "chosen_rendering": "师父",
+      "required": "Literal title; add player name only where original contains name slot",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "name-mayumi",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "マユミくん referring to 049eis",
+      "chosen_rendering": "眉见君",
+      "required": "Keep surname level",
+      "source_form": "マユミくん",
+      "target_entity_id": "049eis",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_g:cmd-000021:dialogue:000",
+          "source_hash": "sha256:d6d7160a5ce401dcf08ddbe0ea9fbbc270daffa8b077d651aca74f5f560a672e"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_h:cmd-000023:dialogue:000",
+          "source_hash": "sha256:4c80b2d1b2dac091d04e6b84d78abf4a1c33595311990f550a5e7229d8b1cdb8"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-nao",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "なおくん referring to 032nao",
+      "chosen_rendering": "直央君",
+      "required": "Masterdata canonical given name 直央 is read なお; do not invent 直",
+      "source_form": "なおくん",
+      "target_entity_id": "032nao",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000194:phone_message:000",
+          "source_hash": "sha256:60a070778ba5f5591b6a81a22622a533810217db48921882a063430815d2b026"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-shiro",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "しろうくん referring to 033shr",
+      "chosen_rendering": "志狼君",
+      "required": "Do not invent 四郎",
+      "source_form": "しろうくん",
+      "target_entity_id": "033shr",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000194:phone_message:000",
+          "source_hash": "sha256:60a070778ba5f5591b6a81a22622a533810217db48921882a063430815d2b026"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-michiru",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "道流さん referring to 039mcr",
+      "chosen_rendering": "道流先生",
+      "required": "Not 道夫",
+      "source_form": "道流さん",
+      "target_entity_id": "039mcr",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_f:cmd-000154:dialogue:000",
+          "source_hash": "sha256:c7f10104ca449f7e0d719fecf7df67721224b087bbf35b5b2567bd0d0be4bda8"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-michio",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "道夫さん referring to 035mco",
+      "chosen_rendering": "道夫先生",
+      "required": "Not 道流",
+      "source_form": "道夫さん",
+      "target_entity_id": "035mco",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000096:dialogue:000",
+          "source_hash": "sha256:8ed8c1e60e577f3b70c44042e5fbdcc380f14336e58b07d26bbc2cbc515b50f1"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000128:dialogue:000",
+          "source_hash": "sha256:0ae29bcb9d4b39fa2395ce9193dd2942138267749676be609bf6ae9ce426ecaf"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_f:cmd-000141:dialogue:000",
+          "source_hash": "sha256:15be3bf24efd69969913a11ff17d64d45bdd2dbc95d28d004e11b34716a32163"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-takeru",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "タケル referring to 038tak",
+      "chosen_rendering": "武",
+      "required": "保留原文的名字层级和敬称；不得改称姓氏大河。",
+      "source_form": "タケル",
+      "target_entity_id": "038tak",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_c:cmd-000057:dialogue:000",
+          "source_hash": "sha256:e6705e2f62bb14394bbe36ffcda17c6f918b9581ac7d5e5b61df1755838fa759"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000061:dialogue:000",
+          "source_hash": "sha256:d371673eac6e704fb2288f362cf7e75f075924543d5af63330a8c974f602d2e6"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000064:dialogue:000",
+          "source_hash": "sha256:d12bcd7b61aea970549bfe49ce0c8acec8c74d391527e02ee589faf54705766e"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_e:cmd-000072:dialogue:000",
+          "source_hash": "sha256:b2d04f631cd9ae477dda07292acab8c5ebcedc61e89d9213813ab5324aefa6eb"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_f:cmd-000093:dialogue:000",
+          "source_hash": "sha256:5bda7de40ec23045f2850ad7180e42738c450b096de3d8f2d9ed078e8a417414"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000033:dialogue:000",
+          "source_hash": "sha256:ddb249515f28ac65af8181285c29ce527e1403ca2bdb0f5a566bc736242fcf5c"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000043:dialogue:000",
+          "source_hash": "sha256:f22245af8aa3a6076a76bb80d54c27b95b2d17671f1be23d41b28ad71f72e1fc"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_05:1_4_001_05_g:cmd-000080:dialogue:000",
+          "source_hash": "sha256:2b07ac2d2d9c5f5cf756bbb4e48cfdb785457a1b62a7c8a61d235f390abcfda2"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "name-momohito",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "百々人 referring to 048mom",
+      "chosen_rendering": "百百人",
+      "required": "Editorial simplified-Chinese orthography default only, not official-name claim",
+      "source_form": "百々人",
+      "target_entity_id": "048mom",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_e:cmd-000160:mobile_message:000",
+          "source_hash": "sha256:a0be8ca7c2a422e8d6bce0b4ac6bf9cad005b41ba99d2b0351391f59c28a6752"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_01:1_4_001_01_f:cmd-000067:dialogue:000",
+          "source_hash": "sha256:a4cffd32d638c5c83cbca6d8907a8a55e50bd321c611e24ef721d62eaafa7212"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:34cc7643b6d1fcdecde7887ea440ff092f8e99400f5ef5057eae34f1de3ddc45"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_e:cmd-000057:dialogue:000",
+          "source_hash": "sha256:fcb3242a0e5280f0ef6726e632f37554ac9a17c351595a8f6999fc2478427e62"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_g:cmd-000086:dialogue:000",
+          "source_hash": "sha256:ea88d91cc46d565fb002bc5728f77e895f6cbb00b621806d84bf968000016f57"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_h:cmd-000072:dialogue:000",
+          "source_hash": "sha256:77d85397cf574fc54d7aa08838d2f125b2faa006f93be22a02e4b38f9121a784"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_02:1_4_001_02_j:cmd-000062:dialogue:000",
+          "source_hash": "sha256:34752efd5a53e866b42778e889e37c347d605728d2a955547b0484d7b80dec0d"
+        }
+      ],
+      "evidence_scope": "B001 source rows"
+    },
+    {
+      "key": "shiki-tchi",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "伊瀬谷四季 explicit person-name＋っち and a direct quote of that same name",
+      "chosen_rendering": "人名＋仔",
+      "required": "Scoped style proposal e.g.史密斯仔/隼人仔/旬仔/英雄仔; do not mechanically apply to all ちゃん, all speakers or dog nickname",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "mister-yamashita",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "舞田類 explicit ミスターやました",
+      "chosen_rendering": "Mr. 山下",
+      "required": "If retaining English, put title before surname",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "arrow-band",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "ARROW・B proper band name",
+      "chosen_rendering": "ARROW・B",
+      "required": "Keep original separator; middle dot is not kana residue",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "giga-thankyou",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "四季 ギガサンキュー and the corresponding quoted reply",
+      "chosen_rendering": "Giga Thank You",
+      "required": "Keep deliberately unusual English and ensuing joke; remove Japanese grammatical suffix, not the joke",
+      "source_evidence": [],
+      "evidence_scope": "editorial scope; requires per-row source match"
+    },
+    {
+      "key": "cat-nyankee",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "にゃん喜威",
+      "chosen_rendering": "喵喜威",
+      "scope": "猫的正式专名（原文也出现在 Speaker 标签）",
+      "required": "与昵称にゃこ指向同一只猫；不是泛指猫咪，不把动物称为猫咪先生。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_c:cmd-000092:dialogue:000",
+          "source_hash": "sha256:ea2adc4477387fa8351a5d472c0e3e247016824ff71edd7bf5a0fc6eaf87b6e4",
+          "matched_field": "reader.speaker.sourceName"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_d:cmd-000047:dialogue:000",
+          "source_hash": "sha256:ec4c6dccc52e1b6d1fb13c9e59f072ab9223df86829b8cfebedb52e7fd7fb967",
+          "matched_field": "reader.speaker.sourceName"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_j:cmd-000040:dialogue:000",
+          "source_hash": "sha256:ea3511d8f62dda239de0f8fdaf21059e4cc991ec07b0cc9854b2114c5db38dfd",
+          "matched_field": "reader.speaker.sourceName"
+        }
+      ],
+      "evidence_scope": "B002 exact visible Speaker label; text hash binds the associated row, not a claim of resolved actor identity",
+      "target_term": {
+        "entity_id": "trial:nyankee",
+        "entity_type": "animal",
+        "canonical_ja": "にゃん喜威"
+      }
+    },
+    {
+      "key": "cat-nyako",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "にゃこ",
+      "chosen_rendering": "喵子",
+      "scope": "猫にゃん喜威的昵称にゃこ／にゃこさん",
+      "required": "保留昵称层级；本轮にゃこさん也译喵子，不机械加先生；不要和キリオ的猫口癖混淆。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_c:cmd-000098:dialogue:000",
+          "source_hash": "sha256:a38c7b25102b54bfc759cee7d888e7b8e8d5e130dc54ea8ff52c68a44ff7e55f"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_c:cmd-000100:dialogue:000",
+          "source_hash": "sha256:fe32dd3895e3ae323326a58b491199e49e5e46ebbafd0e49f5bddbf4b0b1d8ae"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_d:cmd-000053:dialogue:000",
+          "source_hash": "sha256:1280126bfac99312ed44220edd1baa97573701d1622d23c2625a6cd6839a5b1c"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:nyankee",
+        "entity_type": "animal",
+        "canonical_ja": "にゃん喜威"
+      }
+    },
+    {
+      "key": "agency-315",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "315プロダクション",
+      "chosen_rendering": "315 Production",
+      "scope": "事务所专名",
+      "required": "不要临时改造品牌名。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000028:dialogue:000",
+          "source_hash": "sha256:01451276a37323c4b971f581ae599686dfc91f68a8564c32d572fe4b55a36b26"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000057:dialogue:000",
+          "source_hash": "sha256:86170a4d596f6ee48aff5f7f0c44009df9774713681a442755b2f34968d49571"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000213:dialogue:000",
+          "source_hash": "sha256:2a22572f8cb1227bbe48545d5a19a63357360c626ee6de7deb483174c2b88622"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:315-production",
+        "entity_type": "organization",
+        "canonical_ja": "315プロダクション"
+      }
+    },
+    {
+      "key": "name-soichiro",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "ソーイチロー",
+      "chosen_rendering": "庄一郎",
+      "scope": "東雲荘一郎的片假名名字称呼",
+      "required": "只保留原文名字层级，不补姓氏；canonical_ja来自人物字典，庄是本轮中文用字。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_e:cmd-000056:dialogue:000",
+          "source_hash": "sha256:c9d463bda53daac44b7c300d9c700c3ad0b59afb29142e0332f61f678e437af8"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_entity_id": "028soi"
+    },
+    {
+      "key": "unit-mofumofuen",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "もふもふえん",
+      "chosen_rendering": "もふもふえん",
+      "scope": "组合专名，中文项目译名待审",
+      "required": "KeepLiteral；不自创萌绒绒等组合名；此例外只针对专名。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_e:cmd-000113:dialogue:000",
+          "source_hash": "sha256:5b9d6fc016fcb8e295d02022a5db08f638a9201719af261341f2772a8b474ae0"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_e:cmd-000151:dialogue:000",
+          "source_hash": "sha256:7154e10ee6124d54bcee59333b57700e11cb7a88c2c4fc554c38bd0d4d98e0a8"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000028:dialogue:000",
+          "source_hash": "sha256:01451276a37323c4b971f581ae599686dfc91f68a8564c32d572fe4b55a36b26"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:mofumofuen",
+        "entity_type": "unit",
+        "canonical_ja": "もふもふえん"
+      }
+    },
+    {
+      "key": "hokuto-angel",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "エンジェルちゃん",
+      "chosen_rendering": "天使酱",
+      "scope": "北斗明确对粉丝的称呼",
+      "required": "是原文已有的称呼，不因此给其他句子新增昵称。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_e:cmd-000198:phone_message:000",
+          "source_hash": "sha256:4ef6e9ac6eced4d265a0ca69a5c7f082ae48806c95489954067d6e3a2df0217c"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:angel-address",
+        "entity_type": "address",
+        "canonical_ja": "エンジェルちゃん"
+      },
+      "actor_ids": [
+        "003hok"
+      ]
+    },
+    {
+      "key": "aslan-master",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "主よ",
+      "chosen_rendering": "吾主",
+      "scope": "アスラン以主称呼制作人",
+      "required": "按原文呼格组织中文，不改成契约者，不新增姓名槽。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_b:cmd-000031:dialogue:000",
+          "source_hash": "sha256:0b10d3b554c6504e3c006669298ca8543be07830eca92c2b98495e51dbdf6ab6"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:producer-master",
+        "entity_type": "address",
+        "canonical_ja": "主"
+      },
+      "actor_ids": [
+        "029ass"
+      ]
+    },
+    {
+      "key": "aslan-servants",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "シモベ",
+      "chosen_rendering": "仆从",
+      "scope": "アスラン原文的称呼シモベ",
+      "required": "不改成信徒，不添加等级或身份设定。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_b:cmd-000031:dialogue:000",
+          "source_hash": "sha256:0b10d3b554c6504e3c006669298ca8543be07830eca92c2b98495e51dbdf6ab6"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_b:cmd-000109:dialogue:000",
+          "source_hash": "sha256:f1e73ae589f57a2cd7bf1084e67325702c786c5c6695901b60af4b15ee4759b9"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_10:1_4_001_10_d:cmd-000097:dialogue:000",
+          "source_hash": "sha256:1c6c53a271ecb4b231befa3926183e9ca910e5661abb909a849e6a7837401d0b"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:servants",
+        "entity_type": "address",
+        "canonical_ja": "シモベ"
+      },
+      "actor_ids": [
+        "029ass"
+      ]
+    },
+    {
+      "key": "aslan-dark-one",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "闇の者",
+      "chosen_rendering": "暗之使者",
+      "scope": "アスラン原文自称闇の者",
+      "required": "本轮统一暗之使者，不另造魔王等身份。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_a:cmd-000121:dialogue:000",
+          "source_hash": "sha256:17d80123496f7813c298e7f947899bfb7ceb5d5a7aafa369086491a8d9e8859d"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:dark-one",
+        "entity_type": "epithet",
+        "canonical_ja": "闇の者"
+      },
+      "actor_ids": [
+        "029ass"
+      ]
+    },
+    {
+      "key": "aslan-satan",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "サタン",
+      "chosen_rendering": "撒旦",
+      "scope": "原文明确出现的サタン",
+      "required": "只翻译明确出现的名称，不把每次祝福都补成撒旦的祝福。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_a:cmd-000104:dialogue:000",
+          "source_hash": "sha256:53ec4c4994c0716e1021a0ef22b78935ecc51d350faf9ef60ba35d5f2e3565a1"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:satan",
+        "entity_type": "proper-name",
+        "canonical_ja": "サタン"
+      }
+    },
+    {
+      "key": "kyoji-stutter",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "Beitのたきゃっ",
+      "chosen_rendering": "鹰",
+      "scope": "恭二自我介绍中未说完的姓氏口误",
+      "required": "按已知鷹城姓氏保留卡壳，例如“我是Beit的鹰、鹰城……”；不另造高敲等姓名，也不能把完整自我介绍补完。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000057:dialogue:000",
+          "source_hash": "sha256:86170a4d596f6ee48aff5f7f0c44009df9774713681a442755b2f34968d49571"
+        }
+      ],
+      "evidence_scope": "B002 current source; rendering is editorial trial, not human translation approval",
+      "target_term": {
+        "entity_id": "trial:taka-stutter",
+        "entity_type": "speech-slip",
+        "canonical_ja": "鷹城"
+      },
+      "actor_ids": [
+        "009kyj"
+      ]
+    },
+    {
+      "key": "name-minori",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "みのり",
+      "chosen_rendering": "实",
+      "scope": "渡辺みのり的名字称呼",
+      "required": "用户明确指定全名渡边实；原文仅みのり时保留名字层级为实，不猜稔／实乃梨，不擅自补姓。",
+      "target_entity_id": "011min",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_a:cmd-000042:dialogue:000",
+          "source_hash": "sha256:465d4e959010d1f4e96266fdd167652ead5eacef463cdeafdbcbcbb9dd26f1cb"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_a:cmd-000082:dialogue:000",
+          "source_hash": "sha256:2c5e71cdc770a4c89901b5565049535bf55c22b50d7864bcff095c4488f33d97"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_h:cmd-000132:dialogue:000",
+          "source_hash": "sha256:95b6fefe15183e5b56c2b045e9da712e5c1d2855836e1e770b5cdb65b66fcd39"
+        }
+      ],
+      "evidence_scope": "B002 exact source forms and user targeted editorial direction"
+    },
+    {
+      "key": "genbu-bancho",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "番長さん",
+      "chosen_rendering": "番长",
+      "scope": "玄武明确称呼制作人为番長さん",
+      "required": "不追加先生；原文有姓名保护槽时保留槽，未有槽时不补姓名。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_a:cmd-000179:dialogue:000",
+          "source_hash": "sha256:114b7f60016a28b11411b200f27a864b3a12c640c3830cfd11f7c60d5ff6c353"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_b:cmd-000100:dialogue:000",
+          "source_hash": "sha256:ef834d8da77102612287623ad7cae49578631b9f9613ac2aee3047f8c3e865f2"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_09:1_4_001_09_b:cmd-000125:dialogue:000",
+          "source_hash": "sha256:9074b308c53739353e812d9294875b2bcff683968c8862599cd572d0ae52e6f5"
+        }
+      ],
+      "evidence_scope": "B002 exact source forms and user targeted editorial direction"
+    },
+    {
+      "key": "name-010pie",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "原文明确的名字称呼；全名遵从项目姓名表",
+      "source_form": "ピエール",
+      "target_entity_id": "010pie",
+      "chosen_rendering": "皮埃尔",
+      "required": "使用用户确认的项目写法，保留原文的名字层级与句子功能，不补姓名或揭示隐藏身份。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_b:cmd-000056:dialogue:000",
+          "source_hash": "sha256:d839506df51783106681d81671f7f59da6c957809bab096a4f4c032b00c5d0dd"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_f:cmd-000183:dialogue:000",
+          "source_hash": "sha256:88c4adfac194ff112e9735c522e52546079483f7cb32575ac01956eb05c1605b"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_07:1_4_001_07_g:cmd-000074:dialogue:000",
+          "source_hash": "sha256:3c5f5d2b0bb6b1320c8f1a1b961fdf59bc4c82e8a426320db8d1b0ba56b87db8"
+        }
+      ],
+      "evidence_scope": "Exact B002 source form + direct user name selection on 2026-10-01"
+    },
+    {
+      "key": "name-017kir",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "原文明确的名字称呼；全名遵从项目姓名表",
+      "source_form": "キリオ",
+      "target_entity_id": "017kir",
+      "chosen_rendering": "桐生",
+      "required": "使用用户确认的项目写法，保留原文的名字层级与句子功能，不补姓名或揭示隐藏身份。",
+      "source_evidence": [],
+      "evidence_scope": "Exact B002 source form + direct user name selection on 2026-10-01"
+    },
+    {
+      "key": "name-029ass",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "原文明确的名字称呼；全名遵从项目姓名表",
+      "source_form": "アスラン",
+      "target_entity_id": "029ass",
+      "chosen_rendering": "阿斯兰",
+      "required": "使用用户确认的项目写法，保留原文的名字层级与句子功能，不补姓名或揭示隐藏身份。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_a:cmd-000077:dialogue:000",
+          "source_hash": "sha256:0d945e4978c7ae64a534cef4579203768a06024afba4ecd979ac1fe6e72aeded"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_001_06:1_4_001_06_e:cmd-000074:dialogue:000",
+          "source_hash": "sha256:e241df81e5e2eada3c5721087312df44297b1afd77be410141845b78e6d454b9"
+        }
+      ],
+      "evidence_scope": "Exact B002 source form + direct user name selection on 2026-10-01"
+    },
+    {
+      "key": "name-046chr",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "scope": "原文明确的名字称呼；全名遵从项目姓名表",
+      "source_form": "クリス",
+      "target_entity_id": "046chr",
+      "chosen_rendering": "克里斯",
+      "required": "使用用户确认的项目写法，保留原文的名字层级与句子功能，不补姓名或揭示隐藏身份。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_001_10:1_4_001_10_h:cmd-000094:dialogue:000",
+          "source_hash": "sha256:358f05e662bd73bde14b7e2672b27f684a72b2696928a3301cb7409da18f4c8d"
+        }
+      ],
+      "evidence_scope": "Exact B002 source form + direct user name selection on 2026-10-01"
+    },
+    {
+      "key": "menkyoku-league-full",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "男極ッ！アイドルリーグ",
+      "chosen_rendering": "男极！偶像联赛",
+      "scope": "赛事全称",
+      "required": "ッ是强调，不保留假名；リーグ是有部门赛与冠军称号的联赛，不译联盟。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_a:cmd-000000:title:000",
+          "source_hash": "sha256:d42ebc0681aba0211eefef91186f36befcf0dc75c9d1d25efe8ab1d2be857af7"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_a:cmd-000012:title:001",
+          "source_hash": "sha256:d42ebc0681aba0211eefef91186f36befcf0dc75c9d1d25efe8ab1d2be857af7"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:menkyoku-league-full",
+        "entity_type": "event",
+        "canonical_ja": "男極ッ！アイドルリーグ"
+      }
+    },
+    {
+      "key": "menkyoku-league",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "男極リーグ",
+      "chosen_rendering": "男极联赛",
+      "scope": "赛事简称",
+      "required": "与全称一致用联赛。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_c:cmd-000041:dialogue:000",
+          "source_hash": "sha256:50a71b38646396183cd5d5578ebfea9ca630ecb32a9f25d46217390c62dc0795"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_02:1_4_002_02_a:cmd-000064:dialogue:000",
+          "source_hash": "sha256:4eb4ec8cacf2247e33ace28a27727c3b0ef704e2d8be24303135067a43119036"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:menkyoku-league",
+        "entity_type": "event",
+        "canonical_ja": "男極リーグ"
+      }
+    },
+    {
+      "key": "menkyoku-king",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "男極KING",
+      "chosen_rendering": "男极KING",
+      "scope": "冠军称号",
+      "required": "保留英文KING。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_b:cmd-000031:dialogue:000",
+          "source_hash": "sha256:4f3ebc41c8cc93e6a8209bebe103d6a2a74ef903ff450c94363f4c094e290856"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_j:cmd-000116:dialogue:000",
+          "source_hash": "sha256:84ae730b84ebef438a4c70372062783707ecf360949e3c7ad6ebe39821ff138d"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:menkyoku-king",
+        "entity_type": "title",
+        "canonical_ja": "男極KING"
+      }
+    },
+    {
+      "key": "menkyoku-five",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "男極FIVE",
+      "chosen_rendering": "男极FIVE",
+      "scope": "赛事内称号或组别",
+      "required": "保留英文FIVE。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_h:cmd-000160:dialogue:000",
+          "source_hash": "sha256:9e041b2a04001c8e3adb3c86a740370361f60f72e545896b1ab8ba99243e585d"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_10:1_4_002_10_i:cmd-000062:dialogue:000",
+          "source_hash": "sha256:f05de1b0f9e93dcab05b9bb2a1b3eba8092e8b1dc5794a19e4ddd86d7057e4e4"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:menkyoku-five",
+        "entity_type": "title",
+        "canonical_ja": "男極FIVE"
+      }
+    },
+    {
+      "key": "menkyoku-prize",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "男極賞",
+      "chosen_rendering": "男极奖",
+      "scope": "赛事奖项",
+      "required": "不译男极赏。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_09:1_4_002_09_f:cmd-000019:dialogue:000",
+          "source_hash": "sha256:f73795f7d3832ba3b5d26ca63c1408a001cdfa36b332ab6de5a3ed5ecb3063b3"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_09:1_4_002_09_f:cmd-000075:dialogue:000",
+          "source_hash": "sha256:a6a617209c3357850b75b55cc05eefc02528055ce0a53bd80d475ebe7febdd5f"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:menkyoku-prize",
+        "entity_type": "title",
+        "canonical_ja": "男極賞"
+      }
+    },
+    {
+      "key": "div-mote",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "モテ部門",
+      "chosen_rendering": "受欢迎部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "沿用B002已审定写法。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_c:cmd-000069:dialogue:000",
+          "source_hash": "sha256:a0dc76f8de66517c75787b8d8f5bf18dc028d68c3a6c59dba8746d506076aace"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_02:1_4_002_02_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:1a5860054c0237eafaa78c85642e0138ebf764862bb1cfde435307e233d8ea16"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-mote",
+        "entity_type": "division",
+        "canonical_ja": "モテ部門"
+      }
+    },
+    {
+      "key": "div-live-performance",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "ライブパフォーマンス部門",
+      "chosen_rendering": "现场表现力部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "与パフォーマンス部門保持同一核心词表现力。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_07:1_4_002_07_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:52d0a8babc509bcd8da1fd6f8d31ed0730f4b9ce66417cfe64a73614b4905f3d"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_07:1_4_002_07_a:cmd-000061:dialogue:000",
+          "source_hash": "sha256:b035760c698cd63a2949088efb6f55bd10a5221fe933da2f5e25edc6ce4dbc17"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-live-performance",
+        "entity_type": "division",
+        "canonical_ja": "ライブパフォーマンス部門"
+      }
+    },
+    {
+      "key": "div-performance",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "パフォーマンス部門",
+      "chosen_rendering": "表现力部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "沿用B002写法。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_b:cmd-000029:dialogue:000",
+          "source_hash": "sha256:f6a210594fcc1548f5b79457ec69c73b83e21a67177e81e158c624a04716ac96"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-performance",
+        "entity_type": "division",
+        "canonical_ja": "パフォーマンス部門"
+      }
+    },
+    {
+      "key": "div-stamina",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "体力部門",
+      "chosen_rendering": "体能部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "沿用B002写法。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_01:1_4_002_01_b:cmd-000029:dialogue:000",
+          "source_hash": "sha256:f6a210594fcc1548f5b79457ec69c73b83e21a67177e81e158c624a04716ac96"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-stamina",
+        "entity_type": "division",
+        "canonical_ja": "体力部門"
+      }
+    },
+    {
+      "key": "div-dokkiri",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "ドッキリ部門",
+      "chosen_rendering": "整蛊部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "ドッキリ是整蛊／恶作剧节目，不译惊吓。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_07:1_4_002_07_c:cmd-000087:dialogue:000",
+          "source_hash": "sha256:19047f4a1e58b928327f5eaa72304c8117453803251cfb9e1bfeef2db36d499b"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_07:1_4_002_07_d:cmd-000033:dialogue:000",
+          "source_hash": "sha256:7921fc0deab1f6df975a3bac7312388dd6b31c12de48673d64c96a8aab7300da"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-dokkiri",
+        "entity_type": "division",
+        "canonical_ja": "ドッキリ部門"
+      }
+    },
+    {
+      "key": "div-synchro",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "シンクロ部門",
+      "chosen_rendering": "同步部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "指动作同步，不译花样游泳。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_05:1_4_002_05_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:6c946da8e99d79727f98afa39df62649d0b73daf75e2210f8809a6da00767b85"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_05:1_4_002_05_a:cmd-000084:dialogue:000",
+          "source_hash": "sha256:7a3f69b4e8d7065fbf4e0485cd67793c12526b1588f1a940818b43ba5f0e6064"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-synchro",
+        "entity_type": "division",
+        "canonical_ja": "シンクロ部門"
+      }
+    },
+    {
+      "key": "div-produce",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "プロデュース部門",
+      "chosen_rendering": "制作部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "与プロデュース的制作人语义一致。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_04:1_4_002_04_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:2cdcfce3c033f6ee734a55daee616851146b562d69d675763b5b5a192b97783d"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_04:1_4_002_04_a:cmd-000132:dialogue:000",
+          "source_hash": "sha256:867648cdef302886c4de6c26e8945fd7c8077ecc84588e8e2cc9b5694eba1f4a"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-produce",
+        "entity_type": "division",
+        "canonical_ja": "プロデュース部門"
+      }
+    },
+    {
+      "key": "div-speed",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "スピード部門",
+      "chosen_rendering": "速度部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "同一部门全篇统一。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_03:1_4_002_03_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:b41f108edf7469451896b141d3a408bc500d14a19d4cf55b05d531fb7b2e9706"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_04:1_4_002_04_a:cmd-000011:dialogue:000",
+          "source_hash": "sha256:b0ec3389077892bb515fbb36f84c1ee7da8964be97c706201152a066ddaf1a27"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-speed",
+        "entity_type": "division",
+        "canonical_ja": "スピード部門"
+      }
+    },
+    {
+      "key": "div-acting",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "演技部門",
+      "chosen_rendering": "演技部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "同一部门全篇统一。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_06:1_4_002_06_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:16ee0d161c3b102aacf450b3ff5759730997bc335648bad12290e9d72bc04767"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_06:1_4_002_06_a:cmd-000099:dialogue:000",
+          "source_hash": "sha256:0f2490148b35a819a94e57918ebf7f2c958f93031c369aea3b8e5b804834d611"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-acting",
+        "entity_type": "division",
+        "canonical_ja": "演技部門"
+      }
+    },
+    {
+      "key": "div-power",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "パワー部門",
+      "chosen_rendering": "力量部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "同一部门全篇统一。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:3ba886fc2f5a625f776ea6d3c65ddf89cee4fa900d14252193e93bb16944f816"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_08:1_4_002_08_a:cmd-000100:dialogue:000",
+          "source_hash": "sha256:c11e637b7f7001b4181ddca31c06015cffb34b95739bb3d10b8ae42c6d5eb5de"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-power",
+        "entity_type": "division",
+        "canonical_ja": "パワー部門"
+      }
+    },
+    {
+      "key": "div-knowledge",
+      "editorial_status": "frozen-for-trial",
+      "public_approval": false,
+      "source_form": "知識部門",
+      "chosen_rendering": "知识部门",
+      "scope": "赛事部门名；只译部门名，保留书名号等原文标点",
+      "required": "同一部门全篇统一。",
+      "source_evidence": [
+        {
+          "unit_id": "story-text:v1:1_4_002_09:1_4_002_09_a:cmd-000000:synopsis:000",
+          "source_hash": "sha256:bb551c995d07cd4c4811656dd991e6bd3ecbe521933293c0800050981d05588d"
+        },
+        {
+          "unit_id": "story-text:v1:1_4_002_09:1_4_002_09_a:cmd-000155:dialogue:000",
+          "source_hash": "sha256:36ffce897606e83b5c4a75e45326f2f6872655934b5fd34e970b33e083b36359"
+        }
+      ],
+      "evidence_scope": "run-228f18eac77b B002–B004 source; rendering is editorial trial default chosen 2026-10-07, not human approval",
+      "target_term": {
+        "entity_id": "trial:div-knowledge",
+        "entity_type": "division",
+        "canonical_ja": "知識部門"
+      }
+    }
+  ],
+  "global_required": [
+    "每个ID只翻译本条源文意义，不搬句",
+    "保留施受、否定、条件、时态与数量来源",
+    "普通日语语法与感叹词必须中文化",
+    "信息用于理解，不自动补进译文",
+    "未知专名按精确名单保留，不自行造字",
+    "さん、くん、ちゃん按关系和本轮精确词条处理，不机械统一为先生；保留原文姓／名层级。",
+    "既有道流さん→道流先生、道夫さん→道夫先生继续保留；タケル→武，タケルさん→武先生，不改姓氏大河。",
+    "語り合う按句意为聊天／畅谈；一族为家族／族人；正統派アイドル为正统派偶像，不能靠润色增加喝酒或世界观。",
+    "さん默认不等于先生；除道流先生、道夫先生等精确冻结词条外，优先自然姓名称呼。producer_name_with_p＋さん只保留槽，不加先生。",
+    "被讨论的读音、拼写、口误、语言笑点本身必须保留；语法假名禁令不针对这些剧情信息。",
+    "假名姓名查项目词典，原文姓／名／昵称层级必须保留；未知译名保留原名，不自行猜汉字。",
+    "はい、はーいっ不是报到的到！；ほう不是吼。ふむ／むむっ按语境自然表达，不按发音造字。"
+  ],
+  "global_forbidden": [
+    "未批准的っす/ッス/ほう/ァ残留",
+    "姓名层级无依据转换",
+    "仅因角色印象新增称呼、酒或具体动作",
+    "把false choice按百科资料改对"
+  ],
+  "pending_terms": [
+    "贝独乐/ベーゴマ具体中文称谓",
+    "アヤカシ清掃社项目译名",
+    "ひつじ雲/おぼろ雲专业术语独立核验"
+  ],
+  "proper_name_exceptions": [
+    "ARROW・B",
+    "Cafe Parade",
+    "Altessimo",
+    "Beit",
+    "W",
+    "FRAME",
+    "彩",
+    "High×Joker",
+    "神速一魂",
+    "S.E.M",
+    "THE 虎牙道",
+    "F-LAGS",
+    "Legenders",
+    "C.FIRST",
+    "もふもふえん"
+  ],
+  "note": "Trial-only editorial choices. No published translation approval. R3.1 retains R3 architecture and prior files; non-idol targets are trial glossary hints only, never Speaker/Voice identities. R3.3 (2026-10-07) adds 男極 event/division terms as trial defaults for B003+.",
+  "revision": "R3.3",
+  "meaningful_kana": [
+    {
+      "source_form": "『こうひょう』",
+      "retained_form": "こうひょう"
+    },
+    {
+      "source_form": "『しゅうにん』",
+      "retained_form": "しゅうにん"
+    }
+  ]
+}
