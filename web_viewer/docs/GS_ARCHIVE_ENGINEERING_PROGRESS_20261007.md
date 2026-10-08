@@ -376,3 +376,11 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 详情的 item-masterdata 分支直接返回补录数据，不请求叶子；正式卡池仍带 expectedId 校验身份和 derived_pickup_cards，再附加同名证据。目录入口 preserveBrowse 保留筛选与来源，Portal 来源的特殊保留规则不改；详情从目录打开保留查询，从 extra story_collection 打开保留返回剧情集合的语义。
 - Card factory 当前直接接收 `openGasha`，若 Gasha factory 排在 Card 之后，须改成延迟回调；反向 Gasha→Card 使用真实 Card refs 与入口。`openGashaCard` 暂保留现有等待目录后跳转的行为，不把导航竞争修复悄悄混入搬迁。restore 失败保持原 route 字段，仅改 view 为 gashas、清空 gasha；直接播放器继续跳过父页加载。
 - 旧 gasha-readmodel-navigation 测试仍替换内部 loader，下一批先补真实动态导入、目录/叶子、招募券、取消与归属证据。还需适配 relation、startup、各 restore fixture、卡池分类/本地化消费者；当前尚未修改卡池代码。
+
+### 卡池导航迁移前的真实加载回归（2026-10-08，输入 168c06bb）
+
+- 新增 `gasha-navigation-harness.mjs` 与 `verify-gasha-loading-boundary.mjs`：AST 提取并共同执行 App 当前 6 个函数、4 个 computed 和私有计数，仅替换 ReadModelClient 传输与跨域回调。VM 动态导入使用 App 的实际文件位置，执行真实分类模块与招募券证据模块，未复制 supplement/attach 实现；本地与源码门均为 Node 24。新 verifier 已加入 batch。
+- 检查两页目录、primary 数量/唯一 ID/phase/描述符、详情 expectedId/身份/数组、缓存和未知卡池；用实际证据验证招募券附加、同 ID 异名拒绝附加、item-masterdata 补录与零叶子请求。分别在分页等待期间取消，以及真实 Vue 同步 watcher 观察函数缓存后取消，验证后续目录不发布。
+- 目录/详情两两迟到成功与失败、全局失效/卸载、独立计数竞争、失败重试和页面准备等待均通过。保留 Portal 来源、preserveBrowse、目录查询、extra 剧情集合返回及无集合回退；还覆盖投影身份隔离、补录分类数量、译名/偶像搜索和关联卡片传输边界。
+- 正向基线及 **18/18** 内存错误变体通过，证据 `.analysis/gasha-boundary-mutations/results.json`；变体不写服务源码。source batch **118/118** 通过，日志 `.analysis/gasha-boundary-source-batch.log`；随后将第二次取消检查改为真实 Vue watcher + AbortController 驱动，基线与全部错误变体再次通过。旧卡池入口及关联导航 17 条生产边也通过。
+- 本批只建立迁移前行为证据，没有修改 App、组件、样式、译文或播放行为，不重复构建或声称新增 Browser 验收。共享窗口的门户改动、设计令牌基线和新译文批次均保留。下一步迁移 Card 之后的 Gasha factory，并验证 Card→Gasha 延迟接线、App restore 与既有返回语义。
