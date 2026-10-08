@@ -1,3 +1,4 @@
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -107,6 +108,7 @@ function fixture({ cached = true } = {}) {
   // No placeholder for either cyclic callback: eager capture must fail like real App setup.
   assert.equal(Object.hasOwn(context, 'openStoryCatalog'), false)
   assert.equal(Object.hasOwn(context, 'openProjectedCollection'), false)
+  bindMobileNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
   const stop = () => { scope.stop(); story.stop() }; cleanups.push(stop)

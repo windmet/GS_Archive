@@ -224,3 +224,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 旧目录迁移 8 个入口/返回函数、3 个 alias loader/publish、4 个 computed 和请求计数，提供 prepare/invalidate；22 个依赖、17 个输出。`openUnit` 属于旧前传入口，现代 `openArchiveUnit` 保留原归属。payload/status refs、共享 ownership、URL watcher 与整体导航生命周期仍在 App。
 - 两个 prepare 保留各自原 restore 分支的身份、失败回退和调用位置；所有 restore 路径执行 invalidator。App apply 阶段既有 hydration 与统一状态分派先不合并，其规则与 restore prepare 不完全相同。尤其保留通信成员身份、电话文件到记录 ID、随机会话范围与旧目录父级 category/owner 校验。
 - 必须适配 relation-navigation 的 `openMobileCard` 抽取、startup-route/修复链/故事档案的 restore fixture；旧目录还影响 idol-navigation-ux 与 archive-async-navigation 的宽切片边界。新增回归应验证实际 App 输入/输出、共享计数交叉竞争、明确来源和直接播放器零父页加载；projection 单测不能替代运行时导航回归。本轮只完成盘点，尚未实施上述两批。
+
+
+### 通信导航拆分（2026-10-08，输入 d6418783）
+
+- 提取 `useMobileNavigation`：12 个既有入口/选择/播放/加载函数、2 个 computed、私有请求计数，加上 Back、恢复准备及失效入口；27 个输入、17 个输出。App 3856→3661 行，模板、样式与 `applyArchiveRoute` 保持不变。12 个函数及 3 个声明通过 AST 等价检查，记录于 `.analysis/mobile-diff-review.json`。
+- 新增真实 App 接线回归与 harness；适配启动恢复、故事档案、关联跳转和播放器入口夹具。覆盖三种选择器共享竞争（旧成功/旧失败）、失效/卸载、目录字段及身份验证、缓存/取消、单位归属、电话文件与记录定位、随机话题范围、关联卡片、实际 Back 绑定及实际 restore 的成功/降级/过期路径。无 UI 文案或布局修改。
+- `verify:source-batch` 112/112、`verify:reading`、player repair 37/37、新通信回归、`build:check` 通过。首次编译在 Git 所有权审计失败，以进程级 safe.directory 重跑成功（14.12 秒）。日志 `.analysis/mobile-{source-batch,reading,player-repair,build-check}.log`；输出仅 `.analysis/build-check`，不复制 public。
+- 5175 Browser：皮埃尔电话演出显示实际画面/对白并返回原目录；电话关联卡片往返；改选冬马后 phone 分类保留；组合聊天独立改选 Beit；切换随机分类回到冬马所属 Jupiter；第二随机话题仅播放步骤 7–11（界面 1/5），返回保留随机分类。390×844 和 1280×900 通信布局检查通过。这些是本地 dev 导航与画面验收，不作为音频解码、长稳或线上发布证明。
+- 原 5175 PID 74640 保持，未重启、部署、上传或完整打包。其他窗口翻译、审计、`.gitattributes` 及未跟踪资料保留。本批提交后的干净 LF 完整门禁待记录。

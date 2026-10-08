@@ -1,3 +1,4 @@
+import { bindMobileNavigation } from '../lib/mobile-navigation-harness.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
@@ -158,6 +159,7 @@ function appHarness(t, overrides = {}) {
   bindStoryArchiveNavigation(appSource, context).stop()
   bindStoryNavigation(appSource, context).stop()
   bindSongNavigation(appSource, context).stop()
+  bindMobileNavigation(appSource, context).stop()
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
   bindReaderNavigation(appSource, context).stop()

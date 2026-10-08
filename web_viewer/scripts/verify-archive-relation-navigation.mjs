@@ -1,3 +1,4 @@
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -62,7 +63,7 @@ const context = vm.createContext({
 const handlers = ['captureDetailSource',
   'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
   'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
-  'openMobileCard', 'openRelatedCard', 'openEventDetail']
+  'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
@@ -70,6 +71,7 @@ for (const name of handlers) {
 }
 bindStoryNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
 const fixtures = [
   ['song_detail', 'openSongIdol', '002sht', 'idol_detail'],
   ['song_detail', 'openSongUnit', '01jup', 'unit_detail'],
