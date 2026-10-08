@@ -4,6 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildMainStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
+import { verifyStoryLandingNavigation } from './lib/story-navigation-harness.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readText = relative => readFile(path.join(root, relative), 'utf8')
@@ -27,20 +28,13 @@ assert.equal(main.collections[2].isPlaceholder, true)
 
 assert.match(appSource, /:main-domain="mainStoryDomain"/)
 assert.match(appSource, /const mainStoryDomain = computed\(\(\) => storyCatalogLanding\.value\?\.main \|\| null\)/)
-assert.match(appSource, /await loadStoryReadModelLanding\(\)/)
+await verifyStoryLandingNavigation(appSource, 'main', main)
 assert.doesNotMatch(appSource, /buildMainStoryDomainIdentity\(/,
   'runtime must consume the projected main landing instead of rebuilding it')
 assert.match(
   appSource,
   /currentStoryMode\.value === 'portal' && currentStoryDomain\.value === 'main'/,
 )
-assert.match(appSource, /mode === 'portal' && domain === 'main'/)
-assert.match(appSource, /commitView\('story_catalog'\)/)
-assert.match(
-  appSource,
-  /currentStoryMode\.value === 'portal' && currentStoryDomain\.value === 'main'[\s\S]+currentStoryDomain\.value = ''[\s\S]+commitView\('story_catalog'\)/,
-)
-assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 
 assert.match(catalogSource, /class="main-domain-landing"/)
 assert.match(catalogSource, /openDomain\('main'\)/)

@@ -2,8 +2,10 @@ import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { ref } from 'vue'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 {
@@ -87,6 +89,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
@@ -129,6 +132,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
@@ -148,7 +152,7 @@ for (const disposed of [false, true]) {
 for (const asynchronous of [false, true]) {
   const initial = deferred(), next = deferred(), written = []
   let mount, page = 'home'
-  const loading = { value: true }
+  const loading = ref(true)
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = {
     isDirectScenarioEntry, tracePlayer: () => {}, playbackError: { value: '' },
@@ -173,6 +177,7 @@ for (const asynchronous of [false, true]) {
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
+  bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
@@ -214,8 +219,7 @@ for (const route of [
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => true,
-    loadCollectionDetail: async () => { throw new Error('missing leaf') },
-    loadStoryReadModelDetail: async () => { throw new Error('missing leaf') },
+    readModelClient: { load: async () => { throw new Error('missing leaf') } },
     loadIdolEntityTranslations: async () => {},
     navigation: createArchiveNavigationCoordinator(),
     applyArchiveRoute: async value => { applied.push(value) },
@@ -228,6 +232,7 @@ for (const route of [
   // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
   context.watch = () => {}
   context.view ??= { value: null }
+  bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   await mount()

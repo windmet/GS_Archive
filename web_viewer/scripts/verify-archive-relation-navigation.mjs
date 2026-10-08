@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const roundTrip = route => readArchiveRoute(buildArchiveUrl('http://localhost/', route))
 const source = route => readArchiveSourceRoute(roundTrip(route).sourceRoute)
@@ -61,12 +62,13 @@ const context = vm.createContext({
 const handlers = ['captureDetailSource',
   'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
   'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
-  'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
+  'openMobileCard', 'openRelatedCard', 'openEventDetail']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
+bindStoryNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
 const fixtures = [
   ['song_detail', 'openSongIdol', '002sht', 'idol_detail'],

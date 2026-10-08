@@ -7,6 +7,7 @@ import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { buildExtraStoryDomainIdentity as legacyExtra } from '../fixtures/story-catalog/legacy-domain-identity-v0.mjs'
 import { readArchiveRoute } from '../src/core/archiveRoute.js'
+import { verifyStoryLandingNavigation } from './lib/story-navigation-harness.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readText = relative => readFile(path.join(root, relative), 'utf8')
@@ -87,12 +88,10 @@ assert.deepEqual(
 
 assert.match(appSource, /:extra-domain="extraStoryDomain"/)
 assert.match(appSource, /const extraStoryDomain = computed\(\(\) => storyCatalogLanding\.value\?\.extra \|\| null\)/)
-assert.match(appSource, /await loadStoryReadModelLanding\(\)/)
+await verifyStoryLandingNavigation(appSource, 'extra', extra)
 assert.doesNotMatch(appSource, /buildExtraStoryDomainIdentity\(/,
   'runtime must consume the projected extra landing instead of rebuilding it')
 assert.match(appSource, /collection\.legacySectionIds\?\.includes\(currentStorySection\.value\)/)
-assert.match(appSource, /\['main', 'unit_story', 'extra', 'birthday'\]\.includes\(domain\)/)
-assert.match(appSource, /returnsToDomainLanding = \['main', 'extra', 'birthday'\]\.includes\(domain\)/)
 assert.match(catalogSource, /mode === 'portal' && domain === 'extra'/)
 assert.match(catalogSource, /官方 Extra Story/)
 assert.match(catalogSource, /card\.bannerUrl/)

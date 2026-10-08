@@ -5,6 +5,7 @@ import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { legacyProjection } from '../fixtures/archive-navigation/legacy-route-projection.mjs'
 import { VALID_VIEWS, buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const navigation = useArchiveNavigationState()
 const independent = useArchiveNavigationState()
@@ -167,9 +168,7 @@ const collectionContext = vm.createContext({
   currentStoryFile: independent.currentStoryFile,
   commitArchiveSelection: () => { collectionSelectionCommits++ },
 })
-const selectChapterSource = app.match(/function selectStoryCollectionChapter\([^]*?\n\}/)?.[0]
-assert.ok(selectChapterSource, 'story collection selection handler exists')
-vm.runInContext(selectChapterSource, collectionContext)
+bindStoryNavigation(app, collectionContext).stop()
 independent.currentStoryFile.value = ''
 collectionContext.selectStoryCollectionChapter({ story: { file: '1_4_001_01.json' } })
 assert.equal(independent.currentStoryFile.value, '1_4_001_01.json')

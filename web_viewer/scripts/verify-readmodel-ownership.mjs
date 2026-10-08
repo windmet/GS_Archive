@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { VALID_VIEWS } from '../src/core/archiveRoute.js'
+import { ref, nextTick } from 'vue'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 // App.vue releases a read-model catalogue whenever the current view is not one of its
 // owners. A misspelt owner silently frees data the page is showing (the gasha catalogue
@@ -25,23 +27,22 @@ for (const [ref, view] of [['gashaReadModelCatalog', 'gashas'], ['cardReadModelC
 // The story home (portal mode, no domain) renders chapters, events and unit prequels from the
 // full directory; only the main/extra/birthday landings may skip it.
 {
-  const vm = await import('node:vm')
-  const { ref } = await import('vue')
-  const start = app.indexOf('watch([view, currentStoryMode, currentStoryDomain, currentCharacterId], () => {')
-  const end = app.indexOf('\n})', start)
-  assert.ok(start >= 0 && end > start, 'story directory watcher exists')
-  const body = app.slice(app.indexOf('{', start) + 1, end)
-  function loads(viewName, mode, domain, idol) {
+  async function loads(viewName, mode, domain, idol) {
     let calls = 0
-    const context = vm.createContext({ view: ref(viewName), currentStoryMode: ref(mode), currentStoryDomain: ref(domain), currentCharacterId: ref(idol),
-      navigation: { getLoadOptions: () => ({}) }, storyReadModelStatus: ref(''), loadStoryReadModelCatalog: () => { calls++; return Promise.resolve([]) } })
-    vm.runInContext(`(() => {${body}\n})()`, context)
-    return calls === 1
+    const context = { view: ref('__boot__'), currentStoryMode: ref(mode), currentStoryDomain: ref(domain), currentCharacterId: ref(idol),
+      archiveBootstrap: { domains: { stories: 'story-index' }, counts: { catalog_story_entries: 0 } },
+      readModelClient: { load: async descriptor => { assert.equal(descriptor, 'story-index'); calls++; return { pages: [], count: 0 } } } }
+    const bound = bindStoryNavigation(app, context)
+    try {
+      context.view.value = viewName
+      await nextTick(); for (let index = 0; index < 12; index++) await Promise.resolve()
+      return calls === 1
+    } finally { bound.stop() }
   }
-  assert.equal(loads('story_catalog', 'portal', '', ''), true, 'story home loads the directory')
-  assert.equal(loads('story_catalog', 'search', 'event', ''), true)
-  assert.equal(loads('story_catalog', 'portal', 'main', '001tom'), true, 'idol scope always needs the directory')
-  for (const domain of ['main', 'extra', 'birthday']) assert.equal(loads('story_catalog', 'portal', domain, ''), false, `${domain} landing uses its own projection`)
-  assert.equal(loads('cards', 'portal', '', ''), false)
+  assert.equal(await loads('story_catalog', 'portal', '', ''), true, 'story home loads the directory')
+  assert.equal(await loads('story_catalog', 'search', 'event', ''), true)
+  assert.equal(await loads('story_catalog', 'portal', 'main', '001tom'), true, 'idol scope always needs the directory')
+  for (const domain of ['main', 'extra', 'birthday']) assert.equal(await loads('story_catalog', 'portal', domain, ''), false, `${domain} landing uses its own projection`)
+  assert.equal(await loads('cards', 'portal', '', ''), false)
 }
 console.log(`Read-model ownership: ${entries.length} entries name only real views; each listing view keeps its catalogue`)

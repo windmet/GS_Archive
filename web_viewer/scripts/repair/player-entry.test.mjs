@@ -12,6 +12,7 @@ import { prepareScenario } from '../../src/data/prepareScenario.js'
 import { Preloader } from '../../src/utils/Preloader.js'
 import { deferred, tick, until } from './helpers.mjs'
 import { bindSongNavigation } from '../lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from '../lib/story-navigation-harness.mjs'
 const scenario = { scenario_id: 'test', steps: Array.from({ length: 6 }, (_, i) => ({ step_id: i+1, type: 'adv', state: { bg: `bg${i}` } })) }
 const href = 'https://archive.invalid/?view=player&story_type=main&story_section=101&story=1_4_001_00.json&scenario=episodes%2F1_4_001_00_a.json&start_step=2&end_step=27&return=story_collection&from=%3Fview%3Dstory_catalog'
 function setup(options = {}) {
@@ -145,11 +146,13 @@ function appHarness(t, overrides = {}) {
     loadingPurpose: ref('archive-data'), playbackError: t.controller.error,
     isDirectScenarioEntry, playerReturnRoute, tracePlayer() {}, primeArchiveRouteComponent() {}, captureActiveArchiveView() {}, adoptArchiveViewContext() {},
     writeArchiveRoute: (...args) => writes.push(args), legacyEntryStatus: ref(''), collectionReadModelDetail: ref(null), collectionReadModelStatus: ref('untouched'),
-    loadCollectionDetail: () => { throw Error('parent hydration must not occur before direct player') }, console,
+    collectionReadModelCatalog: ref([{ id: 'main:101', domain: 'main', sectionId: '101', title: 'Main', detail: { url: 'collection:main:101' } }]),
+    readModelClient: { load: () => { throw Error('parent hydration must not occur before direct player') } }, console,
     ...overrides }
   for (const name of [...restoreCode.matchAll(/\+\+(pending\w+)/g)].map(match => match[1])) context[name] = 0
   // Exercise the real route invalidation/preparation methods; this fixture owns
   // player restoration rather than the song-view watcher lifecycle.
+  bindStoryNavigation(appSource, context).stop()
   bindSongNavigation(appSource, context).stop()
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
@@ -173,11 +176,14 @@ test('actual App.vue raw deep-link path executes without catalog/collection hydr
 
 test('actual App.vue establishes intent BEFORE awaited parent hydrate; stale success publishes nothing', async () => {
   const gate = deferred(), t = setup(); let seenPending = false
-  const h = appHarness(t, { loadCollectionDetail: () => { seenPending = t.navigation.isPending(); return gate.promise } })
+  const h = appHarness(t, { readModelClient: { load: (_descriptor, options) => {
+    seenPending = t.navigation.isPending()
+    return gate.promise.then(detail => { options.validate(detail); return detail })
+  } } })
   const old = h.context.restoreEntry(playerReturnRoute(readArchiveRoute(href)))
   await tick(); assert.equal(seenPending, true)
   await t.controller.load('new.json')
-  gate.resolve({ id: 'old', view: { collection: { chapters: [] } } })
+  gate.resolve({ id: 'main:101', view: { collection: { domain: 'main', sectionId: '101', chapters: [] }, readingEntries: [] } })
   await old
   assert.equal(t.state.currentScenarioFile.value, 'new.json')
   assert.equal(h.context.collectionReadModelDetail.value, null)

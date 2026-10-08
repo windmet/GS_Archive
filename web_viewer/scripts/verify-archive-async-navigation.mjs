@@ -13,6 +13,8 @@ import { useStoryPlaybackController } from '../src/core/useStoryPlaybackControll
 import { useStageNavigation } from '../src/composables/useStageNavigation.js'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse as parseJavascript } from '@babel/parser'
+import { ref } from 'vue'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const appScript = parseSfc(app).descriptor.scriptSetup.content
@@ -38,8 +40,10 @@ function deferred() {
 function setup() {
   const requests = [], writes = [], errors = []
   const state = useArchiveNavigationState()
-  const loading = { value: false }
+  const loading = ref(false)
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
+  const storyIndex = { count: 0, pages: [], landing: { main: 'landing:main', extra: 'landing:extra', birthday: 'landing:birthday' } }
+  const storyTransport = { index: async () => storyIndex }
   const context = vm.createContext({
     isDirectScenarioEntry, playerReturnRoute,
     prepareArchivePage: (_view, data) => data,
@@ -49,12 +53,15 @@ function setup() {
     cardReadModelDetail: { value: null },
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
-    archiveBootstrap: { idols: [{ id: '038tak' }] },
+    archiveBootstrap: { idols: [{ id: '038tak' }], domains: { stories: 'story-index' }, counts: { catalog_story_entries: 0 } },
     userPreferences: {value:{portalDefaultScope:'all'}},
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
     idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
-    ensureIdolCommunicationData: async () => {},
-    loadStoryReadModelLanding: async () => {},
+    readModelClient: { load: async descriptor => {
+      if (descriptor === 'story-index') return storyTransport.index()
+      assert.ok(['landing:main', 'landing:extra', 'landing:birthday'].includes(descriptor))
+      return { value: { collections: [] } }
+    } },
     loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
@@ -90,12 +97,13 @@ function setup() {
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
-    functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
     functionSource('async function openVoicePreview(', 'async function openGroup('),
     functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,
-    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
+    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
+  bindStoryNavigation(app, context).stop()
+  production.openStoryCatalog = context.openStoryCatalog
   // Keep transport replaceable after setup while exercising App's real dependency wiring.
   const stageContext = { ...context, useStageNavigation,
     spineViewerLoader: (...args) => context.spineViewerLoader(...args),
@@ -103,7 +111,7 @@ function setup() {
   }
   Object.assign(production, vm.runInNewContext(appScript.slice(stageBinding.init.start, stageBinding.init.end), stageContext))
   const respond = (index, name) => requests[index].resolve(new Response(JSON.stringify({ name, steps: [] })))
-  return { context, state, ...production, requests, respond, writes, errors }
+  return { context, state, ...production, requests, respond, writes, errors, storyTransport, storyIndex }
 }
 {
   const t = setup()
@@ -169,10 +177,10 @@ function setup() {
 // Older history restore cannot write selections after its data dependency resolves.
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.restore({ view: 'story_catalog', query: 'old' })
   await t.restore({ view: 'home', query: 'current' })
-  data.resolve(); await old
+  data.resolve(t.storyIndex); await old
   assert.equal(t.state.view.value, 'home')
   assert.equal(t.state.filterQuery.value, 'current')
   assert.equal(t.writes.length, 0)
@@ -181,10 +189,10 @@ function setup() {
 // release the new restore's history-write suppression.
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.restore({ view: 'story_catalog' })
   const current = t.restore({ view: 'player', scenario: 'current.json', startStep: 3, endStep: 9, returnView: 'story_collection', storyType: 'main', storySection: '101' })
-  data.resolve(); await old
+  data.resolve(t.storyIndex); await old
   assert.equal(t.context.navigation.isRestoring(), true)
   t.sync({ replace: true }); assert.equal(t.writes.length, 0)
   await flush(() => t.requests.length === 1)
@@ -212,9 +220,9 @@ function setup() {
 }
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.openStoryCatalog()
-  t.commit('home'); data.resolve(); await old
+  t.commit('home'); data.resolve(t.storyIndex); await old
   assert.equal(t.state.view.value, 'home')
   assert.equal(t.writes.length, 1)
 }
@@ -262,12 +270,12 @@ const previewCard = (id, cue) => ({ resource_id: `${id}_card`, character_id: id,
 {
   const t = setup(), detail = deferred()
   t.state.view.value = 'cards'
-  t.context.loadStoryReadModelLanding = () => detail.promise
+  t.storyTransport.index = () => detail.promise
   const pending = t.restore({ view: 'story_catalog', query: 'old route' })
   await flush()
   t.filter('filterQuery', 'new search')
   assert.equal(t.context.navigation.isPending(), false, 'explicit user filtering supersedes pending route restoration')
-  detail.resolve()
+  detail.resolve(t.storyIndex)
   await pending
   assert.equal(t.state.view.value, 'cards')
   assert.equal(t.state.filterQuery.value, 'new search')

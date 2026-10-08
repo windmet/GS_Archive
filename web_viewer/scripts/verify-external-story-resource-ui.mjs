@@ -10,6 +10,7 @@ import {
   externalResourcesForStory,
 } from '../src/data/externalStoryResources.js'
 import { storyGateways } from '../src/presentation/StoryGateways.js'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
@@ -281,11 +282,11 @@ assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
   'the withdrawn external registry must not join story sources in the live app')
 assert.doesNotMatch(appComponent, /ensureIdolCommunicationData|loadIdolCommunicationData|ArchiveDataRepository/,
   'withdrawn external-resource routes must not retain the legacy archive repository')
-assert.match(
-  appComponent,
-  /target\?\.kind === 'idol-story'/,
-  'dedicated navigation must retain an internal personal-story action',
-)
+const internalCalls = []
+const internalNavigation = bindStoryNavigation(appComponent, { openIdolStoryArchive: id => internalCalls.push(id) })
+internalNavigation.stop()
+internalNavigation.openExternalStoryInternal({ target: { kind: 'idol-story', idolCode: '001tom' } })
+assert.deepEqual(internalCalls, ['001tom'], 'dedicated navigation must retain an internal personal-story action')
 
 console.log('External Story resource UI verified: exact mappings and safe links')
 
