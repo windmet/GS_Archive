@@ -3,6 +3,8 @@ import { access, readFile } from 'node:fs/promises'
 import { MOBILE_UNIT_THEMES } from '../src/data/mobileVisualThemes.js'
 import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
 import { resolveMobileHeroMedia, MOBILE_HERO_FOCAL_POINT } from '../src/presentation/mobileHeroMedia.js'
+import { ref } from 'vue'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 const readJson = async path => JSON.parse(await read(path))
@@ -186,9 +188,32 @@ assert.match(archiveMobile, /emit\('open-card'/, 'named card unlock chips must r
 assert.match(archiveMobile, /storyByEpisodeId/, 'mobile archive unlock chips must resolve idol-story masterdata')
 assert.match(archiveMobile, /story\.scenarioTitle/, 'mobile archive story unlocks must display formal story titles')
 assert.match(archiveMobile, /emit\('open-idol-story'/, 'named story unlock chips must expose a related-story route entry')
-assert.match(app, /function openMobileIdolStory/, 'App must route related mobile unlocks into the idol-story archive')
-assert.match(app, /currentStorySection\.value = String\(relation\.sectionId\)/, 'related-story routes must retain the exact section identity')
-assert.match(app, /currentEpisodeId\.value = String\(episodeId\)/, 'related-story routes must retain the exact episode identity')
+for (const mode of ['personal', 'unit']) {
+  const episodeId = 2380208, sectionId = 23802
+  const source = { view: { episodeRefs: [{ id: episodeId, idolCode: '038tak', sectionId }] } }
+  const context = {
+    currentMobileMode: ref(mode),
+    mobileIdolReadModelDetail: ref(mode === 'personal' ? source : null),
+    mobileUnitReadModelDetail: ref(mode === 'unit' ? source : null),
+    idolStoryReadModelCatalog: ref([{ id: '038tak', detail: { url: 'idol:038tak' } }]),
+    readModelClient: { load: async (descriptor, options) => {
+      assert.equal(descriptor.url, 'idol:038tak')
+      const detail = { id: '038tak', view: { page: { idol_code: '038tak', sections: [] }, readingEntries: [] } }
+      options.validate(detail)
+      return detail
+    } },
+    captureDetailSource: () => {},
+    commitView: view => { context.navigation.invalidate(); context.view.value = view },
+  }
+  const bound = bindStoryArchiveNavigation(app, context)
+  try {
+    await bound.openMobileIdolStory(String(episodeId))
+    assert.equal(context.view.value, 'idol_story_archive', `${mode} unlock enters the idol-story archive`)
+    assert.equal(context.currentStorySection.value, String(sectionId), 'related-story routes retain the exact section identity')
+    assert.equal(context.currentEpisodeId.value, String(episodeId), 'related-story routes retain the exact episode identity')
+    assert.equal(bound.currentIdolStoryPage.value.idol_code, '038tak')
+  } finally { bound.stop() }
+}
 assert.match(archiveIdolStory, /data-section-id="section\.id"/, 'idol-story archive must expose focused section identity')
 assert.match(archiveIdolStory, /data-episode-id="episode\.id"/, 'idol-story archive must expose focused episode identity')
 assert.match(backdrop, /filter:\s*blur\(/, 'outer story background must be softened behind the phone surface')

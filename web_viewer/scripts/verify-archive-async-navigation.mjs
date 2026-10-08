@@ -15,6 +15,7 @@ import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse as parseJavascript } from '@babel/parser'
 import { ref } from 'vue'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const appScript = parseSfc(app).descriptor.scriptSetup.content
@@ -43,7 +44,7 @@ function setup() {
   const loading = ref(false)
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const storyIndex = { count: 0, pages: [], landing: { main: 'landing:main', extra: 'landing:extra', birthday: 'landing:birthday' } }
-  const storyTransport = { index: async () => storyIndex }
+  const storyTransport = { index: async () => storyIndex, idolDetail: async () => { throw Error('Unexpected idol story hydration') } }
   const context = vm.createContext({
     isDirectScenarioEntry, playerReturnRoute,
     prepareArchivePage: (_view, data) => data,
@@ -56,15 +57,19 @@ function setup() {
     archiveBootstrap: { idols: [{ id: '038tak' }], domains: { stories: 'story-index' }, counts: { catalog_story_entries: 0 } },
     userPreferences: {value:{portalDefaultScope:'all'}},
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
-    idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
-    readModelClient: { load: async descriptor => {
+    idolStoryReadModelDetail: ref(null),
+    idolStoryReadModelCatalog: ref([{ id: '038tak', detail: { url: 'idol:038tak' } }]),
+    readModelClient: { load: async (descriptor, options) => {
+      if (descriptor?.url === 'idol:038tak') {
+        const detail = await storyTransport.idolDetail(); options.validate(detail); return detail
+      }
       if (descriptor === 'story-index') return storyTransport.index()
       assert.ok(['landing:main', 'landing:extra', 'landing:birthday'].includes(descriptor))
       return { value: { collections: [] } }
     } },
     loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
-    currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
+    currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
     captureDetailSource: () => {}, ownsArchiveSource, normalizeEventBrowseState,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
@@ -102,6 +107,7 @@ function setup() {
     scenarioSource,
     '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
+  bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   production.openStoryCatalog = context.openStoryCatalog
   // Keep transport replaceable after setup while exercising App's real dependency wiring.
@@ -161,12 +167,13 @@ function setup() {
 // A raw player deep link saves return identity without blocking on owner payloads.
 {
   const t = setup(), data = deferred()
-  t.context.loadIdolStoryDetail = () => data.promise
+  let parentLoads = 0
+  t.storyTransport.idolDetail = () => { parentLoads++; return data.promise }
   const pending = t.restore({ view: 'player', scenario: 'birthday-b.json', returnView: 'idol_story_archive', idol: '038tak' })
   await flush()
   assert.equal(t.requests.length, 1, 'scenario restoration must precede owner hydration')
-  t.context.currentIdolStoryPage.value = { sections: [{ episodes: [{ file: 'birthday-b.json' }] }] }
-  data.resolve({ id: '038tak', view: { page: t.context.currentIdolStoryPage.value } })
+  assert.equal(parentLoads, 0, 'raw player entry must not request its parent leaf')
+  data.resolve({ id: '038tak', view: { page: { idol_code: '038tak', sections: [] }, readingEntries: [] } })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'birthday'); await pending
   assert.equal(t.state.playerEntryRoute.value.idol, '038tak')

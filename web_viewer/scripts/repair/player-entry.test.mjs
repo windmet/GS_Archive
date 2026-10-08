@@ -13,6 +13,7 @@ import { Preloader } from '../../src/utils/Preloader.js'
 import { deferred, tick, until } from './helpers.mjs'
 import { bindSongNavigation } from '../lib/song-navigation-harness.mjs'
 import { bindStoryNavigation } from '../lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from '../lib/story-archive-navigation-harness.mjs'
 const scenario = { scenario_id: 'test', steps: Array.from({ length: 6 }, (_, i) => ({ step_id: i+1, type: 'adv', state: { bg: `bg${i}` } })) }
 const href = 'https://archive.invalid/?view=player&story_type=main&story_section=101&story=1_4_001_00.json&scenario=episodes%2F1_4_001_00_a.json&start_step=2&end_step=27&return=story_collection&from=%3Fview%3Dstory_catalog'
 function setup(options = {}) {
@@ -152,6 +153,7 @@ function appHarness(t, overrides = {}) {
   for (const name of [...restoreCode.matchAll(/\+\+(pending\w+)/g)].map(match => match[1])) context[name] = 0
   // Exercise the real route invalidation/preparation methods; this fixture owns
   // player restoration rather than the song-view watcher lifecycle.
+  bindStoryArchiveNavigation(appSource, context).stop()
   bindStoryNavigation(appSource, context).stop()
   bindSongNavigation(appSource, context).stop()
   vm.createContext(context)

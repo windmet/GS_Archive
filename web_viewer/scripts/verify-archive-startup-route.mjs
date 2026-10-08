@@ -6,6 +6,7 @@ import { ref } from 'vue'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 {
@@ -89,6 +90,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
@@ -132,6 +134,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
@@ -177,6 +180,7 @@ for (const asynchronous of [false, true]) {
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
@@ -232,6 +236,7 @@ for (const route of [
   // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
   context.watch = () => {}
   context.view ??= { value: null }
+  bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
