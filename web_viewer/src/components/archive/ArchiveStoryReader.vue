@@ -54,6 +54,7 @@ import { useReadingPresentation } from './useReadingPresentation.js'
 import { computed, nextTick, ref, watch } from 'vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
+import { readingDirectoryEntries } from '../../data/ReadingDirectory.js'
 
 const props = defineProps({ relatedEvent:String,state: { type: Object, required: true }, chapter: { type: Object, default: null }, chapterNavigation: { type: Object, default: null }, documentId: String, mode: String, anchor: String, notice: String, busy: Boolean, idolDirectory:{type:Array,default:()=>[]} })
 const emit = defineEmits(['open-event','chapter', 'select', 'mode', 'back', 'retry', 'play-document', 'refresh', 'locate', 'retry-segment', 'play-segment', 'locate-segment'])
@@ -65,8 +66,9 @@ const playbackNotice = ref(null)
 const document = computed(() => props.state.document)
 const focusedEntry = computed(() => props.state.entries.find(entry => entry.document_id === props.documentId))
 const segmentEntries = computed(() => {
-  const logicalId = document.value?.logical_id || props.state.entries.find(entry => entry.document_id === props.documentId)?.logical_id
-  return logicalId ? props.state.entries.filter(entry => entry.logical_id === logicalId) : []
+  const entry = props.state.entries.find(candidate => candidate.document_id === props.documentId) ||
+    (document.value && { logical_id: document.value.logical_id })
+  return entry ? readingDirectoryEntries(props.state.entries, entry) : []
 })
 const { localization, sourceTitle, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
 const originalTitle = computed(() => presentProducerAddressingText(document.value ? sourceTitle.value : focusedEntry.value?.title || props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.title))

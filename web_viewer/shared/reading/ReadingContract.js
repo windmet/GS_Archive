@@ -24,6 +24,8 @@ export function validateReadingManifest(value) {
     requireValue(typeof e.logical_id === 'string' && typeof e.scenario_id === 'string', 'story identity')
     requireValue(e.title == null || typeof e.title === 'string', 'presentation title')
     requireValue(e.episode_label == null || typeof e.episode_label === 'string', 'presentation episode label')
+    requireValue((e.directory_id == null && e.directory_order == null) ||
+      (typeof e.directory_id === 'string' && e.directory_id && Number.isInteger(e.directory_order)), 'reading directory')
   }
   return value
 }

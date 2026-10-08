@@ -42,6 +42,7 @@ const HELPERS = {
  idolStories: 'src/data/idolCommunicationSelectors.js',
  mobile: 'src/data/idolCommunicationSelectors.js',
  characterImages: 'src/utils/CharacterImageResolver.js',
+ readingDirectory: 'src/data/ReadingDirectory.js',
 };
 export function projectUnitRecord(entry, stories, songs) {
   const unit = entry.unit;
@@ -221,7 +222,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'legacy-files': { records:legacyAliases.fileRecords },
     'legacy-episodes': { records:legacyAliases.episodeRecords },
     'legacy-zero': { records:legacyAliases.zeroRecords },
-    'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest) },
+    'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries) },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         readingEntries:readingEntriesForFiles(data.readingManifest.entries,

@@ -1,3 +1,4 @@
+import { readingDirectoryKey } from './ReadingDirectory.js'
 import { createBoundedTextTransport } from '../utils/BoundedTextTransport.js'
 import { validateReadingDocument, validateReadingManifest } from '../../shared/reading/ReadingContract.js'
 
@@ -43,7 +44,7 @@ export function createReadingRepository({ fetchImpl = (...args) => fetch(...args
     if (!entry && result.entry === null && entries.length === 0) return freeze({ entry: null, entries })
     if (!entry || Object.keys(entry).some(key => entry[key] !== result.entry?.[key]) ||
       Object.keys(result.entry).some(key => entry[key] !== result.entry[key])) throw Error('Reading locator identity mismatch')
-    if (entries.some(candidate => candidate.logical_id !== entry.logical_id)) throw Error('Reading locator segment mismatch')
+    if (entries.some(candidate => readingDirectoryKey(candidate) !== readingDirectoryKey(entry))) throw Error('Reading locator segment mismatch')
     return freeze({ entry, entries })
   }
   async function load(documentId, knownEntry = undefined, {signal} = {}) {

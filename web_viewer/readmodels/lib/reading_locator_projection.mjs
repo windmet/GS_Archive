@@ -3,16 +3,13 @@ import { assert, pick } from './common.mjs';
 const ID = /^[A-Za-z0-9_-]+$/;
 const HASH = /^sha256:[a-f0-9]{64}$/;
 
-export function buildReadingLocatorRecords(manifest) {
+// directoryEntries is the App's readingDirectoryEntries (src/data/ReadingDirectory.js), passed in by
+// the checkout adapter so the published locator groups segments exactly as the Reader does.
+export function buildReadingLocatorRecords(manifest, directoryEntries) {
   assert(manifest?.schema_version === 1 && Array.isArray(manifest.entries), 'Reading manifest version/entries');
+  assert(typeof directoryEntries === 'function', 'Reading directory grouping');
   const ids = new Set();
   const files = new Set();
-  const byLogicalId = new Map();
-  for (const entry of manifest.entries) {
-    const siblings = byLogicalId.get(entry.logical_id) || [];
-    siblings.push(entry);
-    byLogicalId.set(entry.logical_id, siblings);
-  }
   return manifest.entries.map(entry => {
     assert(ID.test(entry.document_id || '') && !ids.has(entry.document_id), 'Reading locator document identity');
     assert(entry.file === `${entry.document_id}.json` && entry.schema_version === 2, 'Reading locator file/version');
@@ -23,7 +20,7 @@ export function buildReadingLocatorRecords(manifest) {
     files.add(entry.source_file);
     return { id: entry.document_id,
       summary: pick(entry, ['source_file', 'status', 'row_count', 'title', 'episode_label', 'domain']),
-      view: { entry, entries: byLogicalId.get(entry.logical_id) },
+      view: { entry, entries: directoryEntries(manifest.entries, entry) },
     };
   });
 }

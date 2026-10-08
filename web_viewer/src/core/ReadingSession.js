@@ -1,3 +1,4 @@
+import { readingDirectoryEntries } from '../data/ReadingDirectory.js'
 /** Navigation owns validity; this feature only publishes one atomic reading state. */
 export function createReadingSession({ repository, publish }) {
   return {
@@ -23,5 +24,5 @@ export function createReadingSession({ repository, publish }) {
 export function knownReadingLocator(detail, documentId) {
   const entries = detail?.view?.readingEntries || []
   const selected = entries.filter(entry => entry.document_id === documentId)
-  return selected.length === 1 ? {entry:selected[0],entries:entries.filter(entry => entry.logical_id === selected[0].logical_id)} : null
+  return selected.length === 1 ? {entry:selected[0],entries:readingDirectoryEntries(entries, selected[0])} : null
 }
