@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -63,6 +64,7 @@ function restoreFixture() {
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
     applyArchiveRoute: async route => { t.calls.push(['apply', route]); c.view.value = route.view },
   })
+  bindLegacyAliasNavigation(app, c).stop()
   bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop()
   const node = body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'restoreRoute')
   const source = script.slice(node.start, node.end)

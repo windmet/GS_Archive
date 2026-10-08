@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import assert from 'node:assert/strict'
@@ -71,7 +72,7 @@ for (const disposed of [false, true]) {
     userPreferences: { value: {} },
     archiveBootstrap: { idols: [{ id: '002sht' }] },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, loadCardCatalog: () => catalog.promise,
     loadIdolDetail: async idolCode => ({ id: idolCode, view: { profile: { idol_code: idolCode } } }),
     loadIdolEntityTranslations: () => translations.promise,
@@ -95,6 +96,7 @@ for (const disposed of [false, true]) {
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
@@ -122,7 +124,7 @@ for (const disposed of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     loadGashaCatalog: async () => ({ rows: [] }),
     isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
@@ -140,6 +142,7 @@ for (const disposed of [false, true]) {
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -165,7 +168,7 @@ for (const asynchronous of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: (_route, { intent: inherited }) => navigation.run(async intent => {
@@ -187,6 +190,7 @@ for (const asynchronous of [false, true]) {
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -225,7 +229,7 @@ for (const route of [
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => true,
     readModelClient: { load: async () => { throw new Error('missing leaf') } },
     loadIdolEntityTranslations: async () => {},
@@ -244,6 +248,7 @@ for (const route of [
   bindStoryNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   await mount()
   assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,

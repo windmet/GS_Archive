@@ -237,3 +237,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 固定 `5a0f1e59` 的干净 LF 完整源码门禁执行 115 步：113 通过、1 失败、1 跳过 npm ci（复用依赖）。唯一失败为新增 `verify-mobile-navigation.mjs` 末尾多一空行；`61724e04` 仅删除该空行，已推送，原范围 `git diff --check 39d79ba2… 61724e04` 和通信回归复验通过。原门禁报告不改写成全绿，也未为纯空白修正重复运行其他 113 项；源码与行为保持相同。
 - 证据位于 `E:\Web_build\GS_Archive_engineering_20261007\gate-5a0f1e59-final\`：`results.json` 为原始门禁结果，`whitespace-correction.json` 为修正复验，`mobile-diff-review.json` 为 AST 对照，`generated-audit.diff` 为门禁生成差异。最终批量为 112/112，编译与当前构建审计通过。临时检出及 junction 已移除，主依赖保留；清理后 C 盘可用 48.38 GiB，5175 PID 74640。
 - Browser 刷新后仍恢复皮埃尔 phone 页面，检查期间 console 无 error，临时 viewport 已重置。下一批继续旧目录兼容导航；本轮不引入 UI 改造。
+
+
+### 旧目录兼容导航拆分（2026-10-08，输入 999d9b00）
+
+- 提取 `useLegacyAliasNavigation`：11 个既有函数、4 个 computed、私有请求计数及 prepare/invalidate；22 个依赖、17 个输出。App 3661→3478 行。AST 对照确认迁移函数、5 个声明、模板/样式、`goArchiveBack`、`applyArchiveRoute` 及 restore 委托外内容不变，证据 `.analysis/legacy-diff-review.json`。现代 `openArchiveUnit`、payload refs、共享生命周期仍留在原处。
+- 新真实 App harness/verifier 覆盖目录/文件身份、category/owner 父级匹配、哈希 descriptor、筛选、缺失文件不播放、三入口交叉竞争、旧成功/旧失败、私有失效/全局 revision/卸载、返回分支；同时执行真实 restore 与 apply，验证恢复成功/降级/过期以及直接播放器不加载父目录。适配六个既有夹具，语音预览的脆弱字符串切片改为 AST 函数提取。
+- 源码 batch 113/113、reading、player repair 37/37、新 legacy verifier 和 `build:check`（22.57 秒）通过；夹具提取整理后 async-navigation 再次通过。日志 `.analysis/legacy-{source-batch,reading,player-repair,build-check}.log`。构建只写固定 `.analysis/build-check`，不复制 public。
+- 5175 Browser：旧前传组合目录→Jupiter→第一话文件→演出实际对白→返回同一文件；输入无匹配搜索显示空态；清空并刷新恢复；再返回 Jupiter 章节及组合目录。三层目录在 390 与 1280 宽度前后肉眼对照结构和内容一致，指针悬停/焦点高亮不同不计为代码外观变化。console 无 error，临时 viewport 已重置。没有将上述视图与跳转验收扩展为音频/长稳/发布验收。
+- 仅记录既有 UI 待办：旧兼容目录仍展示 episodes/files、源文件名及 voices/lips 技术数量；本批未改文案、元素或样式。仍不部署、不上传、不重启 5175。固定提交的干净 LF 全门结果随后补录。

@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from '../lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from '../lib/mobile-navigation-harness.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
@@ -160,6 +161,7 @@ function appHarness(t, overrides = {}) {
   bindStoryNavigation(appSource, context).stop()
   bindSongNavigation(appSource, context).stop()
   bindMobileNavigation(appSource, context).stop()
+  bindLegacyAliasNavigation(appSource, context).stop()
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
   bindReaderNavigation(appSource, context).stop()

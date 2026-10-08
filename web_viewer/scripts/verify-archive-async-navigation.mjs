@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
@@ -19,7 +20,13 @@ import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harne
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const appScript = parseSfc(app).descriptor.scriptSetup.content
-const stageBinding = parseJavascript(appScript, { sourceType: 'module' }).program.body
+const appBody = parseJavascript(appScript, { sourceType: 'module' }).program.body
+const productionFunction = name => {
+  const node = appBody.find(node => node.type === 'FunctionDeclaration' && node.id.name === name)
+  assert.ok(node, `Missing production function: ${name}`)
+  return appScript.slice(node.start, node.end)
+}
+const stageBinding = appBody
   .filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
   .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
 assert.ok(stageBinding, 'App binds the stage navigation composable')
@@ -67,7 +74,6 @@ function setup() {
       assert.ok(['landing:main', 'landing:extra', 'landing:birthday'].includes(descriptor))
       return { value: { collections: [] } }
     } },
-    loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
     currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
@@ -102,11 +108,12 @@ function setup() {
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
-    functionSource('async function openVoicePreview(', 'async function openGroup('),
+    productionFunction('openVoicePreview'),
     functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,
     '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
+  bindLegacyAliasNavigation(app, context).stop()
   bindStoryArchiveNavigation(app, context).stop()
   bindStoryNavigation(app, context).stop()
   production.openStoryCatalog = context.openStoryCatalog

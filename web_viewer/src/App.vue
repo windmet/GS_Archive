@@ -634,7 +634,7 @@ import {
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
-import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
+import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
 import {
   archiveSectionForRoute,
@@ -664,6 +664,7 @@ import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigati
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { useStoryNavigation } from './composables/useStoryNavigation.js'
 import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { useLegacyAliasNavigation } from './composables/useLegacyAliasNavigation.js'
 import { useMobileNavigation } from './composables/useMobileNavigation.js'
 import { useReaderNavigation } from './composables/useReaderNavigation.js'
 import { usePortalNavigation } from './composables/usePortalNavigation.js'
@@ -914,8 +915,6 @@ const legacyFileReadModelDetail = shallowRef(null)
 const legacyZeroReadModelDetail = shallowRef(null)
 const legacyEpisodeReadModelDetail = shallowRef(null)
 const legacyAliasStatus = ref('')
-let pendingLegacyAliasNavigation = 0
-
 const homeFocus = ref(false)
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
@@ -1152,17 +1151,19 @@ const idolUnitOptions = computed(() => {
 })
 
 // Group list.
-const filteredGroups = computed(() => {
-  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
-  if (legacyGroupReadModelDetail.value?.id !== aliasId) return []
-  const groups = legacyGroupReadModelDetail.value.view.groups
-  const q = filterQuery.value.toLowerCase()
-  return q ? groups.filter(group => group.title.toLowerCase().includes(q) || group.id.toLowerCase().includes(q)) : groups
-})
-
-const groupTitle = computed(() => {
-  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
-  return legacyGroupReadModelDetail.value?.id === aliasId ? legacyGroupReadModelDetail.value.view.title : ''
+const {
+  openGroup, openScenarioEntry, openUnit, openEpisodeFiles,
+  goBackToUnits, goBackFromGroups, returnToMobilePicker, goBackToFiles,
+  loadLegacyAliasDetail, loadLegacyAliasRoute, publishLegacyAliasRoute, filteredGroups,
+  groupTitle, episodeZeroUnits, filteredFileEntries, prepareLegacyAliasRoute,
+  invalidateLegacyAliasNavigation,
+} = useLegacyAliasNavigation({
+  legacyGroupReadModelDetail, legacyFileReadModelDetail, legacyEpisodeReadModelDetail, legacyZeroReadModelDetail,
+  legacyAliasStatus, currentCharacterId, currentCategoryId, currentPickTarget,
+  currentGroup, currentUnit, currentEpisodeId, currentCardId,
+  filterQuery, detailSourceRoute, navigation, archiveBootstrap,
+  readModelClient, captureDetailSource, commitView, goHome,
+  loadScenario, openIdolReadModel,
 })
 
 const categoryHeaderText = computed(() => {
@@ -1177,11 +1178,6 @@ const categoryFilterPlaceholder = computed(() => {
   if (currentCategoryId.value === 'idol_chat') return 'Search chat...'
   if (currentCategoryId.value === 'idol_phone') return 'Search phone...'
   return '搜索偶像姓名或组合…'
-})
-
-// Episode Zero units.
-const episodeZeroUnits = computed(() => {
-  return legacyZeroReadModelDetail.value?.id === 'episode_zero' ? legacyZeroReadModelDetail.value.view.units : []
 })
 
 const mainStoryDomain = computed(() => storyCatalogLanding.value?.main || null)
@@ -1316,14 +1312,6 @@ const currentArchiveUnitStories = computed(() => unitReadModelDetail.value?.view
   ? unitReadModelDetail.value.view.stories : [])
 const currentArchiveUnitSongs = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
   ? unitReadModelDetail.value.view.songs : [])
-
-const filteredFileEntries = computed(() => {
-  if (!currentGroup.value) return []
-  if (legacyFileReadModelDetail.value?.id !== String(currentGroup.value.id)) return []
-  const entries = legacyFileReadModelDetail.value.view.entries
-  const q = filterQuery.value.toLowerCase()
-  return q ? entries.filter(entry => entry.searchText.toLowerCase().includes(q)) : entries
-})
 
 const currentCards = computed(() => (cardReadModelCatalog.value || [])
   .filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value))
@@ -2444,13 +2432,6 @@ function goBackToCards() {
   commitView('cards')
 }
 
-function goBackToUnits() {
-  currentUnit.value = null
-  currentEpisodeId.value = ''
-  currentGroup.value = null
-  commitView('episode_zero_units')
-}
-
 function openPrimaryIdol(idolCode = '') {
   if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('profile')
   return openIdolReadModel(idolCode, { resetContext: true })
@@ -2904,116 +2885,6 @@ async function openVoicePreview(card, cue, returnView) {
     typeof cue === 'string' ? cue : cue.cue, returnView)
 }
 
-async function openGroup(group) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-files', String(group.id)) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open files:', error)
-      legacyAliasStatus.value = '剧情文件暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyFileReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentGroup.value = detail.view.group
-  currentEpisodeId.value = ''
-  filterQuery.value = ''
-  commitView('files')
-}
-
-function openScenarioEntry(entry) {
-  if (entry?.file && !entry.missing) loadScenario(entry.file)
-}
-
-async function openUnit(unit) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-episodes', unit.unit_code) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open episodes:', error)
-      legacyAliasStatus.value = '组合前传目录暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyEpisodeReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentUnit.value = detail.view.unit
-  currentEpisodeId.value = ''
-  filterQuery.value = ''
-  commitView('episodes')
-}
-
-async function openEpisodeFiles(ep) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-files', String(ep.id)) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open episode files:', error)
-      legacyAliasStatus.value = '章节文件暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyFileReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentGroup.value = detail.view.group
-  currentEpisodeId.value = String(ep.id)
-  filterQuery.value = ''
-  commitView('files')
-}
-
-function goBackFromGroups() {
-  if (currentCharacterId.value) {
-    if (currentCategoryId.value === 'idol') openIdolReadModel(currentCharacterId.value)
-    else if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) returnToMobilePicker()
-    else {
-      currentCharacterId.value = ''
-      commitView('idols')
-    }
-  } else {
-    goHome()
-  }
-}
-
-function returnToMobilePicker() {
-  detailSourceRoute.value = ''
-  currentCharacterId.value = ''
-  currentCategoryId.value = ''
-  currentGroup.value = null
-  currentPickTarget.value = 'mobile'
-  commitView('idol_picker')
-}
-
-function goBackToFiles() {
-  if (currentUnit.value) {
-    currentGroup.value = null
-    currentEpisodeId.value = ''
-    commitView('episodes')
-  } else if (currentCategoryId.value === 'cards' && currentCardId.value) {
-    commitView('card_detail')
-  } else if (currentCategoryId.value === 'cards') {
-    commitView('cards')
-  } else if (currentCharacterId.value) {
-    currentGroup.value = null
-    commitView('groups')
-  } else {
-    currentGroup.value = null
-    commitView('groups')
-  }
-}
-
 async function restorePlaybackDestination(destination, route) {
   if (destination === 'reader') return returnToReader()
   if (!route) return commitView(destination)
@@ -3256,47 +3127,6 @@ async function loadEventDetail(id, options = navigation.getLoadOptions?.() || {}
 
 }
 
-async function loadLegacyAliasDetail(domain, id, options = navigation.getLoadOptions?.() || {}) {
-  const descriptor = await entityDescriptor(archiveBootstrap, domain, id, `${domain}.detail`)
-  return readModelClient.load({...descriptor,expectedId:id}, { ...options, expectedId: id, validate: data => {
-    const view = data.view
-    if (domain === 'legacy-groups' && (!view?.title || !Array.isArray(view.groups)) ||
-      domain === 'legacy-files' && (!view?.group || !Array.isArray(view.entries) || !view.sourceRoute) ||
-      domain === 'legacy-episodes' && (!view?.unit || !Array.isArray(view.unit.episodes)) ||
-      domain === 'legacy-zero' && !Array.isArray(view?.units))
-      throw new Error(`${domain} alias shape mismatch`)
-  } })
-}
-
-async function loadLegacyAliasRoute(route, options = navigation.getLoadOptions?.() || {}) {
-  const owner = route.view === 'player' ? route.returnView : route.view
-  if (owner === 'episode_zero_units') return { zero: await loadLegacyAliasDetail('legacy-zero', 'episode_zero', options) }
-  if (owner === 'episodes') return { episode: await loadLegacyAliasDetail('legacy-episodes', route.unit, options) }
-  if (owner === 'groups') {
-    const id = route.idol ? `${route.category}:${route.idol}` : route.category
-    return { groups: await loadLegacyAliasDetail('legacy-groups', id, options) }
-  }
-  if (owner !== 'files' || !route.group) return null
-  const id = route.idol ? `${route.category}:${route.idol}` : route.category
-  const [files, parent] = await Promise.all([
-    loadLegacyAliasDetail('legacy-files', route.group, options),
-    loadLegacyAliasDetail(route.category === 'episode_zero' ? 'legacy-episodes' : 'legacy-groups',
-      route.category === 'episode_zero' ? route.unit : id, options),
-  ])
-  if (files.view.sourceRoute.categoryId !== route.category ||
-    files.view.sourceRoute.ownerId !== (route.category === 'episode_zero' ? route.unit : route.idol || ''))
-    throw new Error('Legacy file alias route context mismatch')
-  return route.category === 'episode_zero' ? { files, episode: parent } : { files, groups: parent }
-}
-
-function publishLegacyAliasRoute(result) {
-  if (!result) return
-  if (result.groups) legacyGroupReadModelDetail.value = result.groups
-  if (result.files) legacyFileReadModelDetail.value = result.files
-  if (result.episode) legacyEpisodeReadModelDetail.value = result.episode
-  if (result.zero) legacyZeroReadModelDetail.value = result.zero
-}
-
 async function loadResourceStatus(options = navigation.getLoadOptions?.() || {}) {
   return (async () => {
       const index = await readModelClient.load(archiveBootstrap.domains.resources, options)
@@ -3339,7 +3169,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
     ++pendingEventNavigation
     invalidateStoryArchiveNavigation()
     invalidateMobileNavigation()
-    ++pendingLegacyAliasNavigation
+    invalidateLegacyAliasNavigation()
     invalidateStoryNavigation()
     ++pendingResourceNavigation
     loading.value = true
@@ -3359,22 +3189,9 @@ async function restoreRoute(route, { restoring = true } = {}) {
           route = { view: 'welcome' }
         }
       }
-      if (['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
-        (route.view === 'player' && ['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.returnView))) {
-        try {
-          const alias = await loadLegacyAliasRoute(route)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          if (intent.isCurrent() && request === restoreRequest) {
-            publishLegacyAliasRoute(alias)
-            legacyAliasStatus.value = ''
-          }
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[LegacyAliasReadModel] Failed to restore route:', error)
-          legacyAliasStatus.value = '旧剧情目录暂时无法读取，请重试。'
-          route = { view: route.category === 'episode_zero' ? 'episode_zero_units' : 'home' }
-        }
-      }
+      const preparedLegacyRoute = await prepareLegacyAliasRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
+      if (!preparedLegacyRoute) return
+      route = preparedLegacyRoute
       const preparedMobileRoute = await prepareMobileRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
       if (!preparedMobileRoute) return
       route = preparedMobileRoute

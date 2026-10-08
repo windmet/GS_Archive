@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -97,7 +98,7 @@ for (const preferred of [null, { id: '002sht' }]) {
     openIdolPicker: target => destinations.push(['picker', target]),
     commitView: view => destinations.push(['view', view]), goHome: () => destinations.push(['home']),
   }
-  vm.runInNewContext(source('function goBackFromGroups(', 'function closePlayer('), state)
+  bindLegacyAliasNavigation(app, state).stop()
   state.goBackFromGroups()
   assert.deepEqual(destinations.pop(), ['detail', '001tom'])
   state.currentCategoryId.value = 'idol_chat'

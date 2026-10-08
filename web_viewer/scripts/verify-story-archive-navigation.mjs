@@ -1,3 +1,4 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -109,6 +110,7 @@ function fixture({ cached = true } = {}) {
   assert.equal(Object.hasOwn(context, 'openStoryCatalog'), false)
   assert.equal(Object.hasOwn(context, 'openProjectedCollection'), false)
   bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
   const stop = () => { scope.stop(); story.stop() }; cleanups.push(stop)
