@@ -44,15 +44,14 @@
       </figure>
     </header>
 
-    <section v-if="story.titleCards?.length" class="story-section" aria-labelledby="story-detail-entries">
+    <section v-if="story.titleCards?.length > 1" class="story-section" aria-labelledby="story-detail-entries">
       <div class="story-section-head"><h3 id="story-detail-entries">正式播放入口</h3><small>{{ story.titleCards.length }} 个</small></div>
       <ol class="episode-list">
         <li v-for="(card, index) in story.titleCards" :key="`${card.episode_index}-${index}`" class="episode-entry">
           <div class="episode-reading-main">
-            <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
             <span class="episode-copy">
               <strong>{{ presentProducerAddressingText(card.title || story.title) }}</strong>
-              <small>{{ presentIdolEpisodeLabel({ sourceName: card.label }) || `EP${index + 1}` }}</small>
+              <small>{{ presentIdolEpisodeLabel({ sourceName: card.label }) || `第 ${index + 1} 个入口` }}</small>
             </span>
           </div>
         </li>

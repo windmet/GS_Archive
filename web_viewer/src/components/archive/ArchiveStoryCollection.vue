@@ -44,7 +44,7 @@
         <small>{{ collection.chapterCount }} {{ chapterUnit }}</small>
       </div>
 
-      <ol class="chapter-list">
+      <ol class="chapter-list" :class="{ unnumbered: singleStoryChapters }">
         <li
           v-for="(chapter, chapterIndex) in collection.chapters"
           :key="chapter.id"
@@ -52,12 +52,12 @@
           :class="{ expanded: expandedChapterId === chapter.id, unavailable: !chapter.exists, canonical: chapter.canonicalRelation }"
         >
           <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter)">
-            <span class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
+            <span v-if="!singleStoryChapters" class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
             <span class="chapter-identity">
               <small>{{ chapterLabel(chapter.label) }}</small>
               <strong>{{ chapterTitle(chapter) }}</strong>
             </span>
-            <span class="chapter-stats">{{ chapter.episodeCount }} 段 · {{ chapter.voiceCount }} 段语音</span>
+            <span class="chapter-stats">{{ chapterStats(chapter) }}</span>
             <ChevronUp v-if="expandedChapterId === chapter.id" :size="18" aria-hidden="true" />
             <ChevronDown v-else :size="18" aria-hidden="true" />
           </button>
@@ -71,8 +71,9 @@
             <p v-if="!chapter.exists && !chapter.synopsis" class="story-note">这一{{ chapterUnit }}暂未收录。</p>
 
             <div v-if="!chapter.canonicalRelation" class="chapter-actions" aria-label="本话观看方式">
-              <button class="story-action primary" @click="readChapter(chapter)"><BookOpen :size="16" />阅读本话</button>
-              <button class="story-action" :disabled="!chapter.exists" @click="emit('play-chapter', chapter)"><Play :size="15" fill="currentColor" />连播演出</button>
+              <button class="story-action primary" @click="readChapter(chapter)"><BookOpen :size="16" />{{ soleEpisode(chapter) ? '阅读本篇' : '阅读本话' }}</button>
+              <button v-if="soleEpisode(chapter)" class="story-action" :disabled="!soleEpisode(chapter).exists" @click="emit('play-episode', { chapter, episode: soleEpisode(chapter) })"><Play :size="15" fill="currentColor" />播放演出</button>
+              <button v-else class="story-action" :disabled="!chapter.exists" @click="emit('play-chapter', chapter)"><Play :size="15" fill="currentColor" />连播演出</button>
               <a
                 v-for="resource in externalResourcesForChapter(chapter.id)"
                 :key="resource.external_id"
@@ -88,14 +89,13 @@
             <p v-if="readingStatusNotice" class="story-note" role="status">{{ readingStatusNotice }}</p>
             <p v-if="readingError" class="story-note" role="status">{{ readingError }} <button class="story-more" @click="emit('retry-reading')">重试阅读目录</button></p>
 
-            <ol v-if="!chapter.canonicalRelation" class="episode-list">
-              <li v-for="(episode, episodeIndex) in chapter.episodes" :key="episode.id" class="episode-entry">
+            <!-- A one-episode chapter is the story itself: its actions above already read and play it. -->
+            <ol v-if="!chapter.canonicalRelation && !soleEpisode(chapter)" class="episode-list">
+              <li v-for="episode in chapter.episodes" :key="episode.id" class="episode-entry">
                 <a v-if="readingEntry(episode)" class="episode-reading-main" :href="readingHref(chapter, readingEntry(episode))" :aria-label="`阅读 ${episodeLabel(episode)}`" @click="readEpisode($event, chapter, episode)">
-                  <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                   <span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small></span>
                 </a>
                 <div v-else class="episode-reading-main">
-                  <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                   <span class="episode-copy"><strong>{{ episodeLabel(episode) }}</strong><small>{{ episode.exists ? '暂无文字版，可观看演出' : '暂未收录' }}</small></span>
                 </div>
                 <button class="story-icon-action" :disabled="!episode.exists" :aria-label="`播放 ${episodeLabel(episode)}`" :title="`播放 ${episodeLabel(episode)}`" @click.stop="emit('play-episode', { chapter, episode })"><Play :size="17" fill="currentColor" /></button>
@@ -146,6 +146,14 @@ const collectionTitle = computed(() => {
 })
 const episodeLabel = episode => presentIdolEpisodeLabel({ sourceName: episode.label, kind:episode.kind, ordinal:episode.ordinal })
 const readingEntry = episode => readingByFile.value.get(episode.file)
+// Birthday and extra chapters are each one story; main, unit and personal chapters hold episodes.
+const soleEpisode = chapter => chapter.episodes.length === 1 ? chapter.episodes[0] : null
+const singleStoryChapters = computed(() => Boolean(props.collection?.chapters?.length) && props.collection.chapters.every(soleEpisode))
+function chapterStats(chapter) {
+  const episode = soleEpisode(chapter)
+  if (!episode) return `${chapter.episodeCount} 段 · ${chapter.voiceCount} 段语音`
+  return [episode.dialogueCount && `${episode.dialogueCount} 段对白`, episode.voiceCount && `${episode.voiceCount} 段语音`].filter(Boolean).join(' · ')
+}
 
 function readingHref(chapter, entry) {
   const source = { ...props.readerSource, story: chapter.story?.file || chapter.file || '' }
@@ -158,7 +166,7 @@ function readEpisode(event, chapter, episode) {
 function readChapter(chapter) {
   const entry = chapter.episodes.map(readingEntry).find(Boolean)
   if (entry) emit('read-episode', { chapter, documentId:entry.document_id })
-  else readingStatusNotice.value = chapter.exists ? '这一话暂无文字版，可以连播观看演出。' : '这一话暂未收录。'
+  else readingStatusNotice.value = chapter.exists ? `这一${chapterUnit.value}暂无文字版，可以观看演出。` : `这一${chapterUnit.value}暂未收录。`
 }
 const displayTitle = useReaderTitles()
 function chapterTitle(chapter) { return presentProducerAddressingText(displayTitle(chapter.episodes.map(readingEntry).find(Boolean),chapter.title)) }

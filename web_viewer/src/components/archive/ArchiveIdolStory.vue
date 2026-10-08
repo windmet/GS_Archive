@@ -79,7 +79,7 @@
             </div>
 
             <ol class="episode-list">
-              <li v-for="(episode, episodeIndex) in section.episodes" :key="episode.id" class="episode-entry" :class="{ focused: Number(episode.id) === Number(focusedEpisodeId) }">
+              <li v-for="episode in section.episodes" :key="episode.id" class="episode-entry" :class="{ focused: Number(episode.id) === Number(focusedEpisodeId) }">
                 <button
                   v-if="readingEntry(episode)"
                   type="button"
@@ -88,11 +88,9 @@
                   :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.name })}`"
                   @click="emit('read-episode', { section, episode })"
                 >
-                  <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                   <span class="episode-copy"><strong>{{ presentIdolEpisodeLabel({ sourceName: episode.name }) }}</strong><small>{{ episode.dialogueCount }} 段对白 · {{ episode.voiceCount }} 段语音</small></span>
                 </button>
                 <div v-else class="episode-reading-main" :data-episode-id="episode.id">
-                  <span class="episode-number">{{ String(episodeIndex + 1).padStart(2, '0') }}</span>
                   <span class="episode-copy"><strong>{{ presentIdolEpisodeLabel({ sourceName: episode.name }) }}</strong><small>{{ episode.exists ? '暂无文字版，可观看演出' : '暂未收录' }}</small></span>
                 </div>
                 <button type="button" class="story-icon-action" :disabled="!episode.exists" :aria-label="`播放 ${presentIdolEpisodeLabel({ sourceName: episode.name })}`" :title="`播放 ${presentIdolEpisodeLabel({ sourceName: episode.name })}`" @click="emit('play-episode', { section, episode })">

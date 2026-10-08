@@ -65,14 +65,13 @@
         <span class="episode-count">{{ episodes.length }} 章</span>
       </div>
       <div class="episode-list">
-        <div v-for="(episode, index) in episodes" :key="episode.id" class="episode-entry">
+        <div v-for="episode in episodes" :key="episode.id" class="episode-entry">
         <button
           :disabled="!event.exists"
           @click="emit('play-episode', episode)"
         >
-          <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
           <span class="episode-copy">
-            <strong>{{ chapterLabel(episode.label) }}</strong>
+            <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong>
           </span>
           <span class="episode-stats">
             <span>{{ episode.dialogueCount }} 段对白</span>
@@ -80,7 +79,7 @@
           </span>
           <Play :size="16" fill="currentColor" />
         </button>
-        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${chapterLabel(episode.label)}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
+        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
           @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="16" />阅读</button>
         </div>
       </div>
@@ -174,7 +173,7 @@
 </template>
 
 <script setup>
-import { chapterLabel } from '../../presentation/chapterLabel.js'
+import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
 import { BookOpen, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -366,9 +365,8 @@ function formatDateTime(timestamp) {
 .episode-section { background: transparent; }
 .episode-count { color: #6f7e85; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); border-top: 1px solid var(--gs-rule); }
-.episode-list button { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto 28px; align-items: center; gap: var(--gs-space-3); min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.episode-list button { display: grid; grid-template-columns: minmax(0, 1fr) auto 28px; align-items: center; gap: var(--gs-space-3); min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
 .episode-list button:disabled { cursor: not-allowed; opacity: .55; }
-.episode-number { color: var(--gs-mint-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
 .episode-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .episode-copy small { overflow: hidden; color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); text-overflow: ellipsis; white-space: nowrap; }
@@ -489,7 +487,7 @@ function formatDateTime(timestamp) {
   .episode-list { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 520px) {
-  .episode-list button { grid-template-columns: 28px minmax(0, 1fr) 26px; }
+  .episode-list button { grid-template-columns: minmax(0, 1fr) 26px; }
   .episode-stats { display: none; }
   .reward-grid { grid-template-columns: minmax(0, 1fr); }
 }
@@ -503,7 +501,7 @@ function formatDateTime(timestamp) {
   .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container event-detail (max-width: 520px) {
-  .episode-list button { grid-template-columns: 28px minmax(0, 1fr) 26px; }
+  .episode-list button { grid-template-columns: minmax(0, 1fr) 26px; }
   .episode-stats { display: none; }
   .reward-grid, .event-media-grid { grid-template-columns: minmax(0, 1fr); }
 }
