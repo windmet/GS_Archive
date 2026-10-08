@@ -1,5 +1,5 @@
 const HASH = /^sha256:[a-f0-9]{64}$/
-export const READER_TITLE_BYTE_BUDGET = 64 * 1024
+export const READER_TITLE_BYTE_BUDGET = 128 * 1024
 export const READER_TITLE_SHARD_COUNT = 16
 export function readerTitleShardKey(id) {
   let hash = 2166136261

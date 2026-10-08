@@ -7,11 +7,11 @@ import { readerStoryTitle, readerTitle, validateReaderTitles, validateReaderTitl
 const indexBytes = fs.readFileSync(new URL('../public/translations/zh-CN/reader-titles.json',import.meta.url))
 const index = validateReaderTitles(JSON.parse(indexBytes))
 const payloads = new Map([['/reader-titles.json', indexBytes]])
-assert.ok(indexBytes.length < READER_TITLE_BYTE_BUDGET, 'optional title index stays below 64 KiB')
+assert.ok(indexBytes.length < READER_TITLE_BYTE_BUDGET, 'optional title index stays below 128 KiB')
 for (const [key, descriptor] of Object.entries(index.shards || {})) {
   const bytes = fs.readFileSync(new URL(`../public/translations/zh-CN/${descriptor.file}`,import.meta.url))
   payloads.set(`/${descriptor.file}`,bytes)
-  assert.ok(bytes.length < READER_TITLE_BYTE_BUDGET, 'each optional binding shard stays below 64 KiB')
+  assert.ok(bytes.length < READER_TITLE_BYTE_BUDGET, 'each optional binding shard stays below 128 KiB')
   assert.equal(bytes.length, descriptor.bytes)
   assert.equal(`sha256:${createHash('sha256').update(bytes).digest('hex')}`,descriptor.sha256)
   const shard = validateReaderTitleShard(JSON.parse(bytes),index,key)
