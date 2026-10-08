@@ -177,7 +177,7 @@ const filteredSongs = computed(() => {
 
 <style scoped>
 .song-catalog { height: 100%; padding: var(--gs-space-7); overflow-y: auto; background: var(--gs-paper); font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
-.song-catalog-status { padding: var(--gs-space-4) var(--gs-space-5); background: var(--gs-mint-wash); color: #246d67; font-size: var(--gs-text-ui); }
+.song-catalog-status { padding: var(--gs-space-4) var(--gs-space-5); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); }
 .song-catalog-status button { margin-left: var(--gs-space-3); border: 0; background: none; color: var(--gs-mint-ink); font: inherit; text-decoration: underline; cursor: pointer; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); min-height: var(--gs-control-normal); }
 .song-hero { display: grid; gap: var(--gs-space-4); padding-bottom: var(--gs-space-5); border-bottom: 1px solid var(--gs-line); }
 .song-hero p { max-width: 62ch; margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.7; }
@@ -196,7 +196,7 @@ const filteredSongs = computed(() => {
   padding: 0 11px;
   border: 1px solid var(--gs-line);
   border-radius: 999px;
-  background: #fff;
+  background: var(--gs-surface);
   color: var(--gs-ink-2);
   font: inherit;
   font-size: var(--gs-text-ui);
@@ -216,7 +216,7 @@ const filteredSongs = computed(() => {
   border: 1px solid var(--gs-line);
   border-radius: 6px;
   color: var(--gs-ink-3);
-  background: #fff;
+  background: var(--gs-surface);
 }
 .song-search input { min-width: 0; width: 100%; height: 100%; border: 0; outline: 0; background: transparent; color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
 .song-search:focus-within { border-color: var(--gs-mint-ink); outline: var(--gs-focus-ring) solid var(--gs-mint-ink); outline-offset: var(--gs-focus-offset); }
@@ -295,7 +295,7 @@ const filteredSongs = computed(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .song-card:hover { background: #eef7f6; }
+  .song-card:hover { background: var(--gs-mint-wash); }
 }
 
 @media (max-width: 760px), (pointer: coarse) {

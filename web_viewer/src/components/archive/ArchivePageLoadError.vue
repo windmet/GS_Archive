@@ -11,9 +11,9 @@
 function reload() { window.location.reload(); }
 </script>
 <style scoped>
-.archive-page-load-error { margin:24px 0;padding:24px;border:1px solid #d5e2e2;border-radius:12px;background:#ffffffed;color:#25444c; }
+.archive-page-load-error { margin:24px 0;padding:24px;border:1px solid var(--gs-line);border-radius:12px;background:#ffffffed;color:var(--gs-ink); }
 .archive-page-load-error h2 { margin:0 0 12px;font-size:20px; }
 .archive-page-load-error p { margin:0 0 16px;line-height:1.7; }
-.archive-page-load-error button { padding:10px 16px;min-height:44px;border:1px solid #bdd8d2;border-radius:8px;background:#edf7f4;color:#236b60;font:inherit;cursor:pointer; }
-.archive-page-load-error button:focus-visible { outline:3px solid #048a6d;outline-offset:3px; }
+.archive-page-load-error button { padding:10px 16px;min-height:44px;border:1px solid var(--gs-selected-line);border-radius:8px;background:var(--gs-mint-wash);color:var(--gs-mint-ink);font:inherit;cursor:pointer; }
+.archive-page-load-error button:focus-visible { outline:3px solid var(--gs-mint);outline-offset:3px; }
 </style>

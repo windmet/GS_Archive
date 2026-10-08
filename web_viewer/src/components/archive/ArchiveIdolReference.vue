@@ -45,12 +45,12 @@ function advanceImage() {
 </script>
 
 <style scoped>
-.archive-idol-reference { --reference-size: 44px; display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; min-height: 52px; padding: 6px 8px; border: 1px solid #dce8e8; border-radius: 12px; background: #f8fbfb; color: #29444b; font: inherit; text-align: left; }
+.archive-idol-reference { --reference-size: 44px; display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; min-height: 52px; padding: 6px 8px; border: 1px solid var(--gs-line); border-radius: 12px; background: var(--gs-mint-wash); color: var(--gs-ink); font: inherit; text-align: left; }
 button.archive-idol-reference { cursor: pointer; }
-button.archive-idol-reference:hover { border-color: #89c9c2; background: #eff9f7; }
-button.archive-idol-reference:focus-visible { outline: 3px solid #37a9a1; outline-offset: 2px; }
+button.archive-idol-reference:hover { border-color: var(--gs-selected-line); background: var(--gs-mint-wash); }
+button.archive-idol-reference:focus-visible { outline: 3px solid var(--gs-mint); outline-offset: 2px; }
 .density-identity { --reference-size: 36px; width: auto; min-height: 44px; padding: 3px 5px; border-color: transparent; background: transparent; }
-button.density-identity:hover { border-color: #d3e8e5; }
+button.density-identity:hover { border-color: var(--gs-line); }
 .density-identity .idol-reference-copy { flex-direction: row; align-items: baseline; gap: 6px; }
 .density-identity .idol-reference-copy small::before { content: '·'; margin-right: 6px; }
 .density-portrait { --reference-size: 64px; min-height: 78px; }
@@ -62,10 +62,10 @@ button.density-identity:hover { border-color: #d3e8e5; }
 .density-visual .idol-reference-copy { flex: 0 0 auto; align-items: center; width: 100%; }
 .density-visual .idol-reference-arrow { display: none; }
 .without-image { min-height: 44px; padding-inline: 12px; }
-.idol-reference-art { display: grid; flex: 0 0 var(--reference-size); place-items: center; width: var(--reference-size); height: var(--reference-size); border-radius: 50%; background: #e7f0f0; color: #63848a; font-weight: 700; overflow: hidden; }
+.idol-reference-art { display: grid; flex: 0 0 var(--reference-size); place-items: center; width: var(--reference-size); height: var(--reference-size); border-radius: 50%; background: var(--gs-line); color: var(--gs-ink-3); font-weight: 700; overflow: hidden; }
 .idol-reference-art img { width: 100%; height: 100%; object-fit: cover; }
 .idol-reference-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; min-width: 0; }
 .idol-reference-copy strong, .idol-reference-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.idol-reference-copy strong { font-size: .82rem; }.idol-reference-copy small { color: #70848a; font-size: .67rem; }
-.idol-reference-arrow { flex: 0 0 auto; color: #23867e; }
+.idol-reference-copy strong { font-size: .82rem; }.idol-reference-copy small { color: var(--gs-ink-3); font-size: .67rem; }
+.idol-reference-arrow { flex: 0 0 auto; color: var(--gs-mint-ink); }
 </style>

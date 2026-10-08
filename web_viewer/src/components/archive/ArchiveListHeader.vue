@@ -25,7 +25,7 @@ const emit = defineEmits(['back', 'update:modelValue'])
 
 <style scoped>
 .list-header {
-  --archive-back-ink: #16838d;
+  --archive-back-ink: var(--gs-mint-ink);
   position: sticky;
   top: 0;
   z-index: 5;
@@ -33,8 +33,8 @@ const emit = defineEmits(['back', 'update:modelValue'])
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  background: var(--gs-surface);
+  border-bottom: 1px solid var(--gs-line);
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 .list-header h2 {
@@ -42,7 +42,7 @@ const emit = defineEmits(['back', 'update:modelValue'])
   margin: 0;
   font-size: 1rem;
   flex: 1;
-  color: #222;
+  color: var(--gs-ink);
   overflow-wrap: anywhere;
 }
 .filter-bar {
@@ -50,20 +50,20 @@ const emit = defineEmits(['back', 'update:modelValue'])
   top: 69px;
   z-index: 5;
   padding: 8px 16px;
-  background: #f8f9fa;
+  background: var(--gs-paper);
 }
 .filter-input {
   width: 100%;
   padding: 8px 12px;
-  background: #fff;
-  border: 1px solid #ccc;
-  color: #222;
+  background: var(--gs-surface);
+  border: 1px solid var(--gs-rule);
+  color: var(--gs-ink);
   border-radius: 6px;
   font-size: 0.85rem;
 }
 .filter-input:focus {
   outline: none;
-  border-color: #88ccff;
+  border-color: var(--gs-rule);
   box-shadow: 0 0 0 2px rgba(136,204,255,0.2);
 }
 </style>

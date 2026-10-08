@@ -52,19 +52,19 @@ function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '
 <style scoped>
 .domain-detail-title { display:block; }
 .domain-detail-title h3 { min-width:0;overflow-wrap:anywhere; }
-.collection-card-usage { min-width:0; margin:var(--gs-space-6,20px) 0; padding-top:var(--gs-space-5,16px); border-top:1px solid #dce8e7; }
-.collection-card-usage h4 { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--gs-space-3,8px); margin:0; color:#243c45; font-size:var(--gs-text-subtitle,16px); font-weight:var(--gs-weight-semibold,600); line-height:1.5; }
-.collection-card-usage h4 small { color:#657a80; font-size:var(--gs-text-meta,12px); font-weight:var(--gs-weight-regular,400); }
-.collection-usage-note { margin:var(--gs-space-3,8px) 0 var(--gs-space-4,12px); color:#657a80; font-size:var(--gs-text-meta,12px); line-height:1.6; }
+.collection-card-usage { min-width:0; margin:var(--gs-space-6,20px) 0; padding-top:var(--gs-space-5,16px); border-top:1px solid var(--gs-line); }
+.collection-card-usage h4 { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--gs-space-3,8px); margin:0; color:var(--gs-ink); font-size:var(--gs-text-subtitle,16px); font-weight:var(--gs-weight-semibold,600); line-height:1.5; }
+.collection-card-usage h4 small { color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); font-weight:var(--gs-weight-regular,400); }
+.collection-usage-note { margin:var(--gs-space-3,8px) 0 var(--gs-space-4,12px); color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.6; }
 .collection-usage-list { display:grid; gap:var(--gs-space-3,8px); margin:0; padding:0; list-style:none; }
-.collection-usage-list > li { display:block; min-width:0; padding-bottom:var(--gs-space-3,8px); border-bottom:1px solid #e5eeed; }
-.collection-usage-card { display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; gap:var(--gs-space-2,4px); width:100%; min-width:0; min-height:var(--gs-control-touch,44px); padding:var(--gs-space-2,4px) 0; border:0; border-radius:var(--gs-radius-field,8px); background:transparent; color:#243c45; font-family:inherit; text-align:left; cursor:pointer; }
+.collection-usage-list > li { display:block; min-width:0; padding-bottom:var(--gs-space-3,8px); border-bottom:1px solid var(--gs-line); }
+.collection-usage-card { display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; gap:var(--gs-space-2,4px); width:100%; min-width:0; min-height:var(--gs-control-touch,44px); padding:var(--gs-space-2,4px) 0; border:0; border-radius:var(--gs-radius-field,8px); background:transparent; color:var(--gs-ink); font-family:inherit; text-align:left; cursor:pointer; }
 .collection-usage-copy { display:grid; gap:4px; min-width:0; }
-.collection-usage-image { display:grid; place-items:center; width:44px; height:44px; color:#657a80; }
+.collection-usage-image { display:grid; place-items:center; width:44px; height:44px; color:var(--gs-ink-3); }
 .collection-usage-image img { display:block; width:100%; height:100%; object-fit:contain; }
 .collection-usage-card strong { font-size:var(--gs-text-body,14px); font-weight:var(--gs-weight-semibold,600); line-height:1.6; overflow-wrap:anywhere; }
 .collection-usage-identity { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-3,8px); font-size:var(--gs-text-meta,12px); line-height:1.5; overflow-wrap:anywhere; }
-.collection-usage-identity small { padding:var(--gs-space-1,2px) var(--gs-space-2,4px); border-radius:4px; background:#edf5f2; color:#236d67; font-size:inherit; font-weight:var(--gs-weight-semibold,600); }
-.collection-usage-card:focus-visible { outline:var(--gs-focus-ring,3px) solid #048a6d; outline-offset:var(--gs-focus-offset,2px); }
-@media (hover:hover) and (pointer:fine) { .collection-usage-card:hover { background:#edf8f4; } }
+.collection-usage-identity small { padding:var(--gs-space-1,2px) var(--gs-space-2,4px); border-radius:4px; background:var(--gs-mint-wash); color:var(--gs-mint-ink); font-size:inherit; font-weight:var(--gs-weight-semibold,600); }
+.collection-usage-card:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }
+@media (hover:hover) and (pointer:fine) { .collection-usage-card:hover { background:var(--gs-mint-wash); } }
 </style>
