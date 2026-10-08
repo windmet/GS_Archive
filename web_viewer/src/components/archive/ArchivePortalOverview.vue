@@ -65,10 +65,10 @@
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" decorative /></button></div>
         </article></div>
       </section>
-      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable, 'is-w-view': birthdayTheme && ['012yus','013kys'].includes(preferredReference?.idolCode)}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
+      <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
           <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
             <header class="overview-identity">
-              <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :style="{transform: birthdayTheme && preferredReference?.idolCode === '012yus' ? 'translateX(8%)' : birthdayTheme && preferredReference?.idolCode === '013kys' ? 'translateX(-12%)' : undefined}" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
+              <div class="overview-portrait-slot"><span class="overview-signature" aria-hidden="true"></span><img v-if="activePortrait && !portraitFailed" class="overview-idol-art" :src="activePortrait.url" alt="" decoding="async" @error="portraitFailed = true" />
               <ArchiveIdolAvatar v-else-if="preferredReference?.actionable" :idol-code="preferredReference.idolCode" :size="88" :accent-color="preferredReference.accentColor" decorative />
               <Users v-else class="overview-all-mark" :size="76" aria-hidden="true" />
               </div><div class="overview-identity-copy">
@@ -78,15 +78,16 @@
                 <p v-if="desktopOverview.preferredUnitName" class="overview-unit-name"><img v-if="unitLogoUrl && !unitLogoFailed" :src="unitLogoUrl" :alt="desktopOverview.preferredUnitName" decoding="async" @error="unitLogoFailed = true" /><span v-else>{{ desktopOverview.preferredUnitName }}</span></p>
               </div>
             </header>
-            <button v-if="desktopOverview.birthdayPortrait" class="overview-art-theme" type="button" :aria-pressed="birthdayTheme" @click="birthdayTheme = !birthdayTheme; portraitFailed=false">{{ birthdayTheme ? '生日主题 · 切换原版立绘' : '原版立绘 · 切换生日主题' }}</button>
             <button class="overview-home-action" type="button" data-archive-focus-id="portal-open-home" @click="emit('open-home', preferredReference.idolCode)">进入主页<ChevronRight :size="16" aria-hidden="true" /></button>
             <nav v-if="preferredReference?.actionable" class="overview-preferred-actions" aria-label="当前偶像快捷入口"><button v-for="action in preferredActions" :key="action.id" type="button" :data-archive-focus-id="`portal-preferred:${action.id}`" @click="emit('open-preferred', {action: action.id, idolCode: preferredReference.idolCode})"><component :is="preferredActionIcons[action.id]" :size="15" aria-hidden="true" />{{ action.label }}</button></nav>
-            <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
-            <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
+            <!-- Quiet settings for this hero, as one caption line under the shortcuts. -->
+            <p class="overview-personal-meta">
+              <button v-if="preferredReference?.actionable && preferredReference.idolCode !== savedIdolCode" class="overview-save-idol" type="button" @click="emit('save-preferred', preferredReference.idolCode)">设为我的担当</button>
+              <button class="overview-producer-badge" type="button" @click="emit('edit-personal')">{{ producerDisplayName }}<ArrowUpRight :size="12" /></button>
+            </p>
           </div>
           <div class="overview-card-showcase">
-            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></header>
-            <button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组卡面 <Shuffle :size="15" /></button>
+            <header class="overview-section-heading overview-card-heading"><h3 id="portal-card-preview-title">{{ preferredReference?.actionable ? '精选卡片' : '卡面探索' }}</h3><span class="overview-heading-actions"><button v-if="!preferredReference?.actionable" class="overview-shuffle" type="button" @click="shuffleCards">换一组<Shuffle :size="15" aria-hidden="true" /></button><button type="button" data-archive-focus-id="portal-cards-all" @click="openDirectory('cards')">查看全部<ChevronRight :size="16" aria-hidden="true" /></button></span></header>
             <PortalCardBento :cards="collections.cards || []" :counts="desktopOverview.cardCounts" @expand="emit('expand-cards')" :global="!preferredReference?.actionable" :offset="cardOffset" @open="emit('open-result',$event)" @filter="openDirectory('cards', $event)" />
           </div>
       </section>
@@ -175,8 +176,7 @@ const footprints = computed(() => props.desktopOverview.footprints || [])
 const directoryItems = destinations.flatMap(group => group.items)
 const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
 const collections = computed(() => props.desktopOverview.collections || {})
-const birthdayTheme=ref(false)
-const activePortrait=computed(()=>birthdayTheme.value ? props.desktopOverview.birthdayPortrait : props.desktopOverview.portrait)
+const activePortrait=computed(()=>props.desktopOverview.portrait)
 const gateways=storyGateways.filter(row=>row.action!=='external-resources')
 function gatewayCount(gateway){return props.desktopOverview.gatewayCountsByAction?.[gateway.id] ?? storyGatewayCount(gateway,collections.value.stories || [],props.desktopOverview.gatewayCounts)}
 const timeline=computed(()=>props.desktopOverview.projectionVersion ? collections.value.events || [] : portalTimeline(collections.value.events || []))
@@ -230,242 +230,286 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 </script>
 
 <style scoped>
+/* The archive portal on the programme layout. One stylesheet, one order: base, toolbar and search,
+   the footprint and the phone directory, the 担当 hero and featured cards, then the sections.
+   Sections sit on the paper under a heading and a rule; only controls, the search popover and the
+   art carry a surface. Component layout follows the page's own width (container portal); the
+   viewport tiers decide only the shell-level rows (toolbar, phone directory). */
 .portal-overview-scroll { position:relative;z-index:2;width:100%;height:100%;min-height:0;overflow:auto;padding:var(--gs-space-7) var(--gs-space-8) var(--gs-space-9);scrollbar-width:thin; }
-.portal-overview { --portal-accent:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 36%,var(--gs-ink));--portal-tint:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 7%,var(--gs-surface));--portal-line:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,var(--gs-line));--portal-muted:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,var(--gs-ink-3));container-type:inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:var(--gs-ink);font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6; }
+.portal-overview {
+  --portal-accent:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 36%,var(--gs-ink));
+  --portal-tint:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 7%,var(--gs-surface));
+  --portal-line:color-mix(in srgb,var(--portal-idol-color,var(--gs-mint)) 15%,var(--gs-line));
+  container:portal / inline-size;width:min(1200px,100%);min-width:0;margin:0 auto;color:var(--gs-ink);font-family:var(--gs-font-directory);font-size:var(--gs-text-ui);line-height:1.6;
+}
 .portal-overview *, .portal-overview-scroll { box-sizing:border-box; }
 .portal-overview button, .portal-overview input { font:inherit; }
 .portal-overview button { cursor:pointer; }
 .portal-overview button:disabled { cursor:default;color:var(--gs-ink-3); }
-.portal-overview button:focus-visible, .portal-overview input:focus-visible, .portal-overview :deep(.domain-media-preview button:focus-visible) { outline:var(--gs-focus-ring) solid var(--portal-accent);outline-offset:var(--gs-focus-offset); }
-.overview-toolbar, .overview-brand, .overview-toolbar-actions { display:flex;align-items:center;gap:var(--gs-space-4); }
-.overview-toolbar { justify-content:space-between;min-height:44px;gap:var(--gs-space-5); }
-.overview-brand { flex:none;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);letter-spacing:-.03em; }
-.overview-brand b { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);letter-spacing:.12em;margin-left:var(--gs-space-2); }
-.overview-toolbar-actions { flex-wrap:wrap;justify-content:flex-end;gap:var(--gs-space-1); }
-.overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
-.overview-icon-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:var(--gs-radius-field);background:transparent;color:var(--portal-accent); }
-.overview-brand h1 { margin:0;padding-left:14px;border-left:1px solid var(--portal-line);font-size:var(--gs-text-section);line-height:1.3;font-weight:700;letter-spacing:-.02em; }
+.portal-overview button:focus-visible, .portal-overview input:focus-visible, .portal-overview :deep(.domain-media-preview button:focus-visible) { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
+.overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+
+/* Toolbar: 资料馆 / scope · search · tools. */
+.overview-toolbar { display:grid;grid-template-columns:auto minmax(180px,1fr) auto;align-items:center;gap:var(--gs-space-4);min-height:var(--gs-control-touch); }
+.overview-brand { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0; }
+.overview-brand h1 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.3;white-space:nowrap; }
 .overview-brand h1:focus { outline:none; }
-.overview-search { position:relative;margin-bottom:var(--gs-space-4); }
-.overview-search-form { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:4px 6px 4px 16px;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 93%, transparent);color:var(--portal-accent);box-shadow:0 6px 24px color-mix(in srgb, var(--gs-chrome) 4%, transparent); }
-.overview-search-form:focus-within { border-color:var(--portal-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--portal-idol-color) 12%,transparent); }
-.overview-search-form > svg { flex:none; }
-.overview-search-form input { flex:1;min-width:0;height:44px;padding:var(--gs-space-3) 0;border:0;background:transparent;color:inherit;font-size:var(--gs-text-subtitle); }
-.overview-search-form input::placeholder { color:var(--portal-muted); }
+.overview-breadcrumb-divider { color:var(--gs-ink-3); }
+.overview-icon-button { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
+.overview-lens-trigger { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0;min-height:var(--gs-control-toolbar);padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold); }
+.overview-lens-trigger span { max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.overview-lens-trigger > svg:last-child { color:var(--gs-ink-3); }
+.overview-toolbar-actions { display:flex;align-items:center;justify-content:flex-end;gap:var(--gs-space-1); }
+.overview-toolbar-actions :deep(.archive-language-switch) { border:0;padding:0;background:transparent; }
+
+.overview-search { position:relative;justify-self:end;width:100%;max-width:420px;min-width:0; }
+.overview-search-form { display:flex;align-items:center;gap:var(--gs-space-3);min-width:0;min-height:var(--gs-control-touch);padding:2px 2px 2px var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);background:var(--gs-surface);color:var(--gs-ink-3); }
+.overview-search-form:focus-within { border-color:var(--gs-selected-line); }
+.overview-search-form > svg { flex:none;width:17px; }
+.overview-search-form input { flex:1;min-width:0;height:38px;padding:0;border:0;background:transparent;color:var(--gs-ink);font-size:var(--gs-text-ui); }
+.overview-search-form input:focus-visible { outline:none; }
+.overview-search-form input::placeholder { color:var(--gs-ink-3); }
 .overview-search-form input::-webkit-search-cancel-button { display:none; }
-.overview-search-submit { min-height:44px;padding:var(--gs-space-3) var(--gs-space-6);border:0;border-radius:var(--gs-radius-field);background:var(--portal-accent);color:var(--gs-surface);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-search-form .overview-icon-button { border:0;background:transparent; }
-.overview-search-shortcuts { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-top:4px;color:var(--portal-muted);font-size:var(--gs-text-meta); }
-.overview-search-shortcuts > button { display:flex;align-items:center;min-height:36px;padding:4px 12px;border:1px solid color-mix(in srgb,var(--portal-line) 60%,transparent);border-radius:999px;background:color-mix(in srgb, var(--gs-surface) 44%, transparent);color:var(--portal-accent);overflow-wrap:anywhere;text-align:left; }
-.overview-search-results { position:absolute;z-index:12;left:0;right:0;top:60px;max-height:min(560px,calc(100dvh - 200px));overflow:auto;overscroll-behavior:contain;box-shadow:0 12px 32px color-mix(in srgb, var(--gs-chrome) 17%, transparent);margin-top:0;padding:var(--gs-space-3) var(--gs-space-5);border:1px solid var(--portal-line);border-radius:var(--gs-radius-panel);background:color-mix(in srgb, var(--gs-surface) 95%, transparent); }
-.overview-search-collapse {display:flex;align-items:center;gap:4px;min-height:36px;margin-left:auto;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-muted);}
-.overview-search-results ul { list-style:none;padding:0;margin:0; }
+.overview-search-form .overview-icon-button { width:32px;height:38px; }
+.overview-search-submit { min-height:38px;padding:0 var(--gs-space-4);border:0;border-radius:6px;background:var(--gs-action-bg);color:var(--gs-action-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-search-results { position:absolute;z-index:12;top:52px;right:0;width:min(620px,calc(100cqw - 24px));max-height:min(560px,calc(100dvh - 160px));overflow:auto;overscroll-behavior:contain;padding:var(--gs-space-3) var(--gs-space-5);border-radius:var(--gs-radius-panel);background:var(--gs-surface);box-shadow:var(--gs-shadow-float); }
+.overview-search-collapse { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-normal);margin-left:auto;padding:0 var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-3); }
+.overview-search-shortcuts { display:flex;flex-wrap:wrap;align-items:center;gap:var(--gs-space-3);margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-search-shortcuts > button { min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-search-total { margin:var(--gs-space-3) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.overview-result-group + .overview-result-group { border-top:1px solid var(--gs-line);margin-top:var(--gs-space-3);padding-top:var(--gs-space-3); }
+.overview-search-results ul { margin:0;padding:0;list-style:none; }
+.overview-result-group + .overview-result-group { margin-top:var(--gs-space-3);padding-top:var(--gs-space-3);border-top:1px solid var(--gs-line); }
 .overview-result-group > header { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-4); }
 .overview-result-group h3 { margin:0;font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
 .overview-result-group h3 > span { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
-.overview-result-group > header > button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+.overview-result-group > header > button { display:flex;align-items:center;gap:var(--gs-space-2);min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
 .overview-search-results li { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-3) 0; }
 .overview-search-results li + li { border-top:1px solid var(--gs-line); }
-.overview-search-results li > button { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-5);flex:1;min-width:0;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-search-results li > button { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-5);min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-search-results li > button > svg { flex:none;color:var(--gs-ink-3); }
 .overview-result-copy { display:grid;min-width:0; }
-.overview-result-copy small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
+.overview-result-copy small, .overview-result-copy > span { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
 .overview-result-copy strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);overflow-wrap:anywhere; }
-.overview-result-copy > span { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
-.overview-search-results li > button > svg { flex:none; }
-.overview-result-kind { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:var(--gs-radius-field);background:var(--portal-tint);color:var(--portal-accent); }
-.overview-panel { min-width:0;margin-top:var(--gs-space-section);padding-top:var(--gs-space-7);border-top:1px solid var(--gs-line); }
-.overview-featured { display:grid;grid-template-columns:minmax(280px,32%) minmax(0,1fr);gap:var(--gs-space-7); }
-.overview-personal, .overview-card-showcase { min-width:0; }
-.overview-personal { position:relative;align-self:stretch;display:flex;flex-direction:column;justify-content:center; }
-.overview-card-showcase { width:100%;max-width:none;padding-left:24px;border-left:1px solid color-mix(in srgb,var(--portal-idol-color) 10%,color-mix(in srgb, var(--gs-line) 38%, transparent)); }
-.overview-eyebrow { color:var(--portal-accent);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
-.overview-section-heading { display:flex;justify-content:space-between;align-items:center;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4); }
-.overview-section-heading h2 { margin:0;font-size:var(--gs-text-section);line-height:1.4;font-weight:var(--gs-weight-bold); }
-.overview-section-heading > button { display:flex;align-items:center;gap:var(--gs-space-2);flex:none;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-identity { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0; }
-/* Only the named copy grows. The shared avatar root remains a square circle. */
-.overview-identity-copy { min-width:0; }
-.overview-identity-copy h2 { font-size:var(--gs-text-title);line-height:1.3;overflow-wrap:anywhere; }
-.overview-preferred-actions { display:flex;flex-wrap:wrap;align-items:center;gap:6px; }
-.overview-preferred-actions button { display:flex;align-items:center;gap:6px;min-height:44px;padding:6px 8px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-meta);font-weight:500; }
-.overview-card-heading { margin-bottom:10px; }
-.overview-card-heading h3 { margin:0;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-song-list { display:grid;grid-template-columns:1fr;gap:0; }
-.overview-song { display:flex;align-items:center;gap:10px;min-width:0;padding:10px 0; }
-.overview-song + .overview-song { border-top:1px solid var(--gs-line); }
-.overview-song-copy { flex:1;min-width:0; }
-.overview-song-detail { display:grid;gap:4px;width:100%;min-width:0;min-height:44px;padding:0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-song strong { font-size:var(--gs-text-ui);line-height:1.45;font-weight:600;overflow-wrap:anywhere; }
-.overview-song small { font-size:var(--gs-text-meta);color:var(--portal-muted);overflow-wrap:anywhere; }
-.overview-song-detail > svg { flex:none;color:var(--gs-ink-3); }
-.overview-song-cover { position:relative;flex:none;width:64px; }
-.overview-stage-button { display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:1px solid var(--portal-line);border-radius:50%;background:color-mix(in srgb, var(--gs-surface) 44%, transparent);color:var(--portal-accent); }
-.overview-song-image, .overview-story-image, .overview-event-image { display:flex;position:relative;align-items:center;justify-content:center;margin:0;padding:var(--gs-space-2);border:0;border-radius:var(--gs-radius-field);background:var(--portal-tint); }
-/* Every card uses the same portrait frame; bound pixels retain their own ratio. */
-.overview-song-image { flex:none;width:64px;height:64px;box-shadow:0 2px 6px color-mix(in srgb, var(--gs-chrome) 4%, transparent); }
-.overview-story-image { flex:none;width:44px;height:44px; }
-.overview-event-image { flex:none;width:128px;height:72px;aspect-ratio:16 / 9;margin:0; }
-.overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:auto;height:auto;max-width:100%;max-height:100%;min-height:0;object-fit:contain;margin:0; }
-.overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:var(--gs-space-3);min-height:0;width:100%;height:100%;margin:0;background:transparent;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.overview-song-image:deep(.domain-resource-empty span), .overview-story-image:deep(.domain-resource-empty span), .overview-song-image:deep(figcaption), .overview-story-image:deep(figcaption) { display:none; }
-.overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.portal-overview :deep(.domain-media-preview button) { min-height:44px;padding:var(--gs-space-2) var(--gs-space-3);border:1px solid var(--portal-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--portal-accent);font-size:var(--gs-text-ui); }
-.overview-song-image:deep(button), .overview-story-image:deep(button) { width:44px;padding:0;font-size:var(--gs-text-meta); }
-.overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-top:20px;align-items:stretch; }
-.overview-events { grid-column:1 / -1; }
-.overview-story-list { display:grid; }
-.overview-unit-name { display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;color:var(--portal-muted);font-size:var(--gs-text-meta); }
-.overview-unit-name > img { flex:none;width:48px;height:28px;object-fit:contain; }
-.overview-story { display:flex;align-items:center;gap:12px;min-width:0;padding-block:10px; }
-.overview-story-mark { display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:8px;background:var(--portal-tint);color:var(--portal-accent); }
-.overview-story + .overview-story { border-top:1px solid var(--gs-line); }
-.overview-story > button, .overview-event > button { display:flex;align-items:center;justify-content:space-between;gap:var(--gs-space-4);width:100%;min-width:0;min-height:44px;padding:var(--gs-space-2) 0;border:0;background:transparent;color:inherit;text-align:left; }
-.overview-story > button > span, .overview-event > button > span { display:grid;gap:var(--gs-space-2);min-width:0; }
-.overview-story-copy { flex:1; }
-.overview-story > button > .overview-story-cast { display:flex;align-items:center;gap:0;flex:none; }
-.overview-story-cast :deep(.idol-avatar-shell + .idol-avatar-shell) { margin-left:-5px; }
-.overview-story .overview-story-cast > small { display:grid;place-items:center;min-width:26px;height:24px;margin-left:4px;padding-inline:4px;border:1px solid var(--portal-line);border-radius:999px;background:var(--portal-tint);color:var(--portal-accent);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
-.overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
-.overview-story small, .overview-event small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
-.overview-story > button > svg, .overview-event > button > svg { flex:none;color:var(--portal-accent); }
-.overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px; }
-.overview-event { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-top:1px solid var(--gs-line); }
-.overview-status, .overview-error, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
-.overview-error { color:#875a40; }
-.overview-error > button { min-height:44px;margin-left:var(--gs-space-4);padding:var(--gs-space-2) var(--gs-space-3);border:1px solid #dbc9bd;border-radius:var(--gs-radius-control);background:var(--gs-surface);color:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
-.overview-footer { margin-top:var(--gs-space-6);padding:var(--gs-space-5) 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
-.overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer; }
-.overview-footprint { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-6);margin:var(--gs-space-5) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.overview-result-kind { display:grid;place-items:center;flex:none;width:var(--gs-control-touch);height:var(--gs-control-touch);color:var(--gs-ink-3); }
+
+/* Footprint: one line of counts that open their directories. */
+.overview-footprint { display:flex;flex-wrap:wrap;gap:var(--gs-space-2) var(--gs-space-6);margin:var(--gs-space-4) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .overview-footprint button { min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:inherit; }
 .overview-footprint b { margin-right:var(--gs-space-2);color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
-.overview-footprint button:hover b { color:var(--gs-mint-ink); }
+.overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
 .overview-directory { display:none; }
-@media (max-width:760px) {
-  /* The stats as four equal columns, number over label. (The header rows live in portal-bento.css.) */
-  .overview-footprint { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:var(--gs-space-5);border-block:1px solid var(--gs-line); }
-  .overview-footprint button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;padding:var(--gs-space-3) 2px;text-align:center; }
-  .overview-footprint button + button { border-left:1px solid var(--gs-line); }
-  .overview-footprint b { margin:0;font-size:var(--gs-text-subtitle);line-height:1.2;white-space:nowrap; }
-  .overview-footprint b small { color:var(--gs-ink-3);font-family:var(--gs-font-body);font-size:var(--gs-text-caption);font-weight:var(--gs-weight-regular); }
-  .overview-footprint span { color:var(--gs-ink-3);font-size:var(--gs-text-meta);white-space:nowrap; }
-  /* Every section as one grid of icons. */
-  .overview-directory { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-1) 0;margin-top:var(--gs-space-4); }
-  .overview-directory button { display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;min-height:var(--gs-control-touch);padding:var(--gs-space-3) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
-  .overview-directory button svg { color:var(--gs-mint-ink); }
+
+.overview-status, .overview-error, .overview-empty { margin:0;padding:var(--gs-space-4) 0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.overview-error { color:#875a40; }
+.overview-error > button { min-height:var(--gs-control-touch);margin-left:var(--gs-space-4);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:inherit;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold); }
+
+/* Sections: heading and count on one baseline over a rule, the directory link at the end. */
+.overview-panel { min-width:0;margin-top:var(--gs-space-section); }
+.overview-section-heading { display:flex;align-items:baseline;justify-content:space-between;gap:var(--gs-space-4);margin-bottom:var(--gs-space-4);padding-bottom:var(--gs-space-3);border-bottom:1px solid var(--gs-rule); }
+.overview-section-heading h2, .overview-section-heading h3 { margin:0;font-size:var(--gs-text-section);font-weight:var(--gs-weight-semibold);line-height:1.4; }
+.overview-section-heading h2 > small { margin-left:var(--gs-space-3);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular); }
+.overview-section-heading button, .overview-heading-actions { display:flex;flex:none;align-items:center;gap:var(--gs-space-2); }
+.overview-section-heading button { min-height:var(--gs-control-compact);padding:0;border:0;background:transparent;color:var(--gs-mint-ink);font-size:var(--gs-text-ui); }
+.overview-heading-actions { gap:var(--gs-space-5); }
+.overview-section-heading .overview-shuffle { color:var(--gs-ink-2); }
+
+/* Featured: the 担当 hero beside the featured cards. */
+.overview-featured { display:grid;grid-template-columns:minmax(300px,30%) minmax(0,1fr);gap:var(--gs-space-8);margin-top:var(--gs-space-7); }
+.overview-featured.is-all-view { grid-template-columns:minmax(0,1fr); }
+.overview-unit-hub + .overview-featured { margin-top:var(--gs-space-section); }
+.overview-personal, .overview-card-showcase { min-width:0; }
+.overview-personal { position:relative;display:flex;flex-direction:column;gap:var(--gs-space-3); }
+/* The hero is artwork: the idol's light wash, the autograph in the idol's ink behind the figure,
+   the figure placed by where the person stands. It gets the media radius and nothing else. */
+.overview-identity { position:relative;height:228px;overflow:hidden;border-radius:var(--gs-radius-media);background:radial-gradient(circle at 76% 62%,var(--gs-surface) 0,var(--hero-wash,var(--gs-paper)) 58%); }
+.overview-identity::before { content:'';position:absolute;inset:0 0 auto;z-index:3;height:3px;background:var(--hero-light,var(--gs-mint)); }
+.overview-portrait-slot { position:absolute;inset:0; }
+.overview-idol-art { position:absolute;left:var(--hero-figure-left,40%);bottom:-40px;z-index:2;width:auto;max-width:none;height:300px;object-fit:contain;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent); }
+.overview-signature { position:absolute;top:10px;right:12px;z-index:1;display:block;width:250px;height:232px;opacity:.28;background:var(--hero-ink,var(--gs-ink-3));-webkit-mask:var(--hero-sign) center/contain no-repeat;mask:var(--hero-sign) center/contain no-repeat;mask-mode:luminance; }
+.overview-identity-copy { position:relative;z-index:3;display:flex;flex-direction:column;width:170px;padding:var(--gs-space-6) var(--gs-space-5); }
+.overview-eyebrow { order:0;margin:0;color:var(--hero-ink,var(--gs-ink-3));font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-unit-name { order:1;display:flex;align-items:center;margin:var(--gs-space-3) 0 0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-unit-name > img { width:auto;max-width:112px;height:28px;object-fit:contain;object-position:left center; }
+.overview-identity-copy h2 { order:2;margin:6px 0 4px;font-size:var(--gs-text-section);font-weight:var(--gs-weight-bold);line-height:1.25;overflow-wrap:anywhere; }
+.overview-kana { order:3;margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+/* The way home sits on the art like the player's controls: a surface pill. */
+.overview-home-action { position:absolute;top:176px;left:var(--gs-space-5);z-index:4;display:inline-flex;align-items:center;gap:2px;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:0;border-radius:var(--gs-radius-pill);background:color-mix(in srgb, var(--gs-surface) 88%, transparent);color:var(--gs-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);box-shadow:var(--gs-shadow-float); }
+/* Shortcuts: this idol's five archive pages, the main way on from the hero. They sit on a band of
+   the hero's own wash with icons in the idol's ink (idolStageLight keeps both readable), so they
+   read as part of the 担当 block and stand out from the quiet line below. */
+.overview-preferred-actions { display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:var(--gs-space-1);border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--hero-wash,var(--gs-mint-wash)) 75%,var(--gs-surface)); }
+.overview-preferred-actions button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-1);min-height:52px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.overview-preferred-actions button svg { width:18px;height:18px;color:var(--hero-ink,var(--gs-mint-ink)); }
+/* Quiet settings: 设为担当 and the producer — one caption line, separated by dots. */
+.overview-personal-meta { display:flex;flex-wrap:wrap;align-items:center;gap:0 var(--gs-space-2);margin:0;padding-top:var(--gs-space-3);border-top:1px solid var(--gs-line);color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-personal-meta:empty { display:none; }
+.overview-personal-meta button { display:inline-flex;align-items:center;gap:2px;min-height:var(--gs-control-compact);padding:0;border:0;background:none;color:var(--gs-ink-2);font-size:var(--gs-text-meta); }
+.overview-personal-meta button + button::before { content:'·';margin-right:var(--gs-space-2);color:var(--gs-ink-3); }
+.overview-personal-meta .overview-save-idol { color:var(--gs-mint-ink);font-weight:var(--gs-weight-semibold); }
+
+/* Global view: the unit matrix, in each unit's own colour. */
+.overview-unit-hub { margin-top:var(--gs-space-7); }
+.overview-unit-matrix { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-3); }
+.overview-unit-tile { position:relative;container:unit-tile / inline-size;min-width:0;height:100px;overflow:hidden;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
+.overview-unit-logo { display:grid;place-items:center;width:100%;height:100%;padding:10px 12px 40px;border:0;border-radius:inherit;background:transparent; }
+.overview-unit-logo img { width:100%;height:100%;max-width:118px;object-fit:contain; }
+.overview-unit-members { position:absolute;right:0;bottom:8px;left:0;display:flex;justify-content:center;gap:3px; }
+.overview-unit-members button { padding:0;border:0;border-radius:50%;background:transparent; }
+/* Members sit side by side while they fit; a narrow tile with four or more overlaps them. */
+@container unit-tile (max-width:150px) {
+  .overview-unit-members { --idol-avatar-override-size:24px; }
+  .overview-unit-members:has(> :nth-child(4)) { gap:0;--idol-avatar-override-size:22px; }
+  .overview-unit-members:has(> :nth-child(4)) button + button { margin-left:-6px; }
+  .overview-unit-members:has(> :nth-child(4)) button { box-shadow:0 0 0 1.5px color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
 }
-.overview-visually-hidden { position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap; }
+
+/* Content sections. */
+.overview-content-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+.overview-events { grid-column:1 / -1; }
+.is-global-grid { grid-template-columns:minmax(0,1fr); }
+.is-global-grid .overview-stories { grid-row:1; }
+
+/* Filter chips: stories by kind, songs by lineup. One scrolling row. */
+.overview-story-tabs { display:flex;gap:var(--gs-space-3);overflow-x:auto;margin:0 0 var(--gs-space-2);padding:var(--gs-space-1) 0;scrollbar-width:none; }
+.overview-story-tabs button { flex:none;min-height:var(--gs-control-compact);padding:0 var(--gs-space-4);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);white-space:nowrap; }
+.overview-story-tabs button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.overview-story-tabs small { margin-left:var(--gs-space-2);color:inherit;opacity:.75;font-variant-numeric:tabular-nums; }
+
+/* Rows: picture, title and one line of meta, split by hairlines; the whole row opens. */
+.overview-song-list, .overview-story-list { display:grid; }
+.overview-song, .overview-story { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
+.overview-song-cover { flex:none; }
+.overview-song-copy { flex:1;min-width:0; }
+.overview-song-detail { display:grid;gap:2px;width:100%;min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-song strong, .overview-story strong, .overview-event strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.overview-song small, .overview-story small, .overview-event small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);overflow-wrap:anywhere; }
+/* Relation labels are meta, not badges. */
+.overview-relation { color:var(--gs-ink-2) !important; }
+.overview-stage-button { display:grid;flex:none;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);padding:0;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
+.overview-song-image, .overview-story-image, .overview-event-image { position:relative;display:flex;flex:none;align-items:center;justify-content:center;margin:0;padding:0;border:0;border-radius:var(--gs-radius-media);overflow:hidden;background:var(--gs-line); }
+.overview-song-image { width:56px;height:56px; }
+.overview-story-image { width:44px;height:44px; }
+.overview-event-image { width:128px;height:72px; }
+.overview-song-image:deep(img), .overview-story-image:deep(img), .overview-event-image:deep(img) { display:block;width:100%;height:100%;margin:0;object-fit:cover; }
+.overview-song-image:deep(.domain-resource-empty), .overview-story-image:deep(.domain-resource-empty), .overview-event-image:deep(.domain-resource-empty) { display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-height:0;margin:0;background:transparent;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-song-image:deep(.domain-resource-empty span), .overview-story-image:deep(.domain-resource-empty span), .overview-song-image:deep(figcaption), .overview-story-image:deep(figcaption) { display:none; }
+.overview-event-image:deep(figcaption) { position:absolute;inset:auto var(--gs-space-3) var(--gs-space-2);margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.portal-overview :deep(.domain-media-preview button) { min-height:var(--gs-control-touch);padding:0 var(--gs-space-3);border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-ui); }
+.overview-song-image:deep(button), .overview-story-image:deep(button) { width:var(--gs-control-touch);padding:0;font-size:var(--gs-text-meta); }
+.overview-story-mark { display:grid;flex:none;place-items:center;width:44px;height:44px;color:var(--gs-ink-3); }
+.overview-story > button, .overview-event > button { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-4);min-width:0;min-height:var(--gs-control-touch);padding:0;border:0;background:transparent;color:inherit;text-align:left; }
+.overview-story > button > span, .overview-event > button > span { display:grid;gap:2px;min-width:0; }
+.overview-story-copy { flex:1; }
+.overview-story > button > svg, .overview-event > button > svg { flex:none;color:var(--gs-ink-3); }
+.overview-story > button > .overview-story-cast { display:flex;flex:none;align-items:center;gap:0; }
+.overview-story-cast :deep(.idol-avatar-shell + .idol-avatar-shell) { margin-left:-5px; }
+.overview-story .overview-story-cast > small { margin-left:var(--gs-space-2);color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-variant-numeric:tabular-nums; }
+.overview-event-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:var(--gs-space-6); }
+.overview-event { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
+
+/* Global stories: the main chapters as picture tiles (no frame), the other kinds as rows. */
+.overview-story-hub { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-8); }
+.overview-main-index { display:grid;align-content:start;gap:var(--gs-space-6); }
+.overview-main-index button { display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
+.overview-main-index article :deep(.domain-media-preview) { display:block;margin:0;padding:0; }
+.overview-main-index article :deep(img) { display:block;width:100%;height:auto;aspect-ratio:906 / 210;object-fit:cover;border-radius:var(--gs-radius-media); }
+.overview-main-index article :deep(figcaption) { display:none; }
+.overview-main-index button > span { display:flex;flex-wrap:wrap;align-items:baseline;gap:0 var(--gs-space-3);padding-top:var(--gs-space-3); }
+.overview-main-index strong { font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold); }
+.overview-main-index small { flex:1;color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-main-index button > span > svg { align-self:center;color:var(--gs-ink-3); }
+.overview-main-index article:has(button:disabled) { opacity:.6; }
+.overview-story-gateways { display:grid;align-content:start;border-top:1px solid var(--gs-line); }
+.overview-story-gateways button { display:flex;align-items:center;gap:var(--gs-space-4);min-width:0;min-height:56px;padding:0 var(--gs-space-2);border:0;border-bottom:1px solid var(--gs-line);background:none;color:var(--gs-ink);text-align:left; }
+.overview-story-gateways button > svg { flex:none;color:var(--gs-ink-3); }
+.overview-story-gateways button > span { display:flex;flex:1;align-items:center;justify-content:space-between;gap:var(--gs-space-3);min-width:0; }
+.overview-story-gateways strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);white-space:nowrap; }
+.overview-story-gateways small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.is-global-grid .overview-song-list { grid-template-columns:repeat(2,minmax(0,1fr));column-gap:var(--gs-space-8); }
+
+/* Global events: a horizontal timeline of banners. */
+.overview-timeline { display:flex;gap:var(--gs-space-5);overflow-x:auto;padding:var(--gs-space-1) 0 var(--gs-space-4);scroll-snap-type:x proximity;scrollbar-width:thin; }
+.overview-timeline article { position:relative;flex:1 0 210px;max-width:300px;min-width:0;scroll-snap-align:start; }
+.overview-timeline article::before { content:'';position:absolute;top:33px;right:calc(-1 * var(--gs-space-5));left:0;height:1px;background:var(--gs-line); }
+.overview-timeline article:last-child::before { right:0; }
+.timeline-date { display:block;margin-bottom:22px;color:var(--gs-ink);font-family:var(--gs-font-stage);font-size:var(--gs-text-subtitle);font-weight:var(--gs-weight-semibold);font-variant-numeric:tabular-nums; }
+.timeline-dot { position:absolute;top:30px;left:0;width:8px;height:8px;border-radius:50%;background:var(--gs-mint); }
+.overview-timeline button { position:relative;display:grid;align-content:start;gap:var(--gs-space-2);width:100%;padding:0;border:0;background:none;color:inherit;text-align:left; }
+.overview-timeline img { width:100%;height:auto;aspect-ratio:2 / 1;object-fit:contain;border-radius:var(--gs-radius-media); }
+.overview-timeline button > small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-timeline strong { font-size:var(--gs-text-ui);line-height:1.5;overflow-wrap:anywhere; }
+.overview-timeline button > svg { justify-self:end;color:var(--gs-ink-3); }
+
+/* Scope dialog and footer. */
+.overview-dialog-note { margin:0 0 var(--gs-space-4);color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.overview-scope-actions { display:grid;grid-template-columns:1fr 1fr;gap:var(--gs-space-4);margin-bottom:var(--gs-space-5); }
+.overview-scope-actions button { display:flex;align-items:center;justify-content:center;gap:var(--gs-space-3);min-height:52px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-control);background:var(--gs-surface);color:var(--gs-ink);font:inherit; }
+.overview-scope-actions button[aria-pressed=true] { border-color:var(--gs-selected-line);background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.overview-footer { margin-top:var(--gs-space-section);padding:var(--gs-space-5) 0;border-top:1px solid var(--gs-line);color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.overview-footer-link { min-height:var(--gs-control-touch);padding:0;border:0;background:none;color:var(--gs-mint-ink);font:inherit;text-decoration:underline;text-underline-offset:3px; }
+
 @media (hover:hover) and (pointer:fine) {
-  .overview-icon-button:hover, .overview-search-shortcuts > button:hover, .overview-preferred-actions button:hover { background:var(--portal-tint); }
-  .overview-stage-button:hover { border-color:var(--portal-accent);background:var(--portal-accent);color:var(--gs-surface); }
-  .overview-section-heading > button:hover, .overview-song-detail:hover, .overview-search-results li > button:hover, .overview-story > button:hover, .overview-event > button:hover { color:var(--portal-accent); }
-  .overview-search-submit:hover { background:color-mix(in srgb,var(--portal-accent) 88%,var(--gs-chrome)); }
+  .overview-icon-button:hover, .overview-lens-trigger:hover { background:var(--gs-mint-wash); }
+  .overview-preferred-actions button:hover { background:color-mix(in srgb, var(--gs-surface) 70%, transparent); }
+  .overview-search-submit:hover { background:color-mix(in srgb,var(--gs-action-bg) 88%,var(--gs-chrome)); }
+  .overview-section-heading button:hover, .overview-personal-meta button:hover, .overview-search-results li > button:hover,
+  .overview-story-gateways button:hover strong, .overview-main-index button:hover strong { color:var(--gs-mint-ink); }
+  .overview-song-detail:hover strong, .overview-story > button:hover strong, .overview-event > button:hover strong, .overview-timeline button:hover strong { color:var(--gs-mint-ink); }
+  .overview-stage-button:hover, .overview-home-action:hover { color:var(--gs-mint-ink); }
+  .overview-unit-tile:hover { background:color-mix(in srgb,var(--unit-color) 20%,var(--gs-surface)); }
 }
-.portal-overview button:active { background-color:var(--portal-tint); }
-.portal-overview .overview-search-submit:active { background-color:color-mix(in srgb,var(--portal-accent) 80%,var(--gs-chrome)); }
-@media (pointer:coarse) {
-  .overview-search-shortcuts > button { min-height:44px; }
-}
-@container (max-width:900px) {
-  .overview-featured { grid-template-columns:1fr;gap:18px; }
-  .overview-card-showcase { max-width:none;padding:10px 0 0;border-left:0;border-top:1px solid color-mix(in srgb,var(--portal-idol-color) 10%,color-mix(in srgb, var(--gs-line) 38%, transparent)); }
-  .overview-preferred-actions button { padding-inline:8px; }
+
+/* Narrow page (the shell's middle tier or a phone): the hero spans the row above the cards. */
+@container portal (max-width:980px) {
+  .overview-featured { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-section); }
+  .overview-personal { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:var(--gs-space-3) var(--gs-space-7); }
+  .overview-identity { grid-row:1 / span 2; }
+  .overview-content-grid { grid-template-columns:minmax(0,1fr); }
   .overview-event-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .overview-story-hub { grid-template-columns:minmax(0,1fr);gap:var(--gs-space-6); }
 }
-@container (max-width:650px) {
-  .overview-content-grid { grid-template-columns:1fr; }
-  .overview-personal { display:flex; }
-}
-@media(max-width:900px) {
-  .portal-overview-scroll { padding:16px; }
-  .overview-toolbar { align-items:start; }
-  .overview-brand b { display:none; }
-}
-/* The view controller, typography and original art share the existing GS palette. */
-.overview-brand h1 { border:0;padding:0;font-size:var(--gs-text-title); }
-.overview-scope-bar { display:flex;align-items:center;gap:12px;min-width:0;margin:16px 0 12px; }
-.overview-scope-trigger { display:flex;align-items:center;gap:10px;flex:none;min-height:52px;padding:6px 12px;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 85%, transparent);color:var(--portal-accent); }
-.overview-scope-trigger > span { display:flex;align-items:baseline;gap:10px; }
-.overview-scope-trigger small { flex:none;white-space:nowrap;color:var(--portal-muted);font-size:var(--gs-text-meta); }
-.overview-scope-trigger strong { font-size:var(--gs-text-subtitle);font-weight:650; }
-.overview-scope-reset,.overview-save-idol { min-height:44px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:var(--portal-accent);font-size:var(--gs-text-meta); }
-.overview-scope-note { margin-left:auto;color:var(--portal-muted);font-size:var(--gs-text-meta); }
-.overview-identity { position:relative;min-height:190px;gap:12px; }
-.overview-idol-art { position:absolute;left:-20px;bottom:-5px;width:75%;height:270px;object-fit:contain;object-position:left bottom;pointer-events:none;filter:drop-shadow(0 6px 10px color-mix(in srgb, var(--gs-chrome) 7%, transparent)); }
-.overview-identity-copy { position:relative;z-index:1; }
-.has-portrait .overview-identity-copy { margin-left:48%;padding:12px 0 12px 10px;border-radius:10px;background:linear-gradient(90deg,color-mix(in srgb, var(--gs-surface) 0%, transparent),color-mix(in srgb, var(--gs-surface) 81%, transparent) 30%,color-mix(in srgb, var(--gs-surface) 52%, transparent)); }
-.overview-identity-copy h2 { margin:8px 0 6px;font-size:var(--gs-text-title);line-height:1.25;font-weight:650; }
-.overview-kana { margin:0 0 12px;font-size:var(--gs-text-meta);color:var(--portal-muted); }
-.overview-unit-name > img { width:min(120px,100%);height:40px; }
-.overview-preferred-actions { position:relative;z-index:1;gap:2px;justify-content:space-between;margin-top:12px;padding:3px;border:1px solid color-mix(in srgb, var(--gs-surface) 61%, transparent);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 79%, transparent); }
-.overview-preferred-actions button { gap:4px;padding:4px 5px;font-size:var(--gs-text-meta); }
-.overview-save-idol { align-self:flex-start;margin-top:4px;padding-left:0; }
-.overview-section-heading h2 > small { margin-left:6px;color:var(--portal-muted);font-size:var(--gs-text-meta);font-weight:500; }
-.overview-story-tabs { display:flex;flex-wrap:wrap;gap:4px;margin:-6px 0 4px; }
-.overview-story-tabs button { min-height:36px;padding:4px 10px;border:0;border-radius:999px;background:transparent;color:var(--portal-muted);font-size:var(--gs-text-meta); }
-.overview-story-tabs button[aria-pressed=true] { color:var(--portal-accent);background:var(--portal-tint);box-shadow:inset 0 0 0 1px var(--portal-line); }
-.overview-story-tabs small { margin-left:3px;font-variant-numeric:tabular-nums; }
-.overview-song { min-height:100px; }
-.overview-story { min-height:80px; }
-.overview-relation { display:inline-flex;width:fit-content;padding:1px 6px;border-radius:5px;background:var(--portal-tint);color:var(--portal-accent)!important;font-size:var(--gs-text-meta)!important; }
-.overview-dialog-note { margin:0 0 12px;color:var(--portal-muted);font-size:var(--gs-text-ui); }
-@media(hover:hover) and (pointer:fine) {
-  .overview-scope-reset:hover,.overview-save-idol:hover,.overview-story-tabs button:hover { background:var(--portal-tint); }
-}
-@container(max-width:1050px) {
-  .overview-event-grid { grid-template-columns:1fr; }
-  .overview-event-image { width:160px;height:90px; }
-  .overview-scope-note { display:none; }
-}
-@container(max-width:900px) {
-  .overview-featured { grid-template-columns:minmax(250px,38%) minmax(0,1fr);gap:16px; }
-  .overview-card-showcase { padding:0 0 0 16px;border-top:0;border-left:1px solid var(--portal-line); }
-  .overview-idol-art { height:240px; }
-  .overview-identity-copy h2 { font-size:var(--gs-text-section); }
-  .overview-preferred-actions { flex-wrap:wrap;justify-content:flex-start; }
-}
-@container(max-width:720px) {
-  .overview-featured { grid-template-columns:1fr; }
-  .overview-personal { min-height:260px; }
-  .overview-identity { min-height:190px; }
-  .overview-idol-art { width:50%;height:250px;left:0; }
-  .has-portrait .overview-identity-copy { margin-left:45%; }
-  .overview-preferred-actions { justify-content:center; }
-  .overview-card-showcase { padding:16px 0 0;border-left:0;border-top:1px solid var(--portal-line); }
-  .overview-content-grid { grid-template-columns:1fr; }
+@container portal (max-width:640px) {
+  .overview-personal { display:flex;align-items:stretch; }
+  .overview-unit-matrix { grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gs-space-2); }
+  .overview-unit-tile { height:84px; }
+  .overview-event-grid, .is-global-grid .overview-song-list { grid-template-columns:minmax(0,1fr); }
+  .overview-event-image { width:112px;height:63px; }
+  .overview-scope-actions { grid-template-columns:minmax(0,1fr); }
+  .overview-section-heading h2, .overview-section-heading h3 { font-size:var(--gs-text-subtitle); }
 }
 
-.overview-segment {display:flex;max-width:100%;min-width:0;gap:3px;padding:4px;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 66%, transparent);}
-.overview-segment > button {display:flex;min-width:0;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border:0;border-radius:8px;background:transparent;color:var(--portal-muted);white-space:nowrap;}
-.overview-segment > button:first-child,.overview-segment > button > svg,.overview-segment :deep(.idol-avatar-shell) {flex:none;}
-.overview-segment > button > span {min-width:0;overflow:hidden;text-overflow:ellipsis;}
-.overview-segment > button[aria-pressed=true] {background:var(--portal-accent);color:var(--gs-surface);box-shadow:0 2px 6px color-mix(in srgb, var(--gs-chrome) 10%, transparent);}
-.overview-identity {display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:12px;min-height:210px;}
-.overview-portrait-slot {height:210px;min-width:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;}
-.overview-idol-art {position:static;flex:none;width:auto;max-width:none;height:210px;object-fit:contain;object-position:center bottom;mask-image:linear-gradient(#000 85%,transparent);-webkit-mask-image:linear-gradient(#000 85%,transparent);}
-.has-portrait .overview-identity-copy {margin:0;padding:0;background:transparent;}
-.overview-home-action,.overview-shuffle {display:flex;align-items:center;gap:8px;min-height:36px;width:fit-content;padding:4px 10px;border:1px solid var(--portal-line);border-radius:8px;background:color-mix(in srgb, var(--gs-surface) 66%, transparent);color:var(--portal-accent);}
-.overview-home-action {margin:6px 0 12px;align-self:flex-end;}
-.overview-shuffle {margin:0 0 12px auto;}
-.overview-featured.is-all-view {grid-template-columns:1fr;}
-.overview-featured.is-w-view {grid-template-columns:minmax(340px,38%) minmax(0,1fr);}
-.is-w-view .overview-identity {grid-template-columns:minmax(0,58%) minmax(0,1fr);}
-@container(max-width:900px){.overview-featured.is-w-view {grid-template-columns:1fr;}}
-
-.overview-unit-matrix {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
-.overview-unit-tile {position:relative;min-width:0;height:100px;border-radius:var(--gs-radius-media);}
-.overview-unit-logo {display:grid;place-items:center;width:100%;height:100%;padding:12px 18px 30px;border:0;border-radius:inherit;background:transparent;}
-.overview-unit-logo img {width:100%;height:100%;max-width:150px;object-fit:contain;}
-.overview-unit-members {position:absolute;bottom:4px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
-.overview-unit-members button {border:0;background:transparent;padding:0;border-radius:50%;}
-@media(hover:hover) and (pointer:fine){.overview-unit-members {opacity:0;pointer-events:none;}.overview-unit-tile:hover .overview-unit-members,.overview-unit-tile:focus-within .overview-unit-members {opacity:1;pointer-events:auto;}.overview-unit-tile:hover {background:var(--portal-tint);}}
-.overview-main-index {display:grid;gap:12px;}
-.overview-main-index article {display:grid;grid-template-columns:110px minmax(0,1fr);min-height:84px;border-radius:var(--gs-radius-media);overflow:hidden;}
-.overview-main-index button {display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:84px;padding:10px 14px;border:0;background:transparent;color:inherit;text-align:left;}
-.overview-main-index small {flex-basis:100%;color:var(--portal-muted);}
-.overview-main-index article:has(button:disabled) {grid-template-columns:1fr;opacity:.6;}
-@container(max-width:760px){.overview-unit-matrix {gap:6px;}.overview-unit-tile {height:84px;}.overview-segment > button {padding:8px;font-size:var(--gs-text-meta);}.overview-identity {grid-template-columns:minmax(0,42%) minmax(0,1fr);}.overview-identity-copy h2 {font-size:var(--gs-text-title);}}
-@media(prefers-reduced-motion:reduce){.portal-overview * {transition:none!important;animation:none!important;}}
+/* Shell tiers. Middle and phone: tighter gutters, the search on its own row. */
+@media (max-width:1100px) {
+  .portal-overview-scroll { padding:var(--gs-space-5); }
+  .overview-toolbar { grid-template-columns:minmax(0,1fr) auto; }
+  .overview-toolbar-actions { grid-column:2;grid-row:1; }
+  .overview-toolbar > .overview-search { grid-column:1 / -1;grid-row:2;max-width:none; }
+}
+/* Phones have no sidebar: 资料馆 and the tools share the first row, the scope chip the second, then
+   the search, then the index of every section. */
+@media (max-width:760px) {
+  .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-4) var(--gs-space-8); }
+  .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
+  .overview-brand { display:contents; }
+  .overview-breadcrumb-divider { display:none; }
+  .overview-toolbar-actions { grid-column:3;grid-row:1; }
+  .overview-lens-trigger { grid-column:1 / -1;grid-row:2;justify-self:start;max-width:100%;border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface); }
+  .overview-lens-trigger span { max-width:none; }
+  .overview-toolbar > .overview-search { grid-row:3; }
+  .overview-search-results { width:100%; }
+  /* Counts are links: two rows of two, each a full touch target, numbers aligned in a column. */
+  .overview-footprint { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 var(--gs-space-5);font-size:var(--gs-text-meta); }
+  .overview-footprint button { display:flex;align-items:baseline;min-width:0;min-height:var(--gs-control-touch);text-align:left;white-space:nowrap; }
+  .overview-footprint b { font-size:var(--gs-text-subtitle); }
+  /* The archive tab is the index of every section: all of them, in sidebar order, visible at once
+     as a compact grid between two hairlines — no tiles, neutral icons, labels always shown. */
+  .overview-directory { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:var(--gs-space-4) 0 0;padding:var(--gs-space-2) 0;border-block:1px solid var(--gs-line); }
+  .overview-directory button { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--gs-space-2);min-width:0;min-height:60px;padding:var(--gs-space-2) 0;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font-size:var(--gs-text-ui); }
+  .overview-directory button svg { width:22px;height:22px;color:var(--gs-ink-2); }
+  .overview-directory button:active { background:var(--gs-mint-wash); }
+  .overview-panel { margin-top:var(--gs-space-8); }
+  .overview-featured { margin-top:var(--gs-space-6); }
+  .overview-story-tabs button, .overview-search-shortcuts > button, .overview-personal-meta button, .overview-section-heading button { min-height:var(--gs-control-touch); }
+}
+@media (prefers-reduced-motion:reduce) { .portal-overview * { transition:none !important;animation:none !important; } }
 </style>
-<style scoped src="./portal-bento.css"></style>

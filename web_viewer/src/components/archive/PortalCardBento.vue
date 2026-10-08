@@ -5,7 +5,7 @@
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
     <template v-if="!global">
-      <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="secondary.image.url" :alt="secondary.title" /><small>{{ secondary.rarity }}</small></button>
+      <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="secondary.image.url" :alt="secondary.title" /><span class="bento-tile-caption">{{ secondary.title }}</span></button>
       <button v-if="third" class="bento-note" type="button" :data-archive-focus-id="`portal-card-art:${third.id}`" @click="emit('open',third)"><img :src="third.image.url" alt="" /><span><small>{{ third.rarity }} · 精选档案</small><strong>{{ third.title }}</strong></span><ArrowUpRight :size="16" /></button>
       <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
     </template>
@@ -37,98 +37,82 @@ const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.
 const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)'}]
 </script>
 <style scoped>
-.card-bento {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:224px 94px;gap:10px;min-width:0;}
-.card-bento button {font:inherit;cursor:pointer;color:inherit;min-width:0;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 63%, transparent);text-align:left;}
-.card-bento button:focus-visible {outline:2px solid var(--portal-accent);outline-offset:3px;}
-.bento-lead {position:relative;grid-column:span 2;overflow:hidden;padding:0;display:flex;flex-direction:column;justify-content:center;background:var(--gs-line)!important;}
-.bento-lead:before {content:'';position:absolute;inset:-20px;background-image:var(--card-art);background-size:cover;background-position:center;filter:blur(20px);opacity:.35;}
-.bento-lead > img {position:relative;width:100%;height:100%;object-fit:contain;min-height:0;}
-.bento-caption {position:absolute;inset:auto 0 0;display:grid;grid-template-columns:1fr auto;gap:3px;padding:24px 14px 12px;background:linear-gradient(transparent,color-mix(in srgb, var(--gs-chrome) 86%, transparent));color:var(--gs-surface);}
-.bento-caption small {grid-column:1/-1;font-size:10px;}
-.bento-caption strong {font-size:14px;line-height:1.4;}
-.bento-portrait {position:relative;padding:0;overflow:hidden;}
-.bento-portrait img {width:100%;height:100%;object-fit:contain;}
-.bento-portrait > small {position:absolute;top:8px;left:8px;padding:2px 6px;background:color-mix(in srgb, var(--gs-surface) 60%, transparent);border-radius:5px;color:var(--portal-accent);}
-.bento-note {grid-column:span 2;display:flex;align-items:center;gap:12px;padding:10px;}
-.bento-note > img {width:54px;height:72px;object-fit:contain;}
-.bento-note > span {flex:1;display:grid;gap:4px;min-width:0;}
-.bento-note small,.bento-directory small,.bento-encounter > small {color:var(--portal-muted);font-size:10px;}
-.bento-note strong {font-size:13px;line-height:1.4;overflow-wrap:anywhere;}
-.bento-directory {position:relative;display:grid;gap:2px;align-content:center;padding:10px 12px;background:var(--portal-tint)!important;}
-.bento-directory > svg:last-child {position:absolute;right:10px;top:12px;}
-.bento-directory strong {font-size:14px;}
-.is-global {grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:168px 150px;}
-.is-global .bento-lead {grid-column:1;grid-row:span 2;}
-.bento-encounter,.bento-filters {padding:12px 14px;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 60%, transparent);min-width:0;}
-.bento-encounter header {display:flex;align-items:center;gap:6px;color:var(--portal-accent);font-size:12px;}
-.bento-encounter header button {display:grid;place-items:center;min-height:30px;width:30px;margin-left:auto;border:0;background:transparent;}
-.encounter-card {display:flex;align-items:center;gap:12px;width:100%;padding:4px 0;border:0!important;background:transparent!important;}
-.encounter-card img {height:78px;width:62px;object-fit:contain;}
-.encounter-card span {flex:1;min-width:0;display:grid;gap:4px;}
-.encounter-card small {color:var(--portal-muted);font-size:11px;}
-.encounter-card strong {font-size:13px;line-height:1.35;}
-.bento-filters > span {font-size:11px;color:var(--portal-muted);}
-.attribute-links,.rarity-links {display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-.attribute-links button {padding:5px 7px;color:var(--attribute);background:color-mix(in srgb,var(--attribute) 7%,white);border-color:color-mix(in srgb,var(--attribute) 20%,white);font-size:11px;min-height:32px;}
-.rarity-links button {font-size:11px;min-height:30px;padding:3px 7px;}
-.bento-empty {color:var(--portal-muted);}
-@media(hover:hover) and (pointer:fine){.card-bento button:hover {box-shadow:0 4px 12px color-mix(in srgb, var(--gs-chrome) 10%, transparent);border-color:var(--portal-accent);}.bento-note,.bento-directory,.encounter-card {transition:transform 160ms ease-out;}.bento-note:hover,.bento-directory:hover {transform:translateY(-2px);}}
-@media(prefers-reduced-motion:reduce){.card-bento button {transition:none!important;transform:none!important;}}
-@container(max-width:850px){.card-bento {grid-template-rows:210px 94px;}.is-global {grid-template-rows:168px 150px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}}
+/* Featured cards: pictures whose frames hug the art (media radius, cover, no blurred fill), and the
+   text entries under them as plain rows on the paper. */
+.card-bento { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:224px auto;gap:var(--gs-space-3) var(--gs-space-4);min-width:0; }
+.card-bento button { min-width:0;padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer; }
+.card-bento button:focus-visible { outline:var(--gs-focus-ring) solid var(--gs-mint);outline-offset:var(--gs-focus-offset); }
+.bento-lead, .bento-portrait, .encounter-next, .bento-encounter { position:relative;overflow:hidden;border-radius:var(--gs-radius-media);background:var(--gs-line); }
+.bento-lead { grid-column:span 2; }
+.bento-lead picture { display:block;width:100%;height:100%; }
+.bento-lead picture > img, .bento-portrait img, .encounter-card img, .encounter-next img { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
+/* Captions on art: the only place text sits on a picture, over a chrome fade. */
+.bento-caption, .encounter-card > span, .encounter-next strong { position:absolute;inset:auto 0 0;padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
+.bento-caption { display:grid;grid-template-columns:1fr auto;align-items:end;gap:2px var(--gs-space-3); }
+.bento-caption small { grid-column:1 / -1;font-size:var(--gs-text-meta); }
+.bento-caption strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.4; }
+/* Small tiles carry one line at the bottom, the same fade as the lead: the card title when every
+   card is one idol's, the idol's name in the all-archive view. Rarity is marked on the lead only. */
+.bento-tile-caption { position:absolute;inset:auto 0 0;overflow:hidden;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);text-overflow:ellipsis;white-space:nowrap; }
+/* Text entries: a third card and the directory, as rows under a hairline. */
+.bento-note, .bento-directory { display:flex;align-items:center;gap:var(--gs-space-4);min-height:76px;padding:var(--gs-space-3) 0 !important;border-top:1px solid var(--gs-line) !important; }
+.bento-note { grid-column:span 2; }
+.bento-note > img { flex:none;width:48px;height:64px;object-fit:cover;object-position:top;border-radius:var(--gs-radius-media); }
+.bento-note > span { display:grid;flex:1;gap:2px;min-width:0; }
+.bento-note small, .bento-directory small { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.bento-note strong, .bento-directory strong { font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);line-height:1.4;overflow-wrap:anywhere; }
+.bento-note > svg, .bento-directory > svg { flex:none;color:var(--gs-ink-3); }
+.bento-directory { display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;align-content:center;column-gap:var(--gs-space-3); }
+.bento-directory > svg:first-child { grid-column:1;grid-row:1 / span 2;align-self:center; }
+.bento-directory strong { grid-column:2;grid-row:1; }
+.bento-directory small { grid-column:2;grid-row:2; }
+.bento-directory > svg:last-child { grid-column:3;grid-row:1 / span 2;align-self:center; }
 
-.bento-note,.bento-directory {border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--portal-idol-color) 6%,color-mix(in srgb, var(--gs-surface) 63%, transparent))!important;}
-.bento-lead picture {position:relative;display:block;width:100%;height:100%;min-height:0;}
-.bento-lead picture > img {width:100%;height:100%;object-fit:contain;}
-.encounter-next {display:none;}
-/* Phones: a bento of pictures whose frames hug the art — the lead in portrait, two cards beside it,
-   filters below. No padding inside a frame, no blurred fill around a picture. */
-@media (max-width:760px){
-  .card-bento,.is-global {grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:142px 142px;gap:8px;}
-  .card-bento button {border-radius:var(--gs-radius-control);}
-  .bento-lead {grid-column:1;grid-row:span 2;}
-  .bento-lead:before {display:none;}
-  .bento-lead picture > img {object-fit:cover;object-position:top;}
-  .bento-portrait,.bento-note,.encounter-next {position:relative;display:block;padding:0;overflow:hidden;border:1px solid var(--portal-line)!important;background:var(--gs-paper)!important;}
-  .bento-portrait img,.bento-note > img,.encounter-next img {width:100%;height:100%;object-fit:cover;object-position:top;}
-  .bento-note {grid-column:2;}
-  .bento-note > span,.bento-note > svg {display:none;}
-  .bento-directory {grid-column:1 / -1;grid-row:3;}
-  .bento-encounter {position:relative;padding:0;overflow:hidden;background:var(--gs-paper);}
-  .bento-encounter header span,.bento-encounter > small {display:none;}
-  .bento-encounter header {position:absolute;top:2px;right:2px;z-index:1;}
-  .bento-encounter header button {color:var(--gs-surface);}
-  .encounter-card {height:100%;padding:0;}
-  .encounter-card img {width:100%;height:100%;object-fit:cover;object-position:top;}
-  .encounter-card > span {position:absolute;inset:auto 0 0;padding:16px 6px 6px;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 82%,transparent));color:var(--gs-surface);}
-  .encounter-card > span small,.encounter-card > span strong,.encounter-card > svg {display:none;}
-  .encounter-card > span::after {content:attr(data-idol);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold);}
-  .encounter-card strong,.encounter-next strong {font-size:var(--gs-text-meta);}
-  .encounter-next strong {position:absolute;inset:auto 0 0;padding:16px 6px 6px;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 82%,transparent));color:var(--gs-surface);}
-  .bento-filters {grid-column:1 / -1;grid-row:3;display:grid;gap:8px;padding:0;border:0;background:none;}
-  .bento-filters > span {display:none;}
-  .attribute-links,.rarity-links {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:0;}
-  .attribute-links button,.rarity-links button {min-height:36px;border-radius:var(--gs-radius-pill);text-align:center;font-size:var(--gs-text-meta);}
+/* Global view: the lead at the landscape art's 15:8, two encounter cards beside it, filters under. */
+.is-global { grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,.5fr));grid-template-rows:minmax(0,1fr) auto;row-gap:var(--gs-space-5); }
+.is-global .bento-lead { grid-column:1;grid-row:1 / span 2;align-self:start;aspect-ratio:15 / 8; }
+.bento-encounter { grid-column:2;grid-row:1; }
+.bento-encounter header span, .bento-encounter > small { display:none; }
+.bento-encounter header { position:absolute;top:2px;right:2px;z-index:1; }
+.bento-encounter header button { display:grid;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);color:var(--gs-surface); }
+.encounter-card { display:block;width:100%;height:100%; }
+.encounter-card > span small, .encounter-card > span strong, .encounter-card > svg { display:none; }
+.encounter-card > span::after { content:attr(data-idol); }
+.encounter-card > span, .encounter-next strong { overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.encounter-card > span, .encounter-next strong { padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.encounter-next { grid-column:3;grid-row:1;display:block; }
+.bento-filters { grid-column:2 / -1;grid-row:2;display:grid;gap:var(--gs-space-3);min-width:0; }
+.bento-filters > span { display:none; }
+.attribute-links, .rarity-links { display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:var(--gs-space-2); }
+.card-bento .attribute-links button, .card-bento .rarity-links button { min-height:var(--gs-control-normal);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);text-align:center;white-space:nowrap; }
+.card-bento .attribute-links button { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
+.attribute-links small, .rarity-links small { margin-left:2px;color:var(--gs-ink-3);font-weight:var(--gs-weight-regular); }
+.bento-empty { color:var(--gs-ink-3); }
+
+@media (hover:hover) and (pointer:fine) {
+  .bento-lead img, .bento-portrait img, .encounter-card img, .encounter-next img { transition:transform var(--gs-motion-feedback) var(--gs-motion-ease); }
+  .bento-lead:hover img, .bento-portrait:hover img, .encounter-card:hover img, .encounter-next:hover img { transform:scale(1.02); }
+  .bento-note:hover strong, .bento-directory:hover strong { color:var(--gs-mint-ink); }
+  .card-bento .rarity-links button:hover { border-color:var(--gs-selected-line); }
 }
-/* Desktop: the same hugging frames — cover, never a blurred fill. 卡面探索 shows the lead at the
-   landscape art's own 15:8, two encounter cards beside it in portrait, the filters under them. */
-@media (min-width:761px){
-  .is-global {grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,.5fr));grid-template-rows:minmax(0,1fr) auto;}
-  .is-global .bento-lead {grid-column:1;grid-row:1 / span 2;align-self:start;aspect-ratio:15 / 8;}
-  .bento-lead:before {display:none;}
-  .bento-lead picture > img,.bento-portrait img {object-fit:cover;object-position:top;}
-  .bento-encounter {grid-column:2;grid-row:1;position:relative;padding:0;overflow:hidden;background:var(--gs-paper);}
-  .bento-encounter header span,.bento-encounter > small {display:none;}
-  .bento-encounter header {position:absolute;top:2px;right:2px;z-index:1;}
-  .bento-encounter header button {color:var(--gs-surface);}
-  .encounter-card {height:100%;padding:0;}
-  .encounter-card img,.encounter-next img {width:100%;height:100%;object-fit:cover;object-position:top;}
-  .encounter-card > span,.encounter-next strong {position:absolute;inset:auto 0 0;padding:24px 10px 8px;background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 82%,transparent));color:var(--gs-surface);}
-  .encounter-card > span small,.encounter-card > svg {display:none;}
-  .encounter-next {grid-column:3;grid-row:1;position:relative;display:block;padding:0;overflow:hidden;background:var(--gs-paper)!important;}
-  .encounter-next strong {font-size:var(--gs-text-meta);}
-  .bento-filters {grid-column:2 / -1;grid-row:2;display:grid;gap:8px;padding:0;border:0;background:none;}
-  .bento-filters > span {display:none;}
-  .attribute-links,.rarity-links {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;margin:0;}
-  .attribute-links button,.rarity-links button {min-height:36px;border-radius:var(--gs-radius-pill);text-align:center;font-size:var(--gs-text-meta);}
+@media (prefers-reduced-motion:reduce) { .card-bento * { transition:none !important;transform:none !important; } }
+
+/* Phones: the lead in portrait, two cards beside it, the text entries and filters below. */
+@media (max-width:760px) {
+  .card-bento, .is-global { grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:142px 142px auto;gap:var(--gs-space-3); }
+  .is-global { row-gap:var(--gs-space-3); }
+  .bento-filters { margin-top:var(--gs-space-3); }
+  .bento-lead, .is-global .bento-lead { grid-column:1;grid-row:1 / span 2;aspect-ratio:auto; }
+  .bento-portrait { grid-column:2;grid-row:1; }
+  .bento-note { position:relative;grid-column:2;grid-row:2;display:block;min-height:0;padding:0 !important;border:0 !important;border-radius:var(--gs-radius-media);overflow:hidden;background:var(--gs-line); }
+  .bento-note > img { width:100%;height:100%;border-radius:0; }
+  .bento-note > svg, .bento-note > span small { display:none; }
+  .bento-note > span { position:absolute;inset:auto 0 0;display:block;padding:var(--gs-space-7) var(--gs-space-3) var(--gs-space-3);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
+  .bento-note > span strong { display:block;overflow:hidden;font-size:var(--gs-text-meta);text-overflow:ellipsis;white-space:nowrap; }
+  .bento-directory { grid-column:1 / -1;grid-row:3; }
+  .bento-encounter { grid-column:2;grid-row:1; }
+  .encounter-next { grid-column:2;grid-row:2; }
+  .bento-filters { grid-column:1 / -1;grid-row:3; }
+  .card-bento .attribute-links button, .card-bento .rarity-links button { min-height:var(--gs-control-touch); }
 }
 </style>
