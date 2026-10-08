@@ -435,3 +435,11 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 测试执行实际 factory 参数，补 App 的实际 resource apply 分支（成功、迟到与失败传播）及私有失效。正向基线和 **19/19** 错误变体通过，记录 `.analysis/resource-mutations/results.json`。相应 startup/restore fixture 接入真实 Resource factory；Gasha 只在 restoration fixture 接入，避免扩大其他案例边界。
 - `verify:archive-startup-route`、源码批次 **118/118**、player repair **37/37** 和 `build:check` **22.57 秒**通过；日志 `.analysis/resource-{startup,extraction-source-batch,player-repair,build-check}.log`。源码构建不复制 public，仅复用 E 盘 `.analysis/build-check`。
 - 5175 手机深链接刷新与迁移前基线一致，数据状态返回按既有偏好进入偶像首页。未改 UI、译文、资源绑定或端口。完整固定提交门和 App orchestration 专项审计另行补录；不把行数作为后续目标。
+
+
+### Resource Status 最终验收与 App 职责审计
+
+- `cc0aa069` 已推送。固定该提交的 LF 干净源码门：**114 通过、0 失败、1 跳过 npm ci**；batch **118/118**，最终源码构建 **20.20 秒**及生成审计通过。证据 `E:\Web_build\GS_Archive_engineering_20261007\gate-cc0aa069-final\` 含日志、结果、生成差异、Resource AST/错误变体结果与 App 职责清点。
+- Browser 桌面与手机资源状态基线/迁移后对照一致；刷新、按偏好返回首页通过，最终 console error 为 0，视口恢复且临时页关闭。入口来源/筛选/竞争由真实加载回归证明，不以页面截图代替这些行为断言。
+- 临时检出和依赖 junction 已清理，主工程依赖保留。清理记录 C 盘可用 **47.60 GiB**，5175 仍为原 PID **74640**。没有部署、上传或重启。
+- 按用户要求，Resource Status 收口后完成独立 [App orchestration 专项审计](GS_ARCHIVE_APP_ORCHESTRATION_AUDIT_20261008.md)。结论 **No：以编排为主，仍有明确的领域/展示规则残留**。报告给出六处具体证据，以及不应再为减行数拆分的编排范围。本轮止于审计，没有改这些残留，也没有宣称整个 App 已满足冻结条件；后续不设行数目标。
