@@ -667,6 +667,7 @@ import {
 } from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { useStageSongProjection } from './composables/useStageSongProjection.js'
+import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigation.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
 import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
@@ -2163,16 +2164,9 @@ async function onEventCatalogReady() {
     console.error('[ArchiveNavigation] Failed to restore event directory position:',error)
   })
 }
-function selectPhotoIdol(id) {
-  if (!/^\d{1,4}$/.test(String(id))) return
-  if (currentPhotoIdol.value!==String(id) && /^(faces|poses):/.test(currentPhotoEntity.value)) currentPhotoEntity.value=''
-  currentPhotoIdol.value=String(id); syncArchiveRoute({restoreView:false})
-}
-
-function updatePhotoCatalogQuery(query) {
-  filterQuery.value=query
-  syncArchiveRoute({replace:true,restoreView:false})
-}
+const { selectPhotoIdol, updatePhotoCatalogQuery, selectPhotoEntity, openPictureStudio } = usePhotoCatalogNavigation({
+  view, currentPhotoIdol, currentPhotoEntity, filterQuery, syncArchiveRoute, captureDetailSource, commitView,
+})
 
 async function onPhotoCatalogReady() {
   const pending=pendingPhotoCatalogRestore
@@ -2188,16 +2182,6 @@ async function onPhotoCatalogReady() {
 async function openDomainTarget(target){
   if(target?.view==='card_detail' && /^[a-z0-9_]+$/.test(target.card || ''))return openEventCard({card_resource_id:target.card})
   if(target?.view==='photo_catalog' && /^(spots|scenes|stickers|frames|filters):\d+$/.test(target.photoEntity || '')){captureDetailSource();currentPhotoIdol.value='';currentPhotoEntity.value=target.photoEntity;currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog')}
-}
-function selectPhotoEntity(key) {
-  if (key === '' && view.value === 'photo_catalog') {
-    currentPhotoEntity.value = ''; syncArchiveRoute({ replace: true, restoreView: false }); return
-  }
-  if (!/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(key || '')) return
-  currentPhotoEntity.value=key; syncArchiveRoute({replace:true,restoreView:false})
-}
-function openPictureStudio(key) {
-  if (key) selectPhotoEntity(key); captureDetailSource(); filterQuery.value=''; commitView('picture_studio')
 }
 
 async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {

@@ -2,8 +2,17 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { computed, ref } from 'vue'
+import { parse } from '@vue/compiler-sfc'
+import { parse as parseScript } from '@babel/parser'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const appScript = parse(app).descriptor.scriptSetup.content
+const declarations = parseScript(appScript, { sourceType: 'module' }).program.body
+const productionFunction = name => {
+  const node = declarations.find(node => node.type === 'FunctionDeclaration' && node.id.name === name)
+  assert.ok(node, `Missing production function: ${name}`)
+  return appScript.slice(node.start, node.end)
+}
 const source = (start, end) => {
   const from = app.indexOf(start), to = app.indexOf(end, from)
   assert.ok(from >= 0 && to > from, `Missing production region: ${start}`)
@@ -23,8 +32,8 @@ for (const preferred of [null, { id: '002sht' }]) {
     commitView: next => { views.push(next); state.view.value = next },
   }
   vm.runInNewContext([
-    source('function navigateArchiveSection(', 'async function openStoryReader('),
-    source('function openIdolDirectory(', 'function openPrimaryCards('),
+    productionFunction('navigateArchiveSection'),
+    productionFunction('openIdolDirectory'),
     'navigateArchiveSection("idols")',
   ].join('\n'), state)
   assert.deepEqual(views, ['idols'])

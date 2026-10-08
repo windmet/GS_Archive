@@ -9,6 +9,8 @@ import * as photoStickerGroups from '../src/presentation/photoStickerGroups.js'
 import * as photoSpotScenes from '../src/presentation/photoSpotScenes.js'
 import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchiveSourceRoute, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
+import { usePhotoCatalogNavigation } from '../src/composables/usePhotoCatalogNavigation.js'
+import { parse as parseScript } from '@babel/parser'
 import { buildArchiveViewContext, captureArchiveViewState, saveArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
 const assert = { ...strictAssert, equal(actual, expected, message) {
   if ((actual?.type || expected?.type) && actual !== expected) strictAssert.fail((message || 'Host-node identity differs') + ': ' + (actual?.type || actual) + ' #' + actual?.id + ' vs ' + (expected?.type || expected) + ' #' + expected?.id)
@@ -21,6 +23,11 @@ const assert = { ...strictAssert, equal(actual, expected, message) {
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const json = path => JSON.parse(read(path))
 const appSource = read('src/App.vue')
+const appScript = parse(appSource).descriptor.scriptSetup.content
+const photoBinding = parseScript(appScript, {sourceType:'module'}).program.body
+  .filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+  .find(node => node.id.type === 'ObjectPattern' && node.id.properties.some(property => property.key.name === 'selectPhotoIdol'))
+assert.ok(photoBinding, 'App binds the photo navigation composable')
 const production = name => {
   const source=appSource.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(source, `${name}: production handler exists`)
@@ -167,7 +174,9 @@ function fixture(initial, {saved=null,leaveOnReady=false,disposeOnReady=false,qu
       navigationState.view.value=route.view
     },
   })
-  for(const name of ['captureActiveArchiveView','adoptArchiveViewContext','syncArchiveRoute','commitView','selectPhotoIdol','selectPhotoEntity','updatePhotoCatalogQuery','onPhotoCatalogReady','captureDetailSource','openPictureStudio','restoreDetailSource','closeFullScreenExperiment'])vm.runInContext(production(name),parent)
+  for(const name of ['captureActiveArchiveView','adoptArchiveViewContext','syncArchiveRoute','commitView','onPhotoCatalogReady','captureDetailSource','restoreDetailSource','closeFullScreenExperiment'])vm.runInContext(production(name),parent)
+  parent.usePhotoCatalogNavigation = usePhotoCatalogNavigation
+  Object.assign(parent, vm.runInContext(appScript.slice(photoBinding.init.start, photoBinding.init.end),parent))
   if(saved)saveArchiveViewRestoration(buildArchiveViewContext(window.location.href,window.history.state),saved,storage)
   const payload = id => id === 'materials'
     ? { id, view: { materials: material, media: materialMedia } }
