@@ -34,21 +34,21 @@ const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==le
 const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,draw.value);return next?.image?.url ? next : null})
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
-const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intelligence',label:'Intelli',color:'#446aa8'},{id:'Mental',label:'Mental',color:'#9b7f24'}]
+const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)'}]
 </script>
 <style scoped>
 .card-bento {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:224px 94px;gap:10px;min-width:0;}
-.card-bento button {font:inherit;cursor:pointer;color:inherit;min-width:0;border:1px solid var(--portal-line);border-radius:12px;background:#ffffffa0;text-align:left;}
+.card-bento button {font:inherit;cursor:pointer;color:inherit;min-width:0;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 63%, transparent);text-align:left;}
 .card-bento button:focus-visible {outline:2px solid var(--portal-accent);outline-offset:3px;}
-.bento-lead {position:relative;grid-column:span 2;overflow:hidden;padding:0;display:flex;flex-direction:column;justify-content:center;background:#e8e9f0!important;}
+.bento-lead {position:relative;grid-column:span 2;overflow:hidden;padding:0;display:flex;flex-direction:column;justify-content:center;background:var(--gs-line)!important;}
 .bento-lead:before {content:'';position:absolute;inset:-20px;background-image:var(--card-art);background-size:cover;background-position:center;filter:blur(20px);opacity:.35;}
 .bento-lead > img {position:relative;width:100%;height:100%;object-fit:contain;min-height:0;}
-.bento-caption {position:absolute;inset:auto 0 0;display:grid;grid-template-columns:1fr auto;gap:3px;padding:24px 14px 12px;background:linear-gradient(transparent,#102330db);color:#fff;}
+.bento-caption {position:absolute;inset:auto 0 0;display:grid;grid-template-columns:1fr auto;gap:3px;padding:24px 14px 12px;background:linear-gradient(transparent,color-mix(in srgb, var(--gs-chrome) 86%, transparent));color:var(--gs-surface);}
 .bento-caption small {grid-column:1/-1;font-size:10px;}
 .bento-caption strong {font-size:14px;line-height:1.4;}
 .bento-portrait {position:relative;padding:0;overflow:hidden;}
 .bento-portrait img {width:100%;height:100%;object-fit:contain;}
-.bento-portrait > small {position:absolute;top:8px;left:8px;padding:2px 6px;background:#fff9;border-radius:5px;color:var(--portal-accent);}
+.bento-portrait > small {position:absolute;top:8px;left:8px;padding:2px 6px;background:color-mix(in srgb, var(--gs-surface) 60%, transparent);border-radius:5px;color:var(--portal-accent);}
 .bento-note {grid-column:span 2;display:flex;align-items:center;gap:12px;padding:10px;}
 .bento-note > img {width:54px;height:72px;object-fit:contain;}
 .bento-note > span {flex:1;display:grid;gap:4px;min-width:0;}
@@ -59,7 +59,7 @@ const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intellig
 .bento-directory strong {font-size:14px;}
 .is-global {grid-template-columns:minmax(0,2fr) minmax(0,1fr);grid-template-rows:168px 150px;}
 .is-global .bento-lead {grid-column:1;grid-row:span 2;}
-.bento-encounter,.bento-filters {padding:12px 14px;border:1px solid var(--portal-line);border-radius:12px;background:#ffffff98;min-width:0;}
+.bento-encounter,.bento-filters {padding:12px 14px;border:1px solid var(--portal-line);border-radius:12px;background:color-mix(in srgb, var(--gs-surface) 60%, transparent);min-width:0;}
 .bento-encounter header {display:flex;align-items:center;gap:6px;color:var(--portal-accent);font-size:12px;}
 .bento-encounter header button {display:grid;place-items:center;min-height:30px;width:30px;margin-left:auto;border:0;background:transparent;}
 .encounter-card {display:flex;align-items:center;gap:12px;width:100%;padding:4px 0;border:0!important;background:transparent!important;}
@@ -72,11 +72,11 @@ const attributes=[{id:'Physical',label:'Physical',color:'#ca4d5d'},{id:'Intellig
 .attribute-links button {padding:5px 7px;color:var(--attribute);background:color-mix(in srgb,var(--attribute) 7%,white);border-color:color-mix(in srgb,var(--attribute) 20%,white);font-size:11px;min-height:32px;}
 .rarity-links button {font-size:11px;min-height:30px;padding:3px 7px;}
 .bento-empty {color:var(--portal-muted);}
-@media(hover:hover) and (pointer:fine){.card-bento button:hover {box-shadow:0 4px 12px #1b33441a;border-color:var(--portal-accent);}.bento-note,.bento-directory,.encounter-card {transition:transform 160ms ease-out;}.bento-note:hover,.bento-directory:hover {transform:translateY(-2px);}}
+@media(hover:hover) and (pointer:fine){.card-bento button:hover {box-shadow:0 4px 12px color-mix(in srgb, var(--gs-chrome) 10%, transparent);border-color:var(--portal-accent);}.bento-note,.bento-directory,.encounter-card {transition:transform 160ms ease-out;}.bento-note:hover,.bento-directory:hover {transform:translateY(-2px);}}
 @media(prefers-reduced-motion:reduce){.card-bento button {transition:none!important;transform:none!important;}}
 @container(max-width:850px){.card-bento {grid-template-rows:210px 94px;}.is-global {grid-template-rows:168px 150px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);}}
 
-.bento-note,.bento-directory {border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--portal-idol-color) 6%,#ffffffa0)!important;}
+.bento-note,.bento-directory {border:0!important;box-shadow:none!important;background:color-mix(in srgb,var(--portal-idol-color) 6%,color-mix(in srgb, var(--gs-surface) 63%, transparent))!important;}
 .bento-lead picture {position:relative;display:block;width:100%;height:100%;min-height:0;}
 .bento-lead picture > img {width:100%;height:100%;object-fit:contain;}
 .encounter-next {display:none;}
