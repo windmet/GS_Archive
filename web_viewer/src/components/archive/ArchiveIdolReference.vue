@@ -33,9 +33,12 @@ const props = defineProps({
 })
 const emit = defineEmits(['open'])
 const imageIndex = ref(0)
-const imageUrls = computed(() => (props.reference?.imageCandidates || []).map(candidate => candidate.url).filter(Boolean))
+// Half-body event story art belongs to the visual density; every avatar density skips it.
+const usableCandidates = computed(() => (props.reference?.imageCandidates || [])
+  .filter(candidate => props.density === 'visual' || candidate.kind !== 'event_story_visual'))
+const imageUrls = computed(() => usableCandidates.value.map(candidate => candidate.url).filter(Boolean))
 const imageSrc = computed(() => imageUrls.value[imageIndex.value] || '')
-const currentImageKind = computed(() => props.reference?.imageCandidates?.[imageIndex.value]?.kind || '')
+const currentImageKind = computed(() => usableCandidates.value[imageIndex.value]?.kind || '')
 const avatarSize = computed(() => ({ identity: 36, compact: 44, portrait: 64, visual: 72 })[props.density] || 44)
 watch(() => `${props.reference?.idolCode || ''}|${imageUrls.value.join('|')}`, () => { imageIndex.value = 0 })
 

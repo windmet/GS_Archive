@@ -101,8 +101,10 @@ assert.match(eventDetailSource, /props\.view\?\.castReferences/)
 assert.match(eventDetailSource, /:reference="entry\.reference"/)
 const adapterEventSource = await readFile(new URL('../readmodels/lib/checkout_adapter.mjs',import.meta.url),'utf8')
 assert.match(adapterEventSource,/buildEventIdolReference/)
-// The event cast is small avatars like a story's cast list: half-body event art stays out of it.
-assert.match(eventDetailSource, /candidate\.kind !== 'event_story_visual'/, 'event cast drops event story visuals')
+// The event cast is small avatars like a story's cast list; half-body event art is used only by the
+// visual density, which no cast list renders.
+const avatarSource = await readFile(new URL('../src/components/archive/ArchiveIdolReference.vue', import.meta.url), 'utf8')
+assert.match(avatarSource, /props\.density === 'visual' \|\| candidate\.kind !== 'event_story_visual'/, 'avatar densities skip event story visuals')
 assert.doesNotMatch(eventDetailSource, /density="?'?visual|has-story-visuals/, 'event cast never renders half-body cards')
 
 const viteSource = await readFile(new URL('../vite.config.js', import.meta.url), 'utf8')

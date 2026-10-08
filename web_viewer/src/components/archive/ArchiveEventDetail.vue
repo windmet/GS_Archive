@@ -127,7 +127,7 @@
     <section v-if="castReferences.length||units.length" class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
-        <!-- Cast as small avatars, the same as a story's cast list; event story half-body art is not used here. -->
+        <!-- Cast as small avatars, the same as a story's cast list (half-body art is visual density only). -->
         <div class="idol-list">
           <ArchiveIdolReference
             v-for="entry in castReferences"
@@ -212,8 +212,7 @@ const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
 const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
 const castReferences=computed(()=>(props.view?.castReferences || []).map(entry=>({
   idol:props.view.cast.find(idol=>idol.idol_code===entry.idol_code),
-  reference:{...entry.reference,displayName:props.displayIdolName(entry.idol_code,entry.reference.displayName)||entry.reference.displayName,
-    imageCandidates:(entry.reference.imageCandidates || []).filter(candidate=>candidate.kind !== 'event_story_visual')},
+  reference:{...entry.reference,displayName:props.displayIdolName(entry.idol_code,entry.reference.displayName)||entry.reference.displayName},
 })))
 const eventTypeLabel=computed(()=>({theater:'THEATER 累计 PT',tour:'TOUR 累计 PT',collection:'315 CARNIVAL',valentine:'VALENTINE',whiteday:'WHITEDAY'}[props.view?.identity.kind] || '活动剧情'))
 const scopeLabel=computed(()=>({fixed_unit_event:'固定组合团活',attribute_event:`${props.view?.identity.attribute || ''} 属性团曲`.trim(),mixed_unit_event:'跨组合团活'}[props.view?.identity.scope] || (props.view?.identity.isReprint?'复刻活动':'历史活动')))
