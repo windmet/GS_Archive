@@ -267,3 +267,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - source batch 114/114、完整 reading、player repair 37/37 与 `build:check`（22.41 秒）通过；输出仅 `.analysis/build-check`、不复制 public。日志 `.analysis/event-{source-batch,reading,player-repair,build-check}.log`。反向加固后的新回归基线再次通过；完整干净源码门结果随后补录。
 - 5175 Browser：Plus 1 搜索→原期活动→播放实际对白（7/18）→返回；奖励卡片、出演者握野英雄及 FRAME 组合分别往返；详情刷新后返回目录保留 Plus 1 与两条结果。390×844 和 1280×900 的目录/详情对照布局内容一致（焦点高亮差异除外）；没有白屏或框架错误，console 无 error，保留既有 Pixi Spine warning。测试视口已重置。未把本地导航/画面验收称为音频解码、长稳或发布验收。
 - UI/数据待办仅记录：奖励列表仍有「未绑定图片」与原文道具名；关联卡说明仍有「获得方式待确认」。本批不修改这些展示。原 5175 PID 74640 保持，没有重启、部署、R2 上传或完整资源打包；共享工作区译文及其他未跟踪资料保留。
+
+- 代码 `9e3ed2e7` 已推送。固定该提交的 LF 干净检出完整源码门 115 步：**114 通过、0 失败、1 跳过 npm ci**；其中 batch 114/114，最后代码编译与当前构建审计通过。证据 `E:\Web_build\GS_Archive_engineering_20261007\gate-9e3ed2e7-final\` 下的 `results.json`、`generated-audit.diff`、`event-diff-review.json`、`mutation-results.json`；这是本地源码门，不是远端 CI 或上线验收。
+- 临时检出与依赖 junction 已清理，主依赖保留，清理回执 `cleanup.json`：C 盘可用 49.41 GiB，5175 仍为 PID 74640。收尾发现另一窗口新增未提交的 `src/components/archive/ArchiveEventDetail.vue` UI 改动（文件时间 19:56）；原样保留、不纳入本批。上述固定提交门禁与此前 Browser 旅程不扩展为这份后续 UI 改动的验收。
+
+### 下一批 Home 编排边界（活动拆分后只读盘点）
+
+- 下一批优先 `useHomeNavigation`：`loadHomeIndex`、`loadHomeIdol`、`openGameHome`、`closeHomeVisit`，及 `homeSelectedId` 异步 watcher 的处理器。同一私有请求计数必须贯穿打开、切换、restore 和 unmount；App 保留 watcher 注册与统一生命周期，只委托处理器和 invalidate。
+- `recentHomeProfiles` 与三人缓存淘汰随 loader 一起归属；`homeVisits` 仍需作为同一个 Map 交给 `usePortalNavigation`，保留临时访问的台词/服装和门户范围/搜索返回。读取页的去重、hydrate 校验、中止后不发布与缓存命中顺序不能改变。
+- `archiveStats`…`idolPickerLabel` 保持连续，首页/picker computed 暂留 App，factory 应在该区域之后、所有消费者之前绑定。`goHome` 的跨领域清理、用户偏好写入、onboarding/picker 分派和 Home 三个跨域快捷入口先保持原归属，避免把偏好修改与临时 Home 访问混在一批。
+- 已确认受影响护栏：home-portal-visits 的函数提取、async-navigation 中以 `loadHomeIndex` 为终点的切片、各 restore fixture 与 App 卸载处计数；后续测试必须执行真实 Home loader、共享请求和三人缓存，不仅替换 Home 打开函数。当前仅盘点，尚未实施 Home 拆分。
