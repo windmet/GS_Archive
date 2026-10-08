@@ -16,7 +16,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .stage-tap-target:disabled { cursor: progress; }
 .scene-shade { position: absolute; z-index: 2; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(11 20 36 / 11%), transparent 35%); }
 .home-masthead { position: absolute; z-index: 4; top: 22px; left: 24px; max-width: 34%; }
-.idol-heading { border-left: 4px solid var(--idol-color); padding: 5px 0 5px 15px; background: transparent; text-shadow: 0 2px 8px rgb(6 24 37 / 82%), 0 1px 2px rgb(6 24 37 / 92%); }
+.idol-heading { display: block; border: 0; border-left: 4px solid var(--idol-color); padding: 5px 0 5px 15px; background: transparent; color: var(--gs-surface); font: inherit; text-align: left; text-shadow: 0 2px 8px rgb(6 24 37 / 82%), 0 1px 2px rgb(6 24 37 / 92%); }
+/* The name is the link to this idol's archive; the cue line says so. */
+.idol-heading-cta { display: inline-flex; align-items: center; gap: 2px; margin-top: 6px; color: var(--gs-surface); font-size: var(--gs-text-ui); font-style: normal; font-weight: var(--gs-weight-semibold); }
+.idol-heading:hover .idol-heading-cta { text-decoration: underline; text-underline-offset: 3px; }
+.home-return { display: inline-flex; align-items: center; gap: 4px; min-height: var(--gs-control-compact); margin-bottom: 8px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-pill); background: var(--chrome-bg); color: var(--chrome-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); box-shadow: var(--gs-shadow-float); }
 .idol-heading span, .idol-heading small { display: block; color: var(--gs-surface); font-size: var(--gs-text-meta); }
 .idol-heading h2 { margin: 5px 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.25; color: var(--gs-surface); }
 .home-context { position: absolute; z-index: 5; top: 22px; right: 24px; display: flex; align-items: center; height: 48px; padding: 4px; border: 0; border-radius: var(--gs-radius-control); background: var(--chrome-bg); box-shadow: var(--gs-shadow-float); }
@@ -51,7 +55,10 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .settings-field select, .settings-field input { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 /* Touch keeps 16px so iOS does not zoom the page into a focused field. */
 @media (pointer: coarse) { .settings-field select, .settings-field input { font-size: var(--gs-text-subtitle); } }
-.home-producer-settings { display: flex; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+.home-producer-settings { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px; align-items: center; width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+.home-producer-settings span { font-weight: var(--gs-weight-semibold); }
+.home-producer-settings small { overflow: hidden; color: var(--gs-ink-3); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
+.home-producer-settings svg { color: var(--gs-ink-3); }
 .settings-backgrounds { margin: 0; padding: 0 0 17px; border: 0; border-bottom: 1px solid var(--gs-line); }
 .settings-backgrounds legend { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }.settings-backgrounds p { font-size: var(--gs-text-meta); line-height: 1.65; color: var(--gs-ink-2); }
 .settings-backgrounds small { display: block; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.65; margin-top: 9px; }
@@ -101,6 +108,3 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: var(-
 .is-focus-mode .home-context, .is-focus-mode .mobile-idol-switch, .is-focus-mode .mobile-settings-trigger, .is-focus-mode .mobile-costume-trigger { display: none; }
 .immersive-home[data-home-mode="card"] .stage-tap-target { inset: 0; width: 100%; }
 
-.home-archive-links {position:absolute;z-index:5;right:24px;top:82px;display:flex;gap:8px;}
-.home-archive-links button {min-height:40px;padding:6px 12px;border:0;border-radius:var(--gs-radius-control);background:var(--chrome-bg);color:var(--chrome-ink);font-size:var(--gs-text-ui);font-weight:var(--gs-weight-medium);box-shadow:var(--gs-shadow-float);}
-@media(max-width:760px){.home-archive-links {left:12px;right:auto;top:110px;flex-direction:column;}.home-archive-links button{font-size:var(--gs-text-meta);min-height:36px;}}

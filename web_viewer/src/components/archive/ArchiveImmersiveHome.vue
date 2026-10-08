@@ -38,18 +38,19 @@
       @click="handleStageTap"
     ></button>
     <div class="scene-shade" aria-hidden="true"></div>
-    <nav v-if="!focusMode" class="home-archive-links" aria-label="主页与资料馆">
-      <button type="button" @click="emit('open-archive')">查看他的档案</button>
-      <button v-if="canReturnToArchive" type="button" @click="emit('return-to-archive')">返回资料馆</button>
-      <button type="button" @click="emit('settings')">{{ producerName ? `${producerName} P` : '制作人档案' }}</button>
-    </nav>
-
+    <!-- The idol's name is the way into the archive: it opens the archive scoped to this idol.
+         Returning sits above it as a back link, only when a page sent the reader here. Producer
+         settings live in the scene settings sheet, not on the stage. -->
     <header class="home-masthead">
-      <div class="idol-heading">
+      <button v-if="canReturnToArchive && !focusMode" type="button" class="home-return" @click="emit('return-to-archive')">
+        <ArrowLeft :size="15" aria-hidden="true" />返回资料馆
+      </button>
+      <button type="button" class="idol-heading" :aria-label="`查看${activeIdol.name}的资料`" @click="emit('open-archive')">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
         <h2>{{ activeIdol.name }}</h2>
         <small>{{ activeIdol.kana }}</small>
-      </div>
+        <em v-if="!focusMode" class="idol-heading-cta">查看资料<ChevronRight :size="14" aria-hidden="true" /></em>
+      </button>
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
@@ -191,6 +192,8 @@
       </header>
 
       <div class="settings-body">
+        <!-- First in the sheet: the stage has no producer button of its own. -->
+        <button type="button" class="home-producer-settings" @click="emit('settings')"><span>制作人设置</span><small>{{ producerName ? `${producerName} P · 称呼与担当` : '设置称呼与担当' }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
         <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
         <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
           <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
@@ -218,7 +221,6 @@
           <small>来自资料馆已发布场景；不是原游戏首页可选背景的完整还原清单。</small>
         </fieldset>
 
-        <button type="button" class="home-producer-settings" @click="emit('settings')">{{ producerName || '制作人' }} P · 编辑制作人档案</button>
         <label class="settings-field">
           <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
@@ -282,7 +284,9 @@
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
+  ArrowLeft,
   Check,
+  ChevronRight,
   RotateCcw,
   SlidersHorizontal,
   Square,
