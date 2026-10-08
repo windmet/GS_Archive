@@ -97,11 +97,12 @@ assert.equal(restoreContext.portalScope.value,'all','bare portal follows saved d
 await restoreContext.applyArchiveRoute({view:'portal',portalScope:'001tom'})
 assert.equal(restoreContext.portalScope.value,'001tom','explicit temporary lens wins over default')
 // No loaders or media globals were provided: this early restoration path is isolated.
-const handlers = ['openArchivePortal', 'closeArchivePortal'].map(name => {
-  const source = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
-  assert.ok(source)
-  return source
-}).join('\n')
+const appScript = parse(app).descriptor.scriptSetup.content
+const portalBinding = parseScript(appScript,{sourceType:'module'}).program.body
+  .filter(node=>node.type==='VariableDeclaration').flatMap(node=>node.declarations)
+  .find(node=>node.id.type==='ObjectPattern'&&node.id.properties.some(property=>property.key.name==='openArchivePortal'))
+assert.ok(portalBinding, 'App binds portal navigation')
+const bindPortalNavigation = context => vm.runInNewContext(appScript.slice(portalBinding.init.start,portalBinding.init.end),{...context,usePortalNavigation})
 const nav = useArchiveNavigationState()
 nav.view.value = 'cards'
 nav.currentCharacterId.value = '001tom'
@@ -123,10 +124,20 @@ const context = {
     if (intent.isCurrent()) nav.view.value = route.view
   }, { restoring: true }),
 }
-vm.runInNewContext(handlers, context)
+const loadCalls = []
+for (const name of ['loadHomeIdol','loadIdolDetail','loadUnitCatalog','loadUnitDetail','loadGashaCatalog',
+  'loadGashaDetail','loadCardDetail','loadEventDetail','loadSeasonalDetail','loadWorkDetail','loadIdolStoryDetail',
+  'loadCollectionDetail','loadStoryReadModelDetail','ensureSongCatalog','loadSongDetail']) context[name] = async (...args) => {
+  loadCalls.push([name,...args]); return {id:args[0],name}
+}
+for (const name of ['idolReadModelDetail','unitReadModelDetail','gashaReadModelDetail','cardReadModelDetail',
+  'eventReadModelDetail','seasonalReadModelDetail','workReadModelDetail','idolStoryReadModelDetail',
+  'collectionReadModelDetail','storyReadModelDetail','songReadModelDetail']) context[name] = {value:null}
+Object.assign(context, bindPortalNavigation(context))
 context.openArchivePortal()
 assert.equal(nav.view.value, 'portal')
 const captured = nav.portalFrom.value
+assert.ok(captured, 'opening the portal captures its source route')
 context.openArchivePortal()
 assert.equal(nav.portalFrom.value, captured, 'reopening cannot overwrite return context')
 let pending = context.closeArchivePortal()
@@ -148,6 +159,44 @@ nav.portalFrom.value = ''
 await context.closeArchivePortal()
 assert.equal(nav.view.value, 'portal', 'root Portal has no synthetic return action')
 assert.equal(published, 1)
+// All detail-preparation branches still call their boundary and publish to the original ref.
+for (const [route, loader, detail, args] of [
+  [{view:'home',homeIdol:'001tom'},'loadHomeIdol',null,['001tom']],
+  [{view:'idol_detail',idol:'001tom'},'loadIdolDetail','idolReadModelDetail',['001tom']],
+  [{view:'unit_catalog'},'loadUnitCatalog',null,[]],
+  [{view:'unit_detail',unit:'1'},'loadUnitDetail','unitReadModelDetail',['1']],
+  [{view:'gashas'},'loadGashaCatalog',null,[]],
+  [{view:'gasha_detail',gasha:'1'},'loadGashaDetail','gashaReadModelDetail',['1']],
+  [{view:'card_detail',card:'001tom_n01'},'loadCardDetail','cardReadModelDetail',['001tom_n01']],
+  [{view:'event_detail',event:'event:10020'},'loadEventDetail','eventReadModelDetail',['event:10020']],
+  [{view:'seasonal_campaign',storySection:'1'},'loadSeasonalDetail','seasonalReadModelDetail',['1']],
+  [{view:'work_archive',idol:'001tom'},'loadWorkDetail','workReadModelDetail',['001tom']],
+  [{view:'idol_story_archive',idol:'001tom'},'loadIdolStoryDetail','idolStoryReadModelDetail',['001tom']],
+  [{view:'story_collection',storyType:'main',storySection:'102'},'loadCollectionDetail','collectionReadModelDetail',['main','102']],
+  [{view:'story_detail',story:'1_4_002_07.json'},'loadStoryReadModelDetail','storyReadModelDetail',['1_4_002_07.json']],
+  [{view:'song_catalog',query:'BRAND'},'ensureSongCatalog',null,[]],
+  [{view:'song_detail',song:'brnfld'},'loadSongDetail','songReadModelDetail',['brnfld']],
+]) {
+  let applied
+  const scope={...context, applyArchiveRoute:async value=>{applied=value}}
+  nav.portalFrom.value=buildPortalReturnQuery(route)
+  loadCalls.length=0
+  await bindPortalNavigation(scope).closeArchivePortal()
+  assert.deepEqual(loadCalls,[[loader,...args]])
+  assert.equal(applied.view,route.view)
+  if(detail)assert.equal(context[detail].value?.name,loader, 'prepared detail is published to its owner')
+}
+// Leaving while return data loads must not bring the user back to the old source.
+{
+  let finishLoad, applied = 0
+  nav.portalFrom.value=buildPortalReturnQuery({view:'song_catalog'})
+  const scope={...context,ensureSongCatalog:()=>new Promise(resolve=>{finishLoad=resolve}),applyArchiveRoute:async()=>{applied++}}
+  const pending=bindPortalNavigation(scope).closeArchivePortal()
+  navigation.invalidate()
+  finishLoad()
+  await pending
+  assert.equal(applied,0,'a superseded data load cannot restore the old source')
+}
 console.log('Portal navigation: preserved contexts, safe deep links, refresh, no nesting and obsolete-close suppression passed')
 
 // Two-way visit contexts retain the selected lens and search while preventing nested cross-page cycles.
@@ -170,3 +219,6 @@ console.log('Home/Portal contexts: lens, query, cue/costume, explicit all-view, 
 assert.equal(archiveSectionForRoute({ view: 'collection_catalog', collection: { kind: 'items' } }), 'collections')
 assert.equal(archiveSectionForRoute({ view: 'collection_catalog', collection: { kind: 'honors' } }), 'honors')
 assert.equal(archiveSectionForRoute({ view: 'collection_catalog', entity: 'honor:1' }), 'honors', 'an honor deep link highlights 称号')
+import { usePortalNavigation } from '../src/composables/usePortalNavigation.js'
+import { parse } from '@vue/compiler-sfc'
+import { parse as parseScript } from '@babel/parser'

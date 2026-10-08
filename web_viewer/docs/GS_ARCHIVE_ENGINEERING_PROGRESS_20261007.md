@@ -111,3 +111,11 @@
 - `verify-story-catalog-projection.mjs` 登记到 batch，覆盖生产 App 接线、响应式更新、过滤、排序、源数组不变和空数据。基线与 6 个反向变体的结果见 `story-projection-20261008/results.json`。
 - 修正顺序后重新执行：batch 106/106、完整 reading、build:check 均通过；日志 `story-{batch,reading,build}-20261008.log`。没有复制完整 public。
 - 5175 Browser：390/1280 宽目录前后截图布局与文字一致；1394 条总目录切换到活动 36 条，再选跨组合 2 条，最新排序实际生效。初始化修复后的刷新与操作没有新 error；本地浏览器证据不等同线上验收。
+
+## 2026-10-08 App.vue 拆分：门户导航
+
+- 从 `fd1dc7b7` 抽出 `usePortalNavigation` 的进入、来源保留、详情准备与返回；App 从 5122 行降至 5092 行，模板和样式逐字一致。四批累计从 5182 行降至 5092 行；这是四个视图族的首批逻辑边界提取，不表示 App 已完全解耦。
+- Browser 暴露原实现的遗漏：歌曲数据在进入门户后释放，但返回分支没有重新加载。补齐歌曲目录和详情恢复，并在加载结束后检查导航修订，避免过期加载把用户带回旧页面。
+- 门户回归执行真实 App 接线和生产模块，覆盖原有 13 个加载分支及新增歌曲目录/详情分支；6 个错误变体全部被拦截，基线通过。记录 `portal-navigation-20261008/results.json`。偶像导航原有 7 个错误变体也通过反向检查。
+- 390/1280 宽门户前后截图布局与文字一致。5175 实际搜索 BRAND → 门户 → 返回后保留搜索且显示 BRAND NEW FIELD；该歌曲详情往返门户后标题、封面、Jupiter 与制作信息恢复；console 无 error。没有更改界面文案或布局。
+- 最终修复后重新执行完整 source batch、reading 与 build:check；日志 `portal-{batch,reading,build}-20261008.log`。所有构建均不复制 public，未重启 5175、上传 R2 或部署。

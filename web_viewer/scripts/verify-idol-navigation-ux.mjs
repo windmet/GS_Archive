@@ -54,7 +54,7 @@ for (const preferred of [null, { id: '002sht' }]) {
     archiveBootstrap: { idols: [{ id: '001tom' }, { id: '002sht' }] },
     openIdolReadModel: (id, options) => opened.push([id, { ...options }]),
   }
-  vm.runInNewContext(source('function openPreferredDestination(', 'function openArchivePortal('), state)
+  vm.runInNewContext(productionFunction('openPreferredDestination'), state)
   state.openPreferredDestination('profile')
   state.openPreferredDestination({ action: 'profile', idolCode: '001tom' })
   assert.deepEqual(opened, [
