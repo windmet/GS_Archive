@@ -54,7 +54,9 @@ const honorKindLabel=computed(()=>({tantou:'担当称号',catchphrase:'专属台
 const failedCardImages=ref(new Set())
 watch(()=>props.detail.entry.key,()=>{failedCardImages.value=new Set()})
 const domain=computed(()=>props.kind==='honors'?'honor':'item')
-const name=computed(()=>archiveText(domain.value,props.detail.entry.nameJa))
+// FES achievement names are internal condition labels; title them by what they are and whose they are.
+const FES_TITLES={'fes-change':'FES 限定卡换装','fes-limitbreak':'FES 限定卡满破'}
+const name=computed(()=>FES_TITLES[honorIdol.value?.kind] ? `${FES_TITLES[honorIdol.value.kind]} · ${honorIdol.value.name}` : archiveText(domain.value,props.detail.entry.nameJa))
 const description=computed(()=>archiveText(domain.value,props.detail.entry.descriptionText?.plain,'description') || '尚未收录说明。')
 const usageCards=computed(()=>props.kind==='items' && Array.isArray(props.detail.usageCards) ? props.detail.usageCards : [])
 const cardTitle=source=>cardText('card',source,'title')

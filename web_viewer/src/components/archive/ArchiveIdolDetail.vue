@@ -54,7 +54,7 @@
           <li v-for="honor in group.honors" :key="honor.key">
             <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${honor.key}`" :title="honor.nameJa" @click="emit('open-honor',honor.key)">
               <span class="honor-plate"><img v-if="honor.image?.url" :src="honor.image.url" :alt="honorTitle(honor)" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
-              <span class="honor-caption"><strong>{{ honorTitle(honor) }}</strong><small>{{ honorMeta(honor) }}</small></span>
+              <span class="honor-caption"><strong>{{ honorTitle(honor) }}</strong><small v-if="honorSubline(honor)">{{ honorSubline(honor) }}</small></span>
             </button>
           </li>
         </ul>
@@ -136,7 +136,10 @@ const honorGroups = computed(() => [
   ...HONOR_GROUPS.map(group => ({ ...group, honors: props.honors.filter(honor => group.kinds.includes(honor.kind)) })),
   { id: 'ranking', title: '活动排名', note: '按活动排名配置中的偶像编号关联', honors: props.honors.filter(honor => honor.group === 'ranking') },
 ].filter(group => group.honors.length))
+// Ranking plates already print the event and rank; their caption says the same once, in place of
+// the long configuration name.
 function honorTitle(honor) {
+  if (honor.group === 'ranking') return honorMeta(honor)
   if (honor.kind === 'fes-change') return 'FES 限定卡换装'
   if (honor.kind === 'fes-limitbreak') return 'FES 限定卡满破'
   return archiveText('honor', honor.nameJa)
@@ -147,6 +150,7 @@ function honorMeta(honor) {
   if (honor.group === 'idol') { const bond = honorBondSource(honor); return bond ? `羁绊 Lv.${bond.level}` : '专属称号' }
   return (honor.sources || []).map(source => [source.event?.title, rankLabel(source)].filter(Boolean).join(' · ')).join('；')
 }
+const honorSubline = honor => honor.group === 'ranking' ? '' : honorMeta(honor)
 
 const displayedIdolName = computed(() => props.idol
   ? props.idolName(props.idol.idol_code, props.idol.display_name) || props.idol.display_name
@@ -282,6 +286,9 @@ function formatDate(timestamp) {
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links, .idol-notes { grid-template-columns: 1fr; gap: 0; }
+  .honor-plates { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
+  .honor-plate { height: auto; min-height: 36px; }
+  .honor-caption strong { white-space: normal; }
   .idol-notes { gap: var(--gs-space-7); }
 }
 </style>
