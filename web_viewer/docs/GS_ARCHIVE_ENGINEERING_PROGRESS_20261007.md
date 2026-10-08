@@ -232,4 +232,8 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 新增真实 App 接线回归与 harness；适配启动恢复、故事档案、关联跳转和播放器入口夹具。覆盖三种选择器共享竞争（旧成功/旧失败）、失效/卸载、目录字段及身份验证、缓存/取消、单位归属、电话文件与记录定位、随机话题范围、关联卡片、实际 Back 绑定及实际 restore 的成功/降级/过期路径。无 UI 文案或布局修改。
 - `verify:source-batch` 112/112、`verify:reading`、player repair 37/37、新通信回归、`build:check` 通过。首次编译在 Git 所有权审计失败，以进程级 safe.directory 重跑成功（14.12 秒）。日志 `.analysis/mobile-{source-batch,reading,player-repair,build-check}.log`；输出仅 `.analysis/build-check`，不复制 public。
 - 5175 Browser：皮埃尔电话演出显示实际画面/对白并返回原目录；电话关联卡片往返；改选冬马后 phone 分类保留；组合聊天独立改选 Beit；切换随机分类回到冬马所属 Jupiter；第二随机话题仅播放步骤 7–11（界面 1/5），返回保留随机分类。390×844 和 1280×900 通信布局检查通过。这些是本地 dev 导航与画面验收，不作为音频解码、长稳或线上发布证明。
-- 原 5175 PID 74640 保持，未重启、部署、上传或完整打包。其他窗口翻译、审计、`.gitattributes` 及未跟踪资料保留。本批提交后的干净 LF 完整门禁待记录。
+- 原 5175 PID 74640 保持，未重启、部署、上传或完整打包。其他窗口翻译、审计、`.gitattributes` 及未跟踪资料保留。代码提交 `5a0f1e59` 已推送；门禁结果见下。
+
+- 固定 `5a0f1e59` 的干净 LF 完整源码门禁执行 115 步：113 通过、1 失败、1 跳过 npm ci（复用依赖）。唯一失败为新增 `verify-mobile-navigation.mjs` 末尾多一空行；`61724e04` 仅删除该空行，已推送，原范围 `git diff --check 39d79ba2… 61724e04` 和通信回归复验通过。原门禁报告不改写成全绿，也未为纯空白修正重复运行其他 113 项；源码与行为保持相同。
+- 证据位于 `E:\Web_build\GS_Archive_engineering_20261007\gate-5a0f1e59-final\`：`results.json` 为原始门禁结果，`whitespace-correction.json` 为修正复验，`mobile-diff-review.json` 为 AST 对照，`generated-audit.diff` 为门禁生成差异。最终批量为 112/112，编译与当前构建审计通过。临时检出及 junction 已移除，主依赖保留；清理后 C 盘可用 48.38 GiB，5175 PID 74640。
+- Browser 刷新后仍恢复皮埃尔 phone 页面，检查期间 console 无 error，临时 viewport 已重置。下一批继续旧目录兼容导航；本轮不引入 UI 改造。
