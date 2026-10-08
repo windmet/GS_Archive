@@ -194,3 +194,11 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 5175 Browser：季节、冬马工作及个人故事在 390×844 前后肉眼对照布局和文字一致；1280 桌面共同可见区域一致，前后截图的实际可见高度有差异，且现场担当偏好从未设置变为苍井享介，不把这些现场差异计作代码改动或逐像素一致证明。
 - 实际旅程：工作档案切换至场景台词后改选翔太，`work_mode=lines` 和选中标签保留；季节 2023 Valentine → 2022 → White Day → 事务所 → 山村贤演出实际帧/对白 → 返回原企划；冬马个人故事 → 生日档案共享入口 → `20102 / 2010201` → SMALL TALK 02 演出 → 返回原章；第 2 话后日谈通信 → 剧情条件入口 → `20102 / 2010208` 精确定位。个人故事刷新可正常载入，console 无 error。
 - Browser 的通信关联使用电话来源；unit 来源由真实模块行为回归覆盖。上述是本地 dev 渲染、跳转及返回验收，不扩展为音频解码、长稳或线上发布证明。5175 原服务保持运行，没有重启、R2 上传或完整媒体打包。剩余 Reader、通信/旧目录、活动和 Home 编排继续按原工程边界处理。
+- 代码提交 `b6c6b833` 已推送。干净 LF 检出执行全部 115 步：**114 通过、0 失败、1 跳过 npm ci**；第 113 步为最终加固后的 110/110，末两步不复制 public 的编译与审计通过。结果与生成审计差异保存在 `E:\Web_build\GS_Archive_engineering_20261007\gate-b6c6b833-final\`，独立 AST 证据为主检出 `.analysis/engineering-20261008-story-archive-navigation/diff-review.json`。
+- 本次临时检出及依赖 junction 已清理，主依赖保留；C 盘可用 46.7 GiB，5175 PID 仍为 74640。源码门固定于上述提交；另一窗口随后新增的 B015 审阅、译文、标题/检索索引、审计和检查脚本改动均未触碰，不纳入本次提交验收。
+
+### Reader 下一批边界（`b6c6b833` 只读盘点）
+
+- 建议一次提取 `useReaderNavigation`：17 个既有入口/阅读/播放/续读函数、4 个功能状态 ref、2 个 computed、repository 与两种 session，再通过 `applyReaderRoute` 和 `loadReaderQueue` 接回 App 原有分派位置。URL refs、跨域队列和恢复事务仍由 App 统一持有。没有新增 watcher 或卸载清理的理由，保留章节 session 原有 close 时机。
+- factory 可放原 Reader 状态初始化位置；更早的播放器 `resolveReaderSource` 和通用故事 `openStoryReader` 必须延迟读取。新回归需检查真实初始化和闭包，不能沿用旧 Reading 夹具在创建后替换 session/repository/ref 对象的做法。重点适配 reading-navigation、reading-playback、player-entry，以及把 `readingState` 当切片终点的 terminal-idol-localization；一并核对 async/startup/portal 调度。
+- 本轮只完成上述盘点，并保留冬马第 2 话 EP05 Reader 的 390/1280 可见基线；桌面与移动截图阅读滚动位置不同，后续对照需分别恢复同一位置。尚未修改 Reader 生产逻辑。
