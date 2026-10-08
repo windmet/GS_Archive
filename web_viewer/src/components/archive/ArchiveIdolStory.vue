@@ -33,9 +33,10 @@
         <small>{{ story.sectionCount }} 话</small>
       </div>
 
-      <ol class="chapter-list">
+      <!-- Each label already carries its ordinal (第1話), so rows have no 01/02 column. -->
+      <ol class="chapter-list unnumbered">
         <li
-          v-for="(section, sectionIndex) in story.sections"
+          v-for="section in story.sections"
           :key="section.id"
           :ref="element => setSectionElement(element, section.id)"
           class="chapter-row"
@@ -43,7 +44,6 @@
           :data-section-id="section.id"
         >
           <button type="button" class="chapter-toggle" :aria-expanded="isExpanded(section)" @click="toggleSection(section)">
-            <span class="chapter-number">{{ String(sectionIndex + 1).padStart(2, '0') }}</span>
             <span class="chapter-identity">
               <small>{{ chapterLabel(section.name) }} · {{ releaseDate(section.open_at) }}<template v-if="sectionBirthdayAligned(section)"> · <em>生日同期公开</em></template></small>
               <strong>{{ presentProducerAddressingText(section.scenario_title) }}</strong>
@@ -204,16 +204,14 @@ function externalResourcesForSection(sectionId) {
 
 <style scoped>
 /* Rows, actions and footprint come from archive-story.css; only the idol head, the chapter art
-   and the follow-up call are particular to this page. The idol accent marks the open chapter. */
+   and the follow-up call are particular to this page. Inside an open chapter the synopsis rule is the only vertical line. */
 .idol-story-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-6); }
 .idol-story-copy { min-width: 0; }
 .idol-story-copy h2 { overflow-wrap: anywhere; }
 .idol-switcher { display: flex; align-items: center; gap: var(--gs-space-1); }
 .idol-switcher select { min-width: 220px; height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.chapter-row.expanded .chapter-number { color: var(--idol-accent, var(--gs-mint-ink)); }
 .chapter-identity small em { color: var(--idol-accent, var(--gs-mint-ink)); font-style: normal; font-weight: var(--gs-weight-semibold); }
-.chapter-row.focused { box-shadow: inset 3px 0 var(--idol-accent, var(--gs-mint)); }
 /* Text and actions first; the chapter's background is a picture beside them, not a banner. */
 .chapter-lead { display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: start; gap: var(--gs-space-6); margin: var(--gs-space-1) 0 var(--gs-space-2); }
 .chapter-lead-copy { grid-column: 1; grid-row: 1; min-width: 0; }
