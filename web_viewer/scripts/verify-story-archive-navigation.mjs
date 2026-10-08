@@ -1,3 +1,4 @@
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
@@ -116,7 +117,7 @@ function fixture({ cached = true } = {}) {
   bindLegacyAliasNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
-  bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindIdolFixtureNavigation(app, context)
+  bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindIdolFixtureNavigation(app, context)
   const stop = () => { scope.stop(); story.stop() }; cleanups.push(stop)
   return { ...api, state, context, calls, loads, jobs, data, navigation, story, stop }
 }

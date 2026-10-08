@@ -1,3 +1,4 @@
+import { bindUnitNavigation, createUnitFixtureTransport } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindEventNavigation, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
@@ -15,6 +16,9 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const state = useArchiveNavigationState()
 const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
 const unit = { unit_code: '01jup', unit_id: 1 }
+const units = createUnitFixtureTransport(['1'])
+units.data.get('unit-page').rows[0].catalog.unit.unit_code = '01jup'
+units.data.get('unit:1').view.entry.unit.unit_code = '01jup'
 const events = createEventFixtureTransport(['430018'])
 const context = vm.createContext({
   eventReadModelCatalog: { value: events.rows },
@@ -29,6 +33,7 @@ const context = vm.createContext({
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   readModelClient: { load: async (songCode, options) => {
+    if (units.data.has(songCode?.url)) return units.client.load(songCode, options)
     if (songCode?.url?.startsWith('event:')) return events.client.load(songCode, options)
     const detail = { id: songCode, song: { song_code: songCode }, view: { id: songCode } }
     options.validate(detail)
@@ -38,17 +43,7 @@ const context = vm.createContext({
   loadCardDetail: async id => ({ id, card: { resource_id: id } }),
   loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
-  archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
-  openIdolReadModel: (idolCode, options = {}) => {
-    if (options.captureSource) context.captureDetailSource()
-    state.currentCharacterId.value = idolCode
-    state.view.value = 'idol_detail'
-  },
-  openArchiveUnit: unit => {
-    context.captureDetailSource()
-    state.currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
-    state.view.value = 'unit_detail'
-  },
+  archiveBootstrap: { idols: [{ id: '002sht', unitId: '1' }, { id: '003hok', unitId: '1' }], domains: units.bootstrap.domains },
   openPrimaryCards: idolCode => {
     context.captureDetailSource()
     state.currentCategoryId.value = 'cards'
@@ -65,7 +60,7 @@ const context = vm.createContext({
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource',
-  'openUnitMember', 'openUnitCards', 'openIdolDomain',
+  'openUnitCards', 'openIdolDomain',
   'openCard', 'openGasha', 'openGashaCard',
   'openRelatedCard']
 for (const name of handlers) {
@@ -74,6 +69,7 @@ for (const name of handlers) {
   vm.runInContext(code, context)
 }
 bindIdolFixtureNavigation(app, context)
+bindUnitNavigation(app, context)
 bindStoryNavigation(app, context).stop()
 bindEventNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
@@ -95,6 +91,7 @@ const fixtures = [
   ['story_detail', 'openStoryIdol', '002sht', 'idol_detail'],
   ['card_detail', 'openRelatedCard', card, 'card_detail'],
   ['idol_detail', 'openEventDetail', { event_id: 430018 }, 'event_detail'],
+  ['unit_detail', 'openUnitEvent', { event_id: 430018 }, 'event_detail'],
 ]
 for (const [view, handler, arg, target] of fixtures) {
   for (const [key, ref] of Object.entries(useArchiveNavigationState())) {

@@ -1,3 +1,4 @@
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import assert from 'node:assert/strict'
@@ -65,7 +66,7 @@ function fixture({ story = false } = {}) {
 }
 function restoreFixture() {
   const t = fixture({ story: true }), c = t.c
-  bindHomeNavigation(app, c).stop(); bindIdolFixtureNavigation(app, c)
+  bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindIdolFixtureNavigation(app, c)
   bindStoryArchiveNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: ref(''), playbackError: ref(''), isDirectScenarioEntry,

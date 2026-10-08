@@ -325,3 +325,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - `openUnitMember`、`openUnitStory`、`openUnitEvent` 可作为 Unit 对外入口随模块迁移，但 Event factory 晚于当前 Unit computed，必须用延迟回调连接 `openEventDetail`，不提前读取未初始化的 const。App 的 `watch(view)` 同时负责组合目录元数据和卡名翻译，保留原注册与触发时机。
 - `openUnitCards` 使用的是 `pendingCardNavigation`，与卡片目录/详情竞争；这一批先保留 App，不能另建 Unit 私有卡片计数而改变竞争语义。后续卡片模块统一处理该入口。通用 route apply/Back、Portal hydration 和全局缓存清理也保持既有边界。
 - 受影响检查包括 unit-readmodel-navigation 的函数切片、relation-navigation 的三个组合入口、各 restore fixture、Unit computed 消费者；既有 Unit 入口测试同样替换内部 loader，迁移时改为真实目录/详情传输，验证双身份入口、错误身份、迟到成功/失败、取消、恢复与播放器父来源。当前仅盘点，未实施 Unit 拆分。
+
+### 组合档案导航拆分（2026-10-08，输入 9a89da72）
+
+- 提取 `useUnitNavigation`：7 个既有导航/加载函数、6 个 computed、私有计数与 prepare/invalidate；18 个依赖、15 个输出。App 3159→3064 行（含清理迁移留下的空白），净减 95 行。AST 证据 `.analysis/unit-diff-review.json` 确认函数、投影与计数等价，模板/样式、apply/Back/goHome、原 unmount、跨域入口与 `openUnitCards` 不变，restore 仅委托 Unit 分支与失效计数。
+- factory 保留在原组合投影位置，早于 Event/Song 等消费者；`openEventDetail` 通过 App 延迟回调绑定。`watch(view)` 中目录元数据加载和卡名翻译时机保持原样，组合到卡片仍使用 App 的共享卡片计数。七个输出入口包括成员、剧情、活动关联，不更改返回来源。
+- 新增真实 App factory harness 与 `verify-unit-navigation`，覆盖 bootstrap 组合去重顺序、目录数量/身份/结构、详情身份与成员/统计/歌曲/剧情形状、code/id 双入口、缓存复用、取消后不发布、目录回退投影和旧详情隔离、上下文清理与保留、成员/剧情/活动入口、旧成功/旧失败竞争、私有失效/全局 revision/卸载，以及真实 App restore 成功、失败、过期和直接播放器零父目录加载。旧 Unit 测试改用真实加载链，关联检查增加组合→活动，移除已被真实 factory 覆盖的假入口。
+- 正向基线通过，16/16 内存错误变体被拦截，包含目录数量/身份/取消、详情身份、双入口、投影归属、活动上下文、私有失效、恢复降级/过期/采纳、成员参数、缺失剧情、规范组合代码、prepare 目标页和延迟 Event 接线。记录 `.analysis/unit-mutations/results.json`；变体不写服务源码。
+- source batch 117/117、完整 reading、player repair 37/37、旧 Unit/卡片/关联与启动回归通过；`build:check` 通过（14.73 秒），输出固定 `.analysis/build-check`，不复制 public。移除无效测试占位和空白后，相关 Unit/关联回归与 AST 对照再次通过。日志 `.analysis/unit-{source-batch,reading,player-repair,build-check,startup}.log`。
+- 5175 Browser：Jupiter 详情在 1280 宽度和 390×844 下迁移前后布局/文字一致。手机成员翔太→返回、固定组合活动 Inner Dignity→返回、成员卡片目录保留 Jupiter 3 人筛选→返回均通过。桌面组合剧情进入实际对白 5/233，并返回 `unit_detail&unit=01jup`。这些证据不代表音频解码、长稳或线上发布验收。本批没有改组件模板、样式、文案或译文，没有重启、部署、R2 上传或完整资源打包；其他窗口翻译审计工作保持原样。
+- Jupiter 返回后刷新恢复通过，console error 为 0；临时视口已重置、临时标签页已关闭。完整干净源码门结果随后补录。

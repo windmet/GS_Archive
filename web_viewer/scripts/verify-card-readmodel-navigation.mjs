@@ -1,3 +1,4 @@
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -99,7 +100,8 @@ const detail = id => ({ id, card: { resource_id: id } })
 {
   const calls = []
   const context = { loadScenario: (...args) => { calls.push(args); return 'pending' } }
-  vm.runInNewContext(['openUnitStory', 'openCardScenario'].map(name => app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0]).join('\n'), context)
+  bindUnitNavigation(app, context)
+  vm.runInNewContext(['openCardScenario'].map(name => app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))[0]).join('\n'), context)
   assert.equal(context.openUnitStory({ file: 'unit.json', exists: true }), 'pending')
   context.openUnitStory({ file: 'missing.json', exists: false })
   assert.equal(context.openCardScenario({ compiled_file: 'card.json' }), 'pending')
