@@ -81,7 +81,9 @@ console.error = () => {}
 try {
   const t = fixture(), c = t.c
   t.publishLegacyAliasRoute(await t.loadLegacyAliasRoute({ view: 'groups', category: 'idol', idol: '001tom' }))
-  c.filterQuery.value = 'FIRST'; assert.equal(t.filteredGroups.value[0].id, 'g1'); assert.equal(t.groupTitle.value, 'Toma')
+  assert.equal(c.legacyGroupReadModelDetail.value?.id, 'idol:001tom', 'App publishes groups into the group payload ref')
+  assert.equal(c.legacyFileReadModelDetail.value, null, 'publishing groups must not overwrite the file payload')
+  c.filterQuery.value = 'FIRST'; assert.equal(t.filteredGroups.value[0]?.id, 'g1'); assert.equal(t.groupTitle.value, 'Toma')
   c.currentCharacterId.value = 'other'; assert.deepEqual(t.filteredGroups.value, []); assert.equal(t.groupTitle.value, '')
   c.currentCharacterId.value = '001tom'
   await t.openGroup({ id: 'g1' }); assert.equal(c.currentGroup.value.id, 'g1'); assert.equal(c.currentEpisodeId.value, ''); assert.equal(c.filterQuery.value, '')
@@ -93,7 +95,9 @@ try {
   await t.openUnit({ unit_code: '01jup' }); assert.equal(c.currentUnit.value.unit_code, '01jup'); assert.equal(c.view.value, 'episodes')
   await t.openEpisodeFiles({ id: 'ep1' }); assert.equal(c.currentEpisodeId.value, 'ep1'); assert.equal(c.view.value, 'files')
   t.goBackToFiles(); assert.equal(c.view.value, 'episodes'); assert.equal(c.currentGroup.value, null); assert.equal(c.currentEpisodeId.value, '')
+  c.currentGroup.value = { id: 'old' }; c.currentEpisodeId.value = 'old'
   t.goBackToUnits(); assert.equal(c.view.value, 'episode_zero_units'); assert.equal(c.currentUnit.value, null)
+  assert.equal(c.currentGroup.value, null); assert.equal(c.currentEpisodeId.value, '')
   t.publishLegacyAliasRoute(await t.loadLegacyAliasRoute({ view: 'episode_zero_units' })); assert.equal(t.episodeZeroUnits.value.length, 1)
   for (const [category, character, target] of [['idol', '001tom', 'idol'], ['idol_chat', '001tom', 'idol_picker'], ['idol_phone', '001tom', 'idol_picker'], ['other', '001tom', 'idols'], ['other', '', 'home']]) {
     c.currentCategoryId.value = category; c.currentCharacterId.value = character; c.detailSourceRoute.value = 'old'
