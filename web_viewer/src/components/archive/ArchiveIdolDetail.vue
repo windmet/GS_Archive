@@ -57,11 +57,11 @@
         <p v-if="openHonorNote === group.id" class="honor-note">{{ group.note }}</p>
         <div v-for="row in group.rows" :key="row.id" class="honor-row">
           <h5 v-if="row.title">{{ row.title }}</h5>
-          <ul class="honor-plates">
+          <ul class="honor-plates" :class="{ 'is-ranked': group.id === 'ranking' }">
             <li v-for="item in row.items" :key="item.honor.key">
               <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${item.honor.key}`" :aria-label="item.label" :title="item.honor.nameJa" @click="emit('open-honor',item.honor.key)">
                 <span class="honor-plate"><img v-if="item.honor.image?.url" :src="item.honor.image.url" alt="" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
-                <span class="honor-caption"><span v-if="item.text" class="honor-text">{{ item.text }}</span><span class="honor-tag"><small v-if="item.tag.label">{{ item.tag.label }}</small><b>{{ item.tag.value }}</b><small v-if="item.tag.suffix">{{ item.tag.suffix }}</small></span></span>
+                <span v-if="item.tag" class="honor-caption"><span class="honor-text">{{ item.text }}</span><span class="honor-sep" aria-hidden="true">·</span><b class="honor-value">{{ item.tag }}</b></span>
               </button>
             </li>
           </ul>
@@ -142,24 +142,24 @@ const HONOR_NOTES = {
   fes: '称号原名就是达成条件：让该偶像的 FES 限定卡换装，或突破至最大上限。称号牌上印有对应的卡名。',
   ranking: '活动期间该偶像排行榜的名次奖励，按游戏内的排名配置关联到偶像。',
 }
-const rankTag = source => ({ label: '第', value: source.upperRank === source.lowerRank ? String(source.upperRank) : `${source.upperRank}–${source.lowerRank}`, suffix: '名' })
+const rankText = source => source.upperRank === source.lowerRank ? `第 ${source.upperRank} 名` : `第 ${source.upperRank}–${source.lowerRank} 名`
+// Captions add only what neither the plate nor the group heading says: "担当 · Lv.50",
+// "<translation> · Lv.100", "限定换装 · 2022.12". Ranking plates print their rank, so they carry
+// no caption; the rank stays in the accessible name.
 function honorItem(honor) {
   const name = archiveText('honor', honor.nameJa)
   if (honor.kind === 'tantou' || honor.kind === 'catchphrase') {
-    const bond = honorBondSource(honor)
-    const tag = bond ? { label: '羁绊', value: `Lv.${bond.level}` } : { value: '专属称号' }
-    // The 担当 plate reads as its own name; the catchphrase gains its translation.
-    const text = honor.kind === 'catchphrase' && name !== honor.nameJa ? name : ''
-    return { honor, text, tag, label: [name, tag.label, tag.value].filter(Boolean).join(' ') }
+    const level = honorBondSource(honor)?.level
+    const text = honor.kind === 'tantou' ? '担当' : name
+    return { honor, text, tag: level ? `Lv.${level}` : '', label: [name, level && `羁绊 Lv.${level}`].filter(Boolean).join(' · ') }
   }
   if (honor.kind?.startsWith('fes-')) {
-    const text = honor.kind === 'fes-change' ? '限定卡换装' : '限定卡满破'
+    const text = honor.kind === 'fes-change' ? '限定换装' : '限定满破'
     const month = fesHonorMonth(honor).replace(/^(\d{4})年(\d{1,2})月$/, (_, y, m) => `${y}.${m.padStart(2, '0')}`)
-    return { honor, text, tag: { label: 'FES', value: month }, label: `FES ${text} ${month}` }
+    return { honor, text, tag: month, label: `FES ${text} · ${month}` }
   }
   const source = honor.sources?.[0] || {}
-  const tag = rankTag(source)
-  return { honor, text: '', tag, label: `${source.event?.title || ''} 第 ${tag.value} 名` }
+  return { honor, text: '', tag: '', label: `${source.event?.title || ''} ${rankText(source)}` }
 }
 const honorGroups = computed(() => {
   const own = kinds => props.honors.filter(honor => kinds.includes(honor.kind)).map(honorItem)
@@ -293,11 +293,13 @@ function formatDate(timestamp) {
 .honor-plates button { display: grid; gap: var(--gs-space-2); width: 100%; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .honor-plate { display: flex; align-items: center; height: 60px; color: var(--gs-ink-3); }
 .honor-plate img { display: block; max-width: 100%; max-height: 60px; object-fit: contain; object-position: left center; transition: transform var(--gs-motion-feedback) var(--gs-motion-ease); }
-.honor-caption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px var(--gs-space-3); min-width: 0; padding-left: var(--gs-space-2); }
-.honor-text { min-width: 0; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-/* The value is what the plate does not say: bond level, FES month, rank — set in the stage face. */
-.honor-tag { display: inline-flex; align-items: baseline; gap: 3px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
-.honor-tag b { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+.honor-caption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--gs-space-2); min-width: 0; padding-left: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.honor-text { min-width: 0; font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.honor-sep { color: var(--gs-ink-3); }
+/* The value the plate does not print (bond level, FES month) is set in the stage face. */
+.honor-value { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* An event's four rank plates always fill one row (two by two on phones), so none is left alone. */
+.honor-plates.is-ranked { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-4); }
 .idol-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
 .idol-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
@@ -322,7 +324,7 @@ function formatDate(timestamp) {
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links, .idol-notes { grid-template-columns: 1fr; gap: 0; }
-  .honor-plates { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
+  .honor-plates, .honor-plates.is-ranked { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
   .honor-plate { height: auto; min-height: 36px; }
   .idol-notes { gap: var(--gs-space-7); }
 }
