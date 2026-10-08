@@ -1,7 +1,8 @@
 <template>
-  <aside class="reader-chapter-end" aria-label="本话末尾">
-    <p>已到本话末尾</p>
-    <button v-if="nextChapter" @click="emit('chapter', nextChapter.id)"><span>进入{{ nextChapter.label }}</span><strong>{{ presentProducerAddressingText(displayTitle({document_id:nextChapter.documentId,sha256:nextChapter.revision},nextChapter.title)) }}</strong><ChevronRight :size="18" aria-hidden="true" /></button>
+  <aside class="reader-chapter-end" :aria-label="nextSegment ? '本 EP 末尾' : '本话末尾'">
+    <p>{{ nextSegment ? '已到本 EP 末尾' : '已到本话末尾' }}</p>
+    <button v-if="nextSegment" @click="emit('segment', nextSegment.documentId)"><span>继续阅读</span><strong>{{ nextSegment.label }}</strong><ChevronRight :size="18" aria-hidden="true" /></button>
+    <button v-else-if="nextChapter" @click="emit('chapter', nextChapter.id)"><span>进入{{ nextChapter.label }}</span><strong>{{ presentProducerAddressingText(displayTitle({document_id:nextChapter.documentId,sha256:nextChapter.revision},nextChapter.title)) }}</strong><ChevronRight :size="18" aria-hidden="true" /></button>
     <span v-else class="end-note">可通过目录选择其他话目。</span>
   </aside>
 </template>
@@ -12,8 +13,8 @@ import { readerChapterNeighbour } from '../../presentation/ReaderControls.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { useReaderTitles } from './useReaderTitles.js'
 const displayTitle = useReaderTitles()
-const props = defineProps({chapterNavigation:Object})
-const emit = defineEmits(['chapter'])
+const props = defineProps({chapterNavigation:Object, nextSegment:{type:Object,default:null}})
+const emit = defineEmits(['chapter','segment'])
 const nextChapter = computed(() => readerChapterNeighbour(props.chapterNavigation,1))
 </script>
 <style scoped>

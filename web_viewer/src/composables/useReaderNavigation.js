@@ -1,5 +1,5 @@
 import { ref, shallowRef, computed } from 'vue'
-import { chapterReadingPlan, createChapterReadingSession } from '../core/ChapterReadingPlan.js'
+import { chapterReadingPlan, createChapterReadingSession, directoryReadingPlan } from '../core/ChapterReadingPlan.js'
 import { readerChapterNavigation } from '../core/ReaderChapterNavigation.js'
 import { readerScopeForViewport } from '../core/ReaderViewport.js'
 import { readingPlaybackTarget } from '../core/ReadingPlayback.js'
@@ -316,12 +316,18 @@ export function useReaderNavigation({
     if (readingScope.value === 'chapter') {
       if (!reusableDirectory) readingState.value = { status:'loading', document:null, entries:[], error:'' }
       try {
-        if (!route.storyType || !route.storySection) throw Error('整话阅读缺少正式目录来源')
-        const detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
-        if (!intent.isCurrent()) return
-        const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
-        readerCollectionDetail.value = detail
-        await chapterReadingSession.open(plan, intent)
+        if (route.event && !route.storyType) {
+          const locator = await readingRepository.locator(route.reading, { signal:intent.signal })
+          if (!intent.isCurrent()) return
+          await chapterReadingSession.open(directoryReadingPlan(locator, route.reading), intent)
+        } else {
+          if (!route.storyType || !route.storySection) throw Error('整话阅读缺少正式目录来源')
+          const detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
+          if (!intent.isCurrent()) return
+          const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
+          readerCollectionDetail.value = detail
+          await chapterReadingSession.open(plan, intent)
+        }
       } catch (error) { if (intent.isCurrent()) { chapterReadingState.value = null; readingState.value = {status:'error', document:null, entries:[], error:error.message} } }
     } else {
       const directory = !reusableDirectory && route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })

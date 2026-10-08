@@ -1,3 +1,5 @@
+import { readingDirectoryKey } from '../data/ReadingDirectory.js'
+
 export function chapterReadingPlan(collection, entries, documentId, chapterFile = '') {
   const matches = entries.filter(entry => entry.document_id === documentId)
   if (matches.length !== 1) throw Error('阅读分段身份缺失或存在歧义')
@@ -15,6 +17,18 @@ export function chapterReadingPlan(collection, entries, documentId, chapterFile 
         entry: candidates[0] || null, documentId: candidates[0]?.document_id || '',
         status: candidates.length ? 'idle' : 'not-generated', document: null, error: '' }
     }) }
+}
+
+// Event episodes have no story collection: the Reader directory the manifest already groups them
+// into (one logical story, in in-game order) is their chapter.
+export function directoryReadingPlan(locator, documentId) {
+  const entries = locator?.entries || []
+  const matches = entries.filter(entry => entry.document_id === documentId)
+  if (matches.length !== 1) throw Error('阅读分段身份缺失或存在歧义')
+  const focused = matches[0]
+  return { chapterId: `directory:${readingDirectoryKey(focused)}`, title: focused.title, label: '', documentId,
+    segments: entries.map(entry => ({ episodeKey: entry.document_id, label: entry.episode_label, source_file: entry.source_file,
+      entry, documentId: entry.document_id, status: 'idle', document: null, error: '' })) }
 }
 
 // Own publication, not shared repository requests. At most three requests per

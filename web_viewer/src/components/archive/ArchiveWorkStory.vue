@@ -31,15 +31,18 @@
       </nav>
 
       <ul v-if="activeMode === 'stories'" class="story-rows work-rows">
+        <!-- The row reads the story when a text version exists; the icon plays it. -->
         <li v-for="story in idol.short_stories" :key="story.id" class="story-row work-row">
+          <component :is="readingByFile.has(story.compiled_file) ? 'button' : 'div'" class="work-row-main"
+            v-bind="readingByFile.has(story.compiled_file) ? { type: 'button', 'aria-label': `阅读 ${workTitle(story)}`, onClick: () => emit('read', story.compiled_file) } : {}">
           <span class="story-row-thumb"><img :src="backgroundUrl(story.background_resource_id)" :alt="locationLabel(story)" loading="lazy" decoding="async" /></span>
           <span class="story-row-copy">
             <strong>{{ workTitle(story) }}</strong>
             <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
             <small>{{ [locationLabel(story), `${story.dialogue_count} 段对白`, `${story.voice_count} 段语音`].filter(Boolean).join(' · ') }}</small>
           </span>
+          </component>
           <span class="work-actions">
-            <button v-if="readingByFile.has(story.compiled_file)" class="story-action" :aria-label="`阅读 ${workTitle(story)}`" @click="emit('read', story.compiled_file)"><BookOpen :size="15" />阅读</button>
             <button class="story-icon-action" :disabled="!story.compiled_exists" :aria-label="`播放 ${workTitle(story)}`" title="播放工作短剧情" @click="emit('play', story.compiled_file)"><Play :size="17" fill="currentColor" /></button>
           </span>
         </li>
@@ -47,13 +50,15 @@
 
       <ul v-else class="story-rows work-rows">
         <li v-for="line in idol.scene_lines" :key="line.id" class="story-row work-row">
+          <component :is="readingByFile.has(line.compiled_file) ? 'button' : 'div'" class="work-row-main"
+            v-bind="readingByFile.has(line.compiled_file) ? { type: 'button', 'aria-label': `阅读 ${locationLabel(line) || '场景台词'}`, onClick: () => emit('read', line.compiled_file) } : {}">
           <span class="story-row-thumb"><img :src="backgroundUrl(line.background_resource_id)" :alt="locationLabel(line)" loading="lazy" decoding="async" /></span>
           <span class="story-row-copy">
             <strong>{{ presentProducerAddressingText(line.dialogue_preview) }}</strong>
             <small v-if="locationLabel(line)">{{ locationLabel(line) }}</small>
           </span>
+          </component>
           <span class="work-actions">
-            <button v-if="readingByFile.has(line.compiled_file)" class="story-action" :aria-label="`阅读 ${locationLabel(line) || '场景台词'}`" @click="emit('read', line.compiled_file)"><BookOpen :size="15" />阅读</button>
             <button class="story-icon-action" :disabled="!line.compiled_exists" aria-label="播放场景台词" title="播放场景台词" @click="emit('play', line.compiled_file)"><Play :size="17" fill="currentColor" /></button>
           </span>
         </li>
@@ -69,7 +74,7 @@ import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import { BookOpen, ChevronLeft, ChevronRight, Play } from '@lucide/vue'
+import { ChevronLeft, ChevronRight, Play } from '@lucide/vue'
 import '../../styles/archive-story.css'
 
 const props = defineProps({ idol: { type: Object, default: null }, idols: { type: Array, default: () => [] },
@@ -109,7 +114,10 @@ function locationLabel(entry) { return entry.background_name ? archiveNamedText(
 .idol-controls select { min-width: 220px; min-height: var(--gs-control-normal); padding: 0 30px 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
 .work-body { padding-top: 0; }
 .work-rows { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
-.work-row { --thumb: 96px; cursor: default; }
+.work-row { --thumb: 96px; display: flex; align-items: center; gap: var(--gs-space-3); cursor: default; }
+.work-row-main { display: grid; flex: 1; grid-template-columns: var(--thumb) minmax(0, 1fr); align-items: center; gap: var(--gs-space-4); min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+button.work-row-main { cursor: pointer; }
+button.work-row-main:hover .story-row-copy strong { color: var(--gs-mint-ink); }
 .work-row .story-row-thumb { aspect-ratio: 4 / 3; }
 .work-actions { display: flex; align-items: center; gap: var(--gs-space-2); }
 
@@ -117,7 +125,7 @@ function locationLabel(entry) { return entry.background_name ? archiveNamedText(
   .work-rows { grid-template-columns: 1fr; }
   .idol-controls { width: 100%; }
   .idol-controls select { flex: 1; min-width: 0; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
-  .work-row { --thumb: 64px; grid-template-columns: var(--thumb) minmax(0, 1fr); align-items: start; }
-  .work-actions { grid-column: 2; justify-content: end; }
+  .work-row { --thumb: 64px; }
+  .work-row-main { align-items: start; }
 }
 </style>

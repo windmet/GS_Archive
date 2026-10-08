@@ -58,16 +58,18 @@
       </div>
 
       <ol v-if="episodes.length" class="episode-list">
+        <!-- As on the personal-story pages: the row reads the episode, the icon plays it. -->
         <li v-for="episode in episodes" :key="episode.id" class="episode-entry">
-          <button class="episode-play" :disabled="!event.exists" @click="emit('play-episode', episode)">
-            <span class="episode-copy">
-              <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong>
-              <small>{{ episodeStats(episode) }}</small>
-            </span>
-            <Play :size="15" fill="currentColor" aria-hidden="true" />
+          <button v-if="readingByFile.has(episode.file)" class="episode-main" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
+            @click="emit('read', readingByFile.get(episode.file).document_id)">
+            <span class="episode-copy"><strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong><small>{{ episodeStats(episode) }}</small></span>
           </button>
-          <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
-            @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="15" />阅读</button>
+          <div v-else class="episode-main">
+            <span class="episode-copy"><strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong><small>{{ event.exists ? '暂无文字版，可观看演出' : '暂未收录' }}</small></span>
+          </div>
+          <button class="episode-play" :disabled="!event.exists" :aria-label="`播放 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :title="`播放 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" @click="emit('play-episode', episode)">
+            <Play :size="17" fill="currentColor" aria-hidden="true" />
+          </button>
         </li>
       </ol>
       <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
@@ -338,14 +340,14 @@ function formatDateTime(timestamp) {
 .story-action svg { flex: 0 0 auto; }
 .episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-8); margin: 0; padding: 0; list-style: none; }
 .episode-entry { display: flex; align-items: center; min-width: 0; border-bottom: 1px solid var(--gs-line); }
-.episode-play { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; text-align: left; }
-.episode-play:disabled { cursor: not-allowed; opacity: .55; }
-.episode-play > svg { color: var(--gs-ink-3); }
+.episode-main { display: flex; flex: 1; align-items: center; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+button.episode-main { cursor: pointer; }
 .episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
 .episode-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .episode-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
 .episode-copy small:empty { display: none; }
-.episode-reading { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-touch); padding: 0 0 0 var(--gs-space-5); border: 0; background: none; color: var(--gs-mint-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
+.episode-play { display: grid; flex: 0 0 auto; place-items: center; width: var(--gs-control-touch); height: var(--gs-control-touch); padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
+.episode-play:disabled { cursor: not-allowed; opacity: .35; }
 
 /* Rewards. */
 .reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--gs-space-6); }
@@ -444,7 +446,7 @@ function formatDateTime(timestamp) {
   outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset);
 }
 @media (hover: hover) and (pointer: fine) {
-  .episode-play:hover:not(:disabled) strong, .episode-play:hover:not(:disabled) > svg,
+  button.episode-main:hover strong, .episode-play:hover:not(:disabled),
   .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover,
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
 }

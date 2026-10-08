@@ -35,7 +35,11 @@
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
 
         <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
-        <ReaderChapterEnd v-if="chapterNavigation && segmentEntries.at(-1)?.document_id === documentId" :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" />
+        <!-- One EP at a time (phones): the end of each EP leads straight into the next, so reading
+             continues down the page instead of back up to the EP switcher. -->
+        <ReaderChapterEnd v-if="nextSegmentEntry || chapterNavigation" :chapter-navigation="nextSegmentEntry ? null : chapterNavigation"
+          :next-segment="nextSegmentEntry && { documentId: nextSegmentEntry.document_id, label: presentIdolEpisodeLabel({ sourceName: nextSegmentEntry.episode_label, format: 'reader' }) }"
+          @chapter="emit('chapter', $event)" @segment="emit('select', $event)" />
       </template>
       </div>
     </section>
@@ -69,6 +73,10 @@ const segmentEntries = computed(() => {
   const entry = props.state.entries.find(candidate => candidate.document_id === props.documentId) ||
     (document.value && { logical_id: document.value.logical_id })
   return entry ? readingDirectoryEntries(props.state.entries, entry) : []
+})
+const nextSegmentEntry = computed(() => {
+  const index = segmentEntries.value.findIndex(entry => entry.document_id === props.documentId)
+  return index >= 0 ? segmentEntries.value[index + 1] || null : null
 })
 const { localization, sourceTitle, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
 const originalTitle = computed(() => presentProducerAddressingText(document.value ? sourceTitle.value : focusedEntry.value?.title || props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.title))
