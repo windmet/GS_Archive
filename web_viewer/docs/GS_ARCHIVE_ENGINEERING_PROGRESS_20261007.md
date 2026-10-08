@@ -215,3 +215,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 原用户链接首次进入曾显示“语音未载入 · 重试”，点击后提示消失；隔离标签页的直接进入也出现首段提示。仅凭界面不能区分首次播放策略与资源/解码原因，未据此宣称声音或长期稳定性通过。Reader 回归无 console error；Pixi Spine 的现有 warning 不计为本次新增错误。
 - 独立复核发现旧迟到目录检查的正文身份与夹具不匹配，可能让错误发布也得到 null；已改为匹配身份，内存移除发布守卫后该旧断言准确失败，生产代码未改。最终 source batch **111/111**、完整 reading、`verify:story-loading-safety`、`verify:player-repair`（37/37）均通过；旧夹具修复后重跑完整 reading，通过记录为 `reader-reading-final-20261008.log`。
 - 本批复用原 5175 进程 74640；没有重启、R2 上传、部署或完整 public 打包。`build:check` 通过（20.59 秒），输出仍为 `.analysis/build-check`。日志放在 `E:\Web_build\GS_Archive_engineering_20261007\reader-{build,reading,batch}-20261008.log`；完整源码门结果随后补录。共享工作区的 B015 译文、索引、审计和检查脚本改动保留，未纳入本批。
+- 代码提交 `5a119b48` 已推送。该提交的干净 LF 检出完成全部 115 步：**114 通过、0 失败、1 跳过 npm ci**，第 113 步为 111/111，最后两步编译与构建审计通过。记录与生成审计差异为 `E:\Web_build\GS_Archive_engineering_20261007\gate-5a119b48-final\{results.json,generated-audit.diff}`；本地源码门不等同远端 CI 或线上部署验收。
+- 本次临时检出及依赖 junction 已清理，主依赖保留；清理后 C 盘可用 46.55 GiB，5175 仍为原进程 74640。另一窗口在验收期间提交 `7e86f113`（B015–B017 草稿，含其标题工作）；保留在共享分支，本次源码门固定于 `5a119b48`，不包含该后续提交。
+
+### 通信与旧目录下一批边界（Reader 拆分后只读盘点）
+
+- 分两批，先 `useMobileNavigation` 再 `useLegacyAliasNavigation`。通信迁移 9 个入口/切换/播放函数、3 个 loader、2 个 options computed、返回处理器和请求计数，提供 prepare/invalidate；27 个依赖、17 个输出。factory 必须晚于 navigation 初始化、早于通用故事模块接收 `openStoryPhone`，不能简单放回原 options 位置。
+- 旧目录迁移 8 个入口/返回函数、3 个 alias loader/publish、4 个 computed 和请求计数，提供 prepare/invalidate；22 个依赖、17 个输出。`openUnit` 属于旧前传入口，现代 `openArchiveUnit` 保留原归属。payload/status refs、共享 ownership、URL watcher 与整体导航生命周期仍在 App。
+- 两个 prepare 保留各自原 restore 分支的身份、失败回退和调用位置；所有 restore 路径执行 invalidator。App apply 阶段既有 hydration 与统一状态分派先不合并，其规则与 restore prepare 不完全相同。尤其保留通信成员身份、电话文件到记录 ID、随机会话范围与旧目录父级 category/owner 校验。
+- 必须适配 relation-navigation 的 `openMobileCard` 抽取、startup-route/修复链/故事档案的 restore fixture；旧目录还影响 idol-navigation-ux 与 archive-async-navigation 的宽切片边界。新增回归应验证实际 App 输入/输出、共享计数交叉竞争、明确来源和直接播放器零父页加载；projection 单测不能替代运行时导航回归。本轮只完成盘点，尚未实施上述两批。
