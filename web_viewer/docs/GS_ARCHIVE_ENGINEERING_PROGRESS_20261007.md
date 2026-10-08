@@ -296,3 +296,11 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 入口与 `[view,currentCharacterId]` watcher 必须共享请求计数；保留 `selection` 只更新选择、`captureSource/resetContext/clearUnit/clearEventContext` 各自语义。恢复时无效偶像进入 profile picker，加载失败回偶像目录，不能混成同一回退。
 - factory 需早于 Legacy/Event/Song 等调用方，且晚于 navigation/refs 初始化；若把 computed 一起迁移，可放在 Home 接线之后，保留 `archiveStats`…`idolPickerLabel` 原连续块。显示名仍通过 App 的既有函数依赖，避免重做本地化。
 - `openIdol` 中卡片目录分支、`openIdolDomain` 跨领域分派、现代组合、卡片共享请求计数和 `goHome` 全局清理暂不并入。主要受影响护栏是 idol-readmodel-navigation、idol-navigation-ux、idol-communication-readiness 的实际 watcher、relation-navigation、各 restore fixture，以及提取详情 computed 的旧投影检查。当前只盘点，尚未实施。
+
+### 偶像导航迁移前的真实加载回归（2026-10-08）
+
+- 复核发现旧 idol-readmodel-navigation 与 communication-readiness 测试替换了内部 `loadIdolDetail`，无法覆盖迁移中的目录/详情校验丢失。新增 `idol-navigation-harness.mjs` 与 `verify-idol-loading-boundary.mjs`，以 AST 执行 App 当前 6 个函数、6 个 computed 与同一请求计数，真实加载函数保持在一起；仅在 ReadModelClient 传输边界提供夹具。新检查纳入 source batch，旧检查保留。
+- 覆盖索引→分页→详情的请求路径与身份/options、目录顺序/数量/名称/描述符、叶子 profile/stats/events/songs、取消后不入缓存、缓存复用、未知身份不发请求、失败重试、旧成功/旧失败不覆盖新选择、全局失效/卸载、各入口选项保留与清理、selection 分支、投影身份隔离。实际注册 Vue watcher，验证 watcher→点击及点击→watcher 两种竞争共用计数。
+- 正向基线通过，8/8 内存错误变体被断言拦截：目录名称、数量、取消、profile 身份、请求归属、投影身份、活动上下文清理、selection 分派。证据 `.analysis/idol-boundary-mutations/results.json`；变体没有写入服务源码。旧 idol-readmodel-navigation 与 archive-relation-navigation 回归也通过。
+- 本批先建立迁移前行为证据，尚未提取 `useIdolNavigation`；生产代码、模板和样式均未修改，因此不重复构建或声称新增 Browser 验收。其他窗口提交的 `0400c47c` 及后续门户 UI 编辑保留，不属于本批验收。下一步迁移上述生产逻辑，并将 harness 改为执行 App 的真实 factory 参数和解构输出，再验证恢复与生命周期接线。
+- 当前共享工作区 source batch **115/116**：仅 `verify-design-tokens.mjs` 失败，指出正在编辑的 `ArchivePortalOverview.vue`（4 处 box-shadow）与 `PortalCardBento.vue`（background、box-shadow）使用 `--gs-ink`。只在内存中用 `0400c47c` 对应两份文件作对照，同一检查通过，未改写、还原或暂存这两份 UI 文件。日志 `.analysis/idol-boundary-source-batch.log`、`.analysis/idol-boundary-design-head.log`。不能将该对照写作当前共享工作区全绿；新增回归及最终反向检查已单独重跑通过。
