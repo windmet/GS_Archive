@@ -31,7 +31,7 @@ const stageBinding = appBody
   .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
 assert.ok(stageBinding, 'App binds the stage navigation composable')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
-const scenarioSource = functionSource('async function loadScenario(', 'async function loadHomeIndex(')
+const scenarioSource = productionFunction('loadScenario')
 const flush = async (predicate = null) => {
   if (!predicate) { for (let i = 0; i < 20; i++) await Promise.resolve(); return }
   const deadline = Date.now() + 3000

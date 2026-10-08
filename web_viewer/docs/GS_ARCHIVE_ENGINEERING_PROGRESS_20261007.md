@@ -277,3 +277,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - `recentHomeProfiles` 与三人缓存淘汰随 loader 一起归属；`homeVisits` 仍需作为同一个 Map 交给 `usePortalNavigation`，保留临时访问的台词/服装和门户范围/搜索返回。读取页的去重、hydrate 校验、中止后不发布与缓存命中顺序不能改变。
 - `archiveStats`…`idolPickerLabel` 保持连续，首页/picker computed 暂留 App，factory 应在该区域之后、所有消费者之前绑定。`goHome` 的跨领域清理、用户偏好写入、onboarding/picker 分派和 Home 三个跨域快捷入口先保持原归属，避免把偏好修改与临时 Home 访问混在一批。
 - 已确认受影响护栏：home-portal-visits 的函数提取、async-navigation 中以 `loadHomeIndex` 为终点的切片、各 restore fixture 与 App 卸载处计数；后续测试必须执行真实 Home loader、共享请求和三人缓存，不仅替换 Home 打开函数。当前仅盘点，尚未实施 Home 拆分。
+
+### Home 加载与临时访问拆分（2026-10-08，输入 02056b0c）
+
+- 提取 `useHomeNavigation`：4 个既有加载/打开/返回函数、偶像切换 watcher 处理器、三人缓存顺序/请求计数/访问 Map，以及 prepare/invalidate；24 个依赖、8 个输出。App 3357→3257 行。模板、样式、首页投影块、偏好与 onboarding/picker、统一 apply/Back 保持原处；App 保留 watcher 注册和卸载生命周期。AST 等价记录 `.analysis/home-diff-review.json` 验证函数、watcher body、迁移状态，以及 restore/unmount 委托外内容。
+- 新增真实 App harness/verifier：目录 bootstrap 顺序与身份、profile 身份、台词页去重及缺行/多行/错序/缺 previewStep、signal/priority、中止后不发布、缓存命中更新及三人 LRU、候选优先级、失败重试、偏好隔离、台词/服装/门户范围返回、Portal 与 Home 共享同一 Map。实际执行 Vue watcher 注册、App restore 与卸载；旧成功/旧失败跨打开和切换竞争不覆盖新 owner，直接播放器不加载父 Home。
+- 旧 Home 临时访问检查改用真实 loader 与 App factory；适配启动/故事档案/通信/旧目录/活动/播放器 restore 夹具，async 的 `loadScenario` 不再依赖 `loadHomeIndex` 字符串终点而采用实际函数 AST。新 fixture 的索引与 bootstrap 分开拷贝，避免损坏测试同时修改预期值。
+- 正向基线通过，17/17 反向变体被拦截（目录/profile 身份、两级中止、LRU 命中/容量、访问保存/台词、共享请求、watcher 回滚/结束、App 恢复采纳、watcher/unmount 接线、Portal Map、错误 profile ref）。记录 `.analysis/home-mutations/results.json`；变体不写服务源码。source batch 115/115、完整 reading、player repair 37/37、`build:check`（17.63 秒）通过，最终新增 Map 回归与断言加固后的基线再次通过。日志 `.analysis/home-{source-batch,reading,player-repair,build-check}.log`，构建输出固定 `.analysis/build-check`、不复制 public。
+- Browser 5175：以享介首句与基础常服取得 390、1280 宽度基线，恢复相同 URL 后静态控件布局与文案肉眼一致，Spine 姿态随时间变化。手机切换茁壮明彩服装和第 2 句→返回资料馆→重新进入，URL、台词和服装保留；首句深链接刷新恢复通过。中途跨较长操作间隔曾丢失临时访问状态，同一会话连续往返未复现；共享开发期间存在其他窗口 HMR，不据此单独归因于本次逻辑。热更新写入期 20:04 出现一次 App reload error，随后刷新恢复；最终全新后台标签页恢复首句、基础常服与实际立绘，console error 为 0，未出现白屏或框架 overlay；临时 viewport 已重置。上述仅证明本地页面/导航，不作为音频或长稳验收。
+- UI 待办仅记录：首页第二句在未设制作人时仍显示 `●●●●●●●●●●監督`；不在本批调整称呼或文案。另一窗口已提交 B026–B027 译文及活动/档案样式（包括 `f454ddab`、`454b6a9d`、`31876817`、`a005c3c3`），原样保留；本批没有改动组件模板或样式，没有重启、部署、R2 上传或完整资源打包。

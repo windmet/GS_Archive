@@ -1,3 +1,4 @@
+import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
@@ -94,7 +95,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -140,7 +141,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -188,7 +189,7 @@ for (const asynchronous of [false, true]) {
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -246,7 +247,7 @@ for (const route of [
   context.watch = () => {}
   context.view ??= { value: null }
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()

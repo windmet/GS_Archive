@@ -635,15 +635,12 @@ import {
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
-import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
   buildArchiveSourceQuery,
   ownsArchiveSource,
   readArchiveSourceRoute,
-  readPortalReturnRoute,
-  readHomeReturnRoute,
   buildArchiveUrl,
   onArchivePopState,
   readArchiveRoute,
@@ -664,6 +661,7 @@ import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigati
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { useStoryNavigation } from './composables/useStoryNavigation.js'
 import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { useHomeNavigation } from './composables/useHomeNavigation.js'
 import { useEventNavigation } from './composables/useEventNavigation.js'
 import { useLegacyAliasNavigation } from './composables/useLegacyAliasNavigation.js'
 import { useMobileNavigation } from './composables/useMobileNavigation.js'
@@ -965,8 +963,6 @@ let pendingResourceNavigation = 0
 const homeReadModelIndex = shallowRef(null)
 const homeReadModelProfiles = shallowRef({})
 const homeEntryStatus = ref('')
-const recentHomeProfiles = []
-let pendingHomeNavigation = 0
 // One reader-facing message for whatever archive page is being read. Producers keep
 // their own status refs (each navigation function is tested against them); this is
 // the single place that decides which one is shown and how.
@@ -1067,6 +1063,18 @@ const idolPickerLabel = computed(() => ({
   story: '个人故事',
   mobile: '通信档案',
 })[currentPickTarget.value] || '首页')
+const {
+  loadHomeIndex, loadHomeIdol, openGameHome, closeHomeVisit,
+  homeVisits, handleHomeIdolChange, prepareHomeRoute, invalidateHomeNavigation,
+} = useHomeNavigation({
+  homeReadModelIndex, homeReadModelProfiles, homeEntryStatus, view,
+  loading, userPreferenceNotice, userPreferences, validArchiveHomeIdols,
+  homeSelectedId, homeSelectedCue, homeSelectedCostume, homeFrom,
+  portalFrom, detailSourceRoute, navigation, archiveBootstrap,
+  readModelClient, currentArchiveRoute, openIdolPicker, commitView,
+  captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+})
+
 // The 担当 colour takes over the stage light when the producer opts in. The role tokens
 // resolve on :root, so the override must sit on the root element itself.
 const stageLightIdol = computed(() => userPreferences.value.stageLight === 'idol' ? preferredArchiveIdol.value : null)
@@ -2173,48 +2181,6 @@ function cancelWelcomeOrPicker() {
   if (['idol_picker', 'welcome'].includes(view.value)) openRootPortal()
 }
 
-const homeVisits = new Map()
-async function openGameHome(idolCode = '') {
-  if (view.value === 'home' && homeSelectedId.value) homeVisits.set(homeSelectedId.value, currentArchiveRoute())
-  const candidate = [idolCode, userPreferences.value.startupIdol, userPreferences.value.preferredIdol]
-    .find(code => validArchiveHomeIdols.value.includes(code)) || ''
-  if (!candidate) return openIdolPicker('home')
-  const source = view.value === 'portal' ? buildArchiveUrl(window.location.href, currentArchiveRoute()).search : ''
-  const portalHome = portalFrom.value ? readPortalReturnRoute(portalFrom.value) : null
-  const previous = homeVisits.get(candidate) || (portalHome?.view === 'home' && portalHome.homeIdol === candidate ? portalHome : null)
-  navigation.invalidate()
-  const request = ++pendingHomeNavigation
-  const revision = navigation.getRevision()
-  homeEntryStatus.value = '正在准备首页…'
-  try {
-    await loadHomeIdol(candidate)
-  } catch (error) {
-    if (request !== pendingHomeNavigation || revision !== navigation.getRevision()) return
-    console.error('[HomeReadModel] Failed to open Home:', error)
-    homeEntryStatus.value = '首页暂时无法打开，请重试。'
-    userPreferenceNotice.value = homeEntryStatus.value
-    return
-  }
-  if (request !== pendingHomeNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  homeEntryStatus.value = ''
-  detailSourceRoute.value = ''
-  portalFrom.value = ''
-  homeSelectedId.value = candidate
-  homeSelectedCue.value = previous?.homeCue || ''
-  homeSelectedCostume.value = previous?.homeCostume || ''
-  homeFrom.value = source
-  commitView('home')
-}
-
-async function closeHomeVisit() {
-  const destination = readHomeReturnRoute(homeFrom.value)
-  if (!destination) return
-  homeVisits.set(homeSelectedId.value, currentArchiveRoute())
-  captureActiveArchiveView()
-  await restoreRoute(destination)
-  if (view.value === 'portal') syncArchiveRoute()
-}
-
 function openPreferredDestination(request) {
   const destination = typeof request === 'string' ? request : request?.action
   const idolCode = typeof request === 'string' ? preferredArchiveIdol.value?.id : request?.idolCode
@@ -2848,47 +2814,6 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-async function loadHomeIndex(options = navigation.getLoadOptions?.() || {}) {
-  if (homeReadModelIndex.value) return homeReadModelIndex.value
-  const index = await readModelClient.load(archiveBootstrap.domains.home, { ...options, validate: data => {
-      const expected = archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id)
-      if (!Array.isArray(data.idols) || data.idols.length !== expected.length ||
-        data.idols.some((idol, index) => idol.id !== expected[index]) ||
-        !Array.isArray(data.stats) || !Array.isArray(data.highlights))
-        throw new Error('Home index does not match inline bootstrap')
-  } })
-  options.signal?.throwIfAborted()
-  homeReadModelIndex.value = index
-  return index
-}
-
-async function loadHomeIdol(idolId, options = navigation.getLoadOptions?.() || {}) {
-  if (homeReadModelProfiles.value[idolId]) {
-    const previous = recentHomeProfiles.indexOf(idolId)
-    if (previous >= 0) recentHomeProfiles.splice(previous, 1)
-    recentHomeProfiles.push(idolId)
-    return homeReadModelProfiles.value[idolId]
-  }
-  return (async () => {
-    const index = await loadHomeIndex(options)
-    const row = index.idols.find(idol => idol.id === idolId)
-    if (!row) throw new Error(`Unavailable Home idol: ${idolId}`)
-    const detail = await readModelClient.load(row.detail, { ...options, validate: data => {
-      if (data.id !== idolId || data.profile?.id !== idolId || !Array.isArray(data.cueIndex))
-        throw new Error('Home detail identity mismatch')
-    } })
-    const pageDescriptors = [...new Map(detail.cueIndex.map(cue => [cue.page.url, cue.page])).values()]
-    const pages = await Promise.all(pageDescriptors.map(descriptor => readModelClient.load(descriptor, options)))
-    const profile = hydrateHomeProfile(detail, pageDescriptors, pages)
-    options.signal?.throwIfAborted()
-    recentHomeProfiles.push(idolId)
-    const profiles = { ...homeReadModelProfiles.value, [idolId]: profile }
-    while (recentHomeProfiles.length > 3) delete profiles[recentHomeProfiles.shift()]
-    homeReadModelProfiles.value = profiles
-    return profile
-  })()
-}
-
 async function loadIdolCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (idolReadModelCatalog.value) return idolReadModelCatalog.value
   return (async () => {
@@ -3050,7 +2975,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
     const request = ++restoreRequest
     primeArchiveRouteComponent(route.view)
     invalidateSongNavigation()
-    ++pendingHomeNavigation
+    invalidateHomeNavigation()
     ++pendingIdolNavigation
     ++pendingUnitNavigation
     ++pendingGashaNavigation
@@ -3067,17 +2992,9 @@ async function restoreRoute(route, { restoring = true } = {}) {
     if (!isDirectScenarioEntry(route)) {
       legacyEntryStatus.value = ''
       route = normalizeStoryRoute(route)
-      if (route.view === 'home' && route.homeIdol) {
-        try {
-          await loadHomeIdol(route.homeIdol)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[HomeReadModel] Failed to restore Home:', error)
-          userPreferenceNotice.value = '首页暂时无法读取，请重新选择偶像。'
-          route = { view: 'welcome' }
-        }
-      }
+      const preparedHomeRoute = await prepareHomeRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
+      if (!preparedHomeRoute) return
+      route = preparedHomeRoute
       const preparedLegacyRoute = await prepareLegacyAliasRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
       if (!preparedLegacyRoute) return
       route = preparedLegacyRoute
@@ -3259,24 +3176,7 @@ watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
   if (view.value === 'home') syncArchiveRoute({ replace: true, restoreView: false })
 })
 
-watch(homeSelectedId, async (idolId, previousId) => {
-  if (view.value !== 'home' || !idolId || homeReadModelProfiles.value[idolId]) return
-  const request = ++pendingHomeNavigation
-  homeEntryStatus.value = '正在准备首页偶像…'
-  loading.value = true
-  try {
-    await loadHomeIdol(idolId)
-    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
-    homeEntryStatus.value = ''
-  } catch (error) {
-    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
-    console.error('[HomeReadModel] Failed to switch idol:', error)
-    homeEntryStatus.value = '首页偶像暂时无法读取，请重试。'
-    if (previousId && homeReadModelProfiles.value[previousId]) homeSelectedId.value = previousId
-  } finally {
-    if (request === pendingHomeNavigation) loading.value = false
-  }
-})
+watch(homeSelectedId, handleHomeIdolChange)
 
 watch([view, currentCharacterId], ([nextView, idolCode]) => {
   if (nextView !== 'idol_detail' || !idolCode || idolReadModelDetail.value?.id === idolCode) return
@@ -3311,7 +3211,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
-  ++pendingHomeNavigation
+  invalidateHomeNavigation()
   readModelClient.dispose()
   playbackController.dispose()
   navigation.dispose()
