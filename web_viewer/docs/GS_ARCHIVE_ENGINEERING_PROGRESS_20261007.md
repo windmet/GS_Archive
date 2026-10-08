@@ -409,3 +409,11 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 
 - 固定提交 `558955ba` 的完整门在第 73 步发现启动检查仍提供旧 `loadGashaCatalog` 替身。实际 factory 不再使用该替身，导致测试中的卡池恢复缺少传输并走回退。已将该案例改为真实 Gasha index/两页 transport，并等待实际 route write，明确断言三次加载；不依赖一次 setImmediate 恰好完成动态导入。
 - 主检出 `npm run verify:archive-startup-route` 已通过。该修正仅涉及测试；原卡池功能、App 与构建产物不变。完整门将在修正后的固定提交重新运行，旧失败结果保留，不把旧运行记作通过。
+
+
+### 卡池批次最终干净源码门与清理
+
+- 代码 `558955ba` 与启动 fixture 修正 `3b40cf01` 均已推送。固定 `3b40cf01` 的 LF 干净检出完成全部 115 步：**114 通过、0 失败、1 跳过 npm ci**；source batch **117/117**，最终 `build:check` **15.62 秒**及当前构建审计均通过。
+- 最终证据目录 `E:\Web_build\GS_Archive_engineering_20261007\gate-3b40cf01-final\` 保留逐项日志、`results.json`、`generated-audit.diff`、`gasha-diff-review.json`、`mutation-results.json` 和 `cleanup.json`。首轮 `gate-558955ba-final` 的 113/1/1 原始结果单独保留；没有覆盖失败证据。
+- 同一临时检出已移除，node_modules junction 已断开，主工程依赖仍在。清理记录：C 盘可用 **48.39 GiB**，5175 仍为原 PID **74640**。只做源码门与本地开发服务交互验收，未发布、上传或重启。
+- 完成时共享 App 又出现收藏目录 `@open-idol` 接线改动，属于另一窗口；原样保留，未暂存。最终门证明固定 `3b40cf01`，不替其他窗口后续改动背书。下一批按前述资源状态边界推进，先补真实加载回归再迁移。
