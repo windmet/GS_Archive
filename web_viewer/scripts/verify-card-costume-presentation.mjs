@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { eventBannerUrl } from '../src/data/eventResourceGraph.js'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import * as Vue from 'vue'
@@ -219,6 +220,7 @@ const imports = {
   '../../data/cardVoicePreview.js': { cardVoicePreviewStep },
   '../../utils/AssetResolver.js': { getVoiceUrl },
   '../../utils/CardAssetResolver.js': cardAssets,
+  '../../data/eventResourceGraph.js': { eventBannerUrl },
   './useArchiveCardText.js': { archiveText }, './useArchiveGashaText.js': { gashaText },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',

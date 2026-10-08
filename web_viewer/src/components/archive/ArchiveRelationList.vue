@@ -76,6 +76,9 @@ function select(item) {
 .relation-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
 .relation-row.static { grid-template-columns: 48px minmax(0, 1fr); cursor: default; }
 .relation-row > img { display: block; width: 48px; height: 48px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: contain; }
+/* Event rows with a banner show it as the archive's event thumbnail (as on the portal), not a square. */
+.relation-row.kind-event:has(> img) { grid-template-columns: 128px minmax(0, 1fr) 18px; }
+.relation-row.kind-event > img { width: 128px; height: 72px; object-fit: cover; }
 .relation-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--gs-mint-wash); color: var(--gs-mint-ink); }
 .relation-copy { display: grid; gap: var(--gs-space-1); min-width: 0; }
 .relation-labels { display: flex; align-items: center; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-3); }
@@ -97,6 +100,10 @@ function select(item) {
   .relation-row { grid-template-columns: 42px minmax(0, 1fr) 16px; }
   .relation-row.static { grid-template-columns: 42px minmax(0, 1fr); }
   .relation-row > img { width: 42px; height: 42px; }
+  .relation-row.kind-event:has(> img) { grid-template-columns: 96px minmax(0, 1fr) 16px; }
+  .relation-row.kind-event > img { width: 96px; height: 54px; }
+  /* Event names carry their subtitle at the end; let them use two lines instead of losing it. */
+  .relation-row.kind-event .relation-copy b { display: -webkit-box; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .relation-icon { width: 34px; height: 34px; }
 }
 </style>

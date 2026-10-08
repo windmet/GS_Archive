@@ -12,6 +12,10 @@ export function eventResources(identity){
   if(identity.release_at!==undefined&&identity.release_at!==event.startAt)return null
   return (!id||String(id)===event.id)&&(!title||title===event.title)?event:null
 }
+// The banner for an event row (idol and card pages), under the same identity check as eventResources.
+export function eventBannerUrl(event){
+  return eventResources({eventCode:event?.event_code,id:event?.event_id,title:event?.title,release_at:event?.release_at})?.hero?.url||''
+}
 export function storyEventResources(entry){
   const code=String(entry?.eventRelation?.event_code||entry?.sectionId||'')
   const event=byCode.get(code)

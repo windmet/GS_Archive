@@ -296,6 +296,7 @@ const presentCardSkillDescription = source => formatCardSkillDescription(archive
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardCommunicationLabel, cardScenarioTitle } from '../../presentation/CardPresentation.js'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import { cardVoicePreviewStep } from '../../data/cardVoicePreview.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import {
@@ -498,6 +499,8 @@ const relationItems = computed(() => {
       statusLabel: props.eventRelation.exists ? '可播放' : '缺少剧情',
       statusTone: props.eventRelation.exists ? 'available' : 'missing',
       resource: props.eventRelation.file,
+      imageUrl: eventBannerUrl(props.eventRelation),
+      imageAlt: props.eventRelation.title,
       payload: props.eventRelation,
     })
   }

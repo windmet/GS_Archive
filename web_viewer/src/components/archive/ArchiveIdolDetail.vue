@@ -116,6 +116,7 @@ import { BookOpenText, ChevronRight, Images, Camera, Info, Medal, MessageSquareT
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
 import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
+import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import { honorBondSource } from '../../presentation/HonorBondSource.mjs'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
@@ -221,6 +222,8 @@ const eventItems = computed(() => props.events.map(event => {
     statusLabel: event.exists ? '可播放' : '缺少剧情',
     statusTone: event.exists ? 'available' : 'missing',
     resource: event.file,
+    imageUrl: eventBannerUrl(event),
+    imageAlt: event.title,
     payload: event,
   }
 }))
