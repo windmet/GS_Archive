@@ -1,43 +1,39 @@
 import assert from 'node:assert/strict'
 import vm from 'node:vm'
-import { fileURLToPath } from 'node:url'
-import { ref, computed, isRef } from 'vue'
+import { ref, isRef } from 'vue'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse } from '@babel/parser'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNavigationCoordinator.js'
+import { useGashaNavigation } from '../../src/composables/useGashaNavigation.js'
 import evidence from '../../public/data/editorial/gasha-ticket-evidence.json' with { type: 'json' }
 
-// Execute App's actual declarations together; imports retain App's source location.
-// ReadModelClient is the fixture boundary, not the internal catalog/detail loaders.
+// Evaluate App's real factory arguments and destructured outputs.
+// ReadModelClient is the fixture boundary; internal loaders remain production code.
 export function bindGashaNavigation(app, context = {}) {
   const script = parseSfc(app).descriptor.scriptSetup.content
   const body = parse(script, { sourceType: 'module' }).program.body
-  const outputs = ['loadGashaCatalog', 'loadGashaDetail', 'openGashaCatalog', 'openGasha',
-    'goBackFromGasha', 'openGashaCard', 'gashaCatalog', 'gashaCategoryOptions', 'filteredGashas', 'currentGasha']
-  const nodes = [...outputs, 'pendingGashaNavigation'].map(name => {
-    const node = body.find(node => node.type === 'FunctionDeclaration' ? node.id.name === name
-      : node.type === 'VariableDeclaration' && node.declarations.some(row => row.id.name === name))
-    assert.ok(node, `App declares ${name}`)
-    if (node.declarations) assert.equal(node.declarations.length, 1)
-    return node
-  }).sort((a, b) => a.start - b.start)
+  const binding = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useGashaNavigation')
+  assert.ok(binding, 'App binds the real Gasha factory')
+  const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(item => item.local.name === 'useGashaNavigation'))
+  assert.equal(imported?.source.value, './composables/useGashaNavigation.js')
   const unexpected = name => () => { throw new Error(`Unexpected Gasha fixture boundary: ${name}`) }
   const defaults = {
     ...useArchiveNavigationState(), navigation: createArchiveNavigationCoordinator(),
     loading: ref(false), gashaReadModelCatalog: ref(null), gashaReadModelDetail: ref(null),
     gashaReadModelStatus: ref(''), gashaCatalogFunctions: ref(null),
-    currentStoryCollection: ref(null), cardReadModelCatalog: ref(null), computed,
+    currentStoryCollection: ref(null), cardReadModelCatalog: ref(null),
     idolEntitySearchText: id => `idol:${id}`,
   }
   for (const name of ['prepareArchivePage', 'captureDetailSource', 'commitView', 'loadCardCatalog', 'openCard']) defaults[name] = unexpected(name)
-  Object.assign(context, { ...defaults, ...context })
+  Object.assign(context, { ...defaults, ...context, useGashaNavigation })
   for (const [name, value] of Object.entries(context)) if (value && typeof value === 'object' && 'value' in value && !isRef(value)) context[name] = ref(value.value)
-  const executable = new vm.Script(`(() => {\n${nodes.map(node => script.slice(node.start, node.end)).join('\n')}\nreturn { ${outputs.join(', ')} };\n})()`, {
-    filename: fileURLToPath(new URL('../../src/App.vue', import.meta.url)),
-    importModuleDynamically: vm.constants.USE_MAIN_CONTEXT_DEFAULT_LOADER,
-  })
-  const exposed = executable.runInNewContext(context)
+  const handlers = vm.runInNewContext(script.slice(binding.init.start, binding.init.end), context)
+  const exposed = {}
+  for (const property of binding.id.properties) {
+    assert.ok(property.key.name in handlers, `App exports ${property.key.name}`)
+    exposed[property.value.name] = handlers[property.key.name]
+  }
   Object.assign(context, exposed)
   return exposed
 }

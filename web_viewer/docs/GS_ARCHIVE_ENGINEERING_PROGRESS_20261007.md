@@ -384,3 +384,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 目录/详情两两迟到成功与失败、全局失效/卸载、独立计数竞争、失败重试和页面准备等待均通过。保留 Portal 来源、preserveBrowse、目录查询、extra 剧情集合返回及无集合回退；还覆盖投影身份隔离、补录分类数量、译名/偶像搜索和关联卡片传输边界。
 - 正向基线及 **18/18** 内存错误变体通过，证据 `.analysis/gasha-boundary-mutations/results.json`；变体不写服务源码。source batch **118/118** 通过，日志 `.analysis/gasha-boundary-source-batch.log`；随后将第二次取消检查改为真实 Vue watcher + AbortController 驱动，基线与全部错误变体再次通过。旧卡池入口及关联导航 17 条生产边也通过。
 - 本批只建立迁移前行为证据，没有修改 App、组件、样式、译文或播放行为，不重复构建或声称新增 Browser 验收。共享窗口的门户改动、设计令牌基线和新译文批次均保留。下一步迁移 Card 之后的 Gasha factory，并验证 Card→Gasha 延迟接线、App restore 与既有返回语义。
+
+
+### 卡池导航逻辑提取（2026-10-08，输入 599fe076）
+
+- 提取 `useGashaNavigation`：6 个既有加载/导航函数、4 个 computed、私有计数及 prepare/invalidate；26 个依赖、12 个输出。App 2822→2703 行，净减 119 行。两个数据模块仍动态导入，招募券补录与正式详情校验保持原语义。Card→Gasha 改为延迟回调，Gasha→Card 使用既有入口。
+- `.analysis/gasha-diff-review.json` 确认迁移声明 AST 等价（仅调整相对导入），模板/样式、统一 apply/Back/goHome、声音预览与原 unmount 均不变，restore 仅委托 Gasha 准备和失效。没有混入关联卡片等待期间的行为修改。
+- harness 执行 App 实际 factory 参数及解构输出；旧 gasha-readmodel-navigation 入口复用完整真实加载套件，因此 batch 从 118 变为 117，覆盖未减少。适配所有 restore 消费者和关联/状态检查。新增 App restore 成功、失败保留来源回退、旧成功/失败失效、跨域取消及 Card→Gasha 实际接线测试；两个 factory 的初始化顺序均校验。
+- 正向基线及 **22/22** 内存错误变体通过，`.analysis/gasha-mutations/results.json`。source batch **117/117**、完整 reading、player repair **37/37** 通过；最终 `build:check` 18.89 秒，仅复用 E 盘 `.analysis/build-check`，未复制 public。第一次编译被 Git 权限阻断，随后清单写入受限，授权环境重跑通过。日志 `.analysis/gasha-{extraction-source-batch,reading,player-repair,build-check}.log`。
+- 5175 Browser：桌面目录及手机目录/流丽的时装秀详情与迁移前基线对照；流丽详情→冬马关联卡片→关联卡池→返回卡片通过。手机道具补录 25 项→当日限定白金详情→返回保留分类通过；桌面译名“光彩”搜索为 1 项，进入正式 FES 详情（4 种道具、3 张卡）后返回保留搜索。以上为开发服务交互证据，不是发布或音频验收。
+- 同期其他窗口提交了 B028–B030 译文、门户及阅读器交互；本批不回退或代为验收它们。未部署、上传或重启端口；固定提交的完整干净源码门结果随后补录。

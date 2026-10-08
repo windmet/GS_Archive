@@ -1,3 +1,4 @@
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { isRef } from 'vue'
 import { readFileSync } from 'node:fs'
@@ -115,31 +116,28 @@ assert.equal(readArchiveSourceRoute(targetedStage.sourceRoute).view, 'archive_st
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its actual archive destination')
 assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
+const gashas = createGashaFixtureTransport()
 const context = {
+  archiveBootstrap: gashas.bootstrap, readModelClient: gashas.client,
   prepareArchivePage: (_view, data) => data,
   ...independent,
   pendingGashaNavigation: 0,
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
   loading: { value: false },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
-  loadGashaDetail: async id => ({ id, gasha: { id } }),
   captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
   currentStoryCollection: { value: { sectionId: '604' } },
   commitView: value => { independent.view.value = value },
 }
-for (const name of ['openGasha', 'goBackFromGasha']) {
-  const source = app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))?.[0]
-  assert.ok(source, `${name} production handler exists`)
-  vm.runInNewContext(source, context)
-}
+bindGashaNavigation(app, context)
 independent.view.value = 'story_collection'
 independent.currentStoryDomain.value = 'extra'
 independent.currentStorySection.value = '604'
-await context.openGasha({ id: '1300011' })
+await context.openGasha({ id: gashas.ids[0] })
 const restored = readArchiveRoute(buildArchiveUrl('http://localhost/?noAudio=1', independent.currentArchiveRoute()).href)
 assert.equal(restored.parentView, 'story_collection')
 assert.equal(restored.storySection, '604')
-assert.equal(restored.gasha, '1300011')
+assert.equal(restored.gasha, gashas.ids[0])
 // Exercise the same parent restoration assignment as full App startup.
 const restoreSource = app.match(/    gashaParentView.value =[^]*?(?=\n    currentGashaCategory.value)/)?.[0]
 assert.ok(restoreSource)
@@ -154,7 +152,7 @@ context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 independent.filterQuery.value = 'FES'
 independent.currentGashaCategory.value = 'growing_fes'
-await context.openGasha({ id: '1300011' })
+await context.openGasha({ id: gashas.ids[0] })
 context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 assert.equal(independent.filterQuery.value, 'FES')

@@ -1,3 +1,4 @@
+import { bindGashaNavigation } from './lib/gasha-navigation-harness.mjs'
 import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
@@ -71,7 +72,7 @@ function restoreFixture() {
     applyArchiveRoute: async route => { t.calls.push(['apply', route]); c.view.value = route.view },
   })
   bindLegacyAliasNavigation(app, c).stop()
-  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindIdolFixtureNavigation(app, c)
+  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindGashaNavigation(app, c); bindIdolFixtureNavigation(app, c)
   const node = body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'restoreRoute')
   const source = script.slice(node.start, node.end)
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0

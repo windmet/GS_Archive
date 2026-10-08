@@ -1,9 +1,37 @@
+import vm from 'node:vm'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse } from '@babel/parser'
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
+import { bindIdolNavigation } from './lib/idol-navigation-harness.mjs'
+import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
+import { bindCardNavigation, createCardFixtureTransport, deferredCard } from './lib/card-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { watch } from 'vue'
 import { bindGashaNavigation, createGashaFixtureTransport, deferredGasha } from './lib/gasha-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const script = parseSfc(app).descriptor.scriptSetup.content
+const body = parse(script, { sourceType: 'module' }).program.body
+const binding = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useGashaNavigation')
+const names = node => node.type === 'Identifier' ? [node.name] : node.type === 'ObjectPattern' ? node.properties.flatMap(property => names(property.value)) : []
+const defined = new Map()
+for (const node of body) {
+  if (node.type === 'ImportDeclaration') for (const specifier of node.specifiers) defined.set(specifier.local.name, -1)
+  if (node.type === 'FunctionDeclaration') defined.set(node.id.name, -1)
+  for (const declaration of node.declarations || []) for (const name of names(declaration.id)) defined.set(name, declaration.start)
+}
+for (const factory of body.flatMap(node => node.declarations || []).filter(node => ['useGashaNavigation', 'useCardNavigation'].includes(node.init?.callee?.name))) {
+  for (const property of factory.init.arguments[0].properties) if (property.value.type === 'Identifier')
+    assert.ok(defined.get(property.value.name) < factory.start, `${property.key.name} initialized before ${factory.init.callee.name}`)
+}
 const equal = (actual, expected, message) => assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected, message)
 const settle = () => new Promise(resolve => setImmediate(resolve))
 function setup(overrides = {}) {
@@ -19,11 +47,30 @@ function setup(overrides = {}) {
     openCard: (...args) => { cards.push(args); return 'card-result' },
     console: { error: (...args) => errors.push(args) }, ...overrides,
   }
+  console.error = (...args) => errors.push(args)
   bindGashaNavigation(app, c)
   const hold = url => { const job = deferredGasha(); transport.jobs.set(url, job); return job }
   return { c, ...transport, commits, captures, errors, prepared, cards, hold }
 }
 
+function restoration() {
+  const t = setup(), c = t.c, applied = []
+  bindCardNavigation(app, c); bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
+  bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
+  bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
+  Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,
+    primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
+    applyArchiveRoute: async route => { applied.push(route); c.view.value = route.view },
+  })
+  const node = body.find(node => node.id?.name === 'restoreRoute'), source = script.slice(node.start, node.end)
+  for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  return { ...t, applied }
+}
+
+const originalConsoleError = console.error
+try {
 {
   const t = setup(), controller = new AbortController()
   const detail = await t.c.loadGashaDetail(t.ids[0], { signal: controller.signal, priority: 'visible' })
@@ -162,11 +209,53 @@ for (const kind of ['detail', 'catalog']) {
   t.c.filterQuery.value = 'idol:001tom'; equal(t.c.filteredGashas.value.map(row => String(row.id)), t.ids)
 }
 {
-  const t = setup(), job = deferredGasha(), card = { resource_id: 'card', character_id: '001tom' }; let loads = 0
-  t.c.loadCardCatalog = async () => { loads++; await job.promise; t.c.cardReadModelCatalog.value = [card] }
+  const job = deferredGasha(), card = { resource_id: 'card', character_id: '001tom' }; let loads = 0
+  const t = setup({ loadCardCatalog: async () => { loads++; await job.promise; t.c.cardReadModelCatalog.value = [card] } })
   const pending = t.c.openGashaCard({ card_resource_id: 'card' }); equal(t.cards, [])
   job.resolve(); assert.equal(await pending, 'card-result')
   equal(t.cards, [[card, { resetContext: true }]])
   await t.c.openGashaCard({ card_resource_id: 'missing' }); assert.equal(t.cards.length, 1); assert.equal(loads, 1)
 }
+// Restore through App's actual dispatcher as well as the feature preparation boundary.
+for (const kind of ['gashas', 'gasha_detail']) {
+  const t = restoration(), route = { view: kind, gasha: t.ids[0], query: 'keep', gashaCategory: 'ticket_named' }
+  await t.c.restoreRoute(route)
+  equal(t.applied, [route]); assert.equal(t.c.gashaReadModelStatus.value, '')
+  if (kind === 'gasha_detail') assert.equal(t.c.gashaReadModelDetail.value.id, t.ids[0])
+}
+{
+  const t = restoration(), route = { view: 'gasha_detail', gasha: 'missing', query: 'keep', sourceRoute: '?view=portal' }
+  await t.c.restoreRoute(route)
+  equal(t.applied, [{ ...route, view: 'gashas', gasha: '' }])
+  assert.match(t.c.gashaReadModelStatus.value, /重试/)
+}
+for (const fails of [false, true]) {
+  const t = restoration(), job = t.hold(`gasha:${t.ids[0]}`)
+  const pending = t.c.restoreRoute({ view: 'gasha_detail', gasha: t.ids[0] }); await settle()
+  await t.c.restoreRoute({ view: 'about' })
+  if (fails) job.reject(Error('late')); else job.resolve(t.data.get(`gasha:${t.ids[0]}`))
+  await pending; equal(t.applied, [{ view: 'about' }]); assert.equal(t.c.gashaReadModelDetail.value, null)
+  assert.equal(t.errors.length, 0)
+}
+{
+  const t = restoration(); await t.c.loadGashaCatalog()
+  const job = t.hold(`gasha:${t.ids[0]}`), pending = t.c.openGasha({ id: t.ids[0] }); await settle()
+  await t.c.restoreRoute({ view: 'about' })
+  job.resolve(t.data.get(`gasha:${t.ids[0]}`)); await pending
+  equal(t.commits, []); equal(t.applied, [{ view: 'about' }])
+}
+{
+  const t = setup(), c = t.c
+  bindCardNavigation(app, c) // Card captures App's deferred call to the later Gasha factory.
+  bindGashaNavigation(app, c)
+  c.currentCardId.value = 'card'
+  c.cardReadModelDetail.value = { id: 'card', gashaRelation: { announcement_id: t.ids[0] } }
+  const relation = c.currentCardGashaRelation.value
+  assert.ok(relation)
+  await c.loadGashaCatalog()
+  c.openCardGasha(relation); await settle(); assert.equal(c.currentGashaId.value, t.ids[0])
+  equal(t.commits, ['gasha_detail'])
+}
 console.log('Gasha loading boundary passed: real dynamic imports, ticket supplement and identity, shared races, cancellation, browsing and return sources')
+
+} finally { console.error = originalConsoleError }

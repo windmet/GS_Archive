@@ -1,3 +1,4 @@
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
 import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation, createUnitFixtureTransport } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
@@ -15,6 +16,7 @@ const roundTrip = route => readArchiveRoute(buildArchiveUrl('http://localhost/',
 const source = route => readArchiveSourceRoute(roundTrip(route).sourceRoute)
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const state = useArchiveNavigationState()
+const gashas = createGashaFixtureTransport()
 const cards = createCardFixtureTransport()
 const card = { ...cards.data.get('card-page-1').rows[0], id: '002sht_sr01', resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
 const cardDetail = cards.data.get('card:first')
@@ -38,6 +40,7 @@ const context = vm.createContext({
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   readModelClient: { load: async (songCode, options) => {
+    if (gashas.data.has(songCode?.url)) return gashas.client.load(songCode, options)
     if (cards.data.has(songCode?.url)) return cards.client.load(songCode, options)
     if (units.data.has(songCode?.url)) return units.client.load(songCode, options)
     if (songCode?.url?.startsWith('event:')) return events.client.load(songCode, options)
@@ -45,10 +48,9 @@ const context = vm.createContext({
     options.validate(detail)
     return detail
   } },
-  loadGashaDetail: async id => ({ id, gasha: { id } }),
   unitReadModelStatus: { value: '' },
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
-  archiveBootstrap: { idols: [{ id: '002sht', unitId: '1' }, { id: '003hok', unitId: '1' }], domains: units.bootstrap.domains },
+  archiveBootstrap: { idols: [{ id: '002sht', unitId: '1' }, { id: '003hok', unitId: '1' }], domains: { ...units.bootstrap.domains, ...gashas.bootstrap.domains }, counts: gashas.bootstrap.counts },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   mobileIdolReadModelDetail: { value: { view: { cardRefs: [card] } } },
@@ -58,7 +60,7 @@ const context = vm.createContext({
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource',
-  'openIdolDomain', 'openGasha', 'openGashaCard']
+  'openIdolDomain']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
@@ -67,6 +69,7 @@ for (const name of handlers) {
 bindIdolFixtureNavigation(app, context)
 bindUnitNavigation(app, context)
 bindCardNavigation(app, context)
+bindGashaNavigation(app, context)
 bindStoryNavigation(app, context).stop()
 bindEventNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
@@ -81,7 +84,7 @@ const fixtures = [
   ['idol_detail', 'openIdolDomain', 'cards', 'cards'],
   ['event_detail', 'openEventIdol', { idol_code: '002sht' }, 'idol_detail'],
   ['event_detail', 'openEventUnit', unit, 'unit_detail'],
-  ['card_detail', 'openGasha', { id: '1300011' }, 'gasha_detail'],
+  ['card_detail', 'openGasha', { id: gashas.ids[0] }, 'gasha_detail'],
   ['gasha_detail', 'openGashaCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['event_detail', 'openEventCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['mobile_archive', 'openMobileCard', 42, 'card_detail'],
