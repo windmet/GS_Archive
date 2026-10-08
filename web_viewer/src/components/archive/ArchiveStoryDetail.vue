@@ -1,77 +1,90 @@
 <template>
-  <article v-if="story" class="story-detail" data-archive-scroll-container>
-    <header class="story-identity" :class="`domain-${story.domain}`">
-      <div class="identity-visual">
-        <img v-if="visualUrl" :src="visualUrl" :alt="story.sectionLabel || story.title" />
-        <div v-else class="visual-fallback"><BookOpen :size="38" /></div>
-      </div>
-      <div class="identity-copy">
-        <span class="domain-label">{{ story.domainLabel }}</span>
-        <p class="hierarchy">{{ hierarchyLabel }}</p>
+  <!-- One story on the story-family programme layout: text and actions first with the cover
+       beside them, then hairline sections for play entries, cast and the rest of the chapter. -->
+  <article v-if="story" class="story-detail story-page" data-archive-scroll-container>
+    <header class="story-head detail-head" :class="{ 'no-cover': !visualUrl }">
+      <div class="detail-lead">
+        <p class="detail-kicker">{{ hierarchyLabel }}</p>
         <h2>{{ presentProducerAddressingText(story.title) }}</h2>
-        <dl>
-          <div><dt>剧情</dt><dd>{{ story.exists ? '已收录' : '暂未收录' }}</dd></div>
-          <div v-if="story.rowCount > 1"><dt>段落</dt><dd>{{ story.rowCount }} 段</dd></div>
-          <div v-if="releaseDate"><dt>开放</dt><dd>{{ releaseDate }}</dd></div>
-        </dl>
+        <ul class="story-footprint" aria-label="收录">
+          <li :class="{ missing: !story.exists }">{{ story.exists ? '已收录' : '暂未收录' }}</li>
+          <li v-if="story.rowCount > 1"><b>{{ story.rowCount }}</b>段</li>
+          <li v-if="releaseDate">{{ releaseDate }} 开放</li>
+        </ul>
+
+        <blockquote v-if="story.preplaySynopsis" class="detail-synopsis">
+          <strong v-if="synopsisTitle">{{ synopsisTitle }}</strong>
+          <p>{{ story.preplaySynopsis.text }}</p>
+        </blockquote>
+
+        <div class="detail-actions" aria-label="观看方式">
+          <button v-if="availableReading.length" type="button" class="story-action primary" @click="emit('read', availableReading[0].document_id)">
+            <BookOpen :size="16" />{{ availableReading.length > 1 ? '阅读正文' : '阅读本篇' }}
+          </button>
+          <button type="button" class="story-action" :class="{ primary: !availableReading.length }" :disabled="!story.exists" @click="emit('play', story)">
+            <Play :size="15" fill="currentColor" />{{ story.exists ? '播放演出' : '缺少剧情文件' }}
+          </button>
+          <a
+            v-for="resource in externalResources"
+            :key="resource.external_id"
+            class="story-action"
+            :href="resource.platform.canonical_url"
+            target="_blank"
+            rel="noopener noreferrer external"
+            :title="`在 Bilibili 观看 ${resource.uploader.name} 投稿的社区中文资源`"
+          >
+            <ExternalLink :size="15" />社区中文资源 · {{ resource.uploader.name }}
+          </a>
+        </div>
+        <p v-if="story.preplaySynopsis && story.exists" class="story-note">演出从正式标题开始播放。</p>
       </div>
+
+      <figure v-if="visualUrl" class="detail-cover">
+        <img :src="visualUrl" alt="" decoding="async" />
+      </figure>
     </header>
 
-    <section class="synopsis-band" :class="{ empty: !story.preplaySynopsis }">
-      <div class="section-label"><AlignLeft :size="16" /><span>故事简介</span></div>
-      <div v-if="story.preplaySynopsis" class="synopsis-copy">
-        <h3>{{ presentProducerAddressingText(story.preplaySynopsis.title || story.title) }}</h3>
-        <p>{{ story.preplaySynopsis.text }}</p>
-      </div>
-      <p v-else class="missing-copy">原始资料中没有独立的播放前简介。</p>
-      <div class="story-actions">
-        <button :disabled="!story.exists" @click="emit('play', story)">
-          <Play :size="18" fill="currentColor" />
-          <span>{{ story.exists ? '开始播放' : '缺少剧情文件' }}</span>
-        </button>
-        <button v-if="availableReading.length" @click="emit('read', availableReading[0].document_id)">
-          <BookOpen :size="18" /><span>{{ availableReading.length > 1 ? '阅读可用分段' : '阅读正文' }}</span>
-        </button>
-        <a
-          v-for="resource in externalResources"
-          :key="resource.external_id"
-          :href="resource.platform.canonical_url"
-          target="_blank"
-          rel="noopener noreferrer external"
-        >
-          <ExternalLink :size="16" />
-          <span><strong>社区中文资源</strong><small>{{ resource.uploader.name }} · Bilibili</small></span>
-        </a>
-        <small v-if="story.preplaySynopsis && story.exists">播放将从正式标题演出开始</small>
-      </div>
+    <section v-if="story.titleCards?.length" class="story-section" aria-labelledby="story-detail-entries">
+      <div class="story-section-head"><h3 id="story-detail-entries">正式播放入口</h3><small>{{ story.titleCards.length }} 个</small></div>
+      <ol class="episode-list">
+        <li v-for="(card, index) in story.titleCards" :key="`${card.episode_index}-${index}`" class="episode-entry">
+          <div class="episode-reading-main">
+            <span class="episode-number">{{ String(index + 1).padStart(2, '0') }}</span>
+            <span class="episode-copy">
+              <strong>{{ presentProducerAddressingText(card.title || story.title) }}</strong>
+              <small>{{ presentIdolEpisodeLabel({ sourceName: card.label }) || `EP${index + 1}` }}</small>
+            </span>
+          </div>
+        </li>
+      </ol>
     </section>
 
-    <section v-if="story.titleCards?.length" class="detail-section">
-      <div class="section-heading"><div><h3>正式播放入口</h3></div><strong>{{ story.titleCards.length }}</strong></div>
-      <div class="episode-list">
-        <div v-for="(card, index) in story.titleCards" :key="`${card.episode_index}-${index}`">
-          <span>{{ card.label || `EP${index + 1}` }}</span>
-          <strong>{{ presentProducerAddressingText(card.title || story.title) }}</strong>
-        </div>
-      </div>
-    </section>
-
-    <section v-if="characters.length" class="detail-section">
-      <div class="section-heading"><div><h3>登场角色</h3></div><strong>{{ characters.length }}</strong></div>
-      <div class="character-list">
+    <section v-if="characters.length" class="story-section" aria-labelledby="story-detail-cast">
+      <div class="story-section-head"><h3 id="story-detail-cast">登场角色</h3><small>{{ characters.length }} 位</small></div>
+      <div class="detail-cast">
         <ArchiveIdolReference v-for="reference in characterReferences" :key="reference.idolCode" :reference="reference" @open="emit('open-idol', $event)" />
       </div>
     </section>
 
-    <section v-if="relatedStories.length" class="detail-section related-section">
-      <div class="section-heading"><div><h3>{{ collectionTitle }}</h3></div><strong>{{ relatedStories.length }}</strong></div>
-      <div class="related-list">
-        <button v-for="entry in relatedStories" :key="entry.id" :class="{ current: entry.id === story.id }" @click="emit('select', entry)">
-          <span>{{ presentIdolEpisodeLabel({ sourceName: entry.episodeLabel }) || entry.domainLabel }}</span>
-          <strong>{{ presentProducerAddressingText(entry.title) }}</strong>
-          <ArrowRight :size="16" />
-        </button>
-      </div>
+    <section v-if="relatedStories.length" class="story-section" aria-labelledby="story-detail-related">
+      <div class="story-section-head"><h3 id="story-detail-related">{{ collectionTitle }}</h3><small>{{ relatedStories.length }} 篇</small></div>
+      <ul class="story-rows">
+        <li v-for="entry in relatedStories" :key="entry.id">
+          <button
+            type="button"
+            class="story-row no-thumb"
+            :class="{ current: entry.id === story.id }"
+            :aria-current="entry.id === story.id ? 'page' : undefined"
+            @click="emit('select', entry)"
+          >
+            <span class="story-row-copy">
+              <strong>{{ presentProducerAddressingText(entry.title) }}</strong>
+              <small>{{ presentIdolEpisodeLabel({ sourceName: entry.episodeLabel }) || entry.domainLabel }}<template v-if="entry.id === story.id"> · 当前</template></small>
+            </span>
+            <ChevronRight :size="18" aria-hidden="true" />
+          </button>
+        </li>
+      </ul>
     </section>
 
     <ArchiveTechnicalDetails :key="story.id" :evidence="story">
@@ -91,7 +104,8 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import { AlignLeft, ArrowRight, BookOpen, ExternalLink, Play } from '@lucide/vue'
+import { BookOpen, ChevronRight, ExternalLink, Play } from '@lucide/vue'
+import '../../styles/archive-story.css'
 
 const props = defineProps({
   story: { type: Object, default: null }, related: { type: Array, default: () => [] },
@@ -104,7 +118,13 @@ const props = defineProps({
 const emit = defineEmits(['play', 'select', 'open-idol', 'read'])
 const availableReading = computed(() => props.readingEntries.filter(entry => entry.status === 'ready' &&
   (entry.source_file === props.story?.file || entry.parent_file === props.story?.file)))
-const hierarchyLabel = computed(() => [props.story?.sectionLabel, presentIdolEpisodeLabel({ sourceName: props.story?.episodeLabel })].filter(Boolean).join(' · ') || props.story?.domainLabel || '')
+const hierarchyLabel = computed(() => [props.story?.domainLabel, props.story?.sectionLabel && chapterLabel(props.story.sectionLabel),
+  presentIdolEpisodeLabel({ sourceName: props.story?.episodeLabel })].filter(Boolean).join(' · '))
+// The synopsis usually repeats the story title; show its own heading only when it differs.
+const synopsisTitle = computed(() => {
+  const title = props.story?.preplaySynopsis?.title
+  return title && title !== props.story?.title ? presentProducerAddressingText(title) : ''
+})
 const releaseDate = computed(() => props.story?.releaseAt >= 1577836800 ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(new Date(props.story.releaseAt * 1000)) : '')
 const characters = computed(() => (props.story?.characters || []).filter(character => /^\d{3}[a-z0-9]{3}$/i.test(character)))
 const characterReferences = computed(() => props.projectedCastReferences || characters.value.map(character =>
@@ -114,18 +134,31 @@ const collectionTitle = computed(() => props.story?.sectionLabel ? `${chapterLab
 </script>
 
 <style scoped>
-.story-detail { height: 100%; overflow-y: auto; background: #f5f7f8; color: #26343c; }
-.story-identity { display: grid; grid-template-columns: minmax(360px, 1.15fr) minmax(300px, .85fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e7; background: #fff; }
-.identity-visual { align-self: start; overflow: hidden; aspect-ratio: 2.63 / 1; border: 1px solid #dde3e5; border-radius: 6px; background: #edf1f2; }
-.identity-visual img { display: block; width: 100%; height: 100%; object-fit: contain; }.visual-fallback { display: grid; place-items: center; width: 100%; height: 100%; background: url('/assets/stories/story_background.png') center/cover; color: #167f78; }
-.identity-copy { min-width: 0; padding-top: 3px; }.domain-label { color: #168c84; font-size: var(--gs-text-caption); font-weight: 800; }.hierarchy { margin: 7px 0 0; color: #6d7b83; font-size: var(--gs-text-meta); }.identity-copy h2 { margin: 5px 0 18px; font-size: 1.3rem; line-height: 1.45; }
-.identity-copy dl { margin: 0; }.identity-copy dl div { display: grid; grid-template-columns: 54px minmax(0,1fr); gap: 9px; padding: 7px 0; border-bottom: 1px solid #edf0f1; font-size: var(--gs-text-meta); }.identity-copy dt { color: #879299; }.identity-copy dd { margin: 0; overflow-wrap: anywhere; color: #3a4b53; }
-.synopsis-band { position: relative; padding: 24px max(220px, calc((100% - 760px) / 2)) 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dce4e5; background: #eaf6f4; }.section-label { display: flex; align-items: center; gap: 6px; color: #147c75; font-size: var(--gs-text-caption); font-weight: 800; }.synopsis-copy h3 { margin: 11px 0 7px; font-size: var(--gs-text-subtitle); }.synopsis-copy p, .missing-copy { max-width: 760px; margin: 0; color: #405159; font-size: var(--gs-text-ui); line-height: 1.85; white-space: pre-line; }.missing-copy { margin-top: 10px; color: #758188; }
-.story-actions { position: absolute; top: 50%; right: max(24px, calc((100% - 1120px) / 2)); display: grid; gap: 7px; min-width: 184px; transform: translateY(-50%); }.story-actions > button,.story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; padding: 8px 13px; border: 1px solid #158f87; border-radius: 6px; background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); text-decoration: none; }.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: #166f69; }.story-actions > a span { display: flex; flex-direction: column; gap: 2px; }.story-actions > a strong { font-size: var(--gs-text-meta); }.story-actions > a small { color: #63817e; font-size: var(--gs-text-caption); }.story-actions > small { color: #66817e; font-size: var(--gs-text-caption); text-align: center; }
-.detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }.detail-section + .detail-section { margin-top: 10px; }.section-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 12px; }.section-heading span { color: #168a82; font-size: var(--gs-text-caption); font-weight: 800; }.section-heading h3 { margin: 3px 0 0; font-size: var(--gs-text-body); }.section-heading > strong { color: #7f8c93; font-size: var(--gs-text-caption); }
-.episode-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 1px; background: #e2e7e9; }.episode-list > div { display: flex; flex-direction: column; gap: 4px; min-height: 58px; padding: 11px 13px; background: #f9fafb; }.episode-list span { color: #16857e; font-size: var(--gs-text-caption); }.episode-list strong { font-size: var(--gs-text-ui); }
-.character-list { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 7px; }
-.related-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }.related-list button { display: grid; grid-template-columns: 72px minmax(0,1fr) 16px; align-items: center; gap: 9px; min-height: 48px; padding: 8px 10px; border: 1px solid #e0e5e7; border-radius: 5px; background: #fff; color: #2b3941; cursor: pointer; font: inherit; text-align: left; }.related-list button.current { border-color: #70c2bc; background: #eff9f8; }.related-list span { color: #17857e; font-size: var(--gs-text-caption); }.related-list strong { overflow: hidden; font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }.related-list svg { color: #7f8d94; }
-.source-strip { display: flex; justify-content: space-between; gap: 18px; margin-top: 10px; padding: 15px max(24px, calc((100% - 1120px) / 2)) 22px; color: #879198; font-size: var(--gs-text-caption); }.source-strip code { overflow-wrap: anywhere; text-align: right; }
-@media (max-width: 760px) { .story-identity { grid-template-columns: 1fr; gap: 16px; padding: 15px 12px 18px; }.identity-copy h2 { font-size: var(--gs-text-subtitle); }.synopsis-band { padding: 19px 13px; }.story-actions { position: static; width: 100%; margin-top: 16px; transform: none; }.detail-section { padding: 18px 12px; }.episode-list, .related-list { grid-template-columns: 1fr; }.source-strip { flex-direction: column; padding: 13px 12px 18px; }.source-strip code { text-align: left; } }
+/* Head, sections, rows, actions and episode rows come from archive-story.css; only the
+   lead/cover split, the synopsis quotation and the cast grid are particular to this page. */
+.detail-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 340px); align-items: start; gap: var(--gs-space-8); }
+.detail-lead { min-width: 0; }
+.detail-kicker { margin: 0 0 var(--gs-space-2); color: var(--gs-mint-ink); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.detail-head h2 { overflow-wrap: anywhere; }
+.story-footprint .missing { color: var(--gs-ink-3); font-weight: var(--gs-weight-semibold); }
+/* The synopsis is a quotation on the paper: a 2px mint rule, no tinted band. */
+.detail-synopsis { max-width: 46em; margin: var(--gs-space-6) 0 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }
+.detail-synopsis strong { display: block; margin-bottom: var(--gs-space-2); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.detail-synopsis p { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.85; white-space: pre-line; }
+.detail-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin: var(--gs-space-6) 0 var(--gs-space-3); }
+.detail-cover { display: grid; place-items: center; overflow: hidden; margin: 0; aspect-ratio: 16 / 9; border-radius: var(--gs-radius-media); background: var(--gs-rule); }
+.detail-cover img { width: 100%; height: 100%; object-fit: contain; }
+.detail-head.no-cover { grid-template-columns: minmax(0, 1fr); }
+.detail-cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--gs-space-3); }
+.story-row.current { box-shadow: inset 3px 0 var(--gs-mint); padding-left: var(--gs-space-4); }
+.story-row.current .story-row-copy strong { color: var(--gs-mint-ink); }
+.source-strip { display: flex; justify-content: space-between; gap: 18px; padding: 15px max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) 22px; color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.source-strip code { overflow-wrap: anywhere; text-align: right; }
+@container story-page (max-width: 760px) {
+  .detail-head { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-5); }
+  .detail-cover { grid-row: 1; max-height: 200px; }
+  .detail-actions > * { flex: 1 1 140px; }
+  .source-strip { flex-direction: column; padding-inline: var(--gs-space-5); }
+  .source-strip code { text-align: left; }
+}
 </style>
