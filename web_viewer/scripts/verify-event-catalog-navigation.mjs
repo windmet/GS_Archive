@@ -1,3 +1,4 @@
+import { bindEventNavigation, eventFixtureDetail } from './lib/event-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -136,7 +137,7 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
     },
     restoreArchiveViewState: value => { restores.push(value); return restoreArchiveViewState(value, { root: document, storage }) },
     buildArchiveSourceQuery, readArchiveSourceRoute, prepareArchivePage: (_view, value) => value,
-    loadEventDetail: async id => ({ id }), commitView: view => { state.view.value = view },
+    eventReadModelCatalog: Vue.ref(rows), readModelClient: { async load(descriptor, options) { const value = eventFixtureDetail(options.expectedId); options.validate(value); return value } }, commitView: view => { state.view.value = view },
     openStoryCatalog: () => { state.view.value = 'story_catalog' },
     applyArchiveRoute: async value => {
       // This boundary delegates to the exact production assignments; full
@@ -146,7 +147,8 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
       state.view.value = value.view
     },
   })
-  for (const name of ['adoptArchiveViewContext', 'syncArchiveRoute', 'updateArchiveFilter', 'updateEventBrowse', 'updateEventCatalogQuery', 'onEventCatalogReady', 'captureDetailSource', 'openEventDetail', 'goBackFromEvent', 'restoreDetailSource']) vm.runInContext(production(name), context)
+  for (const name of ['adoptArchiveViewContext', 'syncArchiveRoute', 'updateArchiveFilter', 'updateEventBrowse', 'updateEventCatalogQuery', 'onEventCatalogReady', 'captureDetailSource', 'restoreDetailSource']) vm.runInContext(production(name), context)
+  bindEventNavigation(appSource, context).stop()
   if (saved) saveArchiveViewRestoration(buildArchiveViewContext(window.location.href, window.history.state), saved, storage)
   const client = { async load({ url }, { signal } = {}) {
     loads.push({ url, signal })

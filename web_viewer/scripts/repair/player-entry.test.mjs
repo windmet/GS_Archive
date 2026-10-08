@@ -1,3 +1,4 @@
+import { bindEventNavigation } from '../lib/event-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from '../lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from '../lib/mobile-navigation-harness.mjs'
 import test from 'node:test'
@@ -158,7 +159,7 @@ function appHarness(t, overrides = {}) {
   // Exercise the real route invalidation/preparation methods; this fixture owns
   // player restoration rather than the song-view watcher lifecycle.
   bindStoryArchiveNavigation(appSource, context).stop()
-  bindStoryNavigation(appSource, context).stop()
+  bindStoryNavigation(appSource, context).stop(); bindEventNavigation(appSource, context).stop()
   bindSongNavigation(appSource, context).stop()
   bindMobileNavigation(appSource, context).stop()
   bindLegacyAliasNavigation(appSource, context).stop()

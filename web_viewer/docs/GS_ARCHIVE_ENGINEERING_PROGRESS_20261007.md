@@ -257,3 +257,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 活动详情先关注 9 个入口/返回/播放/关联/加载函数、4 个详情 computed 与请求计数。保留奖励分页的 eventId/count、castReferences 对齐、目录去重和中止检查；恢复与 App apply 的职责不混并。
 - 现有活动目录 browse/query/ready 与共享 `restoreDetailSource`、`pendingEventCatalogRestore` 相互关联，提取前再次核对状态初始化和返回滚动恢复。`openDomainCatalog` 同时负责多个目录，不直接并入活动详情模块。
 - 需适配 event-readmodel-navigation、event-view-consumer、event-catalog-navigation、relation-navigation、各 restore fixture，以及 async-navigation 中依赖 `openEventCard` 的旧宽切片终点。先验证同一批，再继续 Home 等剩余编排。
+
+### 活动导航拆分（2026-10-08，输入 9f0f81df，续作 HEAD e662d948）
+
+- 提取 `useEventNavigation`：9 个既有函数、4 个 computed、私有请求计数及 prepare/invalidate；27 个依赖、15 个输出。App 3478→3357 行。AST 对照确认迁移函数和 5 个声明等价，模板/样式、`applyArchiveRoute`、`goArchiveBack`、restore 委托外逻辑不变，证据 `.analysis/event-diff-review.json`。共享目录 browse/query/ready 与 payload 生命周期继续由 App 管理。
+- 活动 factory 晚于卡片/组合 computed 初始化；故事模块到活动详情改为延迟回调，真实 App harness 验证先初始化故事、后初始化活动再跳转。旧活动详情、奖励分页、目录组件、关联跳转、启动及播放器恢复检查改用真实 factory，保留既有断言；移除 async fixture 中原本起点已不存在的空字符串切片。
+- 新回归覆盖目录 count/去重/身份/取消及缓存，castReferences 对齐，活动投影、队列过滤与返回上下文、旧成功不覆盖新选择、私有失效/全局 revision/卸载、关联卡片的迟到防护、来源返回分支、实际 restore 的成功/降级/过期及直接播放器零父页加载。奖励分页 schema、eventId、count、缺页等仍由原消费者回归执行。
+- 反向验证促成过期 payload 与 App 状态隔离断言加固；正向基线通过，14/14 错误变体被拦截，包含延迟接线丢失、接错 payload、restore 未采纳、过期发布、关联守卫、播放过滤/缺失/返回、目录取消与身份、cast 引用。记录 `.analysis/event-mutations/results.json`，变体仅运行于 E 盘测试副本和内存模块，不改服务源码。
+- source batch 114/114、完整 reading、player repair 37/37 与 `build:check`（22.41 秒）通过；输出仅 `.analysis/build-check`、不复制 public。日志 `.analysis/event-{source-batch,reading,player-repair,build-check}.log`。反向加固后的新回归基线再次通过；完整干净源码门结果随后补录。
+- 5175 Browser：Plus 1 搜索→原期活动→播放实际对白（7/18）→返回；奖励卡片、出演者握野英雄及 FRAME 组合分别往返；详情刷新后返回目录保留 Plus 1 与两条结果。390×844 和 1280×900 的目录/详情对照布局内容一致（焦点高亮差异除外）；没有白屏或框架错误，console 无 error，保留既有 Pixi Spine warning。测试视口已重置。未把本地导航/画面验收称为音频解码、长稳或发布验收。
+- UI/数据待办仅记录：奖励列表仍有「未绑定图片」与原文道具名；关联卡说明仍有「获得方式待确认」。本批不修改这些展示。原 5175 PID 74640 保持，没有重启、部署、R2 上传或完整资源打包；共享工作区译文及其他未跟踪资料保留。

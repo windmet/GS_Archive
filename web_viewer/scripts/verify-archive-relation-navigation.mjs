@@ -1,3 +1,4 @@
+import { bindEventNavigation, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -13,7 +14,9 @@ const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const state = useArchiveNavigationState()
 const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
 const unit = { unit_code: '01jup', unit_id: 1 }
+const events = createEventFixtureTransport(['430018'])
 const context = vm.createContext({
+  eventReadModelCatalog: { value: events.rows },
     prepareArchivePage: (_view, data) => data,
   ...state, buildArchiveSourceQuery,
   songReadModelCatalog: { value: { songs: { brndnf: { detail: 'brndnf' } } } },
@@ -25,6 +28,7 @@ const context = vm.createContext({
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   readModelClient: { load: async (songCode, options) => {
+    if (songCode?.url?.startsWith('event:')) return events.client.load(songCode, options)
     const detail = { id: songCode, song: { song_code: songCode }, view: { id: songCode } }
     options.validate(detail)
     return detail
@@ -32,7 +36,6 @@ const context = vm.createContext({
   loadGashaDetail: async id => ({ id, gasha: { id } }),
   loadCardDetail: async id => ({ id, card: { resource_id: id } }),
   loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
-  loadEventDetail: async id => ({ id, view: { event: { event_id: id } } }),
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
   openIdolReadModel: (idolCode, options = {}) => {
@@ -62,14 +65,15 @@ const context = vm.createContext({
 })
 const handlers = ['captureDetailSource',
   'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
-  'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
-  'openRelatedCard', 'openEventDetail']
+  'openCard', 'openGasha', 'openGashaCard',
+  'openRelatedCard']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
 bindStoryNavigation(app, context).stop()
+bindEventNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
 const fixtures = [

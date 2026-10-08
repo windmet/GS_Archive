@@ -107,7 +107,6 @@ function setup() {
     functionSource('function syncArchiveRoute(', 'async function restoreVoicePreview('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
-    functionSource('function playbackEpisodes(', 'async function openEventCard('),
     productionFunction('openVoicePreview'),
     functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,

@@ -1,10 +1,10 @@
+import { bindEventNavigation, eventFixtureDetail, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
-const source = app.match(/function openEventDetail\([^]*?\n\}/)?.[0]
-assert.ok(source)
+
 
 function deferred() {
   let resolve, reject
@@ -13,21 +13,25 @@ function deferred() {
 }
 function setup() {
   const jobs = new Map(), commits = [], errors = []
+  const events = createEventFixtureTransport(['410001', '410002'])
   let revision = 0, captured = 0
   const context = vm.createContext({
     prepareArchivePage: (_view, data) => data,
     pendingEventNavigation: 0, eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
     currentEventId: { value: '' }, eventParentView: { value: '' }, loading: { value: false },
     navigation: { invalidate: () => revision++, getRevision: () => revision, isDisposed: () => false },
-    loadEventDetail: id => { const job = deferred(); jobs.set(id, job); return job.promise },
+    eventReadModelCatalog: { value: events.rows },
+    readModelClient: { async load(descriptor, options) { const value = await jobs.get(descriptor.expectedId).promise; options.validate(value); return value } },
     captureDetailSource: () => { captured++ },
     commitView: view => { revision++; commits.push(view); context.loading.value = false },
     console: { error: (...args) => errors.push(args) },
   })
-  vm.runInContext(source, context)
+  bindEventNavigation(app, context).stop()
+  const open = context.openEventDetail
+  context.openEventDetail = (...args) => { jobs.set(String(args[0].event_id), deferred()); return open(...args) }
   return { context, jobs, commits, errors, captured: () => captured, invalidate: () => revision++ }
 }
-const detail = id => ({ id, view: { schemaVersion:2, identity: { id }, story:{entry:{event_id:id}} } })
+const detail = eventFixtureDetail
 
 {
   const t = setup()
@@ -49,8 +53,12 @@ const detail = id => ({ id, view: { schemaVersion:2, identity: { id }, story:{en
 }
 {
   const t = setup()
-  const failed = t.context.openEventDetail({ event_id: 410001 })
-  t.jobs.get('410001').reject(new Error('network')); await failed
+  const originalError = console.error
+  console.error = (...args) => t.errors.push(args)
+  try {
+    const failed = t.context.openEventDetail({ event_id: 410001 })
+    t.jobs.get('410001').reject(new Error('network')); await failed
+  } finally { console.error = originalError }
   assert.match(t.context.eventReadModelStatus.value, /重试/)
   assert.equal(t.context.loading.value, false)
   assert.equal(t.errors.length, 1)

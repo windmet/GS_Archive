@@ -1,3 +1,4 @@
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
@@ -113,6 +114,7 @@ function fixture({ cached = true } = {}) {
   bindLegacyAliasNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
+  bindEventNavigation(app, context).stop()
   const stop = () => { scope.stop(); story.stop() }; cleanups.push(stop)
   return { ...api, state, context, calls, loads, jobs, data, navigation, story, stop }
 }
@@ -131,7 +133,7 @@ function restoreFixture() {
     }, currentArchiveRoute: () => publishedRoute, writeArchiveRoute: (...args) => writes.push(args),
   })
   for (const name of ['loadHomeIdol', 'loadLegacyAliasRoute', 'publishLegacyAliasRoute', 'loadMobileRoute', 'loadIdolDetail',
-    'loadUnitCatalog', 'loadUnitDetail', 'loadGashaCatalog', 'loadGashaDetail', 'loadCardCatalog', 'loadCardDetail', 'loadEventDetail']) {
+    'loadUnitCatalog', 'loadUnitDetail', 'loadGashaCatalog', 'loadGashaDetail', 'loadCardCatalog', 'loadCardDetail']) {
     context[name] = () => { assert.fail(`Unexpected restore domain boundary: ${name}`) }
   }
   bindSongNavigation(app, context).stop()

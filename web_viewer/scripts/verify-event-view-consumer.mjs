@@ -1,9 +1,10 @@
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs';
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const app = readFileSync(new URL("../src/App.vue", import.meta.url), "utf8");
-const source = app.match(/async function loadEventDetail\([^]*?\n\}/)[0];
+
 const root = () => ({
   id: "410001",
   view: {
@@ -28,7 +29,7 @@ function setup() {
   const calls = [];
   const context = vm.createContext({
     navigation: { getLoadOptions: () => ({}) },
-    loadEventCatalog: async () => [{ id: "410001", detail: { url: "detail" } }],
+    eventReadModelCatalog: { value: [{ id: "410001", detail: { url: "detail" } }] },
     readModelClient: {
       load: async (descriptor, options) => {
         calls.push(descriptor.url);
@@ -38,7 +39,7 @@ function setup() {
       },
     },
   });
-  vm.runInContext(source, context);
+  bindEventNavigation(app, context).stop();
   return { data, calls, load: () => context.loadEventDetail("410001") };
 }
 {

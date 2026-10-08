@@ -1,3 +1,4 @@
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
@@ -93,7 +94,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -139,7 +140,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -187,7 +188,7 @@ for (const asynchronous of [false, true]) {
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -245,7 +246,7 @@ for (const route of [
   context.watch = () => {}
   context.view ??= { value: null }
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop()
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
