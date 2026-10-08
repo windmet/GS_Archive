@@ -1,3 +1,4 @@
+import { bindCardNavigation } from '../lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from '../lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from '../lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from '../lib/home-navigation-harness.mjs'
@@ -162,7 +163,7 @@ function appHarness(t, overrides = {}) {
   // Exercise the real route invalidation/preparation methods; this fixture owns
   // player restoration rather than the song-view watcher lifecycle.
   bindStoryArchiveNavigation(appSource, context).stop()
-  bindStoryNavigation(appSource, context).stop(); bindEventNavigation(appSource, context).stop(); bindHomeNavigation(appSource, context).stop(); bindUnitNavigation(appSource, context); bindIdolFixtureNavigation(appSource, context)
+  bindStoryNavigation(appSource, context).stop(); bindEventNavigation(appSource, context).stop(); bindHomeNavigation(appSource, context).stop(); bindUnitNavigation(appSource, context); bindCardNavigation(appSource, context); bindIdolFixtureNavigation(appSource, context)
   bindSongNavigation(appSource, context).stop()
   bindMobileNavigation(appSource, context).stop()
   bindLegacyAliasNavigation(appSource, context).stop()

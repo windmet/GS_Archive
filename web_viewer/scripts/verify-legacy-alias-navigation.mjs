@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
@@ -74,7 +75,7 @@ function restoreFixture() {
     playbackController: { reset: () => t.calls.push(['reset']), restore: (...args) => t.calls.push(['restore-player', ...args]) },
   })
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
-  bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindIdolFixtureNavigation(app, c)
+  bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindIdolFixtureNavigation(app, c)
   const source = functionSource('restoreRoute')
   for (const m of source.matchAll(/\+\+(pending\w+)/g)) c[m[1]] = 0
   vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + functionSource('applyArchiveRoute') + '\n' + source, c)

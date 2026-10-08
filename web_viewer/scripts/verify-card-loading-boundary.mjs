@@ -1,10 +1,37 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import vm from 'node:vm'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse } from '@babel/parser'
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
+import { bindIdolNavigation } from './lib/idol-navigation-harness.mjs'
+import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import { bindCardNavigation, createCardFixtureTransport, deferredCard } from './lib/card-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const script = parseSfc(app).descriptor.scriptSetup.content
+const body = parse(script, { sourceType: 'module' }).program.body
+const binding = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useCardNavigation')
+const names = node => node.type === 'Identifier' ? [node.name] : node.type === 'ObjectPattern' ? node.properties.flatMap(property => names(property.value)) : []
+const defined = new Map()
+for (const node of body) {
+  if (node.type === 'ImportDeclaration') for (const specifier of node.specifiers) defined.set(specifier.local.name, -1)
+  if (node.type === 'FunctionDeclaration') defined.set(node.id.name, -1)
+  for (const declaration of node.declarations || []) for (const name of names(declaration.id)) defined.set(name, declaration.start)
+}
+for (const property of binding.init.arguments[0].properties) if (property.value.type === 'Identifier')
+  assert.ok(defined.get(property.value.name) < binding.start, `${property.key.name} initialized before Card factory`)
+const originalConsoleError = console.error
+try {
 const settle = () => new Promise(resolve => setImmediate(resolve))
-function setup(source = app) {
+function setup(source = app, overrides = {}) {
   const transport = createCardFixtureTransport(), commits = [], captures = [], errors = [], prepared = [], calls = []
   const context = { archiveBootstrap: transport.bootstrap, readModelClient: transport.client,
     view: { value: 'unit_detail' }, currentArchiveUnit: { value: { unit_id: 1 } },
@@ -17,15 +44,33 @@ function setup(source = app) {
     captureDetailSource: () => captures.push(context.view.value),
     commitView: view => { commits.push(view); context.view.value = view; context.loading.value = false; context.navigation.invalidate() },
     commitArchiveSelection: () => { commits.push('selection'); context.navigation.invalidate() },
+    restoreDetailSource: fallback => { calls.push(['restore', context.currentCardId.value]); return fallback() },
     console: { error: (...args) => errors.push(args) },
+    ...overrides,
   }
   for (const name of ['openIdolReadModel', 'loadScenario', 'openEventDetail', 'openGasha'])
     context[name] = (...args) => { calls.push([name, ...args]); return 'pending' }
   bindCardNavigation(source, context)
+  console.error = context.console.error
   const hold = url => { const job = deferredCard(); transport.jobs.set(url, job); return job }
   return { context, transport, commits, captures, errors, prepared, calls, hold }
 }
 const equal = (actual, expected, message) => assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected, message)
+function restoration() {
+  const t = setup(), c = t.context, applied = []
+  bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
+  bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
+  bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
+  bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
+  Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,
+    primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
+    applyArchiveRoute: async route => { applied.push(route); c.view.value = route.view },
+  })
+  const node = body.find(node => node.id?.name === 'restoreRoute'), source = script.slice(node.start, node.end)
+  for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
+  vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
+  return { ...t, applied }
+}
 
 {
   const t = setup(), controller = new AbortController()
@@ -153,9 +198,9 @@ for (const oldKind of ['detail', 'unit', 'list']) for (const newKind of ['detail
   assert.equal(t.commits.length, 1, `${oldKind} -> ${newKind}: only current owner publishes`)
   assert.equal(t.errors.length, 0)
 }
-for (const action of ['invalidate', 'dispose']) {
-  const t = setup(), job = t.hold('card:first'), pending = t.context.openCard({ resource_id: 'first' })
-  await settle(); t.context.navigation[action](); job.resolve(t.transport.data.get('card:first')); await pending
+for (const action of ['invalidate', 'dispose']) for (const kind of ['detail', 'unit', 'list']) {
+  const t = setup(), url = kind === 'detail' ? 'card:first' : 'card-page-2', job = t.hold(url), pending = open(t.context, kind)
+  await settle(); t.context.navigation[action](); job.resolve(t.transport.data.get(url)); await pending
   equal(t.commits, []); assert.equal(t.context.cardReadModelDetail.value, null)
 }
 // Isolate the feature counter from the independent global revision guard.
@@ -168,8 +213,8 @@ for (const kind of ['detail', 'unit', 'list']) {
   assert.equal(t.commits.length, 1, `${kind} shares the feature counter with card detail`)
 }
 {
-  const t = setup(), c = t.context, page = deferredCard()
-  c.prepareArchivePage = async (_view, pending) => { const data = await pending; await page.promise; return data }
+  const page = deferredCard()
+  const t = setup(app, { prepareArchivePage: async (_view, pending) => { const data = await pending; await page.promise; return data } }), c = t.context
   const pending = c.openCard({ resource_id: 'first' }); await settle()
   assert.equal(t.commits.length, 0, 'loading data alone must not publish before the page is prepared')
   c.navigation.invalidate(); page.resolve(); await pending
@@ -210,10 +255,9 @@ for (const kind of ['detail', 'unit', 'list']) {
   c.openCardGasha({ announcement_id: 12 }); c.openCardGasha({})
   equal(t.calls, [['openIdolReadModel', '001tom', { captureSource: true, resetContext: true }],
     ['loadScenario', 'chapter.json', 'card_detail'], ['openEventDetail', { event_id: 'event' }, 'card_detail'], ['openGasha', { id: '12' }]])
-  c.detailSourceRoute.value = '?view=unit_detail'; let restored = false
-  c.restoreDetailSource = fallback => { restored = true; assert.equal(c.currentCardId.value, ''); return fallback() }
-  c.goBackToCards(); assert.equal(restored, true); assert.equal(t.commits.at(-1), 'cards')
-  c.detailSourceRoute.value = ''; restored = false; c.goBackToCards(); assert.equal(restored, false)
+  c.detailSourceRoute.value = '?view=unit_detail'
+  c.goBackToCards(); equal(t.calls.at(-1), ['restore', '']); assert.equal(t.commits.at(-1), 'cards')
+  c.detailSourceRoute.value = ''; const count = t.calls.length; c.goBackToCards(); assert.equal(t.calls.length, count)
 }
 {
   const t = setup(), c = t.context
@@ -238,4 +282,42 @@ for (const kind of ['detail', 'unit', 'list']) {
   c.goBackFromCards(); assert.equal(c.view.value, 'idol_detail'); assert.equal(c.currentCategoryId.value, 'idol')
   assert.equal(c.currentCharacterId.value, '001tom'); assert.equal(c.currentCardId.value, '')
 }
-console.log('Card loading boundary passed: real loaders, optional facets, identity, cancellation, shared navigation races and projections')
+for (const route of [{ view: 'cards' }, { view: 'card_detail', card: 'first' }, { view: 'player', returnView: 'card_detail', card: 'first' }]) {
+  const t = restoration(); await t.context.restoreRoute(route)
+  equal(t.applied, [route]); assert.equal(t.context.cardReadModelStatus.value, '')
+  if (route.view !== 'cards') assert.equal(t.context.cardReadModelDetail.value.id, 'first')
+  assert.ok(t.transport.loads.some(row => row.descriptor.url === 'card-index'))
+}
+{
+  const t = restoration(); await t.context.restoreRoute({ view: 'card_detail', card: 'missing' })
+  equal(t.applied, [{ view: 'cards' }]); assert.match(t.context.cardReadModelStatus.value, /稍后重试/)
+}
+for (const fail of [false, true]) {
+  const t = restoration(), job = t.hold('card:first')
+  const old = t.context.restoreRoute({ view: 'card_detail', card: 'first' }); await settle()
+  const next = { view: 'card_detail', card: 'second' }; await t.context.restoreRoute(next)
+  if (fail) job.reject(Error('old')); else job.resolve(t.transport.data.get('card:first'))
+  await old; equal(t.applied, [next]); assert.equal(t.context.cardReadModelDetail.value.id, 'second')
+  assert.equal(t.errors.length, 0)
+}
+{
+  const t = restoration(), route = { view: 'player', returnView: 'card_detail', card: 'first', scenario: 'direct.json' }
+  await t.context.restoreRoute(route); equal(t.applied, [route]); assert.equal(t.transport.loads.length, 0)
+}
+{
+  const t = setup(), job = t.hold('card:first'), pending = t.context.openCard({ resource_id: 'first' })
+  await settle(); t.context.invalidateCardNavigation(); job.resolve(t.transport.data.get('card:first')); await pending
+  assert.equal(t.commits.length, 0, 'private invalidation revokes pending Card work without changing the global revision')
+}
+{
+  const mobile = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useMobileNavigation')
+  const property = mobile.init.arguments[0].properties.find(row => row.key.name === 'loadCardDetail')
+  assert.equal(property.value.type, 'ArrowFunctionExpression', 'early Mobile factory defers the later Card binding')
+  const c = {}, late = vm.runInNewContext(script.slice(property.value.start, property.value.end), c)
+  c.loadCardDetail = (...args) => args; equal(late('first', { priority: 'visible' }), ['first', { priority: 'visible' }])
+  const t = setup(); t.context.openEventDetail = (...args) => args
+  equal(t.context.openCardEvent('event'), ['event', 'card_detail'], 'Card event entry defers the later Event binding')
+}
+console.log('Card loading boundary passed: real loaders, optional facets, identity, cancellation, shared navigation races, projections and actual App restoration')
+
+} finally { console.error = originalConsoleError }

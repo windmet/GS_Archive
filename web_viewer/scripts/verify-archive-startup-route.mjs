@@ -1,3 +1,4 @@
+import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
@@ -64,6 +65,8 @@ function deferred() {
 }
 for (const disposed of [false, true]) {
   const catalog = deferred()
+  const cardTransport = createCardFixtureTransport()
+  cardTransport.jobs.set('card-index', catalog)
   const translations = deferred()
   let mount, popState, isDisposed = false
   const route = { view: 'cards', idol: '001tom' }
@@ -74,7 +77,8 @@ for (const disposed of [false, true]) {
     localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } },
     userPreferences: { value: {} },
-    archiveBootstrap: { idols: [{ id: '002sht' }] },
+    archiveBootstrap: { ...cardTransport.bootstrap, idols: [{ id: '002sht' }] },
+    readModelClient: cardTransport.client,
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, loadCardCatalog: () => catalog.promise,
@@ -97,7 +101,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -105,7 +109,7 @@ for (const disposed of [false, true]) {
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
   popState(latestRoute)
-  catalog.resolve([])
+  catalog.resolve(cardTransport.data.get('card-index'))
   isDisposed = disposed
   translations.resolve()
   await pending
@@ -143,7 +147,7 @@ for (const disposed of [false, true]) {
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -191,7 +195,7 @@ for (const asynchronous of [false, true]) {
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()
@@ -249,7 +253,7 @@ for (const route of [
   context.watch = () => {}
   context.view ??= { value: null }
   bindStoryArchiveNavigation(app, context).stop()
-  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindIdolFixtureNavigation(app, context)
   bindSongNavigation(app, context).stop()
   bindMobileNavigation(app, context).stop()
   bindLegacyAliasNavigation(app, context).stop()

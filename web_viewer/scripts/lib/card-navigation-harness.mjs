@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict'
 import vm from 'node:vm'
-import { ref, computed, isRef } from 'vue'
+import { ref, isRef } from 'vue'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse } from '@babel/parser'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNavigationCoordinator.js'
-import { cardAttribute } from '../../src/presentation/CatalogIdolScope.js'
-import { buildCardRarityTabs, filterArchiveCards } from '../../src/data/cardFilters.js'
+import { useCardNavigation } from '../../src/composables/useCardNavigation.js'
 
-// Before extraction, execute the actual App declarations together, preserving closures.
+// Execute the actual App factory arguments and expose only its destructured outputs.
 // Only transport and cross-domain callbacks are fixtures; no internal loader is replaced.
 export const cardFunctions = ['loadCardFacets', 'loadCardCatalog', 'loadCardDetail',
   'openUnitCards', 'openPrimaryCards', 'openCard', 'selectCardIdol', 'goBackToCards',
@@ -22,32 +21,32 @@ export const cardComputeds = ['currentCards', 'cardRarityTabs', 'filteredCards',
 export function bindCardNavigation(app, context = {}) {
   const script = parseSfc(app).descriptor.scriptSetup.content
   const body = parse(script, { sourceType: 'module' }).program.body
-  const names = [...cardFunctions, ...cardComputeds, 'pendingCardNavigation', 'cardFacetsPromise']
-  const selected = names.map(name => {
-    const fn = body.find(node => node.type === 'FunctionDeclaration' && node.id.name === name)
-    if (fn) return { start: fn.start, source: script.slice(fn.start, fn.end) }
-    const declaration = body.find(node => node.type === 'VariableDeclaration' && node.declarations.some(item => item.id.name === name))
-    assert.ok(declaration, `App declares ${name}`)
-    assert.equal(declaration.declarations.length, 1, `do not silently capture unrelated bindings with ${name}`)
-    return { start: declaration.start, source: script.slice(declaration.start, declaration.end) }
-  }).sort((a, b) => a.start - b.start)
+  const binding = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useCardNavigation')
+  assert.ok(binding, 'App binds the real card navigation factory')
+  const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(item => item.local.name === 'useCardNavigation'))
+  assert.equal(imported?.source.value, './composables/useCardNavigation.js')
   const unexpected = name => () => { throw new Error(`Unexpected Card fixture boundary: ${name}`) }
   const defaults = {
     ...useArchiveNavigationState(), navigation: createArchiveNavigationCoordinator(),
     loading: ref(false), cardReadModelCatalog: ref(null), cardReadModelDetail: ref(null),
     cardReadModelStatus: ref(''), unitReadModelStatus: ref(''), currentArchiveUnit: ref(null),
-    computed, cardAttribute, buildCardRarityTabs, filterArchiveCards,
+    archiveBootstrap: { idols: [], domains: {} }, readModelClient: { load: unexpected('readModelClient.load') },
     idolDisplayName: id => `display:${id}`, idolSourceName: id => `source:${id}`,
     archiveNamedSearchText: (_kind, source) => source,
   }
   for (const name of ['fetch', 'prepareArchivePage', 'captureDetailSource', 'commitView',
     'commitArchiveSelection', 'restoreDetailSource', 'openIdolReadModel', 'loadScenario', 'openEventDetail', 'openGasha'])
     defaults[name] = unexpected(name)
-  Object.assign(context, { ...defaults, ...context })
+  Object.assign(context, { ...defaults, ...context, useCardNavigation })
   for (const [name, value] of Object.entries(context)) {
     if (value && typeof value === 'object' && 'value' in value && !isRef(value)) context[name] = ref(value.value)
   }
-  const exposed = vm.runInNewContext(`(() => {\n${selected.map(item => item.source).join('\n')}\nreturn { ${[...cardFunctions, ...cardComputeds].join(', ')} };\n})()`, context)
+  const handlers = vm.runInNewContext(script.slice(binding.init.start, binding.init.end), context)
+  const exposed = {}
+  for (const property of binding.id.properties) {
+    assert.ok(property.key.name in handlers, `App exports ${property.key.name}`)
+    exposed[property.value.name] = handlers[property.key.name]
+  }
   Object.assign(context, exposed)
   return exposed
 }

@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -50,7 +51,7 @@ function setup(source = app) {
 
 function restoreFixture() {
   const t = setup(), c = t.context, applied = []
-  bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
+  bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
   bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: { value: '' }, playbackError: { value: '' }, isDirectScenarioEntry,

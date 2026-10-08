@@ -1,3 +1,4 @@
+import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation, createUnitFixtureTransport } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindEventNavigation, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
@@ -14,7 +15,11 @@ const roundTrip = route => readArchiveRoute(buildArchiveUrl('http://localhost/',
 const source = route => readArchiveSourceRoute(roundTrip(route).sourceRoute)
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const state = useArchiveNavigationState()
-const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
+const cards = createCardFixtureTransport()
+const card = { ...cards.data.get('card-page-1').rows[0], id: '002sht_sr01', resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
+const cardDetail = cards.data.get('card:first')
+cardDetail.id = card.resource_id; cardDetail.card = { ...cardDetail.card, ...card }
+card.detail = { url: 'card:002sht_sr01' }; cards.data.set(card.detail.url, cardDetail)
 const unit = { unit_code: '01jup', unit_id: 1 }
 const units = createUnitFixtureTransport(['1'])
 units.data.get('unit-page').rows[0].catalog.unit.unit_code = '01jup'
@@ -33,6 +38,7 @@ const context = vm.createContext({
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
   readModelClient: { load: async (songCode, options) => {
+    if (cards.data.has(songCode?.url)) return cards.client.load(songCode, options)
     if (units.data.has(songCode?.url)) return units.client.load(songCode, options)
     if (songCode?.url?.startsWith('event:')) return events.client.load(songCode, options)
     const detail = { id: songCode, song: { song_code: songCode }, view: { id: songCode } }
@@ -40,17 +46,9 @@ const context = vm.createContext({
     return detail
   } },
   loadGashaDetail: async id => ({ id, gasha: { id } }),
-  loadCardDetail: async id => ({ id, card: { resource_id: id } }),
-  loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
+  unitReadModelStatus: { value: '' },
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
   archiveBootstrap: { idols: [{ id: '002sht', unitId: '1' }, { id: '003hok', unitId: '1' }], domains: units.bootstrap.domains },
-  openPrimaryCards: idolCode => {
-    context.captureDetailSource()
-    state.currentCategoryId.value = 'cards'
-    state.currentCharacterId.value = idolCode
-    state.currentCardId.value = ''
-    state.view.value = 'cards'
-  },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   mobileIdolReadModelDetail: { value: { view: { cardRefs: [card] } } },
@@ -60,9 +58,7 @@ const context = vm.createContext({
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource',
-  'openUnitCards', 'openIdolDomain',
-  'openCard', 'openGasha', 'openGashaCard',
-  'openRelatedCard']
+  'openIdolDomain', 'openGasha', 'openGashaCard']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
@@ -70,6 +66,7 @@ for (const name of handlers) {
 }
 bindIdolFixtureNavigation(app, context)
 bindUnitNavigation(app, context)
+bindCardNavigation(app, context)
 bindStoryNavigation(app, context).stop()
 bindEventNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()

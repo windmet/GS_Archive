@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -60,10 +61,12 @@ assert.deepEqual(filterArchiveCards(fixture, { relationState: 'unrelated' }), [f
 assert.deepEqual(filterArchiveCards(fixture, { relationState: 'event_card', eventRelations: { one: [] } }), [fixture[0]], 'existing empty relation array remains a present relation')
 assert.equal(JSON.stringify(fixture), before)
 assert.equal(filterArchiveCards(fixture)[0], fixture[0], 'filter must retain source object identity and order')
-const cardHeading = app.match(/const currentCardCharacterName = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
-assert.ok(cardHeading.includes('idolDisplayName(id)'), 'card heading follows the shared locale by stable idol identity')
+const projection = { currentCharacterId: { value: 'idol' }, currentCardId: { value: 'card' },
+  cardReadModelDetail: { value: { id: 'card', card: { release_series: { series_id: 'series' } } } },
+  cardReadModelCatalog: { value: [{ resource_id: 'card', character_id: 'idol', release_series_id: 'series' }] },
+  idolDisplayName: id => `localized:${id}`, idolSourceName: id => `original:${id}` }
+bindCardNavigation(app, projection)
+assert.equal(projection.currentCardCharacterName.value, 'localized:idol')
+assert.equal(projection.currentSeriesCards.value[0].character_name, 'original:idol')
 assert.match(app, /const bootstrapIdolSwitcher = computed\([\s\S]*?display_name: idolDisplayName\(idol.id\)/, 'switcher uses the same shared idol display names as its heading')
-const seriesCards = app.match(/const currentSeriesCards = computed\(\(\) => \{[^]*?\n\}\)/)?.[0] || ''
-assert.ok(seriesCards.includes('idolSourceName(card.character_id)'), 'card detail series keeps master-data idol names')
-assert.equal(seriesCards.includes('idolDisplayName(card.character_id)'), false, 'card detail series does not mix localized names with source identity')
 console.log(`Card filters: ${cards.length} normalized cards, ${cases} combinations, hash ${hash}; missing data, search, relation presence and input preservation passed`)

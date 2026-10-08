@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -40,7 +41,7 @@ function fixture() {
     openIdolReadModel: (...args) => { calls.push(['idol', ...args]); return 'idol-result' },
     loadScenario: (...args) => { calls.push(['scenario', ...args]); return 'scenario-result' },
   }
-  bindUnitNavigation(app, c)
+  bindUnitNavigation(app, c); bindCardNavigation(app, c)
   console.error = (...args) => errors.push(args)
   const hold = id => { const job = deferredUnit(); transport.jobs.set(`unit:${id}`, job); return job }
   return { c, calls, errors, ...transport, hold }

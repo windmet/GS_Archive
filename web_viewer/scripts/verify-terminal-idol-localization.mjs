@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindIdolNavigation } from './lib/idol-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -50,10 +51,8 @@ const owner = buildIdolReference(card.character_id, dictionary, manifest, `card:
 context.computed = computed
 context.currentCardId = ref(card.resource_id)
 context.cardReadModelDetail = shallowRef({ id: card.resource_id, card, ownerReference: owner })
-const ownerProjection = app.slice(app.indexOf('const currentCardOwnerReference = computed('),
-  app.indexOf('const currentCardAssetStatus = computed('))
-assert.ok(ownerProjection)
-const displayedOwner = vm.runInContext(`${ownerProjection}\ncurrentCardOwnerReference`, context)
+bindCardNavigation(app, context)
+const displayedOwner = context.currentCardOwnerReference
 const catalog = JSON.parse(read('public/data/song_catalog.json')).songs
 const playback = JSON.parse(read('public/data/song_playback_audio.json')).songs
 const experiments = JSON.parse(read('public/data/song_experimental_audio.json')).songs

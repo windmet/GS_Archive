@@ -354,3 +354,14 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 正向基线通过，14/14 内存错误变体被断言拦截：目录数量/身份/取消、详情身份/expectedId、facets 重试、内置属性、投影归属、三个入口计数、活动上下文、组合目录目标和页面准备。证据 `.analysis/card-boundary-mutations/results.json`；变体没有改写服务源码。旧卡片导航和关联导航 17 条生产边回归通过。
 - source batch **118/118** 通过，日志 `.analysis/card-boundary-source-batch.log`；覆盖清单检查通过。随后仅加强 facets 重试失败的断言类型，正向基线与全部反向变体再次通过。
 - 本批仅建立迁移前证据，尚未迁移卡片生产逻辑；未修改 App、组件模板、样式或播放行为，不重复构建或声称新增 Browser 验收。共享窗口正在修改门户两个组件及删除 `portal-bento.css`，原样保留，不纳入本批提交。下一步提取真实生产逻辑，并将 harness 改为执行 App 的真实 factory 参数和解构输出，补齐 restore/生命周期接线验收。
+
+### 卡片导航拆分（2026-10-08，输入 98ada14f）
+
+- 提取 `useCardNavigation`：15 个既有加载/导航函数、15 个 computed、共享请求计数、facets promise 以及 prepare/invalidate；37 个依赖、32 个输出。App 3064→2822 行，净减 242 行。`.analysis/card-diff-review.json` 确认迁移声明 AST 等价，模板/样式、统一 apply/Back/goHome、语音预览与恢复入口、原 unmount 不变；restore 仅委托 Card 分支和计数失效。
+- factory 放在 Unit 之后、Event 之前；Card→Event 使用延迟回调，较早初始化的 Mobile→Card loader 也改为延迟回调。内部属性/筛选函数随模块引入，HTTP fetch 通过 App 传输边界提供。全局缓存清理、视图 watcher、声音控制与其他跨域分派保留在 App。
+- harness 改为执行 App 实际 factory 参数和解构输出。旧卡片入口检查复用更完整的真实加载回归，并保留目录/剧情断言；因而新 verifier 现在经原 Card 源码门步骤执行，移除重复 batch 登记，覆盖没有减少。适配各 restore fixture、关联导航、卡片筛选、集合入口及本地化投影检查，关联检查使用真实卡片叶子传输。
+- 新增实际 App restore 的目录/详情/播放器父卡成功、未知卡回退、旧成功/旧失败竞争、直接播放器零父卡加载，及私有失效、初始化顺序、Mobile/Event 延迟回调检查。正向基线与 **20/20** 内存错误变体通过，记录 `.analysis/card-mutations/results.json`；变体没有改写服务源码。
+- source batch **117/117**、完整 reading、player repair **37/37**、卡片真实加载/关联导航/启动/过滤/集合/本地化回归通过。`build:check` 通过（20.29 秒），输出仅 `.analysis/build-check`，不复制 public。日志 `.analysis/card-{source-batch,reading,player-repair,build-check}.log`。第一次构建因 translations manifest 写入失败停止，重试成功；最终构建记录不代表完整资源包。
+- 5175 Browser：1280 宽度卡片目录与 390×844 冬马首张 SSR 详情和拆分前布局/文字一致。手机下一张→关联卡池→返回、所属偶像→返回卡片→原目录通过；桌面 SSR 筛选→首张详情→触摸语音演出预览出现实际 1/1 台词→返回详情→返回保留 SSR 筛选通过。新标签页恢复该筛选，console error 为 0；切翔太后筛选按原行为重置。演出证据仅证明页面/导航与台词呈现，不代表音频解码或长稳验收。
+- 开发中第一次模块落盘曾因 Mobile 过早引用 Card loader 触发 HMR 初始化错误；延迟接线修正、上述源码回归和全新 Browser 页面已验证恢复。没有把开发期错误计为最终页面无错误，也没有改动样式、译文、部署、上传或重启服务。其他窗口的门户组件、设计令牌基线及 CSS 删除保留在其原有暂存状态。固定提交的完整源码门随后补录。
+- 最终补测：三个入口分别在全局失效和卸载时均禁止发布，Card 入口检查通过。Browser 的 Jupiter 查看卡片→三人成员目录→返回组合通过，新标签页 console error 仍为 0；临时视口已重置、标签页已关闭。UI 待办仅记录：中文模式组合卡片目录的搜索提示仍为 `Search card idol...`，本批未修改。

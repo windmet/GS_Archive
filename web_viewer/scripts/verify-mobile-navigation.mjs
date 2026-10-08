@@ -1,3 +1,4 @@
+import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
@@ -26,7 +27,8 @@ for (const node of body) {
   if (node.type === 'FunctionDeclaration') defined.set(node.id.name, -1)
   for (const d of node.declarations || []) for (const name of names(d.id)) defined.set(name, d.start)
 }
-for (const p of binding.init.arguments[0].properties) assert.ok(defined.get(p.value.name) < binding.start, `${p.key.name} initialized before mobile factory`)
+for (const p of binding.init.arguments[0].properties) if (p.value.type === 'Identifier')
+  assert.ok(defined.get(p.value.name) < binding.start, `${p.key.name} initialized before mobile factory`)
 const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b }); return { promise, resolve, reject } }
 const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve() }
 function fixture() {
@@ -69,7 +71,7 @@ function restoreFixture() {
     applyArchiveRoute: async route => { t.calls.push(['apply', route]); c.view.value = route.view },
   })
   bindLegacyAliasNavigation(app, c).stop()
-  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindIdolFixtureNavigation(app, c)
+  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindIdolFixtureNavigation(app, c)
   const node = body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'restoreRoute')
   const source = script.slice(node.start, node.end)
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
