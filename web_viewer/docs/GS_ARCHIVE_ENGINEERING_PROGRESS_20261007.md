@@ -417,3 +417,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 最终证据目录 `E:\Web_build\GS_Archive_engineering_20261007\gate-3b40cf01-final\` 保留逐项日志、`results.json`、`generated-audit.diff`、`gasha-diff-review.json`、`mutation-results.json` 和 `cleanup.json`。首轮 `gate-558955ba-final` 的 113/1/1 原始结果单独保留；没有覆盖失败证据。
 - 同一临时检出已移除，node_modules junction 已断开，主工程依赖仍在。清理记录：C 盘可用 **48.39 GiB**，5175 仍为原 PID **74640**。只做源码门与本地开发服务交互验收，未发布、上传或重启。
 - 完成时共享 App 又出现收藏目录 `@open-idol` 接线改动，属于另一窗口；原样保留，未暂存。最终门证明固定 `3b40cf01`，不替其他窗口后续改动背书。下一批按前述资源状态边界推进，先补真实加载回归再迁移。
+
+
+### 资源状态迁移前的真实加载回归（2026-10-08，输入 92f568d7）
+
+- `resource-navigation-harness.mjs` 共同执行 App 的 `loadResourceStatus`、`openArchiveStatus` 和实际私有计数，替换边界只到 ReadModelClient 传输及页面准备。原 verifier 入口和门登记不变，没有另增一份替身 loader 测试。
+- 验证 index→page→detail 的描述符顺序、signal/priority 传递、目录 count/页数、archive-status 行身份/描述符、双处 expectedId，以及 manifest.coverage、verification.scenarios、uiAssets.meta 必需字段。loader 不发布 payload，也不缓存；该既有边界显式保留。
+- 使用真实导航协调器验证迟到成功/失败、共享失效/卸载和信号撤销；传输刻意允许取消后返回，确保发布守卫独立有效。另隔离全局 revision 验证私有计数、三阶段失败重试和页面准备屏障。进入时 Portal 来源保留、其他来源清空及五项筛选重置均覆盖。
+- 正向基线及 **17/17** 内存错误变体通过，证据 `.analysis/resource-boundary-mutations/results.json`；没有改写运行时源码。本批未改 App、UI、译文或媒体行为，不需要重复编译和 Browser 验收。模块迁移与 apply 内深链接接线留在下一批。
+- 当前源码批次 **118/118** 通过（共享工作区新增检查已纳入现有名单），日志 `.analysis/resource-boundary-source-batch.log`；资源状态 verifier 单独通过。只提交本批 harness、verifier 和记录，其他窗口修改保留。
