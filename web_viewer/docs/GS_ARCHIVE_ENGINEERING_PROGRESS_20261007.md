@@ -165,3 +165,4 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 5175 Browser：390×844 与 1280×900 的歌曲详情前后对比布局和文案一致；桌面谱面在相同长轨模式与播放时间下保持一致。移动谱面布局/控件一致，但截图中的轨道滚动位置不同，不称逐像素一致；详情截图的一处焦点环来自键盘回顶操作。
 - 实际旅程：BRAND NEW FIELD 详情 → 谱面 → 搜索 DRIVE → DRIVE A LIVE → 返回原 BRAND NEW FIELD；工具 → 无预选歌曲的 61 首选择器 → 返回工具。标题、难度及来源均正确，console 无 error。此为现有 dev 服务的本地界面验收，未扩展为真实音频长稳或部署验收。
 - 5175 仍为原进程 74640，未重启；没有 R2 上传或完整媒体打包。下一批继续处理故事目录、章节、详情及外部入口的业务逻辑；需要 UI 或数据决策的已记录事项仍保留原边界。
+- 代码提交 `1168f0c4` 已推送。首轮干净 LF 门为 112 通过、2 失败、1 跳过；两处失败均来自 `scripts/repair/player-entry.test.mjs` 的路由夹具漏接新歌曲模块。补用实际 App 调用与 `bindSongNavigation`，没有添加空函数替身或修改生产行为。定向 `verify:story-loading-safety` 与 `verify:player-repair`（37/37）通过；内存副本移除过期父页保护时，原断言准确发现旧详情被发布，生产源码哈希未变。证据在主检出 `.analysis/song-fixture-repair-20261008/`，首轮全门与审计差异保存在 `E:\Web_build\GS_Archive_engineering_20261007\gate-1168f0c4-final\`；完整门将对修复后的提交重跑。
