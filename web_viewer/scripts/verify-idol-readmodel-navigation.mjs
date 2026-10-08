@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse as parseJavascript } from '@babel/parser'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const start = app.indexOf('async function openIdolReadModel(')
@@ -85,9 +87,13 @@ function setup() {
   assert.equal(t.context.idolReadModelDetail.value, null, 'late detail must not replace a newer route')
 }
 {
-  const detailStart = app.indexOf('const currentIdolDetail = computed(')
-  const detailEnd = app.indexOf('const readingState = ref(', detailStart)
-  assert.ok(detailStart >= 0 && detailEnd > detailStart)
+  const script = parseSfc(app).descriptor.scriptSetup.content
+  const body = parseJavascript(script, { sourceType:'module' }).program.body
+  const projectionSource = ['currentIdolDetail','currentIdolProfile','currentIdolDisplayName','currentIdolStats','currentIdolEvents','currentIdolSongs'].map(name => {
+    const node = body.find(node => node.type === 'VariableDeclaration' && node.declarations.some(declaration => declaration.id.name === name))
+    assert.ok(node, `App declares ${name}`)
+    return script.slice(node.start,node.end)
+  }).join('\n')
   const context = vm.createContext({
     computed: fn => ({ get value() { return fn() } }),
     currentCharacterId: { value: '001tom' },
@@ -95,7 +101,7 @@ function setup() {
       profile: { display_name: '冬馬' }, stats: { chats: 20 }, events: [{ event_id: 1 }], songs: [{ song: { song_code: 'one' } }],
     } } },
   })
-  const projections = vm.runInContext(`${app.slice(detailStart, detailEnd)}\n;[currentIdolProfile, currentIdolStats, currentIdolEvents, currentIdolSongs]`, context)
+  const projections = vm.runInContext(`${projectionSource}\n;[currentIdolProfile, currentIdolStats, currentIdolEvents, currentIdolSongs]`, context)
   assert.equal(projections[0].value.display_name, '冬馬')
   assert.equal(projections[1].value.chats, 20)
   assert.equal(projections[2].value.length, 1)

@@ -13,6 +13,8 @@ import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { buildIdolProfile, eventsForIdol, songsForIdol } from '../src/data/idolPage.js'
 import { buildUnitCatalog } from '../src/data/unitPage.js'
 import { readCheckout } from '../readmodels/lib/checkout_adapter.mjs'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse as parseJavascript } from '@babel/parser'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const dictionary = JSON.parse(read('public/data/masterdata/idol_unit_dictionary.json'))
@@ -71,11 +73,17 @@ context.currentCharacterId = ref(profile.idol_code)
 context.idolReadModelDetail = shallowRef({ id: profile.idol_code, view: {
   profile, stats: {}, events: idolEvents, songs: idolSongs,
 } })
-const idolProjectionStart = app.indexOf('const currentIdolDetail = computed(')
-const idolProjectionEnd = app.indexOf('const readingState = ref(', idolProjectionStart)
-assert.ok(idolProjectionStart >= 0 && idolProjectionEnd > idolProjectionStart)
+const appScript = parseSfc(app).descriptor.scriptSetup.content
+const appDeclarations = parseJavascript(appScript, { sourceType: 'module' }).program.body
+  .filter(node => node.type === 'VariableDeclaration')
+const idolProjectionNames = ['currentIdolDetail', 'currentIdolProfile', 'currentIdolDisplayName', 'currentIdolStats', 'currentIdolEvents', 'currentIdolSongs']
+const idolProjectionSource = idolProjectionNames.map(name => {
+  const node = appDeclarations.find(declaration => declaration.declarations.some(item => item.id.name === name))
+  assert.ok(node, `App declares ${name}`)
+  return appScript.slice(node.start, node.end)
+}).join('\n')
 const [canonicalProfile, displayedProfileName] = vm.runInContext(
-  `${app.slice(idolProjectionStart, idolProjectionEnd)}\n;[currentIdolProfile, currentIdolDisplayName]`, context)
+  `${idolProjectionSource}\n;[currentIdolProfile, currentIdolDisplayName]`, context)
 assert.match(app, /<ArchiveIdolDetail\b[^>]*:idol-name="idolDisplayName"/,
   'App forwards the production display callback to the canonical profile consumer')
 assert.match(app, /<ArchiveEventDetail\b[^>]*:display-idol-name="idolDisplayName"/,

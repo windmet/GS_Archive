@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import vm from 'node:vm'
+import { createHash } from 'node:crypto'
 import { ref } from 'vue'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { useStoryPlaybackController } from '../../src/core/useStoryPlaybackController.js'
@@ -14,6 +15,7 @@ import { deferred, tick, until } from './helpers.mjs'
 import { bindSongNavigation } from '../lib/song-navigation-harness.mjs'
 import { bindStoryNavigation } from '../lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from '../lib/story-archive-navigation-harness.mjs'
+import { bindReaderNavigation, createReaderFixtureTransport } from '../lib/reader-navigation-harness.mjs'
 const scenario = { scenario_id: 'test', steps: Array.from({ length: 6 }, (_, i) => ({ step_id: i+1, type: 'adv', state: { bg: `bg${i}` } })) }
 const href = 'https://archive.invalid/?view=player&story_type=main&story_section=101&story=1_4_001_00.json&scenario=episodes%2F1_4_001_00_a.json&start_step=2&end_step=27&return=story_collection&from=%3Fview%3Dstory_catalog'
 function setup(options = {}) {
@@ -158,6 +160,7 @@ function appHarness(t, overrides = {}) {
   bindSongNavigation(appSource, context).stop()
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
+  bindReaderNavigation(appSource, context).stop()
   return { context, writes }
 }
 
@@ -194,11 +197,32 @@ test('actual App.vue establishes intent BEFORE awaited parent hydrate; stale suc
   t.controller.dispose()
 })
 
-test('Reader and synthetic preview are excluded from raw shortcut; existing revision proof is kept', () => {
+test('Reader and synthetic preview are excluded from raw shortcut; actual Reader rejects forged source and position', async () => {
   const route = readArchiveRoute(href)
   assert.equal(isDirectScenarioEntry({ ...route, returnView: 'reader' }), false)
   assert.equal(isDirectScenarioEntry({ view: 'player', card: '001tom_sr07', voice: 'touch01' }), false)
-  assert.match(appSource, /route\.scenario !== target\.file/)
-  assert.match(appSource, /route\.initialStep !== target\.initialStep/)
-  assert.match(appSource, /readingPlaybackTarget\(readingState\.value\.document/)
+  const transport = createReaderFixtureTransport()
+  const document = JSON.parse(await readFile(new URL('../../public/data/reading/1_4_001_01_d.json', import.meta.url), 'utf8'))
+  document.source = { file:'reader-proof.json', sha256:`sha256:${createHash('sha256').update(JSON.stringify(scenario)).digest('hex')}`, step_count:scenario.steps.length }
+  document.playback = { file:document.source.file,start_step_index:0,end_step_index:scenario.steps.length-1 }
+  document.rows = document.rows.slice(0,1)
+  document.rows[0].anchor.step_id=1;document.rows[0].anchor.step_index=0;document.rows[0].visual.stepId=1
+  document.controls=[]
+  const entry=transport.register(document)
+  const restoreFetch=transport.install(), t=setup()
+  try {
+    const h=appHarness(t,{readModelClient:transport.readModelClient})
+    const pinned={view:'player',returnView:'reader',reading:document.document_id,readingRow:document.rows[0].anchor.row_id,
+      readingRev:entry.sha256,scenario:document.source.file,startStep:1,endStep:document.source.step_count,initialStep:1}
+    for(const forged of [{scenario:'wrong-source.json'}, {initialStep:2}, {readingRev:`sha256:${'0'.repeat(64)}`}]) {
+      await h.context.applyEntry({...pinned,...forged})
+      assert.equal(t.state.view.value,'reader')
+      assert.equal(t.controller.currentScenario.value,null)
+      assert.equal(t.prepared.length,0,'invalid Reader proof is rejected before scenario preparation')
+      assert.match(h.context.readingPlaybackNotice.value,/范围与正文定位不一致|版本已变化/)
+    }
+    await h.context.applyEntry(pinned)
+    assert.equal(t.state.view.value,'player','same actual App path accepts a valid Reader proof')
+    assert.equal(t.prepared.length,1)
+  } finally { t.controller.dispose();restoreFetch() }
 })

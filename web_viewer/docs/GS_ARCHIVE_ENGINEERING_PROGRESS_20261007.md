@@ -202,3 +202,16 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 建议一次提取 `useReaderNavigation`：17 个既有入口/阅读/播放/续读函数、4 个功能状态 ref、2 个 computed、repository 与两种 session，再通过 `applyReaderRoute` 和 `loadReaderQueue` 接回 App 原有分派位置。URL refs、跨域队列和恢复事务仍由 App 统一持有。没有新增 watcher 或卸载清理的理由，保留章节 session 原有 close 时机。
 - factory 可放原 Reader 状态初始化位置；更早的播放器 `resolveReaderSource` 和通用故事 `openStoryReader` 必须延迟读取。新回归需检查真实初始化和闭包，不能沿用旧 Reading 夹具在创建后替换 session/repository/ref 对象的做法。重点适配 reading-navigation、reading-playback、player-entry，以及把 `readingState` 当切片终点的 terminal-idol-localization；一并核对 async/startup/portal 调度。
 - 本轮只完成上述盘点，并保留冬马第 2 话 EP05 Reader 的 390/1280 可见基线；桌面与移动截图阅读滚动位置不同，后续对照需分别恢复同一位置。尚未修改 Reader 生产逻辑。
+
+## 2026-10-08 App.vue 继续拆分：Reader 会话与导航
+
+- 输入 `9f96acb8`，提取 `useReaderNavigation`：17 个原函数、4 个状态 ref、2 个 computed、ReadingRepository 与单篇/整话 session；另以 `applyReaderRoute`、`loadReaderQueue` 承接原 App 分支。App 从 4137 行降至 3843 行，净减 294 行。独立 AST 检查确认原函数、9 个声明、Reader 分支及队列兜底的原有逻辑一致，其他路由/队列分支和模板/样式不变；42 个依赖和 25 个 App 输出完成接线。
+- 更早初始化的播放控制器和通用故事模块通过延迟回调读取 Reader 续播来源与入口。repository 和单篇 session 成为领域内部实例，URL refs、导航协调器、全局恢复/销毁仍由 App 持有；未新增 watcher、卸载动作或改变章节 session 的关闭时机。
+- 新增 `verify-reader-navigation.mjs` 并纳入 source batch：真实 App 初始化/解构、Reader 路由和队列分派、通用故事入口及控制器续播回调都实际执行；使用真实 ReadModelClient、ReadingRepository、两种 session 和播放控制器。默认使用带匹配摘要的 synthetic compiled，保持干净源码检出可执行；`--local-sources` 另行通过仓库现有编译语料。媒体组件/预载为明确边界，不能把该测试称为音频播放验收。
+- 5 项旧检查使用真实 Reader harness，或把偶像 computed 的位置哨兵改为实际声明的 AST 提取；保留原场景断言。检查范围含阅读导航/播放、播放器入口、偶像详情与终端本地化，关联异步/启动/门户检查也通过。初始化不预先塞入 Reader 占位函数，harness 只暴露 App 实际解构的输出。
+- 基线通过，**20/20 错误变体**均触发断言：活动分段发布、领域投影、刷新失效、可选目录失败、跨目录复用、陈旧目录发布、章节定位版本、切话来源、返回 scope/work mode、播放范围、相邻话目/来源版本、无效正文行、队列文件，以及 App 两处分派、缺输出和两处延迟回调。记录在主检出 `.analysis/engineering-20261008-reader-navigation/results.json`；AST 证据为同目录 `diff-review.json`。变体只在 E 盘 QA 脚本与内存 data URL 中运行，没有改写服务中的源码。
+- 5175 Browser：新取得相同正文起点的冬马第 2 话 EP05 基线；390×844 和 1280×900 前后布局与文字肉眼一致。刷新正文、单篇 → 实际演出帧（6/41）→ 原正文通过。原用户链接恢复到主线第 7 话 EP10（5/47），桌面返回整话并切到第 8 话；隔离后台标签页复核手机话目菜单切换、返回目录保留第 8 话 URL/展开、再次进入及 EP01→EP02 正文切换均正确。
+- 故意使用过期 `reading_rev` 后显示版本提示，“重新载入正文”清除旧绑定并保留来源。原标签页在操作间隙曾发生其他章节选择变化；隔离标签页未复现，不将该现场归因于共享视图恢复。个人单篇的快速定位按钮空标签在拆分前后均存在，作为后续 UI/投影检查线索保留，本批不更改。
+- 原用户链接首次进入曾显示“语音未载入 · 重试”，点击后提示消失；隔离标签页的直接进入也出现首段提示。仅凭界面不能区分首次播放策略与资源/解码原因，未据此宣称声音或长期稳定性通过。Reader 回归无 console error；Pixi Spine 的现有 warning 不计为本次新增错误。
+- 独立复核发现旧迟到目录检查的正文身份与夹具不匹配，可能让错误发布也得到 null；已改为匹配身份，内存移除发布守卫后该旧断言准确失败，生产代码未改。最终 source batch **111/111**、完整 reading、`verify:story-loading-safety`、`verify:player-repair`（37/37）均通过；旧夹具修复后重跑完整 reading，通过记录为 `reader-reading-final-20261008.log`。
+- 本批复用原 5175 进程 74640；没有重启、R2 上传、部署或完整 public 打包。`build:check` 通过（20.59 秒），输出仍为 `.analysis/build-check`。日志放在 `E:\Web_build\GS_Archive_engineering_20261007\reader-{build,reading,batch}-20261008.log`；完整源码门结果随后补录。共享工作区的 B015 译文、索引、审计和检查脚本改动保留，未纳入本批。
