@@ -304,3 +304,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 正向基线通过，8/8 内存错误变体被断言拦截：目录名称、数量、取消、profile 身份、请求归属、投影身份、活动上下文清理、selection 分派。证据 `.analysis/idol-boundary-mutations/results.json`；变体没有写入服务源码。旧 idol-readmodel-navigation 与 archive-relation-navigation 回归也通过。
 - 本批先建立迁移前行为证据，尚未提取 `useIdolNavigation`；生产代码、模板和样式均未修改，因此不重复构建或声称新增 Browser 验收。其他窗口提交的 `0400c47c` 及后续门户 UI 编辑保留，不属于本批验收。下一步迁移上述生产逻辑，并将 harness 改为执行 App 的真实 factory 参数和解构输出，再验证恢复与生命周期接线。
 - 当前共享工作区 source batch **115/116**：仅 `verify-design-tokens.mjs` 失败，指出正在编辑的 `ArchivePortalOverview.vue`（4 处 box-shadow）与 `PortalCardBento.vue`（background、box-shadow）使用 `--gs-ink`。只在内存中用 `0400c47c` 对应两份文件作对照，同一检查通过，未改写、还原或暂存这两份 UI 文件。日志 `.analysis/idol-boundary-source-batch.log`、`.analysis/idol-boundary-design-head.log`。不能将该对照写作当前共享工作区全绿；新增回归及最终反向检查已单独重跑通过。
+
+### 偶像档案导航拆分（2026-10-08，输入 6755824a）
+
+- 提取 `useIdolNavigation`：6 个既有导航/加载函数、6 个身份隔离 computed、详情 watcher 处理器、私有请求计数及 prepare/invalidate；22 个依赖、15 个输出。App 3257→3159 行，净减 98 行。factory 位于 Home 之后、Legacy/Event/Song 之前，初始化依赖顺序已检查。
+- AST 对照确认迁移函数、computed、请求计数与 watcher body 等价；模板/样式、apply/Back/goHome、openIdol/openIdolDomain 跨域分派以及原 unmount 不变；restore 仅替换原偶像 prepare 分支与计数失效调用。证据 `.analysis/idol-diff-review.json`。无效偶像仍去 profile picker，加载失败仍回偶像目录；直接播放器不加载父偶像。
+- 上一批真实加载 harness 改为执行 App 实际 factory 参数与解构输出；旧导航、通信 watcher、目录 UX、关联跳转、启动/播放器恢复及本地化投影检查同步适配，内部偶像 loader 不再使用旧 stub。恢复夹具保留同一个客户端对象，避免测试中的取消包装与模块引用分离。跨域入口未返回异步请求的既有语义不变，关联检查在请求完成后观察结果。
+- 新增实际 restore 的成功、未知身份、失败回退、旧成功/旧失败竞争及直接播放器零父页请求；实际 unmount 验证卸载后不发布。正向基线通过，14/14 内存错误变体被断言拦截，覆盖目录名称/数量/取消、profile 身份、请求归属、投影身份、上下文清理、selection、私有失效、无效恢复/过期恢复、App 恢复采纳、watcher 接线和卸载 dispose。证据 `.analysis/idol-mutations/results.json`；变体没有写服务源码。
+- source batch 116/116、完整 reading、player repair 37/37、独立偶像/关联导航及终端偶像本地化检查通过；新增卸载断言后的基线和反向检查再次通过。`build:check` 通过（21.42 秒），输出固定 `.analysis/build-check`，不复制 public。日志 `.analysis/idol-{source-batch-final,reading,player-repair,localization,build-check}.log`。
+- 5175 Browser：1280 宽度冬马详情迁移前后布局/文字一致；下一位切翔太、刷新恢复、电话通信 6 条入口及返回详情通过。390×844 选择器切北斗、URL 更新，再用全新标签页直接恢复北斗详情通过；控制台无 error，无白屏或框架 overlay。临时视口已重置、标签页关闭。这是页面/导航验收，不代表语音解码、长稳或发布验收。
+- 本批没有修改组件模板、样式、文案或译文，没有重启、部署、R2 上传或完整资源打包。其他窗口已提交 `5a249b0f` 门户令牌调整，及其后续翻译审计改动均保留；此前共享工作区设计令牌失败已由该窗口处理，最终 batch 通过。固定提交的完整干净源码门随后补录。

@@ -1,3 +1,4 @@
+import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
 import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
@@ -67,7 +68,7 @@ function restoreFixture() {
     applyArchiveRoute: async route => { t.calls.push(['apply', route]); c.view.value = route.view },
   })
   bindLegacyAliasNavigation(app, c).stop()
-  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop()
+  bindSongNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindIdolFixtureNavigation(app, c)
   const node = body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'restoreRoute')
   const source = script.slice(node.start, node.end)
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0

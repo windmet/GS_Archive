@@ -661,6 +661,7 @@ import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigati
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { useStoryNavigation } from './composables/useStoryNavigation.js'
 import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { useIdolNavigation } from './composables/useIdolNavigation.js'
 import { useHomeNavigation } from './composables/useHomeNavigation.js'
 import { useEventNavigation } from './composables/useEventNavigation.js'
 import { useLegacyAliasNavigation } from './composables/useLegacyAliasNavigation.js'
@@ -923,7 +924,6 @@ const songReadModelStatus = ref('')
 const idolReadModelCatalog = shallowRef(null)
 const idolReadModelDetail = shallowRef(null)
 const idolReadModelStatus = ref('')
-let pendingIdolNavigation = 0
 const unitReadModelCatalog = shallowRef(null)
 const unitReadModelDetail = shallowRef(null)
 const unitReadModelStatus = ref('')
@@ -1073,6 +1073,20 @@ const {
   portalFrom, detailSourceRoute, navigation, archiveBootstrap,
   readModelClient, currentArchiveRoute, openIdolPicker, commitView,
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+})
+
+const {
+  openPrimaryIdol, openIdolReadModel, openIdolDirectory, selectPrimaryIdol,
+  loadIdolCatalog, loadIdolDetail, currentIdolDetail, currentIdolProfile,
+  currentIdolDisplayName, currentIdolStats, currentIdolEvents, currentIdolSongs,
+  handleIdolDetailChange, prepareIdolRoute, invalidateIdolNavigation,
+} = useIdolNavigation({
+  idolReadModelCatalog, idolReadModelDetail, idolReadModelStatus, currentCharacterId,
+  currentEventId, eventParentView, currentCategoryId, currentGroup,
+  currentArchiveUnitCode, currentCardId, filterQuery, view,
+  loading, currentIdolUnitFilter, navigation, archiveBootstrap,
+  readModelClient, openIdolPicker, captureDetailSource, commitArchiveSelection,
+  commitView, idolDisplayName,
 })
 
 // The 担当 colour takes over the stage light when the producer opts in. The role tokens
@@ -1407,15 +1421,6 @@ const currentCardCharacterName = computed(() => {
   return id ? idolDisplayName(id) : '全部卡片'
 })
 
-const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view : null)
-const currentIdolProfile = computed(() => currentIdolDetail.value?.profile || null)
-const currentIdolDisplayName = computed(() => currentIdolProfile.value
-  ? idolDisplayName(currentIdolProfile.value.idol_code, currentIdolProfile.value.display_name)
-  : '')
-const currentIdolStats = computed(() => currentIdolDetail.value?.stats || {})
-const currentIdolEvents = computed(() => currentIdolDetail.value?.events || [])
-const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
 
 const {
   readingState, chapterReadingState, readingPlaybackNotice, readingCatalogEntries, readingChapterNavigation, chapterReadingSession,
@@ -2404,53 +2409,8 @@ function goBackToCards() {
   commitView('cards')
 }
 
-function openPrimaryIdol(idolCode = '') {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('profile')
-  return openIdolReadModel(idolCode, { resetContext: true })
-}
 
-async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false, clearUnit = false, clearEventContext = false } = {}) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  const request = ++pendingIdolNavigation
-  const revision = navigation.getRevision()
-  idolReadModelStatus.value = '正在读取偶像档案…'
-  loading.value = true
-  let detail
-  try {
-    detail = await loadIdolDetail(idolCode)
-  } catch (error) {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[IdolReadModel] Failed to load idol detail:', error)
-    idolReadModelStatus.value = '偶像档案暂时无法读取，请重试。'
-    return
-  }
-  if (request !== pendingIdolNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  idolReadModelDetail.value = detail
-  idolReadModelStatus.value = ''
-  if (captureSource) captureDetailSource()
-  if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
-  if (resetContext) {
-    currentCategoryId.value = 'idol'
-    currentGroup.value = null
-  }
-  if (clearUnit) currentArchiveUnitCode.value = ''
-  currentCharacterId.value = idolCode
-  currentCardId.value = ''
-  filterQuery.value = ''
-  if (selection && view.value === 'idol_detail') commitArchiveSelection()
-  else commitView('idol_detail')
-}
 
-function openIdolDirectory() {
-  filterQuery.value = ''
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = ''
-  currentIdolUnitFilter.value = ''
-  currentGroup.value = null
-  currentCardId.value = ''
-  commitView('idols')
-}
 
 function openPrimaryCards(idolCode = '', { captureSource = false, rarity = 'all', attribute = 'all' } = {}) {
   const request = ++pendingCardNavigation
@@ -2480,10 +2440,6 @@ function openPrimaryCards(idolCode = '', { captureSource = false, rarity = 'all'
   })
 }
 
-function selectPrimaryIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  return openIdolReadModel(idolCode, { selection: true })
-}
 
 function selectCardIdol(idolCode) {
   if (idolCode !== '' && !archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
@@ -2814,31 +2770,7 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-async function loadIdolCatalog(options = navigation.getLoadOptions?.() || {}) {
-  if (idolReadModelCatalog.value) return idolReadModelCatalog.value
-  return (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.idols, options)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || rows.length !== archiveBootstrap.idols.length ||
-        rows.some((row, position) => row.id !== archiveBootstrap.idols[position].id ||
-          row.name !== archiveBootstrap.idols[position].name || !row.detail))
-        throw new Error('Idol catalog does not match inline bootstrap')
-      options.signal?.throwIfAborted()
-      idolReadModelCatalog.value = Object.fromEntries(rows.map(row => [row.id, row]))
-      return idolReadModelCatalog.value
-  })()
-}
 
-async function loadIdolDetail(idolCode, options = navigation.getLoadOptions?.() || {}) {
-  const row = (await loadIdolCatalog(options))[idolCode]
-  if (!row) throw new Error(`Unavailable idol: ${idolCode}`)
-  return readModelClient.load({...row.detail,expectedId: idolCode}, { ...options, expectedId: idolCode, validate: data => {
-    if (data.view?.profile?.idol_code !== idolCode || !data.view?.stats ||
-      !Array.isArray(data.view?.events) || !Array.isArray(data.view?.songs))
-      throw new Error('Idol detail identity or shape mismatch')
-  } })
-}
 
 async function loadUnitCatalog(options = navigation.getLoadOptions?.() || {}) {
   if (unitReadModelCatalog.value) return unitReadModelCatalog.value
@@ -2976,7 +2908,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
     primeArchiveRouteComponent(route.view)
     invalidateSongNavigation()
     invalidateHomeNavigation()
-    ++pendingIdolNavigation
+    invalidateIdolNavigation()
     ++pendingUnitNavigation
     ++pendingGashaNavigation
     ++pendingCardNavigation
@@ -3001,23 +2933,9 @@ async function restoreRoute(route, { restoring = true } = {}) {
       const preparedMobileRoute = await prepareMobileRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
       if (!preparedMobileRoute) return
       route = preparedMobileRoute
-      if (route.view === 'idol_detail' && route.idol) {
-        if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
-          route = { view: 'idol_picker', pickTarget: 'profile' }
-        } else {
-          try {
-            const detail = await loadIdolDetail(route.idol)
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            idolReadModelDetail.value = detail
-            idolReadModelStatus.value = ''
-          } catch (error) {
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            console.error('[IdolReadModel] Failed to restore idol detail:', error)
-            idolReadModelStatus.value = '偶像档案暂时无法读取，请重新选择。'
-            route = { view: 'idols', category: 'idol' }
-          }
-        }
-      }
+      const preparedIdolRoute = await prepareIdolRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
+      if (!preparedIdolRoute) return
+      route = preparedIdolRoute
       if (route.view === 'unit_catalog' || route.view === 'unit_detail' ||
           (route.view === 'player' && route.returnView === 'unit_detail')) {
         try {
@@ -3178,23 +3096,7 @@ watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
 
 watch(homeSelectedId, handleHomeIdolChange)
 
-watch([view, currentCharacterId], ([nextView, idolCode]) => {
-  if (nextView !== 'idol_detail' || !idolCode || idolReadModelDetail.value?.id === idolCode) return
-  const request = ++pendingIdolNavigation
-  const revision = navigation.getRevision()
-  idolReadModelStatus.value = '正在读取偶像档案…'
-  loadIdolDetail(idolCode).then(detail => {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
-      navigation.isDisposed() || view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
-    idolReadModelDetail.value = detail
-    idolReadModelStatus.value = ''
-  }).catch(error => {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
-      view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
-    console.error('[IdolReadModel] Failed to restore idol detail:', error)
-    idolReadModelStatus.value = '偶像档案暂时无法读取，请返回后重试。'
-  })
-})
+watch([view, currentCharacterId], handleIdolDetailChange)
 
 watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)

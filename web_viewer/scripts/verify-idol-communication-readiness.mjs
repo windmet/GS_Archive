@@ -1,3 +1,4 @@
+import { bindIdolNavigation, createIdolFixtureTransport, idolFixtureDetail } from './lib/idol-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { createIdolCommunicationReadiness } from '../src/data/idolCommunicationReadiness.js'
@@ -65,20 +66,28 @@ assert.ok(start >= 0 && end > start, 'production idol-detail watcher must be ava
 const scope = effectScope()
 const loads = []
 const errors = []
+const transport = createIdolFixtureTransport()
 const state = {
+  archiveBootstrap: transport.bootstrap,
   ref, watch, view: ref('portal'), currentCharacterId: ref(''),
   idolReadModelDetail: ref(null), idolReadModelStatus: ref(''), pendingIdolNavigation: 0,
   navigation: createArchiveNavigationCoordinator(),
-  loadIdolDetail: id => {
-    let resolve, reject
-    const promise = new Promise((yes, no) => { resolve = yes; reject = no })
-    loads.push({ id, resolve, reject })
-    return promise
-  },
+  readModelClient: { load(descriptor, options) {
+    if (descriptor.url.startsWith('idol:')) {
+      const id = descriptor.url.slice(5)
+      let resolve, reject
+      const promise = new Promise((yes, no) => { resolve = yes; reject = no })
+      loads.push({ id, resolve, reject }); transport.jobs.set(descriptor.url, { promise })
+    }
+    return transport.client.load(descriptor, options)
+  } },
   idolCommunicationReadiness: { enter: () => { throw Error('legacy communication fetch is forbidden') } },
   console: { error: (...args) => errors.push(args) },
 }
-const flush = async () => { await nextTick(); await Promise.resolve(); await Promise.resolve() }
+bindIdolNavigation(app, state)
+const originalError = console.error
+console.error = state.console.error
+const flush = async () => { await nextTick(); await new Promise(resolve => setImmediate(resolve)) }
 const enter = async (id, view = 'idol_detail') => {
   state.currentCharacterId.value = id
   state.view.value = view
@@ -93,10 +102,10 @@ try {
   assert.equal(loads[0].id, '001tom')
   assert.ok(state.idolReadModelStatus.value)
   await enter('002sht')
-  loads[0].resolve({ id: '001tom' })
+  loads[0].resolve(idolFixtureDetail('001tom'))
   await flush()
   assert.equal(state.idolReadModelDetail.value, null, 'stale detail must not publish')
-  loads[1].resolve({ id: '002sht' })
+  loads[1].resolve(idolFixtureDetail('002sht'))
   await flush()
   assert.equal(state.idolReadModelDetail.value?.id, '002sht')
   assert.equal(state.idolReadModelStatus.value, '')
@@ -110,18 +119,19 @@ try {
   assert.match(state.idolReadModelStatus.value, /重试/)
   await enter('', 'portal')
   await enter('001tom')
-  loads[3].resolve({ id: '001tom' })
+  loads[3].resolve(idolFixtureDetail('001tom'))
   await flush()
   assert.equal(state.idolReadModelDetail.value?.id, '001tom', 'returning retries a failed leaf')
   for (const invalidate of [() => state.navigation.invalidate(), () => state.navigation.dispose()]) {
     await enter('002sht')
     invalidate()
-    loads.at(-1).resolve({ id: '002sht' })
+    loads.at(-1).resolve(idolFixtureDetail('002sht'))
     await flush()
     assert.equal(state.idolReadModelDetail.value?.id, '001tom', 'invalidated navigation must not publish')
     await enter('', 'portal')
   }
 } finally {
   scope.stop()
+  console.error = originalError
 }
 console.log('Idol communication readiness utility races and production leaf cutover passed')

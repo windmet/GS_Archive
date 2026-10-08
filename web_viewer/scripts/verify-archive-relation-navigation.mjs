@@ -1,3 +1,4 @@
+import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindEventNavigation, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
 import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
@@ -64,7 +65,7 @@ const context = vm.createContext({
   commitView: view => { state.view.value = view },
 })
 const handlers = ['captureDetailSource',
-  'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
+  'openUnitMember', 'openUnitCards', 'openIdolDomain',
   'openCard', 'openGasha', 'openGashaCard',
   'openRelatedCard']
 for (const name of handlers) {
@@ -72,6 +73,7 @@ for (const name of handlers) {
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
+bindIdolFixtureNavigation(app, context)
 bindStoryNavigation(app, context).stop()
 bindEventNavigation(app, context).stop()
 bindSongNavigation(app, context).stop()
@@ -111,6 +113,9 @@ for (const [view, handler, arg, target] of fixtures) {
   state.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'song_catalog', query: 'BRAND' })
   const before = roundTrip(state.currentArchiveRoute())
   await context[handler](arg)
+  // Some production cross-domain dispatchers intentionally do not return their
+  // async leaf load. Observe after that real request has had a turn to settle.
+  await new Promise(resolve => setImmediate(resolve))
   const after = roundTrip(state.currentArchiveRoute())
   assert.equal(after.view, target, handler)
   assert.deepEqual(source(after), before, `${handler}: exact prior identity, filters and ancestors`)

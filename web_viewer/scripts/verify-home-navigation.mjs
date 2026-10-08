@@ -1,3 +1,4 @@
+import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -47,6 +48,7 @@ function fixture() {
 }
 function restoreFixture() {
   const t = fixture(), c = t.c
+  bindIdolFixtureNavigation(app, c)
   bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop(); bindEventNavigation(app, c).stop()
   bindLegacyAliasNavigation(app, c).stop(); bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   Object.assign(c, { loadingPurpose: ref(''), playbackError: ref(''), isDirectScenarioEntry,

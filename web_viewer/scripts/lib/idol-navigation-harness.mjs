@@ -1,27 +1,24 @@
 import assert from 'node:assert/strict'
 import vm from 'node:vm'
-import { computed, ref, isRef } from 'vue'
+import { ref, isRef } from 'vue'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse as parseJavascript } from '@babel/parser'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNavigationCoordinator.js'
+import { useIdolNavigation } from '../../src/composables/useIdolNavigation.js'
 
-// Execute the current App declarations together: internal loaders and the request
-// counter must not be replaced by fixture callbacks at this boundary.
+// Execute App's complete factory call and expose only its actual destructuring.
 export function bindIdolNavigation(app, context = {}) {
   const script = parseSfc(app).descriptor.scriptSetup.content
   const body = parseJavascript(script, { sourceType: 'module' }).program.body
-  const functions = ['openPrimaryIdol', 'openIdolReadModel', 'openIdolDirectory',
-    'selectPrimaryIdol', 'loadIdolCatalog', 'loadIdolDetail']
-  const projections = ['currentIdolDetail', 'currentIdolProfile', 'currentIdolDisplayName',
-    'currentIdolStats', 'currentIdolEvents', 'currentIdolSongs']
-  const names = new Set([...functions, ...projections, 'pendingIdolNavigation'])
-  const nodes = body.filter(node => node.type === 'FunctionDeclaration' ? names.has(node.id.name)
-    : node.type === 'VariableDeclaration' && node.declarations.some(item => names.has(item.id.name)))
-  assert.equal(nodes.length, names.size, 'All production idol declarations are present')
+  const binding = body.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+    .find(node => node.init?.callee?.name === 'useIdolNavigation')
+  assert.ok(binding, 'App binds the real idol navigation factory')
+  const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(item => item.local.name === 'useIdolNavigation'))
+  assert.equal(imported?.source.value, './composables/useIdolNavigation.js')
   const unexpected = name => () => { throw new Error(`Unexpected idol fixture boundary: ${name}`) }
   const defaults = {
-    ...useArchiveNavigationState(), computed,
+    ...useArchiveNavigationState(),
     navigation: createArchiveNavigationCoordinator(), archiveBootstrap: { idols: [], domains: {} },
     readModelClient: { load: unexpected('readModelClient.load') },
     idolReadModelCatalog: ref(null), idolReadModelDetail: ref(null), idolReadModelStatus: ref(''),
@@ -30,15 +27,18 @@ export function bindIdolNavigation(app, context = {}) {
   }
   for (const name of ['openIdolPicker', 'captureDetailSource', 'commitArchiveSelection', 'commitView'])
     defaults[name] = unexpected(name)
-  Object.assign(context, { ...defaults, ...context })
+  Object.assign(context, { ...defaults, ...context, useIdolNavigation })
   for (const [key, value] of Object.entries(context)) {
     if (value && typeof value === 'object' && 'value' in value && !isRef(value)) context[key] = ref(value.value)
   }
-  const exposed = [...functions, ...projections]
-  const handlers = vm.runInNewContext(nodes.map(node => script.slice(node.start, node.end)).join('\n')
-    + `\n;({${exposed.join(',')}})`, context)
-  Object.assign(context, handlers)
-  return handlers
+  const handlers = vm.runInNewContext(script.slice(binding.init.start, binding.init.end), context)
+  const exposed = {}
+  for (const property of binding.id.properties) {
+    assert.ok(property.key.name in handlers, `App exports ${property.key.name}`)
+    exposed[property.value.name] = handlers[property.key.name]
+  }
+  Object.assign(context, exposed)
+  return exposed
 }
 
 export function idolFixtureDetail(id) {
@@ -74,4 +74,20 @@ export function deferredIdol() {
   let resolve, reject
   const promise = new Promise((yes, no) => { resolve = yes; reject = no })
   return { promise, resolve, reject }
+}
+
+// Restore fixtures retain their other domain transports; idol requests use real
+// catalog/leaf loading against an explicit fixture derived from their bootstrap.
+export function bindIdolFixtureNavigation(app, context) {
+  const bootstrap = context.archiveBootstrap || { idols: [], domains: {} }
+  const fixture = createIdolFixtureTransport(bootstrap.idols.map(idol => idol.id))
+  const rows = fixture.data.get('idol-page').rows
+  rows.forEach((row, index) => { row.name = bootstrap.idols[index].name })
+  const previousLoad = context.readModelClient?.load?.bind(context.readModelClient)
+  context.archiveBootstrap = { ...bootstrap, domains: { ...bootstrap.domains, idols: fixture.bootstrap.domains.idols } }
+  context.readModelClient ??= {}
+  context.readModelClient.load = (descriptor, options) => fixture.data.has(descriptor?.url)
+    ? fixture.client.load(descriptor, options) : previousLoad(descriptor, options)
+  bindIdolNavigation(app, context)
+  return fixture
 }

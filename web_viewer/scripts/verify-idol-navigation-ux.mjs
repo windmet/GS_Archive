@@ -1,3 +1,4 @@
+import { bindIdolNavigation } from './lib/idol-navigation-harness.mjs'
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -32,9 +33,9 @@ for (const preferred of [null, { id: '002sht' }]) {
     buildArchiveSourceQuery: () => '', currentArchiveRoute: () => ({}),
     commitView: next => { views.push(next); state.view.value = next },
   }
+  bindIdolNavigation(app, state)
   vm.runInNewContext([
     productionFunction('navigateArchiveSection'),
-    productionFunction('openIdolDirectory'),
     'navigateArchiveSection("idols")',
   ].join('\n'), state)
   assert.deepEqual(views, ['idols'])
