@@ -10,6 +10,7 @@ import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNaviga
 import { songMatchesIdol } from '../../src/presentation/CatalogIdolScope.js'
 import { buildSongPresentation } from '../../src/presentation/SongPresentation.js'
 import { projectSongPerformance } from '../../readmodels/lib/projections.mjs'
+import { useStageSongProjection } from '../../src/composables/useStageSongProjection.js'
 
 function production(text) {
   const { descriptor, errors } = parse(text); assert.deepEqual(errors, [])
@@ -29,7 +30,13 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   const app = production(appComponent)
   const state = { computed, view: ref('song_detail'), currentSongId: ref('drvalv'),
     songReadModelDetail: ref({ id: 'drvalv', song: catalog.songs.drvalv, view: { id: 'drvalv' }, experimental: { id: 'drvalv' } }) }
-  const values = Object.fromEntries(['currentSong','stageAudioExperiments','currentSongPresentation'].map(name => [name, vm.runInNewContext(app.value(name), state)]))
+  const values = Object.fromEntries(['currentSong','currentSongPresentation'].map(name => [name, vm.runInNewContext(app.value(name), state)]))
+  const stageBinding = app.body.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+    .find(node => node.id.type === 'ObjectPattern' && node.id.properties.some(property => property.key.name === 'stageAudioExperiments'))
+  const stageCatalog = ref(null)
+  Object.assign(values, vm.runInNewContext(app.cut(stageBinding.init), {
+    ...state, songReadModelCatalog: stageCatalog, useStageSongProjection,
+  }))
   assert.equal(values.currentSong.value.song_code, 'drvalv')
   assert.equal(values.currentSongPresentation.value.id, 'drvalv')
   state.currentSongId.value = 'brndnf'
@@ -37,6 +44,34 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   assert.deepEqual(Object.keys(values.stageAudioExperiments.value), [])
   state.currentSongId.value = ''; state.view.value = 'chibi_stage'
   assert.deepEqual(Object.keys(values.stageAudioExperiments.value), ['drvalv'])
+  assert.deepEqual(values.stageSongDirectory.value, [])
+  stageCatalog.value = catalog
+  assert.equal(values.stageSongDirectory.value.length, Object.keys(catalog.songs).length)
+  assert.equal(values.stageSongDirectory.value[0], stageCatalog.value.songs[Object.keys(catalog.songs)[0]])
+  // Preserve table-46 slot ordering, including repeated performers, rather than sorting/deduplicating it.
+  const slotMapping = { performer_slot_idol_codes: ['003hok', '001tom', '003hok'], performer_idol_codes: ['001tom', '003hok'] }
+  state.songReadModelDetail.value = { id: 'drvalv', song: { performance_mapping: slotMapping } }
+  assert.equal(values.stageOriginalSlotOrdered.value, true)
+  assert.deepEqual(plain(values.stageOriginalPerformers.value), slotMapping.performer_slot_idol_codes)
+  assert.deepEqual(Object.keys(values.stageAudioExperiments.value), [])
+  state.songReadModelDetail.value.song.performance_mapping.performer_slot_idol_codes = []
+  assert.equal(values.stageOriginalSlotOrdered.value, false)
+  assert.deepEqual(plain(values.stageOriginalPerformers.value), slotMapping.performer_idol_codes)
+  state.currentSongId.value = 'brndnf'
+  assert.equal(values.stageOriginalSlotOrdered.value, false)
+  assert.deepEqual(values.stageOriginalPerformers.value, [])
+  state.currentSongId.value = ''; state.view.value = 'song_catalog'
+  assert.deepEqual(values.stageOriginalPerformers.value, [])
+  state.view.value = 'chibi_stage'; state.songReadModelDetail.value = null
+  assert.deepEqual(values.stageOriginalPerformers.value, [])
+  for (const [id, song] of Object.entries(catalog.songs)) {
+    state.currentSongId.value = id; state.songReadModelDetail.value = { id, song }
+    const mapping = song.performance_mapping
+    assert.equal(values.stageOriginalSlotOrdered.value, Boolean(mapping?.performer_slot_idol_codes?.length))
+    assert.deepEqual(plain(values.stageOriginalPerformers.value), mapping?.performer_slot_idol_codes?.length
+      ? mapping.performer_slot_idol_codes : mapping?.performer_idol_codes || [])
+  }
+  state.currentSongId.value = 'drvalv'; state.view.value = 'song_detail'
 
   const requests = [], views = [], effects = []
   const navigation = createArchiveNavigationCoordinator()

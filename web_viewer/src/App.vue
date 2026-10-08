@@ -666,6 +666,7 @@ import {
   restoreArchiveViewState,
 } from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
+import { useStageSongProjection } from './composables/useStageSongProjection.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
 import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
@@ -1476,16 +1477,9 @@ const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 
 
 const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.song : null)
-const stageAudioExperiments = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : '')) && songReadModelDetail.value?.experimental
-  ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
-  : {})
-// The stage's 原曲成员: performer-slot order when table 46 records it, else the member list.
-const stagePerformanceMapping = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : ''))
-  ? songReadModelDetail.value.song?.performance_mapping || null : null)
-const stageOriginalSlotOrdered = computed(() => Boolean(stagePerformanceMapping.value?.performer_slot_idol_codes?.length))
-const stageOriginalPerformers = computed(() => stageOriginalSlotOrdered.value
-  ? stagePerformanceMapping.value.performer_slot_idol_codes : stagePerformanceMapping.value?.performer_idol_codes || [])
-const stageSongDirectory = computed(() => Object.values(songReadModelCatalog.value?.songs || {}))
+const { stageAudioExperiments, stageOriginalSlotOrdered, stageOriginalPerformers, stageSongDirectory } = useStageSongProjection({
+  songReadModelDetail, currentSongId, view, songReadModelCatalog,
+})
 const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
   ? songReadModelDetail.value.view : null)
 // Songs the chart tool can open: the chart manifest names them, the song catalogue (or a primary
