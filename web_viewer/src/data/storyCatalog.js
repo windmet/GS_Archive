@@ -53,6 +53,9 @@ export function buildStoryCatalog(data, presentationData = null) {
       preplaySynopsis: presentation?.preplay_synopsis || null,
       playableStartIndex: presentation?.playable_start_index || 0,
       playableStepCount: presentation?.playable_step_count ?? source.summary?.step_count ?? 0,
+      // Whole-file counts for stories without episode boundaries (birthday, extra).
+      dialogueCount: presentation?.dialogue_count ?? 0,
+      voiceCount: presentation?.voice_count ?? source.summary?.voice_count ?? 0,
       titleCards: presentation?.title_cards || [], episodes: presentation?.episodes || [],
     }
     // card_scenarios are the communication archive's phone calls. Their source rows carry the

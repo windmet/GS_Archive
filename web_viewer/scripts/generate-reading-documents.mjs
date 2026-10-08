@@ -49,7 +49,7 @@ for (const sample of samples) {
   const entry = { document_id: document.document_id, logical_id: document.logical_id,
     scenario_id: document.scenario_id, file, schema_version: document.schema_version,
     sha256: hash(output), source_sha256: document.source.sha256, source_file: document.source.file, status: document.status, row_count: document.rows.length,
-    title: document.presentation.title, episode_label: document.presentation.episode_label || sample.navigation_label || null, domain: sample.domain, parent_file: sample.parent_file,
+    title: document.presentation.title, episode_label: sample.navigation_label || document.presentation.episode_label || null, domain: sample.domain, parent_file: sample.parent_file,
     ...(sample.directory_id ? { directory_id: sample.directory_id, directory_order: sample.directory_order } : {}) }
   validateReadingDocument(document, entry)
   entries.push(entry)

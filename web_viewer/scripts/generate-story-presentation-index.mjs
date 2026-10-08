@@ -140,6 +140,9 @@ for (const file of files) {
     playable_start_index: playableStartIndex < 0 ? 0 : playableStartIndex,
     playable_step_count: Math.max(0, steps.length - Math.max(0, playableStartIndex)),
     title_cards: titleCards,
+    // Whole-file counts, with the episode rule, for stories without episode boundaries (birthday, extra).
+    dialogue_count: steps.slice(Math.max(0, playableStartIndex)).filter(step => dialogueSpeakerText(step?.dialogue) || dialogueSourceText(step?.dialogue)).length,
+    voice_count: steps.slice(Math.max(0, playableStartIndex)).filter(step => step?.dialogue?.voice).length,
     episodes,
   }
 }

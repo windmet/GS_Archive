@@ -13,6 +13,13 @@ export function presentIdolEpisodeLabel({ sourceName = '', kind = '', ordinal = 
   const display = (label, value) => label === 'EPISODE' && format === 'reader' ? `EP ${String(value).padStart(2, '0')}`
     : label === 'EPISODE' && format === 'player' ? `EP${String(value).padStart(2, '0')}` : `${label} ${String(value).padStart(2, '0')}`
   if (knownKind && Number.isInteger(number) && number > 0) return display(knownKind, number)
+  // A combined document covering several talks: スモールトーク1-3 -> SMALL TALK 01–03.
+  const range = source.match(/^(.+?)\s*0?(\d+)\s*[-–〜~]\s*0?(\d+)$/u)
+  if (range) {
+    const [from, to] = [range[2], range[3]].map(value => presentIdolEpisodeLabel({ sourceName: `${range[1]}${value}`, format }))
+    const prefix = from.replace(/\s*\d+$/u, '')
+    if (prefix && prefix === to.replace(/\s*\d+$/u, '') && prefix !== from) return `${from}–${to.slice(prefix.length).trim()}`
+  }
   for (const [pattern, label] of SOURCE_KINDS) {
     const match = source.match(pattern)
     if (match) return display(label, Number(match[1]))

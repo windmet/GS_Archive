@@ -307,7 +307,8 @@ try {
     const rawStoryRow = rewardView.rewards.general.find(row => row.key === storyMethod.key)
     assert.equal(rawStoryRow.episodeId, 4100120110)
     assert.equal(rewardView.episodes.find(episode => episode.id === String(rawStoryRow.episodeId)).label, 'エピソード10')
-    const storyLabel = `${locale.value === 'zh-CN' ? '第10话' : 'エピソード10'} 阅读（活动期内）`
+    // The reward condition names its episode exactly as the event's episode list does.
+    const storyLabel = 'EPISODE 10 阅读（活动期内）'
     assert.equal(state.rewardMethodLabel(storyCard, storyMethod), storyLabel)
     assert.ok(elementText(region, 'span').map(decodeHtml).includes(storyLabel),
       'the actual reward copy uses the exact source episode join')

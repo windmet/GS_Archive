@@ -189,7 +189,6 @@ import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {eventResources} from '../../data/eventResourceGraph.js'
 import {rewardConditions} from './DomainPresentation.mjs'
-import {uiLocale} from '../../localization/ui/UiLocaleStore.js'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
 const quickEntity=ref('')
@@ -265,12 +264,8 @@ function rewardMethodLabel(card,method) {
     if(method.kind==='story' && row.scope?.startsWith('story') && row.episodeId) {
       const episode=rewardEpisodesById.value.get(String(row.episodeId))
       if(!episode?.label) return method.label
-      let label=episode.label
-      if(uiLocale.value==='zh-CN') {
-        const ordinal=label.match(/^エピソード\s*(\d+)$/)
-        if(ordinal) label=`第${ordinal[1]}话`
-        else if(label==='プロローグ') label='序章'
-      }
+      // Same presenter as the episode list above, so the condition names the row it points at.
+      const label=presentIdolEpisodeLabel({ sourceName: episode.label })
       return `${label} 阅读${row.scope==='story-in-event-term'?'（活动期内）':''}`
     }
     if(method.kind==='point' && ['point','repeated'].includes(row.scope) &&

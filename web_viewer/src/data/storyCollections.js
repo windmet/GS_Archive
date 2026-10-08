@@ -108,8 +108,8 @@ function buildExtraCollection(series, extraDomain, catalog) {
       startStep: exists ? startStep : 0,
       endStep: exists ? endStep : 0,
       stepCount: boundary?.step_count || story?.playableStepCount || story?.summary?.step_count || 0,
-      dialogueCount: boundary?.dialogue_count || 0,
-      voiceCount: boundary?.voice_count ?? story?.summary?.voice_count ?? 0,
+      dialogueCount: boundary ? boundary.dialogue_count || 0 : story?.dialogueCount || 0,
+      voiceCount: boundary?.voice_count ?? story?.voiceCount ?? story?.summary?.voice_count ?? 0,
     }
     return {
       id: entry.masterId,
@@ -244,8 +244,8 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
         startStep: exists ? startStep : 0,
         endStep: exists ? endStep : 0,
         stepCount: story?.playableStepCount || story?.summary?.step_count || 0,
-        dialogueCount: 0,
-        voiceCount: story?.summary?.voice_count || 0,
+        dialogueCount: story?.dialogueCount || 0,
+        voiceCount: story?.voiceCount ?? story?.summary?.voice_count ?? 0,
       }
       return {
         id: entry.masterId,
@@ -260,7 +260,7 @@ function buildBirthdayCollections(birthdayDomain, catalog, idolEpisodes) {
         episodes: [episode],
         episodeCount: 1,
         playableEpisodeCount: exists ? 1 : 0,
-        dialogueCount: 0,
+        dialogueCount: episode.dialogueCount,
         voiceCount: episode.voiceCount,
         domainMemberships: entry.domainMemberships,
         canonicalRelation,

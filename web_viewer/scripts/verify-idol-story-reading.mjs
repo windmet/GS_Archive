@@ -42,5 +42,15 @@ for (const view of ['reader', 'player']) {
   const segments = json('reading/manifest.json').entries.filter(entry => entry.domain === 'idol_story' && names.has(entry.document_id))
   assert.ok(segments.length > 400, 'personal-story reading segments are published')
   for (const entry of segments) assert.equal(entry.episode_label, names.get(entry.document_id), entry.document_id)
-  console.log(`Personal Reader: ${segments.length} EP directory labels match the idol episode index`)
+  // Every chapter split across two files (birthday small talks + episodes) reads as one directory,
+  // including the four whose small talks are a single combined document.
+  const manifest = json('reading/manifest.json').entries
+  const sections = json('masterdata/idol_episode_index.json').chapters.flatMap(chapter => chapter.sections)
+    .filter(section => new Set(section.episodes.map(episode => episode.compiled_file)).size > 1)
+  for (const section of sections) {
+    const members = manifest.filter(entry => entry.directory_id === `idol-story-section:${section.id}`)
+    assert.deepEqual(new Set(members.map(entry => entry.parent_file)), new Set(section.episodes.map(episode => episode.compiled_file)), `section ${section.id}`)
+  }
+  assert.equal(sections.length, 29, 'birthday chapters spanning two files')
+  console.log(`Personal Reader: ${segments.length} EP directory labels match the idol episode index; ${sections.length} two-file chapters read as one directory`)
 }

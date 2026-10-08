@@ -57,8 +57,23 @@ assert.deepEqual(buildMainStoryDomainIdentity(reactive(generated)), legacyMainId
 assert.deepEqual(buildBirthdayStoryDomainIdentity(reactive(generated)), legacyBirthdayIdentity(master))
 for (const overlay of [null, presentation]) {
   const expected = legacy(master, overlay)
-  const actual = buildStoryCatalog(generated, overlay)
+  // Deliberate addition to v0: whole-file dialogue/voice counts from the presentation index, so
+  // birthday and extra stories (no episode boundaries) show real counts instead of a fixed 0.
+  const counted = buildStoryCatalog(generated, overlay)
+  for (const entry of counted) {
+    const row = overlay?.by_file?.[entry.file]
+    assert.equal(entry.dialogueCount, row?.dialogue_count ?? 0, `dialogue count follows the presentation index: ${entry.id}`)
+    assert.equal(entry.voiceCount, row?.voice_count ?? entry.summary?.voice_count ?? 0, `voice count follows the presentation index: ${entry.id}`)
+  }
+  if (overlay) assert.ok(counted.some(entry => entry.domain === 'birthday' && entry.dialogueCount > 0), 'birthday stories carry dialogue counts')
+  const actual = counted.map(({ dialogueCount, voiceCount, ...entry }) => entry)
   verifyCollections(master, generated, actual)
+  if (overlay) {
+    const extra = buildStoryCollections(generated, counted, { extraDomain: buildExtraStoryDomainIdentity(generated) })
+      .filter(collection => collection.domain === 'extra').flatMap(collection => collection.chapters)
+    const counts = extra.filter(chapter => chapter.exists && !overlay.by_file[chapter.file]?.episodes?.length).map(chapter => [chapter.episodes[0].dialogueCount, overlay.by_file[chapter.file]?.dialogue_count])
+    assert.ok(counts.length > 0 && counts.every(([shown, source]) => shown === source), 'extra chapters show the presentation-index dialogue count')
+  }
   assert.equal(actual.length, expected.length)
   // Deliberate departure from v0: card_scenarios are phone calls (labelled 电话) whose source rows put the
   // call's first line in officialTitle and the room id in releaseAt. They must show the call's
@@ -134,7 +149,8 @@ const fixturePath = fileURLToPath(new URL('../fixtures/story-catalog/edge-cases.
 const fixture = JSON.parse(readFileSync(fixturePath, 'utf8'))
 const edge = JSON.parse(execFileSync('python', [pipeline, '--input', fixturePath], { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }))
 const overlay = { by_file: { 'shared.json': { preplay_synopsis: { title: 'Overlay', text: 'Search overlay' }, playable_step_count: 0, playable_start_index: 3 } } }
-const edgeActual = buildStoryCatalog(edge, overlay)
+// The whole-file counts are the documented addition checked above; edge parity covers every other field.
+const edgeActual = buildStoryCatalog(edge, overlay).map(({ dialogueCount, voiceCount, ...entry }) => entry)
 verifyFileMetadata(fixture, edge)
 assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture))
 assert.deepEqual(buildBirthdayStoryDomainIdentity(edge), legacyBirthdayIdentity(fixture))
