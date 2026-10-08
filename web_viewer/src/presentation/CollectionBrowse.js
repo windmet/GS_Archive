@@ -2,16 +2,17 @@ import index from '../../config/collection-browse.v1.json' with {type:'json'}
 import {IDOL_ID_TO_NAME} from '../utils/IdolNameMap.js'
 import {getUnitCodeByCharaId} from '../utils/UnitNameMap.js'
 import {honorBondSource} from './HonorBondSource.mjs'
+import {idolHonorIdentity} from './HonorIdentity.mjs'
 import {rewardCondition,rewardRelationLabel} from './DomainPresentation.mjs'
 export const collectionIdols=Object.entries(IDOL_ID_TO_NAME).filter(([id])=>/^0\d{2}[a-z]{3}$/.test(id)&&Number(id.slice(0,3))<=49).map(([id,name])=>({id,name,unit:getUnitCodeByCharaId(id)}))
 export function collectionSummary(row,kind,release) {
   const entry=index.entries[`${kind==='honors'?'honor':'item'}:${row.id}`]
   return release===index.release && entry?.nameJa===row.nameJa && entry?.resourceId===row.resourceId ? entry : null
 }
+// The idol an honor belongs to, decoded from its id by the one shared rule (HonorIdentity).
 export function honorIdol(row) {
-  if(row.honorType!==2 || row.resourceId!==`honor_idol_${row.id}`)return null
-  const match=/^2(\d{2})\d{5}$/.exec(String(row.id))
-  return match?collectionIdols.find(idol=>Number(idol.id.slice(0,3))===Number(match[1])) || null:null
+  const identity=row?.resourceId===`honor_idol_${row?.id}` ? idolHonorIdentity(row) : null
+  return identity?collectionIdols.find(idol=>Number(idol.id.slice(0,3))===identity.idolNumber) || null:null
 }
 export function honorGroup(row){return row.honorType===2?'idol':row.honorType===3?'event':row.honorType===1?'normal':'other'}
 export function itemAttribute(row) {

@@ -43,6 +43,7 @@ import {UNIT_CODE_TO_NAME} from '../../utils/UnitNameMap.js'
 import CollectionDetailPanel from './CollectionDetailPanel.vue'
 import ArchiveFloatingTooltip from './ArchiveFloatingTooltip.vue'
 import {archiveText,archiveSearchText} from './useArchiveCollectionText.js'
+import {honorTitle} from './useHonorTitle.js'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {createCollectionCatalogSession} from '../../../readmodels/runtime/CollectionCatalogSession.mjs'
 import '../../styles/archive-domains.css'
@@ -68,13 +69,13 @@ const groups=computed(()=>kind.value==='items'?itemBrowseGroups:Object.entries(h
 const units=Object.entries(UNIT_CODE_TO_NAME).map(([id,name])=>({id,name}))
 const attributes=[{id:'',label:'全部'},{id:'physical',label:'Physical'},{id:'intelligent',label:'Intelli'},{id:'mental',label:'Mental'}]
 const summary=row=>collectionSummary(row,kind.value,props.bootstrap.release)
-const entryName=row=>archiveText(kind.value==='honors'?'honor':'item',row.nameJa||row.name)
+const entryName=row=>kind.value==='honors' ? honorTitle(row,props.displayIdolName) : archiveText('item',row.nameJa||row.name)
 const ownerName=owner=>owner ? (props.displayIdolName(owner.id)||owner.name) : ''
 const filtered=computed(()=>{
  const q=props.query.trim().toLowerCase()
  return rows.value.filter(row=>{
   const owner=kind.value==='honors'?honorIdol(row):null
-  const search=`${archiveSearchText(kind.value==='honors'?'honor':'item',row.nameJa)} ${row.id} ${kind.value==='honors'?honorSourceLabel(row,props.bootstrap.release):''}`.toLowerCase()
+  const search=`${archiveSearchText(kind.value==='honors'?'honor':'item',row.nameJa)} ${kind.value==='honors'?honorTitle(row,props.displayIdolName):''} ${row.id} ${kind.value==='honors'?honorSourceLabel(row,props.bootstrap.release):''}`.toLowerCase()
   return (!q||search.includes(q))&&(!category.value||(kind.value==='items'?itemBrowseGroup(row.itemType).key:honorGroup(row))===category.value)&&(!attribute.value||itemAttribute(row)===attribute.value)&&(!idol.value||owner?.id===idol.value)&&(!unit.value||owner?.unit===unit.value)
  })
 })

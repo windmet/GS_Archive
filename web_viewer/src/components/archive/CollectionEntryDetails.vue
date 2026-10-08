@@ -38,25 +38,20 @@ import {ChevronRight,ImageOff} from '@lucide/vue'
 import {historicalPeriod} from './DomainPresentation.mjs'
 import {archiveText} from './useArchiveCollectionText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
-import {IDOL_ID_TO_NAME,IDOL_NAME_TO_ID} from '../../utils/IdolNameMap.js'
-import {idolHonorIdentity,fesHonorMonth} from '../../presentation/HonorIdentity.mjs'
+import {IDOL_ID_TO_NAME} from '../../utils/IdolNameMap.js'
+import {fesHonorMonth} from '../../presentation/HonorIdentity.mjs'
+import {honorIdol as honorIdolOf,honorTitle} from './useHonorTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainInlineText from './DomainInlineText.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
 const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true},displayIdolName:{type:Function,default:()=>''},linkIdol:Boolean})
 const emit=defineEmits(['open-card','open-idol'])
-const honorIdol=computed(()=>{
-  const identity=props.kind==='honors' ? idolHonorIdentity(props.detail.entry) : null
-  const code=identity && Object.values(IDOL_NAME_TO_ID).find(value=>/^\d{3}/.test(value) && Number(value.slice(0,3))===identity.idolNumber)
-  return code ? {code,kind:identity.kind,name:props.displayIdolName(code,IDOL_ID_TO_NAME[code]) || IDOL_ID_TO_NAME[code] || code} : null
-})
+const honorIdol=computed(()=>props.kind==='honors' ? honorIdolOf(props.detail.entry,props.displayIdolName) : null)
 const honorKindLabel=computed(()=>({tantou:'担当称号',catchphrase:'专属台词称号','fes-change':'FES 成就 · 换装','fes-limitbreak':'FES 成就 · 满破'})[honorIdol.value?.kind] || '称号')
 const failedCardImages=ref(new Set())
 watch(()=>props.detail.entry.key,()=>{failedCardImages.value=new Set()})
 const domain=computed(()=>props.kind==='honors'?'honor':'item')
-// FES achievement names are internal condition labels; title them by what they are and whose they are.
-const FES_TITLES={'fes-change':'FES 限定卡换装','fes-limitbreak':'FES 限定卡满破'}
-const name=computed(()=>FES_TITLES[honorIdol.value?.kind] ? `${FES_TITLES[honorIdol.value.kind]} · ${honorIdol.value.name}` : archiveText(domain.value,props.detail.entry.nameJa))
+const name=computed(()=>props.kind==='honors' ? honorTitle(props.detail.entry,props.displayIdolName) : archiveText(domain.value,props.detail.entry.nameJa))
 const description=computed(()=>archiveText(domain.value,props.detail.entry.descriptionText?.plain,'description') || '尚未收录说明。')
 const usageCards=computed(()=>props.kind==='items' && Array.isArray(props.detail.usageCards) ? props.detail.usageCards : [])
 const cardTitle=source=>cardText('card',source,'title')
