@@ -345,3 +345,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 保留 facets 的单次请求复用、失败后可重试，以及目录的可选属性回退；目录校验数量、resource_id 唯一性、id 对齐、ownerReference 和两个整数计数，中止后不发布。详情必须携带 expectedId 并校验 resource_id、ownerReference、home_voice_cues/scenario_entries。新回归需实际执行这条加载链，而不是复用旧卡片测试的内部 loader stub。
 - factory 应位于 Unit 之后、Event 之前，继续让 Event 接收实际 card refs/入口。卡片到活动、卡池的跨域回调若迁入，须按实际初始化顺序延迟绑定。`openIdol` 的双目录分派、`openVoicePreview/restoreVoicePreview` 的播放控制及统一 apply/Back 暂留 App；声音入口不能因拆分改变 revision、目标卡身份或返回来源。
 - 重点验证卡片列表→详情→组合卡片目录交叉竞争，过滤条件清理/保留、详情身份隔离、成员 owner 与来源恢复、深链接/player 父卡加载、可选 facets 失败和取消。主要影响旧 card-readmodel-navigation、card-filtering、relation-navigation、async/player voice 与各 restore fixture。当前只盘点，未实施卡片拆分。
+
+### 卡片导航迁移前的真实加载回归（2026-10-08，输入 e8bc33eb）
+
+- 新增 `card-navigation-harness.mjs` 与 `verify-card-loading-boundary.mjs`，通过 AST 提取并共同执行 App 当前 15 个函数、15 个 computed、共享请求计数和 facets promise。内部 loader 不替换，仅在 ReadModelClient、facets HTTP 和跨域回调边界提供夹具；新 verifier 纳入 source batch。
+- 覆盖两页目录合并、bootstrap 数量、资源 ID 唯一性与对齐、owner/计数字段、详情 expectedId/身份/数组、缓存复用、未知卡不发叶子请求；真实属性函数校验 facets release 和 detail hash，保留内置属性，可选数据失败不阻断目录，失败后可重试，共享在途 promise。分别在分页和 facets 等待期间取消，确认不发布目录缓存。
+- 三入口（列表、详情、组合卡片目录）两两竞争，迟到成功和失败均不覆盖当前页面；另隔离全局 revision 检查共享私有计数，避免两层保护互相掩盖。覆盖全局失效/卸载、页面准备等待、失败重试、过滤和上下文清理/保留、详情投影身份、前后卡/同系列、成员/剧情/活动/卡池入口，以及来源返回和集合卡片目标校验。
+- 正向基线通过，14/14 内存错误变体被断言拦截：目录数量/身份/取消、详情身份/expectedId、facets 重试、内置属性、投影归属、三个入口计数、活动上下文、组合目录目标和页面准备。证据 `.analysis/card-boundary-mutations/results.json`；变体没有改写服务源码。旧卡片导航和关联导航 17 条生产边回归通过。
+- source batch **118/118** 通过，日志 `.analysis/card-boundary-source-batch.log`；覆盖清单检查通过。随后仅加强 facets 重试失败的断言类型，正向基线与全部反向变体再次通过。
+- 本批仅建立迁移前证据，尚未迁移卡片生产逻辑；未修改 App、组件模板、样式或播放行为，不重复构建或声称新增 Browser 验收。共享窗口正在修改门户两个组件及删除 `portal-bento.css`，原样保留，不纳入本批提交。下一步提取真实生产逻辑，并将 harness 改为执行 App 的真实 factory 参数和解构输出，补齐 restore/生命周期接线验收。
