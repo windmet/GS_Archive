@@ -365,3 +365,14 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 5175 Browser：1280 宽度卡片目录与 390×844 冬马首张 SSR 详情和拆分前布局/文字一致。手机下一张→关联卡池→返回、所属偶像→返回卡片→原目录通过；桌面 SSR 筛选→首张详情→触摸语音演出预览出现实际 1/1 台词→返回详情→返回保留 SSR 筛选通过。新标签页恢复该筛选，console error 为 0；切翔太后筛选按原行为重置。演出证据仅证明页面/导航与台词呈现，不代表音频解码或长稳验收。
 - 开发中第一次模块落盘曾因 Mobile 过早引用 Card loader 触发 HMR 初始化错误；延迟接线修正、上述源码回归和全新 Browser 页面已验证恢复。没有把开发期错误计为最终页面无错误，也没有改动样式、译文、部署、上传或重启服务。其他窗口的门户组件、设计令牌基线及 CSS 删除保留在其原有暂存状态。固定提交的完整源码门随后补录。
 - 最终补测：三个入口分别在全局失效和卸载时均禁止发布，Card 入口检查通过。Browser 的 Jupiter 查看卡片→三人成员目录→返回组合通过，新标签页 console error 仍为 0；临时视口已重置、标签页已关闭。UI 待办仅记录：中文模式组合卡片目录的搜索提示仍为 `Search card idol...`，本批未修改。
+
+- 代码 `85913b95` 已推送。固定该提交的干净 LF 检出完成全部 115 步：**114 通过、0 失败、1 跳过 npm ci**；其中 source batch 117/117，最终 `build:check`（22.82 秒）及当前构建审计通过。证据目录 `E:\Web_build\GS_Archive_engineering_20261007\gate-85913b95-final\` 包含逐项日志、`results.json`、`generated-audit.diff`、`card-diff-review.json` 和 `mutation-results.json`；这是本地源码门，不代表远端 CI、完整媒体包或发布验收。
+- 临时工作树及 node_modules junction 已清理，主工程依赖保留；同目录 `cleanup.json` 记录 C 盘可用 47.22 GiB，5175 仍为原 PID 74640。其他窗口门户组件、设计令牌基线及 CSS 删除原样保留。
+
+### 下一批卡池导航边界（卡片拆分后只读盘点）
+
+- 候选模块 `useGashaNavigation`：目录/详情 loader、`openGashaCatalog`、`openGasha`、`goBackFromGasha`、`openGashaCard`，4 个目录/分类/筛选/详情 computed，私有计数与 prepare/invalidate。`gashaCatalogFunctions`、payload refs 和统一 apply/Back 仍由 App 协调；迁移仅改变逻辑位置。
+- 目录的两个动态依赖必须继续按需加载：分类/搜索模块和真实招募券证据模块。先校验 primary 目录数量、唯一 ID、phase 与详情描述符，再补充 item-masterdata 记录；两次取消检查分别保护函数缓存和目录发布。测试须执行真实 supplement/attach，不用手写招募券镜像替身。
+- 详情的 item-masterdata 分支直接返回补录数据，不请求叶子；正式卡池仍带 expectedId 校验身份和 derived_pickup_cards，再附加同名证据。目录入口 preserveBrowse 保留筛选与来源，Portal 来源的特殊保留规则不改；详情从目录打开保留查询，从 extra story_collection 打开保留返回剧情集合的语义。
+- Card factory 当前直接接收 `openGasha`，若 Gasha factory 排在 Card 之后，须改成延迟回调；反向 Gasha→Card 使用真实 Card refs 与入口。`openGashaCard` 暂保留现有等待目录后跳转的行为，不把导航竞争修复悄悄混入搬迁。restore 失败保持原 route 字段，仅改 view 为 gashas、清空 gasha；直接播放器继续跳过父页加载。
+- 旧 gasha-readmodel-navigation 测试仍替换内部 loader，下一批先补真实动态导入、目录/叶子、招募券、取消与归属证据。还需适配 relation、startup、各 restore fixture、卡池分类/本地化消费者；当前尚未修改卡池代码。
