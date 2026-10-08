@@ -1,3 +1,4 @@
+import { bindResourceNavigation } from './lib/resource-navigation-harness.mjs'
 import vm from 'node:vm'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse } from '@babel/parser'
@@ -55,6 +56,7 @@ function setup(overrides = {}) {
 
 function restoration() {
   const t = setup(), c = t.c, applied = []
+  bindResourceNavigation(app, c)
   bindCardNavigation(app, c); bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
   bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
   bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()

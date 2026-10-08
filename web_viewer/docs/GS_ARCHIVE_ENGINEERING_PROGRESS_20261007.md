@@ -426,3 +426,12 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 使用真实导航协调器验证迟到成功/失败、共享失效/卸载和信号撤销；传输刻意允许取消后返回，确保发布守卫独立有效。另隔离全局 revision 验证私有计数、三阶段失败重试和页面准备屏障。进入时 Portal 来源保留、其他来源清空及五项筛选重置均覆盖。
 - 正向基线及 **17/17** 内存错误变体通过，证据 `.analysis/resource-boundary-mutations/results.json`；没有改写运行时源码。本批未改 App、UI、译文或媒体行为，不需要重复编译和 Browser 验收。模块迁移与 apply 内深链接接线留在下一批。
 - 当前源码批次 **118/118** 通过（共享工作区新增检查已纳入现有名单），日志 `.analysis/resource-boundary-source-batch.log`；资源状态 verifier 单独通过。只提交本批 harness、verifier 和记录，其他窗口修改保留。
+
+
+### Resource Status 逻辑收尾（2026-10-08，输入 0d530297）
+
+- `useResourceNavigation` 接收 15 个依赖，导出打开、加载与私有失效三个入口。App 的目录→分页→详情校验实现和入口计数已迁出；apply 中仍在原顺序调用 loader，检查 intent 后发布，restore 只调用 invalidator。未增加缓存、吞掉深链接错误或改变重置规则。
+- `.analysis/resource-diff-review.json` 与 AST 对照证明两个函数/计数等价，模板/样式不变，除明确接线外所有 App 顶层声明/副作用不变；对照先规范 LF/CRLF，避免把换行差异误报为界面变化。
+- 测试执行实际 factory 参数，补 App 的实际 resource apply 分支（成功、迟到与失败传播）及私有失效。正向基线和 **19/19** 错误变体通过，记录 `.analysis/resource-mutations/results.json`。相应 startup/restore fixture 接入真实 Resource factory；Gasha 只在 restoration fixture 接入，避免扩大其他案例边界。
+- `verify:archive-startup-route`、源码批次 **118/118**、player repair **37/37** 和 `build:check` **22.57 秒**通过；日志 `.analysis/resource-{startup,extraction-source-batch,player-repair,build-check}.log`。源码构建不复制 public，仅复用 E 盘 `.analysis/build-check`。
+- 5175 手机深链接刷新与迁移前基线一致，数据状态返回按既有偏好进入偶像首页。未改 UI、译文、资源绑定或端口。完整固定提交门和 App orchestration 专项审计另行补录；不把行数作为后续目标。

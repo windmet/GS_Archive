@@ -1,3 +1,4 @@
+import { bindResourceNavigation } from './lib/resource-navigation-harness.mjs'
 import { bindGashaNavigation } from './lib/gasha-navigation-harness.mjs'
 import { bindCardNavigation } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
@@ -119,7 +120,7 @@ function fixture({ cached = true } = {}) {
   bindLegacyAliasNavigation(app, context).stop()
   const scope = effectScope(), api = scope.run(() => expose(binding, context))
   const story = bindStoryNavigation(app, context)
-  bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
   const stop = () => { scope.stop(); story.stop() }; cleanups.push(stop)
   return { ...api, state, context, calls, loads, jobs, data, navigation, story, stop }
 }

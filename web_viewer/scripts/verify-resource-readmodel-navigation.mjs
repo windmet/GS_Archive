@@ -1,3 +1,4 @@
+import vm from 'node:vm'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { bindResourceNavigation, createResourceFixtureTransport, deferredResource } from './lib/resource-navigation-harness.mjs'
@@ -16,9 +17,12 @@ function setup(overrides = {}) {
     commitView: view => { commits.push(view); c.view.value = view; c.loading.value = false; c.navigation.invalidate() },
     console: { error: (...args) => errors.push(args) }, ...overrides,
   }
+  console.error = c.console.error
   bindResourceNavigation(app, c)
   return { c, ...transport, commits, errors, prepared }
 }
+const originalConsoleError = console.error
+try {
 {
   const t = setup(), controller = new AbortController()
   equal(await t.c.loadResourceStatus({ signal: controller.signal, priority: 'visible' }), t.detail)
@@ -96,4 +100,34 @@ for (const stale of [false, true]) {
   ready.resolve(); await pending
   equal(t.commits, stale ? [] : ['archive_status'])
 }
+// Execute the resource branch in App's real apply path, retaining its await and
+// intent guard. The encompassing route dispatcher remains App-owned.
+const branch = app.match(/    if \(route.view === 'archive_status'\) \{[^]*?\n    \}/)?.[0]
+assert.ok(branch)
+for (const stale of [false, true]) {
+  const t = setup(), job = t.hold('resource-detail'); let current = true
+  Object.assign(t.c, { route: { view: 'archive_status' }, intent: { isCurrent: () => current } })
+  const pending = vm.runInNewContext(`(async () => { ${branch} })()`, t.c)
+  await settle(); if (stale) current = false
+  job.resolve(t.detail); await pending
+  equal(t.c.resourceReadModelDetail.value, stale ? null : t.detail)
+}
+{
+  const t = setup(), job = t.hold('resource-detail')
+  Object.assign(t.c, { route: { view: 'archive_status' }, intent: { isCurrent: () => true } })
+  const pending = vm.runInNewContext(`(async () => { ${branch} })()`, t.c)
+  const rejection = assert.rejects(pending, /offline/)
+  job.reject(Error('offline')); await rejection
+  assert.equal(t.c.resourceReadModelDetail.value, null)
+}
+{
+  const t = setup(), job = t.hold('resource-detail')
+  t.c.navigation.invalidate = () => {}
+  const pending = t.c.openArchiveStatus(); await settle()
+  t.c.invalidateResourceNavigation(); job.resolve(t.detail); await pending
+  equal(t.commits, []); assert.equal(t.c.resourceReadModelDetail.value, null)
+}
+assert.match(app, /invalidateResourceNavigation\(\)/)
 console.log('Resource navigation: real index/page/leaf validation, transport options, selection ownership, cancellation, retry, page readiness and source reset passed')
+
+} finally { console.error = originalConsoleError }

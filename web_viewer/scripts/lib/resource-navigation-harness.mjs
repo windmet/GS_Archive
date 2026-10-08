@@ -6,26 +6,30 @@ import { parse } from '@babel/parser'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../../src/core/ArchiveNavigationCoordinator.js'
 
-// Exercise App's loader and entry together; only transport and page preparation
-// are fixture boundaries. Keep this source extraction until the module moves.
+import { useResourceNavigation } from '../../src/composables/useResourceNavigation.js'
+
+// Execute App's actual factory arguments; transport is the loading boundary.
 export function bindResourceNavigation(app, context = {}) {
   const script = parseSfc(app).descriptor.scriptSetup.content
   const body = parse(script, { sourceType: 'module' }).program.body
-  const names = ['openArchiveStatus', 'loadResourceStatus', 'pendingResourceNavigation']
-  const nodes = names.map(name => {
-    const node = body.find(node => node.id?.name === name || node.declarations?.some(row => row.id.name === name))
-    assert.ok(node, `App declares ${name}`)
-    return node
-  }).sort((a, b) => a.start - b.start)
+  const binding = body.flatMap(node => node.declarations || []).find(node => node.init?.callee?.name === 'useResourceNavigation')
+  assert.ok(binding, 'App binds the real resource factory')
+  const imported = body.find(node => node.type === 'ImportDeclaration' && node.specifiers.some(row => row.local.name === 'useResourceNavigation'))
+  assert.equal(imported?.source.value, './composables/useResourceNavigation.js')
   const unexpected = name => () => { throw Error(`Unexpected resource fixture boundary: ${name}`) }
   Object.assign(context, {
     ...useArchiveNavigationState(), navigation: createArchiveNavigationCoordinator(),
     loading: ref(false), resourceReadModelDetail: ref(null), resourceReadModelStatus: ref(''),
     prepareArchivePage: unexpected('prepareArchivePage'), commitView: unexpected('commitView'),
-    ...context,
+    ...context, useResourceNavigation,
   })
   for (const [name, value] of Object.entries(context)) if (value && typeof value === 'object' && 'value' in value && !isRef(value)) context[name] = ref(value.value)
-  const exposed = vm.runInNewContext(`(() => {\n${nodes.map(node => script.slice(node.start, node.end)).join('\n')}\nreturn { openArchiveStatus, loadResourceStatus };\n})()`, context)
+  const handlers = vm.runInNewContext(script.slice(binding.init.start, binding.init.end), context)
+  const exposed = {}
+  for (const property of binding.id.properties) {
+    assert.ok(property.key.name in handlers)
+    exposed[property.value.name] = handlers[property.key.name]
+  }
   Object.assign(context, exposed)
   return exposed
 }

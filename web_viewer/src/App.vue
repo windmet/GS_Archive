@@ -659,6 +659,7 @@ import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigati
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { useStoryNavigation } from './composables/useStoryNavigation.js'
 import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { useResourceNavigation } from './composables/useResourceNavigation.js'
 import { useGashaNavigation } from './composables/useGashaNavigation.js'
 import { useCardNavigation } from './composables/useCardNavigation.js'
 import { useUnitNavigation } from './composables/useUnitNavigation.js'
@@ -957,7 +958,6 @@ const storyCatalogIndex = shallowRef(null)
 const storyCatalogLanding = shallowRef(null)
 const resourceReadModelDetail = shallowRef(null)
 const resourceReadModelStatus = ref('')
-let pendingResourceNavigation = 0
 const homeReadModelIndex = shallowRef(null)
 const homeReadModelProfiles = shallowRef({})
 const homeEntryStatus = ref('')
@@ -2236,30 +2236,12 @@ const { openSongStage, openSpineLab, openChibiStage, closeArchiveExperiment, upd
   syncArchiveRoute, spineViewerLoader, chibiStageViewerLoader, loadSongDetail, ensureSongCatalog,
 })
 
-function openArchiveStatus() {
-  const request = ++pendingResourceNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  resourceReadModelStatus.value = '正在读取资源状态…'
-  loading.value = true
-  return prepareArchivePage('archive_status', loadResourceStatus()).then(detail => {
-    if (request !== pendingResourceNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    resourceReadModelDetail.value = detail
-    resourceReadModelStatus.value = ''
-    if (view.value !== 'portal') detailSourceRoute.value = ''
-    filterQuery.value = ''
-    currentStoryDomain.value = ''
-    currentEventScope.value = 'all'
-    currentStoryAvailability.value = 'all'
-    currentStorySort.value = 'domain'
-    commitView('archive_status')
-  }).catch(error => {
-    if (request !== pendingResourceNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[ResourceReadModel] Failed to open status:', error)
-    resourceReadModelStatus.value = '资源状态暂时无法读取，请重试。'
-  })
-}
+const { openArchiveStatus, loadResourceStatus, invalidateResourceNavigation } = useResourceNavigation({
+  resourceReadModelDetail, resourceReadModelStatus, view, loading,
+  detailSourceRoute, filterQuery, currentStoryDomain, currentEventScope,
+  currentStoryAvailability, currentStorySort, navigation, archiveBootstrap,
+  readModelClient, prepareArchivePage, commitView,
+})
 
 function openIdol(entry) {
   if (currentCategoryId.value !== 'cards') return openIdolReadModel(entry.id, { captureSource: true })
@@ -2464,20 +2446,6 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-async function loadResourceStatus(options = navigation.getLoadOptions?.() || {}) {
-  return (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.resources, options)
-      if (index.count !== 1 || index.pages?.length !== 1) throw new Error('Resource status directory mismatch')
-      const page = await readModelClient.load(index.pages[0], options)
-      const row = page.rows?.[0]
-      if (row?.id !== 'archive-status' || !row.detail) throw new Error('Resource status identity mismatch')
-      return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
-        if (!data.view?.manifest?.coverage || !data.view?.verification?.scenarios ||
-          !data.view?.uiAssets?.meta) throw new Error('Resource status shape mismatch')
-      } })
-  })()
-}
-
 function isBootstrapRoute(route) {
   if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
@@ -2508,7 +2476,7 @@ async function restoreRoute(route, { restoring = true } = {}) {
     invalidateMobileNavigation()
     invalidateLegacyAliasNavigation()
     invalidateStoryNavigation()
-    ++pendingResourceNavigation
+    invalidateResourceNavigation()
     loading.value = true
     loadingPurpose.value = route.view === 'player' ? 'story-playback' : 'archive-data'
     tracePlayer('route-restore', { view: route.view, directPlayer: isDirectScenarioEntry(route) })

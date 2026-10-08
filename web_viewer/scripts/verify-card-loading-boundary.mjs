@@ -1,3 +1,4 @@
+import { bindResourceNavigation } from './lib/resource-navigation-harness.mjs'
 import { bindGashaNavigation } from './lib/gasha-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -59,7 +60,7 @@ function setup(source = app, overrides = {}) {
 const equal = (actual, expected, message) => assert.deepEqual(JSON.parse(JSON.stringify(actual)), expected, message)
 function restoration() {
   const t = setup(), c = t.context, applied = []
-  bindGashaNavigation(app, c); bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
+  bindGashaNavigation(app, c); bindResourceNavigation(app, c); bindIdolNavigation(app, c); bindUnitNavigation(app, c); bindHomeNavigation(app, c).stop()
   bindStoryNavigation(app, c).stop(); bindStoryArchiveNavigation(app, c).stop()
   bindEventNavigation(app, c).stop(); bindLegacyAliasNavigation(app, c).stop()
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
