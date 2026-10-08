@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import vm from 'node:vm'
 import { parse } from '@vue/compiler-sfc'
 import { parse as parseScript } from '@babel/parser'
-import { computed, ref, reactive, watch, nextTick, effectScope, createSSRApp } from 'vue'
+import { computed, ref, reactive, nextTick, createSSRApp } from 'vue'
 import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { renderToString } from '@vue/server-renderer'
@@ -12,6 +12,7 @@ import { buildSongPresentation } from '../../src/presentation/SongPresentation.j
 import { projectSongPerformance } from '../../readmodels/lib/projections.mjs'
 import { useStageSongProjection } from '../../src/composables/useStageSongProjection.js'
 import { useStageNavigation } from '../../src/composables/useStageNavigation.js'
+import { bindSongNavigation } from './song-navigation-harness.mjs'
 
 function production(text) {
   const { descriptor, errors } = parse(text); assert.deepEqual(errors, [])
@@ -24,14 +25,16 @@ function production(text) {
     template: descriptor.template.ast,
   }
 }
-const flush = async () => { await nextTick(); await Promise.resolve(); await Promise.resolve() }
+const flush = async () => { await nextTick(); for (let index = 0; index < 16; index++) await Promise.resolve() }
 const plain = value => JSON.parse(JSON.stringify(value))
 
 export async function verifySongLandingBehavior({ appComponent, catalogComponent, detailComponent, idolDetailComponent, unitDetailComponent, catalog, unitDictionary }) {
   const app = production(appComponent)
   const state = { computed, view: ref('song_detail'), currentSongId: ref('drvalv'),
     songReadModelDetail: ref({ id: 'drvalv', song: catalog.songs.drvalv, view: { id: 'drvalv' }, experimental: { id: 'drvalv' } }) }
-  const values = Object.fromEntries(['currentSong','currentSongPresentation'].map(name => [name, vm.runInNewContext(app.value(name), state)]))
+  const songProjection = bindSongNavigation(appComponent, state)
+  songProjection.stop()
+  const values = { currentSong: songProjection.currentSong, currentSongPresentation: songProjection.currentSongPresentation }
   const stageBinding = app.body.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
     .find(node => node.id.type === 'ObjectPattern' && node.id.properties.some(property => property.key.name === 'stageAudioExperiments'))
   const stageCatalog = ref(null)
@@ -77,14 +80,21 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   const requests = [], views = [], effects = []
   const navigation = createArchiveNavigationCoordinator()
   const context = {
-    ...state, navigation, pendingSongNavigation: 0, songReadModelStatus: ref(''), songParentView: ref(''),
+    ...state, navigation, songReadModelCatalog: ref(null), songReadModelStatus: ref(''), songParentView: ref(''),
     detailSourceRoute: ref('old'), currentCharacterId: ref('001tom'), currentSongScope: ref('movie'),
     filterQuery: ref('old'), currentCategoryId: ref('idol'), gashaReadModelStatus: ref(''),
-    currentArchiveUnit: ref({ id: '01jup' }), archiveBootstrap: { idols: [{ id: '001tom' }] },
+    currentArchiveUnit: ref({ id: '01jup' }), archiveBootstrap: { idols: [{ id: '001tom' }], domains: { songs: 'index' } },
     commitView: next => { views.push(next); state.view.value = next },
-    ensureSongCatalog: () => effects.push('catalog'), captureDetailSource: () => effects.push('source'),
+    captureDetailSource: () => effects.push('source'),
     buildArchiveSourceQuery: () => '?view=portal', currentArchiveRoute: () => ({ view: state.view.value }),
-    loadSongDetail: id => new Promise((resolve, reject) => requests.push({ id, resolve, reject })),
+    readModelClient: { load: async (descriptor, options) => {
+      if (descriptor === 'index') { effects.push('catalog'); return { pages: ['page'], count: Object.keys(catalog.songs).length } }
+      if (descriptor === 'page') return { rows: Object.values(catalog.songs).map(song => ({ ...song, detail: song.song_code })) }
+      const leaf = await new Promise((resolve, reject) => requests.push({ id: descriptor,
+        resolve: value => resolve({ song: { song_code: descriptor }, view: { id: descriptor }, ...value }), reject }))
+      options.validate(leaf)
+      return leaf
+    } },
     stageTargetId: ref(''), stageHandoff: ref(null), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0),
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
     restoreDetailSource: () => {}, goHome: () => {}, syncArchiveRoute: () => {},
@@ -92,12 +102,15 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
     openPrimaryIdol: id => effects.push(['idol', id]), openProjectedCollection: target => effects.push(['story', plain(target)]),
     console: { error() {} },
   }
-  vm.runInNewContext(['navigateArchiveSection','openSongCatalog','openSong','openSongUnit','openSongIdol','openSongRelatedStory'].map(app.fn).join('\n'), context)
+  vm.runInNewContext(app.fn('navigateArchiveSection'), context)
+  const songNavigation = bindSongNavigation(appComponent, context)
+  try {
   const stageNavigationBinding = app.body.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
     .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
   assert.ok(stageNavigationBinding, 'App binds real stage navigation')
   Object.assign(context, vm.runInNewContext(app.cut(stageNavigationBinding.init), { ...context, useStageNavigation }))
   context.navigateArchiveSection('songs')
+  await flush()
   assert.equal(state.view.value, 'song_catalog'); assert.equal(state.currentSongId.value, '')
   for (const key of ['songParentView','filterQuery','currentCategoryId','currentCharacterId']) assert.equal(context[key].value, '')
   assert.equal(context.currentSongScope.value, 'all'); assert.ok(effects.includes('catalog'))
@@ -131,26 +144,20 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   assert.deepEqual(effects.at(-1), ['story', { domain: 'extra', section: '602', parent: 'song_detail' }])
   state.view.value = 'song_detail'
 
-  // Real watcher + real navigation revision ownership, with only transport controlled.
-  context.watch = watch
-  const watcher = app.body.find(node => node.type === 'ExpressionStatement' && node.expression.callee?.name === 'watch' &&
-    node.expression.arguments[0]?.type === 'ArrayExpression' && node.expression.arguments[0].elements[1]?.name === 'currentSongId')
-  const scope = effectScope()
-  try {
-    scope.run(() => vm.runInNewContext(app.cut(watcher), context))
-    state.currentSongId.value = 'drvalv'; await flush()
-    requests.at(-1).resolve({ id: 'drvalv' }); await flush()
-    assert.equal(state.songReadModelDetail.value.id, 'drvalv')
-    state.currentSongId.value = 'brndnf'; await flush(); navigation.invalidate()
-    requests.at(-1).resolve({ id: 'brndnf' }); await flush()
-    assert.equal(state.songReadModelDetail.value.id, 'drvalv')
-  } finally { scope.stop() }
+  // The production factory installed this watcher; only transport is controlled.
+  state.currentSongId.value = 'drvalv'; await flush()
+  requests.at(-1).resolve({ id: 'drvalv' }); await flush()
+  assert.equal(state.songReadModelDetail.value.id, 'drvalv')
+  state.currentSongId.value = 'brndnf'; await flush(); navigation.invalidate()
+  requests.at(-1).resolve({ id: 'brndnf' }); await flush()
+  assert.equal(state.songReadModelDetail.value.id, 'drvalv')
+  } finally { songNavigation.stop() }
 
   const rows = Object.values(catalog.songs)
   let pageRows = rows, count = rows.length, loads = 0
   const loader = { navigation, songReadModelCatalog: ref(null), archiveBootstrap: { domains: { songs: 'index' } },
     readModelClient: { load: async descriptor => { loads++; return descriptor === 'index' ? { pages: ['page'], count, summary: catalog.summary } : { rows: pageRows } } } }
-  vm.runInNewContext(app.fn('loadSongCatalog'), loader)
+  bindSongNavigation(appComponent, loader).stop()
   assert.equal(Object.keys((await loader.loadSongCatalog()).songs).length, 61)
   await loader.loadSongCatalog(); assert.equal(loads, 2, 'cached catalog must not request pages again')
   loader.songReadModelCatalog.value = null; count++
@@ -162,7 +169,7 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
     readModelClient: { load: async (descriptor, options) => {
       assert.equal(descriptor, 'bounded-detail'); options.validate(leaf); return leaf
     } } }
-  vm.runInNewContext(app.fn('loadSongDetail'), detailLoader)
+  bindSongNavigation(appComponent, detailLoader).stop()
   assert.equal(await detailLoader.loadSongDetail('brndnf'), leaf)
   leaf = { song: catalog.songs.drvalv, view: { id: 'brndnf' } }
   await assert.rejects(detailLoader.loadSongDetail('brndnf'), /identity mismatch/)

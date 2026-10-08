@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 {
@@ -86,6 +87,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
@@ -127,6 +129,7 @@ for (const disposed of [false, true]) {
   context.watch = () => {}
   context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -170,6 +173,7 @@ for (const asynchronous of [false, true]) {
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
+  bindSongNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -224,6 +228,7 @@ for (const route of [
   // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
   context.watch = () => {}
   context.view ??= { value: null }
+  bindSongNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   await mount()
   assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,

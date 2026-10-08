@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 
 const roundTrip = route => readArchiveRoute(buildArchiveUrl('http://localhost/', route))
 const source = route => readArchiveSourceRoute(roundTrip(route).sourceRoute)
@@ -13,15 +14,19 @@ const unit = { unit_code: '01jup', unit_id: 1 }
 const context = vm.createContext({
     prepareArchivePage: (_view, data) => data,
   ...state, buildArchiveSourceQuery,
-  songCatalogData: { value: { songs: { brndnf: {} } } },
+  songReadModelCatalog: { value: { songs: { brndnf: { detail: 'brndnf' } } } },
   songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
   cardReadModelCatalog: { value: [card] }, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
-  pendingSongNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
+  pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
   eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
-  loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
+  readModelClient: { load: async (songCode, options) => {
+    const detail = { id: songCode, song: { song_code: songCode }, view: { id: songCode } }
+    options.validate(detail)
+    return detail
+  } },
   loadGashaDetail: async id => ({ id, gasha: { id } }),
   loadCardDetail: async id => ({ id, card: { resource_id: id } }),
   loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
@@ -53,7 +58,7 @@ const context = vm.createContext({
   normalizedPrimaryIdol: code => code,
   commitView: view => { state.view.value = view },
 })
-const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUnit',
+const handlers = ['captureDetailSource',
   'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
   'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
   'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
@@ -62,6 +67,7 @@ for (const name of handlers) {
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
+bindSongNavigation(app, context).stop()
 const fixtures = [
   ['song_detail', 'openSongIdol', '002sht', 'idol_detail'],
   ['song_detail', 'openSongUnit', '01jup', 'unit_detail'],

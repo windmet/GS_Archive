@@ -4,12 +4,12 @@ import fs from 'node:fs'
 import process from 'node:process'
 import assert from 'node:assert/strict'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
-import vm from 'node:vm'
-import { computed, ref, createSSRApp } from 'vue'
+import { ref, createSSRApp } from 'vue'
 import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 
 const root = new URL('..', import.meta.url)
 const mounted = process.argv.includes('--mounted')
@@ -79,10 +79,10 @@ const ordinaryCodes = expectedCodes.filter(code => !experiment.songs[code])
 if (ordinaryCodes.length !== 56) fail(`expected 56 ordinary single-player songs, found ${ordinaryCodes.length}`)
 
 // Execute the production App projection; the bounded song leaf owns playback.
-const projection = appSource.match(/const currentSongPresentation = computed\([^]*?\n[^]*?: null\)/)?.[0]
-assert.ok(projection, 'production song projection must be available')
-const state = { computed, currentSongId: ref(''), songReadModelDetail: ref(null) }
-const selected = vm.runInNewContext(`${projection}\ncurrentSongPresentation`, state)
+const state = { currentSongId: ref(''), songReadModelDetail: ref(null) }
+const songNavigation = bindSongNavigation(appSource, state)
+songNavigation.stop()
+const selected = songNavigation.currentSongPresentation
 const server = await createServer({ configFile: false, plugins: [vue()],
   server: { middlewareMode: true, watch: null },
   optimizeDeps: { noDiscovery: true, include: [] }, appType: 'custom' })

@@ -9,6 +9,7 @@ import { songMatchesIdol, storyMatchesIdol, eventMatchesIdol, idolEventIds, card
 import { buildPortalDesktopOverview } from '../src/presentation/ArchivePortalPresentation.js'
 import { eventResources } from '../src/data/eventResourceGraph.js'
 import { filterArchiveCards } from '../src/data/cardFilters.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 
 const root = process.argv[2]
 assert.ok(root, 'Supply the verified read-model root')
@@ -88,11 +89,11 @@ assert.equal(calls.length,before)
 const directoryState = useArchiveNavigationState()
 const opened=[]
 const adapters={ ...directoryState,
-  ensureSongCatalog:()=>{},
+  songReadModelCatalog:{value:{songs:{}}},
   normalizeEventBrowseState:()=>({kind:'',sort:'newest',page:0}),
   commitView:next=>{directoryState.view.value=next;opened.push(next)},
 }
-vm.runInNewContext(app.match(/function openSongCatalog\([^]*?\n\}/)[0],adapters)
+bindSongNavigation(app,adapters).stop()
 vm.runInNewContext(app.match(/function openDomainCatalog\([^]*?\n\}/)[0],adapters)
 for(const idolCode of ['011min','017kir','']) {
   adapters.openSongCatalog({idolCode})
