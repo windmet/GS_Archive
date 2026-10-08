@@ -103,3 +103,11 @@
 - 偶像导航检查之前截取两个函数之间整段代码，包含新 composable 初始化后报缺少依赖；现改为 AST 精确提取真实函数，原行为断言不变，重新执行的 7 个错误变体仍全部失败如预期。
 - Browser：390 宽摄影目录前后画面一致；1280 宽顶部共同可见区域一致（桌面前后截图可见高度不同，不称全图逐像素一致）。搜索“摄影棚”得到 3 条，打开详情进入工作台，再返回时保留搜索与场景详情；无 console error。对应源码模板/样式一致性断言通过。
 - `build:check` 和完整 `verify:reading` 通过；首轮 batch 104/105 暴露上述测试提取问题，修正后重新执行整批 105/105 通过。日志为 `photo-{batch,reading,build}-20261008.log`。
+
+## 2026-10-08 App.vue 拆分：故事目录投影
+
+- 从 `142229b5` 提取 `useStoryCatalogProjection`：偶像范围、领域和活动分类计数、可用性与章节过滤、五种排序、可见条数。搜索仍由既有目录组件处理，没有增设另一套标题过滤。App 从 5160 行降至 5122 行，模板与样式内容完全一致。
+- Browser 首轮发现抽取时立即传入了后声明的 `storyCatalogEntries`，产生初始化顺序错误；已把无副作用的 computed 声明移到调用前。新回归按 App 的实际声明顺序执行依赖和 composable 调用；把声明移回后方会确实触发 ReferenceError，不能再仅凭模块测试通过掩盖白屏。
+- `verify-story-catalog-projection.mjs` 登记到 batch，覆盖生产 App 接线、响应式更新、过滤、排序、源数组不变和空数据。基线与 6 个反向变体的结果见 `story-projection-20261008/results.json`。
+- 修正顺序后重新执行：batch 106/106、完整 reading、build:check 均通过；日志 `story-{batch,reading,build}-20261008.log`。没有复制完整 public。
+- 5175 Browser：390/1280 宽目录前后截图布局与文字一致；1394 条总目录切换到活动 36 条，再选跨组合 2 条，最新排序实际生效。初始化修复后的刷新与操作没有新 error；本地浏览器证据不等同线上验收。

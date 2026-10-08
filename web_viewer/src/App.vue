@@ -604,7 +604,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import { cardAttribute, storyMatchesIdol } from './presentation/CatalogIdolScope.js'
+import { cardAttribute } from './presentation/CatalogIdolScope.js'
 import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
 import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
@@ -668,6 +668,7 @@ import {
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { useStageSongProjection } from './composables/useStageSongProjection.js'
 import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigation.js'
+import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
 import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
@@ -1203,50 +1204,12 @@ const currentIdolStoryExternalResources = computed(() =>
   ),
 )
 
-const storyDomainOptions = computed(() => {
-  const counts = new Map()
-  const labels = new Map()
-  for (const entry of catalogStoryEntries.value) {
-    counts.set(entry.domain, (counts.get(entry.domain) || 0) + 1)
-    labels.set(entry.domain, entry.domainLabel)
-  }
-  return [...counts.entries()].map(([id, count]) => ({ id, count, label: labels.get(id) || id }))
-})
-
-const storyEventScopeOptions = computed(() => {
-  const labels = {
-    fixed_unit_event: '固定组合团活',
-    attribute_event: '属性团曲',
-    mixed_unit_event: '跨组合团活',
-  }
-  return Object.entries(labels).map(([id, label]) => ({
-    id,
-    label,
-    count: catalogStoryEntries.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
-  }))
-})
-
+const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
 const catalogScopeIdol = computed(() => archiveBootstrap.idols.find(row => row.id === currentCharacterId.value) || null)
-const catalogStoryEntries = computed(() => storyCatalogEntries.value.filter(entry => storyMatchesIdol(entry, catalogScopeIdol.value)))
-const filteredStoryCatalog = computed(() => {
-  const query = filterQuery.value.trim().toLowerCase()
-  const availability = currentStoryAvailability.value
-  const entries = catalogStoryEntries.value.filter(entry =>
-    (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
-    (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
-    (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
-    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)),
-  )
-  const sorted = [...entries]
-  if (currentStorySort.value === 'latest') sorted.sort((a,b)=>b.releaseAt-a.releaseAt)
-  else if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
-  else if (currentStorySort.value === 'resource') sorted.sort((a, b) => a.resourceId.localeCompare(b.resourceId))
-  else if (currentStorySort.value === 'steps_desc') sorted.sort((a, b) => (b.summary?.step_count || 0) - (a.summary?.step_count || 0))
-  else sorted.sort((a, b) => a.domainOrder - b.domainOrder || a.resourceId.localeCompare(b.resourceId))
-  return sorted
+const { storyDomainOptions, storyEventScopeOptions, catalogStoryEntries, filteredStoryCatalog, visibleStoryCatalogEntries } = useStoryCatalogProjection({
+  storyCatalogEntries, catalogScopeIdol, filterQuery, currentStoryAvailability, currentStoryDomain,
+  currentStorySection, currentEventScope, currentStorySort, storyVisibleLimit,
 })
-
-const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.slice(0, storyVisibleLimit.value))
 
 const currentStory = computed(() => storyReadModelDetail.value?.story?.file === currentStoryFile.value
   ? storyReadModelDetail.value.story : null)
@@ -1307,7 +1270,6 @@ const currentStoryVisualUrl = computed(() => {
 })
 
 const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
-const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
 const currentArchiveUnit = computed(() => {
   const projected = unitReadModelDetail.value?.view.entry.unit
   if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
