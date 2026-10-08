@@ -286,3 +286,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 正向基线通过，17/17 反向变体被拦截（目录/profile 身份、两级中止、LRU 命中/容量、访问保存/台词、共享请求、watcher 回滚/结束、App 恢复采纳、watcher/unmount 接线、Portal Map、错误 profile ref）。记录 `.analysis/home-mutations/results.json`；变体不写服务源码。source batch 115/115、完整 reading、player repair 37/37、`build:check`（17.63 秒）通过，最终新增 Map 回归与断言加固后的基线再次通过。日志 `.analysis/home-{source-batch,reading,player-repair,build-check}.log`，构建输出固定 `.analysis/build-check`、不复制 public。
 - Browser 5175：以享介首句与基础常服取得 390、1280 宽度基线，恢复相同 URL 后静态控件布局与文案肉眼一致，Spine 姿态随时间变化。手机切换茁壮明彩服装和第 2 句→返回资料馆→重新进入，URL、台词和服装保留；首句深链接刷新恢复通过。中途跨较长操作间隔曾丢失临时访问状态，同一会话连续往返未复现；共享开发期间存在其他窗口 HMR，不据此单独归因于本次逻辑。热更新写入期 20:04 出现一次 App reload error，随后刷新恢复；最终全新后台标签页恢复首句、基础常服与实际立绘，console error 为 0，未出现白屏或框架 overlay；临时 viewport 已重置。上述仅证明本地页面/导航，不作为音频或长稳验收。
 - UI 待办仅记录：首页第二句在未设制作人时仍显示 `●●●●●●●●●●監督`；不在本批调整称呼或文案。另一窗口已提交 B026–B027 译文及活动/档案样式（包括 `f454ddab`、`454b6a9d`、`31876817`、`a005c3c3`），原样保留；本批没有改动组件模板或样式，没有重启、部署、R2 上传或完整资源打包。
+
+- 代码 `8adf48f1` 已推送。固定该提交的 LF 干净检出完成全部 115 步：**114 通过、0 失败、1 跳过 npm ci**；source batch 115/115，最后编译（33.423 秒）与当前构建审计通过。证据位于 `E:\Web_build\GS_Archive_engineering_20261007\gate-8adf48f1-final\`，包括 `results.json`、`generated-audit.diff`、`home-diff-review.json`、`mutation-results.json`；这是本地源码门，不代表远端 CI、媒体发布或上线验收。
+- 临时工作树及依赖 junction 已清理，主工程依赖保留，见同目录 `cleanup.json`。清理后 C 盘可用 48.55 GiB，5175 仍为 PID 74640。收尾发现另一窗口新增 `src/components/archive/ArchiveImmersiveHome.vue` 与 `src/styles/archive-home-day.css` 改动，原样保留、不纳入本批；固定提交门禁及此前 Browser 旅程不扩展为这两份后续 UI 改动的验收。
+
+### 下一批偶像档案边界（Home 拆分后只读盘点）
+
+- 下一批优先 `useIdolNavigation`：`openPrimaryIdol`、`openIdolReadModel`、`openIdolDirectory`、`selectPrimaryIdol`、两个 read-model loader、详情 watcher 处理器、请求计数与 prepare/invalidate；身份/资料/显示名/统计/活动/歌曲 6 个 computed 可随同迁移。初步 22 个依赖、15 个输出，实施时以 AST 的真实引用再次核对。
+- 入口与 `[view,currentCharacterId]` watcher 必须共享请求计数；保留 `selection` 只更新选择、`captureSource/resetContext/clearUnit/clearEventContext` 各自语义。恢复时无效偶像进入 profile picker，加载失败回偶像目录，不能混成同一回退。
+- factory 需早于 Legacy/Event/Song 等调用方，且晚于 navigation/refs 初始化；若把 computed 一起迁移，可放在 Home 接线之后，保留 `archiveStats`…`idolPickerLabel` 原连续块。显示名仍通过 App 的既有函数依赖，避免重做本地化。
+- `openIdol` 中卡片目录分支、`openIdolDomain` 跨领域分派、现代组合、卡片共享请求计数和 `goHome` 全局清理暂不并入。主要受影响护栏是 idol-readmodel-navigation、idol-navigation-ux、idol-communication-readiness 的实际 watcher、relation-navigation、各 restore fixture，以及提取详情 computed 的旧投影检查。当前只盘点，尚未实施。
