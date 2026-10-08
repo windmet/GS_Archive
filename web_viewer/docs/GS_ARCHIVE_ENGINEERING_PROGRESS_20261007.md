@@ -335,3 +335,13 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - source batch 117/117、完整 reading、player repair 37/37、旧 Unit/卡片/关联与启动回归通过；`build:check` 通过（14.73 秒），输出固定 `.analysis/build-check`，不复制 public。移除无效测试占位和空白后，相关 Unit/关联回归与 AST 对照再次通过。日志 `.analysis/unit-{source-batch,reading,player-repair,build-check,startup}.log`。
 - 5175 Browser：Jupiter 详情在 1280 宽度和 390×844 下迁移前后布局/文字一致。手机成员翔太→返回、固定组合活动 Inner Dignity→返回、成员卡片目录保留 Jupiter 3 人筛选→返回均通过。桌面组合剧情进入实际对白 5/233，并返回 `unit_detail&unit=01jup`。这些证据不代表音频解码、长稳或线上发布验收。本批没有改组件模板、样式、文案或译文，没有重启、部署、R2 上传或完整资源打包；其他窗口翻译审计工作保持原样。
 - Jupiter 返回后刷新恢复通过，console error 为 0；临时视口已重置、临时标签页已关闭。完整干净源码门结果随后补录。
+
+- 代码 `396971e7` 已推送。固定该提交的干净 LF 检出完成全部 115 步：**114 通过、0 失败、1 跳过 npm ci**；source batch 117/117、最终 `build:check`（16.50 秒）与当前构建审计通过。编译未复制 public；既有大 chunk 与运行时背景资源解析提示仍存在。这是本地源码门，不代表远端 CI、媒体发布或上线验收。
+- 证据保存在 `E:\Web_build\GS_Archive_engineering_20261007\gate-396971e7-final\`：`results.json`、`generated-audit.diff`、`unit-diff-review.json`、`mutation-results.json` 与 `cleanup.json`。临时检出和依赖 junction 已清理，主工程依赖保留；C 盘可用 47.89 GiB，5175 仍为 PID 74640，未重启。
+
+### 下一批卡片导航边界（组合拆分后只读盘点）
+
+- 下一批统一处理卡片目录、卡片详情与 `openUnitCards`，共享一个 `pendingCardNavigation`；不要按入口另建计数。基础边界包括三项 loader（facets/catalog/detail）、目录/详情打开、偶像筛选、返回卡片目录与同系列入口；目录/筛选/详情身份/前后卡/同系列等 computed 可随同迁移，实施时再核对准确依赖数。
+- 保留 facets 的单次请求复用、失败后可重试，以及目录的可选属性回退；目录校验数量、resource_id 唯一性、id 对齐、ownerReference 和两个整数计数，中止后不发布。详情必须携带 expectedId 并校验 resource_id、ownerReference、home_voice_cues/scenario_entries。新回归需实际执行这条加载链，而不是复用旧卡片测试的内部 loader stub。
+- factory 应位于 Unit 之后、Event 之前，继续让 Event 接收实际 card refs/入口。卡片到活动、卡池的跨域回调若迁入，须按实际初始化顺序延迟绑定。`openIdol` 的双目录分派、`openVoicePreview/restoreVoicePreview` 的播放控制及统一 apply/Back 暂留 App；声音入口不能因拆分改变 revision、目标卡身份或返回来源。
+- 重点验证卡片列表→详情→组合卡片目录交叉竞争，过滤条件清理/保留、详情身份隔离、成员 owner 与来源恢复、深链接/player 父卡加载、可选 facets 失败和取消。主要影响旧 card-readmodel-navigation、card-filtering、relation-navigation、async/player voice 与各 restore fixture。当前只盘点，未实施卡片拆分。
