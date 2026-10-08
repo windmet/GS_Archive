@@ -265,7 +265,7 @@
         :scope-idol="catalogScopeIdol" :idol-name="idolDisplayName" :load-idol="loadIdolDetail" @clear-idol="clearCatalogIdol"
         :browse-state="currentEventBrowseState" @query="updateEventCatalogQuery" @browse="updateEventBrowse" @ready="onEventCatalogReady" @open-event="openEventDetail($event,view)" />
       <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
-        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-card="openCollectionCard" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" />
+        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-card="openCollectionCard" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" @open-idol="code => openIdolReadModel(code, { captureSource: true, resetContext: true })" />
       <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
         @query="updatePhotoCatalogQuery" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @ready="onPhotoCatalogReady" @open-studio="openPictureStudio" />
 

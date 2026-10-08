@@ -7,7 +7,7 @@
           <p v-if="busy" role="status" class="domain-muted">正在读取所选藏品…</p>
           <p v-else-if="error" role="alert" class="domain-error">{{ error }}<button type="button" @click="emit('retry')">重试</button></p>
           <template v-else-if="detail?.entry">
-            <CollectionEntryDetails :detail="detail" :kind="kind" :display-idol-name="displayIdolName" @open-card="emit('open-card',$event)" />
+            <CollectionEntryDetails :detail="detail" :kind="kind" :display-idol-name="displayIdolName" link-idol @open-card="emit('open-card',$event)" @open-idol="emit('open-idol',$event)" />
             <section v-if="gashaLinks.length" class="domain-panel"><h3>对应卡池</h3><p v-if="gashaLinks.some(link=>link.ambiguous)" class="domain-muted">券名对应同名卡池，尚不能区分具体公告。</p><ul><li v-for="link in gashaLinks" :key="link.id"><button type="button" @click="emit('open-gasha',link)">{{ gashaText(link.display_name) }}<template v-if="link.ambiguous && link.start_at"> · {{ gashaTicketPeriodLabel(link.start_at) }}</template></button></li></ul><p class="domain-muted">依据此道具的原文名称关联；不代表已确认卡片范围。</p></section>
             <section class="domain-panel"><h3>已知来源与用途</h3><p v-if="bond" class="domain-description">偶像羁绊 Lv.{{ bond.level }} 称号。<small class="domain-muted">用户补充来源。</small></p><ArchiveRewardTable v-if="detail.sources?.length || !bond" :rows="detail.sources" sources @open-event="emit('open-event',$event)"/></section>
           </template>
@@ -26,7 +26,7 @@ import {honorBondSource} from '../../presentation/HonorBondSource.mjs'
 import {gashaTicketLinks,gashaTicketPeriodLabel} from '../../data/gashaTicketCatalog.js'
 import {gashaText} from './useArchiveGashaText.js'
 const props=defineProps({detail:Object,kind:String,busy:Boolean,error:String,modal:Boolean,displayIdolName:{type:Function,default:()=>''}})
-const emit=defineEmits(['close','retry','open-event','open-gasha','open-card'])
+const emit=defineEmits(['close','retry','open-event','open-gasha','open-card','open-idol'])
 const gashaLinks=computed(()=>props.kind==='items'?gashaTicketLinks(props.detail?.entry?.id):[])
 const title=computed(()=>props.kind==='honors'?'称号详情':'道具详情')
 const bond=computed(()=>props.kind==='honors'?honorBondSource(props.detail?.entry):null)

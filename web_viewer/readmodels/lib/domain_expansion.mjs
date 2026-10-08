@@ -1,4 +1,5 @@
 import { assert, pick } from './common.mjs';
+import { idolHonorIdentity, idolHonorBelongsTo, idolHonorOrder } from '../../src/presentation/HonorIdentity.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
 const photoProductKinds={photoFilter:'filters',photoSticker:'stickers',photoSpot:'spots',photoScene:'scenes',photoFrame:'frames'};
@@ -222,9 +223,17 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(idol,'Photo profile identity mismatch');
     idol.view.photo={idolId:person.view.actor.idolId,faceCount:person.view.actor.faces.length,poseCount:person.view.actor.poses.length,
       cueCount:person.view.media.voiceCues.length};
-    idol.view.honors=domains.honors.records.filter(honor=>honor.view.sources.some(source=>source.idolId===person.view.actor.idolId)).map(honor=>({
-      key:honor.view.entry.key,nameJa:honor.view.entry.nameJa,
+    // Two independent links: the idol's own honors decode from the honor id (担当, catchphrase, FES
+    // achievements); event ranking honors name the idol in their ranking configuration.
+    const honorLink=(honor,group,extra)=>({key:honor.view.entry.key,id:honor.view.entry.id,nameJa:honor.view.entry.nameJa,
+      resourceId:honor.view.entry.resourceId,openAt:honor.view.entry.openAt,image:pick(honor.summary.image,['url','status']),group,...extra});
+    const own=domains.honors.records.filter(honor=>idolHonorBelongsTo(honor.view.entry,person.summary.idolCode))
+      .map(honor=>honorLink(honor,'idol',{kind:idolHonorIdentity(honor.view.entry).kind}))
+      .sort((a,b)=>idolHonorOrder(a.kind)-idolHonorOrder(b.kind));
+    const ranking=domains.honors.records.filter(honor=>honor.view.sources.some(source=>source.idolId===person.view.actor.idolId)).map(honor=>honorLink(honor,'ranking',{
       sources:honor.view.sources.filter(source=>source.idolId===person.view.actor.idolId).map(source=>pick(source,['idolId','scope','upperRank','lowerRank','event']))}));
+    assert(!own.some(honor=>ranking.some(row=>row.key===honor.key)),'An honor cannot be both an idol honor and a ranking honor');
+    idol.view.honors=[...own,...ranking];
   }
   return materialRelations.materialContexts;
 }

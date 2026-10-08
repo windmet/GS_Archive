@@ -122,6 +122,7 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   assert.equal(actor.media.entries['faces:10102001'].preset.face,'face_joy');
   assert.equal(actor.media.models['001tom_002_00'].status,'verified-local-files');
   assert.equal(actor.media.voiceCues.length,5);
+  let ownTotal=0;
   for(const person of domains.photos.records.filter(row=>row.id!=='materials')){
     assert(person.view.costumes.length>1);
     for(const costume of person.view.costumes){
@@ -135,13 +136,20 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
     assert.equal(profile.poseCount,person.view.actor.poses.length);
     assert.equal(profile.cueCount,person.view.media.voiceCues.length);
     const honors=domains.idols.records.find(row=>row.id===person.summary.idolCode).view.honors;
-    assert.equal(honors.length,8);
-    for(const honor of honors){
+    const ranking=honors.filter(honor=>honor.group==='ranking'), own=honors.filter(honor=>honor.group==='idol');
+    assert.equal(ranking.length,8);
+    for(const honor of ranking){
       const entry=domains.honors.records.find(row=>row.view.entry.key===honor.key);
       assert.equal(honor.nameJa,entry.view.entry.nameJa);
       assert(honor.sources.every(source=>source.idolId===profile.idolId && source.scope==='idol-ranking'));
     }
+    // Every idol has a 担当 and a catchphrase honor; FES idols add their two achievements.
+    assert.deepEqual(own.slice(0,2).map(honor=>honor.kind),['tantou','catchphrase']);
+    assert([2,4].includes(own.length));
+    for(const honor of own) assert.equal(String(honor.id).slice(1,3),person.summary.idolCode.slice(1,3));
+    ownTotal+=own.length;
   }
+  assert.equal(ownTotal,122,'all 122 idol honors reach exactly one idol');
   for(const domain of ['items','honors'])for(const row of domains[domain].records)assert.equal(row.summary.image.url,row.view.media.image.url);
   let linkedCards=0,linkedPhotos=0;
   for(const event of domains.events.records)for(const row of event.view.rewards.general){

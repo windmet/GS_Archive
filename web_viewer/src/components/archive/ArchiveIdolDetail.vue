@@ -44,10 +44,21 @@
       </div>
     </section>
 
-    <section v-if="honors.length" class="idol-related" aria-labelledby="idol-honors-title">
-      <div class="section-heading"><h3 id="idol-honors-title">关联排名称号</h3><span>{{ honors.length }} 条 · 已知来源</span></div>
-      <div class="related-grid"><button v-for="honor in honors" :key="honor.key" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${honor.key}`" @click="emit('open-honor',honor.key)"><Medal :size="20"/><span><strong :title="honor.nameJa">{{ archiveText('honor',honor.nameJa) }}</strong><small>{{ honor.sources.map(source=>source.event?.title).filter(Boolean).join(' · ') }}</small></span><ChevronRight :size="18" aria-hidden="true"/></button></div>
-      <p class="idol-honor-note">按历史排名配置中的偶像编号关联；未推断持有或其他称号的归属。</p>
+    <!-- Honors as the plates the game shows. The idol's own honors decode from the honor id; ranking
+         honors name the idol in an event's ranking configuration. Each plate opens the honor page. -->
+    <section v-if="honors.length" class="idol-related idol-honors" aria-labelledby="idol-honors-title">
+      <div class="section-heading"><h3 id="idol-honors-title">称号</h3><span>{{ honors.length }} 个</span></div>
+      <section v-for="group in honorGroups" :key="group.id" class="honor-group" :aria-label="group.title">
+        <h4>{{ group.title }}<small>{{ group.note }}</small></h4>
+        <ul class="honor-plates">
+          <li v-for="honor in group.honors" :key="honor.key">
+            <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${honor.key}`" :title="honor.nameJa" @click="emit('open-honor',honor.key)">
+              <span class="honor-plate"><img v-if="honor.image?.url" :src="honor.image.url" :alt="honorTitle(honor)" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
+              <span class="honor-caption"><strong>{{ honorTitle(honor) }}</strong><small>{{ honorMeta(honor) }}</small></span>
+            </button>
+          </li>
+        </ul>
+      </section>
     </section>
 
     <section v-if="songs.length" class="idol-songs" aria-labelledby="idol-songs-title">
@@ -96,6 +107,8 @@ import { computed } from 'vue'
 import { BookOpenText, ChevronRight, Images, Camera, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
+import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
+import { honorBondSource } from '../../presentation/HonorBondSource.mjs'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -113,6 +126,27 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor'])
+// Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100) come first, then FES achievements, then
+// event rankings. FES names are internal condition labels, so their plate gets a readable title.
+const HONOR_GROUPS = [
+  { id: 'bond', title: '羁绊称号', note: '偶像羁绊奖励 · 用户转述来源', kinds: ['tantou', 'catchphrase'] },
+  { id: 'fes', title: 'FES 成就', note: 'FES 限定卡的换装与满破', kinds: ['fes-change', 'fes-limitbreak'] },
+]
+const honorGroups = computed(() => [
+  ...HONOR_GROUPS.map(group => ({ ...group, honors: props.honors.filter(honor => group.kinds.includes(honor.kind)) })),
+  { id: 'ranking', title: '活动排名', note: '按活动排名配置中的偶像编号关联', honors: props.honors.filter(honor => honor.group === 'ranking') },
+].filter(group => group.honors.length))
+function honorTitle(honor) {
+  if (honor.kind === 'fes-change') return 'FES 限定卡换装'
+  if (honor.kind === 'fes-limitbreak') return 'FES 限定卡满破'
+  return archiveText('honor', honor.nameJa)
+}
+const rankLabel = source => source.upperRank === source.lowerRank ? `第 ${source.upperRank} 名` : `第 ${source.upperRank}–${source.lowerRank} 名`
+function honorMeta(honor) {
+  if (honor.kind?.startsWith('fes-')) return `${fesHonorMonth(honor)} FES`
+  if (honor.group === 'idol') { const bond = honorBondSource(honor); return bond ? `羁绊 Lv.${bond.level}` : '专属称号' }
+  return (honor.sources || []).map(source => [source.event?.title, rankLabel(source)].filter(Boolean).join(' · ')).join('；')
+}
 
 const displayedIdolName = computed(() => props.idol
   ? props.idolName(props.idol.idol_code, props.idol.display_name) || props.idol.display_name
@@ -215,14 +249,24 @@ function formatDate(timestamp) {
 .idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-8); }
 .idol-notes h3 { padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .idol-notes p { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-2); line-height: 1.8; overflow-wrap: anywhere; }
-.idol-honor-note { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.7; }
+.honor-group + .honor-group { margin-top: var(--gs-space-6); }
+.honor-group h4 { display: flex; align-items: baseline; gap: var(--gs-space-3); margin: 0 0 var(--gs-space-3); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.honor-group h4 small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+/* Plates keep the game's 228x46 / 232x60 proportions; the caption says where each one comes from. */
+.honor-plates { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: var(--gs-space-4) var(--gs-space-6); margin: 0; padding: 0; list-style: none; }
+.honor-plates button { display: grid; gap: var(--gs-space-2); width: 100%; min-width: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.honor-plate { display: flex; align-items: center; height: 60px; color: var(--gs-ink-3); }
+.honor-plate img { display: block; max-width: 100%; max-height: 60px; object-fit: contain; object-position: left center; }
+.honor-caption { display: grid; gap: 2px; min-width: 0; }
+.honor-caption strong { overflow: hidden; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.honor-caption small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .idol-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
 .idol-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
 
 @media (hover: hover) {
   .idol-unit-link:hover { text-decoration: underline; }
-  .related-grid button:hover strong, .song-links button:hover strong { color: var(--gs-mint-ink); }
+  .related-grid button:hover strong, .song-links button:hover strong, .honor-plates button:hover strong { color: var(--gs-mint-ink); }
 }
 @container idol-detail (max-width: 800px) {
   .idol-profile-header { grid-template-columns: 104px minmax(0, 1fr); }

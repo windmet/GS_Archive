@@ -4,7 +4,10 @@
     <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3><p v-if="name !== detail.entry.nameJa" lang="ja" class="collection-original">{{ detail.entry.nameJa }}</p></div>
     <p class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
-      <div><dt>种类</dt><dd>{{ kind === 'honors' ? '称号' : itemBrowseGroup(detail.entry.itemType).label }}</dd></div>
+      <div><dt>种类</dt><dd>{{ kind === 'honors' ? (honorIdol ? honorKindLabel : '称号') : itemBrowseGroup(detail.entry.itemType).label }}</dd></div>
+      <!-- An idol honor's id names its idol (HonorIdentity), so the honor page links back to the idol. -->
+      <div v-if="honorIdol"><dt>所属偶像</dt><dd><button v-if="linkIdol" type="button" class="collection-idol-link" :data-archive-focus-id="`collection-honor-idol:${detail.entry.id}`" @click="emit('open-idol',honorIdol.code)"><ArchiveIdolAvatar :idol-code="honorIdol.code" :size="24" decorative />{{ honorIdol.name }}<ChevronRight :size="15" aria-hidden="true" /></button><template v-else>{{ honorIdol.name }}</template></dd></div>
+      <div v-if="honorIdol?.kind.startsWith('fes-')"><dt>对应 FES</dt><dd>{{ fesHonorMonth(detail.entry) }} FES 限定卡</dd></div>
       <div v-if="detail.entry.term"><dt>历史配置期</dt><dd>{{ historicalPeriod(detail.entry) }}</dd></div>
       <div v-if="kind === 'items'"><dt>持有上限</dt><dd>{{ detail.entry.maxAmount === undefined ? '未记录' : number(detail.entry.maxAmount) }}</dd></div>
       <div v-if="detail.entry.hasPrefab"><dt>原始效果</dt><dd>原配置含 Prefab，当前展示静态图片。</dd></div>
@@ -31,15 +34,23 @@
 <script setup>
 import {number,itemBrowseGroup} from './DomainPresentation.mjs'
 import {computed,ref,watch} from 'vue'
-import {ImageOff} from '@lucide/vue'
+import {ChevronRight,ImageOff} from '@lucide/vue'
 import {historicalPeriod} from './DomainPresentation.mjs'
 import {archiveText} from './useArchiveCollectionText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
-import {IDOL_ID_TO_NAME} from '../../utils/IdolNameMap.js'
+import {IDOL_ID_TO_NAME,IDOL_NAME_TO_ID} from '../../utils/IdolNameMap.js'
+import {idolHonorIdentity,fesHonorMonth} from '../../presentation/HonorIdentity.mjs'
+import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import DomainInlineText from './DomainInlineText.vue'
 import DomainMediaPreview from './DomainMediaPreview.vue'
-const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true},displayIdolName:{type:Function,default:()=>''}})
-const emit=defineEmits(['open-card'])
+const props=defineProps({detail:{type:Object,required:true},kind:{type:String,required:true},displayIdolName:{type:Function,default:()=>''},linkIdol:Boolean})
+const emit=defineEmits(['open-card','open-idol'])
+const honorIdol=computed(()=>{
+  const identity=props.kind==='honors' ? idolHonorIdentity(props.detail.entry) : null
+  const code=identity && Object.values(IDOL_NAME_TO_ID).find(value=>/^\d{3}/.test(value) && Number(value.slice(0,3))===identity.idolNumber)
+  return code ? {code,kind:identity.kind,name:props.displayIdolName(code,IDOL_ID_TO_NAME[code]) || IDOL_ID_TO_NAME[code] || code} : null
+})
+const honorKindLabel=computed(()=>({tantou:'担当称号',catchphrase:'专属台词称号','fes-change':'FES 成就 · 换装','fes-limitbreak':'FES 成就 · 满破'})[honorIdol.value?.kind] || '称号')
 const failedCardImages=ref(new Set())
 watch(()=>props.detail.entry.key,()=>{failedCardImages.value=new Set()})
 const domain=computed(()=>props.kind==='honors'?'honor':'item')
@@ -65,6 +76,8 @@ function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '
 .collection-usage-card strong { font-size:var(--gs-text-body,14px); font-weight:var(--gs-weight-semibold,600); line-height:1.6; overflow-wrap:anywhere; }
 .collection-usage-identity { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-3,8px); font-size:var(--gs-text-meta,12px); line-height:1.5; overflow-wrap:anywhere; }
 .collection-usage-identity small { padding:var(--gs-space-1,2px) var(--gs-space-2,4px); border-radius:4px; background:var(--gs-mint-wash); color:var(--gs-mint-ink); font-size:inherit; font-weight:var(--gs-weight-semibold,600); }
+.collection-idol-link { display:inline-flex; align-items:center; gap:var(--gs-space-2,4px); min-height:var(--gs-control-compact,32px); padding:0; border:0; background:none; color:var(--gs-mint-ink); font:inherit; font-weight:var(--gs-weight-semibold,600); cursor:pointer; }
+.collection-idol-link:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }
 .collection-usage-card:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }
 @media (hover:hover) and (pointer:fine) { .collection-usage-card:hover { background:var(--gs-mint-wash); } }
 </style>
