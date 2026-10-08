@@ -127,12 +127,13 @@
     <section v-if="castReferences.length||units.length" class="detail-section" aria-labelledby="event-cast-title">
       <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
       <div class="cast-layout">
-        <div class="idol-list" :class="{ 'has-story-visuals': hasStoryVisuals }">
+        <!-- Cast as small avatars, the same as a story's cast list; event story half-body art is not used here. -->
+        <div class="idol-list">
           <ArchiveIdolReference
             v-for="entry in castReferences"
             :key="entry.idol.idol_code"
             :reference="entry.reference"
-            :density="entry.reference.imageCandidates[0]?.kind === 'event_story_visual' ? 'visual' : 'portrait'"
+            density="compact"
             @open="emit('open-idol', entry.idol)"
           />
         </div>
@@ -211,9 +212,9 @@ const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
 const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
 const castReferences=computed(()=>(props.view?.castReferences || []).map(entry=>({
   idol:props.view.cast.find(idol=>idol.idol_code===entry.idol_code),
-  reference:{...entry.reference,displayName:props.displayIdolName(entry.idol_code,entry.reference.displayName)||entry.reference.displayName},
+  reference:{...entry.reference,displayName:props.displayIdolName(entry.idol_code,entry.reference.displayName)||entry.reference.displayName,
+    imageCandidates:(entry.reference.imageCandidates || []).filter(candidate=>candidate.kind !== 'event_story_visual')},
 })))
-const hasStoryVisuals=computed(()=>castReferences.value.some(entry=>entry.reference.imageCandidates[0]?.kind==='event_story_visual'))
 const eventTypeLabel=computed(()=>({theater:'THEATER 累计 PT',tour:'TOUR 累计 PT',collection:'315 CARNIVAL',valentine:'VALENTINE',whiteday:'WHITEDAY'}[props.view?.identity.kind] || '活动剧情'))
 const scopeLabel=computed(()=>({fixed_unit_event:'固定组合团活',attribute_event:`${props.view?.identity.attribute || ''} 属性团曲`.trim(),mixed_unit_event:'跨组合团活'}[props.view?.identity.scope] || (props.view?.identity.isReprint?'复刻活动':'历史活动')))
 const rewardCards=computed(()=>props.view?.rewards.cards || [])
@@ -385,16 +386,13 @@ button.episode-main { cursor: pointer; }
 
 /* Cast. */
 .cast-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--gs-space-6); }
-/* 64px portrait, arrow and card padding leave about 150px for a complete name. */
+/* Small avatars, as on a story's cast list; names wrap rather than truncate. */
 .idol-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--gs-space-3); min-width: 0; }
-.idol-list.has-story-visuals { grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); }
 .idol-list :deep(.archive-idol-reference) { gap: var(--gs-space-4); padding: var(--gs-space-3); border-radius: var(--gs-radius-panel); }
 .idol-list :deep(.idol-reference-copy) { gap: var(--gs-space-2); }
 .idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.4; }
 .idol-list :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-list :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-/* Keep the 170px artwork and 230px visual card; compact copy spacing fits both text roles. */
-.idol-list :deep(.density-visual) { gap: var(--gs-space-2); padding: var(--gs-space-2) var(--gs-space-3); }
 .unit-list { display: grid; align-content: start; gap: var(--gs-space-3); min-width: 180px; }
 .unit-list button { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 52px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
 .unit-list img { flex: 0 0 auto; width: 70px; height: 38px; object-fit: contain; }
