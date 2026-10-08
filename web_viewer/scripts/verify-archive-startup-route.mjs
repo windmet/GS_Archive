@@ -1,4 +1,4 @@
-import { bindGashaNavigation } from './lib/gasha-navigation-harness.mjs'
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
 import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
 import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
 import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
@@ -124,6 +124,8 @@ for (const disposed of [false, true]) {
 }
 {
   const firstRestore = deferred()
+  const latestWritten = deferred()
+  const gashas = createGashaFixtureTransport()
   let mount, popState
   const navigation = createArchiveNavigationCoordinator()
   let route = { view: 'player', scenario: 'slow.json' }
@@ -134,11 +136,11 @@ for (const disposed of [false, true]) {
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
     pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
-    loadGashaCatalog: async () => ({ rows: [] }),
+    archiveBootstrap: { ...gashas.bootstrap, idols: [] }, readModelClient: gashas.client,
     isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: (value, { intent }) => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true, intent }),
-    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
+    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => { written.push(value); latestWritten.resolve() },
     onArchivePopState: callback => { popState = callback; return () => {} },
     installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
@@ -159,7 +161,8 @@ for (const disposed of [false, true]) {
   assert.equal(typeof popState, 'function', 'history listener must be active during initial route restoration')
   route = { view: 'gashas' }
   popState(route)
-  await new Promise(resolve => setImmediate(resolve))
+  await latestWritten.promise
+  assert.deepEqual(gashas.loads.map(entry => entry.descriptor.url), ['gasha-index', 'gasha-page-1', 'gasha-page-2'])
   assert.equal(written.length, 1, 'latest completed restoration must finalize startup without waiting for obsolete load')
   assert.deepEqual(written[0], route)
   firstRestore.resolve()

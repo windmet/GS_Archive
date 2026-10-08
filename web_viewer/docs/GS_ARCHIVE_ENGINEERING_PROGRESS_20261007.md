@@ -394,3 +394,18 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 正向基线及 **22/22** 内存错误变体通过，`.analysis/gasha-mutations/results.json`。source batch **117/117**、完整 reading、player repair **37/37** 通过；最终 `build:check` 18.89 秒，仅复用 E 盘 `.analysis/build-check`，未复制 public。第一次编译被 Git 权限阻断，随后清单写入受限，授权环境重跑通过。日志 `.analysis/gasha-{extraction-source-batch,reading,player-repair,build-check}.log`。
 - 5175 Browser：桌面目录及手机目录/流丽的时装秀详情与迁移前基线对照；流丽详情→冬马关联卡片→关联卡池→返回卡片通过。手机道具补录 25 项→当日限定白金详情→返回保留分类通过；桌面译名“光彩”搜索为 1 项，进入正式 FES 详情（4 种道具、3 张卡）后返回保留搜索。以上为开发服务交互证据，不是发布或音频验收。
 - 同期其他窗口提交了 B028–B030 译文、门户及阅读器交互；本批不回退或代为验收它们。未部署、上传或重启端口；固定提交的完整干净源码门结果随后补录。
+
+- 新标签页恢复 `?view=gashas&q=光彩` 显示同一条结果，console error 为 0；临时视口已重置，两个验收页已关闭。
+
+### 下一批资源状态导航边界（卡池拆分后只读盘点）
+
+- `openArchiveStatus`、`loadResourceStatus` 和私有请求计数可作为一个小模块；保持 Portal 来源保留、其他来源清空，以及进入时的故事/活动筛选重置。payload/status refs 仍在 App，统一 route apply/Back 与生命周期不迁移。
+- 与前几批不同，资源状态的深链接加载目前位于 `applyArchiveRoute`，不在 restore 的特征准备链中。第一批迁移宜继续由 apply 调用导出的 loader，在原位置检查 `intent.isCurrent()` 后发布；不要把失败回退或状态清理顺序混进提取。
+- 现有 resource-readmodel-navigation 用 loader 替身，只覆盖入口竞争和重试。迁移前先执行真实 index→page→detail 链，验证唯一目录/页数、archive-status 身份、详情描述符、expectedId 和 manifest/verification/uiAssets 必需字段；真实传输的迟到成功/失败、失效/卸载与页面准备等待也需覆盖。未增加源码缓存，不将 loader 内不存在的取消或缓存行为写成既有合同。
+- 之后仍有全局路由恢复、返回来源、Portal 跨域分派与壳层标题/面包屑投影。它们耦合广，不按 App 行数目标强拆；需要先建立调用顺序与失败语义的行为证据。样式、页面元素、文案及已有 UI 待办仍不在本工程批次内修改。
+
+
+### 卡池源码门发现的启动 fixture 遗漏
+
+- 固定提交 `558955ba` 的完整门在第 73 步发现启动检查仍提供旧 `loadGashaCatalog` 替身。实际 factory 不再使用该替身，导致测试中的卡池恢复缺少传输并走回退。已将该案例改为真实 Gasha index/两页 transport，并等待实际 route write，明确断言三次加载；不依赖一次 setImmediate 恰好完成动态导入。
+- 主检出 `npm run verify:archive-startup-route` 已通过。该修正仅涉及测试；原卡池功能、App 与构建产物不变。完整门将在修正后的固定提交重新运行，旧失败结果保留，不把旧运行记作通过。
