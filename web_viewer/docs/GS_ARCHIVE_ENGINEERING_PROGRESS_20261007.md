@@ -314,3 +314,14 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - source batch 116/116、完整 reading、player repair 37/37、独立偶像/关联导航及终端偶像本地化检查通过；新增卸载断言后的基线和反向检查再次通过。`build:check` 通过（21.42 秒），输出固定 `.analysis/build-check`，不复制 public。日志 `.analysis/idol-{source-batch-final,reading,player-repair,localization,build-check}.log`。
 - 5175 Browser：1280 宽度冬马详情迁移前后布局/文字一致；下一位切翔太、刷新恢复、电话通信 6 条入口及返回详情通过。390×844 选择器切北斗、URL 更新，再用全新标签页直接恢复北斗详情通过；控制台无 error，无白屏或框架 overlay。临时视口已重置、标签页关闭。这是页面/导航验收，不代表语音解码、长稳或发布验收。
 - 本批没有修改组件模板、样式、文案或译文，没有重启、部署、R2 上传或完整资源打包。其他窗口已提交 `5a249b0f` 门户令牌调整，及其后续翻译审计改动均保留；此前共享工作区设计令牌失败已由该窗口处理，最终 batch 通过。固定提交的完整干净源码门随后补录。
+
+- 代码 `13bb87d1` 已推送。固定该提交的干净 LF 检出完整 115 步结果为 **113 通过、1 失败、1 跳过 npm ci**：唯一失败是另一窗口此前提交的 `archive-home-day.css` 末尾空行；source batch 116/116、最终编译与当前构建审计均通过。证据 `E:\Web_build\GS_Archive_engineering_20261007\gate-13bb87d1-final\results.json`。预检查曾因临时检出 CRLF 停止，恢复索引所记录的 LF、保留显式 CRLF 夹具并确认干净后才执行完整源码门。
+- 后续 `4b968e3d` 仅移除上述一个末尾 LF，已推送；字节对照确认没有 CSS 声明或其他文件变化，完整 base→修复提交的 whitespace 检查通过，证据同目录 `whitespace-repair.json`。没有将原始失败报告改成全绿，也未对纯末尾空白重复执行全部源码门；此处是原完整门结果加单项修复复验，不是新提交全门或远端 CI 声明。
+- 生成审计差异、AST/反向记录已保存到同目录，临时检出及 node_modules junction 已清理、主依赖保留；`cleanup.json` 记录 C 盘可用 47.91 GiB，5175 仍为 PID 74640。没有部署、R2 上传或完整资源包。
+
+### 下一批组合档案边界（偶像拆分后只读盘点）
+
+- 组合详情适合下一批：`openArchiveUnit`、`openUnitFromIdol`、两个 Unit loader，以及 `unitCatalogEntries/currentArchiveUnit/currentArchiveUnitEntry/currentArchiveUnitMembers/currentArchiveUnitStories/currentArchiveUnitSongs` 六个 computed；加入 prepare/invalidate 以承接原 restore 分支与私有计数。实际分组数/顺序来自 bootstrap 中去重的 unitId，目录和详情两级身份校验、信号取消与 code/id 双入口均须保留。
+- `openUnitMember`、`openUnitStory`、`openUnitEvent` 可作为 Unit 对外入口随模块迁移，但 Event factory 晚于当前 Unit computed，必须用延迟回调连接 `openEventDetail`，不提前读取未初始化的 const。App 的 `watch(view)` 同时负责组合目录元数据和卡名翻译，保留原注册与触发时机。
+- `openUnitCards` 使用的是 `pendingCardNavigation`，与卡片目录/详情竞争；这一批先保留 App，不能另建 Unit 私有卡片计数而改变竞争语义。后续卡片模块统一处理该入口。通用 route apply/Back、Portal hydration 和全局缓存清理也保持既有边界。
+- 受影响检查包括 unit-readmodel-navigation 的函数切片、relation-navigation 的三个组合入口、各 restore fixture、Unit computed 消费者；既有 Unit 入口测试同样替换内部 loader，迁移时改为真实目录/详情传输，验证双身份入口、错误身份、迟到成功/失败、取消、恢复与播放器父来源。当前仅盘点，未实施 Unit 拆分。
