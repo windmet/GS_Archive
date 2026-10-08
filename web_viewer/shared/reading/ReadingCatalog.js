@@ -2,9 +2,12 @@ export const READING_SOURCE_FILE = /^(?:episodes\/)?[A-Za-z0-9_-]+\.json$/
 
 /** Catalog-owned discovery; readCompiled is injected so no directory crawl or
  * media loader decides what is published. Missing/invalid inputs stay audited. */
-export async function discoverReadingSources({ catalog, publications, readCompiled }) {
+export async function discoverReadingSources({ catalog, publications, readCompiled, idolEpisodeIndex = null }) {
   const candidates = new Map(), excluded = []
   const chapters = (catalog.collectionStructure || []).flatMap(section => section.chapters)
+  // Personal stories are not in collectionStructure; their episode names live in the idol episode index.
+  const idolEpisodeLabels = new Map((idolEpisodeIndex?.chapters || []).flatMap(chapter => chapter.sections)
+    .flatMap(section => section.episodes).map(episode => [episode.resource_id, episode.name]))
   for (const entry of catalog.entries) {
     const exclude = (file, reason) => excluded.push({ file, domain: entry.domain, reason })
     if (!entry.exists) { exclude(entry.file, 'catalog-source-unavailable'); continue }
@@ -43,6 +46,9 @@ export async function discoverReadingSources({ catalog, publications, readCompil
         logical_id: publication?.logical_id || `story-collection:${entry.file.replace(/\.json$/, '')}`,
         title: chapter?.title || entry.officialTitle || entry.summary?.title || entry.titles?.[0] || null,
         episode_label: episode?.label || eventEpisode?.label || (file === entry.file ? entry.episodeLabel : null) || null,
+        // Directory-only label: it goes to the manifest entry, not the document body, so reviewed
+        // documents keep the bytes their translation receipts pinned.
+        navigation_label: entry.domain === 'idol_story' ? idolEpisodeLabels.get(id) || null : null,
         publication: publication ? { kind: 'authoritative-registry', ownership: publication.ownership }
           : { kind: 'catalog-compatibility', aggregate_file: entry.file } }
       const previous = candidates.get(id)

@@ -272,12 +272,15 @@ export function useStoryArchiveNavigation({
       const detail = await loadIdolStoryDetail(relation.idolCode)
       if (!intent.isCurrent()) return
       if (!detail.view.page) return
+      // A catalog link knows the chapter only by its compiled file.
+      const sectionId = relation.sectionId || (relation.compiledFile && detail.view.page.sections.find(section =>
+        section.episodes.some(episode => episode.compiled_file === relation.compiledFile))?.id)
       idolStoryReadModelDetail.value = detail
       captureDetailSource()
       currentStoryDomain.value = 'idol_story'
       currentStoryMode.value = 'portal'
       currentCharacterId.value = relation.idolCode
-      currentStorySection.value = String(relation.sectionId || '')
+      currentStorySection.value = String(sectionId || '')
       currentEpisodeId.value = String(relation.episodeId || '')
       currentStoryFile.value = ''
       storyCollectionParentView.value = ''

@@ -1283,6 +1283,7 @@ const {
   navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
   goHome, openEventDetail, openIdolStoryArchive, openStoryPhone, loadScenario, startEpisodeQueue,
   openStoryReader: (...args) => openStoryReader(...args),
+  idolStoryChapterOwner, openIdolStoryChapter,
 })
 
 const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
@@ -1803,6 +1804,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       if (!intent.isCurrent()) return
       // Old links to a phone call as a "card story" land on the call in the communication archive.
       if (route.view === 'story_detail' && detail.story.domain === 'card_scenarios') return openStoryPhone(detail.story)
+      if (route.view === 'story_detail' && idolStoryChapterOwner(detail.story)) return openIdolStoryChapter(detail.story)
       storyReadModelDetail.value = detail
       route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
     }
@@ -2862,7 +2864,7 @@ async function openPortalResult(result) {
     } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
       return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
     } else if (target.domain === 'stories' && target.view === 'story_detail') {
-      if (stillHere()) return openStoryDetail({ file: target.file }, 'portal')
+      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain }, 'portal')
     } else if (target.domain === 'events' && target.view === 'event_detail') {
       const rows = await loadEventCatalog()
       if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
@@ -2913,6 +2915,17 @@ function openStoryPhone(story) {
   // The call's owner, not its first listed speaker: Ren's card call also lists Haruna and Amehiko.
   const idolCode = communicationOwnerId(story?.file) || story?.characters?.[0] || ''
   return openMobileArchive({ idolCode, mode: 'phone', scenarioFile: story?.file || '' })
+}
+
+// A personal-story chapter belongs to its owner's story page (episodes, small talks, follow-up
+// call), so catalog, search and portal links land on that chapter instead of a generic detail.
+// The owner comes from the file name: a birthday chapter's cast can list another idol first.
+function idolStoryChapterOwner(story) {
+  const idolCode = story?.domain === 'idol_story' ? communicationOwnerId(story.file) : ''
+  return archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
+}
+function openIdolStoryChapter(story) {
+  return openBirthdayIdolStory({ idolCode: idolStoryChapterOwner(story), compiledFile: story.file })
 }
 
 async function previewCardVoice(cue) {

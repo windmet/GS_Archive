@@ -8,7 +8,8 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   collectionReadModelCatalog, collectionReadModelDetail, collectionReadModelStatus,
   storyReadModelCatalog, storyReadModelDetail, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
   navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
-  goHome, openEventDetail, openIdolStoryArchive, openStoryPhone, openStoryReader, loadScenario, startEpisodeQueue }) {
+  goHome, openEventDetail, openIdolStoryArchive, openStoryPhone, openStoryReader, loadScenario, startEpisodeQueue,
+  idolStoryChapterOwner, openIdolStoryChapter }) {
   let pendingCollectionNavigation = 0
   let pendingStoryDetailNavigation = 0
   async function loadCollectionCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -234,6 +235,7 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
   function openStoryDetail(entry, parentView = '') {
     if (!entry?.file) return
     if (entry.domain === 'card_scenarios') return openStoryPhone(entry)
+    if (idolStoryChapterOwner(entry)) return openIdolStoryChapter(entry)
     const file = entry.file
     const request = ++pendingStoryDetailNavigation
     navigation.invalidate()

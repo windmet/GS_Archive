@@ -32,3 +32,15 @@ for (const view of ['reader', 'player']) {
   const route = navigation.currentArchiveRoute()
   for (const key of ['idol', 'storySection', 'episode']) assert.equal(route[key], parent[key])
 }
+
+// The Reader's EP directory reads manifest labels; personal stories take them from the idol episode index.
+{
+  const { readFileSync } = await import('node:fs')
+  const json = file => JSON.parse(readFileSync(new URL(`../public/data/${file}`, import.meta.url), 'utf8'))
+  const names = new Map(json('masterdata/idol_episode_index.json').chapters.flatMap(chapter => chapter.sections)
+    .flatMap(section => section.episodes).map(episode => [episode.resource_id, episode.name]))
+  const segments = json('reading/manifest.json').entries.filter(entry => entry.domain === 'idol_story' && names.has(entry.document_id))
+  assert.ok(segments.length > 400, 'personal-story reading segments are published')
+  for (const entry of segments) assert.equal(entry.episode_label, names.get(entry.document_id), entry.document_id)
+  console.log(`Personal Reader: ${segments.length} EP directory labels match the idol episode index`)
+}

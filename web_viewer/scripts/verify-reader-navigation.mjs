@@ -165,9 +165,10 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     storyViewerLoader: async () => { media.push('component') }, preloadScenario: async () => { media.push('preload-boundary'); return {} }, queueEpisodeLabel: episode => episode.label || episode.id,
     restoreDetailSource: async () => { destinations.push(readArchiveSourceRoute(state.detailSourceRoute.value)); state.view.value = destinations.at(-1).view },
   }
-  for (const name of ['goHome', 'openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'loadEventDetail', 'loadIdolStoryDetail', 'restoreRoute', 'loadLegacyAliasRoute']) {
+  for (const name of ['goHome', 'openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'loadEventDetail', 'loadIdolStoryDetail', 'restoreRoute', 'loadLegacyAliasRoute', 'openIdolStoryChapter']) {
     context[name] = () => { assert.fail('Unexpected feature boundary: ' + name) }
   }
+  context.idolStoryChapterOwner = () => ''
   vm.runInNewContext(['applyArchiveRoute', 'loadPlayerQueue', 'restorePlaybackDestination'].map(functionSource).join('\n'), context)
   const appApply = context.applyArchiveRoute
   context.applyArchiveRoute = (route, options) => {

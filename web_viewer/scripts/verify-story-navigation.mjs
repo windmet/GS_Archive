@@ -77,9 +77,10 @@ function fixture({ cached = true, initialView = '__boot__' } = {}) {
     commitView: view => { navigation.invalidate(); state.view.value = view; state.loading.value = false; calls.push(['commit', view]) },
     commitArchiveSelection: () => calls.push(['selection']), goHome: () => calls.push(['home']),
   }
-  for (const name of ['openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue']) {
+  for (const name of ['openEventDetail', 'openIdolStoryArchive', 'openStoryPhone', 'openStoryReader', 'loadScenario', 'startEpisodeQueue', 'openIdolStoryChapter']) {
     context[name] = (...args) => calls.push([name, ...args])
   }
+  context.idolStoryChapterOwner = story => story?.domain === 'idol_story' ? '002sht' : ''
   context.currentStory = vm.runInNewContext(script.slice(currentStory.init.start, currentStory.init.end), context)
   const scope = effectScope(); scopes.push(scope)
   const api = scope.run(() => vm.runInNewContext(call, context))
@@ -227,6 +228,9 @@ try {
     t.openCatalogStory({ file: 'phone.json', domain: 'card_scenarios' })
     assert.deepEqual(t.calls.slice(0, 3), [['openEventDetail', { id: '17' }, 'external_story_resources'],
       ['openIdolStoryArchive', '001tom'], ['openStoryPhone', { file: 'phone.json', domain: 'card_scenarios' }]])
+    // A personal-story chapter opens its owner's story page, never the generic story detail.
+    t.openCatalogStory({ file: 'chapter.json', domain: 'idol_story' })
+    assert.deepEqual(t.calls.at(-1), ['openIdolStoryChapter', { file: 'chapter.json', domain: 'idol_story' }])
     const graph = JSON.parse(readFileSync(new URL('../public/data/editorial/event-resource-graph.json', import.meta.url), 'utf8'))
     const event = graph.events.find(row => row.firstReadingId && row.storyFile)
     assert.ok(event)

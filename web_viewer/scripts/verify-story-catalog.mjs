@@ -66,7 +66,18 @@ for (const overlay of [null, presentation]) {
   const phoneFields = ['domainLabel', 'officialTitle', 'title', 'subtitle', 'searchText', 'releaseAt']
   const omit = entry => Object.fromEntries(Object.entries(entry).filter(([key]) => !phoneFields.includes(key)))
   let phones = 0
+  // Deliberate departure from v0: a personal story's section is its owner, the idol numbered in its
+  // resource ids. v0 took the first cast code, which filed 30 birthday-era chapters under a guest.
+  let movedOwners = 0
   for (const [index, entry] of expected.entries()) {
+    if (entry.domain === 'idol_story') {
+      const { sectionId, ...rest } = actual[index]
+      assert.deepEqual(rest, Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'sectionId')), `personal story parity: ${entry.id}`)
+      const owner = entry.resourceIds.map(id => id.match(/^1_2_(\d{3})_/)?.[1]).find(Boolean)
+      assert.ok(entry.characters.includes(sectionId) && sectionId.startsWith(owner), `personal story is filed under its owner: ${entry.id}`)
+      if (sectionId !== entry.sectionId) movedOwners++
+      continue
+    }
     if (entry.domain !== 'card_scenarios') {
       assert.deepEqual(actual[index], entry, `catalog property/order parity: ${entry.id}`)
       continue
@@ -81,6 +92,7 @@ for (const overlay of [null, presentation]) {
     assert.ok(phone.searchText.includes(phone.title.toLowerCase()), `phone title is searchable: ${entry.id}`)
   }
   assert.equal(phones, 342, 'all phone calls are checked')
+  assert.equal(movedOwners, 30, 'every chapter v0 filed under a guest moves to its owner')
 }
 assert.throws(() => validateStoryCatalog(master), /named v1/)
 for (const mutate of [
