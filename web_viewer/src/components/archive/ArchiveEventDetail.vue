@@ -9,10 +9,7 @@
         <p v-else class="event-banner-unavailable">{{ event.title }}<small>活动图片暂不可用</small></p>
       </div>
       <div class="event-summary">
-        <div class="event-kicker">
-          <small>{{ eventTypeLabel }}</small>
-          <small>{{ scopeLabel }}</small>
-        </div>
+        <p class="event-kicker">{{ eventTypeLabel }} · {{ scopeLabel }}</p>
         <h2>{{ view.identity.title }}</h2>
         <ArchiveSourceLink v-if="exchangeRewards" :url="exchangeRewards.source.url" :label="exchangeRewards.source.title" />
         <dl>
@@ -30,59 +27,49 @@
       <summary>活动视觉资料</summary>
       <div class="event-media-grid"><DomainMediaPreview v-for="role in ['banner','logo','background','resultBackground']" :key="role" :binding="view.media[role]" :name="({banner:'剧情入口横幅',logo:'活动标志',background:'活动背景',resultBackground:'结算背景'})[role]"/></div>
     </details>
-    <section v-if="event.exists || view.seasonalCampaign || view.identity.kind!=='collection'" class="story-band" aria-labelledby="event-synopsis-title">
-      <div>
-        <span>故事简介</span>
-        <h3 id="event-synopsis-title">{{ story?.preplaySynopsis?.title || event.title }}</h3>
-        <p>{{ story?.preplaySynopsis?.text || (view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
+    <!-- Story block in the story-family idiom: heading with count, synopsis as a quotation,
+         one row of actions (reading is the page's primary action), then hairline episode rows. -->
+    <section v-if="episodes.length || event.exists || view.seasonalCampaign || view.identity.kind!=='collection'" class="detail-section event-story" aria-labelledby="event-story-title">
+      <div class="section-heading">
+        <h3 id="event-story-title">活动剧情</h3>
+        <small v-if="episodes.length" class="section-count">{{ episodes.length }} 话</small>
       </div>
-      <div class="story-actions">
-        <button v-if="view.seasonalCampaign" :data-archive-focus-id="`event-seasonal:${view.identity.id}:${view.seasonalCampaign.id}`" @click="emit('open-seasonal',view.seasonalCampaign.id)"><BookOpen :size="17"/>阅读季节企划</button>
-        <button v-else-if="firstReading" :data-archive-focus-id="`event-read:${view.identity.id}:overview:${firstReading.document_id}`" @click="emit('read',firstReading.document_id)"><BookOpen :size="17" />阅读本期活动剧情（共 {{ episodes.length }} 话）</button>
-        <button v-if="!view.seasonalCampaign" :disabled="!event.exists" @click="emit('play')">
-          <Play :size="17" fill="currentColor" />
-          <span>{{ event.exists ? '播放活动剧情' : '缺少剧情文件' }}</span>
+      <blockquote class="event-synopsis">
+        <strong v-if="synopsisTitle">{{ synopsisTitle }}</strong>
+        <p>{{ story?.preplaySynopsis?.text || (view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
+      </blockquote>
+      <div class="story-actions" aria-label="观看方式">
+        <button v-if="view.seasonalCampaign" class="story-action primary" :data-archive-focus-id="`event-seasonal:${view.identity.id}:${view.seasonalCampaign.id}`" @click="emit('open-seasonal',view.seasonalCampaign.id)"><BookOpen :size="16"/>阅读季节企划</button>
+        <button v-else-if="firstReading" class="story-action primary" :data-archive-focus-id="`event-read:${view.identity.id}:overview:${firstReading.document_id}`" @click="emit('read',firstReading.document_id)"><BookOpen :size="16" />从第一话阅读</button>
+        <button v-if="!view.seasonalCampaign" class="story-action" :class="{ primary: !firstReading }" :disabled="!event.exists" @click="emit('play')">
+          <Play :size="15" fill="currentColor" />{{ event.exists ? '播放活动剧情' : '缺少剧情文件' }}
         </button>
         <a
           v-for="resource in externalResources"
           :key="resource.external_id"
+          class="story-action"
           :href="resource.platform.canonical_url"
           target="_blank"
           rel="noopener noreferrer external"
+          :title="`在 Bilibili 观看 ${resource.uploader.name} 投稿的社区中文资源`"
         >
-          <ExternalLink :size="16" />
-          <span><strong>社区中文资源</strong><small>{{ resource.uploader.name }} · Bilibili</small></span>
+          <ExternalLink :size="15" />社区中文资源 · {{ resource.uploader.name }}
         </a>
       </div>
-    </section>
 
-    <section v-if="episodes.length" class="detail-section episode-section" aria-labelledby="event-episodes-title">
-      <div class="section-heading">
-        <div>
-          <h3 id="event-episodes-title">活动剧情</h3>
-          <p>选择章节开始观看剧情。</p>
-        </div>
-        <span class="episode-count">{{ episodes.length }} 章</span>
-      </div>
-      <div class="episode-list">
-        <div v-for="episode in episodes" :key="episode.id" class="episode-entry">
-        <button
-          :disabled="!event.exists"
-          @click="emit('play-episode', episode)"
-        >
-          <span class="episode-copy">
-            <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong>
-          </span>
-          <span class="episode-stats">
-            <span>{{ episode.dialogueCount }} 段对白</span>
-            <span>{{ episode.voiceCount }} 段语音</span>
-          </span>
-          <Play :size="16" fill="currentColor" />
-        </button>
-        <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
-          @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="16" />阅读</button>
-        </div>
-      </div>
+      <ol v-if="episodes.length" class="episode-list">
+        <li v-for="episode in episodes" :key="episode.id" class="episode-entry">
+          <button class="episode-play" :disabled="!event.exists" @click="emit('play-episode', episode)">
+            <span class="episode-copy">
+              <strong>{{ presentIdolEpisodeLabel({ sourceName: episode.label }) }}</strong>
+              <small>{{ episodeStats(episode) }}</small>
+            </span>
+            <Play :size="15" fill="currentColor" aria-hidden="true" />
+          </button>
+          <button v-if="readingByFile.has(episode.file)" class="episode-reading" :aria-label="`阅读 ${presentIdolEpisodeLabel({ sourceName: episode.label })}`" :data-archive-focus-id="`event-read:${view.identity.id}:episode:${episode.id}`"
+            @click="emit('read', readingByFile.get(episode.file).document_id)"><BookOpen :size="15" />阅读</button>
+        </li>
+      </ol>
       <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
@@ -92,7 +79,7 @@
           <h3 id="event-rewards-title">活动报酬卡</h3>
           <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
         </div>
-        <span class="raw-badge">{{ rewardCards.length + (exchangeRewards?.cards.length || 0) }} 张</span>
+        <small class="section-count">{{ rewardCards.length + (exchangeRewards?.cards.length || 0) }} 张</small>
       </div>
       <div v-if="rewardCards.length" class="reward-grid">
         <div v-for="card in rewardCards" :key="card.card_resource_id" class="event-reward-card">
@@ -159,7 +146,7 @@
     <section v-if="derivedOnlyCards.length" class="detail-section" aria-labelledby="event-related-title">
       <div class="section-heading">
         <div><h3 id="event-related-title">其他同期关联</h3><p>仅由开放时间与出演阵容推导，尚未在报酬表中确认获得方式。</p></div>
-        <span class="derived-badge">{{ derivedOnlyCards.length }} 张</span>
+        <small class="section-count">{{ derivedOnlyCards.length }} 张</small>
       </div>
       <ArchiveRelationList layout="grid" :items="derivedRelationItems" @select="emit('open-card', $event.payload)" />
     </section>
@@ -206,6 +193,12 @@ const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 const firstReading=computed(()=>readingByFile.value.get(props.view?.episodes?.[0]?.file))
+// The synopsis usually repeats the event title; give it its own heading only when it differs.
+const synopsisTitle=computed(()=>{
+  const title=props.view?.story?.preplaySynopsis?.title
+  return title && title!==props.view?.identity.title ? title : ''
+})
+const episodeStats=episode=>[episode.dialogueCount&&`${episode.dialogueCount} 段对白`,episode.voiceCount&&`${episode.voiceCount} 段语音`].filter(Boolean).join(' · ')
 
 const event=computed(()=>props.view?.story.entry)
 const story=computed(()=>props.view?.story)
@@ -301,89 +294,94 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
+/* Programme layout like the story pages: content sits on the paper, sections are split by a
+   heading rule and hairlines, colours come from the role tokens. Only controls and floating
+   things get a surface or a border. */
 .event-detail { container: event-detail / inline-size; min-width: 0; height: 100%; overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
 .event-detail button { font-family: inherit; font-weight: var(--gs-weight-semibold); }
-.wiki-exchange-table { margin-top: var(--gs-space-6); font-size: var(--gs-text-body); color: #526b73; }
-.wiki-exchange-table summary { min-height: var(--gs-control-normal); padding: var(--gs-space-3) 0; cursor: pointer; color: #1b7a73; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.exchange-table-scroll { overflow: auto; }
-.wiki-exchange-table table { width: 100%; border-collapse: collapse; text-align: left; }
-.wiki-exchange-table th, .wiki-exchange-table td { padding: var(--gs-space-3) var(--gs-space-4); border-bottom: 1px solid #e5ecee; min-width: 90px; line-height: 1.5; }
-.wiki-exchange-table th { background: #f2f7f7; color: #497271; font-weight: var(--gs-weight-semibold); }
-.wiki-exchange-table td:first-child { min-width: 200px; }
-.exchange-source { margin: 0 0 var(--gs-space-5); color: #69767e; font-size: var(--gs-text-body); line-height: 1.65; }
-.exchange-source a { color: #147d76; }
-.event-banner-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; margin: 0; padding: var(--gs-space-6); text-align: center; color: #57738a; gap: var(--gs-space-4); overflow-wrap: anywhere; }
-.event-banner-unavailable small { font-size: var(--gs-text-meta); }
-.event-related-history { margin-top: var(--gs-space-6); }
-.event-related-history h3 { font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
-.event-related-history .domain-link { min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
-.episode-entry { display: flex; min-width: 0; }
-.episode-entry > button:first-child { flex: 1; min-width: 0; }
-.episode-list .episode-reading { display: flex; justify-content: center; flex: 0 0 auto; min-width: 62px; gap: var(--gs-space-2); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); }
-.event-media-note { position: absolute; bottom: 0; left: 0; right: 0; padding: var(--gs-space-3); background: #fffffff2; font-size: var(--gs-text-meta); color: #536872; }
-.event-media-archive { padding: var(--gs-space-4) var(--gs-space-7); border-bottom: 1px solid #dfe5e8; font-size: var(--gs-text-ui); }
-.event-media-archive > summary { min-height: var(--gs-control-normal); padding-block: var(--gs-space-3); cursor: pointer; font-weight: var(--gs-weight-semibold); }
-.event-media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-4); }
-.event-identity { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
-.event-visual { min-width: 0; position: relative; align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: #e9eef0; }
+
+/* Identity: banner beside the title and the period table. */
+.event-identity { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .6fr); gap: var(--gs-space-7); padding: var(--gs-space-8) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-7); }
+.event-visual { position: relative; align-self: start; min-width: 0; overflow: hidden; aspect-ratio: 940 / 510; border-radius: var(--gs-radius-media); background: var(--gs-line); }
 .event-banner { display: block; width: 100%; height: 100%; object-fit: contain; }
-.event-summary { min-width: 0; padding-top: var(--gs-space-2); }
-.event-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); color: #16857d; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
-.event-kicker small { padding: var(--gs-space-2); border-radius: var(--gs-radius-control); background: #eaf7f5; color: #277870; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.event-summary h2 { margin: var(--gs-space-4) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; overflow-wrap: anywhere; }
-.event-summary dl { margin: 0; }
-.event-summary dl div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid #edf0f2; }
-.event-summary dt { color: #849097; font-size: var(--gs-text-meta); }
-.event-summary dd { margin: 0; color: #36474f; font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.story-band { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: none; }
-.story-band > div { min-width: 0; }
-.story-band > div > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
-.story-band h3 { margin: var(--gs-space-3) 0 var(--gs-space-2); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
-.story-band p { max-width: 800px; margin: 0; padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
-.story-actions { display: grid; flex: 0 0 auto; gap: var(--gs-space-3); min-width: 174px; max-width: 100%; }
-.story-actions > button, .story-actions > a { display: inline-flex; align-items: center; justify-content: center; gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid #158f87; border-radius: var(--gs-radius-control); background: #158f87; color: #fff; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
-.story-actions > button svg, .story-actions > a svg { flex: 0 0 auto; }
-.story-actions > button:disabled { border-color: #cbd3d6; background: #dfe5e7; color: #78848a; cursor: not-allowed; }
-.story-actions > a { justify-content: flex-start; border-color: #bedbd8; background: #fff; color: var(--gs-mint-ink); }
-.story-actions > a span { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; overflow-wrap: anywhere; }
-.story-actions > a strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.story-actions > a small { color: #63817e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.detail-section { min-width: 0; padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
-.detail-section + .detail-section { margin-top: var(--gs-space-4); }
-.section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-3) var(--gs-space-6); margin-bottom: var(--gs-space-5); }
+.event-media-note { position: absolute; right: 0; bottom: 0; left: 0; padding: var(--gs-space-3); background: color-mix(in srgb, var(--gs-surface) 94%, transparent); color: var(--gs-ink-2); font-size: var(--gs-text-meta); }
+.event-banner-unavailable { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--gs-space-4); height: 100%; margin: 0; padding: var(--gs-space-6); color: var(--gs-ink-3); text-align: center; overflow-wrap: anywhere; }
+.event-banner-unavailable small { font-size: var(--gs-text-meta); }
+.event-summary { min-width: 0; }
+.event-kicker { margin: 0; color: var(--gs-mint-ink); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.event-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.35; overflow-wrap: anywhere; }
+.event-summary dl { margin: 0; border-top: 1px solid var(--gs-rule); }
+.event-summary dl div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
+.event-summary dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.event-summary dd { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-body); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.event-media-archive { padding: var(--gs-space-2) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)); font-size: var(--gs-text-ui); }
+.event-media-archive > summary { min-height: var(--gs-control-normal); padding-block: var(--gs-space-3); color: var(--gs-mint-ink); cursor: pointer; font-weight: var(--gs-weight-semibold); }
+.event-media-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-4); }
+
+/* Sections: heading and count on one baseline over a rule, a grey lede beneath the heading. */
+.detail-section { min-width: 0; padding: var(--gs-space-5) max(var(--gs-space-7), calc((100% - var(--gs-content-width)) / 2)) var(--gs-space-8); }
+.section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--gs-space-3) var(--gs-space-5); margin-bottom: var(--gs-space-4); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .section-heading > div { min-width: 0; }
-.section-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
-.section-heading p { margin: var(--gs-space-2) 0 0; color: #849097; font-size: var(--gs-text-body); line-height: 1.65; }
-.raw-badge, .derived-badge { flex: 0 0 auto; padding: var(--gs-space-2) var(--gs-space-3); border-radius: var(--gs-radius-control); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
-.raw-badge { background: #e5f6f3; color: var(--gs-mint-ink); }
-.derived-badge { background: #fff2d6; color: #8b6413; }
-.episode-section { background: transparent; }
-.episode-count { color: #6f7e85; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); border-top: 1px solid var(--gs-rule); }
-.episode-list button { display: grid; grid-template-columns: minmax(0, 1fr) auto 28px; align-items: center; gap: var(--gs-space-3); min-height: 58px; padding: var(--gs-space-3) var(--gs-space-4); border: 0; border-bottom: 1px solid var(--gs-line); background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.episode-list button:disabled { cursor: not-allowed; opacity: .55; }
-.episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
-.episode-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.episode-copy small { overflow: hidden; color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); text-overflow: ellipsis; white-space: nowrap; }
-.episode-stats { display: flex; flex-direction: column; align-items: flex-end; gap: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.episode-list button > svg { color: var(--gs-mint-ink); }
+.section-heading h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.section-heading p { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.65; }
+.section-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
+
+/* Story: synopsis quotation, one row of actions, hairline episode rows. */
+.event-synopsis { max-width: 46em; margin: var(--gs-space-5) 0 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }
+.event-synopsis strong { display: block; margin-bottom: var(--gs-space-2); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.event-synopsis p { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.85; white-space: pre-line; overflow-wrap: anywhere; }
+.story-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin: var(--gs-space-6) 0; }
+.story-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); max-width: 100%; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; overflow-wrap: anywhere; }
+.story-action.primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }
+.story-action:disabled { cursor: not-allowed; opacity: .45; }
+.story-action svg { flex: 0 0 auto; }
+.episode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-8); margin: 0; padding: 0; list-style: none; }
+.episode-entry { display: flex; align-items: center; min-width: 0; border-bottom: 1px solid var(--gs-line); }
+.episode-play { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-3); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; text-align: left; }
+.episode-play:disabled { cursor: not-allowed; opacity: .55; }
+.episode-play > svg { color: var(--gs-ink-3); }
+.episode-copy { display: flex; flex-direction: column; gap: var(--gs-space-1); min-width: 0; }
+.episode-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.episode-copy small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
+.episode-copy small:empty { display: none; }
+.episode-reading { display: inline-flex; flex: 0 0 auto; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-touch); padding: 0 0 0 var(--gs-space-5); border: 0; background: none; color: var(--gs-mint-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); }
+
+/* Rewards. */
 .reward-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--gs-space-6); }
 .event-reward-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 96px; padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
-.event-reward-open { display: block; min-width: 0; min-height: 84px; padding: 0; border: 0; background: transparent; color: #28363e; cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.event-reward-card :deep(.domain-media-compact) { width:72px;height:72px;min-width:0;margin:0; }
-.event-materials { display: flex; flex-wrap: wrap; gap: var(--gs-space-4); margin: 0 0 var(--gs-space-5); }
-.event-material { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; max-width: 100%; padding: var(--gs-space-4); border: 1px solid #d3e2ed; border-radius: var(--gs-radius-panel); background: #fff; }
-.event-material :deep(.domain-media-compact) { margin:0; }
-.event-material > button { min-width: 0; min-height: var(--gs-control-normal); border: 0; padding: 0 var(--gs-space-2); background: transparent; color: #36506b; cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-align: left; overflow-wrap: anywhere; }
+.event-reward-open { display: block; min-width: 0; min-height: 84px; padding: 0; border: 0; background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.event-reward-card :deep(.domain-media-compact) { width: 72px; height: 72px; min-width: 0; margin: 0; }
 .reward-copy { min-width: 0; }
-.reward-identity { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--gs-space-2); min-width: 0; }
-.reward-rarity { flex: 0 0 auto; padding: 0 var(--gs-space-2); border: 1px solid #d7e2e1; border-radius: var(--gs-radius-control); color: #466862; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); line-height: 1.5; }
-.reward-name { color: #5f7774; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
+.reward-identity { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); min-width: 0; }
+/* Rarity is one of the stage face's few jobs. */
+.reward-rarity { flex: 0 0 auto; color: var(--gs-ink-2); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); font-style: italic; font-weight: var(--gs-weight-semibold); }
+.reward-name { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); overflow-wrap: anywhere; }
 .reward-copy strong { display: block; margin: var(--gs-space-2) 0 var(--gs-space-3); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.45; overflow-wrap: anywhere; }
 .reward-copy ul { display: grid; gap: var(--gs-space-2); margin: 0; padding: 0; list-style: none; }
-.reward-copy li { display: flex; align-items: flex-start; gap: var(--gs-space-2); color: #69767e; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); line-height: 1.4; }
-.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: #248980; }
-.empty-copy { margin: 0; color: #7b878e; font-size: var(--gs-text-body); }
+.reward-copy li { display: flex; align-items: flex-start; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); line-height: 1.4; }
+.reward-copy li svg { flex: 0 0 auto; margin-top: 1px; color: var(--gs-mint-ink); }
+.empty-copy { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); }
+.exchange-source { margin: 0 0 var(--gs-space-5); color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.65; }
+.exchange-source a { color: var(--gs-mint-ink); }
+.wiki-exchange-table { margin-top: var(--gs-space-6); color: var(--gs-ink-2); font-size: var(--gs-text-body); }
+.wiki-exchange-table summary { min-height: var(--gs-control-normal); padding: var(--gs-space-3) 0; color: var(--gs-mint-ink); cursor: pointer; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.exchange-table-scroll { overflow: auto; }
+.wiki-exchange-table table { width: 100%; border-collapse: collapse; text-align: left; }
+.wiki-exchange-table th, .wiki-exchange-table td { min-width: 90px; padding: var(--gs-space-3) var(--gs-space-4); border-bottom: 1px solid var(--gs-line); line-height: 1.5; }
+.wiki-exchange-table th { border-bottom-color: var(--gs-rule); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+.wiki-exchange-table td:first-child { min-width: 200px; }
+
+/* Materials are entries on the paper: icon and name, no box. */
+.event-materials { display: flex; flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-6); margin: 0 0 var(--gs-space-5); }
+.event-material { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; max-width: 100%; }
+.event-material :deep(.domain-media-compact) { margin: 0; }
+.event-material > button { min-width: 0; min-height: var(--gs-control-normal); padding: 0; border: 0; background: transparent; color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-align: left; overflow-wrap: anywhere; }
+.event-related-history { margin-top: var(--gs-space-6); }
+.event-related-history h3 { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.event-related-history .domain-link { min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+
+/* Cast. */
 .cast-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--gs-space-6); }
 /* 64px portrait, arrow and card padding leave about 150px for a complete name. */
 .idol-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--gs-space-3); min-width: 0; }
@@ -395,16 +393,10 @@ function formatDateTime(timestamp) {
 .idol-list :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
 /* Keep the 170px artwork and 230px visual card; compact copy spacing fits both text roles. */
 .idol-list :deep(.density-visual) { gap: var(--gs-space-2); padding: var(--gs-space-2) var(--gs-space-3); }
-.unit-list { display: grid; gap: var(--gs-space-3); min-width: 180px; }
-.unit-list button { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 52px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid #e0e5e8; border-radius: var(--gs-radius-control); background: #fff; color: #26323b; cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.unit-list img { width: 70px; height: 38px; object-fit: contain; }
-.unit-list img { flex: 0 0 auto; }
+.unit-list { display: grid; align-content: start; gap: var(--gs-space-3); min-width: 180px; }
+.unit-list button { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 52px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.unit-list img { flex: 0 0 auto; width: 70px; height: 38px; object-fit: contain; }
 .unit-list span { min-width: 0; font-size: var(--gs-text-body); overflow-wrap: anywhere; }
-.evidence-section { margin-bottom: var(--gs-space-6); }
-.evidence-section dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; }
-.evidence-section dl div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid #edf0f2; }
-.evidence-section dt { color: #7d898f; font-size: var(--gs-text-meta); }
-.evidence-section dd { margin: 0; overflow-wrap: anywhere; color: #394a52; font-size: var(--gs-text-meta); }
 
 .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link) { gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .event-summary :deep(.archive-source-link small), .wiki-exchange-table :deep(.archive-source-link small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
@@ -424,8 +416,8 @@ function formatDateTime(timestamp) {
 .general-reward-section :deep(.domain-reward-icon) { border: 0; border-radius: 0; background: transparent; }
 .detail-section :deep(.domain-reward-conditions > small) { margin-bottom: var(--gs-space-3); font-size: var(--gs-text-meta); }
 .detail-section :deep(.domain-reward-conditions > div) { gap: var(--gs-space-2); }
-.general-reward-section :deep(.domain-reward-condition) { padding: 0; border-radius: 0; background: transparent; color: #5f7774; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.general-reward-section :deep(.domain-reward-condition + .domain-reward-condition)::before { content: '·'; margin-right: var(--gs-space-2); color: #9aa7aa; }
+.general-reward-section :deep(.domain-reward-condition) { padding: 0; border-radius: 0; background: transparent; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.general-reward-section :deep(.domain-reward-condition + .domain-reward-condition)::before { content: '·'; margin-right: var(--gs-space-2); color: var(--gs-ink-3); }
 .detail-section :deep(.domain-reward-quantity) { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .detail-section :deep(.domain-reward-product) { gap: var(--gs-space-4); }
 .detail-section :deep(.domain-reward-name) { gap: var(--gs-space-3); padding: var(--gs-space-2) 0; font-family: inherit; font-size: var(--gs-text-body); border-radius: var(--gs-radius-control); }
@@ -442,62 +434,48 @@ function formatDateTime(timestamp) {
 .detail-section :deep(.archive-technical pre), .event-detail > :deep(.archive-technical pre) { font-size: var(--gs-text-meta); }
 
 .event-media-archive > summary:focus-visible, .wiki-exchange-table > summary:focus-visible,
-.story-actions > :focus-visible, .episode-list button:focus-visible, .event-reward-open:focus-visible,
+.story-actions > :focus-visible, .episode-entry button:focus-visible, .event-reward-open:focus-visible,
 .event-material > button:focus-visible, .unit-list button:focus-visible, .event-related-history button:focus-visible,
 .event-summary :deep(a:focus-visible), .wiki-exchange-table :deep(a:focus-visible),
 .event-media-grid :deep(.domain-media-preview button:focus-visible), .event-reward-card :deep(.domain-media-preview button:focus-visible), .event-material :deep(.domain-media-preview button:focus-visible),
 .idol-list :deep(button:focus-visible), .detail-section :deep(.relation-row:focus-visible),
 .detail-section :deep(.domain-rewards button:focus-visible), .detail-section :deep(.domain-rewards select:focus-visible),
 .detail-section :deep(.archive-technical summary:focus-visible), .event-detail > :deep(.archive-technical summary:focus-visible) {
-  outline: var(--gs-focus-ring) solid #158f87; outline-offset: var(--gs-focus-offset);
+  outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset);
 }
 @media (hover: hover) and (pointer: fine) {
-  .episode-list button:hover:not(:disabled) { background: #eff9f7; }
-  .event-reward-open:hover { color: #157c78; }
+  .episode-play:hover:not(:disabled) strong, .episode-play:hover:not(:disabled) > svg,
+  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover,
+  .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
 }
 @media (hover: none), (pointer: coarse) {
-  .idol-list :deep(button.archive-idol-reference:hover) { border-color: #dce8e8; background: #f8fbfb; }
-  .detail-section :deep(.relation-row:hover) { border-color: #dfe5e8; background: #fff; }
+  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: var(--gs-paper); }
+  .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
   .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }
-@media (max-width: 900px) { .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 760px) {
-  .event-identity { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); padding: var(--gs-space-5); }
-  .story-band { align-items: stretch; flex-direction: column; gap: var(--gs-space-5); padding: var(--gs-space-6) var(--gs-space-5); }
-  .detail-section { padding: var(--gs-space-6) var(--gs-space-5); }
-  .event-media-archive { padding-inline: var(--gs-space-5); }
-  .cast-layout { grid-template-columns: minmax(0, 1fr); }
-  .unit-list { min-width: 0; }
-  .evidence-section dl { grid-template-columns: minmax(0, 1fr); }
-}
 @media (max-width: 760px), (pointer: coarse) {
-  .story-actions > button, .story-actions > a, .event-media-archive > summary, .wiki-exchange-table > summary,
+  .story-action, .event-media-archive > summary, .wiki-exchange-table > summary,
   .event-material > button, .event-related-history button,
   .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link),
   .event-media-grid :deep(.domain-media-preview button), .event-reward-card :deep(.domain-media-preview button), .event-material :deep(.domain-media-preview button),
   .detail-section :deep(.domain-pagination button), .detail-section :deep(.archive-technical summary), .event-detail > :deep(.archive-technical summary) { min-height: var(--gs-control-touch); }
   .detail-section :deep(.domain-table-controls select) { min-height: var(--gs-control-touch); max-width: 100%; font-size: var(--gs-text-subtitle); }
 }
-@media (max-width: 620px) {
-  .episode-list { grid-template-columns: minmax(0, 1fr); }
+/* Columns follow the content width the Shell leaves, not the viewport. */
+@container event-detail (max-width: 900px) {
+  .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@media (max-width: 520px) {
-  .episode-list button { grid-template-columns: minmax(0, 1fr) 26px; }
-  .episode-stats { display: none; }
-  .reward-grid { grid-template-columns: minmax(0, 1fr); }
-}
-/* Reading/play and cast columns also follow the content width left by the Shell. */
 @container event-detail (max-width: 800px) {
   .event-identity { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
-  .story-band { align-items: stretch; flex-direction: column; gap: var(--gs-space-5); }
   .cast-layout { grid-template-columns: minmax(0, 1fr); }
   .unit-list { min-width: 0; }
   .episode-list { grid-template-columns: minmax(0, 1fr); }
-  .reward-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
-@container event-detail (max-width: 520px) {
-  .episode-list button { grid-template-columns: minmax(0, 1fr) 26px; }
-  .episode-stats { display: none; }
+@container event-detail (max-width: 560px) {
+  .event-identity { padding: var(--gs-space-6) var(--gs-space-5) var(--gs-space-5); }
+  .event-summary h2 { font-size: var(--gs-text-section); }
+  .detail-section, .event-media-archive { padding-inline: var(--gs-space-5); }
+  .story-actions > * { flex: 1 1 140px; }
   .reward-grid, .event-media-grid { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
