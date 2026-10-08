@@ -11,6 +11,7 @@ import { songMatchesIdol } from '../../src/presentation/CatalogIdolScope.js'
 import { buildSongPresentation } from '../../src/presentation/SongPresentation.js'
 import { projectSongPerformance } from '../../readmodels/lib/projections.mjs'
 import { useStageSongProjection } from '../../src/composables/useStageSongProjection.js'
+import { useStageNavigation } from '../../src/composables/useStageNavigation.js'
 
 function production(text) {
   const { descriptor, errors } = parse(text); assert.deepEqual(errors, [])
@@ -84,12 +85,18 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
     ensureSongCatalog: () => effects.push('catalog'), captureDetailSource: () => effects.push('source'),
     buildArchiveSourceQuery: () => '?view=portal', currentArchiveRoute: () => ({ view: state.view.value }),
     loadSongDetail: id => new Promise((resolve, reject) => requests.push({ id, resolve, reject })),
-    openChibiStage: target => effects.push(['stage', plain(target)]),
+    stageTargetId: ref(''), stageHandoff: ref(null), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0),
+    spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
+    restoreDetailSource: () => {}, goHome: () => {}, syncArchiveRoute: () => {},
     openArchiveUnit: target => effects.push(['unit', plain(target)]),
     openPrimaryIdol: id => effects.push(['idol', id]), openProjectedCollection: target => effects.push(['story', plain(target)]),
     console: { error() {} },
   }
-  vm.runInNewContext(['navigateArchiveSection','openSongCatalog','openSong','openSongStage','openSongUnit','openSongIdol','openSongRelatedStory'].map(app.fn).join('\n'), context)
+  vm.runInNewContext(['navigateArchiveSection','openSongCatalog','openSong','openSongUnit','openSongIdol','openSongRelatedStory'].map(app.fn).join('\n'), context)
+  const stageNavigationBinding = app.body.filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+    .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
+  assert.ok(stageNavigationBinding, 'App binds real stage navigation')
+  Object.assign(context, vm.runInNewContext(app.cut(stageNavigationBinding.init), { ...context, useStageNavigation }))
   context.navigateArchiveSection('songs')
   assert.equal(state.view.value, 'song_catalog'); assert.equal(state.currentSongId.value, '')
   for (const key of ['songParentView','filterQuery','currentCategoryId','currentCharacterId']) assert.equal(context[key].value, '')
@@ -111,14 +118,18 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
   assert.equal(state.currentSongId.value, 'brndnf', 'old responses must not replace the selected song')
   const failed = context.openSong('drvalv'); requests.at(-1).reject(Error('controlled failure')); await failed
   assert.equal(state.currentSongId.value, 'brndnf'); assert.match(context.songReadModelStatus.value, /重新选择/)
-  context.openSongStage({ songCode: 'wrong', choreographyId: 'sample' })
-  assert.ok(!effects.some(item => Array.isArray(item) && item[0] === 'stage'))
-  context.openSongStage({ songCode: 'brndnf', choreographyId: 'sample' })
-  assert.deepEqual(effects.at(-1), ['stage', { songCode: 'brndnf', choreographyId: 'sample' }])
+  await context.openSongStage({ songCode: 'wrong', choreographyId: 'sample' })
+  assert.equal(state.view.value, 'song_detail')
+  assert.equal(context.stageTargetId.value, '')
+  await context.openSongStage({ songCode: 'brndnf', choreographyId: 'sample' })
+  assert.equal(state.view.value, 'chibi_stage')
+  assert.equal(context.stageTargetId.value, 'sample')
+  assert.equal(state.currentSongId.value, 'brndnf')
   context.openSongUnit('01jup'); assert.deepEqual(effects.at(-1), ['unit', { unit_code: '01jup' }])
   context.openSongIdol('001tom'); assert.deepEqual(effects.at(-1), ['idol', '001tom'])
   context.openSongRelatedStory(catalog.songs.drv999.related_entities[0])
   assert.deepEqual(effects.at(-1), ['story', { domain: 'extra', section: '602', parent: 'song_detail' }])
+  state.view.value = 'song_detail'
 
   // Real watcher + real navigation revision ownership, with only transport controlled.
   context.watch = watch

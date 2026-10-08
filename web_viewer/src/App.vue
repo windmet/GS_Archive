@@ -666,6 +666,7 @@ import {
 } from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
 import { useStageSongProjection } from './composables/useStageSongProjection.js'
+import { useStageNavigation } from './composables/useStageNavigation.js'
 import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigation.js'
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { usePortalNavigation } from './composables/usePortalNavigation.js'
@@ -2516,11 +2517,6 @@ async function openSong(songCode) {
   commitView('song_detail')
 }
 
-function openSongStage(target) {
-  if (view.value !== 'song_detail' || target?.songCode !== currentSongId.value || !target.choreographyId) return
-  return openChibiStage(target)
-}
-
 function openSongUnit(unitCode) {
   return openArchiveUnit({ unit_code: unitCode })
 }
@@ -2718,72 +2714,11 @@ function closeFullScreenExperiment() {
   commitView('photo_catalog')
 }
 
-async function openSpineLab() {
-  return navigation.run(async intent => {
-    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
-    loading.value = true
-    loadingPurpose.value = 'stage'
-    preloadProgress.value = 100
-    await spineViewerLoader()
-    if (!intent.isCurrent()) return
-    commitView('spine_lab')
-  })
-}
-
-async function openChibiStage(target = null) {
-  return navigation.run(async intent => {
-    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
-    loading.value = true
-    loadingPurpose.value = 'stage'
-    preloadProgress.value = 100
-    await chibiStageViewerLoader()
-    if (!intent.isCurrent()) return
-    const songCode = target?.songCode || 'drvalv'
-    if (songReadModelDetail.value?.id !== songCode) {
-      try {
-        const detail = await loadSongDetail(songCode)
-        if (!intent.isCurrent()) return
-        songReadModelDetail.value = detail
-      } catch (error) {
-        if (!intent.isCurrent()) return
-        console.error('[StageReadModel] Failed to load song audio experiment:', error)
-      }
-    }
-    stageTargetId.value = target?.choreographyId || ''
-    currentSongId.value = stageTargetId.value ? target.songCode : ''
-    stageHandoff.value = target?.stageHandoff || null
-    commitView('chibi_stage')
-    void ensureSongCatalog()
-  })
-}
-
-function closeArchiveExperiment() {
-  stageHandoff.value = null
-  if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
-      stageTargetId.value && currentSongId.value) {
-    stageTargetId.value = ''
-    return commitView('song_detail')
-  }
-  return restoreDetailSource(goHome)
-}
-
-function updateStageTarget(target) {
-  if (view.value !== 'chibi_stage' || !target?.songCode || !target?.choreographyId) return
-  stageTargetId.value = target.choreographyId
-  currentSongId.value = target.songCode
-  stageHandoff.value = null
-  syncArchiveRoute({ replace: true, restoreView: false })
-  if (songReadModelDetail.value?.id === target.songCode) return
-  const revision = navigation.getRevision()
-  loadSongDetail(target.songCode).then(detail => {
-    if (navigation.isDisposed() || revision !== navigation.getRevision() ||
-        view.value !== 'chibi_stage' || currentSongId.value !== target.songCode) return
-    songReadModelDetail.value = detail
-  }).catch(error => {
-    if (revision === navigation.getRevision() && view.value === 'chibi_stage')
-      console.error('[StageReadModel] Failed to switch song audio experiment:', error)
-  })
-}
+const { openSongStage, openSpineLab, openChibiStage, closeArchiveExperiment, updateStageTarget } = useStageNavigation({
+  view, currentSongId, detailSourceRoute, stageTargetId, stageHandoff, songReadModelDetail,
+  loading, loadingPurpose, preloadProgress, navigation, captureDetailSource, commitView, restoreDetailSource, goHome,
+  syncArchiveRoute, spineViewerLoader, chibiStageViewerLoader, loadSongDetail, ensureSongCatalog,
+})
 
 function openArchiveStatus() {
   const request = ++pendingResourceNavigation

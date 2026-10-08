@@ -10,8 +10,16 @@ import { buildCardVoicePreviewScenario, findCardVoiceCue } from '../src/data/car
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 import { prepareScenario } from '../src/data/prepareScenario.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
+import { useStageNavigation } from '../src/composables/useStageNavigation.js'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse as parseJavascript } from '@babel/parser'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const appScript = parseSfc(app).descriptor.scriptSetup.content
+const stageBinding = parseJavascript(appScript, { sourceType: 'module' }).program.body
+  .filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+  .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
+assert.ok(stageBinding, 'App binds the stage navigation composable')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
 const scenarioSource = functionSource('async function loadScenario(', 'async function loadHomeIndex(')
 const flush = async (predicate = null) => {
@@ -54,6 +62,9 @@ function setup() {
     captureDetailSource: () => {}, ownsArchiveSource, normalizeEventBrowseState,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
     stageHandoff: { value: null },
+    songReadModelDetail: { value: null },
+    loadSongDetail: async id => ({ id }), ensureSongCatalog: async () => {},
+    restoreDetailSource: fallback => fallback(), goHome: () => {},
     episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},
     Preloader: { preloadScenario: async () => {} },
@@ -80,12 +91,17 @@ function setup() {
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
     functionSource('function playbackEpisodes(', 'async function openEventCard('),
     functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
-    functionSource('async function openSpineLab(', 'async function openChibiStage('),
     functionSource('async function openVoicePreview(', 'async function openGroup('),
     functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,
-    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
+    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
+  // Keep transport replaceable after setup while exercising App's real dependency wiring.
+  const stageContext = { ...context, useStageNavigation,
+    spineViewerLoader: (...args) => context.spineViewerLoader(...args),
+    chibiStageViewerLoader: (...args) => context.chibiStageViewerLoader(...args),
+  }
+  Object.assign(production, vm.runInNewContext(appScript.slice(stageBinding.init.start, stageBinding.init.end), stageContext))
   const respond = (index, name) => requests[index].resolve(new Response(JSON.stringify({ name, steps: [] })))
   return { context, state, ...production, requests, respond, writes, errors }
 }
