@@ -166,3 +166,5 @@ App 保留唯一导航 refs、history/startup/dispose、跨域协调与路由分
 - 实际旅程：BRAND NEW FIELD 详情 → 谱面 → 搜索 DRIVE → DRIVE A LIVE → 返回原 BRAND NEW FIELD；工具 → 无预选歌曲的 61 首选择器 → 返回工具。标题、难度及来源均正确，console 无 error。此为现有 dev 服务的本地界面验收，未扩展为真实音频长稳或部署验收。
 - 5175 仍为原进程 74640，未重启；没有 R2 上传或完整媒体打包。下一批继续处理故事目录、章节、详情及外部入口的业务逻辑；需要 UI 或数据决策的已记录事项仍保留原边界。
 - 代码提交 `1168f0c4` 已推送。首轮干净 LF 门为 112 通过、2 失败、1 跳过；两处失败均来自 `scripts/repair/player-entry.test.mjs` 的路由夹具漏接新歌曲模块。补用实际 App 调用与 `bindSongNavigation`，没有添加空函数替身或修改生产行为。定向 `verify:story-loading-safety` 与 `verify:player-repair`（37/37）通过；内存副本移除过期父页保护时，原断言准确发现旧详情被发布，生产源码哈希未变。证据在主检出 `.analysis/song-fixture-repair-20261008/`，首轮全门与审计差异保存在 `E:\Web_build\GS_Archive_engineering_20261007\gate-1168f0c4-final\`；完整门将对修复后的提交重跑。
+- 修复提交 `7380cace` 已推送，并在干净 LF 检出重跑全部 115 步：**114 通过、0 失败、1 跳过 npm ci**。第 113 步 108/108；第 114/115 步编译与构建审计通过。环境仍为复用依赖的本地源码门，不声称远端 CI 或部署验证。完整结果与生成审计差异保存在 `E:\Web_build\GS_Archive_engineering_20261007\gate-7380cace-final\`。
+- 本轮隔离检出和 dependency junction 已清理，主依赖与所有检查日志保留；C 盘可用空间为 46.8 GiB。主工作区剩余无关未跟踪文件未处理。故事下一批已取得目录、主线第 2 章和第 1 章序章详情的 390/1280 基线；尚未修改该批生产逻辑，不计作拆分完成。
