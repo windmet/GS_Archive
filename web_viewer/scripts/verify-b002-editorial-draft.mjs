@@ -37,6 +37,10 @@ const drafts = [
   { dir: 'B028-work-r33-edited-20261008', documents: 155, units: 995 },
   { dir: 'B029-work-r33-edited-20261008', documents: 155, units: 991 },
   { dir: 'B030-work-r33-edited-20261008', documents: 16, units: 130 },
+  { dir: 'B031-card-scenarios-r33-edited-20261008', documents: 95, units: 1000 },
+  { dir: 'B032-card-scenarios-r33-edited-20261008', documents: 93, units: 990 },
+  { dir: 'B033-card-scenarios-r33-edited-20261008', documents: 95, units: 990 },
+  { dir: 'B034-card-scenarios-r33-edited-20261008', documents: 59, units: 653 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
@@ -74,6 +78,15 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
     assert.equal(fill.text, row.source_text)
     assert(parseStudioResult(startText, ids).missing.includes(fill.rid), `Fill recorded for a row the model returned: ${fill.rid}`)
     startText = startText.replace(/\n*$/u, `\n| ${fill.rid} | ${fill.text} |\n`)
+  }
+  // The only other permitted repair: a recorded ID typo (e.g. T00100 for T000100) that leaves every text byte untouched.
+  for (const fix of receipt.id_fixes || []) {
+    assert.match(fix.from, /^T\d{1,5}$/u)
+    assert.match(fix.to, /^T\d{6}$/u)
+    assert.equal(+fix.from.slice(1), +fix.to.slice(1))
+    assert(startText.includes(`| ${fix.from} |`), `Recorded ID typo not present: ${fix.from}`)
+    assert.notDeepEqual(parseStudioResult(startText, ids).errors, [], 'ID fix recorded for output that parses')
+    startText = startText.replace(`| ${fix.from} |`, `| ${fix.to} |`)
   }
   const before = parseStudioResult(startText, ids)
   const after = parseStudioResult(editedBytes.toString('utf8'), ids)
