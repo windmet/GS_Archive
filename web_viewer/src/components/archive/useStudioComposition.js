@@ -485,11 +485,13 @@ export function useStudioComposition(props, canvas) {
         sceneId:
           materials.value.sceneIdsBySpotId[materials.value.spots[0].id][0],
       };
-      const id = props.photoIdol || actors.value[0].id,
-        view = await actorView(id),
-        actor = defaultActor(id, view);
-      doc.actors = [actor];
       const [kind, seed] = props.photoEntity.split(":");
+      // A blank studio starts with the place only; an idol comes in when the visit names one
+      // (from an idol page, or a pose/face of theirs) and is otherwise added from 人物.
+      const castId = props.photoIdol || (seed && ["poses", "faces"].includes(kind) ? actors.value[0].id : ""),
+        view = castId ? await actorView(castId) : null,
+        actor = castId ? defaultActor(castId, view) : null;
+      doc.actors = actor ? [actor] : [];
       if (seed) {
         const key = Number(seed);
         if (["poses", "faces"].includes(kind)) {
@@ -523,7 +525,7 @@ export function useStudioComposition(props, canvas) {
       }
       validateStudioSources(doc, materials.value, views.value);
       draft.value = validateStudioDocument(doc);
-      select(actor.instanceId);
+      if (actor) select(actor.instanceId);
       busy.value = false;
       await sync();
     } catch (cause) {

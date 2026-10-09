@@ -1113,12 +1113,21 @@ function applyDebugVisibility(hidden) {
   applyVisibilityPause(debugVisibilityOverride.value)
 }
 
+// Auto mode's reading time for a line with no voice: about ten characters a second of the text
+// shown first, capped so a long monologue still moves on.
+function unvoicedReadingMs() {
+  const step = currentStep.value
+  if (!step?.dialogue || step.dialogue.voice || step.hide_dialogue === true) return 0
+  const text = storyLocalization.resolveDialogue(step.dialogue).view?.primary?.text || ''
+  return Math.min(8000, [...text.replace(/\s+/gu, '')].length * 100)
+}
 playbackController = new PlaybackModeController({
   getStep: () => storyRuntimeCues.getNormalizedStep(),
   getVoiceState: () => voicePlayer?.getVoiceState?.() || 'idle',
   hasBlockingAuto: () => storyRuntimeCues.hasBlockingAuto() || titleAnimationPending.value,
   hasNonSkippable: () => storyRuntimeCues.hasNonSkippable(),
   isRead: isStepRead,
+  getReadingMs: unvoicedReadingMs,
   autoDelayMs: autoDelayMs.value,
   onAdvance: source => goNext(source),
   onModeChange: state => {

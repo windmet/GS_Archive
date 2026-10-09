@@ -349,10 +349,14 @@ function birthdayName(card) { return (card.subject.kind === 'idol' && props.idol
 function extraMeta(card) { return `${formatExtraDate(card.releaseAt)} · ${card.logicalEntryCount} 章` }
 function mainVisual(index) { return `/assets/stories/main/image_story_main_button_${String(index + 1).padStart(2, '0')}.png` }
 // The 1456×553 main buttons have transparent flanks; [left, width] of each opaque art area.
+// The tile is 1138:553, so object-fit: cover shows a 1138px-wide window; it is centred on the art
+// area and scaled up when the art is narrower. Plain cover/position keeps iOS Safari painting it
+// (the earlier absolutely positioned, over-wide image stayed blank there).
 const MAIN_ART = [[178, 1138], [226, 1005]]
 function mainArtStyle(index) {
   const [left, width] = MAIN_ART[index] || [0, 1456]
-  return { width: `${1456 / width * 100}%`, left: `${-left / width * 100}%` }
+  const windowLeft = Math.min(1456 - 1138, Math.max(0, left + width / 2 - 1138 / 2))
+  return { objectPosition: `${(windowLeft / (1456 - 1138) * 100).toFixed(2)}% 50%`, scale: String(Math.max(1, 1138 / width).toFixed(4)) }
 }
 function unitVisual(id) {
   const codes = ['01jup', '02dra', '03alt', '04bei', '05w00', '06fra', '07sai', '08hig', '09shi', '10caf', '11mof', '12sem', '13the', '14fla', '15leg', '16cfi']
@@ -379,9 +383,7 @@ function formatExtraDate(timestamp) {
 .birthday-mark, .gateway-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--gs-line); color: var(--gs-ink-2); }
 .gateway-icon { background: none; color: var(--gs-ink-2); }
 
-/* Main-story art fills the tile by its own opaque area (see MAIN_ART), centred vertically. */
-.story-tile-media:has(.main-art) { position: relative; }
-.story-tile-media .main-art { position: absolute; top: 50%; max-width: none; height: auto; translate: 0 -50%; }
+/* Main-story art fills the tile by its own opaque area (see MAIN_ART). */
 .story-section-head h2 small { margin-left: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-regular); }
 
 /* Unit prequels: all sixteen banners on the page, four to a row. */

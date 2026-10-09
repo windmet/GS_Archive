@@ -7,6 +7,7 @@ export class PlaybackModeController {
     hasBlockingAuto = () => false,
     hasNonSkippable = () => false,
     isRead = () => false,
+    getReadingMs = () => 0,
     onAdvance,
     onModeChange = () => {},
     autoDelayMs = 800,
@@ -22,6 +23,7 @@ export class PlaybackModeController {
     this.hasBlockingAuto = hasBlockingAuto
     this.hasNonSkippable = hasNonSkippable
     this.isRead = isRead
+    this.getReadingMs = getReadingMs
     this.onAdvance = onAdvance
     this.onModeChange = onModeChange
     this.autoDelayMs = Math.max(0, Number(autoDelayMs) || 0)
@@ -35,6 +37,8 @@ export class PlaybackModeController {
     this.pausedReasons = new Set()
     this.timer = null
     this.autoReadyAt = null
+    this.shownStep = null
+    this.shownAt = 0
   }
 
   setAuto(enabled) {
@@ -139,6 +143,10 @@ export class PlaybackModeController {
       return
     }
     if (!this.autoEnabled) return
+    if (step !== this.shownStep) {
+      this.shownStep = step
+      this.shownAt = this.now()
+    }
     if (step.type === 'choice' || step.unavailable === true || step.fatal === true) {
       this.autoReadyAt = null
       this._schedule()
@@ -152,7 +160,11 @@ export class PlaybackModeController {
       return
     }
     if (this.autoReadyAt == null) {
-      this.autoReadyAt = this.now() + this.autoDelayMs
+      // An unvoiced line (the producer's, narration) has no voice to wait for; it stays at least
+      // as long as it takes to read, counted from when it appeared, so a short idol motion does
+      // not cut it off and a long one does not add the reading time again afterwards.
+      const readUntil = this.shownAt + Math.max(0, Number(this.getReadingMs(step)) || 0)
+      this.autoReadyAt = Math.max(this.now(), readUntil) + this.autoDelayMs
       this._schedule(Math.min(POLL_INTERVAL_MS, this.autoDelayMs))
       return
     }

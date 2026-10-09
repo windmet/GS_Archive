@@ -400,7 +400,8 @@ const canvas = ref(null), fileInput = ref(null);
 const studioShell = ref(null), drawerHost = ref(null), menuButton = ref(null);
 const materialsHost = ref(null), controlsHost = ref(null), toolsHost = ref(null);
 const focused = ref(props.standalone);
-const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref('edit');
+// The menu opens on 地点: a picture starts from its place, then people are added from 人物.
+const menuOpen = ref(props.standalone && window.innerWidth > 900), drawerTab = ref(props.photoIdol ? 'edit' : 'spots');
 const variantTab = ref('faces');
 const variantTabs = [{ id: 'poses', label: '动作' }, { id: 'faces', label: '表情' }];
 const framingPresets = [

@@ -2636,8 +2636,8 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #story-viewer {
-  width: 100%; height: 100vh; height: 100dvh; color: #222;
-  background: #f8f9fa; overflow: hidden;
+  width: 100%; height: 100vh; height: 100dvh; min-height: 100%; color: #222;
+  background: var(--gs-paper); overflow: hidden;
 }
 .player-trace-panel { position: fixed; z-index: 130; top: calc(72px + env(safe-area-inset-top, 0px)); right: 8px; max-width: calc(100vw - 16px); padding: 8px 12px; border: 1px solid #9abab7; border-radius: 8px; background: #f7faf9; color: #193c44; font: 13px/1.5 system-ui; }
 .player-trace-panel button { min-height: 44px; }
@@ -2655,6 +2655,9 @@ onBeforeUnmount(() => {
 <style>
 /* Global reset: no page-level scrollbar */
 html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; overflow-y: hidden; }
+/* iPad Safari can resolve 100dvh a few pixels short of the html box; the uncovered strip must be
+   the archive's paper, not the browser's white. */
+html, body { background: var(--gs-paper); }
 *, *::before, *::after { box-sizing: border-box; }
 #app { overflow-x: hidden; }
 /* Non-archive source pages keep the existing non-blocking feedback semantics. */

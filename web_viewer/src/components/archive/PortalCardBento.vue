@@ -10,7 +10,7 @@
       <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
     </template>
     <template v-else>
-      <div class="bento-encounter"><header><Sparkles :size="16" /><span>今日相遇</span><button type="button" aria-label="再遇见一张卡片" @click="draw++; emit('expand')"><Shuffle :size="16" /></button></header><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button><small>从档案中遇见一颗星</small></div>
+      <div class="bento-encounter"><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button></div>
       <button v-if="encounterNext" class="encounter-next" type="button" :data-archive-focus-id="`portal-card:${encounterNext.id}`" :aria-label="`打开卡片 ${encounterNext.title}`" @click="emit('open',encounterNext)"><img :src="encounterNext.image.url" alt="" /><strong>{{ encounterNext.idolName }}</strong></button>
       <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
     </template>
@@ -18,20 +18,21 @@
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
 </template>
 <script setup>
-import {computed,ref} from 'vue'
-import {ArrowUpRight,Layers,Shuffle,Sparkles} from '@lucide/vue'
+import {computed} from 'vue'
+import {ArrowUpRight,Layers} from '@lucide/vue'
 import {portalDailyCard} from '../../presentation/PortalBento.js'
 const props=defineProps({cards:{type:Array,default:()=>[]},counts:Object,global:Boolean,offset:{type:Number,default:0}})
-const emit=defineEmits(['open','filter','expand'])
-const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date()),draw=ref(0)
+const emit=defineEmits(['open','filter'])
+const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date())
 const lead=computed(()=>{const pool=props.cards.filter(row=>row.landscape?.url);return props.global ? portalDailyCard(pool,date,props.offset) : pool[0] || props.cards.find(row=>row.image?.url)})
 const secondary=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.image?.url))
 const third=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.id!==secondary.value?.id && row.image?.url))
 const displayed=computed(()=>[lead.value,secondary.value,third.value].filter(Boolean).length)
-// The encounter is never the lead card already shown beside it.
-const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==lead.value?.id),date,draw.value))
+// The encounter is never the lead card already shown beside it. The section's 换一组 moves the
+// offset, so the lead and both encounter cards change together.
+const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==lead.value?.id),date,props.offset))
 // A second encounter sits beside the first, both as pictures next to the lead.
-const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,draw.value);return next?.image?.url ? next : null})
+const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,props.offset);return next?.image?.url ? next : null})
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
 const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)'}]
@@ -72,9 +73,6 @@ const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)
 .is-global { grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,.5fr));grid-template-rows:minmax(0,1fr) auto;row-gap:var(--gs-space-5); }
 .is-global .bento-lead { grid-column:1;grid-row:1 / span 2;align-self:start;aspect-ratio:15 / 8; }
 .bento-encounter { grid-column:2;grid-row:1; }
-.bento-encounter header span, .bento-encounter > small { display:none; }
-.bento-encounter header { position:absolute;top:2px;right:2px;z-index:1; }
-.bento-encounter header button { display:grid;place-items:center;width:var(--gs-control-touch);height:var(--gs-control-touch);color:var(--gs-surface); }
 .encounter-card { display:block;width:100%;height:100%; }
 .encounter-card > span small, .encounter-card > span strong, .encounter-card > svg { display:none; }
 .encounter-card > span::after { content:attr(data-idol); }

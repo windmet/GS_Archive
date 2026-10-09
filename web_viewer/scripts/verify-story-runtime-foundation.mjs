@@ -728,6 +728,51 @@ function verifyPlaybackModeController() {
   assert.equal(controller.inspect().skip_enabled, false)
   assert.ok(modeChanges.includes('choice'))
   controller.dispose()
+  verifyUnvoicedReadingTime()
+}
+
+// An unvoiced line waits for its reading time counted from when it appeared, not from when an
+// idol's motion ends: a short motion does not cut it off, a long one does not double the wait.
+function verifyUnvoicedReadingTime() {
+  let now = 0, blocking = true
+  const line = { step_id: 3, type: 'adv', dialogue: { text: 'producer' } }
+  const advances = [], timers = []
+  const controller = new PlaybackModeController({
+    getStep: () => line,
+    hasBlockingAuto: () => blocking,
+    getReadingMs: () => 3000,
+    onAdvance: source => { advances.push(source); return 'advanced' },
+    autoDelayMs: 800,
+    now: () => now,
+    setTimer: callback => { timers.push(callback); return callback },
+    clearTimer: timer => { const index = timers.indexOf(timer); if (index >= 0) timers.splice(index, 1) },
+  })
+  const runTimer = () => timers.shift()?.()
+  controller.setAuto(true)
+  runTimer()
+  now = 500; blocking = false
+  runTimer()
+  now = 3799
+  runTimer()
+  assert.deepEqual(advances, [], 'a short motion must not cut an unvoiced line short of its reading time')
+  now = 3800
+  runTimer()
+  assert.deepEqual(advances, ['auto'])
+  line.step_id = 4
+  const next = { ...line }
+  controller.getStep = () => next
+  blocking = true
+  now = 4000
+  runTimer()
+  now = 9000; blocking = false
+  runTimer()
+  now = 9799
+  runTimer()
+  assert.deepEqual(advances, ['auto'], 'after a long motion only the configured delay remains')
+  now = 9800
+  runTimer()
+  assert.deepEqual(advances, ['auto', 'auto'])
+  controller.dispose()
 }
 
 async function verifyScenarioNormalizer() {
