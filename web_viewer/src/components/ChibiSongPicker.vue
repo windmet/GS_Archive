@@ -13,7 +13,9 @@
             <span>演出编排</span>
             <select :value="selectedScript?.id || ''" aria-label="演出编排版本" :disabled="disabled" @change="chooseVersion($event.target.value)">
               <option v-if="!selectedScript" value="" disabled>选择编排版本</option>
-              <option v-for="version in selectedGroup.versions" :key="version.id" :value="version.id">{{ version.label }}{{ version.participantCount ? ` · ${version.participantCount}人` : '' }}</option>
+              <optgroup v-for="section in versionSections" :key="section.label" :label="section.label">
+                <option v-for="version in section.versions" :key="version.id" :value="version.id">{{ version.label }}{{ version.participantCount ? ` · ${version.participantCount}人` : '' }}</option>
+              </optgroup>
             </select>
           </label>
           <p v-else class="single-arrangement"><span>演出编排</span><strong>{{ selectedScript?.label || selectedGroup.versions[0]?.label }}</strong></p>
@@ -79,6 +81,14 @@ const categoryOptions = computed(() => stageSongCategoryOptions(library.value))
 const matches = computed(() => filterStageSongLibrary(library.value, { query: query.value, category: category.value }))
 const selectedGroup = computed(() => findStageSongGroup(library.value, props.selectedSongId))
 const selectedScript = computed(() => selectedGroup.value?.versions.find(version => version.id === props.selectedSongId) || null)
+// Ensemble songs carry one script per way of singing them: the free formation, each unit's own
+// version, and the centre solo. Grouping them keeps 按组合演唱 findable in a 20-entry list.
+const versionKindSections = [['collective', '全员 / 自由编成'], ['unit', '按组合演唱'], ['center', '单人中心'], ['standard', '标准'], ['special', '特别演出'], ['variant', '其他编排']]
+const versionSections = computed(() => {
+  const versions = selectedGroup.value?.versions || []
+  return versionKindSections.map(([kind, label]) => ({ label, versions: versions.filter(version => version.kind === kind) }))
+    .filter(section => section.versions.length)
+})
 
 watch(categoryOptions, options => {
   if (!options.some(option => option.id === category.value)) category.value = 'all'

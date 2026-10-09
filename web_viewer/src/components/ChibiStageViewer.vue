@@ -119,7 +119,7 @@
           <div class="performance-identity"><strong :title="selectedSong ? songOptionLabel(selectedSong) : ''">{{ selectedSong ? songOptionLabel(selectedSong) : '—' }}</strong><small>{{ isSpecialSingle ? '社长特别演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</small></div>
           <div class="performance-actions">
             <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-            <button class="stage-icon-action" type="button" aria-label="沉浸观看" title="沉浸观看 · 隐藏界面并全屏 · F" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+            <button class="stage-icon-action" type="button" aria-label="沉浸观看" :title="touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
           </div>
         </div>
 
@@ -132,6 +132,12 @@
 
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
           {{ currentLyric.text }}
+        </div>
+
+        <div v-if="immersiveHintVisible" class="immersive-hint" role="status">
+          <span>沉浸观看会隐藏界面，播放更流畅</span>
+          <button type="button" @click="toggleImmersive"><Maximize :size="15" />沉浸观看</button>
+          <button type="button" class="immersive-hint-close" aria-label="不再提示" @click="dismissImmersiveHint"><X :size="15" /></button>
         </div>
 
         <div v-if="booting" class="stage-state stage-state--loading">
@@ -238,6 +244,11 @@
 
             <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
             <small class="lineup-note">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSlotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
+            <div v-if="stageVocalAvailable" class="lineup-vocal">
+              <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>
+              <button type="button" class="lineup-vocal-mix" aria-label="声部与伴奏音量" title="声部与伴奏音量" @click="vocalSettingsOpen = true"><Music2 :size="17" /></button>
+            </div>
             <div v-if="editingSlot" class="slot-editor">
               <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
                 <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
@@ -255,6 +266,8 @@
             <label class="camera-toggle"><input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" /><span>演出镜头</span></label>
             <label class="camera-toggle"><input v-model="lyricsEnabled" type="checkbox" /><span>显示歌词</span></label>
             </div>
+            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台与人物</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
+            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
             <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
             <div class="viewing-actions"><button type="button" @click="toggleImmersive"><Maximize :size="16" />沉浸观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
@@ -406,14 +419,29 @@
     </ArchiveTerminalDialog>
     <ArchiveTerminalDialog class="stage-dev-dialog stage-help-dialog" :open="helpOpen" title="观看与操作" :title-id="helpTitleId" @close="helpOpen = false">
       <p>选择演出曲目，点击头像槽位编辑偶像与衣装。原曲成员使用已收录名单，按当前脚本槽位排列。</p>
+      <template v-if="touchUi">
+        <dl class="shortcut-list touch-help"><div><dt><Maximize :size="18" aria-label="沉浸观看" /></dt><dd>沉浸观看：隐藏界面并全屏，播放最流畅；右上角的按钮可截图或退出。</dd></div><div><dt>画面</dt><dd>切换轻量 / 完整加载、帧率、镜头与歌词。</dd></div></dl>
+        <p>截图保存当前舞台画面，不包含操作界面与歌词。</p>
+      </template>
+      <template v-else>
       <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>F</kbd> <kbd>H</kbd></dt><dd>沉浸观看：隐藏界面并全屏；把鼠标移到画面顶端可截图或退出，<kbd>Esc</kbd> 也可退出</dd></div></dl>
       <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
+      </template>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(stageQuality)">
+      <div class="quality-options">
+        <button type="button" :aria-pressed="stageQuality === 'lite'" @click="chooseStageQuality('lite')"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、演出镜头与歌词。不开启灯光和动态物件，手机与平板更流畅。</span></button>
+        <button type="button" :aria-pressed="stageQuality === 'full'" @click="chooseStageQuality('full')"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
+      </div>
+      <p class="quality-tip"><Maximize :size="15" aria-hidden="true" />播放时选「沉浸观看」隐藏界面并全屏，画面最流畅。</p>
+      <label class="camera-toggle"><input v-model="rememberViewing" type="checkbox" @change="saveStageViewing" /><span>记住选择，下次不再询问</span></label>
+      <small class="quality-note">之后可在「画面」里随时切换。</small>
     </ArchiveTerminalDialog>
     <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
          stage, shown when it reaches the top or a key moves focus there. -->
     <div v-if="pureMode" class="pure-peek">
       <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
-      <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸 <kbd>F</kbd></button>
+      <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸<kbd v-if="!touchUi">F</kbd></button>
     </div>
   </div>
 </template>
@@ -454,6 +482,7 @@ import {
   RefreshCw,
   RotateCcw,
   UsersRound,
+  X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
@@ -519,7 +548,7 @@ const stageRoot = ref(null), selectedPosition = ref(3), pickerPosition = ref(nul
 const panelTab = ref('lineup')
 const MAINTAINER = isMaintainerMode()
 const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref(false), pureMode = ref(false), pureExitButton = ref(null)
-const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId()
+const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId(), qualityTitleId = useId()
 const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
 const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
 const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
@@ -571,9 +600,23 @@ const cameraEnabled = ref(true)
 const staticStageEnabled = ref(true)
 const backmonitorEnabled = ref(true)
 const imageLayersEnabled = ref(true)
-const objectLayersEnabled = ref(true)
-const lightingEnabled = ref(true)
-const beamEffectsEnabled = ref(true)
+// 轻量 / 完整. The static stage, back screen, performers, camera and lyrics are full
+// reconstructions; the lights and moving stage objects are partial approximations and the most
+// expensive to draw. 轻量 leaves those off and paints at a lower pixel density. The choice is
+// offered on entry, can be changed under 画面, and is kept for this browser when asked.
+const STAGE_VIEWING_KEY = 'gs-stage-viewing'
+const touchUi = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(hover: none)').matches)
+const recommendedQuality = touchUi || (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4 ? 'lite' : 'full'
+const savedViewing = (() => { try { return JSON.parse(localStorage.getItem(STAGE_VIEWING_KEY) || 'null') } catch { return null } })()
+const stageQuality = ref(['lite', 'full'].includes(savedViewing?.quality) ? savedViewing.quality : recommendedQuality)
+const frameRateSetting = ref(['auto', '30', '60', 'max'].includes(savedViewing?.frameRate) ? savedViewing.frameRate : 'auto')
+const rememberViewing = ref(savedViewing?.remember === true)
+const qualityPromptOpen = ref(!rememberViewing.value)
+const IMMERSIVE_HINT_KEY = 'gs-stage-immersive-hint'
+const immersiveHintSeen = ref((() => { try { return localStorage.getItem(IMMERSIVE_HINT_KEY) === 'seen' } catch { return false } })())
+const objectLayersEnabled = ref(stageQuality.value === 'full')
+const lightingEnabled = ref(stageQuality.value === 'full')
+const beamEffectsEnabled = ref(stageQuality.value === 'full')
 const charactersEnabled = ref(true)
 const characterShadowsEnabled = ref(true)
 const lyricsEnabled = ref(true)
@@ -1104,7 +1147,7 @@ function createPixiApp() {
     backgroundAlpha: 0,
     antialias: true,
     autoDensity: true,
-    resolution: Math.min(window.devicePixelRatio || 1, 2),
+    resolution: stageResolution(),
   }))
   app.stop() // One owned RAF drives rendering; paused stages have no Pixi ticker.
   app.stage.sortableChildren = true
@@ -1121,6 +1164,85 @@ function createPixiApp() {
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
   resizeObserver.observe(host)
+}
+
+function stageResolution() {
+  return Math.min(window.devicePixelRatio || 1, stageQuality.value === 'full' ? 2 : 1.5)
+}
+
+function saveStageViewing() {
+  try { localStorage.setItem(STAGE_VIEWING_KEY, JSON.stringify({ quality: stageQuality.value, frameRate: frameRateSetting.value, remember: rememberViewing.value })) } catch { /* convenience only */ }
+}
+
+function applyStageQuality() {
+  const full = stageQuality.value === 'full'
+  lightingEnabled.value = full
+  beamEffectsEnabled.value = full
+  // The president's silhouette is an object layer; that stage needs it in either mode.
+  objectLayersEnabled.value = full || isSpecialSingle.value
+  if (app && app.renderer.resolution !== stageResolution()) {
+    app.renderer.resolution = stageResolution()
+    resizeStage()
+  }
+  resetAutoFrameRate()
+  applyLayerDebugVisibility()
+  saveStageViewing()
+}
+
+function chooseStageQuality(quality) {
+  stageQuality.value = quality
+  qualityPromptOpen.value = false
+  applyStageQuality()
+}
+
+function setFrameRate() {
+  resetAutoFrameRate()
+  saveStageViewing()
+}
+
+// 帧率. 自动 starts at 30 and steps up to 60, then to the display's own rate, while frames keep
+// arriving on time and the stage's own work per frame stays small; it steps back down when they
+// do not, and waits before trying a higher rate again.
+const AUTO_FRAME_TIERS = [30, 60, 0]
+const autoFrameTier = ref(0)
+let lastStageFrame = 0, frameWindow = null, frameStepUpAfter = 0
+const frameRateLabel = computed(() => {
+  const cap = frameRateSetting.value === 'auto' ? AUTO_FRAME_TIERS[autoFrameTier.value] : frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
+  return cap ? `${cap} 帧` : '跟随屏幕'
+})
+function frameCap() {
+  if (frameRateSetting.value === 'auto') return AUTO_FRAME_TIERS[autoFrameTier.value]
+  return frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
+}
+function resetAutoFrameRate() {
+  autoFrameTier.value = 0
+  frameWindow = null
+  frameStepUpAfter = 0
+  lastStageFrame = 0
+}
+function measureStageFrame(gap, work, cap, now) {
+  if (frameRateSetting.value !== 'auto' || !gap) return
+  const budget = 1000 / (cap || 60)
+  const sample = frameWindow || (frameWindow = { frames: 0, late: 0, work: 0 })
+  sample.frames += 1
+  sample.work += work
+  if (gap > budget * 1.5) sample.late += 1
+  if (sample.frames < 90) return
+  frameWindow = null
+  const late = sample.late / sample.frames, meanWork = sample.work / sample.frames
+  if ((late > 0.15 || meanWork > budget * 0.6) && autoFrameTier.value > 0) {
+    autoFrameTier.value -= 1
+    frameStepUpAfter = now + 20000
+  } else if (late < 0.03 && now >= frameStepUpAfter && autoFrameTier.value < AUTO_FRAME_TIERS.length - 1
+    && meanWork < (autoFrameTier.value === 0 ? 6 : 4)) {
+    autoFrameTier.value += 1
+  }
+}
+
+const immersiveHintVisible = computed(() => !immersiveHintSeen.value && playing.value && !pureMode.value)
+function dismissImmersiveHint() {
+  immersiveHintSeen.value = true
+  try { localStorage.setItem(IMMERSIVE_HINT_KEY, 'seen') } catch { /* convenience only */ }
 }
 
 function slotByPosition(position) {
@@ -1219,9 +1341,15 @@ async function toggleImmersive() {
     return
   }
   const fullscreen = enterFullscreen(stageRoot.value)
+  if (!immersiveHintSeen.value) dismissImmersiveHint()
   await togglePureMode()
   immersiveFullscreen = await fullscreen
 }
+watch(isSpecialSingle, special => {
+  if (stageQuality.value === 'full' || objectLayersEnabled.value === special) return
+  objectLayersEnabled.value = special
+  applyLayerDebugVisibility()
+})
 watch(fullscreenActive, (active, was) => {
   if (was && !active && pureMode.value && immersiveFullscreen) { immersiveFullscreen = false; void togglePureMode() }
 })
@@ -2576,12 +2704,42 @@ function releaseImageLayers() {
   visibleImageObjectAssets.value = []
 }
 
+// Image layers and objects are created when they first become visible. Over the network that is
+// too late for timed art such as Take a StuMp's unit logos (3.6 s each, back to back), so every
+// image the song names is fetched and decoded as soon as its index is known; the later load of the
+// same URL is then served from the browser's memory cache.
+let warmedImageKey = ''
+let warmedImages = []
+function warmSongImages() {
+  const song = selectedSong.value
+  const key = `${song?.id || ''}|${Boolean(imageLayerIndex.value)}|${Boolean(imageObjectIndex.value)}`
+  if (!song || key === warmedImageKey) return
+  warmedImageKey = key
+  const files = new Set()
+  for (const event of song.imageLayerEvents || []) {
+    const file = imageLayerIndex.value?.assets?.[event.asset]?.file
+    if (file) files.add(file)
+  }
+  for (const event of imageObjectIndex.value?.songs?.[song.id]?.events || []) {
+    const file = event.asset && imageObjectIndex.value?.assets?.[event.asset]?.file
+    if (file) files.add(file)
+  }
+  warmedImages = [...files].map(file => {
+    const image = new Image()
+    image.decoding = 'async'
+    image.src = `${LIVE_CHIBI_BASE}/${file}`
+    image.decode?.().catch(() => {})
+    return image
+  })
+}
+
 async function syncImageLayers() {
   if (!cameraContainer || !selectedSong.value || (!imageLayerIndex.value && !imageObjectIndex.value)) return
   if (imageLayerSongId !== selectedSong.value.id) {
     releaseImageLayers()
     imageLayerSongId = selectedSong.value.id
   }
+  warmSongImages()
   const sequence = imageLayerSequence
   const states = imageLayerStatesAt(stageTime.value)
   const visibleStates = imageLayersEnabled.value
@@ -2947,6 +3105,8 @@ function syncBackmonitorLogo(state,projected) {
   backmonitorLogoAngle.value = ''
   for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
   const model = stageEffectIndex.value?.backmonitorLogo
+  // Load the rotating logo with the song, not on its first frame (see warmSongImages).
+  if (model?.previewSongs?.includes(selectedSong.value?.songCode) && backmonitorContainer) backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
   const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model,selectedSong.value?.backmonitorEvents)
   backmonitorLogoAlpha.value = sample?.alpha || 0
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
@@ -3188,7 +3348,8 @@ function resizeStage() {
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
-  if(!playing.value)app?.render()
+  // Resizing clears the WebGL canvas; draw now so the cleared buffer is never shown, playing or not.
+  app?.render()
 }
 
 async function selectStageScript(id) {
@@ -3568,6 +3729,7 @@ async function toggleStage() {
   syncMotionPlaybackSpeed()
   syncBackmonitor(true)
   if(app)app.ticker.lastTime=performance.now()
+  lastStageFrame = 0
   animationFrame = requestAnimationFrame(updateStage)
   } catch (error) {
     if (current()) { stopStage(); audioError.value = `舞台无法开始：${error.message || error}` }
@@ -3576,6 +3738,14 @@ async function toggleStage() {
 
 function updateStage(now) {
   if (!playing.value || !selectedSong.value) return
+  const cap = frameCap()
+  if (cap && lastStageFrame && now - lastStageFrame < 1000 / cap - 3) {
+    animationFrame = requestAnimationFrame(updateStage)
+    return
+  }
+  const gap = lastStageFrame ? now - lastStageFrame : 0
+  lastStageFrame = now
+  const workStart = performance.now()
   const clockAudio = stageClockAudio()
   stageTime.value = Math.min(
     stageDuration.value,
@@ -3610,6 +3780,7 @@ function updateStage(now) {
     return
   }
   app?.ticker.update(now)
+  measureStageFrame(gap, performance.now() - workStart, cap, now)
   animationFrame = requestAnimationFrame(updateStage)
 }
 
@@ -3770,6 +3941,8 @@ function formatTime(milliseconds) {
 .position-marker small { max-width: 100%; color: var(--gs-surface); font-size: var(--gs-text-meta); line-height: 1.4; overflow-wrap: anywhere; }
 .position-marker.selected { border-color: var(--gs-mint); background: var(--gs-chrome-hover); }
 .position-marker.singing { background: var(--gs-chrome-hover); }
+.position-marker { transition: background-color 240ms ease-out, color 240ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .position-marker { transition: none; } }
 .position-marker.singing .position-caption { color: var(--gs-surface); }
 .position-marker:disabled { align-content: center; color: var(--muted); background: transparent; cursor: default; }
 .position-marker:disabled small { color: var(--gs-chrome-ink); }
@@ -3861,6 +4034,27 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); cursor: pointer; }
 .lineup-actions button:disabled { opacity: .4; cursor: default; }
 .lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.viewing-select { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: 16px; }
+.immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
+.immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.immersive-hint button { display: inline-flex; flex: none; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
+.immersive-hint .immersive-hint-close { width: 36px; padding: 0; justify-content: center; background: none; color: var(--gs-surface); }
+.quality-options { display: grid; gap: 8px; }
+.quality-options button { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.quality-options button[aria-pressed="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.quality-options strong { display: flex; align-items: center; gap: 8px; font-size: var(--gs-text-body); }
+.quality-options strong small { padding: 1px 8px; border-radius: var(--gs-radius-pill); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
+.quality-options span { color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
+.quality-options button[aria-pressed="true"] span { color: inherit; }
+.quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
+.quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.touch-help dt { display: flex; align-items: center; color: var(--gs-ink-2); }
+.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
+.lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
+.lineup-vocal small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .slot-editor { display: grid; gap: 8px; min-width: 0; }
 .idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }
 .slot-editor-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
@@ -3901,13 +4095,14 @@ kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inh
 .pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
 .pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
 .pure-exit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
-/* Touch has no pointer to reach the edge: only the way back stays, faint. */
+/* Touch has no pointer to reach the edge: the screenshot and the way back stay in the corner, faint. */
 @media (hover: none) {
   .pure-peek { opacity: 1; background: none; pointer-events: none; }
-  .pure-peek .stage-icon-action { display: none; }
-  .pure-exit { pointer-events: auto; opacity: .35; }
-  .pure-exit:focus-visible { opacity: 1; }
+  .pure-peek .stage-icon-action, .pure-exit { pointer-events: auto; opacity: .45; }
+  .pure-peek .stage-icon-action { background: color-mix(in srgb, var(--gs-chrome) 60%, transparent); }
+  .pure-peek .stage-icon-action:active, .pure-exit:active, .pure-exit:focus-visible { opacity: 1; }
 }
+.pure-exit kbd { margin-left: 4px; }
 @media (prefers-reduced-motion: reduce) { .pure-peek { transition: none; } }
 .is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .rail-summary, .is-pure .position-rail, .is-pure .transport { display: none; }
 .is-pure { grid-template-rows: minmax(0, 1fr); }
