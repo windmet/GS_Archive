@@ -34,9 +34,11 @@
         <h3 id="event-story-title">活动剧情</h3>
         <small v-if="episodes.length" class="section-count">{{ episodes.length }} 话</small>
       </div>
-      <blockquote class="event-synopsis">
-        <strong v-if="synopsisTitle">{{ synopsisTitle }}</strong>
-        <p>{{ story?.preplaySynopsis?.text || (view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。') }}</p>
+      <blockquote class="event-synopsis" :aria-busy="synopsisView.pending.value || undefined">
+        <strong v-if="synopsisTitle" :class="{ 'is-pending': synopsisView.titlePending.value }">{{ presentProducerAddressingText(synopsisTitle) }}</strong>
+        <p v-if="synopsisView.view.value.primary.text" :lang="synopsisView.view.value.primary.locale" :class="{ 'is-pending': synopsisView.pending.value }">{{ presentProducerAddressingText(synopsisView.view.value.primary.text) }}</p>
+        <p v-else>{{ view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。' }}</p>
+        <small v-if="synopsisView.notice.value" class="event-synopsis-notice" role="status">{{ synopsisView.notice.value }}</small>
       </blockquote>
       <div class="story-actions" aria-label="观看方式">
         <button v-if="view.seasonalCampaign" class="story-action primary" :data-archive-focus-id="`event-seasonal:${view.identity.id}:${view.seasonalCampaign.id}`" @click="emit('open-seasonal',view.seasonalCampaign.id)"><BookOpen :size="16"/>阅读季节企划</button>
@@ -178,6 +180,8 @@ import '../../styles/archive-domains.css'
 import { getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {eventResources} from '../../data/eventResourceGraph.js'
+import { useStorySynopsis } from './useStorySynopsis.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import {rewardConditions} from './DomainPresentation.mjs'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
@@ -190,16 +194,21 @@ const props = defineProps({
   view: {type:Object,default:null},
   externalResources: { type: Array, default: () => [] },
   readingError: { type: String, default: '' },
+  loadReadingDocument: { type: Function, default: null },
 })
 const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
 const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 const firstReading=computed(()=>readingByFile.value.get(props.view?.episodes?.[0]?.file))
-// The synopsis usually repeats the event title; give it its own heading only when it differs.
+// The synopsis is the first episode's synopsis row, translated like the story pages show it; the
+// projection's source text is the fallback. It usually repeats the event title, so it gets its own
+// heading only when the source titles differ.
+const synopsisView=useStorySynopsis({ entry: firstReading, loadDocument: computed(() => props.loadReadingDocument),
+  fallback: computed(() => props.view?.story?.preplaySynopsis), title: computed(() => props.view?.story?.preplaySynopsis?.title || '') })
 const synopsisTitle=computed(()=>{
   const title=props.view?.story?.preplaySynopsis?.title
-  return title && title!==props.view?.identity.title ? title : ''
+  return title && title!==props.view?.identity.title ? synopsisView.displayTitle.value : ''
 })
 const episodeStats=episode=>[episode.dialogueCount&&`${episode.dialogueCount} 段对白`,episode.voiceCount&&`${episode.voiceCount} 段语音`].filter(Boolean).join(' · ')
 
@@ -332,6 +341,8 @@ function formatDateTime(timestamp) {
 /* Story: synopsis quotation, one row of actions, hairline episode rows. */
 .event-synopsis { max-width: 46em; margin: var(--gs-space-5) 0 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }
 .event-synopsis strong { display: block; margin-bottom: var(--gs-space-2); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.event-synopsis .is-pending { visibility: hidden; }
+.event-synopsis-notice { display: block; margin-top: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .event-synopsis p { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.85; white-space: pre-line; overflow-wrap: anywhere; }
 .story-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin: var(--gs-space-6) 0; }
 .story-action { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); max-width: 100%; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; overflow-wrap: anywhere; }

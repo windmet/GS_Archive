@@ -9,6 +9,7 @@ import { readingSynopsisRow } from '../src/presentation/StorySynopsis.js'
 import { resolveStoryText } from '../src/localization/story/StoryTextResolver.js'
 import { validateStoryTranslationOverlay } from '../src/localization/story/TranslationRepository.js'
 import { projectReadingChoiceRows } from '../src/presentation/ReadingChoiceMetadata.js'
+import { renderProducerAddressing } from '../src/localization/story/ProducerAddressing.js'
 
 // Exercise the actual Vue template's uncommon states without publishing fake stories.
 const server = await createServer({ configFile: false, plugins: [vue()], optimizeDeps: { noDiscovery: true }, server: { middlewareMode: true, watch: null }, appType: 'custom' })
@@ -38,7 +39,8 @@ try {
     assert.equal((html.match(/role="tabpanel"/g)||[]).length, 1)
     assert.ok(html.includes('image_chara_icon_012yus.png'), 'actual Call reader renders the named source speaker icon')
     for (const branch of fork.branches) for (const row of branchDoc.rows.filter(row => branch.step_indices.includes(row.anchor.step_index))) {
-      assert.equal(html.includes(compact(row.source_text)), branch.option_index === option.option_index, 'actual Vue renders only the selected reply path')
+      // Producer slots render without dots when no name is set (●●●●●●●●●●監督 reads 監督).
+      assert.equal(html.includes(compact(renderProducerAddressing(row.source_text, '', { locale: 'ja' }))), branch.option_index === option.option_index, 'actual Vue renders only the selected reply path')
     }
     const shared = branchDoc.rows.find(row => row.anchor.step_index === fork.join_index)
     assert.equal(html.split(compact(shared.source_text)).length - 1, 1, 'shared continuation appears once outside the tab panel')

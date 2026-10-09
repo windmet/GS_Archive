@@ -71,7 +71,12 @@ export function useReaderNavigation({
 
   const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
 
-  function loadSynopsisReadingDocument(entry) { return readingRepository.load(entry.document_id, entry, navigation.getLoadOptions()) }
+  // Directory pages pass the reading entry they hold; pages without one (phone calls) pass its id.
+  async function loadSynopsisReadingDocument(entryOrId) {
+    const entry = typeof entryOrId === 'string' ? (await readingRepository.locator(entryOrId)).entry : entryOrId
+    if (!entry) return { status: 'not-generated', document: null }
+    return readingRepository.load(entry.document_id, entry, navigation.getLoadOptions())
+  }
 
   async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
     const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,

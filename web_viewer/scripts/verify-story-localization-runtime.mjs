@@ -274,8 +274,9 @@ assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '�
   speaker: 'プロデューサー',
   text: '日本語',
 })
+// Without a Producer name the nameplate reads 制作人 wherever the line is shown translated.
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'CN'), {
-  speaker: 'プロデューサー',
+  speaker: '制作人',
   text: '中文',
 })
 assert.deepEqual(resolveText({ speaker: '<P>', text_jp: '日本語', text_cn: '中文' }, 'BILINGUAL'), {

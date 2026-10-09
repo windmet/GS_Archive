@@ -23,14 +23,25 @@ for (const [key, descriptor] of Object.entries(index.shards || {})) {
 const manifest = JSON.parse(fs.readFileSync(new URL('../public/data/reading/manifest.json',import.meta.url)))
 for (const id of Object.keys(index.documents)) {
   const entry = manifest.entries.find(item=>item.document_id===id)
-  const translated = index.titles[index.documents[id].title]
+  const binding = index.documents[id], translated = binding.record || index.titles[binding.title]
   assert.equal(readerTitle(index,entry,entry.title),translated.text)
+  if (binding.record) {
+    // A document named by its opening title row: the chapter title the page passes binds too.
+    const row = JSON.parse(fs.readFileSync(new URL(`../public/data/reading/${entry.file}`,import.meta.url))).rows.find(item=>item.text_ref?.unit_id===binding.record.unit_id)
+    assert.equal(row?.kind,'title',`${id}: inline title is the document's own title row`)
+    assert.equal(row.source_text,binding.record.source)
+    assert.equal(readerTitle(index,entry,binding.record.source),binding.record.text)
+    assert.equal(Object.hasOwn(binding,'title'),false,'an inline title does not also point into the shared list')
+  }
   assert.equal(readerTitle(index,entry,entry.title,'ja-JP'),entry.title,'Japanese metadata uses the source heading without changing story reading mode')
   assert.equal(readerTitle(index,{...entry,sha256:'sha256:'+'0'.repeat(64)},entry.title),entry.title,'new document revision does not reuse stale metadata')
   assert.equal(readerTitle(index,entry,'different source'),'different source','same ID cannot translate a different title')
 }
 assert.equal(readerTitle(index,{document_id:'untranslated'},'原文'),'原文')
 assert.throws(()=>validateReaderTitles({...index,documents:{bad:{revision:'invalid',title:0}}}))
+assert.throws(()=>validateReaderTitles({...index,documents:{bad:{revision:'sha256:'+'0'.repeat(64),title:0,record:index.titles[0]}}}),'a binding is shared or inline, not both')
+assert.throws(()=>validateReaderTitles({...index,documents:{bad:{revision:'sha256:'+'0'.repeat(64),record:{source:'x',text:''}}}}),'an inline title is a full title record')
+assert.ok(Object.values(index.documents).filter(binding=>binding.record).length>=500,'documents named by their opening title row are bound')
 // Pages that know only the story file (the portal) bind by story id plus the exact source title.
 for (const title of index.titles) {
   const story = title.unit_id.split(':')[2]

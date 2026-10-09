@@ -46,7 +46,7 @@
           <button type="button" class="chapter-toggle" :aria-expanded="isExpanded(section)" @click="toggleSection(section)">
             <span class="chapter-identity">
               <small>{{ chapterLabel(section.name) }} · {{ releaseDate(section.open_at) }}<template v-if="sectionBirthdayAligned(section)"> · <em>生日同期公开</em></template></small>
-              <strong>{{ presentProducerAddressingText(section.scenario_title) }}</strong>
+              <strong :class="{ 'is-title-pending': sectionTitlePending(section) }">{{ presentProducerAddressingText(sectionTitle(section)) }}</strong>
             </span>
             <span class="chapter-stats">{{ section.episodes.length }} 段 · {{ section.voiceCount }} 段语音</span>
             <ChevronUp v-if="isExpanded(section)" :size="18" aria-hidden="true" />
@@ -57,7 +57,7 @@
             <div class="chapter-lead">
             <img class="chapter-art" :src="backgroundUrl(section.background_resource_id)" alt="" loading="lazy" decoding="async" />
             <div class="chapter-lead-copy">
-            <p v-if="section.synopsis?.text" class="chapter-synopsis-text">{{ presentProducerAddressingText(section.synopsis.text) }}</p>
+            <StorySynopsisQuote v-if="section.synopsis?.text" class="chapter-synopsis-text" :entries="sectionEntries(section)" :load-document="loadReadingDocument" :fallback="section.synopsis" />
             <p v-if="section.sharedBirthdayEntries?.length" class="story-note">这一话也可以从生日档案进入。</p>
 
             <div class="chapter-actions" aria-label="本话观看方式">
@@ -134,6 +134,8 @@ import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
+import StorySynopsisQuote from './StorySynopsisQuote.vue'
+import { useReaderTitles } from './useReaderTitles.js'
 import '../../styles/archive-story.css'
 
 const props = defineProps({
@@ -145,6 +147,7 @@ const props = defineProps({
   focusedEpisodeId: { type: [String, Number], default: '' },
   // The reader's-language name (App's idolDisplayName); falls back to the source name.
   idolName: { type: Function, default: (_code, sourceName) => sourceName },
+  loadReadingDocument: { type: Function, default: null },
 })
 const emit = defineEmits(['read-episode', 'select-idol', 'play-section', 'play-episode', 'open-communication', 'open-birthday'])
 const focusedSectionElement = ref(null)
@@ -158,6 +161,18 @@ function toggleSection(section) { expandedSectionId.value = isExpanded(section) 
 watch(() => [props.story?.idol_code, props.focusedSectionId], () => { expandedSectionId.value = openSectionId() }, { immediate: true })
 
 const firstReading = section => section.episodes.find(readingEntry)
+// A chapter's title is its documents' title; birthday chapters open with small talks that may not be
+// translated yet, so the first translated document names the chapter.
+const displayTitle = useReaderTitles()
+const sectionEntries = section => section.episodes.map(readingEntry).filter(Boolean)
+function sectionTitle(section) {
+  for (const entry of sectionEntries(section)) {
+    const title = displayTitle(entry, section.scenario_title)
+    if (title !== section.scenario_title) return title
+  }
+  return section.scenario_title
+}
+const sectionTitlePending = section => sectionEntries(section).some(entry => displayTitle.pending(entry))
 function readSection(section) {
   const episode = firstReading(section)
   if (episode) emit('read-episode', { section, episode })
@@ -203,6 +218,7 @@ function externalResourcesForSection(sectionId) {
 </script>
 
 <style scoped>
+.is-title-pending { visibility: hidden; }
 /* Rows, actions and footprint come from archive-story.css; only the idol head, the chapter art
    and the follow-up call are particular to this page. Inside an open chapter the synopsis rule is the only vertical line. */
 .idol-story-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-6); }

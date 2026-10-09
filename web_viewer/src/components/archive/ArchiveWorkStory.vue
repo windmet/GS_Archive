@@ -38,7 +38,9 @@
           <span class="story-row-thumb"><img :src="backgroundUrl(story.background_resource_id)" :alt="locationLabel(story)" loading="lazy" decoding="async" /></span>
           <span class="story-row-copy">
             <strong>{{ workTitle(story) }}</strong>
-            <p>{{ presentProducerAddressingText(story.dialogue_preview) }}</p>
+            <StoryLineText v-slot="line" :entry="readingByFile.get(story.compiled_file)" :load-document="loadReadingDocument" :source="story.dialogue_preview">
+              <p :lang="line.locale" :class="{ 'is-pending': line.pending }">{{ line.text }}</p>
+            </StoryLineText>
             <small>{{ [locationLabel(story), `${story.dialogue_count} 段对白`, `${story.voice_count} 段语音`].filter(Boolean).join(' · ') }}</small>
           </span>
           </component>
@@ -54,7 +56,9 @@
             v-bind="readingByFile.has(line.compiled_file) ? { type: 'button', 'aria-label': `阅读 ${locationLabel(line) || '场景台词'}`, onClick: () => emit('read', line.compiled_file) } : {}">
           <span class="story-row-thumb"><img :src="backgroundUrl(line.background_resource_id)" :alt="locationLabel(line)" loading="lazy" decoding="async" /></span>
           <span class="story-row-copy">
-            <strong>{{ presentProducerAddressingText(line.dialogue_preview) }}</strong>
+            <StoryLineText v-slot="preview" :entry="readingByFile.get(line.compiled_file)" :load-document="loadReadingDocument" :source="line.dialogue_preview">
+              <strong :lang="preview.locale" :class="{ 'is-pending': preview.pending }">{{ preview.text }}</strong>
+            </StoryLineText>
             <small v-if="locationLabel(line)">{{ locationLabel(line) }}</small>
           </span>
           </component>
@@ -69,6 +73,7 @@
 </template>
 
 <script setup>
+import StoryLineText from './StoryLineText.vue'
 import { computed } from 'vue'
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -81,7 +86,7 @@ const props = defineProps({ idol: { type: Object, default: null }, idols: { type
   sourceEvidence: { type: Object, default: null },
   readingEntries: { type: Array, default: () => [] }, initialFile: { type: String, default: '' },
   mode: { type: String, default: 'stories' },
-  idolName: { type: Function, default: () => '' } })
+  idolName: { type: Function, default: () => '' }, loadReadingDocument: { type: Function, default: null } })
 const emit = defineEmits(['read', 'select-idol', 'play', 'update:mode'])
 const readingByFile = computed(() => new Map(props.readingEntries.filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
 const activeMode = computed(() => (props.mode === 'lines' || props.idol?.scene_lines.some(line => line.compiled_file === props.initialFile))
@@ -107,6 +112,8 @@ function locationLabel(entry) { return entry.background_name ? archiveNamedText(
 </script>
 
 <style scoped>
+/* A preview line waiting for its translation keeps its place but stays hidden. */
+.is-pending { visibility: hidden; }
 .work-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-5); }
 .idol-heading { display: flex; align-items: center; gap: var(--gs-space-5); min-width: 0; }
 .idol-heading h2 { font-size: var(--gs-text-section); }

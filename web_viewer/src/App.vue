@@ -246,7 +246,7 @@
 
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
-        :view="currentEventProjection"
+        :view="currentEventProjection" :load-reading-document="loadSynopsisReadingDocument"
         :client="readModelClient" :bootstrap="archiveBootstrap"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
         @read="openEventReader"
@@ -408,7 +408,7 @@
 
       <ArchiveWorkStory
         v-if="view === 'work_archive'"
-        :idol="currentWorkIdol"
+        :idol="currentWorkIdol" :load-reading-document="loadSynopsisReadingDocument"
         :idols="workReadModelCatalog || []"
         :idol-name="idolDisplayName"
         :source-evidence="workReadModelDetail?.view?.sourceEvidence || null"
@@ -423,7 +423,7 @@
 
       <ArchiveIdolStory
         v-if="view === 'idol_story_archive'"
-        :story="currentIdolStoryPage"
+        :story="currentIdolStoryPage" :load-reading-document="loadSynopsisReadingDocument"
         :reading-entries="readingCatalogEntries"
         @read-episode="openIdolStoryReader"
         :idols="idolStoryOptions"
@@ -440,7 +440,7 @@
 
       <ArchiveMobileArchive
         v-if="view === 'mobile_archive'"
-        :idol-data="mobileIdolReadModelDetail"
+        :idol-data="mobileIdolReadModelDetail" :load-reading-document="loadSynopsisReadingDocument"
         :unit-data="mobileUnitReadModelDetail"
         :idols="mobileIdolOptions"
         :units="mobileUnitOptions"
@@ -1460,7 +1460,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
-  if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
+  if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} 工作档案`.trim()
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} 个人故事`.trim()
   if (view.value === 'mobile_archive') return '通信'
   if (view.value === 'gashas') return '卡池档案'

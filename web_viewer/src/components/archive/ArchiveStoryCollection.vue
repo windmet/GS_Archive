@@ -54,7 +54,8 @@
           <button class="chapter-toggle" :aria-expanded="expandedChapterId === chapter.id" @click="toggleChapter(chapter)">
             <span v-if="!singleStoryChapters" class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
             <span class="chapter-identity">
-              <small>{{ chapterLabel(chapter.label) }}</small>
+              <!-- Extra stories label a chapter with its own title; the translated title below says it once. -->
+              <small v-if="chapter.label !== chapter.title">{{ chapterLabel(chapter.label) }}</small>
               <strong :class="{ 'is-title-pending': chapterTitlePending(chapter) }">{{ chapterTitle(chapter) }}</strong>
             </span>
             <span class="chapter-stats">{{ chapterStats(chapter) }}</span>

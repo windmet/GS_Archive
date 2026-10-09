@@ -90,8 +90,16 @@
                 <span v-else class="unlock-condition" :title="unlockTitle(unlock)"><Unlock :size="13" aria-hidden="true" /><span>{{ unlockText(unlock) }}</span></span>
               </template>
             </div>
-            <h4 v-if="callTitle(bundle)" class="call-title" lang="ja">{{ callTitle(bundle) }}</h4>
-            <component :is="callTitle(bundle) ? 'p' : 'h4'" :class="{ 'call-line': callTitle(bundle) }"><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></component>
+            <template v-if="callTitle(bundle)">
+              <!-- Calls have reading documents and translations: title and first line read in Chinese. -->
+              <StoryLineText v-slot="title" :entry="callDocumentId(bundle)" :load-document="loadReadingDocument" :source="callTitle(bundle)" kind="title">
+                <h4 class="call-title" :lang="title.locale" :class="{ 'is-pending': title.pending }">{{ title.text }}</h4>
+              </StoryLineText>
+              <StoryLineText v-slot="line" :entry="callDocumentId(bundle)" :load-document="loadReadingDocument" :source="bundle.title">
+                <p class="call-line" :lang="line.locale" :class="{ 'is-pending': line.pending }"><template v-for="(part, index) in projectCommunicationInlineContent(line.text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></p>
+              </StoryLineText>
+            </template>
+            <h4 v-else lang="ja"><template v-for="(part, index) in projectCommunicationInlineContent(presentProducerAddressingText(bundle.title))" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
             <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
@@ -105,7 +113,7 @@
       <div v-else class="random-list">
         <article v-for="bundle in randomBundles" :key="bundle.id" class="random-bundle">
           <header>
-            <div><small>话题组 · {{ bundle.topics.length }} 个话题</small><h4><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
+            <div><small>话题组 · {{ bundle.topics.length }} 个话题</small><h4 lang="ja"><template v-for="(part, index) in projectCommunicationInlineContent(presentProducerAddressingText(bundle.title))" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
             <button :disabled="!bundle.exists" aria-label="按脚本顺序连着看这一组" title="按脚本顺序连着看这一组" @click="emit('play', bundle.file)"><Play :size="17" fill="currentColor" /></button>
           </header>
           <div class="topic-grid">
@@ -118,7 +126,7 @@
             >
               <span>{{ String(index + 1).padStart(2, '0') }}</span>
               <span class="topic-copy">
-                <strong>{{ topic.presentation?.title || `话题 ${index + 1}` }}</strong>
+                <strong :lang="topic.presentation?.title ? 'ja' : undefined">{{ topic.presentation?.title ? presentProducerAddressingText(topic.presentation.title) : `话题 ${index + 1}` }}</strong>
                 <small>{{ timeWindow(topic) }} · 再登场间隔 {{ topic.interval_day }} 天</small>
               </span>
               <Play v-if="topic.presentation" :size="15" fill="currentColor" />
@@ -151,6 +159,9 @@ import { formatArchiveDate } from '../../data/idolCommunicationSelectors.js'
 import { getEmojiUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { normalizeIdolAccentColor } from '../../presentation/idolAccentColor.js'
 import { projectCommunicationInlineContent } from '../../presentation/communicationInlineContent.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import StoryLineText from './StoryLineText.vue'
+import { useSourceTitles } from './useReaderTitles.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { resolveMobileHeroMedia } from '../../presentation/mobileHeroMedia.js'
 
@@ -165,6 +176,7 @@ const props = defineProps({
   focusedScenarioId: { type: [String, Number], default: '' },
   // Source (Japanese) idol name -> the name in the reader's language; App's idol dictionary.
   idolNameFromSource: { type: Function, default: source => source },
+  loadReadingDocument: { type: Function, default: null },
 })
 const emit = defineEmits(['select-idol', 'select-unit', 'update:mode', 'play', 'play-random-topic', 'open-card', 'open-idol-story'])
 
@@ -178,6 +190,7 @@ const activeTab = computed(() => tabs.find(tab => tab.id === props.mode) || tabs
 // A tab with nothing in it is left out, unless it is the one being shown.
 const visibleTabs = computed(() => tabs.filter(tab => tab.id === props.mode || tabCount(tab.id)))
 const cardById = computed(() => new Map((props.mode === 'unit' ? props.unitData : props.idolData)?.view?.cardRefs?.map(card => [Number(card.card_id), card]) || []))
+const sourceTitle = useSourceTitles()
 const storyByEpisodeId = computed(() => new Map(((props.mode === 'unit' ? props.unitData : props.idolData)?.view?.episodeRefs || [])
   .map(story => [Number(story.id), story])))
 const bundles = computed(() => props.mode === 'unit' ? props.unitData?.view?.unitBundles || []
@@ -250,7 +263,7 @@ function unlockText(unlock) {
   const card = unlockCard(unlock)
   if (card) return `${archiveCardFullTitle(card) || '卡名待确认'} ${unlockAction(unlock)}`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
+  if (story) return `「${presentProducerAddressingText(sourceTitle(null, story.scenarioTitle))}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} 完成`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
@@ -260,7 +273,7 @@ function unlockTitle(unlock) {
   const card = unlockCard(unlock)
   if (card) return `卡片 · ${archiveCardFullTitle(card)} · ${unlockAction(unlock)} · 点击查看卡片资料`
   const story = storyByEpisodeId.value.get(Number(unlock.condition?.param_a || 0))
-  if (story) return `个人故事 · ${chapterLabel(story.sectionName)}「${story.scenarioTitle}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
+  if (story) return `个人故事 · ${chapterLabel(story.sectionName)}「${presentProducerAddressingText(sourceTitle(null, story.scenarioTitle))}」${presentIdolEpisodeLabel({ sourceName: story.episodeName })} · 点击查看个人故事`
   if (unlock.kind.startsWith('card_')) return '关联卡片待确认'
   if (unlock.kind === 'idol_story_episode_finished') return '个人故事章节待确认'
   return ['scenario_title_mission', 'term_or_default_release'].includes(unlock.kind)
@@ -268,6 +281,8 @@ function unlockTitle(unlock) {
 }
 // Only calls carry a real title; a chat's scenario title is an internal label or the mission
 // that opens it, so chats keep their first line as the heading.
+// A call's reading document is named after its compiled file.
+const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '')
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
 }
@@ -347,6 +362,7 @@ function timeWindow(topic) {
 .conversation-copy { display: grid; gap: var(--gs-space-2); min-width: 0; }
 .conversation-copy > small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .conversation-copy h4 { margin: 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.7; overflow-wrap: anywhere; }
+.conversation-copy .is-pending { visibility: hidden; }
 .conversation-copy h4.call-title { font-weight: var(--gs-weight-semibold); line-height: 1.5; }
 .conversation-copy .call-line { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .conversation-copy .call-line .inline-emoji,

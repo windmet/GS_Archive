@@ -17,6 +17,16 @@ export function useReaderTitles() {
 export function useStoryTitles() {
   return useTitleIndex((storyFile, source) => readerStoryTitle(index.value, storyFile, source, uiLocale.value))
 }
+// Source title alone, for references that carry neither document nor story file (a call's unlock
+// condition names a personal story chapter). Used only when every published translation of that
+// source title agrees.
+export function useSourceTitles() {
+  return useTitleIndex((_entry, source) => {
+    if (uiLocale.value !== 'zh-CN' || !source) return source
+    const texts = new Set((index.value?.titles || []).filter(title => title.source === source).map(title => title.text))
+    return texts.size === 1 ? [...texts][0] : source
+  })
+}
 function useTitleIndex(lookup, documents = false) {
   const owner = new AbortController()
   const requested = new Set()

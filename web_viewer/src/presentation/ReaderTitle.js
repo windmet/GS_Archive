@@ -15,11 +15,13 @@ export function validateReaderTitles(value) {
       if (shard?.file !== `reader-titles/${key}.json` || !HASH.test(shard.sha256) || !Number.isInteger(shard.bytes) || shard.bytes <= 0 || shard.bytes >= READER_TITLE_BYTE_BUDGET) throw Error('Invalid Reader title shard binding')
     }
   }
-  for (const title of value.titles) {
-    if (!title || typeof title.source !== 'string' || !title.source || typeof title.text !== 'string' || !title.text || !HASH.test(title.source_hash) || !title.unit_id?.startsWith('story-text:v1:')) throw Error('Invalid Reader title binding')
-  }
+  const validTitle = title => title && typeof title.source === 'string' && title.source && typeof title.text === 'string' && title.text && HASH.test(title.source_hash) && title.unit_id?.startsWith('story-text:v1:')
+  for (const title of value.titles) if (!validTitle(title)) throw Error('Invalid Reader title binding')
+  // A binding names a shared title (index into titles) or carries a title that names only its own
+  // document (record), kept in the document's shard so the root index stays small.
   for (const [id, record] of Object.entries(value.documents)) {
-    if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || !Number.isInteger(record.title) || !value.titles[record.title]) throw Error('Invalid Reader document title binding')
+    const shared = Number.isInteger(record?.title) && value.titles[record.title], own = record?.record !== undefined && validTitle(record.record)
+    if (!/^[A-Za-z0-9_-]+$/.test(id) || !HASH.test(record?.revision) || Boolean(shared) === Boolean(own)) throw Error('Invalid Reader document title binding')
   }
   return value
 }
@@ -40,6 +42,8 @@ export function readerStoryTitle(index, storyFile, source, locale = 'zh-CN') {
 export function readerTitle(index, entry, source, locale = 'zh-CN') {
   if (locale === 'ja-JP') return source
   const binding = index?.documents?.[entry?.document_id]
-  const title = binding && index.titles[binding.title]
-  return binding?.revision === entry?.sha256 && title?.source === source ? title.text : source
+  const title = binding && (binding.record || index.titles[binding.title])
+  // The bound title row names the document; a caller passing the document's own manifest title (some
+  // documents carry a synopsis line there) gets that title too.
+  return binding?.revision === entry?.sha256 && title && (title.source === source || (entry?.title && source === entry.title)) ? title.text : source
 }
