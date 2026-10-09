@@ -222,6 +222,9 @@ const imports = {
   '../../utils/CardAssetResolver.js': cardAssets,
   '../../data/eventResourceGraph.js': { eventBannerUrl },
   './useArchiveCardText.js': { archiveText }, './useArchiveGashaText.js': { gashaText },
+  // Card lines come from the lazy card-lines overlay; this contract covers costumes, so lines stay source.
+  './useArchiveNamedText.js': { archiveNamedText: (_kind, source) => source, loadArchiveNames: () => Promise.resolve() },
+  '../../localization/ui/UiLocaleStore.js': { uiLocale },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',
     'ArchiveTechnicalDetails', 'ArchiveRelationList'].map(name => [`./${name}.vue`, { default: emptyComponent }])),

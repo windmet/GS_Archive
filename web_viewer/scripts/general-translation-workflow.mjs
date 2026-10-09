@@ -16,9 +16,12 @@ if(command==='export') {
   assert(!fs.existsSync(out),'Output exists; use a new export directory to preserve source snapshots')
   const options=args.slice(1), legacy=options.includes('--legacy-json')
   const numberOption=(name,fallback)=>options.includes(name)?Number(options[options.indexOf(name)+1]):fallback
-  for(let i=0;i<options.length;i++){if(options[i]==='--legacy-json')continue;assert(['--max-rows','--max-chars'].includes(options[i]),`Unknown export option ${options[i]}`);i++}
+  for(let i=0;i<options.length;i++){if(options[i]==='--legacy-json')continue;assert(['--max-rows','--max-chars','--domains'].includes(options[i]),`Unknown export option ${options[i]}`);i++}
+  // --domains card-lines: export only those shards (a later wave), numbering unchanged per shard.
+  const domains=options.includes('--domains')?options[options.indexOf('--domains')+1].split(','):null
   const compact=legacy?null:planCompactBatches(units,{maxRows:numberOption('--max-rows',400),maxChars:numberOption('--max-chars',16000)})
-  const existing=read('public/translations/zh-CN/archive-general.json').entries, batches=legacy?planBatches(units):compact.batches
+  const existing=read('public/translations/zh-CN/archive-general.json').entries, batches=(legacy?planBatches(units):compact.batches).filter(batch=>!domains||domains.some(domain=>batch.batch_id.startsWith(`G-${domain}-`)))
+  assert(batches.length,'No batches for the requested domains')
   fs.mkdirSync(out,{recursive:true})
   const local=path.join(out,'local');fs.mkdirSync(local)
   const plan={schema:'GS-GENERAL-PLAN-V2',format:legacy?'json-v1':'compact-markdown-v1',source_commit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),source_digest:corpusHash(units),unique_units:units.length,source_references:units.reduce((n,u)=>n+u.references.length,0),max_rows:compact?.maxRows||100,max_input_characters:compact?.maxChars||null,batches:[]}
@@ -47,7 +50,7 @@ if(command==='export') {
   const batch=read(args[0]), returned=readReturn(args[1],batch), entries=validateGeneralReturn(batch,returned,units)
   if(command==='import') {
     assert(args[2]?.trim(),'Provide translator/model identity')
-    assert(/^G-(photos|costumes|cards|skills|items|honors)-\d{3}$/.test(batch.batch_id),'Unsafe batch ID')
+    assert(/^G-(photos|costumes|cards|skills|items|honors|card-lines)-\d{3}$/.test(batch.batch_id),'Unsafe batch ID')
     const existing=loadGeneralRevisions(root,units)
     assert(entries.every(e=>!existing.has(e.key)),'Batch overlaps an existing revision')
     const folder=path.join(root,'translation/studio/general/revisions');fs.mkdirSync(folder,{recursive:true})

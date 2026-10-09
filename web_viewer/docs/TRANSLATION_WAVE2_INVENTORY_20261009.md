@@ -32,13 +32,25 @@
 
 建议批次：每批 4 位偶像，约 300–330 行、1.8 万字，共约 13 批。触摸语音跨卡重复的 208 条只翻一次。
 
-## 3. 还缺的工程
+## 3. 卡面文本：已接入通用翻译流程（10-09）
+
+卡面台词、触摸语音、电话标题按「一句对一句、只绑说话人」处理，走通用资料流程（原文作键），不用剧情 Studio 的逐行回执：
+
+- 语料新增 `card-line`（normal/awakened/extra）、`card-touch`（text）、`call-title`（title），每条引用记说话人（卡片所属偶像）。
+- 分片 `card-lines`：只在卡片详情和电话页懒加载，**不进**打包的根文件 `archive-general.json`。
+- 批次：`web_viewer/.analysis/general-translation-batches/card-lines-20261009/`，18 批（G-card-lines-001～018），按偶像排序，每组标题写明说话人；提示词是角色台词版（称呼规则、保留 ●●●●、内部标签用 `[编号=]`）。给模型的只有 `glossary.md` 和各批 `input.md`，回传按 `output-template.md` 的格式存为 `output.md`。
+- 导入（在 web_viewer 下）：
+  `node scripts/general-translation-workflow.mjs check <批次>/local/batch-map.json <批次>/output.md`
+  `node scripts/general-translation-workflow.mjs import <批次>/local/batch-map.json <批次>/output.md '模型名'`
+  然后 `node scripts/generate-archive-general-translations.mjs`、`generate-translation-release.mjs`、`generate-translation-audit.mjs`、`generate-story-search-localization.mjs`。
+- 审计里单列三组：卡面文本·台词 / 触摸语音 / 电话标题。检查：`verify-card-line-translation.mjs`。
+
+## 4. 还缺的工程
 
 现有 Studio 管线以阅读文档为单位（`prepare-ai-studio-batches.mjs`），卡面文本、通信、随机话题都不是阅读文档，需要先做：
 
-- 卡面文本的「来源绑定记录」投影（resource_id、字段、序号、原文哈希）与对应的批次生成、导入、校验；页面按记录取译文（卡片详情、首页触摸语音、电话标题）。
 - 通信的同类投影（聊天编译文件的逐行单元）。量最大，建议放在卡面文本之后。
 
-## 4. 现在就能翻的
+## 5. 现在就能翻的
 
 - **B035-birthday-small-talk**：`web_viewer/.analysis/translation-studio/wave2-20261009/B035-birthday-small-talk/input.md`（10 篇、59 行）。生成方式：`node scripts/prepare-ai-studio-batches.mjs --documents <10 个文档 id> --batch B035-birthday-small-talk --out .analysis/translation-studio/wave2-20261009`。载入流程与 B031–B034 相同；旧合并稿的草稿可作参考，但不能直接套用（换行和键名都变了）。

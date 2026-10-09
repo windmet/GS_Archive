@@ -1,8 +1,29 @@
 import assert from 'node:assert/strict'
-import { hash, shards } from './general-translation-batches.mjs'
+import fs from 'node:fs'
+import { hash, shards, CARD_LINE_KINDS } from './general-translation-batches.mjs'
 
-const kinds = { card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
-const fields = { name:'名称',title:'标题',description:'说明' }
+const kinds = { 'card-line':'卡面台词','card-touch':'首页触摸语音','call-title':'电话标题',card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
+const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词' }
+const isCharacterLine = row => CARD_LINE_KINDS.includes(row.kind)
+const speakerOf = row => row.references.find(ref => ref.speaker)?.speaker || ''
+let speakerNames
+// 中文名（日文名）, from the project idol names the model also sees in glossary.md.
+function speakerLabel(code) {
+  if (!speakerNames) {
+    const read = file => JSON.parse(fs.readFileSync(new URL(`../../${file}`, import.meta.url), 'utf8'))
+    const zh = read('public/translations/zh-CN/entities/idols.json').entries
+    speakerNames = new Map(read('public/data/masterdata/idol_unit_dictionary.json').idols.map(idol => [idol.idol_code, `${zh[idol.idol_code]?.name || idol.display_name}（${idol.display_name}）`]))
+  }
+  return speakerNames.get(code) || code
+}
+const CHARACTER_LINE_RULES = [
+  '你是日中游戏本地化译者。下面是偶像角色自己说的台词：卡面台词（普通/特训/额外）、首页点触立绘时的语音和电话标题。按小标题标明的说话人，用符合该角色性格的自然口语译成简体中文。',
+  '每条是独立的一句或一段，没有上下文；同一位偶像的口吻、自称和对制作人的称呼要前后一致。不要添加原文没有的内容，也不要把多条合并。',
+  '称呼规则：「プロデューサーさん」「プロデューサー」译为“制作人”，不加“先生”；人名+さん 译为“先生”（女性用“小姐/女士”）；くん→君，ちゃん→酱，先生（せんせい）→老师；直呼就直呼。',
+  '●●●● 是制作人名字的占位符，必须原样保留（包括“●●●●プロデューサー”整体，不翻译、不拆开、不删掉），程序会替换成玩家设定的名字。',
+  '原样保留数字、程序标记和表情标记；换行可按中文调整。姓名参照 glossary.md 的项目姓名表，不确定时标记疑义。',
+  '个别条目是数据内部标签而不是台词（如「2023年プロミ_限定_SR_天ヶ瀬 冬馬」），用 [编号=] 保留原文。',
+]
 const rid = index => String(index + 1).padStart(3, '0')
 export const returnHeading = batch => `# ${batch.batch_id} @${batch.source_digest.slice(0,12)}`
 
@@ -18,12 +39,14 @@ export function compactContexts(units) {
 }
 
 export function renderCompactInput(batch, contexts = new Map()) {
+  const characterLines = batch.rows.length > 0 && batch.rows.every(isCharacterLine)
   const lines = [
-    `# SideM GS 资料翻译 · ${batch.batch_id}`, '',
+    `# SideM GS ${characterLines ? '角色台词' : '资料'}翻译 · ${batch.batch_id}`, '',
+    ...(characterLines ? CHARACTER_LINE_RULES : [
     '你是日中游戏本地化译者。将下面每条日文译成自然、准确的简体中文，供资料馆的名称、图鉴说明和技能说明使用。',
     '本批只含通用资料，不含剧情台词、首页对话或工作通讯。名称简洁有辨识度，说明按中文自然组织；技能严格保留触发条件、概率、时长、对象和效果。不要机械逐词直译，也不要擅自润色成角色对白。',
     '每个短编号独立翻译，不能漏条、合并、拆分或把含义搬到相邻条目。名称可有创意，但不能添加原文没有的事实、获取来源、衣装关联或解锁条件。同一专名保持一致；英文专名保留，普通日语语法译成中文。',
-    '原样保留数字、小数、参数 <value>、图标 [stamina]、占位符及其他程序标记；数值不能变，技能中数值顺序也不能变。换行可按中文调整。可参考 glossary.md 的项目姓名表；它不是官方中文译名，不确定时必须标记疑义。', '',
+    '原样保留数字、小数、参数 <value>、图标 [stamina]、占位符及其他程序标记；数值不能变，技能中数值顺序也不能变。换行可按中文调整。可参考 glossary.md 的项目姓名表；它不是官方中文译名，不确定时必须标记疑义。']), '',
     '## 回传格式（只输出标记行和译文，不复制原文、上下文、章节标题或检查过程）',
     '第一行原样输出下面这行，然后每个编号恰好一次：',
     returnHeading(batch),
@@ -36,8 +59,9 @@ export function renderCompactInput(batch, contexts = new Map()) {
   ]
   let group = ''
   batch.rows.forEach((row,index)=>{
-    const next = `${row.kind}:${row.field}`
-    if (next !== group) { lines.push(`### ${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next }
+    const speaker = isCharacterLine(row) ? speakerOf(row) : ''
+    const next = `${speaker}:${row.kind}:${row.field}`
+    if (next !== group) { lines.push(`### ${speaker ? `说话人：${speakerLabel(speaker)} · ` : ''}${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next }
     const context = contexts.get(row.key)
     if (context && context !== row.source) lines.push(`【名称上下文：${context.replace(/[\r\n]+/g,' ')}】`)
     lines.push(`[${rid(index)}]${row.source}`, '')
@@ -53,7 +77,12 @@ export function planCompactBatches(units, {maxRows=400,maxChars=16000} = {}) {
     let rows=[], number=1
     const make = () => ({schema:'GS-GENERAL-BATCH-V1',batch_id:`G-${domain}-${String(number).padStart(3,'0')}`,locale:'zh-CN',rows:[...rows],source_digest:hash(JSON.stringify(rows))})
     const finish = () => { if (rows.length) { batches.push(make()); number++; rows=[] } }
-    for (const row of units.filter(u=>select(u.kind))) {
+    // Character lines go speaker by speaker, so one idol's lines share a batch and one voice.
+    const kindOrder = kind => CARD_LINE_KINDS.indexOf(kind), fieldOrder = ['normal','awakened','extra','text','title']
+    const selected = units.filter(u=>select(u.kind))
+    if (selected.every(isCharacterLine)) selected.sort((a,b)=>speakerOf(a).localeCompare(speakerOf(b)) || kindOrder(a.kind)-kindOrder(b.kind) ||
+      fieldOrder.indexOf(a.field)-fieldOrder.indexOf(b.field) || a.key.localeCompare(b.key))
+    for (const row of selected) {
       rows.push(row)
       if (rows.length>1 && (rows.length>maxRows || renderCompactInput(make(),contexts).length>maxChars)) {
         rows.pop(); finish(); rows.push(row)

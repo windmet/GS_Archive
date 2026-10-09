@@ -188,7 +188,7 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
-          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.normal) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.normal)) }}</span></p>
+          <p v-bind="cardLine('card-line', 'normal', card.texts.normal).attrs"><span class="authored-text">{{ cardLine('card-line', 'normal', card.texts.normal).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-line', 'normal', card.texts.normal).text) }}</span></p>
         </div>
         <div v-if="card.texts?.awakened" class="card-text-block">
           <div class="card-text-heading">
@@ -198,11 +198,11 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
-          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.awakened) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.awakened)) }}</span></p>
+          <p v-bind="cardLine('card-line', 'awakened', card.texts.awakened).attrs"><span class="authored-text">{{ cardLine('card-line', 'awakened', card.texts.awakened).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-line', 'awakened', card.texts.awakened).text) }}</span></p>
         </div>
         <div v-if="card.texts?.extra?.trim() && card.texts.extra !== '0'" class="card-text-block">
           <strong>短台词</strong>
-          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.extra) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.extra)) }}</span></p>
+          <p v-bind="cardLine('card-line', 'extra', card.texts.extra).attrs"><span class="authored-text">{{ cardLine('card-line', 'extra', card.texts.extra).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-line', 'extra', card.texts.extra).text) }}</span></p>
         </div>
       </section>
 
@@ -212,7 +212,7 @@
           <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
-              <p v-if="cue.preview?.text" lang="ja"><span class="authored-text">{{ presentProducerAddressingText(cue.preview.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.preview.text)) }}</span></p>
+              <p v-if="cue.preview?.text" v-bind="cardLine('card-touch', 'text', cue.preview.text).attrs"><span class="authored-text">{{ cardLine('card-touch', 'text', cue.preview.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-touch', 'text', cue.preview.text).text) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -284,9 +284,23 @@
 
 <script setup>
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
+import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, ref, watch } from 'vue'
+
+// Card lines and touch voices come from the lazily loaded card-lines overlay. While it loads the
+// source line keeps its place hidden (no Japanese flash); without a translation it stays Japanese.
+const cardLinesState = ref('loading')
+loadArchiveNames('card-lines').then(() => { cardLinesState.value = 'ready' }, () => { cardLinesState.value = 'failed' })
+function cardLine(kind, field, source) {
+  const original = { text: presentProducerAddressingText(source || ''), attrs: { lang: 'ja' } }
+  if (uiLocale.value !== 'zh-CN') return original
+  if (cardLinesState.value === 'loading') return { ...original, attrs: { lang: 'ja', class: 'is-pending' } }
+  const translated = archiveNamedText(kind, source, field)
+  return translated && translated !== source ? { text: presentProducerAddressingText(translated), attrs: { lang: 'zh-CN' } } : original
+}
 import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
@@ -558,6 +572,7 @@ function openRelation(item) {
 </script>
 
 <style scoped>
+.is-pending { visibility: hidden; }
 /* Card detail: one artwork hero, an identity column, then flat sections under hairlines. */
 .list-screen { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; background: var(--gs-paper); }
 .card-detail { container: card-detail / inline-size; display: grid; gap: var(--gs-space-section); min-width: 0; max-width: var(--gs-content-width); margin: 0 auto; padding: var(--gs-space-8) var(--gs-space-8) var(--gs-space-9); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
-import {sourceUnits,loadGeneralRevisions,shards} from './lib/general-translation-batches.mjs';
+import {sourceUnits,loadGeneralRevisions,shards,rootOverlayEntries} from './lib/general-translation-batches.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
 import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../translation/studio/general/photo-drafts.mjs';
@@ -74,9 +74,10 @@ for (const row of corpus) {
 // Regeneration cannot silently erase imported Gemini revisions.
 const revisions = loadGeneralRevisions(root,sourceUnits(root));
 for (const revision of revisions.values()) ((entries[revision.kind] ||= {})[revision.field] ||= {})[revision.source] = revision.translation;
+const rootEntries = rootOverlayEntries(entries);
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',
-  scope: 'metadata-only', excluded: ['dialogue','unit-story','work-communication','home-dialogue'], entries}, null, 2) + '\n');
+  scope: 'metadata-only', excluded: ['dialogue','unit-story','work-communication','home-dialogue'], entries: rootEntries}, null, 2) + '\n');
 const shardDirectory = path.join(root,'public/translations/zh-CN/archive-general');
 fs.mkdirSync(shardDirectory,{recursive:true});
 // One shard map for batches and published shards (general-translation-batches.mjs).

@@ -8,13 +8,17 @@ import {validateItemIdolNames} from './item-idol-name-policy.mjs'
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
-export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k)}
+export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k),'card-lines':k=>CARD_LINE_KINDS.includes(k)}
+// Character lines: lazily loaded, never in the bundled root overlay, batched by speaker.
+export const CARD_LINE_KINDS = ['card-line','card-touch','call-title']
+// The root overlay is bundled into the app; character lines live only in their lazy shard.
+export const rootOverlayEntries = entries => Object.fromEntries(Object.entries(entries).filter(([kind]) => !CARD_LINE_KINDS.includes(kind)))
 export function sourceUnits(root) {
   const unique = new Map()
   for (const row of archiveGeneralTextCorpus(root)) {
     const key = keyOf(row)
     const entry = unique.get(key) || {...row,key,references:[]}
-    entry.references.push({kind:row.kind,id:row.id,field:row.field})
+    entry.references.push({kind:row.kind,id:row.id,field:row.field,...(row.speaker?{speaker:row.speaker}:{})})
     unique.set(key,entry)
   }
   return [...unique.values()].sort((a,b)=>a.kind.localeCompare(b.kind)||a.field.localeCompare(b.field)||a.key.localeCompare(b.key))

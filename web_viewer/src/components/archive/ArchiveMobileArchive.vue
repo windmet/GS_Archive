@@ -92,9 +92,8 @@
             </div>
             <template v-if="callTitle(bundle)">
               <!-- Calls have reading documents and translations: title and first line read in Chinese. -->
-              <StoryLineText v-slot="title" :entry="callDocumentId(bundle)" :load-document="loadReadingDocument" :source="callTitle(bundle)" kind="title">
-                <h4 class="call-title" :lang="title.locale" :class="{ 'is-pending': title.pending }">{{ title.text }}</h4>
-              </StoryLineText>
+              <!-- The call title comes from card data, translated with the card lines. -->
+              <h4 class="call-title" :lang="callTitleText(bundle).lang" :class="{ 'is-pending': callTitleText(bundle).pending }">{{ callTitleText(bundle).text }}</h4>
               <StoryLineText v-slot="line" :entry="callDocumentId(bundle)" :load-document="loadReadingDocument" :source="bundle.title">
                 <p class="call-line" :lang="line.locale" :class="{ 'is-pending': line.pending }"><template v-for="(part, index) in projectCommunicationInlineContent(line.text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></p>
               </StoryLineText>
@@ -149,7 +148,7 @@ import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { presentMissionText } from '../../presentation/missionText.js'
 import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveCardFullTitle} from './useArchiveCardTitle.js'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
@@ -283,6 +282,13 @@ function unlockTitle(unlock) {
 // that opens it, so chats keep their first line as the heading.
 // A call's reading document is named after its compiled file.
 const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '')
+const cardLinesState = ref('loading')
+loadArchiveNames('card-lines').then(() => { cardLinesState.value = 'ready' }, () => { cardLinesState.value = 'failed' })
+function callTitleText(bundle) {
+  const source = callTitle(bundle), translated = uiLocale.value === 'zh-CN' ? archiveNamedText('call-title', source, 'title') : source
+  const own = translated && translated !== source
+  return { text: presentProducerAddressingText(own ? translated : source), lang: own ? 'zh-CN' : 'ja', pending: uiLocale.value === 'zh-CN' && cardLinesState.value === 'loading' }
+}
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
 }

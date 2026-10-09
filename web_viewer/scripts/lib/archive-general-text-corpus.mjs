@@ -2,16 +2,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 
-// Explicit metadata allowlist. Dialogue, story summaries and home cues are excluded.
+// Explicit allowlist. Story dialogue and summaries are excluded. Card lines, home touch voices and
+// call titles are character text read one line at a time: each carries its speaker (the card's idol)
+// and they publish only to the lazily loaded card-lines shard.
 export function archiveGeneralTextCorpus(root) {
   const rows = [];
   const load = file => JSON.parse(fs.readFileSync(path.join(root, 'public/data/masterdata', file), 'utf8'));
-  const add = (kind, id, field, text) => {
+  const add = (kind, id, field, text, speaker = '') => {
     if (typeof text !== 'string' || !text.trim()) return;
     rows.push({kind, id: String(id), field, source: text,
-      sourceHash: createHash('sha256').update(text).digest('hex')});
+      sourceHash: createHash('sha256').update(text).digest('hex'), ...(speaker ? {speaker} : {})});
   };
-  for (const row of load('card_index.json').cards) add('card', row.resource_id, 'title', row.title);
+  const cards = load('card_index.json').cards;
+  for (const row of cards) add('card', row.resource_id, 'title', row.title);
+  for (const row of cards) {
+    // extra is '0' on cards without one.
+    for (const field of ['normal', 'awakened', 'extra'])
+      if (row.texts?.[field]?.trim() !== '0') add('card-line', row.resource_id, field, row.texts?.[field], row.character_id);
+    for (const cue of row.home_voice_cues || []) add('card-touch', `${row.resource_id}:${cue.cue}`, 'text', cue.preview?.text, row.character_id);
+  }
+  for (const call of Object.values(load('mobile_archive_index.json').scenarios))
+    if (call.kind === 'idol_phone') add('call-title', call.scenario_id ?? call.id, 'title', call.title, call.idol_code);
   for (const row of load('costume_dictionary.json').costumes) {
     add('costume', row.model_resource_id, 'name', row.costume_name);
     add('costume', row.model_resource_id, 'description', row.description);
