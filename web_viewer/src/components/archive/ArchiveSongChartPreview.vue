@@ -1,17 +1,19 @@
 <template>
-  <section class="chart-preview" :class="{ 'is-long': mode === 'long' }" aria-label="谱面查看器">
+  <section ref="previewRoot" class="chart-preview" :class="{ 'is-long': mode === 'long', 'is-immersive': immersive }" aria-label="谱面查看器" @keydown.esc="immersive && leaveImmersive()">
     <button v-if="!opened" type="button" class="chart-open" @click="opened = true">打开谱面预览</button>
     <template v-else>
       <header class="chart-toolbar">
         <div class="chart-difficulties" role="group" aria-label="谱面难度"><button v-for="d in difficulties" :key="d.type" type="button" :class="`difficulty-${d.type}`" :aria-pressed="selected === d.type" @click="selected = d.type">{{ d.label }} <small>Lv {{ d.levelLabel }}</small></button></div>
         <div class="chart-modes" role="group" aria-label="谱面视图"><button type="button" :aria-pressed="mode === 'perspective'" @click="mode = 'perspective'">透视轨道</button><button type="button" :aria-pressed="mode === 'long'" @click="mode = 'long'">长轨图</button></div>
         <button v-if="mode === 'long'" type="button" :aria-pressed="followPlayback" @click="followPlayback = !followPlayback">跟随播放</button>
+        <button v-if="chart && !immersive" type="button" class="chart-immersive-enter" @click="enterImmersive"><Maximize :size="15" aria-hidden="true" />沉浸查看</button>
+        <button v-if="immersive" type="button" class="chart-immersive-exit" @click="leaveImmersive"><Minimize :size="15" aria-hidden="true" />退出沉浸</button>
         <div class="chart-actions"><button ref="settingsButton" type="button" :aria-expanded="settingsOpen" :aria-controls="`${uid}-settings`" aria-haspopup="dialog" @click="toggleSettings"><Settings2 :size="15" aria-hidden="true" />视图设置</button><button type="button" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen"><Info :size="15" aria-hidden="true" />谱面信息</button><button v-if="!standalone" type="button" @click="opened = false"><X :size="15" aria-hidden="true" />收起谱面</button><span v-if="chart && mode === 'long'" class="chart-export-actions"><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'png'" @click="download('png')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'png' ? `正在导出 PNG ${exportProgress}%…` : '保存长轨 PNG' }}</button><button type="button" :disabled="exporting" :aria-busy="exporting && exportFormat === 'svg'" @click="download('svg')"><Download :size="15" aria-hidden="true" />{{ exporting && exportFormat === 'svg' ? '正在导出…' : '导出 SVG' }}</button></span></div>
       </header>
       <Teleport to="body">
         <div v-if="settingsOpen" :id="`${uid}-settings`" ref="settingsPanel" class="chart-settings" :style="settingsPosition" role="dialog" aria-label="谱面视图设置" @keydown.esc.stop.prevent="closeSettings()">
           <header class="settings-heading"><strong>显示与播放</strong><button type="button" aria-label="关闭视图设置" @click="closeSettings()"><X :size="18" aria-hidden="true" /></button></header>
-          <label>贴图样式 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形（截图样式）</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
+          <label>贴图样式 <select v-model="skin" aria-label="轨道音符贴图"><option value="Note1SpriteAtlas">圆形</option><option value="Note2SpriteAtlas">菱形</option><option value="Note3SpriteAtlas">横条</option></select></label>
           <template v-if="mode === 'perspective'"><label class="speed-setting">视觉配速 <input v-model.number="speed" type="number" min="1" max="30" step="0.1" aria-label="轨道视觉配速" @change="speed = safeSpeed" /><input v-model.number="speed" type="range" min="1" max="30" step="0.1" aria-label="轨道配速滑杆" /></label><p class="setting-note">1–30 为相对刻度，越大落下越快；只改变画面疏密。</p></template>
           <template v-else><label>纵向缩放 <select v-model.number="scale" aria-label="谱面纵向缩放"><option :value="55">紧凑</option><option :value="90">标准</option><option :value="150">放大</option></select></label><label>长轨排布 <select v-model="longLayout" aria-label="长轨排布"><option value="auto">自动：桌面分栏 / 手机单栏</option><option value="columns">分栏横向阅读</option><option value="continuous">单栏纵向阅读</option></select></label></template>
           <div class="settings-audio"><label>播放速度 <select v-model.number="playbackRate" aria-label="谱面播放速度"><option :value="0.5">0.5×</option><option :value="0.75">0.75×</option><option :value="1">1×</option><option :value="1.25">1.25×</option><option :value="1.5">1.5×</option></select></label><label>音量 <input v-model.number="volume" type="range" min="0" max="1" step="0.01" aria-label="谱面音量" /></label></div>
@@ -31,7 +33,7 @@
           <p class="chart-shortcuts">聚焦画布：<kbd>空格</kbd> 播放 / 暂停 <span>·</span> <kbd>←</kbd><kbd>→</kbd> 跳音符 <span>·</span> <kbd>Home</kbd><kbd>End</kbd> 首尾</p>
         </footer>
       </template>
-      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。</p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
+      <div v-if="infoOpen" class="chart-info"><p v-if="chart">{{ activeDifficulty.label }} · {{ chart.noteObjectCount }} 个原始音符对象 · 最大 Combo {{ activeDifficulty.maxCombo }}。音符对象和判定点计数不同。<template v-if="chart.hiddenAfterSongEnd">原始数据另有 {{ chart.hiddenAfterSongEnd }} 个音符位于歌曲结束之后，游戏中不会出现，此处不显示。</template></p><p v-if="chart && mode === 'long'">PNG 保存完整单栏长轨（2×，宽 820px）；SVG 保存当前排布。超出浏览器 PNG 预算时，可保存 SVG 后离线导出。</p><p>五轨原生贴图：绿 Tap / 长条，黄左划、青右划、红上划，紫星 P 技能，绿 315 Special。绿色横条为原始滑条中间节点；中途判定规则仍待核实。</p><p>完整混音音频作为播放时钟，与舞台小人使用同一音频资源。谱面按各段 BPM 换算时间。视图的相机、配速刻度及特效仍为复刻估计。</p></div>
     </template>
   </section>
 </template>
@@ -40,8 +42,9 @@
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 const masterVolume = new PlayerPreferencesRepository().load().volumes.master
 import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { ChevronLeft, ChevronRight, Download, Info, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
-import { validateSongChart } from '../../presentation/SongChartPresentation.js'
+import { ChevronLeft, ChevronRight, Download, Info, Maximize, Minimize, Pause, Play, Settings2, SkipBack, SkipForward, X } from '@lucide/vue'
+import { usePlayerImmersiveMode } from '../../composables/usePlayerImmersiveMode.js'
+import { playableSongChart, validateSongChart } from '../../presentation/SongChartPresentation.js'
 import { buildSongChartTiming, formatChartTime } from '../../presentation/SongChartTiming.js'
 import { songTrackSpanForSpeed } from '../../presentation/SongTrackPresentation.js'
 import { createMediaElementClock } from '../../utils/mediaElementClock.js'
@@ -51,6 +54,21 @@ import ArchiveSongLongPreview from './ArchiveSongLongPreview.vue'
 import { embedSongChartImages, songNoteEndpoints } from '../../presentation/SongNotePresentation.js'
 const props = defineProps({ songCode: { type: String, required: true }, title: { type: String, required: true }, difficulties: { type: Array, required: true }, audioTrack: { type: Object, default: null }, standalone: Boolean })
 const emit = defineEmits(['request-play'])
+// 沉浸查看: the track fills the screen and owns every touch, so several fingers on it neither
+// scroll nor zoom the page. Fullscreen is asked for inside the tap; where the browser refuses it
+// (iPhone Safari) the fixed full-window view still applies.
+const previewRoot = ref(null), immersive = ref(false)
+const { active: fullscreenActive, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
+function enterImmersive() {
+  mode.value = 'perspective'; settingsOpen.value = false; infoOpen.value = false
+  immersive.value = true
+  void enterFullscreen(previewRoot.value)
+}
+function leaveImmersive() {
+  immersive.value = false
+  if (fullscreenActive.value) void leaveFullscreen()
+}
+watch(fullscreenActive, (active, was) => { if (was && !active) immersive.value = false })
 const uid = `chart-viewer-${getCurrentInstance().uid}`
 const opened = ref(props.standalone), selected = ref(props.difficulties[0]?.type || 1), mode = ref('perspective')
 const scale = ref(90), skin = ref('Note1SpriteAtlas'), speed = ref(10), longLayout = ref('auto'), followPlayback = ref(false)
@@ -95,7 +113,7 @@ async function loadChart() {
     const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(n => n.toString(16).padStart(2, '0')).join('')
     if (hash !== difficulty.chart.sha256 || bytes.byteLength !== difficulty.chart.bytes) throw new Error('谱面校验失败，请刷新页面后重试')
     const parsed = validateSongChart(JSON.parse(new TextDecoder().decode(bytes)), props.songCode, difficulty.type)
-    if (current === generation) { chart.value = parsed; loading.value = false; goToFirstNote() }
+    if (current === generation) { chart.value = playableSongChart(parsed, props.audioTrack?.source?.duration_seconds); loading.value = false; seekSeconds(0) }
   } catch (e) { if (current === generation && e.name !== 'AbortError') error.value = e.message || '谱面加载失败' }
   finally { if (current === generation) loading.value = false }
 }
@@ -122,7 +140,6 @@ function seekSeconds(seconds) {
   void nextTick(() => longPreview.value?.scrollToTick())
 }
 function seek(tick) { seekSeconds(timing.value.tickToSeconds(Math.max(0, Math.min(chart.value.maxTick, Number(tick) || 0)))) }
-function goToFirstNote() { seek(Math.min(...chart.value.notes.map(n => n.tick), chart.value.maxTick)) }
 function step(direction) {
   const note = direction > 0 ? nextNote.value : previousNote.value
   if (note) { seek(note.tick); locateMessage.value = `tick ${note.tick} · 轨位 ${note.lane + 1}` }
@@ -292,6 +309,22 @@ kbd { padding: 0 var(--gs-space-1); border: 1px solid var(--gs-line); border-rad
 .chart-info { margin-top: var(--gs-space-3); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); color: var(--gs-ink-2); font-size: var(--gs-text-ui); line-height: 1.7; }
 .chart-info p { margin: var(--gs-space-1) 0; }
 button:focus-visible, select:focus-visible, input:focus-visible, .chart-viewport:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+/* 沉浸查看: one fixed screen; the track takes the room left by the difficulty row and the transport
+   and keeps its 16:9. touch-action: none stops pans and pinches from reaching the page. */
+.chart-immersive-exit { display: none; }
+section.chart-preview.is-immersive { position: fixed; z-index: 1100; inset: 0; display: flex; flex-direction: column; gap: var(--gs-space-2); margin: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border: 0; background: var(--gs-paper); overscroll-behavior: none; touch-action: none; }
+.is-immersive .chart-toolbar { flex: none; margin: 0; }
+.is-immersive .chart-modes, .is-immersive .chart-actions, .is-immersive .chart-info, .is-immersive .chart-shortcuts, .is-immersive .tick-position { display: none; }
+.is-immersive .chart-immersive-exit { display: inline-flex; height: var(--gs-control-touch); margin-left: auto; }
+.is-immersive .chart-viewport { display: grid; flex: 1 1 0; place-items: center; min-height: 0; container-type: size; }
+.is-immersive .chart-viewport :deep(.track-preview) { width: min(100cqw, calc(100cqh * 16 / 9)); }
+.is-immersive .chart-transport { flex: none; margin: 0; padding-top: var(--gs-space-2); }
+.is-immersive .chart-navigation { margin-top: var(--gs-space-1); }
+@media (max-height: 500px) {
+  .is-immersive .chart-difficulties button { height: var(--gs-control-normal); }
+  .is-immersive .chart-transport { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); }
+  .is-immersive .chart-navigation { margin: 0; }
+}
 @container chart-preview (max-width: 560px) {
   .chart-difficulties { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; gap: var(--gs-space-2); }
   .chart-difficulties button { min-width: 0; padding: 0 var(--gs-space-1); }

@@ -34,6 +34,19 @@ export function validateSongChart(chart, songCode, difficultyType) {
   return chart
 }
 
+// Four source charts (tibeti/wathon Expert, ldyrdm Pro, mtples Expert) carry one or two notes
+// minutes after the song ends; the game stops with the music, so they are never played.
+// The viewer keeps the source file intact and hides only notes that start after the audio.
+export function playableSongChart(chart, audioSeconds) {
+  const limit = Number(audioSeconds)
+  if (!(limit > 0)) return chart
+  const timing = buildSongChartTiming(chart)
+  const notes = chart.notes.filter(n => timing.tickToSeconds(n.tick) <= limit + 0.5)
+  if (notes.length === chart.notes.length) return chart
+  const maxTick = notes.reduce((value, n) => Math.max(value, n.tick + n.duration), 0)
+  return { ...chart, notes, maxTick, hiddenAfterSongEnd: chart.notes.length - notes.length }
+}
+
 export function buildSongChartGeometry(chart, pixelsPerThousand = 90) {
   const x = lane => 105 + lane * 55
   const y = tick => 42 + tick * pixelsPerThousand / 1000
