@@ -26,7 +26,8 @@ for (const entry of indexes.reading.entries) {
   const item = await loadStudioDocument(entry, indexes)
   units += item.rows.length
 }
-assert.equal(units, 30121)
+// 32760 since 2026-10-09: the 306 seasonal campaign documents add exactly 2639 rows.
+assert.equal(units, 32760)
 
 for (const id of ['1_1_002_02_j', '025suz_403_2_4_025_03_09_b']) {
   const entry = indexes.reading.entries.find(item => item.document_id === id)

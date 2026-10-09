@@ -18,10 +18,9 @@
       <image href="/assets/song-chart-track/live_target_line_gradation.png" x="0" y="558" width="1280" height="24" preserveAspectRatio="none" />
       <image href="/assets/song-chart-track/live_target_line.png" x="0" y="560" width="1280" height="20" preserveAspectRatio="none" />
       <g v-for="(p, i) in scene.judges" :key="i" :data-judge-lane="i">
-        <!-- The glow is two soft rings, not an SVG blur: the track redraws 30 times a second and a
+        <!-- The glow is a soft wide ring, not an SVG blur: the track redraws 30 times a second and a
              filter is re-rasterised on every one of them, which is what made iOS stutter. -->
-        <circle :cx="p.x" :cy="p.y" r="10" fill="none" stroke="#70efff" stroke-width="12" opacity=".18" />
-        <circle :cx="p.x" :cy="p.y" r="10" fill="none" stroke="#70efff" stroke-width="7" opacity=".35" />
+        <circle :cx="p.x" :cy="p.y" r="10" fill="none" stroke="#70efff" stroke-width="10" opacity=".3" />
         <circle :cx="p.x" :cy="p.y" r="9" fill="none" stroke="#befaff" stroke-width="2.5" />
       </g>
       <g v-for="n in scene.glyphs" :key="n.id" :data-track-note="n.sourceIndex" :data-endpoint="n.endpoint" :data-tick="n.tick" :data-note-role="n.role">

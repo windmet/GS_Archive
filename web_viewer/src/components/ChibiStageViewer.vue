@@ -4035,7 +4035,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-actions button:disabled { opacity: .4; cursor: default; }
 .lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .viewing-select { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
-.viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: 16px; }
+.viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
 .immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
 .immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .immersive-hint button { display: inline-flex; flex: none; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
@@ -4053,7 +4053,7 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
 .lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
-.lineup-vocal small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .slot-editor { display: grid; gap: 8px; min-width: 0; }
 .idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }
