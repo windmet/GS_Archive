@@ -29,7 +29,7 @@ const cast=computed(()=>storyEventCast(resource.value))
 /* A compact event row beside the lead: the 2:1 event strip, title, series and cast. */
 .story-row.event-story-row { --thumb: 128px; padding-block: var(--gs-space-3); }
 .event-story-row .story-row-thumb { aspect-ratio: 2 / 1; }
-.event-story-row .story-row-copy strong { display: block; overflow: hidden; font-family: var(--gs-font-jp); text-overflow: ellipsis; white-space: nowrap; }
+.event-story-row .story-row-copy strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cast-avatars { display: flex; align-items: center; margin-top: var(--gs-space-1); }
 .cast-avatars > * { border-radius: 50%; box-shadow: 0 0 0 2px var(--gs-paper); }
 .cast-avatars > * + * { margin-left: -4px; }

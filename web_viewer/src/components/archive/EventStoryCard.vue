@@ -40,7 +40,7 @@ const cast=computed(()=>storyEventCast(resource.value))
 .story-series { position: absolute; top: var(--gs-space-3); left: var(--gs-space-3); padding: 2px var(--gs-space-3); border-radius: var(--gs-radius-control); background: rgb(19 33 58 / 72%); color: #fff; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .story-card-head { display: flex; align-items: center; gap: var(--gs-space-4); padding-top: var(--gs-space-4); }
 .story-card-copy { flex: 1; min-width: 0; }
-.story-card-copy h3 { margin: 0; font-family: var(--gs-font-jp); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
+.story-card-copy h3 { margin: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
 .reading-specs { margin: 0 0 var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .cast-avatars { display: flex; flex-shrink: 0; align-items: center; }
 .cast-avatars > * { border-radius: 50%; box-shadow: 0 0 0 2px var(--gs-paper); }

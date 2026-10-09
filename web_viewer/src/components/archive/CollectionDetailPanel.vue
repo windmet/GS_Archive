@@ -51,7 +51,7 @@ function cycleFocus(event){
 </script>
 <style scoped>
 .collection-inspector {
-  font-family: var(--gs-font-directory, Inter, 'Noto Sans JP', 'Noto Sans SC', system-ui, sans-serif);
+  font-family: var(--gs-font-directory);
   font-size: var(--gs-text-body, 14px);
   font-weight: var(--gs-weight-regular, 400);
 }

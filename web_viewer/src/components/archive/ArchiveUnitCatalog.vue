@@ -39,7 +39,7 @@ const emit = defineEmits(['select'])
 </script>
 
 <style scoped>
-.unit-catalog { height:100%;min-width:0;overflow-y:auto;background:var(--gs-paper);font-family:var(--gs-font-directory,Inter,'Noto Sans JP','Noto Sans SC',system-ui,sans-serif);font-size:var(--gs-text-body,14px);font-weight:var(--gs-weight-regular,400); }
+.unit-catalog { height:100%;min-width:0;overflow-y:auto;background:var(--gs-paper);font-family:var(--gs-font-directory);font-size:var(--gs-text-body,14px);font-weight:var(--gs-weight-regular,400); }
 .unit-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gs-space-4,12px);padding:var(--gs-space-5,16px); }
 .unit-entry { position:relative;display:grid;grid-template-columns:94px 5px minmax(0,1fr) auto auto;align-items:center;gap:var(--gs-space-4,12px);min-height:96px;padding:0 var(--gs-space-4,12px) 0 0;overflow:hidden;border:1px solid var(--gs-line);border-radius:var(--gs-radius-control,6px);background:var(--gs-surface);color:var(--gs-ink);cursor:pointer;text-align:left;font:inherit; }
 .unit-entry > img { width:94px;height:94px;object-fit:cover; }

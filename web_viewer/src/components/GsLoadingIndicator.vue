@@ -41,7 +41,7 @@ defineProps({
   min-width: 0;
   max-width: 100%;
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--gs-font-body);
   text-align: start;
 }
 .gs-loading-indicator--dark { --gs-loading-copy: #e0ecef; }

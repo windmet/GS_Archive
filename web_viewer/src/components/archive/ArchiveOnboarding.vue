@@ -101,7 +101,7 @@ onMounted(() => { dialog.value?.showModal(); heading.value?.focus({ preventScrol
 /* The shared name field, restated in the archive's quieter voice. */
 .onboarding-name { padding: 0; border: 0; background: none; color: var(--gs-ink); }
 .onboarding-name :deep(input) { min-height: var(--gs-control-touch); border-color: var(--gs-line); border-radius: var(--gs-radius-field); font-size: var(--gs-text-subtitle); }
-.onboarding-name :deep(.producer-preview) { padding: var(--gs-space-4) var(--gs-space-5); border-left: 3px solid var(--gs-mint); background: var(--gs-surface); font-family: var(--gs-font-jp); }
+.onboarding-name :deep(.producer-preview) { padding: var(--gs-space-4) var(--gs-space-5); border-left: 3px solid var(--gs-mint); background: var(--gs-surface); }
 
 @media (max-width: 760px) {
   .onboarding { width: 100vw; max-width: none; max-height: 92dvh; margin: auto 0 0; border-radius: var(--gs-radius-surface); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }

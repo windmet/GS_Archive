@@ -102,7 +102,7 @@ onMounted(()=>heading.value?.focus({preventScroll:true}))
 .settings-name { display: block; padding-block: var(--gs-space-4); }
 .settings-name :deep(.producer-setting) { padding: 0; border: 0; background: none; color: var(--gs-ink); }
 .settings-name :deep(input) { min-height: var(--gs-control-touch); border-color: var(--gs-line); border-radius: var(--gs-radius-field); font-size: var(--gs-text-subtitle); }
-.settings-name :deep(.producer-preview) { padding: var(--gs-space-2) 0 var(--gs-space-2) var(--gs-space-4); border-left: 2px solid var(--gs-mint); border-radius: 0; background: none; font-family: var(--gs-font-jp); }
+.settings-name :deep(.producer-preview) { padding: var(--gs-space-2) 0 var(--gs-space-2) var(--gs-space-4); border-left: 2px solid var(--gs-mint); border-radius: 0; background: none; }
 .settings-actions { display: flex; flex-wrap: wrap; gap: var(--gs-space-3); margin-top: var(--gs-space-4); }
 .settings-button { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-5); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; white-space: nowrap; }
 .settings-primary { border-color: var(--gs-action-bg); background: var(--gs-action-bg); color: var(--gs-action-ink); }

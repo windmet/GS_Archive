@@ -55,7 +55,7 @@
             <span v-if="!singleStoryChapters" class="chapter-number">{{ String(chapterIndex + 1).padStart(2, '0') }}</span>
             <span class="chapter-identity">
               <small>{{ chapterLabel(chapter.label) }}</small>
-              <strong>{{ chapterTitle(chapter) }}</strong>
+              <strong :class="{ 'is-title-pending': chapterTitlePending(chapter) }">{{ chapterTitle(chapter) }}</strong>
             </span>
             <span class="chapter-stats">{{ chapterStats(chapter) }}</span>
             <ChevronUp v-if="expandedChapterId === chapter.id" :size="18" aria-hidden="true" />
@@ -170,6 +170,7 @@ function readChapter(chapter) {
 }
 const displayTitle = useReaderTitles()
 function chapterTitle(chapter) { return presentProducerAddressingText(displayTitle(chapter.episodes.map(readingEntry).find(Boolean),chapter.title)) }
+function chapterTitlePending(chapter) { return displayTitle.pending(chapter.episodes.map(readingEntry).find(Boolean)) }
 
 const releaseDate = computed(() => {
   const timestamp = Number(props.collection?.releaseAt || 0)
@@ -205,6 +206,8 @@ function externalResourcesForChapter(chapterId) {
 </script>
 
 <style scoped>
+/* A title still waiting for its translation keeps its place but stays hidden (no Japanese flash). */
+.is-title-pending { visibility:hidden; }
 .collection-hero { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: var(--gs-space-8); }
 .collection-hero:not(:has(.collection-visual, .collection-avatar)) { grid-template-columns: minmax(0, 1fr); }
 .collection-hero:has(.collection-avatar) { grid-template-columns: auto minmax(0, 1fr); gap: var(--gs-space-6); }

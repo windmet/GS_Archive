@@ -7,7 +7,7 @@
       <div class="song-detail-title">
         <div class="song-detail-heading">
           <h2>{{ song.title }}</h2>
-          <p v-if="song.kana" class="song-detail-kana">{{ song.kana }}</p>
+          <p v-if="song.kana" class="song-detail-kana" lang="ja">{{ song.kana }}</p>
         </div>
         <p class="song-detail-scope">演唱 · {{ song.unit?.displayName || song.scopeLabel }}</p>
         <ul v-if="song.credits.length" class="song-detail-credits" aria-label="歌曲制作信息"><li v-for="line in song.credits" :key="line">{{ line }}</li></ul>
@@ -200,7 +200,7 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .song-detail-jacket { display: block; width: 96px; height: auto; aspect-ratio: 1; border-radius: var(--gs-radius-media); object-fit: cover; }
 .song-detail-title { display: flex; flex-direction: column; gap: var(--gs-space-4); min-width: 0; }
 .song-detail-title h2 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.25; overflow-wrap: anywhere; text-wrap: balance; }
-.song-detail-kana { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.song-detail-kana { margin: var(--gs-space-2) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 .song-detail-scope { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-body); }
 .song-detail-credits { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-6); margin: 0; padding: 0; list-style: none; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .song-detail-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-6); padding: var(--gs-space-4) 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-2); font-size: var(--gs-text-ui); }

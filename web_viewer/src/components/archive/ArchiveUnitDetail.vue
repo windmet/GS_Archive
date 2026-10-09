@@ -5,7 +5,7 @@
       <div class="unit-hero-copy">
         <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
         <h2>{{ unit.unit_name }}</h2>
-        <p>{{ unit.unit_kana }}</p>
+        <p lang="ja">{{ unit.unit_kana }}</p>
       </div>
       <span class="unit-swatch" :style="{ backgroundColor: unit.unit_color || '#23a99f' }" :title="unit.unit_color"></span>
     </header>
@@ -200,7 +200,7 @@ const mixedEventItems = computed(() => relationItems(
 .unit-hero-copy { position: relative; z-index: 1; min-width: 0; max-width: 100%; }
 .unit-hero-logo { display: block; width: min(220px, 55vw); height: 74px; margin-bottom: var(--gs-space-4); object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%)); }
 .unit-hero h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
-.unit-hero p { margin: 0; color: rgb(255 255 255 / 78%); font-family: var(--gs-font-jp); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.unit-hero p { margin: 0; color: rgb(255 255 255 / 78%); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 .unit-swatch { position: absolute; z-index: 1; top: var(--gs-space-6); right: var(--gs-space-6); width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .unit-description p { max-width: 70ch; margin: 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.9; overflow-wrap: anywhere; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }

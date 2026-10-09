@@ -1,6 +1,6 @@
 <template>
   <div class="reader-workspace reader-container" :data-theme="readerTheme">
-    <ReaderWorkspaceControls ref="controls" :title="title" :segments="chapter.segments" :document-id="documentId" :active-document-id="visibleDocumentId || documentId" :chapter-navigation="chapterNavigation" :mode="mode" allow-unlinked @back="emit('back')" @chapter="emit('chapter', $event)" @select="select" @mode="emit('mode', $event)">
+    <ReaderWorkspaceControls ref="controls" :title="title" :title-pending="titlePending" :segments="chapter.segments" :document-id="documentId" :active-document-id="visibleDocumentId || documentId" :chapter-navigation="chapterNavigation" :mode="mode" allow-unlinked @back="emit('back')" @chapter="emit('chapter', $event)" @select="select" @mode="emit('mode', $event)">
       <template v-if="relatedEvent" #context><button class="reader-event-link" @click="emit('open-event')">查看本期活动档案 →</button></template>
       <template #search>
         <form role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)">
@@ -40,6 +40,7 @@ const searchMatches = computed(() => sections.value.flatMap(section => section?.
 const focused = computed(() => props.chapter.segments.find(segment => segment.documentId === props.documentId))
 const originalTitle = computed(() => presentProducerAddressingText(props.chapter.title))
 const title = useReaderTitle(computed(() => focused.value?.entry),originalTitle)
+const titlePending = title.pending
 const missingAnchor = computed(() => focused.value?.status === 'ready' && props.anchor && !focused.value.document.rows.some(row => row.anchor.row_id === props.anchor))
 function select(segment) { if (segment.documentId) emit('select', segment.documentId); else root.value?.querySelector(`[id="reading-document-${segment.episodeKey}"]`)?.scrollIntoView({ block:'start' }) }
 async function moveMatch(direction) {
@@ -104,7 +105,7 @@ onUpdated(() => {
 })
 </script>
 <style scoped>
-.story-reader { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:Inter,"Noto Sans JP","Noto Sans SC",system-ui,sans-serif; }
+.story-reader { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; background:var(--reader-bg-page); color:var(--reader-text-main); font-family:var(--gs-font-body); }
 .reader-body { max-width:1000px; margin:0 auto; padding:0 max(24px,var(--archive-safe-right)) 60px max(24px,var(--archive-safe-left)); }
 .reader-source-title { font-size:13px; color:var(--reader-text-sub); margin:20px 0 0; }
 button { min-height:44px; padding:8px 14px; border:1px solid var(--reader-border); border-radius:6px; background:var(--reader-bg-card); color:var(--reader-accent-text); font:inherit; cursor:pointer; }

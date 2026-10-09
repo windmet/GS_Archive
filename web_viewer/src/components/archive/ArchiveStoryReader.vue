@@ -1,7 +1,7 @@
 <template>
   <ChapterStoryReader v-if="chapter" :related-event="relatedEvent" @open-event="emit('open-event')" :chapter="chapter" :chapter-navigation="chapterNavigation" @chapter="emit('chapter', $event)" :document-id="documentId" :mode="mode" :anchor="anchor" :notice="notice" :busy="busy" :idol-directory="idolDirectory" @select="emit('select', $event)" @mode="emit('mode', $event)" @back="emit('back')" @retry="emit('retry-segment', $event)" @play="emit('play-segment', $event)" @locate="emit('locate-segment', $event)" @refresh="emit('refresh')" />
   <div v-else class="reader-workspace reader-container" :data-theme="readerTheme">
-    <ReaderWorkspaceControls ref="controls" :title="title" :subtitle="episodeLabel" :segments="segmentEntries.map(entry => ({documentId:entry.document_id,label:entry.episode_label,status:entry.status}))" :document-id="documentId" :active-document-id="documentId" :chapter-navigation="chapterNavigation" :mode="mode" :searchable="state.status === 'ready'" @back="emit('back')" @chapter="emit('chapter', $event)" @select="emit('select', $event.documentId)" @mode="emit('mode', $event)">
+    <ReaderWorkspaceControls ref="controls" :title="title" :title-pending="titlePending" :subtitle="episodeLabel" :segments="segmentEntries.map(entry => ({documentId:entry.document_id,label:entry.episode_label,status:entry.status}))" :document-id="documentId" :active-document-id="documentId" :chapter-navigation="chapterNavigation" :mode="mode" :searchable="state.status === 'ready'" @back="emit('back')" @chapter="emit('chapter', $event)" @select="emit('select', $event.documentId)" @mode="emit('mode', $event)">
       <template v-if="relatedEvent" #context><button class="reader-event-link" @click="emit('open-event')">查看本期活动档案 →</button></template>
       <template #search>
         <form id="reader-search" class="reader-search" role="search" aria-label="篇内查找" @submit.prevent="moveMatch(1)" @keydown.esc.prevent="closeSearch">
@@ -34,7 +34,8 @@
       <template v-else-if="state.status === 'ready'">
         <p v-if="missingAnchor" class="reader-notice" role="status">原定位行已不存在，现显示本篇正文。</p>
 
-        <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
+        <div v-if="translationPending" class="reader-loading" role="status">正在载入译文…<div class="reader-loading-lines" aria-hidden="true"><i></i><i></i><i></i></div></div>
+        <ReadingTranscriptSection v-else :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="searchMatchIds" />
         <!-- One EP at a time (phones): the end of each EP leads straight into the next, so reading
              continues down the page instead of back up to the EP switcher. -->
         <ReaderChapterEnd v-if="nextSegmentEntry || chapterNavigation" :chapter-navigation="nextSegmentEntry ? null : chapterNavigation"
@@ -78,14 +79,15 @@ const nextSegmentEntry = computed(() => {
   const index = segmentEntries.value.findIndex(entry => entry.document_id === props.documentId)
   return index >= 0 ? segmentEntries.value[index + 1] || null : null
 })
-const { localization, sourceTitle, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
+const { localization, sourceTitle, presentedRows, translationPending } = useReadingPresentation(document, computed(() => props.mode))
 const originalTitle = computed(() => presentProducerAddressingText(document.value ? sourceTitle.value : focusedEntry.value?.title || props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.title))
 const title = useReaderTitle(focusedEntry,originalTitle)
+const titlePending = title.pending
 const episodeLabel = computed(() => presentIdolEpisodeLabel({ sourceName: document.value?.presentation?.episode_label || focusedEntry.value?.episode_label }))
 const fallbackCount = computed(() => presentedRows.value.filter(item => !item.mergedTitle && item.row.kind !== 'stamp' && item.view.translation.fallbackUsed).length)
 const translationLoadFailed = computed(() => localization.diagnostics.value?.code === 'translation_invalid')
 const translationStatus = computed(() => {
-  if (localization.loading.value) return '正在读取译文，暂时显示原文。'
+  if (localization.loading.value) return '正在读取译文…'
   if (translationLoadFailed.value) return '译文暂时无法载入，当前显示原文。'
   if (fallbackCount.value) return `${fallbackCount.value} 处暂无可用译文，已显示原文。`
   return props.mode === 'bilingual' ? '当前显示原文与译文。' : '当前显示译文。'
@@ -150,7 +152,7 @@ watch(() => [props.state.status, props.documentId, props.anchor, props.notice, l
 .reader-play { min-height: 44px; padding: 8px 12px; margin-top: 8px; border: 1px solid var(--reader-border); border-radius: 8px; background: var(--reader-bg-card); color: var(--reader-accent-text); font: inherit; font-size: 13px; cursor: pointer; }
 .reader-play:disabled { opacity: .5; cursor: wait; }
 .reader-play:focus-visible { outline: 2px solid var(--reader-accent-text); outline-offset: 3px; }
-.story-reader { flex:1; min-height:0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--reader-border) transparent; background: var(--reader-bg-page); color: var(--reader-text-main); font-family: Inter, "Noto Sans JP", "Noto Sans SC", system-ui, sans-serif; }
+.story-reader { flex:1; min-height:0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--reader-border) transparent; background: var(--reader-bg-page); color: var(--reader-text-main); font-family: var(--gs-font-body); }
 button { font: inherit; font-size: 15px; color: inherit; cursor: pointer; }
 button { min-height: 44px; border: 0; background: none; color: var(--reader-accent-text); }
 button:focus-visible { outline: 3px solid var(--reader-accent-text); outline-offset: 3px; }

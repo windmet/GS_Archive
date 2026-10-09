@@ -23,7 +23,7 @@ function onKeydown(event) { trapDialogKey(event, panel.value, () => emit('close'
 <style scoped>
 .player-modal-layer { position:absolute; inset:0; z-index:40; overflow:hidden; }
 .player-modal-backdrop { position:absolute; inset:0; width:100%; height:100%; padding:0; border:0; background:rgba(235,244,242,.24); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); cursor:default; }
-.player-menu-panel { box-sizing:border-box; position:absolute; inset-block:0; inset-inline-end:0; width:min(340px,92%); height:100%; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; border-left:1px solid var(--gs-line); background:var(--gs-paper); color:var(--gs-ink); font-family:var(--gs-font-jp); box-shadow:var(--gs-shadow-float); }
+.player-menu-panel { box-sizing:border-box; position:absolute; inset-block:0; inset-inline-end:0; width:min(340px,92%); height:100%; min-height:0; display:grid; grid-template-rows:auto minmax(0,1fr); overflow:hidden; border-left:1px solid var(--gs-line); background:var(--gs-paper); color:var(--gs-ink); font-family:var(--gs-font-body); box-shadow:var(--gs-shadow-float); }
 header { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:max(10px,env(safe-area-inset-top)) 16px 10px; border-bottom:1px solid var(--gs-line); }
 header div { display:flex; align-items:baseline; flex-wrap:wrap; gap:10px; } header strong { font-size:var(--gs-text-section); } header small { color:var(--gs-ink-3); font-size:var(--gs-text-meta); }
 header button { min-width:44px; min-height:44px; border:0; background:transparent; color:inherit; font-size:var(--gs-text-title); cursor:pointer; }

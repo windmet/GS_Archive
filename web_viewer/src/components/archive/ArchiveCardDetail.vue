@@ -186,7 +186,7 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.normal)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.normal)">演出预览</button>
             </div>
           </div>
-          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.normal) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.normal)) }}</span></p>
+          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.normal) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.normal)) }}</span></p>
         </div>
         <div v-if="card.texts?.awakened" class="card-text-block">
           <div class="card-text-heading">
@@ -196,11 +196,11 @@
               <button v-if="cardVoicePreviewStep(card, card.card_text_voices.awakened)" class="voice-preview-btn" @click="emit('preview-voice', card.card_text_voices.awakened)">演出预览</button>
             </div>
           </div>
-          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.awakened) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.awakened)) }}</span></p>
+          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.awakened) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.awakened)) }}</span></p>
         </div>
         <div v-if="card.texts?.extra?.trim() && card.texts.extra !== '0'" class="card-text-block">
           <strong>短台词</strong>
-          <p><span class="authored-text">{{ presentProducerAddressingText(card.texts.extra) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.extra)) }}</span></p>
+          <p lang="ja"><span class="authored-text">{{ presentProducerAddressingText(card.texts.extra) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(card.texts.extra)) }}</span></p>
         </div>
       </section>
 
@@ -210,7 +210,7 @@
           <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
-              <p v-if="cue.preview?.text"><span class="authored-text">{{ presentProducerAddressingText(cue.preview.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.preview.text)) }}</span></p>
+              <p v-if="cue.preview?.text" lang="ja"><span class="authored-text">{{ presentProducerAddressingText(cue.preview.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.preview.text)) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -588,7 +588,7 @@ function openRelation(item) {
 .card-attribute[data-attribute="mental"] { color: var(--gs-attr-mental); }
 .card-raw-candidate { color: var(--gs-critical); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
-.card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-body); }
+.card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); }
 .card-identity :deep(.card-owner) { padding: var(--gs-space-4) 0; border: 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
 .card-metaline { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-6); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .card-metaline b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
@@ -666,14 +666,14 @@ function openRelation(item) {
 .card-text-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-4); }
 .card-text-voice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; }
 .card-text-voice audio { width: min(300px, 32vw); height: 32px; }
-.card-text-block p { margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; font-family: var(--gs-font-jp); line-height: 2; }
+.card-text-block p { margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; line-height: 2; }
 .voice-list, .scenario-link-list { display: grid; }
 .voice-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(220px, 340px) auto; align-items: center; gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
 .voice-row > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .voice-row audio { width: 100%; height: 32px; }
 .voice-copy { min-width: 0; }
 .voice-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.voice-copy p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-2); font-family: var(--gs-font-jp); line-height: 1.7; }
+.voice-copy p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.7; }
 .voice-label { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); }
 .voice-label small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .voice-label small.source-curated { color: var(--gs-mint-ink); }

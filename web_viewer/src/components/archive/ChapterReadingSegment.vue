@@ -2,8 +2,9 @@
   <section :id="`reading-document-${segment.documentId || segment.episodeKey}`" class="chapter-reading-segment" :data-document-id="segment.documentId" :data-revision="segment.entry?.sha256" :data-source-file="segment.source_file" :data-text-catalog="segment.document?.text_catalog_id" tabindex="-1">
     <header><h2>{{ label }}</h2><button v-if="segment.status === 'ready'" :disabled="busy" @click="emit('play', { documentId: segment.documentId, rowId: anchor })">{{ uiText('reader.playSegment') }}</button></header>
     <template v-if="segment.status === 'ready'">
-      <p v-if="mode !== 'original'" role="status" class="segment-notice">{{ translationNotice }} <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span> <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button></p>
-      <ReadingTranscriptSection :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="new Set(matches(query).map(item => item.rowId))" />
+      <p v-if="mode !== 'original' && !translationPending" role="status" class="segment-notice">{{ translationNotice }} <span v-if="localization.entityDiagnostics.value.some(item => item.code === 'entity_translation_invalid')">部分姓名译文暂时无法载入，保留原名。</span> <button v-if="localization.retryAvailable.value" :disabled="localization.loading.value" @click="localization.retryTranslation()">重试译文</button></p>
+      <div v-if="translationPending" class="segment-placeholder" aria-busy="true"><p>正在载入本段译文…</p></div>
+      <ReadingTranscriptSection v-else :rows="presentedRows" :mode="mode" :anchor="anchor" :idol-directory="idolDirectory" :search-match-ids="new Set(matches(query).map(item => item.rowId))" />
     </template>
     <div v-else class="segment-placeholder" :aria-busy="segment.status === 'loading'">
       <p v-if="segment.status === 'idle' || segment.status === 'loading'" role="status">正在载入本段正文…</p>
@@ -24,8 +25,8 @@ const props = defineProps({ segment: Object, mode: String, anchor: String, query
 const emit = defineEmits(['play', 'retry', 'before-layout', 'after-layout'])
 const label = computed(() => presentIdolEpisodeLabel({ sourceName: props.segment.label }))
 const document = computed(() => props.segment.status === 'ready' ? props.segment.document : null)
-const { localization, presentedRows } = useReadingPresentation(document, computed(() => props.mode))
-const translationNotice = computed(() => localization.loading.value ? '正在读取本段译文，暂时显示原文。' :
+const { localization, presentedRows, translationPending } = useReadingPresentation(document, computed(() => props.mode))
+const translationNotice = computed(() => localization.loading.value ? '正在读取本段译文…' :
   presentedRows.value.some(item => item.row.kind !== 'stamp' && item.view.translation.fallbackUsed) ? '本段部分台词暂无可用译文，保留原文。' : props.mode === 'bilingual' ? '本段显示原文与译文。' : '本段显示译文。')
 const normalize = value => String(value || '').normalize('NFKC').replace(/\s+/g, '').toLowerCase()
 function matches(query) {

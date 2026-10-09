@@ -90,7 +90,7 @@
                 <span v-else class="unlock-condition" :title="unlockTitle(unlock)"><Unlock :size="13" aria-hidden="true" /><span>{{ unlockText(unlock) }}</span></span>
               </template>
             </div>
-            <h4 v-if="callTitle(bundle)" class="call-title">{{ callTitle(bundle) }}</h4>
+            <h4 v-if="callTitle(bundle)" class="call-title" lang="ja">{{ callTitle(bundle) }}</h4>
             <component :is="callTitle(bundle) ? 'p' : 'h4'" :class="{ 'call-line': callTitle(bundle) }"><template v-for="(part, index) in projectCommunicationInlineContent(bundle.title)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></component>
             <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
@@ -347,7 +347,7 @@ function timeWindow(topic) {
 .conversation-copy { display: grid; gap: var(--gs-space-2); min-width: 0; }
 .conversation-copy > small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
 .conversation-copy h4 { margin: 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.7; overflow-wrap: anywhere; }
-.conversation-copy h4.call-title { font-family: var(--gs-font-jp); font-weight: var(--gs-weight-semibold); line-height: 1.5; }
+.conversation-copy h4.call-title { font-weight: var(--gs-weight-semibold); line-height: 1.5; }
 .conversation-copy .call-line { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; overflow-wrap: anywhere; }
 .conversation-copy .call-line .inline-emoji,
 .conversation-copy h4 .inline-emoji, .random-bundle h4 .inline-emoji { display: inline-block; width: 1.5em; height: 1.5em; margin-inline: 2px; vertical-align: -.3em; object-fit: contain; }

@@ -4,7 +4,7 @@
          switch for names and descriptions is hidden here so the two do not nest. -->
     <header class="reader-compact-header">
       <button class="icon-button" aria-label="返回来源目录" title="返回来源目录" @click="emit('back')"><ArrowLeft :size="20" aria-hidden="true" /></button>
-      <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}{{ title || '剧情阅读' }}</span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
+      <h1 ref="heading" tabindex="-1"><button class="reader-title-button" :disabled="!hasChapters" :aria-expanded="panel === 'chapters'" aria-haspopup="dialog" @click="openPanel('chapters', $event)"><span>{{ chapterLabel ? `${chapterLabel} · ` : '' }}<span :class="{ 'is-title-pending': titlePending }">{{ title || '剧情阅读' }}</span></span><ChevronDown v-if="hasChapters" :size="16" aria-hidden="true" /></button></h1>
       <button class="desktop-search icon-button" :disabled="!searchable" aria-label="篇内查找" title="篇内查找" @click="openPanel('search', $event)"><Search :size="19" aria-hidden="true" /></button>
       <button class="desktop-settings icon-button" aria-label="P 名字" title="P 名字" @click="openPanel('producer', $event)"><UserRound :size="19" aria-hidden="true" /></button>
     </header>
@@ -18,7 +18,7 @@
     </div>
     <nav class="reader-floating-dock" aria-label="阅读浮动导航">
       <button class="icon-button" :disabled="!previousSegment" aria-label="上一 EP" :title="previousSegment ? `上一 EP · ${segmentLabel(previousSegment)}` : '已到本话首个 EP'" @click="emit('select', previousSegment)"><ChevronLeft :size="21" aria-hidden="true" /></button>
-      <button class="dock-directory" :disabled="!hasDirectory" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><span class="dock-story">{{ chapterLabel ? `${chapterLabel} · ` : '' }}{{ title || '剧情阅读' }}</span><span class="dock-episode">{{ activeLabel }} <ChevronDown :size="12" aria-hidden="true" /></span></button>
+      <button class="dock-directory" :disabled="!hasDirectory" aria-haspopup="dialog" :aria-expanded="panel === 'directory'" @click="openPanel('directory', $event)"><span class="dock-story">{{ chapterLabel ? `${chapterLabel} · ` : '' }}<span :class="{ 'is-title-pending': titlePending }">{{ title || '剧情阅读' }}</span></span><span class="dock-episode">{{ activeLabel }} <ChevronDown :size="12" aria-hidden="true" /></span></button>
       <button class="icon-button" :disabled="!nextSegment" aria-label="下一 EP" :title="nextSegment ? `下一 EP · ${segmentLabel(nextSegment)}` : '本话末个 EP；下一话入口在正文末尾'" @click="emit('select', nextSegment)"><ChevronRight :size="21" aria-hidden="true" /></button>
       <span class="dock-divider" aria-hidden="true"></span>
       <button class="icon-button" aria-label="阅读设置" title="阅读设置" aria-haspopup="dialog" :aria-expanded="panel === 'settings' || panel === 'search'" @click="openPanel('settings', $event)"><Settings2 :size="19" aria-hidden="true" /></button>
@@ -41,6 +41,7 @@
   </div>
 </template>
 <script setup>
+import { chapterLabel as presentChapter } from '../../presentation/chapterLabel.js'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { ArrowLeft, ChevronDown, ChevronLeft, ChevronRight, Search, Settings2, UserRound, X } from '@lucide/vue'
 import ReaderControlBar from './ReaderControlBar.vue'
@@ -48,12 +49,12 @@ import ReaderStoryNavigation from './ReaderStoryNavigation.vue'
 import { READER_THEMES, readerTheme, setReaderTheme } from '../../presentation/ReaderTheme.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { readerSegmentNeighbour } from '../../presentation/ReaderControls.js'
-const props = defineProps({ title:String, subtitle:String, segments:{type:Array,default:()=>[]}, documentId:String, activeDocumentId:String, chapterNavigation:{type:Object,default:null}, mode:String, searchable:{type:Boolean,default:true}, allowUnlinked:Boolean })
+const props = defineProps({ title:String, titlePending:Boolean, subtitle:String, segments:{type:Array,default:()=>[]}, documentId:String, activeDocumentId:String, chapterNavigation:{type:Object,default:null}, mode:String, searchable:{type:Boolean,default:true}, allowUnlinked:Boolean })
 const emit = defineEmits(['back','chapter','select','mode'])
 const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 const dialog = ref(null), heading = ref(null), panel = ref('')
 let opener = null
-const chapterLabel = computed(() => props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.label || '')
+const chapterLabel = computed(() => presentChapter(props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.label || ''))
 const previousSegment = computed(() => readerSegmentNeighbour(props.segments, props.activeDocumentId, -1, props.allowUnlinked))
 const nextSegment = computed(() => readerSegmentNeighbour(props.segments, props.activeDocumentId, 1, props.allowUnlinked))
 const hasDirectory = computed(() => props.segments.length > 0)
@@ -88,6 +89,8 @@ onBeforeUnmount(() => dialog.value?.close())
 defineExpose({openSearch:() => openPanel('search'),closePanel,focusHeading:() => heading.value?.focus({preventScroll:true}),onReaderKey})
 </script>
 <style scoped>
+/* A title still waiting for its translation keeps its place but stays hidden (no Japanese flash). */
+.is-title-pending { visibility:hidden; }
 .reader-workspace-controls { flex:none; z-index:10; background:var(--reader-bg-page); border-bottom:1px solid var(--reader-border); padding-top:var(--archive-safe-top); }
 button { min-height:44px; border:0; background:transparent; color:var(--reader-text-main); font:inherit; font-size:13px; cursor:pointer; }
 button:disabled { opacity:.4; cursor:default; }

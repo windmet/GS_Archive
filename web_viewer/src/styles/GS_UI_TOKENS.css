@@ -119,4 +119,9 @@
 /* Scroll areas keep their scrollbar's room whether or not the content scrolls right now, so moving
    between a short view and a long one (a studio tab, a page, a dialog) never shifts the layout by a
    scrollbar's width. Vertical scroll areas only: a horizontal strip would gain an empty gutter. */
+/* Fonts follow the language of the text, not the page region. Chinese interface text and
+   translations use the body face; text explicitly marked Japanese takes the Japanese face (kana and
+   kanji shapes). The root's lang serves assistive tech and translation tools and is not matched. */
+[lang|="ja"]:not(html) { font-family: var(--gs-font-jp); }
+
 [data-archive-scroll-container], .studio-focus-drawer, .terminal-dialog-body, .settings-body, .reader-sheet-content { scrollbar-gutter: stable; }

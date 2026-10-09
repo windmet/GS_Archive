@@ -1,7 +1,7 @@
 <template>
-  <div class="story-synopsis-card">
+  <div class="story-synopsis-card" :class="{ 'is-pending': pending }" :aria-busy="pending || undefined">
     <div class="synopsis-heading"><span>简介</span><div v-if="switchable" role="group" aria-label="简介语言"><button v-for="item in modes" :key="item.id" :aria-pressed="mode === item.id" @click="emit('mode',item.id)">{{ item.label }}</button></div></div>
-    <strong v-if="title">{{ title }}</strong>
+    <strong v-if="title" :class="{ 'is-title-pending': titlePending }">{{ title }}</strong>
     <p class="synopsis-primary" :lang="view.primary.locale">{{ reflowReadingText(view.primary.text,view.primary.locale) }}</p>
     <p v-if="view.secondary" class="synopsis-secondary" :lang="view.secondary.locale">{{ reflowReadingText(view.secondary.text,view.secondary.locale) }}</p>
     <p v-if="notice" class="synopsis-notice" role="status">{{ notice }} <button v-if="retryable" @click="emit('retry')">重试简介</button></p>
@@ -9,7 +9,7 @@
 </template>
 <script setup>
 import { reflowReadingText } from '../../../shared/reading/ReadingTypography.js'
-defineProps({view:{type:Object,required:true},title:String,mode:String,switchable:Boolean,notice:String,retryable:Boolean})
+defineProps({view:{type:Object,required:true},title:String,mode:String,switchable:Boolean,notice:String,retryable:Boolean,pending:Boolean,titlePending:Boolean})
 const emit=defineEmits(['mode','retry'])
 const modes=[{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 </script>
@@ -24,6 +24,8 @@ strong { display:block; margin-bottom:10px; font-size:17px; line-height:1.6; }
 p { margin:6px 0; max-width:52em; font-size:16px; line-height:1.85; white-space:pre-wrap; overflow-wrap:break-word; line-break:strict; }
 .synopsis-secondary { color:var(--reader-text-sub, var(--gs-ink-3)); font-size:15px; }
 .synopsis-notice { font-size:12px; color:var(--reader-text-sub, var(--gs-ink-3)); }
+/* Waiting for the translation: keep the source text's space so nothing jumps, but do not show it. */
+.is-pending .synopsis-primary, .is-pending .synopsis-secondary, .is-title-pending { visibility:hidden; }
 :focus-visible { outline:2px solid var(--reader-accent-text, var(--gs-mint)); outline-offset:2px; }
 @media(max-width:620px) { .story-synopsis-card { padding:12px 14px; } strong { font-size:16px; } p { font-size:15px; } .synopsis-secondary { font-size:14px; } }
 </style>

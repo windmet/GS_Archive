@@ -140,7 +140,7 @@ export async function verifyLoadingBehavior({ source, render, LoadingScreen }) {
     fallbackCount: ref(3), props: reactive({ mode: 'translation' }) }
   readerState.translationLoadFailed = reader.expression('translationLoadFailed', readerState)
   const notice = reader.expression('translationStatus', readerState)
-  assert.equal(notice.value, '正在读取译文，暂时显示原文。')
+  assert.equal(notice.value, '正在读取译文…')
   readerState.localization.loading.value = false
   assert.equal(notice.value, '译文暂时无法载入，当前显示原文。')
   readerState.localization.diagnostics.value = null

@@ -4,7 +4,7 @@
       <ArchiveIdolAvatar class="idol-portrait" :idol-code="idol.idol_code" :accent-color="idol.color" :size="104" :ring-width="3" :alt="displayedIdolName" />
       <div class="idol-identity">
         <h2>{{ displayedIdolName }}<span v-if="idol.color" class="idol-color" :style="{ backgroundColor: idol.color }" :title="`代表色 ${idol.color}`"></span></h2>
-        <p>{{ idol.name_fields?.kana || idol.cv || '' }}</p>
+        <p lang="ja">{{ idol.name_fields?.kana || idol.cv || '' }}</p>
         <button v-if="idol.unit_code" class="idol-unit-link" :data-archive-focus-id="`idol-unit:${idol.idol_code}`" @click="emit('open-unit', idol)">
           <UsersRound :size="15" />
           <span>{{ idol.unit_name }}</span>
@@ -256,7 +256,7 @@ function formatDate(timestamp) {
 .idol-profile-header { display: grid; grid-template-columns: 104px minmax(0, 1fr) minmax(0, 360px); align-items: center; gap: var(--gs-space-7); }
 .idol-identity { display: grid; gap: var(--gs-space-2); min-width: 0; overflow-wrap: anywhere; }
 .idol-identity h2 { display: flex; align-items: center; gap: var(--gs-space-4); margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; }
-.idol-identity p { margin: 0; color: var(--gs-ink-3); font-family: var(--gs-font-jp); font-size: var(--gs-text-ui); }
+.idol-identity p { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
 .idol-color { flex: none; width: 12px; height: 12px; border-radius: 50%; }
 .idol-unit-link { display: inline-flex; align-items: center; justify-self: start; gap: var(--gs-space-2); min-height: var(--gs-control-compact); margin-top: var(--gs-space-3); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .idol-unit-link svg { flex: 0 0 auto; }

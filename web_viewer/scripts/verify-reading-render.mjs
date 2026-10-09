@@ -51,7 +51,7 @@ try {
   assert.ok(navHtml.includes('data-chapter-id="missing"') && /data-chapter-id="missing"[^>]*disabled/.test(navHtml), 'unavailable chapter cannot be selected')
   assert.ok(navHtml.includes('EP 01') && navHtml.includes('EP 02') && navHtml.includes('aria-current="location"'))
   const coldReaderHtml = await renderToString(createSSRApp(Reader,{state:{status:'loading',entries:[{document_id:'first',logical_id:'one',episode_label:'EPISODE 01'}],document:null},documentId:'first',mode:'original',chapterNavigation:navProps.chapterNavigation}))
-  assert.ok(coldReaderHtml.includes('第1話 · One'), 'cold reader retains the formally declared chapter title')
+  assert.ok(coldReaderHtml.replace(/<[^>]+>/g, '').includes('第1话 · One'), 'cold reader retains the formally declared chapter title, its label in the interface language')
   assert.ok(!coldReaderHtml.includes('gs-loading-indicator'), 'cold reader uses its own inline loading state')
   const { setReaderTheme } = await server.ssrLoadModule('/src/presentation/ReaderTheme.js')
   const synopsisDoc=JSON.parse(readFileSync(new URL('../public/data/reading/1_4_001_01_a.json',import.meta.url)))
@@ -91,6 +91,13 @@ try {
     const props = { state: { status:'ready', entries:[], document:synopsisDoc }, documentId:synopsisDoc.document_id, mode, anchor:marker.anchor.row_id }
     const readerHtml = await renderToString(createSSRApp(Reader, props))
     const segmentHtml = await renderToString(createSSRApp(ChapterSegment, { segment:{status:'ready',document:synopsisDoc,documentId:synopsisDoc.document_id,label:'EPISODE 01',entry:{sha256:'test'}}, mode, anchor:marker.anchor.row_id, query:'appeal' }))
+    if (mode !== 'original') {
+      // The translation is still on its way (SSR never resolves it): no Japanese that the
+      // translation would replace a moment later, only the loading state.
+      assert.ok(readerHtml.includes('正在载入译文…') && segmentHtml.includes('正在载入本段译文…'), `${mode}: loading state while the translation arrives`)
+      for (const html of [readerHtml, segmentHtml]) assert.ok(!html.includes('パーッション！！'), `${mode}: no source text flashes before the translation`)
+      continue
+    }
     for (const html of [readerHtml, segmentHtml]) {
       for (const code of ['101ken','102sha']) assert.ok(html.includes(`image_chara_icon_${code}.png`), 'both reading scopes render the actual NPC speaker icon')
       assert.ok(!html.includes('appeal') && !html.includes('选项附文'), `${mode}: no metadata prose in either reading scope`)
@@ -114,6 +121,9 @@ try {
   }
   const stale=resolveStoryText({source:synopsis.source_text,textRef:synopsis.text_ref,overlayEntry:{...exactEntry,source_hash:'sha256:'+'0'.repeat(64)},preferences:{story_content_mode:'translation'}})
   assert.equal(stale.primary.text,synopsis.source_text,'stale synopsis overlay retains source')
+  // A bound synopsis whose document is still loading keeps the catalogue text's space but hides it.
+  const pendingHtml=await renderToString(createSSRApp(CollectionSynopsis,{entry:{document_id:synopsisDoc.document_id,sha256:'test'},loadDocument:()=>new Promise(()=>{}),fallback:{text:synopsis.source_text},title:'Pending'}))
+  assert.ok(pendingHtml.includes('is-pending') && pendingHtml.includes('正在载入简介…'),'pending synopsis hides the source text while loading')
   const fallbackHtml=await renderToString(createSSRApp(CollectionSynopsis,{fallback:{text:synopsis.source_text},title:'Fallback'}))
   assert.ok(fallbackHtml.includes('ついに始動した315プロダクション！'))
   assert.ok(!fallbackHtml.includes('aria-label="简介语言"'),'unbound directory synopsis has no translation controls')
@@ -186,6 +196,8 @@ try {
     const rendered = await renderToString(createSSRApp(Reader, {
       state: { status: 'ready', entries: [], document: prologue }, documentId: prologue.document_id, mode, anchor: '',
     }))
+    // SSR never resolves the translation, so translated modes show the loading state instead of rows.
+    if (mode !== 'original') { assert.ok(rendered.includes('正在载入译文…') && !rendered.includes('id="reading-1_4_001_00_a:step-12:text"'), mode); continue }
     const shu = rendered.split('id="reading-1_4_001_00_a:step-12:text"')[1].split('</section>')[0]
     assert.ok(shu.includes('image_chara_icon_047shu.png'), mode)
     assert.ok(shu.includes('？？？') && !shu.includes('天峰'), mode)

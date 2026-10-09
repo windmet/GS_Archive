@@ -18,5 +18,8 @@ export function useReadingPresentation(document, mode) {
     frontMatter: frontMatter.value.frontMatterIds.has(row.anchor.row_id), mergedTitle: frontMatter.value.mergedTitleIds.has(row.anchor.row_id),
     avatar: readingSpeakerAvatarEntity(row), view: localization.resolveUnit({ source: row.source_text, textRef: row.text_ref,
       speaker: readingPresentationSpeaker(row), inlineEntry: row.inline_translation }) })))
-  return { localization, sourceTitle, presentedRows }
+  // While a translation is on its way the rows would fall back to the source text; readers see a
+  // loading state instead of Japanese that is replaced a moment later.
+  const translationPending = computed(() => Boolean(document.value) && mode.value !== 'original' && localization.loading.value)
+  return { localization, sourceTitle, presentedRows, translationPending }
 }
