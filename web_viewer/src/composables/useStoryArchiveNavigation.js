@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 
 export function useStoryArchiveNavigation({
   loading, filterQuery, currentStoryDomain, currentStoryMode, currentStorySection, currentStoryFile,
@@ -45,11 +46,11 @@ export function useStoryArchiveNavigation({
     const row = rows.find(entry => entry.id === requestedId) ||
       rows.find(entry => entry.id === 'valentine_2023') || rows[0]
     if (!row) throw new Error('No seasonal campaigns available')
-    return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
+    return withStoryText('seasonal', await readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
       if (data.view?.campaign?.id !== row.id || data.view.campaign.year !== row.year ||
         data.view.campaign.season !== row.season || !Array.isArray(data.view.campaign.participants))
         throw new Error('Seasonal campaign identity or shape mismatch')
-    } })
+    } }), options)
   }
 
   async function loadWorkCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -72,12 +73,12 @@ export function useStoryArchiveNavigation({
   async function loadWorkDetail(id, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadWorkCatalog(options)).find(entry => entry.id === id)
     if (!row) throw new Error(`Unavailable work idol: ${id}`)
-    return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
+    return withStoryText('work', await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
         !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries) ||
         !Array.isArray(data.view?.readingEntries))
         throw new Error('Work detail identity or shape mismatch')
-    } })
+    } }), options)
   }
 
   async function loadIdolStoryCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -100,11 +101,11 @@ export function useStoryArchiveNavigation({
   async function loadIdolStoryDetail(id, options = navigation.getLoadOptions?.() || {}) {
     const row = (await loadIdolStoryCatalog(options)).find(entry => entry.id === id)
     if (!row) throw new Error(`Unavailable idol story: ${id}`)
-    return readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
+    return withStoryText('idol_story', await readModelClient.load({...row.detail,expectedId: id}, { ...options, expectedId: id, validate: data => {
       if (data.view?.page?.idol_code !== id || !Array.isArray(data.view.page.sections) ||
         !Array.isArray(data.view?.readingEntries))
         throw new Error('Idol story detail identity or shape mismatch')
-    } })
+    } }), options)
   }
 
   function openSeasonalCampaign(campaignId = 'valentine_2023') {

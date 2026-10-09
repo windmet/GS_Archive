@@ -1,10 +1,9 @@
 // Match the Reader's CSS breakpoint. Media routes retain their explicit proof.
+// One rule for every kind of story: phones read one EP at a time; desktop reads the whole chapter
+// continuously, whichever page it was opened from (main, unit, birthday, extra, event, idol story,
+// work, story detail, catalog). The Reader forms the chapter from the story collection or, failing
+// that, from the Reader directory, and reads the single document only when neither exists.
 export function readerScopeForViewport(route, compact = globalThis.matchMedia?.('(max-width: 760px)')?.matches) {
   if (route.view !== 'reader' || compact === undefined) return route.readingScope || ''
-  if (compact) return ''
-  if (route.storySection && ['main','unit_story','extra','birthday'].includes(route.storyType)) return 'chapter'
-  // An event's episodes (序章, EP 01…) are one Reader directory with no story collection; on desktop
-  // they read as one continuous chapter like the main story.
-  if (route.event && !route.storyType) return 'chapter'
-  return route.readingScope || ''
+  return compact ? '' : 'chapter'
 }

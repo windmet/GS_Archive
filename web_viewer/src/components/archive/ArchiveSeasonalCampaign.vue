@@ -33,20 +33,20 @@
       <ul class="participant-list">
         <li v-if="campaign.introduction?.length" class="participant-row intro-row">
           <div class="participant-id"><strong>共通导入</strong></div>
-          <div class="episode-titles"><span>{{ campaign.introduction[0].title }}</span></div>
+          <div class="episode-titles"><span>{{ episodeTitle(campaign.introduction[0]) }}</span></div>
           <button class="story-icon-action" :disabled="!campaign.introduction[0].compiled_file" aria-label="播放共通导入" title="播放共通导入" @click="play(campaign.introduction[0])"><Play :size="17" fill="currentColor" /></button>
         </li>
         <li v-for="participant in visibleParticipants" :key="`${participant.participant_type}-${participant.participant_numeric_id}`" class="participant-row">
           <div class="participant-id">
-            <strong>{{ participant.display_name || '姓名待确认' }}</strong>
+            <strong>{{ participantName(participant) }}</strong>
             <small>{{ participant.playback_entity_count }} 段剧情<template v-if="participant.episodes[0]?.reward"> · 阅读奖励</template></small>
           </div>
           <div class="episode-titles">
             <span v-for="episode in participant.episodes" :key="episode.id">
-              <small>Lv.{{ episode.required_valentine_level || 1 }}</small>{{ episode.title }}
+              <small>Lv.{{ episode.required_valentine_level || 1 }}</small>{{ episodeTitle(episode) }}
             </span>
           </div>
-          <button class="story-icon-action" :disabled="!participant.episodes[0]?.compiled_exists" :aria-label="`播放 ${participant.display_name || '角色剧情'}`" title="播放角色剧情" @click="play(participant.episodes[0])">
+          <button class="story-icon-action" :disabled="!participant.episodes[0]?.compiled_exists" :aria-label="`播放 ${participantName(participant)}`" title="播放角色剧情" @click="play(participant.episodes[0])">
             <Play :size="17" fill="currentColor" />
           </button>
         </li>
@@ -59,11 +59,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import { useStoryTitles } from './useReaderTitles.js'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { Gift, Heart, Play } from '@lucide/vue'
 import '../../styles/archive-story.css'
 
 const props = defineProps({ campaign: { type: Object, default: null }, campaigns: { type: Array, default: () => [] },
-  sourceEvidence: { type: Object, default: null } })
+  sourceEvidence: { type: Object, default: null }, idolName: { type: Function, default: () => '' } })
+// Names and titles in the reader's language, from the same sources as every other story page.
+const storyTitle = useStoryTitles()
+const participantName = participant => (participant.participant_type === 'idol' && props.idolName(participant.participant_code, participant.display_name)) || participant.display_name || '姓名待确认'
+const episodeTitle = episode => presentProducerAddressingText(storyTitle(episode.compiled_file, episode.title))
 const emit = defineEmits(['select', 'play'])
 const participantType = ref('idol')
 const years = computed(() => [...new Set(props.campaigns.map(item => item.year))].sort())

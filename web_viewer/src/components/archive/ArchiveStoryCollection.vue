@@ -120,6 +120,7 @@ import { BookOpen, ChevronDown, ChevronRight, ChevronUp, ExternalLink, Play } fr
 import { buildArchiveUrl, buildArchiveSourceQuery } from '../../core/archiveRoute.js'
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { storyCollectionTitle } from '../../presentation/StoryPageTitle.js'
 import { useReaderTitles } from './useReaderTitles.js'
 import {gashaText} from './useArchiveGashaText.js'
 import '../../styles/archive-story.css'
@@ -139,12 +140,7 @@ const expandedChapterId = ref('')
 const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
 const readingStatusNotice = ref('')
 const chapterUnit = computed(() => ({ main: '话', birthday: '篇' })[props.collection?.domain] || '章')
-// Birthday pages are named after their idol; use the reader's-language name like every other page.
-const collectionTitle = computed(() => {
-  const subject = props.collection?.subject
-  const name = subject?.kind === 'idol' && props.idolName(subject.code)
-  return presentProducerAddressingText(name ? `${name} 生日剧情` : props.collection?.title)
-})
+const collectionTitle = computed(() => storyCollectionTitle(props.collection, props.idolName))
 const episodeLabel = episode => presentIdolEpisodeLabel({ sourceName: episode.label, kind:episode.kind, ordinal:episode.ordinal })
 const readingEntry = episode => readingByFile.value.get(episode.file)
 // Birthday and extra chapters are each one story; main, unit and personal chapters hold episodes.

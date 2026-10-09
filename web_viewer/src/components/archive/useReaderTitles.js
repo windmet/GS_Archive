@@ -71,3 +71,23 @@ export function useReaderTitle(entry, source) {
   title.pending = computed(() => display.pending(entry.value))
   return title
 }
+// Route preparation: load the index and the shards holding these documents' titles before a page
+// is shown, so its first paint already carries the translations (see StoryTextReadiness).
+export async function prepareReaderTitles(documentIds = [], { signal } = {}) {
+  if (uiLocale.value !== 'zh-CN') return
+  if (indexState.value !== 'ready') indexState.value = 'loading'
+  try {
+    await repository.loadIndex({ signal })
+    const byShard = new Map()
+    for (const id of documentIds) if (id && repository.needsDocument(id)) byShard.set(readerTitleShardKey(id), id)
+    const results = await Promise.allSettled([...byShard.values()].map(id => repository.loadDocument(id, { signal })))
+    results.forEach((result, i) => {
+      if (result.status === 'rejected' && result.reason?.name !== 'AbortError')
+        shardFailures.value = new Set([...shardFailures.value, readerTitleShardKey([...byShard.values()][i])])
+    })
+    index.value = await repository.loadIndex({ signal })
+    indexState.value = 'ready'
+  } catch (error) {
+    if (error?.name !== 'AbortError') indexState.value = 'failed'
+  }
+}

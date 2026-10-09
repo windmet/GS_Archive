@@ -1,5 +1,6 @@
 import { watch } from 'vue'
 import { storyEventResources } from '../data/eventResourceGraph.js'
+import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 
 export function useStoryNavigation({ view, loading, detailSourceRoute, filterQuery,
   currentStoryDomain, currentCharacterId, currentStoryMode, currentStorySection, currentStoryFile,
@@ -31,12 +32,12 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
     const row = (await loadCollectionCatalog(options)).find(entry => entry.domain === domain &&
       (entry.sectionId === String(section) || entry.legacySectionIds?.includes(String(section))))
     if (!row) throw new Error(`Unavailable story collection: ${domain}:${section}`)
-    return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
+    return withStoryText('collection', await readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
       const collection = data.view?.collection
       if (collection?.domain !== row.domain || collection.sectionId !== row.sectionId ||
         !Array.isArray(collection.chapters) || !Array.isArray(data.view?.readingEntries))
         throw new Error('Collection detail identity or shape mismatch')
-    } })
+    } }), options)
   }
 
   async function loadStoryReadModelCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -88,12 +89,12 @@ export function useStoryNavigation({ view, loading, detailSourceRoute, filterQue
       if (row) row = {...row,id:file}
     }
     if (!row) throw new Error(`Unavailable story: ${file}`)
-    return readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
+    return withStoryText('story', await readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
       if (data.story?.file !== file || !Array.isArray(data.view?.related) ||
         !Array.isArray(data.view?.castReferences) || typeof data.view.promotedVisualUrl !== 'string' ||
         !Array.isArray(data.view?.readingEntries))
         throw new Error('Story detail identity or shape mismatch')
-    } })
+    } }), options)
   }
 
   async function openStoryCatalog(options = {}) {

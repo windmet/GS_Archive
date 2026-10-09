@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { resolveMobileArchiveUnit } from '../core/mobileArchiveIdentity.js'
 import { communicationOwnerId } from '../core/story-runtime/CommunicationPresentationContext.js'
+import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 
 export function useMobileNavigation({
   mobileIdolReadModelCatalog, mobileUnitReadModelCatalog, mobileIdolReadModelDetail, mobileUnitReadModelDetail,
@@ -203,6 +204,7 @@ export function useMobileNavigation({
       archive: { by_unit_code: Object.fromEntries(units.map(unit => [unit.id, true])) },
     })
     const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode, options) : null
+    await withStoryText('mobile', null, options)
     return { idol, unit, unitCode }
   }
 

@@ -402,6 +402,7 @@
         :campaign="currentSeasonalCampaign"
         :campaigns="seasonalReadModelCatalog || []"
         :source-evidence="seasonalReadModelDetail?.view?.sourceEvidence || null"
+        :idol-name="idolDisplayName"
         @select="selectSeasonalCampaign"
         @play="playSeasonalCampaignStory"
       />
@@ -671,6 +672,7 @@ import { useMobileNavigation } from './composables/useMobileNavigation.js'
 import { useReaderNavigation } from './composables/useReaderNavigation.js'
 import { usePortalNavigation } from './composables/usePortalNavigation.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
+import { storyCollectionTitle } from './presentation/StoryPageTitle.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
 import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
 import {
@@ -1458,7 +1460,7 @@ const archiveTitle = computed(() => {
   }
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
-  if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
+  if (view.value === 'story_collection') return storyCollectionTitle(currentStoryCollection.value, idolDisplayName) || '故事章节'
   if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} 工作档案`.trim()
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} 个人故事`.trim()
@@ -1519,7 +1521,7 @@ const archiveBreadcrumbs = computed(() => {
       id: currentEventId.value,
     },
     story_collection: {
-      title: currentStoryCollection.value?.title,
+      title: storyCollectionTitle(currentStoryCollection.value, idolDisplayName),
       id: currentStorySection.value,
       domainLabel: currentStoryCollection.value?.domainLabel,
     },

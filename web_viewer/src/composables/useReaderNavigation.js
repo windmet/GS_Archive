@@ -323,20 +323,33 @@ export function useReaderNavigation({
     loading.value = false
     if (readingScope.value === 'chapter') {
       if (!reusableDirectory) readingState.value = { status:'loading', document:null, entries:[], error:'' }
+      // The chapter is the story collection's when the page has one (main, unit, birthday, extra),
+      // otherwise the Reader directory that already groups a story's parts in order (event
+      // episodes, an idol story's 话, a work story). If neither forms, read the one document.
+      let plan = null, detail = null
       try {
-        if (route.event && !route.storyType) {
+        if (route.storyType && route.storySection && !route.event) {
+          detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' }).catch(() => null)
+          if (!intent.isCurrent()) return
+          try { if (detail) plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '') }
+          catch { plan = null }
+        }
+        if (!plan) {
           const locator = await readingRepository.locator(route.reading, { signal:intent.signal })
           if (!intent.isCurrent()) return
-          await chapterReadingSession.open(directoryReadingPlan(locator, route.reading), intent)
-        } else {
-          if (!route.storyType || !route.storySection) throw Error('整话阅读缺少正式目录来源')
-          const detail = reusableDirectory || await loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'foreground' })
-          if (!intent.isCurrent()) return
-          const plan = chapterReadingPlan(detail.view.collection, detail.view.readingEntries, route.reading, route.story || '')
-          readerCollectionDetail.value = detail
-          await chapterReadingSession.open(plan, intent)
+          plan = directoryReadingPlan(locator, route.reading)
+          detail = null
         }
-      } catch (error) { if (intent.isCurrent()) { chapterReadingState.value = null; readingState.value = {status:'error', document:null, entries:[], error:error.message} } }
+      } catch { plan = null }
+      if (!intent.isCurrent()) return
+      if (plan) {
+        if (detail) readerCollectionDetail.value = detail
+        await chapterReadingSession.open(plan, intent)
+      } else {
+        readingScope.value = ''
+        chapterReadingState.value = null
+        await readingSession.open(route.reading, intent, knownReadingLocator(reusableDirectory, route.reading))
+      }
     } else {
       const directory = !reusableDirectory && route.storyType && route.storySection ? loadCollectionDetail(route.storyType, route.storySection, { signal:intent.signal, priority:'background' })
         .then(detail => { if (intent.isCurrent()) readerCollectionDetail.value = detail })

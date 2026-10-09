@@ -1,5 +1,6 @@
 import { computed } from 'vue'
 import { externalResourcesForEvent } from '../data/externalStoryResources.js'
+import { withStoryText } from '../localization/story/StoryTextReadiness.js'
 
 export function useEventNavigation({
   eventReadModelCatalog, eventReadModelDetail, eventReadModelStatus, view,
@@ -136,7 +137,7 @@ export function useEventNavigation({
     }})))
     const general=pages.flatMap(page=>page.rows)
     if(general.length!==detail.view.rewards.generalCount || general.some(row=>row.eventId!==detail.view.provenance.eventId))throw Error('Event reward identity mismatch')
-    return {...detail,view:{...detail.view,rewards:{...detail.view.rewards,general}}}
+    return withStoryText('event', {...detail,view:{...detail.view,rewards:{...detail.view.rewards,general}}}, options)
 
   }
 
