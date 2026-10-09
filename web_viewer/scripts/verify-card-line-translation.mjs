@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { sourceUnits, CARD_LINE_KINDS, shards, validateGeneralReturn, rootOverlayEntries } from './lib/general-translation-batches.mjs'
+import { sourceUnits, CARD_LINE_KINDS, CHAT_KINDS, shards, validateGeneralReturn, rootOverlayEntries } from './lib/general-translation-batches.mjs'
 import { planCompactBatches, renderCompactInput, parseCompactReturn, returnHeading } from './lib/general-translation-markdown.mjs'
 
 // Card lines, home touch voices and call titles go through the general (source-text) workflow:
@@ -18,7 +18,7 @@ const speakers = unit => new Set(unit.references.map(ref => ref.speaker))
 assert.ok(lines.filter(unit => unit.kind !== 'call-title').every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')
 assert.ok(lines.every(unit => [...speakers(unit)].every(code => /^\d{3}[a-z]{3}$/.test(code))), 'speakers are idol codes')
 assert.ok(!lines.some(unit => unit.source.trim() === '0'), 'the extra placeholder 0 is not a line')
-assert.ok(units.filter(unit => !CARD_LINE_KINDS.includes(unit.kind)).every(unit => unit.references.every(ref => !ref.speaker)), 'metadata identities are unchanged')
+assert.ok(units.filter(unit => !CARD_LINE_KINDS.includes(unit.kind) && !CHAT_KINDS.includes(unit.kind)).every(unit => unit.references.every(ref => !ref.speaker)), 'metadata identities are unchanged')
 assert.ok(CARD_LINE_KINDS.every(kind => shards['card-lines'](kind)) && Object.entries(shards).every(([name, select]) => name === 'card-lines' || !CARD_LINE_KINDS.some(select)))
 
 // Batches: speaker by speaker, character-line instructions, speaker headings.

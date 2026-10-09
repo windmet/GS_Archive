@@ -98,7 +98,7 @@
                 <p class="call-line" :lang="line.locale" :class="{ 'is-pending': line.pending }"><template v-for="(part, index) in projectCommunicationInlineContent(line.text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></p>
               </StoryLineText>
             </template>
-            <h4 v-else lang="ja"><template v-for="(part, index) in projectCommunicationInlineContent(presentProducerAddressingText(bundle.title))" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
+            <h4 v-else :lang="chatText(bundle.title).lang" :class="{ 'is-pending': chatText(bundle.title).pending }"><template v-for="(part, index) in projectCommunicationInlineContent(chatText(bundle.title).text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4>
             <p v-if="bundle.guests?.length" class="call-guests"><span class="call-guest-faces" aria-hidden="true"><ArchiveIdolAvatar v-for="code in bundle.guests" :key="code" :idol-code="code" :size="22" :ring-width="0" :gap="0" decorative /></span>{{ guestNames(bundle) }} 也在通话中</p>
           </div>
           <div v-if="!bundle.exists" class="conversation-meta"><span>暂未收录</span></div>
@@ -112,7 +112,7 @@
       <div v-else class="random-list">
         <article v-for="bundle in randomBundles" :key="bundle.id" class="random-bundle">
           <header>
-            <div><small>话题组 · {{ bundle.topics.length }} 个话题</small><h4 lang="ja"><template v-for="(part, index) in projectCommunicationInlineContent(presentProducerAddressingText(bundle.title))" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
+            <div><small>话题组 · {{ bundle.topics.length }} 个话题</small><h4 :lang="chatText(bundle.title).lang"><template v-for="(part, index) in projectCommunicationInlineContent(chatText(bundle.title).text)" :key="`${part.type}:${index}`"><span v-if="part.type === 'text'">{{ part.text }}</span><img v-else class="inline-emoji" :src="getEmojiUrl(part.id)" :alt="part.alt" /></template></h4></div>
             <button :disabled="!bundle.exists" aria-label="按脚本顺序连着看这一组" title="按脚本顺序连着看这一组" @click="emit('play', bundle.file)"><Play :size="17" fill="currentColor" /></button>
           </header>
           <div class="topic-grid">
@@ -125,7 +125,7 @@
             >
               <span>{{ String(index + 1).padStart(2, '0') }}</span>
               <span class="topic-copy">
-                <strong :lang="topic.presentation?.title ? 'ja' : undefined">{{ topic.presentation?.title ? presentProducerAddressingText(topic.presentation.title) : `话题 ${index + 1}` }}</strong>
+                <strong :lang="topic.presentation?.title ? chatText(topic.presentation.title).lang : undefined">{{ topic.presentation?.title ? chatText(topic.presentation.title).text : `话题 ${index + 1}` }}</strong>
                 <small>{{ timeWindow(topic) }} · 再登场间隔 {{ topic.interval_day }} 天</small>
               </span>
               <Play v-if="topic.presentation" :size="15" fill="currentColor" />
@@ -282,6 +282,14 @@ function unlockTitle(unlock) {
 // that opens it, so chats keep their first line as the heading.
 // A call's reading document is named after its compiled file.
 const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '')
+// Chat previews and topic titles are chat lines, translated with the chats overlay.
+const chatsState = ref('loading')
+loadArchiveNames('chats').then(() => { chatsState.value = 'ready' }, () => { chatsState.value = 'failed' })
+function chatText(source) {
+  const zh = uiLocale.value === 'zh-CN'
+  const translated = zh ? ['chat-line:text', 'chat-choice:text', 'chat-choice:detail'].map(key => archiveNamedText(key.split(':')[0], source, key.split(':')[1])).find(text => text && text !== source) : ''
+  return { text: presentProducerAddressingText(translated || source || ''), lang: translated ? 'zh-CN' : 'ja', pending: zh && chatsState.value === 'loading' }
+}
 const cardLinesState = ref('loading')
 loadArchiveNames('card-lines').then(() => { cardLinesState.value = 'ready' }, () => { cardLinesState.value = 'failed' })
 function callTitleText(bundle) {

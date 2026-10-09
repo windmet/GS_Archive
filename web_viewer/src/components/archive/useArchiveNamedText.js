@@ -8,7 +8,7 @@ import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
 const entries=shallowRef({}), pending=new Map();
 const transport=createBoundedTextTransport();
 const record=value=>value !== null && typeof value === 'object' && !Array.isArray(value);
-const loaders=Object.fromEntries(['cards','costumes','photos','profiles','card-lines'].map(domain=>[domain,async()=>{
+const loaders=Object.fromEntries(['cards','costumes','photos','profiles','card-lines','chats'].map(domain=>[domain,async()=>{
     const url=`/translations/zh-CN/archive-general/${domain}.json?rev=${translationRelease.release}`;
     try {
       const data=JSON.parse(await transport.load(url));

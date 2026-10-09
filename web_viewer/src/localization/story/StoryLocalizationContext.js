@@ -10,6 +10,7 @@ import { resolveStoryText } from './StoryTextResolver.js'
 import { TranslationRepository } from './TranslationRepository.js'
 import { EntityTranslationRepository } from './EntityTranslationRepository.js'
 import { speakerDisplayLookup, speakerLabelCandidates, speakerLabelKey } from './SpeakerDisplayNames.js'
+import { chatTranslation, isLegacyChat, loadChatTranslations } from './ChatTranslations.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
@@ -71,6 +72,8 @@ export function createStoryLocalization({
   const loading = ref(false)
   const reloadRevision = ref(0)
   const overlay = shallowRef(null)
+  // Legacy chats (no text units) translate by source text from the shared chat overlay.
+  const chatEntries = shallowRef(null)
   const diagnostics = ref(null)
   const entityDiagnostics = ref([])
   const entityRevision = ref(0)
@@ -98,6 +101,7 @@ export function createStoryLocalization({
       abortController?.abort()
       abortController = null
       overlay.value = null
+      chatEntries.value = null
       diagnostics.value = null
       entityDiagnostics.value = []; entityViews.clear(); entityRevision.value++
       loading.value = Boolean(scenarioId)
@@ -119,6 +123,13 @@ export function createStoryLocalization({
               entityDiagnostics.value = [...entityDiagnostics.value,{code:'entity_translation_invalid',entityType,locale,errors:[error.message]}]
             }
           })
+        }
+        if (isLegacyChat(compiledData?.value)) {
+          try {
+            const entries = await loadChatTranslations({ signal })
+            if (requestGeneration !== generation) return
+            chatEntries.value = entries
+          } catch (error) { if (error?.name === 'AbortError') throw error /* Optional: chats keep their source. */ }
         }
         const loaded = await repository.loadScenario({scenarioId,locale,signal})
         if (requestGeneration !== generation) return
@@ -156,9 +167,12 @@ export function createStoryLocalization({
     return currentPreferences()
   }
 
-  function overlayEntry(textRef, inlineEntry = null) {
+  function overlayEntry(textRef, inlineEntry = null, source = '') {
     const unitId = textRef?.unit_id
-    return (unitId && overlay.value?.entries?.[unitId]) || inlineEntry || null
+    if (unitId && overlay.value?.entries?.[unitId]) return overlay.value.entries[unitId]
+    if (inlineEntry) return inlineEntry
+    const chat = !textRef && chatTranslation(chatEntries.value, source)
+    return chat ? { source_hash: null, text: chat, status: 'draft' } : null
   }
 
   function resolveUnit({ source = '', textRef = null, speaker = null, inlineEntry = null } = {}) {
@@ -167,7 +181,7 @@ export function createStoryLocalization({
       source,
       textRef,
       speaker,
-      overlayEntry: overlayEntry(textRef, inlineEntry),
+      overlayEntry: overlayEntry(textRef, inlineEntry, source),
       entityNames: entityNames || ((entityId, locale, entityType = 'idol') => (
         (entityViews.has(entityType) ? entityRepository.getEntry({ entityType, entityId, locale, overlay:entityViews.get(entityType) }) : null)?.name || ''
       )),

@@ -6,6 +6,7 @@
     "verify-document-language.mjs",
     "verify-speaker-label-dictionary.mjs",
     "verify-card-line-translation.mjs",
+    "verify-chat-translation.mjs",
     "verify-legacy-alias-navigation.mjs",
     "verify-event-navigation.mjs",
     "verify-mobile-navigation.mjs",
@@ -127,6 +128,7 @@
     "corpus": {
       "reason": "Reads gitignored corpus or build evidence (public/assets, public/data/compiled, RAW, .analysis, .deploy); run locally with the corpus mounted.",
       "scripts": [
+        "verify-chat-text-index.mjs",
         "verify-archive-inline-presentation.mjs",
         "verify-archive.mjs",
         "verify-chibi-native-pose-samples.mjs",

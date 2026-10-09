@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { hash, shards, CARD_LINE_KINDS } from './general-translation-batches.mjs'
+import { hash, shards, CARD_LINE_KINDS, CHAT_KINDS } from './general-translation-batches.mjs'
 
-const kinds = { 'card-line':'卡面台词','card-touch':'首页触摸语音','call-title':'电话标题',card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
+const kinds = { 'chat-line':'对白','chat-choice':'制作人回复','card-line':'卡面台词','card-touch':'首页触摸语音','call-title':'电话标题',card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
 const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词' }
 const isCharacterLine = row => CARD_LINE_KINDS.includes(row.kind)
+const isChat = row => CHAT_KINDS.includes(row.kind)
+const firstReference = row => row.references[0]
+const conversationOf = row => firstReference(row).id.split(':')[0]
 const speakerOf = row => row.references.find(ref => ref.speaker)?.speaker || ''
 let speakerNames
 // 中文名（日文名）, from the project idol names the model also sees in glossary.md.
@@ -16,6 +19,19 @@ function speakerLabel(code) {
   }
   return speakerNames.get(code) || code
 }
+let unitNames
+function ownerLabel(code) {
+  if (/^\d{3}[a-z]{3}$/.test(code)) return speakerLabel(code)
+  unitNames ||= new Map(JSON.parse(fs.readFileSync(new URL('../../public/data/masterdata/idol_unit_dictionary.json', import.meta.url), 'utf8')).units.map(unit => [unit.unit_code, unit.unit_name]))
+  return unitNames.get(code) || code || '未知'
+}
+const CHAT_RULES = [
+  '你是日中游戏本地化译者。下面是偶像与制作人的手机聊天（个人聊天、组合聊天、随机话题）。每个小标题是一段对话，条目按对话顺序排列；每条前的【说话人】只供理解，不要翻译或输出。',
+  '用符合角色性格的自然口语译成简体中文，聊天语气轻松简短；同一位偶像的口吻、自称和对制作人的称呼要一致。「制作人回复」是玩家可选的回复：选项短句与回复全文分别成条，意思保持一致。',
+  '同一句原文只出现一次（在第一次出现的对话里），译文会用于所有出现位置，所以不要依赖只在这一段对话里才成立的特殊含义。',
+  '称呼规则：「プロデューサーさん」「プロデューサー」译为“制作人”，不加“先生”；人名+さん 译为“先生”（女性用“小姐/女士”）；くん→君，ちゃん→酱，先生（せんせい）→老师；直呼就直呼。',
+  '●●●● 是制作人名字的占位符，必须原样保留（包括“●●●●プロデューサー”整体，不翻译、不拆开、不删掉）。原样保留数字、表情标记（如 <emoji>…</emoji>）和其他程序标记；换行可按中文调整。姓名参照 glossary.md，不确定时标记疑义。',
+]
 const CHARACTER_LINE_RULES = [
   '你是日中游戏本地化译者。下面是偶像角色自己说的台词：卡面台词（普通/特训/额外）、首页点触立绘时的语音和电话标题。按小标题标明的说话人，用符合该角色性格的自然口语译成简体中文。',
   '每条是独立的一句或一段，没有上下文；同一位偶像的口吻、自称和对制作人的称呼要前后一致。不要添加原文没有的内容，也不要把多条合并。',
@@ -40,9 +56,10 @@ export function compactContexts(units) {
 
 export function renderCompactInput(batch, contexts = new Map()) {
   const characterLines = batch.rows.length > 0 && batch.rows.every(isCharacterLine)
+  const chat = batch.rows.length > 0 && batch.rows.every(isChat)
   const lines = [
-    `# SideM GS ${characterLines ? '角色台词' : '资料'}翻译 · ${batch.batch_id}`, '',
-    ...(characterLines ? CHARACTER_LINE_RULES : [
+    `# SideM GS ${chat ? '聊天' : characterLines ? '角色台词' : '资料'}翻译 · ${batch.batch_id}`, '',
+    ...(chat ? CHAT_RULES : characterLines ? CHARACTER_LINE_RULES : [
     '你是日中游戏本地化译者。将下面每条日文译成自然、准确的简体中文，供资料馆的名称、图鉴说明和技能说明使用。',
     '本批只含通用资料，不含剧情台词、首页对话或工作通讯。名称简洁有辨识度，说明按中文自然组织；技能严格保留触发条件、概率、时长、对象和效果。不要机械逐词直译，也不要擅自润色成角色对白。',
     '每个短编号独立翻译，不能漏条、合并、拆分或把含义搬到相邻条目。名称可有创意，但不能添加原文没有的事实、获取来源、衣装关联或解锁条件。同一专名保持一致；英文专名保留，普通日语语法译成中文。',
@@ -59,6 +76,13 @@ export function renderCompactInput(batch, contexts = new Map()) {
   ]
   let group = ''
   batch.rows.forEach((row,index)=>{
+    if (isChat(row)) {
+      const conversation = conversationOf(row)
+      if (conversation !== group) { lines.push(`### 对话：${ownerLabel(firstReference(row).owner)} · ${conversation.replace(/\.json$/, '')}`); group = conversation }
+      const speaker = speakerOf(row)
+      lines.push(`【说话人：${speaker === 'producer' ? `制作人（${row.field === 'detail' ? '回复全文' : '回复选项'}）` : speakerLabel(speaker)}】`, `[${rid(index)}]${row.source}`, '')
+      return
+    }
     const speaker = isCharacterLine(row) ? speakerOf(row) : ''
     const next = `${speaker}:${row.kind}:${row.field}`
     if (next !== group) { lines.push(`### ${speaker ? `说话人：${speakerLabel(speaker)} · ` : ''}${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next }
@@ -80,7 +104,9 @@ export function planCompactBatches(units, {maxRows=400,maxChars=16000} = {}) {
     // Character lines go speaker by speaker, so one idol's lines share a batch and one voice.
     const kindOrder = kind => CARD_LINE_KINDS.indexOf(kind), fieldOrder = ['normal','awakened','extra','text','title']
     const selected = units.filter(u=>select(u.kind))
-    if (selected.every(isCharacterLine)) selected.sort((a,b)=>speakerOf(a).localeCompare(speakerOf(b)) || kindOrder(a.kind)-kindOrder(b.kind) ||
+    // Chats keep each conversation's own order (owner, file, step), first occurrence of a line.
+    if (selected.length && selected.every(isChat)) selected.sort((a,b)=>(firstReference(a).owner||'').localeCompare(firstReference(b).owner||'') || firstReference(a).id.localeCompare(firstReference(b).id))
+    else if (selected.every(isCharacterLine)) selected.sort((a,b)=>speakerOf(a).localeCompare(speakerOf(b)) || kindOrder(a.kind)-kindOrder(b.kind) ||
       fieldOrder.indexOf(a.field)-fieldOrder.indexOf(b.field) || a.key.localeCompare(b.key))
     for (const row of selected) {
       rows.push(row)
