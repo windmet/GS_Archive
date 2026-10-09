@@ -73,6 +73,8 @@ function select(item) {
 /* Related records: rows on paper separated by hairlines; the artwork or glyph leads each row. */
 .relation-list { display: grid; gap: 0 var(--gs-space-7); }
 .relation-list.layout-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+/* A banner takes 128px of the row, so banner grids use wider cells and the title keeps its line. */
+.relation-list.layout-grid:has(> .relation-row.kind-event > img) { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
 .relation-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 18px; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 72px; padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); cursor: pointer; font: inherit; text-align: left; }
 .relation-row.static { grid-template-columns: 48px minmax(0, 1fr); cursor: default; }
 .relation-row > img { display: block; width: 48px; height: 48px; border-radius: var(--gs-radius-media); background: var(--gs-line); object-fit: contain; }

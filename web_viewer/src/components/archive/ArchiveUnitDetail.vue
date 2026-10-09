@@ -122,6 +122,7 @@ import { computed } from 'vue'
 import { ChevronRight, Images, Music, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
@@ -166,6 +167,8 @@ function relationItems(events, label, meta) {
       statusLabel: event.exists ? '可播放' : '缺少剧情',
       statusTone: event.exists ? 'available' : 'missing',
       resource: event.file,
+      imageUrl: eventBannerUrl(event),
+      imageAlt: event.title,
       payload: event,
     }
   })
