@@ -237,6 +237,9 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         raise ValueError(f"Candidate output directory must be empty: {output_dir}")
 
     expected_parts = expand_expected_parts(args.expected_parts, args.group_id)
+    # The aggregate may carry a catalogue identity other than its parts' shared prefix
+    # (birthday chapters: 1_x_001tom_2_1_2_001_12 holds 1_2_001_12_a/_b/_c).
+    scenario_id = args.scenario_id or args.group_id
     resources = LocalScenarioResources.from_archive_sources(load_archive_sources(getattr(args, 'sources_config', None)))
     if args.raw_file:
         if expected_parts:
@@ -247,7 +250,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         source_files = [f"scenariodata/{raw_file.parent.name}/{raw_file.name}"]
         scenario = ScenarioCompiler(
             load_json(raw_file),
-            args.group_id,
+            scenario_id,
             part_id,
             source_files[0],
             resources=resources,
@@ -265,7 +268,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         raw_data = [load_json(path) for path, _ in parts]
         part_ids = [part_id for _, part_id in parts]
         source_files = [f"scenariodata/{raw_group_dir.name}/{path.name}" for path, _ in parts]
-        scenario = ScenarioCompiler.compile_group(raw_data, args.group_id, part_ids, source_files, resources=resources)
+        scenario = ScenarioCompiler.compile_group(raw_data, scenario_id, part_ids, source_files, resources=resources)
         compilation_mode = "group"
 
     scenario["source"] = build_source_evidence(raw_paths, source_files)
@@ -285,7 +288,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
         scenario_output = scenario
         episode_outputs = episodes
 
-    aggregate_path = output_dir / f"{args.group_id}.json"
+    aggregate_path = output_dir / f"{scenario_id}.json"
     save_json(aggregate_path, scenario_output)
     for source_id, episode in episode_outputs.items():
         save_json(output_dir / "episodes" / f"{source_id}.json", episode)
@@ -293,6 +296,7 @@ def compile_candidate(args: argparse.Namespace) -> dict[str, Any]:
     manifest = {
         "schema_version": 1,
         "group_id": args.group_id,
+        "scenario_id": scenario_id,
         "compilation_mode": compilation_mode,
         "output_contract": args.output_contract,
         "expected_parts": expected_parts,
@@ -317,6 +321,7 @@ def parse_args() -> argparse.Namespace:
     source.add_argument("--raw-file")
     parser.add_argument("--group-id", required=True)
     parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--scenario-id", default="", help="Aggregate identity when it differs from --group-id.")
     parser.add_argument(
         "--output-contract",
         choices=("compatibility", "authoritative"),
