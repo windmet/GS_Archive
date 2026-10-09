@@ -11,7 +11,7 @@ import { useStoryPlaybackController } from '../src/core/useStoryPlaybackControll
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
-import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
+import { ReadModelClient, entityShardDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
 import { withLoadDeadline } from '../src/core/AsyncLoadBoundary.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
@@ -97,12 +97,17 @@ async function fixture({ badContinuationEvidence = false } = {}) {
   }
   const locatorUrls = []
   const updateLocators = async () => {
+    // Locators are published in hash shards; each shard lists every selected entry it owns.
+    const shards = new Map()
     for (const entry of selected) {
-      const descriptor = await entityDescriptor({ release }, 'reading-docs', entry.document_id, 'reading-docs.detail')
+      const descriptor = await entityShardDescriptor({ release }, 'reading-docs', entry.document_id, 'reading-docs.shard')
       locatorUrls.push(descriptor.url)
-      artifacts.set(descriptor.url, JSON.stringify({ schema_version: 1, release, kind: descriptor.kind,
-        data: { id: entry.document_id, view: { entry, entries: selected.filter(item => item.logical_id === entry.logical_id) } } }))
+      const shard = shards.get(descriptor.url) || { descriptor, rows: [] }
+      shard.rows.push({ id: entry.document_id, view: { entry, entries: selected.filter(item => item.logical_id === entry.logical_id) } })
+      shards.set(descriptor.url, shard)
     }
+    for (const [url, { descriptor, rows }] of shards) artifacts.set(url, JSON.stringify({ schema_version: 1, release, kind: descriptor.kind,
+      data: { id: descriptor.expectedId, rows } }))
   }
   await updateLocators()
   selected.forEach((entry, i) => {

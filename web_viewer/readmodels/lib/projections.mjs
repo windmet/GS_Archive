@@ -1,5 +1,5 @@
 import { portalProjection } from './portal_projection.mjs';
-import { ArtifactWriter, assert, entityKey, pick, stripEvidence, jsonBytes } from './common.mjs';
+import { ArtifactWriter, assert, entityKey, shardKey, pick, stripEvidence, jsonBytes } from './common.mjs';
 
 /** Directory identity comes from the same confirmed mapping and idol references as song detail. */
 export function projectSongPerformance(song, view) {
@@ -138,6 +138,25 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       }
       for (const record of value.records) rows.push({id:String(record.id),...record.summary,detail:pageById.get(String(record.id))});
       await directory(domain, rows, {searchRows:value.searchable ? rows : null});
+      continue;
+    }
+    if (value.sharded) {
+      // One file per entity does not scale with the Reader corpus (one locator per segment); a
+      // hash shard keeps the id-only lookup while bounding the file count at 256.
+      assert(new Set(value.records.map(record => String(record.id))).size === value.records.length, `Duplicate ${domain} identity`);
+      const groups = new Map();
+      for (const record of value.records) {
+        const key = shardKey(record.id);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push({ id: String(record.id), view: stripEvidence(record.view) });
+      }
+      const byId = new Map();
+      for (const key of [...groups.keys()].sort()) {
+        const descriptor = await writer.emit(`${domain}/shards/${key}.json`, `${domain}.shard`, { id: key, rows: groups.get(key) });
+        for (const row of groups.get(key)) byId.set(row.id, descriptor);
+      }
+      for (const record of value.records) rows.push({ id: String(record.id), ...record.summary, detail: byId.get(String(record.id)) });
+      await directory(domain, rows, { searchRows: value.searchable ? rows : null });
       continue;
     }
     for (const record of value.records) {

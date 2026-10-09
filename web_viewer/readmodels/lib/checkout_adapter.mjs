@@ -228,7 +228,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'legacy-files': { records:legacyAliases.fileRecords },
     'legacy-episodes': { records:legacyAliases.episodeRecords },
     'legacy-zero': { records:legacyAliases.zeroRecords },
-    'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries) },
+    'reading-docs': { sharded:true, records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries) },
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         readingEntries:readingEntriesForFiles(data.readingManifest.entries,

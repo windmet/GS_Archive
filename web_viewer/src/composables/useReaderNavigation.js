@@ -6,7 +6,7 @@ import { readingPlaybackTarget } from '../core/ReadingPlayback.js'
 import { createReadingRepository } from '../data/ReadingRepository.js'
 import { createReadingSession, knownReadingLocator } from '../core/ReadingSession.js'
 import { readyEpisodeReading } from '../data/IdolStoryReading.js'
-import { entityDescriptor } from '../../readmodels/runtime/ReadModelClient.mjs'
+import { entityShardDescriptor } from '../../readmodels/runtime/ReadModelClient.mjs'
 import { buildArchiveSourceQuery, readArchiveSourceRoute } from '../core/archiveRoute.js'
 import { PlayerPreferencesRepository } from '../core/story-runtime/PlayerPreferencesRepository.js'
 import { playbackPreferencesForReadingMode } from '../core/ReaderPlaybackPreferences.js'
@@ -34,12 +34,16 @@ export function useReaderNavigation({
   const readingPlaybackNotice = ref('')
 
   const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh, signal }) => {
-    const descriptor = await entityDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.detail')
+    const descriptor = await entityShardDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.shard')
     if (fresh) readModelClient.invalidate(descriptor)
     try {
-      const detail = await readModelClient.load({...descriptor,expectedId:documentId}, { signal, expectedId: documentId,
-        validate: data => { if (!data.view?.entry || !Array.isArray(data.view.entries)) throw Error('Reading locator shape mismatch') } })
-      return detail.view
+      const shard = await readModelClient.load(descriptor, { signal, expectedId: descriptor.expectedId,
+        validate: data => { if (!Array.isArray(data.rows) || data.rows.some(row => !row.view?.entry || !Array.isArray(row.view.entries))) throw Error('Reading locator shape mismatch') } })
+      const row = shard.rows.find(item => item.id === documentId)
+      if (row) return row.view
+      const exists = (await readingRepository.manifest({signal})).entries.some(entry => entry.document_id === documentId)
+      if (exists) throw Error('Reading locator missing from its shard')
+      return { entry: null, entries: [] }
     } catch (error) {
       if (error.code !== 'RELEASE_OR_ARTIFACT_MISSING') throw error
       const exists = (await readingRepository.manifest({signal})).entries.some(entry => entry.document_id === documentId)
