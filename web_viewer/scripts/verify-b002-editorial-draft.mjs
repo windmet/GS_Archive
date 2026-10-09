@@ -41,6 +41,7 @@ const drafts = [
   { dir: 'B032-card-scenarios-r33-edited-20261008', documents: 93, units: 990 },
   { dir: 'B033-card-scenarios-r33-edited-20261008', documents: 95, units: 990 },
   { dir: 'B034-card-scenarios-r33-edited-20261008', documents: 59, units: 653 },
+  { dir: 'B035-birthday-small-talk-r33-edited-20261009', documents: 4, units: 59 },
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
@@ -49,6 +50,8 @@ const indexes = await loadStudioIndexes()
 const retirements = (await read(path.join(projectRoot, 'translation/studio/retirements/2026-10-09-birthday-small-talk-split.json'))).documents
 const retired = new Map(retirements.map(record => [record.document_id, record]))
 const retiredSeen = new Set()
+// A combined document's units are addressed by its part id (1_2_001_12), whatever its document id.
+const retiredUnitDocument = record => record.document_id.replace(/^1_x_[0-9a-z]+_2_(1_2_\d{3}_12)$/u, '$1')
 for (const { dir, documents, units: expectedUnits } of drafts) {
   const root = path.join(projectRoot, 'translation/studio/reviews', dir)
   const receipt = await read(path.join(root, 'receipt.json'))
@@ -139,8 +142,16 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
     const record = retirements.find(item => item.batch === dir && item.scenario_id === file.scenario_id)
     if (record) {
       assert.equal(record.translation_sha256, file.sha256, `Retired translation evidence mismatch: ${file.scenario_id}`)
-      await assert.rejects(fs.access(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`)),
-        `Retired translation is still published: ${file.scenario_id}`)
+      // The catalogue may be published again by a later batch (its split documents), but never with
+      // the retired bytes or any entry of the retired document.
+      let republished = null
+      try { republished = await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`)) }
+      catch (error) { if (error.code !== 'ENOENT') throw error }
+      if (republished) {
+        assert.notEqual(sha256(republished), record.translation_sha256, `Retired translation is still published: ${file.scenario_id}`)
+        assert(!Object.keys(JSON.parse(republished).entries).some(id => id.split(':')[3] === record.document_id || id.split(':')[3] === retiredUnitDocument(record)),
+          `Retired document entries are still published: ${file.scenario_id}`)
+      }
       assert.equal(batch.rows.filter(row => row.unit_id.split(':')[2] === file.scenario_id).length, record.units)
       units += record.units
       continue
