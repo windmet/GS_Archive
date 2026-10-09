@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { idolHonorIdentity, idolHonorBelongsTo, fesHonorMonth } from '../src/presentation/HonorIdentity.mjs'
+import { readFileSync, existsSync } from 'node:fs'
+import { idolHonorIdentity, idolHonorBelongsTo, fesHonorMonth, chocolateHonorIdentity, chocolateHonorBelongsTo } from '../src/presentation/HonorIdentity.mjs'
 import { honorBondSource } from '../src/presentation/HonorBondSource.mjs'
 
 // The idol page lists an idol's own honors by decoding the honor id. Check the decoding against two
@@ -36,4 +36,39 @@ for (const entry of typed) {
 assert.deepEqual(kinds, { tantou: 49, catchphrase: 49, 'fes-change': 12, 'fes-limitbreak': 12 })
 assert.equal(bonds, 98, 'every 担当 and catchphrase honor has a bond record naming the same idol')
 assert.equal(honors.filter(entry => entry.honorType !== 2).filter(idolHonorIdentity).length, 0, 'only type-2 honors decode')
-console.log('Idol honor identity: 122 honors decode to one idol each; 48 担当 names and 98 bond records agree')
+
+// VDCP chocolate honors decode idol, season and count from the id. Check every one against the
+// idol and count its name spells out, and the season's event against that idol's VDCP ranking
+// honors, whose ranking configuration names the event independently.
+const chocolateName = /^(\d{4})\/VDCPの(.+)の渡したチョコ数(\d+)個達成$/
+const named = honors.filter(entry => chocolateName.test(entry.nameJa))
+assert.equal(named.length, 490, 'every chocolate honor name is found')
+const seasonEvents = new Map()
+for (const entry of honors.filter(entry => /^\d{4}\/VDCPの.+のランキングで/.test(entry.nameJa))) {
+  const leaf = new URL(`../public/data/masterdata/domains/entity_sources/honor/${entry.id}.json`, import.meta.url)
+  if (!existsSync(leaf)) continue
+  for (const link of JSON.parse(readFileSync(leaf, 'utf8')).links) {
+    if (link.scope !== 'idol-ranking') continue
+    const year = Number(entry.nameJa.slice(0, 4))
+    seasonEvents.set(year, new Set([...(seasonEvents.get(year) || []), link.eventId]))
+  }
+}
+assert.deepEqual([...seasonEvents.keys()].sort(), [2022, 2023], 'both VDCP seasons have ranking honors')
+const perIdol = new Map()
+for (const entry of named) {
+  const [, year, name, count] = entry.nameJa.match(chocolateName)
+  const identity = chocolateHonorIdentity(entry)
+  assert.ok(identity, `chocolate honor ${entry.id} decodes`)
+  const code = codeByNumber.get(identity.idolNumber)
+  assert.ok(code, `chocolate honor ${entry.id} names an existing idol`)
+  assert.equal(name.replace(/\s/g, ''), String(idols[code].display_name).replace(/\s/g, ''), `chocolate idol matches its name: ${entry.id}`)
+  assert.equal(identity.year, Number(year), `chocolate season matches its name: ${entry.id}`)
+  assert.equal(identity.count, Number(count), `chocolate count matches its name: ${entry.id}`)
+  assert.deepEqual([...seasonEvents.get(identity.year)], [identity.eventId], `chocolate season event matches the VDCP ranking event: ${entry.id}`)
+  assert.equal(Object.keys(idols).filter(other => chocolateHonorBelongsTo(entry, other)).length, 1, `chocolate honor ${entry.id} belongs to exactly one idol`)
+  perIdol.set(code, (perIdol.get(code) || 0) + 1)
+}
+assert.equal(perIdol.size, 49)
+assert.ok([...perIdol.values()].every(total => total === 10), 'each idol has ten chocolate honors')
+assert.equal(honors.filter(entry => !chocolateName.test(entry.nameJa)).filter(chocolateHonorIdentity).length, 0, 'only chocolate honors decode as chocolate')
+console.log('Idol honor identity: 122 honors decode to one idol each; 48 担当 names and 98 bond records agree; 490 chocolate honors match idol, count and VDCP event')

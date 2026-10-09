@@ -1,5 +1,5 @@
 import { assert, pick } from './common.mjs';
-import { idolHonorIdentity, idolHonorBelongsTo, idolHonorOrder } from '../../src/presentation/HonorIdentity.mjs';
+import { idolHonorIdentity, idolHonorBelongsTo, idolHonorOrder, chocolateHonorIdentity, chocolateHonorBelongsTo } from '../../src/presentation/HonorIdentity.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
 const photoProductKinds={photoFilter:'filters',photoSticker:'stickers',photoSpot:'spots',photoScene:'scenes',photoFrame:'frames'};
@@ -232,8 +232,15 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       .sort((a,b)=>idolHonorOrder(a.kind)-idolHonorOrder(b.kind));
     const ranking=domains.honors.records.filter(honor=>honor.view.sources.some(source=>source.idolId===person.view.actor.idolId)).map(honor=>honorLink(honor,'ranking',{
       sources:honor.view.sources.filter(source=>source.idolId===person.view.actor.idolId).map(source=>pick(source,['idolId','scope','upperRank','lowerRank','event']))}));
+    // VDCP chocolate honors have no ranking configuration; the id names idol, season and count, and
+    // the season is that year's Valentine event, so they sit beside its ranking honors.
+    const chocolate=domains.honors.records.filter(honor=>chocolateHonorBelongsTo(honor.view.entry,person.summary.idolCode)).map(honor=>{
+      const {year,count,eventId}=chocolateHonorIdentity(honor.view.entry);
+      return honorLink(honor,'ranking',{kind:'chocolate',sources:[{idolId:person.view.actor.idolId,scope:'chocolate',year,count,event:eventLink(eventId)}]});
+    }).sort((a,b)=>a.id-b.id);
     assert(!own.some(honor=>ranking.some(row=>row.key===honor.key)),'An honor cannot be both an idol honor and a ranking honor');
-    idol.view.honors=[...own,...ranking];
+    assert(!chocolate.some(honor=>ranking.some(row=>row.key===honor.key)),'A chocolate honor cannot also be a ranking honor');
+    idol.view.honors=[...own,...ranking,...chocolate];
   }
   return materialRelations.materialContexts;
 }

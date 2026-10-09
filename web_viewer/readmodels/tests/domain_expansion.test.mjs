@@ -122,7 +122,7 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
   assert.equal(actor.media.entries['faces:10102001'].preset.face,'face_joy');
   assert.equal(actor.media.models['001tom_002_00'].status,'verified-local-files');
   assert.equal(actor.media.voiceCues.length,5);
-  let ownTotal=0;
+  let ownTotal=0, chocolateTotal=0;
   for(const person of domains.photos.records.filter(row=>row.id!=='materials')){
     assert(person.view.costumes.length>1);
     for(const costume of person.view.costumes){
@@ -136,8 +136,21 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
     assert.equal(profile.poseCount,person.view.actor.poses.length);
     assert.equal(profile.cueCount,person.view.media.voiceCues.length);
     const honors=domains.idols.records.find(row=>row.id===person.summary.idolCode).view.honors;
-    const ranking=honors.filter(honor=>honor.group==='ranking'), own=honors.filter(honor=>honor.group==='idol');
+    const ranking=honors.filter(honor=>honor.group==='ranking'&&honor.kind!=='chocolate'), own=honors.filter(honor=>honor.group==='idol');
+    const chocolate=honors.filter(honor=>honor.kind==='chocolate');
     assert.equal(ranking.length,8);
+    // Ten VDCP chocolate honors: five counts in each of the two Valentine seasons, filed under the
+    // same events as that idol's VDCP ranking honors.
+    assert.deepEqual(chocolate.map(honor=>`${honor.sources[0].year}:${honor.sources[0].count}`),
+      [2022,2023].flatMap(year=>[100,500,1000,5000,8000].map(count=>`${year}:${count}`)));
+    for(const honor of chocolate){
+      assert.equal(honor.group,'ranking');
+      assert(honor.nameJa.replace(/\s/g,'').includes(`${honor.sources[0].year}/VDCPの${person.summary.nameJa.replace(/\s/g,'')}の渡したチョコ数${honor.sources[0].count}個達成`));
+      const sameEvent=ranking.filter(row=>row.sources[0].event.event_id===honor.sources[0].event.event_id);
+      assert.equal(sameEvent.length,4,'chocolate honors share the event of the same season ranking honors');
+      assert(sameEvent.every(row=>row.nameJa.startsWith(`${honor.sources[0].year}/VDCP`)));
+    }
+    chocolateTotal+=chocolate.length;
     for(const honor of ranking){
       const entry=domains.honors.records.find(row=>row.view.entry.key===honor.key);
       assert.equal(honor.nameJa,entry.view.entry.nameJa);
@@ -150,6 +163,7 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
     ownTotal+=own.length;
   }
   assert.equal(ownTotal,122,'all 122 idol honors reach exactly one idol');
+  assert.equal(chocolateTotal,490,'all 490 chocolate honors reach exactly one idol');
   for(const domain of ['items','honors'])for(const row of domains[domain].records)assert.equal(row.summary.image.url,row.view.media.image.url);
   let linkedCards=0,linkedPhotos=0;
   for(const event of domains.events.records)for(const row of event.view.rewards.general){

@@ -57,8 +57,8 @@
         <p v-if="openHonorNote === group.id" class="honor-note">{{ group.note }}</p>
         <div v-for="row in group.rows" :key="row.id" class="honor-row">
           <h5 v-if="row.title">{{ row.title }}</h5>
-          <ul class="honor-plates" :class="{ 'is-ranked': group.id === 'ranking' }">
-            <li v-for="item in row.items" :key="item.honor.key">
+          <ul v-for="line in row.lines" :key="line.id" class="honor-plates" :class="line.layout && `is-${line.layout}`">
+            <li v-for="item in line.items" :key="item.honor.key">
               <button type="button" :data-archive-focus-id="`idol-honor:${idol.idol_code}:${item.honor.key}`" :aria-label="item.label" :title="item.honor.nameJa" @click="emit('open-honor',item.honor.key)">
                 <span class="honor-plate"><img v-if="item.honor.image?.url" :src="item.honor.image.url" alt="" loading="lazy" decoding="async" /><Medal v-else :size="20" aria-hidden="true" /></span>
                 <span v-if="item.tag" class="honor-caption"><span class="honor-text">{{ item.text }}</span><span class="honor-sep" aria-hidden="true">·</span><b class="honor-value">{{ item.tag }}</b></span>
@@ -141,7 +141,7 @@ const openHonorNote = ref('')
 const HONOR_NOTES = {
   bond: '偶像羁绊达到指定等级时获得：担当称号为 Lv.50，台词称号为 Lv.100。等级来自玩家转述，暂未见官方资料。',
   fes: '称号原名就是达成条件：让该偶像的 FES 限定卡换装，或突破至最大上限。称号牌上印有对应的卡名。',
-  ranking: '活动期间该偶像排行榜的名次奖励，按游戏内的排名配置关联到偶像。',
+  ranking: '活动期间该偶像排行榜的名次奖励，按游戏内的排名配置关联到偶像。情人节活动（VDCP）另有送出巧克力数量的达成称号，称号编号对应偶像与数量。',
 }
 const rankText = source => source.upperRank === source.lowerRank ? `第 ${source.upperRank} 名` : `第 ${source.upperRank}–${source.lowerRank} 名`
 // Captions add only what neither the plate nor the group heading says: "担当 · Lv.50",
@@ -160,6 +160,8 @@ function honorItem(honor) {
     return { honor, text, tag: month, label: `FES ${text} · ${month}` }
   }
   const source = honor.sources?.[0] || {}
+  // Chocolate plates print their count; the count stays in the accessible name.
+  if (honor.kind === 'chocolate') return { honor, text: '', tag: '', label: `${source.event?.title || ''} 送出巧克力 ${source.count} 个` }
   return { honor, text: '', tag: '', label: `${source.event?.title || ''} ${rankText(source)}` }
 }
 const honorGroups = computed(() => {
@@ -167,16 +169,20 @@ const honorGroups = computed(() => {
   const events = new Map()
   for (const honor of props.honors.filter(honor => honor.group === 'ranking')) {
     const event = honor.sources?.[0]?.event
-    const id = String(event?.id || event?.title || honor.key)
-    if (!events.has(id)) events.set(id, { id, title: event?.title || '活动排名', items: [] })
-    events.get(id).items.push(honorItem(honor))
+    const id = String(event?.event_id || event?.title || honor.key)
+    if (!events.has(id)) events.set(id, { id, title: event?.title || '活动排名', ranked: [], chocolate: [] })
+    events.get(id)[honor.kind === 'chocolate' ? 'chocolate' : 'ranked'].push(honorItem(honor))
   }
-  for (const row of events.values()) row.items.sort((a, b) => (a.honor.sources?.[0]?.upperRank ?? 0) - (b.honor.sources?.[0]?.upperRank ?? 0))
+  // One event, one heading: its rank plates on one line, its chocolate plates (VDCP) on the next.
+  const eventRows = [...events.values()].map(({ id, title, ranked, chocolate }) => ({ id, title, lines: [
+    { id: 'ranked', layout: 'ranked', items: ranked.sort((a, b) => (a.honor.sources?.[0]?.upperRank ?? 0) - (b.honor.sources?.[0]?.upperRank ?? 0)) },
+    { id: 'chocolate', layout: 'chocolate', items: chocolate.sort((a, b) => a.honor.sources[0].count - b.honor.sources[0].count) },
+  ].filter(line => line.items.length) }))
   return [
-    { id: 'bond', title: '羁绊称号', rows: [{ id: 'bond', items: own(['tantou', 'catchphrase']) }] },
-    { id: 'fes', title: 'FES 成就', rows: [{ id: 'fes', items: own(['fes-change', 'fes-limitbreak']) }] },
-    { id: 'ranking', title: '活动排名', rows: [...events.values()] },
-  ].map(group => ({ ...group, note: HONOR_NOTES[group.id], count: group.rows.reduce((sum, row) => sum + row.items.length, 0) }))
+    { id: 'bond', title: '羁绊称号', rows: [{ id: 'bond', lines: [{ id: 'bond', items: own(['tantou', 'catchphrase']) }] }] },
+    { id: 'fes', title: 'FES 成就', rows: [{ id: 'fes', lines: [{ id: 'fes', items: own(['fes-change', 'fes-limitbreak']) }] }] },
+    { id: 'ranking', title: '活动称号', rows: eventRows },
+  ].map(group => ({ ...group, note: HONOR_NOTES[group.id], count: group.rows.reduce((sum, row) => sum + row.lines.reduce((total, line) => total + line.items.length, 0), 0) }))
     .filter(group => group.count)
 })
 
@@ -303,6 +309,9 @@ function formatDate(timestamp) {
 .honor-value { color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; white-space: nowrap; }
 /* An event's four rank plates always fill one row (two by two on phones), so none is left alone. */
 .honor-plates.is-ranked { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--gs-space-4); }
+/* VDCP chocolate plates (five counts) share the event heading on a line of their own. */
+.honor-plates.is-chocolate { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gs-space-4); }
+.honor-plates + .honor-plates { margin-top: var(--gs-space-4); }
 .idol-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
 .idol-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-detail :deep(.relation-labels strong), .idol-detail :deep(.relation-labels small), .idol-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
@@ -327,7 +336,7 @@ function formatDate(timestamp) {
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links, .idol-notes { grid-template-columns: 1fr; gap: 0; }
-  .honor-plates, .honor-plates.is-ranked { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
+  .honor-plates, .honor-plates.is-ranked, .honor-plates.is-chocolate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
   .honor-plate { height: auto; min-height: 36px; }
   .idol-notes { gap: var(--gs-space-7); }
 }

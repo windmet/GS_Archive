@@ -25,3 +25,32 @@ export function fesHonorMonth(entry) {
   const match = String(entry?.nameJa || '').match(/^(\d{2})\/(\d{1,2})FES/)
   return match ? `20${match[1]}年${Number(match[2])}月` : ''
 }
+
+// VDCP (Valentine) chocolate honors (HonorData type 3) carry no ranking configuration; their idol and
+// tier sit in the id: base + (idol number − 1) × 5 + tier, tier 0–4 = 100 / 500 / 1000 / 5000 / 8000
+// chocolates. Each season is the same Valentine event as that year's VDCP ranking honors.
+const CHOCOLATE_SEASONS = [
+  { year: 2022, base: 30024001, eventId: 40001 },
+  { year: 2023, base: 30024246, eventId: 40002 },
+]
+const CHOCOLATE_COUNTS = [100, 500, 1000, 5000, 8000]
+const CHOCOLATE_IDOLS = 49
+
+export function chocolateHonorIdentity(entry) {
+  if (Number(entry?.honorType) !== 3) return null
+  const id = Number(entry.id)
+  const season = CHOCOLATE_SEASONS.find(row => id >= row.base && id < row.base + CHOCOLATE_IDOLS * CHOCOLATE_COUNTS.length)
+  if (!season) return null
+  const offset = id - season.base
+  return {
+    idolNumber: Math.floor(offset / CHOCOLATE_COUNTS.length) + 1,
+    year: season.year,
+    eventId: season.eventId,
+    count: CHOCOLATE_COUNTS[offset % CHOCOLATE_COUNTS.length],
+  }
+}
+
+export function chocolateHonorBelongsTo(entry, idolCode) {
+  const identity = chocolateHonorIdentity(entry)
+  return Boolean(identity) && identity.idolNumber === Number(String(idolCode || '').slice(0, 3))
+}
