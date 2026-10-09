@@ -14,7 +14,7 @@ export function useArchiveNavigationState() {
   const detailSourceRoute = ref('')
   const readingDocumentId = ref('')
   const readingRowId = ref('')
-  const readingMode = ref('original')
+  const readingMode = ref(storyContentMode.value)
   const readingRevision = ref('')
   const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)

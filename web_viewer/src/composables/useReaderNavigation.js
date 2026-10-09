@@ -76,7 +76,10 @@ export function useReaderNavigation({
   async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
     const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
       sourceRoute: returnSourceRoute || buildArchiveSourceQuery(currentArchiveRoute()) }
-    const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingScope: source.readingScope ?? context.readingScope ?? '' }, { restoring: false })
+    // A mode that differs from the saved choice (e.g. from a shared link) carries only between
+    // documents inside the reader; entering the reader from elsewhere follows the saved choice.
+    const carriedMode = view.value === 'reader' && readingMode.value !== storyContentMode.value ? readingMode.value : ''
+    const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: carriedMode, readingScope: source.readingScope ?? context.readingScope ?? '' }, { restoring: false })
     // Publish the requested route immediately, including while text is loading.
     syncArchiveRoute()
     await pending

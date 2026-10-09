@@ -226,6 +226,23 @@ try {
     await t.apply(single(0, { readingRev: 'sha256:' + '0'.repeat(64) })); assert.match(t.readingPlaybackNotice.value, /版本已变化/)
     t.stop()
   }
+  {
+    // Entering the Reader from a story page follows the saved story-text choice; a stale mode left
+    // over from an earlier Reader visit must not turn Chinese readers back to the original.
+    storyContentMode.value = 'translation'
+    const t = await fixture()
+    assert.equal(t.state.readingMode.value, 'translation', 'the Reader mode starts from the saved choice')
+    t.state.readingMode.value = 'original'; t.state.view.value = 'story_collection'
+    await t.openStoryReader(entries[0].document_id)
+    assert.equal(t.state.view.value, 'reader')
+    assert.equal(t.state.readingMode.value, 'translation', 'opening the Reader from elsewhere follows the saved choice')
+    assert.equal(t.syncs.at(-1).route.readingMode, '', 'the URL carries no mode when it matches the saved choice')
+    // Inside the Reader a mode that differs from the saved choice (a shared link) carries on.
+    await t.apply(single(0, { readingMode: 'bilingual' }))
+    await t.openStoryReader(entries[1].document_id)
+    assert.equal(t.state.readingMode.value, 'bilingual', 'a linked mode carries between Reader documents')
+    t.stop()
+  }
   for (const reject of [false, true]) {
     const t = await fixture(), job = deferred(), path = '/data/reading/' + entries[0].file
     t.jobs.set(path, job); const old = t.apply(single(0)); await until(() => t.requests.some(request => request.path === path), 'old document request starts')
