@@ -8,7 +8,7 @@ import {sourceUnits,loadGeneralRevisions,protectedTokens} from './lib/general-tr
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'))
 const items=read('public/data/masterdata/domains/item_catalog.json').entries,index=read('public/data/masterdata/gasha_index.json'),overlay=read('public/data/editorial/gasha-ticket-evidence.json'),translations=read('public/translations/zh-CN/archive-general/items.json').entries
 const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()))
-assert.deepEqual(overlay,applyGashaTicketReview(buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json')),revisions),'Regenerate stale ticket evidence')
+assert.deepEqual(overlay,applyGashaTicketReview(buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json'),read('public/data/masterdata/domains/collection_media.json').entries),revisions),'Regenerate stale ticket evidence')
 assert.equal(overlay.unresolved.length,0)
 const before=JSON.stringify(index),base=index.gashas.filter(g=>g.phase==='primary'),catalog=supplementGashaCatalog(base,index.meta)
 assert.equal(catalog.rows.length,82);assert.equal(new Set(catalog.rows.map(r=>r.id)).size,82)
@@ -26,6 +26,7 @@ for(const row of overlay.rows){
   assert.equal(ticket.source_name,original.nameJa);assert.equal(ticket.source_hash,sourceHash(original.nameJa))
   assert.equal(ticket.source_description,original.descriptionText?.plain||'');assert.equal(ticket.description_hash,sourceHash(ticket.source_description))
   assert.equal(ticket.translation,translations.item.name[original.nameJa])
+  assert(ticket.image?.url?.startsWith('/assets/domain-images/')&&ticket.image.width>0&&ticket.image.height>0,`Ticket icon ${ticket.id}`)
   const links=gashaTicketLinks(ticket.id)
   assert(links.length)
   for(const link of links)assert(catalog.rows.some(pool=>pool.id===link.id),'Every item link has a reachable catalog detail')
@@ -66,4 +67,4 @@ for(const row of audit){
  assert(evidence&&row.status===evidence.status&&row.references.length&&row.sourceHash===sourceHash(row.source))
  if(row.status==='reviewed')assert.equal(revisions.get(`metadata:v1:item:name:${sourceHash(evidence.tickets.find(ticket=>ticket.id===evidence.translation_item_id).source_name)}`).status,'reviewed')
 }
-console.log('PASS: 857 item fields, fixed idol names, 273 tickets, 81 pool names / 82 catalog records, 25 supplements; exact source and hashes, unresolved STAGE identity, no fabricated dates/cards, bilingual search and bidirectional reachable links.')
+console.log('PASS: 857 item fields, fixed idol names, 273 tickets with verified icons, 81 pool names / 82 catalog records, 25 supplements; exact source and hashes, unresolved STAGE identity, no fabricated dates/cards, bilingual search and bidirectional reachable links.')

@@ -22,7 +22,13 @@ export function ticketTranslatedGashaName(text) {
  return name.replace(/[（(]SSR确定[)）]/u,'').replace(/\s+/gu,' ').trim()
 }
 
-export function buildGashaTicketEvidence(items,index,translations,aliases={}) {
+// Only verified local icons are carried; a ticket without one renders its fallback glyph.
+export function ticketImage(entry) {
+ const image=entry?.image
+ return image?.status==='verified-local-file'&&String(image.url||'').startsWith('/assets/')?{url:image.url,width:image.width,height:image.height}:null
+}
+
+export function buildGashaTicketEvidence(items,index,translations,aliases={},media={}) {
  const primary=index.gashas.filter(g=>g.phase==='primary'),groups=new Map(),unresolved=[]
  for(const item of items){
   const source=ticketGashaName(item.nameJa)
@@ -37,7 +43,7 @@ export function buildGashaTicketEvidence(items,index,translations,aliases={}) {
   const translated=translations.item?.name?.[item.nameJa]
   const translation=translated?ticketTranslatedGashaName(translated):''
   const priority=/^(?:SSR|SR以上)|付き！/u.test(item.nameJa)?1:0
-  group.tickets.push({id:String(item.id),key:item.key,source_name:item.nameJa,source_description:item.descriptionText?.plain||'',source_hash:sourceHash(item.nameJa),description_hash:sourceHash(item.descriptionText?.plain||''),translation:translated||'',item_type:item.itemType})
+  group.tickets.push({id:String(item.id),key:item.key,source_name:item.nameJa,source_description:item.descriptionText?.plain||'',source_hash:sourceHash(item.nameJa),description_hash:sourceHash(item.descriptionText?.plain||''),translation:translated||'',item_type:item.itemType,image:ticketImage(media[item.key])})
   if(translation)group.translation_candidates.push({text:translation,priority,item_id:String(item.id)})
   groups.set(id,group)
  }

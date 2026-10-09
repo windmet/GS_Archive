@@ -12,8 +12,8 @@
     <span v-if="loading" class="media-music-status" role="status">正在准备音频…</span>
   </div>
   <div v-else class="media-transport" role="group" :aria-label="label">
-    <button type="button" :disabled="!ready" @click="$emit('toggle')">{{ playing ? '暂停' : '播放' }}</button>
-    <button class="media-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')">↺</button>
+    <button class="media-toggle" type="button" :disabled="!ready" :aria-label="playing ? '暂停' : '播放'" :title="playing ? '暂停' : '播放'" @click="$emit('toggle')"><Pause v-if="playing" :size="14" fill="currentColor" aria-hidden="true" /><Play v-else class="media-toggle-play" :size="14" fill="currentColor" aria-hidden="true" /></button>
+    <button class="media-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')"><RotateCcw :size="15" aria-hidden="true" /></button>
     <input type="range" min="0" :max="knownDuration ? duration : 1" step="0.01" :value="currentTime" :disabled="!ready || !knownDuration" aria-label="播放进度" @input="$emit('seek', Number($event.target.value))" />
     <span class="media-time">{{ time(currentTime) }} / {{ knownDuration ? time(duration) : '待播放' }}</span>
     <span v-if="loading" role="status">正在准备音频…</span>
@@ -32,11 +32,17 @@ const time = value => { const n = Math.floor(Math.max(0, Number(value) || 0)); r
 /* One transport for music and voice: on the paper, ink controls, stage light only for progress. */
 .media-transport { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; padding: var(--gs-space-4) 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
-button:first-child { border-color: var(--gs-play-bg); background: var(--gs-play-bg); color: var(--gs-play-ink); }
+/* Voice rows repeat down a page, so play is a quiet ringed triangle, not a filled block. */
+.media-toggle, .media-restart { display: grid; flex: none; place-items: center; box-sizing: border-box; width: var(--gs-control-normal); height: var(--gs-control-normal); min-height: var(--gs-control-normal); padding: 0; border-radius: var(--gs-radius-pill); transition: background var(--gs-motion-feedback), border-color var(--gs-motion-feedback); }
+.media-toggle { border-color: var(--gs-rule); background: transparent; color: var(--gs-mint-ink); }
+.media-toggle-play { margin-left: 2px; }
+.media-restart { border-color: transparent; background: transparent; color: var(--gs-ink-3); }
+.media-toggle:not(:disabled):hover { border-color: var(--gs-mint); background: var(--gs-mint-wash); }
+.media-restart:not(:disabled):hover { background: var(--gs-mint-wash); color: var(--gs-ink-2); }
 button:disabled, input:disabled { opacity: .45; cursor: default; }
 input { flex: 1 1 80px; min-width: 80px; min-height: var(--gs-control-touch); accent-color: var(--gs-mint); }
 button:focus-visible, input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
-.media-restart { padding: 0 var(--gs-space-4); font-size: var(--gs-text-section); }
+@media (pointer: coarse) { .media-toggle, .media-restart { width: var(--gs-control-touch); height: var(--gs-control-touch); min-height: var(--gs-control-touch); } }
 .media-time { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .media-transport-music { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-4); font-family: var(--gs-font-body); }
 .media-music-progress { display: grid; min-width: 0; }

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import {buildGashaTicketEvidence,applyGashaTicketReview} from './lib/gasha-ticket-evidence.mjs'
 import {sourceUnits,loadGeneralRevisions} from './lib/general-translation-batches.mjs'
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'))
-const evidence=buildGashaTicketEvidence(read('public/data/masterdata/domains/item_catalog.json').entries,read('public/data/masterdata/gasha_index.json'),read('public/translations/zh-CN/archive-general/items.json').entries,read('config/gasha-ticket-name-aliases.json'))
+const evidence=buildGashaTicketEvidence(read('public/data/masterdata/domains/item_catalog.json').entries,read('public/data/masterdata/gasha_index.json'),read('public/translations/zh-CN/archive-general/items.json').entries,read('config/gasha-ticket-name-aliases.json'),read('public/data/masterdata/domains/collection_media.json').entries)
 const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()))
 applyGashaTicketReview(evidence,revisions)
 fs.writeFileSync('public/data/editorial/gasha-ticket-evidence.json',JSON.stringify(evidence,null,2)+'\n')

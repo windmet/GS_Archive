@@ -94,23 +94,25 @@
           <div class="skill-panel">
             <div v-if="card.gameplay.center_skill?.name" class="skill-row">
               <div class="skill-heading">
-                <strong>中心效果 · {{ archiveText('center-skill', card.gameplay.center_skill.name) }}</strong>
-                <span v-if="card.gameplay.center_skill.category?.name" class="skill-category">
-                  {{ archiveText('center-skill', card.gameplay.center_skill.category.name) }}
-                </span>
+                <div class="skill-title">
+                  <small class="skill-kind">中心效果</small>
+                  <strong>{{ centerSkillName }}</strong>
+                  <span v-if="centerSkillCategory" class="skill-category">{{ centerSkillCategory }}</span>
+                </div>
               </div>
               <p>{{ formatCardSkillDescription(archiveText('center-skill', card.gameplay.center_skill.description, 'description')) }}</p>
             </div>
             <div v-if="card.gameplay.skill?.name" class="skill-row">
               <div class="skill-heading">
                 <div class="skill-title">
-                  <strong>技能 · {{ archiveText('skill', card.gameplay.skill.name) }}</strong>
+                  <small class="skill-kind">技能</small>
+                  <strong>{{ skillName }}</strong>
                   <span
-                    v-if="card.gameplay.skill.category?.name"
+                    v-if="skillCategory"
                     class="skill-category"
                     :style="{ '--skill-category-color': card.gameplay.skill.category.color || '#168b83' }"
                   >
-                    {{ archiveText('skill-category', card.gameplay.skill.category.name) }}
+                    {{ skillCategory }}
                   </span>
                 </div>
                 <select v-if="card.gameplay.skill.levels?.length" v-model.number="selectedSkillLevel" aria-label="技能等级">
@@ -411,6 +413,15 @@ const visibleCostumes = computed(() => presentCardCostumeGroups(props.card?.cost
     ...group, flavor: presentCardCostumeFlavor(group.description, group.sourceDescription),
   })))
 
+// Many skills are named after their own category; the tag only speaks when it adds something.
+const distinctLabel = (name, label) => label && label.replace(/\s+/gu, '') !== String(name || '').replace(/\s+/gu, '') ? label : ''
+const centerSkillName = computed(() => archiveText('center-skill', props.card?.gameplay?.center_skill?.name))
+const centerSkillCategory = computed(() => distinctLabel(centerSkillName.value,
+  archiveText('center-skill', props.card?.gameplay?.center_skill?.category?.name)))
+const skillName = computed(() => archiveText('skill', props.card?.gameplay?.skill?.name))
+const skillCategory = computed(() => distinctLabel(skillName.value,
+  archiveText('skill-category', props.card?.gameplay?.skill?.category?.name)))
+
 const resolvedLimitbreakMaterial = computed(() => {
   const item = props.limitbreakMaterial, id = props.card?.limitbreak_item_id
   // A delayed or unmapped context must never navigate to another card's item.
@@ -622,22 +633,27 @@ function openRelation(item) {
 .skill-panel { display: grid; align-content: start; }
 .skill-row { display: grid; gap: var(--gs-space-2); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); }
 .skill-row:first-child { padding-top: 0; }
-.skill-row strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.skill-row strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); line-height: 1.4; overflow-wrap: anywhere; }
 .skill-row p { margin: 0; color: var(--gs-ink-2); line-height: 1.7; overflow-wrap: anywhere; }
-.skill-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-4); min-width: 0; }
-.skill-title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; }
+.skill-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--gs-space-4); min-width: 0; }
+.skill-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-1) var(--gs-space-3); min-width: 0; }
+/* The kind sits above its name as a small eyebrow, so the name itself is never prefixed. */
+.skill-kind { flex-basis: 100%; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); line-height: 1.5; }
 /* The game's own skill-category colour, kept as a small semantic mark. */
 .skill-category { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
 .skill-category::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--skill-category-color, var(--gs-mint)); }
 .skill-heading select { flex: 0 0 auto; min-height: var(--gs-control-compact); max-width: 100%; padding: 0 var(--gs-space-7) 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); }
-.limitbreak-item-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; color: var(--gs-ink-3); }
+.limitbreak-item-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-4) 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink-3); }
 .limitbreak-item-row small { display: block; margin-bottom: var(--gs-space-1); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .limitbreak-item-row strong { color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
-.limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.6; }
-.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-3); }
-.limitbreak-item-open { display: grid; grid-template-columns: 44px minmax(0, 1fr) 17px; align-items: center; gap: var(--gs-space-3); width: 100%; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-mint-wash); color: var(--gs-ink-2); text-align: left; cursor: pointer; }
-.limitbreak-item-image { display: grid; place-items: center; width: 44px; height: 44px; }
-.limitbreak-item-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.limitbreak-item-row p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.7; }
+.limitbreak-item-resolved { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-2); }
+/* Same reading as the item catalogue: a white icon well on paper; mint only on hover. */
+.limitbreak-item-open { display: grid; grid-template-columns: 56px minmax(0, 1fr) 16px; align-items: center; gap: var(--gs-space-4); width: calc(100% + 2 * var(--gs-space-3)); min-height: var(--gs-control-touch); margin: 0 calc(-1 * var(--gs-space-3)); padding: var(--gs-space-3); border: 0; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-ink-3); text-align: left; cursor: pointer; transition: background var(--gs-motion-feedback); }
+.limitbreak-item-open:hover { background: var(--gs-mint-wash); }
+.limitbreak-item-open:hover strong, .limitbreak-item-open:hover > svg { color: var(--gs-mint-ink); }
+.limitbreak-item-image { display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden; border-radius: var(--gs-radius-media); background: var(--gs-surface); color: var(--gs-mint-ink); }
+.limitbreak-item-image img { display: block; width: 44px; height: 44px; object-fit: contain; }
 .limitbreak-item-copy { min-width: 0; }
 .limitbreak-item-copy strong { display: block; line-height: 1.5; }
 .limitbreak-item-resolved p { margin: 0; overflow-wrap: anywhere; }

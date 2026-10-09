@@ -21,7 +21,21 @@
       <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
       <p v-if="gasha.ticket_link_ambiguous" class="gasha-note">这些券对应同名卡池，现有道具记录无法区分两次 STAGE 公告。</p>
       <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">道具名称证明了此招募记录；开放时间和卡片范围尚未收录。</p>
-      <ul class="ticket-list"><li v-for="ticket in gasha.tickets" :key="ticket.id"><button type="button" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">{{ archiveText('item',ticket.source_name) }}</button><p>{{ archiveText('item',ticket.source_description,'description') }}</p></li></ul>
+      <ul class="ticket-list">
+        <li v-for="ticket in gasha.tickets" :key="ticket.id">
+          <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">
+            <span class="ticket-art" aria-hidden="true">
+              <img v-if="ticket.image?.url && !failedTickets.has(ticket.id)" :src="ticket.image.url" :width="ticket.image.width" :height="ticket.image.height" alt="" loading="lazy" decoding="async" @error="failedTickets=new Set([...failedTickets,ticket.id])" />
+              <Ticket v-else :size="24" />
+            </span>
+            <span class="ticket-copy">
+              <strong>{{ archiveText('item',ticket.source_name) }}</strong>
+              <small>{{ archiveText('item',ticket.source_description,'description') }}</small>
+            </span>
+            <ChevronRight class="ticket-chevron" :size="16" aria-hidden="true" />
+          </button>
+        </li>
+      </ul>
     </section>
 
     <section v-if="gasha.source_type!=='item-masterdata'" class="detail-section">
@@ -53,7 +67,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
+import { ChevronRight, Ticket } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
@@ -75,6 +90,9 @@ const CATEGORY_LABELS = {
   full_roster_series: '全员系列',
   ticket_named: '道具补录',
 }
+
+const failedTickets = shallowRef(new Set())
+watch(() => props.gasha?.id, () => { failedTickets.value = new Set() })
 
 const pickupCards = computed(() => {
   const direct = props.gasha?.derived_pickup_cards || []
@@ -148,10 +166,18 @@ function formatDateTime(timestamp) {
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }
 .ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:var(--gs-text-ui); }
-.ticket-list { list-style:none;padding:0;display:grid;gap:0;border-top:1px solid var(--gs-rule); }
-.ticket-list li { min-width:0;padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-line); }
-.ticket-list button { display:block;width:100%;min-height:var(--gs-control-touch);background:transparent;border:0;color:var(--gs-mint-ink);text-align:left;cursor:pointer;font:inherit;font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.6;overflow-wrap:anywhere; }
-.ticket-list p { font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);white-space:pre-wrap;color:var(--gs-ink-3);line-height:1.7;margin:var(--gs-space-2) 0 0;overflow-wrap:anywhere; }
+/* Tickets read like the item catalogue: icon well on paper, name, then what it draws. */
+.ticket-list { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:0 var(--gs-space-7);border-top:1px solid var(--gs-rule); }
+.ticket-list li { min-width:0;border-bottom:1px solid var(--gs-line); }
+.ticket-open { display:grid;grid-template-columns:88px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);width:100%;min-height:var(--gs-control-touch);margin:var(--gs-space-3) 0;padding:var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);text-align:left;cursor:pointer;font:inherit;transition:background var(--gs-motion-feedback); }
+.ticket-open:hover { background:var(--gs-mint-wash); }
+.ticket-art { display:grid;place-items:center;width:88px;height:64px;border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-mint-ink); }
+.ticket-art img { display:block;width:76px;height:52px;object-fit:contain; }
+.ticket-copy { display:grid;gap:var(--gs-space-2);min-width:0; }
+.ticket-copy strong { color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.ticket-copy small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.6;overflow-wrap:anywhere; }
+.ticket-chevron { color:var(--gs-ink-3); }
+.ticket-open:hover .ticket-chevron, .ticket-open:hover strong { color:var(--gs-mint-ink); }
 .gasha-summary dl { margin: 0; }
 .gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-meta); }
 .gasha-summary dt { color: var(--gs-ink-3); font-weight: var(--gs-weight-medium); }
@@ -194,5 +220,8 @@ function formatDateTime(timestamp) {
 }
 @media (max-width: 520px) {
   .evidence-grid { grid-template-columns: 1fr; }
+  .ticket-open { grid-template-columns: 72px minmax(0, 1fr) 16px; gap: var(--gs-space-3); }
+  .ticket-art { width: 72px; height: 54px; }
+  .ticket-art img { width: 64px; height: 44px; }
 }
 </style>
