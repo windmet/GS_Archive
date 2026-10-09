@@ -25,3 +25,20 @@ export function speakerDisplayLookup(speaker) {
   if (type && type !== target.entityType && !(type === 'idol' && target.entityType === 'npc')) return null
   return target
 }
+
+// Nameplates without an entity (staff, relatives, roles, variants such as 圭（テレビの音声）) are
+// translated as text from a label dictionary. A label never becomes an identity, so ??? and
+// producer plates stay out. The dictionary may scope a label to a story prefix where the same
+// word means something else (監督 is the football coach in 1_1_005, a director elsewhere).
+export function speakerLabelKey(speaker) {
+  if (!['named', 'idol', 'npc'].includes(speaker?.kind) || speakerDisplayLookup(speaker)) return ''
+  return compact(speaker.sourceName ?? speaker.source_name ?? speaker.source)
+}
+
+/** Dictionary ids to try for one label, most specific story scope first. */
+export function speakerLabelCandidates(key, catalogId = '') {
+  if (!key) return []
+  const parts = String(catalogId || '').split('_')
+  const scopes = parts.map((_, index) => parts.slice(0, parts.length - index).join('_')).filter(Boolean)
+  return [...scopes.map(scope => `${key}@${scope}`), key]
+}

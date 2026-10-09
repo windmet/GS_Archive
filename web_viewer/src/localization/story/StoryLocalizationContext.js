@@ -9,14 +9,20 @@ import {
 import { resolveStoryText } from './StoryTextResolver.js'
 import { TranslationRepository } from './TranslationRepository.js'
 import { EntityTranslationRepository } from './EntityTranslationRepository.js'
-import { speakerDisplayLookup } from './SpeakerDisplayNames.js'
+import { speakerDisplayLookup, speakerLabelCandidates, speakerLabelKey } from './SpeakerDisplayNames.js'
 
 export const STORY_LOCALIZATION_KEY = Symbol('story-localization')
 
 export function collectScenarioEntitySourceNames(compiledData) {
   const sources = new Map()
+  const catalogId = compiledData?.text_catalog_id || compiledData?.scenario_id || ''
   for (const step of compiledData?.steps || []) {
     const speaker = step?.dialogue ? normalizeLegacySpeaker(step.dialogue) : null
+    const label = speakerLabelKey(speaker)
+    if (label) {
+      if (!sources.has('speaker')) sources.set('speaker', {})
+      for (const id of speakerLabelCandidates(label, catalogId)) sources.get('speaker')[id] = label
+    }
     const entityType = speaker?.entity_type || speaker?.entityType
     const entityId = speaker?.entity_id || speaker?.entityId
     const sourceName = speaker?.source_name || speaker?.sourceName
@@ -167,11 +173,22 @@ export function createStoryLocalization({
       )),
       speakerLabelNames: (value, locale) => {
         const display = speakerDisplayLookup(value)
-        return display && entityViews.has(display.entityType) ? entityRepository.getEntry({ entityType: display.entityType,
+        if (display) return entityViews.has(display.entityType) ? entityRepository.getEntry({ entityType: display.entityType,
           entityId: display.entityId, locale, overlay:entityViews.get(display.entityType) })?.name || '' : ''
+        return speakerDictionaryName(value, locale)
       },
       preferences: preferences(),
     })
+  }
+
+  function speakerDictionaryName(speaker, locale = currentPreferences().story_translation_locale || translationLocale) {
+    if (!entityViews.has('speaker')) return ''
+    const catalogId = compiledData?.value?.text_catalog_id || compiledData?.value?.scenario_id || ''
+    for (const entityId of speakerLabelCandidates(speakerLabelKey(speaker), catalogId)) {
+      const name = entityRepository.getEntry({ entityType: 'speaker', entityId, locale, overlay: entityViews.get('speaker') })?.name
+      if (name) return name
+    }
+    return ''
   }
 
   function resolveDialogue(dialogue) {
@@ -192,9 +209,10 @@ export function createStoryLocalization({
       })
       // An untranslated label unit must not replace an available entity label
       // with its RAW name. Explicitly translated label units retain priority.
-      const labelLookup = speakerDisplayLookup({ ...normalized.speaker,
+      const labelSpeaker = { ...normalized.speaker,
         sourceName: dialogue.speaker_source_text
-          ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : '') })
+          ?? (typeof dialogue.speaker === 'string' ? dialogue.speaker : '') }
+      const labelLookup = speakerDisplayLookup(labelSpeaker) || speakerDictionaryName(labelSpeaker)
       if (speakerView.translation.available || !labelLookup || view.speaker.display === view.speaker.source)
         speakerText = joinDisplay(speakerView)
     }

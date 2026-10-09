@@ -2,7 +2,8 @@ import translationRelease from '../../../config/translation-release.json' with {
 import { createBoundedTextTransport } from '../../utils/BoundedTextTransport.js'
 const LOCALE_PATTERN = /^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$/
 const HASH_PATTERN = /^sha256:[a-f0-9]{64}$/
-const ENTITY_TYPES = new Set(['idol', 'npc', 'unit', 'card', 'event', 'skill', 'story_collection'])
+// speaker: nameplate labels without an entity (スタッフ, 麗の姉, 圭（テレビの音声）), keyed by the label itself.
+const ENTITY_TYPES = new Set(['idol', 'npc', 'unit', 'card', 'event', 'skill', 'story_collection', 'speaker'])
 const ENTRY_STATUSES = new Set(['draft', 'reviewed', 'final'])
 const TOP_LEVEL_KEYS = new Set(['schema_version', 'locale', 'entity_type', 'entries'])
 const ENTRY_KEYS = new Set(['source_hash', 'name', 'description', 'status', 'translator', 'reviewer', 'notes'])

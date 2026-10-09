@@ -27,7 +27,19 @@ assert.equal(render(`${ten}師匠`), `${name}師匠`)
 assert.equal(render(`${fourP}ちゃん`), `${name}Pちゃん`)
 assert.equal(render('監督、師匠、下僕、プロデューサー'), '監督、師匠、下僕、プロデューサー')
 assert.equal(render(`●●●● ${'プロデューサー'}`), `●●●● ${'プロデューサー'}`)
-assert.equal(renderProducerAddressing(ten), ten)
+// No name set: the idol's own form of address stands alone, otherwise the plain word for
+// Producer in the text's language; the raw dots never reach readers.
+for (const [source, locale, expected] of [
+  [`${ten}監督、お願い！`, 'ja', '監督、お願い！'], [`${ten}监督，拜托！`, 'zh-CN', '监督，拜托！'],
+  [`${ten}師匠`, 'ja', '師匠'], [`${ten}师父`, 'zh-CN', '师父'], [`${ten}ぴぃちゃん`, 'ja', 'ぴぃちゃん'], [`${ten}P酱`, 'zh-CN', 'P酱'],
+  [`我が主${ten}。`, 'ja', '我が主プロデューサー。'], [`吾主${ten}。`, 'zh-CN', '吾主制作人。'],
+  [`${ten}さん`, 'ja', 'プロデューサーさん'], [`${fourP}、ありがとな`, 'ja', 'プロデューサー、ありがとな'],
+  [`${fourP}，谢谢`, 'zh-CN', '制作人，谢谢'], [`${fourP}酱！`, 'zh-CN', 'P酱！'],
+]) {
+  assert.equal(renderProducerAddressing(source, '', { locale }), expected, source)
+  assert.equal(renderProducerAddressing(source), expected, `${source} (language from the text)`)
+}
+assert.equal(renderProducerAddressing('監督、師匠'), '監督、師匠', 'text without macros is untouched')
 for (const length of [1, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 20]) {
   const source = '●'.repeat(length) + 'プロデューサー'
   assert.equal(render(source), source)
@@ -143,3 +155,11 @@ assert.equal(presentProducerAddressingText(sourceTitle), renderProducerAddressin
 setStoryLanguagePreferences({ producer_name: originalName })
 
 console.log('Producer addressing shared runtime verified: Reader source, dialogue, choice, caption, fallback, preferences and translation slots')
+{
+  // The Producer nameplate: the reader's name when set, else 制作人 wherever the line is shown translated.
+  const producer = { kind: 'producer', source_name: '<P>' }
+  const plate = preferences => resolveStoryText({ source: 'はい。', speaker: producer, preferences }).speaker.display
+  assert.equal(plate({ story_content_mode: 'translation', producer_name: '' }), '制作人')
+  assert.equal(plate({ story_content_mode: 'original', producer_name: '' }), 'プロデューサー')
+  assert.equal(plate({ story_content_mode: 'translation', producer_name: name }), `${name}P`)
+}
