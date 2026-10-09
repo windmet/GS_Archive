@@ -38,7 +38,7 @@
 
 - 语料新增 `card-line`（normal/awakened/extra）、`card-touch`（text）、`call-title`（title），每条引用记说话人（卡片所属偶像）。
 - 分片 `card-lines`：只在卡片详情和电话页懒加载，**不进**打包的根文件 `archive-general.json`。
-- 批次：`web_viewer/.analysis/general-translation-batches/card-lines-20261009/`，18 批（G-card-lines-001～018），按偶像排序，每组标题写明说话人；提示词是角色台词版（称呼规则、保留 ●●●●、内部标签用 `[编号=]`）。给模型的只有 `glossary.md` 和各批 `input.md`，回传按 `output-template.md` 的格式存为 `output.md`。
+- 批次：`web_viewer/.analysis/general-translation-batches/card-lines-20261009-x4/`，**5 批**（G-card-lines-001～005，每批约 850 条、5.6 万字符 ≈ 3.5 万 token），按偶像排序，每组标题写明说话人；由 `export … --domains card-lines --max-chars 56000 --max-rows 999` 生成（编号三位，单批上限 999 条，所以 4231 条最少 5 批）。原 18 批×1.6 万字符的包已改名 `card-lines-20261009-SUPERSEDED-18x16k`，不要再用；两包批次号重叠，不能混导。提示词是角色台词版（称呼规则、保留 ●●●●、内部标签用 `[编号=]`）。给模型的只有 `glossary.md` 和各批 `input.md`，回传按 `output-template.md` 的格式存为 `output.md`。
 - 导入（在 web_viewer 下）：
   `node scripts/general-translation-workflow.mjs check <批次>/local/batch-map.json <批次>/output.md`
   `node scripts/general-translation-workflow.mjs import <批次>/local/batch-map.json <批次>/output.md '模型名'`
