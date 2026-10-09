@@ -2,7 +2,32 @@ export const READING_SOURCE_FILE = /^(?:episodes\/)?[A-Za-z0-9_-]+\.json$/
 
 /** Catalog-owned discovery; readCompiled is injected so no directory crawl or
  * media loader decides what is published. Missing/invalid inputs stay audited. */
-export async function discoverReadingSources({ catalog, publications, readCompiled, idolEpisodeIndex = null }) {
+// Seasonal campaigns (Valentine / White Day) are not in the story catalog; their index names every
+// story file and the episode resource ids it holds, so they read like any other collection: one
+// document per listed episode, each participant's episodes one directory by their shared source.
+export function seasonalReadingEntries(seasonalIndex) {
+  const byFile = new Map()
+  for (const campaign of seasonalIndex?.campaigns || []) {
+    const episodes = [
+      ...(campaign.introduction || []).map(episode => ({ episode, label: '共通导入' })),
+      ...(campaign.participants || []).flatMap(participant => (participant.episodes || [])
+        .map(episode => ({ episode, label: `Lv.${episode.required_valentine_level || 1}` }))),
+    ]
+    for (const { episode, label } of episodes) {
+      if (!episode.compiled_file) continue
+      const entry = byFile.get(episode.compiled_file) || { domain: 'seasonal', file: episode.compiled_file,
+        exists: episode.compiled_exists === true, resourceIds: [], readingEpisodes: {} }
+      entry.resourceIds.push(episode.resource_id)
+      entry.readingEpisodes[episode.resource_id] = { title: episode.title || null, navigation_label: label }
+      // A file without episode boundaries is one document named after the file.
+      entry.readingEpisodes[episode.compiled_file.replace(/\.json$/, '')] ||= { title: episode.title || null, navigation_label: label }
+      byFile.set(episode.compiled_file, entry)
+    }
+  }
+  return [...byFile.values()]
+}
+
+export async function discoverReadingSources({ catalog, publications, readCompiled, idolEpisodeIndex = null, seasonalIndex = null }) {
   const candidates = new Map(), excluded = []
   const chapters = (catalog.collectionStructure || []).flatMap(section => section.chapters)
   // Personal stories are not in collectionStructure; their episode names live in the idol episode index.
@@ -13,7 +38,7 @@ export async function discoverReadingSources({ catalog, publications, readCompil
     const episode = idolEpisodes.get(id)
     return episode ? { navigation_label: episode.name, directory_id: `idol-story-section:${episode.section_id}`, directory_order: episode.sort_order } : {}
   }
-  for (const entry of catalog.entries) {
+  for (const entry of [...catalog.entries, ...seasonalReadingEntries(seasonalIndex)]) {
     const exclude = (file, reason) => excluded.push({ file, domain: entry.domain, reason })
     if (!entry.exists) { exclude(entry.file, 'catalog-source-unavailable'); continue }
     if (!READING_SOURCE_FILE.test(entry.file) || entry.file.startsWith('episodes/')) throw Error('Invalid catalog source file')
@@ -49,11 +74,12 @@ export async function discoverReadingSources({ catalog, publications, readCompil
       const eventEpisode = (catalog.eventEpisodeStructure || []).flatMap(group => group.episodes).find(episode => episode.resourceId === id)
       const candidate = { document_id: id, file, parent_file: entry.file, domain: entry.domain,
         logical_id: publication?.logical_id || `story-collection:${entry.file.replace(/\.json$/, '')}`,
-        title: chapter?.title || entry.officialTitle || entry.summary?.title || entry.titles?.[0] || null,
+        title: chapter?.title || entry.readingEpisodes?.[id]?.title || entry.officialTitle || entry.summary?.title || entry.titles?.[0] || null,
         episode_label: episode?.label || eventEpisode?.label || (file === entry.file ? entry.episodeLabel : null) || null,
         // Directory-only label: it goes to the manifest entry, not the document body, so reviewed
         // documents keep the bytes their translation receipts pinned.
         ...(entry.domain === 'idol_story' ? idolDirectory(id) : {}),
+        ...(entry.readingEpisodes?.[id] ? { navigation_label: entry.readingEpisodes[id].navigation_label } : {}),
         publication: publication ? { kind: 'authoritative-registry', ownership: publication.ownership }
           : { kind: 'catalog-compatibility', aggregate_file: entry.file } }
       const previous = candidates.get(id)

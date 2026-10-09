@@ -153,6 +153,12 @@ export function useReaderNavigation({
       const revision = navigation.getRevision()
       return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
     }
+    if (currentStoryDomain.value === 'seasonal_campaign' && currentStorySection.value) {
+      const pending = applyArchiveRoute({ view: 'seasonal_campaign', storyType: 'seasonal_campaign',
+        storySection: currentStorySection.value }, { restoring: false })
+      const revision = navigation.getRevision()
+      return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+    }
     if (currentEventId.value) {
       const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
         parentView: eventParentView.value, category: currentCategoryId.value,
@@ -191,6 +197,10 @@ export function useReaderNavigation({
     const source = { ...currentArchiveRoute(), view: 'idol_story_archive', storyType: 'idol_story',
       idol: currentCharacterId.value, storySection: String(section.id), episode: String(episode.id), story: episode.file }
     return openStoryReader(entry.document_id, source, buildArchiveSourceQuery(source))
+  }
+
+  function openSeasonalReader(documentId) {
+    return openStoryReader(documentId, { storyType: 'seasonal_campaign', storySection: currentStorySection.value })
   }
 
   function openWorkReader(file) {
@@ -375,7 +385,7 @@ export function useReaderNavigation({
     readingState, chapterReadingState, readingPlaybackNotice, readingCatalogEntries, readingChapterNavigation, chapterReadingSession,
     loadSynopsisReadingDocument, openStoryReader, refreshStoryReader, openCollectionReader,
     selectReaderDocument, selectReaderChapter, locateChapterReadingRow, playChapterReadingSegment,
-    closeStoryReader, returnToReader, openEventReader, openIdolStoryReader, openWorkReader,
+    closeStoryReader, returnToReader, openEventReader, openIdolStoryReader, openWorkReader, openSeasonalReader,
     openReaderPlayback, updateReadingMode, locateReadingRow, resolveReaderContinuationSource,
     applyReaderRoute, loadReaderQueue,
   }

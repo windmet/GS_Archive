@@ -403,6 +403,8 @@
         :campaigns="seasonalReadModelCatalog || []"
         :source-evidence="seasonalReadModelDetail?.view?.sourceEvidence || null"
         :idol-name="idolDisplayName"
+        :reading-entries="seasonalReadModelDetail?.view?.readingEntries || []"
+        @read="openSeasonalReader"
         @select="selectSeasonalCampaign"
         @play="playSeasonalCampaignStory"
       />
@@ -1388,7 +1390,7 @@ const {
   readingState, chapterReadingState, readingPlaybackNotice, readingCatalogEntries, readingChapterNavigation, chapterReadingSession,
   loadSynopsisReadingDocument, openStoryReader, refreshStoryReader, openCollectionReader,
   selectReaderDocument, selectReaderChapter, locateChapterReadingRow, playChapterReadingSegment,
-  closeStoryReader, returnToReader, openEventReader, openIdolStoryReader, openWorkReader,
+  closeStoryReader, returnToReader, openEventReader, openIdolStoryReader, openWorkReader, openSeasonalReader,
   openReaderPlayback, updateReadingMode, locateReadingRow, resolveReaderContinuationSource,
   applyReaderRoute, loadReaderQueue,
 } = useReaderNavigation({

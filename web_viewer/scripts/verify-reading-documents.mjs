@@ -5,6 +5,7 @@ import { createReadingDocument, readingAvatarEntity } from '../shared/reading/Re
 import { validateReadingDocument, validateReadingManifest } from '../shared/reading/ReadingContract.js'
 import { sourceHash } from './audit-reading-diagnostics.mjs'
 import { projectReadingChoiceRows } from '../src/presentation/ReadingChoiceMetadata.js'
+import { seasonalReadingEntries } from '../shared/reading/ReadingCatalog.js'
 
 const read = async file => JSON.parse(await fs.readFile(new URL(`../${file}`, import.meta.url), 'utf8'))
 const hash = value => `sha256:${createHash('sha256').update(value).digest('hex')}`
@@ -27,7 +28,11 @@ for (const sectionId of selection.main_collection_sections || []) {
   }
 }
 for (const id of expectedIds) assert.ok(manifest.entries.some(entry => entry.document_id === id), `regression sample ${id}`)
-for (const entry of manifest.entries) assert.ok(storyCatalog.entries.some(source => source.file === entry.parent_file && source.exists), `published catalog parent ${entry.document_id}`)
+// Parents come from the story catalog or, for seasonal campaigns, from the seasonal index (the same
+// discovery entries the generator reads).
+const catalogParents = [...storyCatalog.entries, ...seasonalReadingEntries(await read('public/data/masterdata/seasonal_campaign_index.json'))]
+for (const entry of manifest.entries) assert.ok(catalogParents.some(source => source.file === entry.parent_file && source.exists && source.domain === entry.domain), `published catalog parent ${entry.document_id}`)
+assert.equal(manifest.entries.filter(entry => entry.domain === 'seasonal').length, 306, 'every seasonal campaign episode has a reading document')
 const byDomain = {}
 for (const entry of manifest.entries) { const counts = byDomain[entry.domain] ||= {}; counts[entry.status] = (counts[entry.status] || 0) + 1 }
 assert.deepEqual((await read('public/data/reading/coverage.json')).by_domain, byDomain)

@@ -14,7 +14,9 @@ export function createReadingRepository({ fetchImpl = (...args) => fetch(...args
   digest = async bytes => `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')}`,
   locatorResolver = null, timeoutMs = 12000,
 } = {}) {
-  const transport = createBoundedTextTransport({fetchImpl,timeoutMs,binary:true,maxBytes:2*1024*1024,cacheBytes:4*1024*1024,maxEntries:16})
+  // The whole manifest is only a fallback when no read-model locator is wired; at 3113 documents
+  // (seasonal campaigns included) it is 2.1 MB uncompressed, so the bound leaves room above that.
+  const transport = createBoundedTextTransport({fetchImpl,timeoutMs,binary:true,maxBytes:3*1024*1024,cacheBytes:6*1024*1024,maxEntries:16})
   const documents = new Map()
   let manifestRevision = 0
   const cacheKey = entry => `${entry.schema_version}:${entry.document_id}:${entry.sha256}`

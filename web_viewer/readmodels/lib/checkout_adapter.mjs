@@ -237,6 +237,9 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
           .filter(entry=>entry._source).map(entry=>({id:entry.id,source:entry._source}))}}})) },
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
       summary:pick(campaign,['name','title','year','season','start_at','end_at']),view:{campaign,
+        readingEntries:(files=>readingEntriesForFiles(data.readingManifest.entries,files,{includeChildrenOf:files}))(
+          [...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
+            .map(episode=>episode.compiled_file)),
         sourceEvidence:{campaign:campaign._source||null,
           episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },

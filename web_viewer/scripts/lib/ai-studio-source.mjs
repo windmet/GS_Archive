@@ -23,7 +23,8 @@ export async function loadStudioIndexes() {
   const reading = await readJson(path.join(projectRoot, 'public/data/reading/manifest.json'))
   const publication = await readJson(path.join(projectRoot, 'public/data/publication/manifest.json'))
   // 2807 since 2026-10-09: four combined birthday small-talk documents split into their ten parts.
-  assert.equal(reading.entries.length, 2807, 'Reader corpus size changed; audit the new baseline')
+  // 3113 since 2026-10-09: 306 seasonal campaign (Valentine / White Day) episodes became readable.
+  assert.equal(reading.entries.length, 3113, 'Reader corpus size changed; audit the new baseline')
   return { reading, publication, releaseCache: new Map() }
 }
 

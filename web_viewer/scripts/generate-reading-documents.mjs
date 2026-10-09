@@ -27,7 +27,8 @@ async function readCompiled(file) {
   return sources.get(file)
 }
 const idolEpisodeIndex = await read('public/data/masterdata/idol_episode_index.json')
-const { candidates: samples, excluded } = await discoverReadingSources({ catalog, publications, readCompiled, idolEpisodeIndex })
+const seasonalIndex = await read('public/data/masterdata/seasonal_campaign_index.json')
+const { candidates: samples, excluded } = await discoverReadingSources({ catalog, publications, readCompiled, idolEpisodeIndex, seasonalIndex })
 const previousEntries = selected.size ? new Map((await read('public/data/reading/manifest.json')).entries.map(e => [e.document_id, e])) : null
 const entries = []
 const outputs = []

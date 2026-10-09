@@ -34,6 +34,7 @@
         <li v-if="campaign.introduction?.length" class="participant-row intro-row">
           <div class="participant-id"><strong>共通导入</strong></div>
           <div class="episode-titles"><span>{{ episodeTitle(campaign.introduction[0]) }}</span></div>
+          <button class="story-icon-action" :disabled="!readingFor(campaign.introduction[0])" aria-label="阅读共通导入" title="阅读共通导入" @click="read(campaign.introduction[0])"><BookOpen :size="17" /></button>
           <button class="story-icon-action" :disabled="!campaign.introduction[0].compiled_file" aria-label="播放共通导入" title="播放共通导入" @click="play(campaign.introduction[0])"><Play :size="17" fill="currentColor" /></button>
         </li>
         <li v-for="participant in visibleParticipants" :key="`${participant.participant_type}-${participant.participant_numeric_id}`" class="participant-row">
@@ -46,6 +47,7 @@
               <small>Lv.{{ episode.required_valentine_level || 1 }}</small>{{ episodeTitle(episode) }}
             </span>
           </div>
+          <button class="story-icon-action" :disabled="!readingFor(participant.episodes[0])" :aria-label="`阅读 ${participantName(participant)}`" title="阅读角色剧情" @click="read(participant.episodes[0])"><BookOpen :size="17" /></button>
           <button class="story-icon-action" :disabled="!participant.episodes[0]?.compiled_exists" :aria-label="`播放 ${participantName(participant)}`" title="播放角色剧情" @click="play(participant.episodes[0])">
             <Play :size="17" fill="currentColor" />
           </button>
@@ -61,16 +63,24 @@ import { computed, ref, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { useStoryTitles } from './useReaderTitles.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
-import { Gift, Heart, Play } from '@lucide/vue'
+import { BookOpen, Gift, Heart, Play } from '@lucide/vue'
 import '../../styles/archive-story.css'
 
 const props = defineProps({ campaign: { type: Object, default: null }, campaigns: { type: Array, default: () => [] },
-  sourceEvidence: { type: Object, default: null }, idolName: { type: Function, default: () => '' } })
+  sourceEvidence: { type: Object, default: null }, idolName: { type: Function, default: () => '' },
+  readingEntries: { type: Array, default: () => [] } })
 // Names and titles in the reader's language, from the same sources as every other story page.
 const storyTitle = useStoryTitles()
 const participantName = participant => (participant.participant_type === 'idol' && props.idolName(participant.participant_code, participant.display_name)) || participant.display_name || '姓名待确认'
 const episodeTitle = episode => presentProducerAddressingText(storyTitle(episode.compiled_file, episode.title))
-const emit = defineEmits(['select', 'play'])
+const emit = defineEmits(['select', 'play', 'read'])
+// Each episode reads from its own document; a participant's episodes form one chapter in the Reader.
+const readingFor = episode => episode && props.readingEntries.find(entry => entry.status === 'ready' &&
+  (entry.document_id === episode.resource_id || (entry.source_file === episode.compiled_file && entry.parent_file === episode.compiled_file)))
+function read(episode) {
+  const entry = readingFor(episode)
+  if (entry) emit('read', entry.document_id)
+}
 const participantType = ref('idol')
 const years = computed(() => [...new Set(props.campaigns.map(item => item.year))].sort())
 const idolParticipants = computed(() => props.campaign?.participants?.filter(item => item.participant_type === 'idol') || [])

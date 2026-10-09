@@ -1,0 +1,570 @@
+{
+  "schema_version": 2,
+  "document_id": "5_01_035_22_b",
+  "logical_id": "story-collection:5_01_035_22",
+  "scenario_id": "5_01_035_22_b",
+  "text_catalog_id": "5_01_035_22",
+  "playback": {
+    "file": "episodes/5_01_035_22_b.json",
+    "start_step_index": 0,
+    "end_step_index": 10
+  },
+  "source": {
+    "file": "episodes/5_01_035_22_b.json",
+    "sha256": "sha256:d94fecdb4bb5e6a6fe2970f4df07a95492de5735e419be1fd622231561478e71",
+    "schema_version": 1,
+    "runtime_contract": null,
+    "raw_hash": "sha256:5798c92969b46a8e0df0878cfb9534b12ab562ea2688cd7f4fc4f49d8a9fbc4c",
+    "aggregate_source": {
+      "file": "5_01_035_22.json",
+      "scenario_id": "5_01_035_22",
+      "start_step_index": 7,
+      "end_step_index": 17
+    },
+    "step_count": 11,
+    "publication": {
+      "kind": "catalog-compatibility",
+      "aggregate_file": "5_01_035_22.json"
+    }
+  },
+  "status": "ready",
+  "rows": [
+    {
+      "kind": "dialogue",
+      "source_text": "バレンタインデーのチョコレートか。\nわざわざ用意してくれて、ありがとう。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000013:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 13,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2510642e4a19211d0a12f4db43c0de6ff08589022ab0046e133b2aa898aeb7fc"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 3
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-3:text",
+        "step_id": 3,
+        "step_index": 2,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 13,
+        "command_end": 13
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ちょうどレッスンも休憩に入ったところだ。\n今、食べてもいいだろうか。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce72feb70def6e456a521d57dd7b87dd5a439588e583bdc99bdd3248543065d9"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 4
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-4:text",
+        "step_id": 4,
+        "step_index": 3,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 17,
+        "command_end": 17
+      },
+      "option": null
+    },
+    {
+      "kind": "choice",
+      "source_text": "もちろんです！　疲労回復にどうぞ。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:54fadfd0952ed3d02658a1d7bf7b4107b82e4aa27d5d7e6bf68f2114e03a7877"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 5
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-5:option-0",
+        "step_id": 5,
+        "step_index": 4,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 19,
+        "command_end": 20
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_035_22:5_01_035_22_b:cmd-000019",
+        "option_id": "choice-option:v1:5_01_035_22:5_01_035_22_b:cmd-000019:000",
+        "source_label": "1-sel1",
+        "target_step_id": 6,
+        "target_step_index": 5,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "choice",
+      "source_text": "是非、食べてください！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91783c4960b8ef4218cd7513e1b6d8d0c7907e22659fd38acbb98c7593f0aba3"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 5
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-5:option-1",
+        "step_id": 5,
+        "step_index": 4,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 19,
+        "command_end": 20
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_035_22:5_01_035_22_b:cmd-000019",
+        "option_id": "choice-option:v1:5_01_035_22:5_01_035_22_b:cmd-000020:001",
+        "source_label": "2-sel1",
+        "target_step_id": 6,
+        "target_step_index": 5,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "では……いただきます。\nうむ、美味だ。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a71cb9226e77ebe69850ee67cfcef011b7ad896c968d9c4946ed885c0b905185"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 7
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-7:text",
+        "step_id": 7,
+        "step_index": 6,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 31,
+        "command_end": 31
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "流石はプロデューサーだ。\n担当アイドルの嗜好の把握は完璧というわけか。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc5461915ca2422f47168d610b9f961c6f20f3b4b6e5fe45d49bfb34a93ad413"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-8:text",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 34,
+        "command_end": 34
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ふっ……\n君のリサーチ能力には頭が下がる。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:56fcbf1cd6136ed9d0b9e12c98cedb58890e6aeb4c49d381946ec89becda5a22"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 9
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-9:text",
+        "step_id": 9,
+        "step_index": 8,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 38,
+        "command_end": 38
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "このチョコレートの礼は、来月必ずしよう。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6d0f6dc1586289b4baaa06aec3c703852530dd6b78395ffe84a906b114fbf2f8"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 10
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-10:text",
+        "step_id": 10,
+        "step_index": 9,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 42,
+        "command_end": 42
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "その時には、私も君が心から喜ぶ品を用意すると\n約束する。待っていてほしい。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_035_22:5_01_035_22_b:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_035_22",
+          "part_id": "5_01_035_22_b",
+          "file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:71896306ac21c3687dd89b8464b5f40907f1d28be1cbba1e116d684806e42da2"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
+        "sourceName": "硲 道夫"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "035mco"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "035mco",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 11
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_035_22_b:step-11:text",
+        "step_id": 11,
+        "step_index": 10,
+        "source_part_id": "5_01_035_22_b",
+        "source_file": "scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "command_start": 46,
+        "command_end": 46
+      },
+      "option": null
+    }
+  ],
+  "controls": [
+    {
+      "step_id": 5,
+      "step_index": 4,
+      "kind": "choice",
+      "options": [
+        {
+          "choice_id": "choice:v1:5_01_035_22:5_01_035_22_b:cmd-000019",
+          "option_id": "choice-option:v1:5_01_035_22:5_01_035_22_b:cmd-000019:000",
+          "source_label": "1-sel1",
+          "target_step_id": 6,
+          "target_step_index": 5,
+          "resolution": "resolved"
+        },
+        {
+          "choice_id": "choice:v1:5_01_035_22:5_01_035_22_b:cmd-000019",
+          "option_id": "choice-option:v1:5_01_035_22:5_01_035_22_b:cmd-000020:001",
+          "source_label": "2-sel1",
+          "target_step_id": 6,
+          "target_step_index": 5,
+          "resolution": "resolved"
+        }
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_01_035_22/scenario_5_01_035_22_b.json",
+        "raw_sha256": "sha256:3c9e8824e0c2fe352e887c5f748c11e76b3af73898f63111c005556b56f95c67",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          19,
+          20
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "1-sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              21
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2-sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "compatibility-source-fields-may-be-missing",
+      "step_index": null,
+      "severity": "warning"
+    }
+  ],
+  "presentation": {
+    "title": "リサーチと厚意と",
+    "episode_label": null
+  }
+}
