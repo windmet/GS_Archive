@@ -9,22 +9,9 @@ export async function discoverReadingSources({ catalog, publications, readCompil
   // A birthday chapter's small talks and episodes are separate files but one in-game section.
   const idolEpisodes = new Map((idolEpisodeIndex?.chapters || []).flatMap(chapter => chapter.sections)
     .flatMap(section => section.episodes).map(episode => [episode.resource_id, episode]))
-  // Four birthday chapters were promoted from the game's combined small-talk file, which has no
-  // per-talk boundaries, so their small talks are one whole-file document. It joins the chapter's
-  // directory in the first talk's place, labelled with the range it covers.
-  const idolEpisodesByFile = new Map()
-  for (const episode of idolEpisodes.values()) {
-    if (!idolEpisodesByFile.has(episode.compiled_file)) idolEpisodesByFile.set(episode.compiled_file, [])
-    idolEpisodesByFile.get(episode.compiled_file).push(episode)
-  }
-  const idolDirectory = (id, wholeFile) => {
+  const idolDirectory = id => {
     const episode = idolEpisodes.get(id)
-    if (episode) return { navigation_label: episode.name, directory_id: `idol-story-section:${episode.section_id}`, directory_order: episode.sort_order }
-    const covered = (idolEpisodesByFile.get(wholeFile) || []).sort((a, b) => a.sort_order - b.sort_order)
-    if (covered.length < 2 || new Set(covered.map(item => item.section_id)).size !== 1) return {}
-    const first = covered[0].name.match(/^(.*?)(\d+)$/), last = covered.at(-1).name.match(/^(.*?)(\d+)$/)
-    const label = first && last && first[1] === last[1] ? `${first[1]}${first[2]}-${last[2]}` : null
-    return { navigation_label: label, directory_id: `idol-story-section:${covered[0].section_id}`, directory_order: covered[0].sort_order }
+    return episode ? { navigation_label: episode.name, directory_id: `idol-story-section:${episode.section_id}`, directory_order: episode.sort_order } : {}
   }
   for (const entry of catalog.entries) {
     const exclude = (file, reason) => excluded.push({ file, domain: entry.domain, reason })
@@ -66,7 +53,7 @@ export async function discoverReadingSources({ catalog, publications, readCompil
         episode_label: episode?.label || eventEpisode?.label || (file === entry.file ? entry.episodeLabel : null) || null,
         // Directory-only label: it goes to the manifest entry, not the document body, so reviewed
         // documents keep the bytes their translation receipts pinned.
-        ...(entry.domain === 'idol_story' ? idolDirectory(id, file === entry.file ? entry.file : '') : {}),
+        ...(entry.domain === 'idol_story' ? idolDirectory(id) : {}),
         publication: publication ? { kind: 'authoritative-registry', ownership: publication.ownership }
           : { kind: 'catalog-compatibility', aggregate_file: entry.file } }
       const previous = candidates.get(id)

@@ -33,7 +33,8 @@ assert.equal(eventPresentation.episodes[0].end_step_index < eventPresentation.ep
 
 const toumaSmallTalk = presentation.by_file['1_x_001tom_2_1_2_001_12.json']
 assert.deepEqual(toumaSmallTalk.episodes.map(episode => episode.episode_part), ['a', 'b', 'c'])
-assert.deepEqual(toumaSmallTalk.episodes.map(episode => [episode.start_step_index, episode.end_step_index]), [[2, 7], [8, 13], [14, 19]])
+assert.deepEqual(toumaSmallTalk.episodes.map(episode => [episode.start_step_index, episode.end_step_index]), [[0, 7], [8, 14], [15, 21]])
+assert.deepEqual(toumaSmallTalk.episodes.map(episode => episode.episode_file), ['a', 'b', 'c'].map(part => `episodes/1_2_001_12_${part}.json`))
 
 // Birthday small talks must load the authored scene, not inherit a previous
 // segment's cast/background from a legacy merged snapshot.

@@ -22,7 +22,8 @@ const readJson = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 export async function loadStudioIndexes() {
   const reading = await readJson(path.join(projectRoot, 'public/data/reading/manifest.json'))
   const publication = await readJson(path.join(projectRoot, 'public/data/publication/manifest.json'))
-  assert.equal(reading.entries.length, 2801, 'Reader corpus size changed; audit the new baseline')
+  // 2807 since 2026-10-09: four combined birthday small-talk documents split into their ten parts.
+  assert.equal(reading.entries.length, 2807, 'Reader corpus size changed; audit the new baseline')
   return { reading, publication, releaseCache: new Map() }
 }
 

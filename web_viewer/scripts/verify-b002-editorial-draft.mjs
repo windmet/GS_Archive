@@ -44,6 +44,11 @@ const drafts = [
 ]
 const read = async file => JSON.parse(await fs.readFile(file, 'utf8'))
 const indexes = await loadStudioIndexes()
+// Documents retired after review (e.g. a combined source split into its parts) keep their receipt
+// evidence; the record names each one, its batch and the bytes it had, and nothing else may vanish.
+const retirements = (await read(path.join(projectRoot, 'translation/studio/retirements/2026-10-09-birthday-small-talk-split.json'))).documents
+const retired = new Map(retirements.map(record => [record.document_id, record]))
+const retiredSeen = new Set()
 for (const { dir, documents, units: expectedUnits } of drafts) {
   const root = path.join(projectRoot, 'translation/studio/reviews', dir)
   const receipt = await read(path.join(root, 'receipt.json'))
@@ -113,6 +118,17 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
   }
   for (const doc of batch.documents) {
     const entry = indexes.reading.entries.find(e => e.document_id === doc.document_id)
+    const record = retired.get(doc.document_id)
+    if (record) {
+      assert.equal(record.batch, dir, `Retirement batch mismatch: ${doc.document_id}`)
+      assert.equal(entry, undefined, `Retired document is still live: ${doc.document_id}`)
+      assert.equal(record.reader_sha256, doc.reader_sha256, `Retired reader evidence mismatch: ${doc.document_id}`)
+      assert(record.replaced_by.length && record.replaced_by.every(id => indexes.reading.entries.some(e => e.document_id === id)),
+        `Retired document has no live replacement: ${doc.document_id}`)
+      retiredSeen.add(doc.document_id)
+      continue
+    }
+    assert(entry, `Reviewed document missing without a retirement record: ${doc.document_id}`)
     const live = await loadStudioDocument(entry, indexes)
     assert.equal(doc.reader_sha256, live.readerHash)
     assert.equal(doc.compiled_sha256, live.compiledHash)
@@ -120,6 +136,15 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
   }
   let units = 0
   for (const file of receipt.files) {
+    const record = retirements.find(item => item.batch === dir && item.scenario_id === file.scenario_id)
+    if (record) {
+      assert.equal(record.translation_sha256, file.sha256, `Retired translation evidence mismatch: ${file.scenario_id}`)
+      await assert.rejects(fs.access(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`)),
+        `Retired translation is still published: ${file.scenario_id}`)
+      assert.equal(batch.rows.filter(row => row.unit_id.split(':')[2] === file.scenario_id).length, record.units)
+      units += record.units
+      continue
+    }
     const bytes = await fs.readFile(path.join(projectRoot, `public/translations/zh-CN/scenarios/${file.scenario_id}.json`))
     assert.equal(sha256(bytes), file.sha256)
     const overlay = JSON.parse(bytes)
@@ -139,3 +164,4 @@ for (const { dir, documents, units: expectedUnits } of drafts) {
   assert.equal(receipt.files.length, documents)
   console.log(`${dir}: ${documents} documents/catalogues, ${units} rows, source identities, edit replay and protected addresses verified`)
 }
+assert.deepEqual([...retiredSeen].sort(), [...retired.keys()].sort(), 'every retirement record names a reviewed document')

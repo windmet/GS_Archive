@@ -90,11 +90,16 @@ const multi = documents.find(d => d.document_id === '1_4_001_03_h')
 assert.equal(multi.status, 'ready')
 assert.equal(multi.controls[0].options.length, 3)
 assert.ok(multi.controls[0].fork)
-const birthday = documents.find(d => d.document_id === '1_2_001_12')
-assert.equal(birthday.status, 'ready')
-assert.equal(birthday.source.file, '1_x_001tom_2_1_2_001_12.json')
-assert.equal(birthday.playback.file, birthday.source.file)
-assert.equal(birthday.rows.filter(row => row.kind === 'dialogue').length, 15)
+// Birthday small talks read one document per talk, sliced from the aggregate like every other
+// lettered group (001tom's combined small-talk file was split into its parts on 2026-10-09).
+assert.equal(documents.some(d => d.document_id === '1_2_001_12'), false, 'the combined small-talk document is retired')
+const birthday = ['a', 'b', 'c'].map(part => documents.find(d => d.document_id === `1_2_001_12_${part}`))
+for (const [index, talk] of birthday.entries()) {
+  assert.equal(talk.status, 'ready')
+  assert.equal(talk.source.file, `episodes/1_2_001_12_${'abc'[index]}.json`)
+  assert.equal(talk.playback.file, talk.source.file)
+}
+assert.deepEqual(birthday.map(talk => talk.rows.filter(row => row.kind === 'dialogue').length), [5, 5, 5])
 
 // A non-contiguous source ID is not a zero-based playback offset.
 const input = { scenario_id: 'test', steps: [
