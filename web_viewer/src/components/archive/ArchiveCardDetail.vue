@@ -527,6 +527,8 @@ const relationItems = computed(() => {
       evidence: props.gashaRelation.relation_type,
       statusLabel: '已建档',
       statusTone: 'available',
+      imageUrl: props.gashaRelation.banner_url || '',
+      imageAlt: gashaText(props.gashaRelation.title) || props.gashaRelation.title,
       payload: props.gashaRelation,
     })
   }

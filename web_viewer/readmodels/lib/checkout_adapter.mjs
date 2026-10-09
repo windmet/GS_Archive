@@ -151,11 +151,17 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
       audioExperiment:data.songExperimentalAudio.songs?.[song.song_code]||null,manifest:data.archiveManifest}),
       stageCandidate: stageCandidate ? pick(stageCandidate,['id','stageKind']) : null }];
   }));
+  // A card's gasha relation carries that gasha's own banner, as the gasha pages show it.
+  const gashaBanners = new Map((data.gashaIndex.gashas || []).map(gasha => [String(gasha.id), gasha.banner_url || null]));
+  const gashaRelation = card => {
+    const relation = data.gashaIndex.relations_by_card?.[card.resource_id];
+    return relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null;
+  };
   const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
     ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
     assetStatus:data.archiveManifest.card_assets_by_id?.[card.resource_id]||null,
     eventRelation:data.archiveManifest.event_card_relations_by_card?.[card.resource_id]||null,
-    gashaRelation:data.gashaIndex.relations_by_card?.[card.resource_id]||null,
+    gashaRelation:gashaRelation(card),
   }]));
   const identities = Object.entries(data.idolUnit.by_idol_code).map(([id, profile]) => ({
     id, name: profile.display_name, kana: profile.name_fields?.kana || '', color: profile.color || '',
