@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {execFileSync} from 'node:child_process'
 import {parseJsonStrict} from './lib/strict-json.mjs'
-import {planCompactBatches,renderCompactInput,renderCompactTemplate,parseCompactReturn} from './lib/general-translation-markdown.mjs'
+import {planCompactBatches,compactContexts,renderCompactInput,renderCompactTemplate,parseCompactReturn} from './lib/general-translation-markdown.mjs'
 import {sourceUnits,corpusHash,planBatches,hash,validateGeneralReturn,loadGeneralRevisions} from './lib/general-translation-batches.mjs'
 
 const root=process.cwd(), [command,...args]=process.argv.slice(2)
@@ -45,6 +45,25 @@ if(command==='export') {
   fs.writeFileSync(path.join(out,'glossary.md'),'# 项目姓名参考（暂用显示名，非官方中文译名）\n\n这份表只供姓名一致性参考；不要照搬旧译文口吻。疑义请在对应回传条目标记 ? 并说明。\n\n'+Object.entries(idols).map(([id,e])=>`${sourceNames.get(id)||id} → ${e.name}`).join('\n')+'\n')
   fs.writeFileSync(path.join(out,'README.md'),`# GS 通用资料 Gemini 翻译包 · 紧凑版\n\n${units.length} 个独立字段、${plan.source_references} 次使用，${batches.length} 批。每批最多 ${plan.max_rows} 条；紧凑版按完整 input.md 的实际字符量控制在 ${plan.max_input_characters||'旧模式'} 字符以内（包含指引和上下文）。\n\n## 给 AI Studio 的只有这些\n\n1. 新建会话，先粘贴 glossary.md（项目姓名参考）。\n2. 一次粘贴一个批次的 input.md。每份输入自带完整翻译指引；不要上传 local 文件夹。\n3. 将回答原样保存为该批次 output.md，不必手工改键值或转换 JSON。output-template.md 仅供核对格式，无需上传。\n4. 正常译文用 [001]，疑义用 [001?] 后加 ! 说明；纯资源键用 [001=]。多行译文可直接换行。编号不能遗漏或重排为新编号。\n\n## 留在本地的校验文件\n\n每批 local/batch-map.json 保存完整键值、原文、哈希和所有使用位置；local/previous-draft.json 只供本地对照。包根 local/plan.json 保存分批与版本审计。均无需提供给模型。\n\n## 本地检查与导入\n\n在仓库 web_viewer 目录执行，$batchDir 指向本批文件夹：\n\n\`\`\`powershell\n$batchDir = '这份包的绝对路径/G-items-001'\nnode scripts/general-translation-workflow.mjs check "$batchDir/local/batch-map.json" "$batchDir/output.md"\nnode scripts/general-translation-workflow.mjs import "$batchDir/local/batch-map.json" "$batchDir/output.md" 'Gemini / 实际模型名称'\nnode scripts/generate-archive-general-translations.mjs\nnode scripts/generate-translation-audit.mjs\n\`\`\`\n\n检查会在本地补回全部身份并验证漏项、重复、串批、来源变化、数值/占位符及危险 HTML。导入仅为 draft；人工逐批确认确切版本之后才可 reviewed，仍为 not_final。不要把结构通过当作译文质量已确认。\n\n旧 60 批 JSON 包仍可导入，但不能与本包交叉混用或重复导入重叠字段；旧包保持原样。详见仓库 docs/GS_ARCHIVE_GENERAL_TRANSLATION_WORKFLOW.md。\n`)
   console.log(JSON.stringify({output:out,batches:batches.length,unique_units:units.length,input_characters:plan.batches.reduce((n,b)=>n+b.input_characters,0),format:plan.format}))
+} else if(command==='reinput') {
+  // Re-render input.md for exported batches that have no returned translation yet (e.g. after the prompt policy changed).
+  // Sources, keys and hashes are untouched; only the instructions change, so the batch map keeps validating returns.
+  assert(args.length,'Usage: reinput <batch-folder>...')
+  const revisions=loadGeneralRevisions(root,units), contexts=compactContexts(units)
+  for(const arg of args) {
+    const folder=path.resolve(arg), mapFile=path.join(folder,'local','batch-map.json'), batch=read(mapFile)
+    assert(!fs.existsSync(path.join(folder,'output.md')),`${batch.batch_id} already has output.md; refusing to change its input`)
+    assert(batch.rows.every(row=>!revisions.has(row.key)),`${batch.batch_id} is already imported; refusing to change its input`)
+    const input=renderCompactInput(batch,contexts)
+    fs.writeFileSync(path.join(folder,'input.md'),input)
+    write(mapFile,{...batch,input_sha256:hash(input)})
+    const planFile=path.join(path.dirname(folder),'local','plan.json')
+    if(fs.existsSync(planFile)) {
+      const plan=read(planFile), entry=plan.batches.find(b=>b.batch_id===batch.batch_id)
+      if(entry){entry.input_characters=input.length;entry.input_bytes=Buffer.byteLength(input);write(planFile,plan)}
+    }
+    console.log(JSON.stringify({batch_id:batch.batch_id,input_characters:input.length,units:batch.rows.length}))
+  }
 } else if(command==='check' || command==='import') {
   assert(args[0]&&args[1],'Usage: check|import <batch-map.json> <output.md|return.json> [translator]')
   const batch=read(args[0]), returned=readReturn(args[1],batch), entries=validateGeneralReturn(batch,returned,units)

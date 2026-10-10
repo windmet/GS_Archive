@@ -25,6 +25,13 @@ function ownerLabel(code) {
   unitNames ||= new Map(JSON.parse(fs.readFileSync(new URL('../../public/data/masterdata/idol_unit_dictionary.json', import.meta.url), 'utf8')).units.map(unit => [unit.unit_code, unit.unit_name]))
   return unitNames.get(code) || code || '未知'
 }
+// Project-wide constraints (R3.3 policy, term decisions, per-speaker voice notes) injected into character-line and chat inputs.
+let promptPolicy
+const promptRules = () => promptPolicy ||= JSON.parse(fs.readFileSync(new URL('../../translation/studio/policy/card-line-prompt.v1.json', import.meta.url), 'utf8'))
+const relevantTerms = rows => {
+  const text = rows.map(row => row.source).join('\n')
+  return promptRules().terms.filter(term => text.includes(term.src)).map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
+}
 const CHAT_RULES = [
   '你是日中游戏本地化译者。下面是偶像与制作人的手机聊天（个人聊天、组合聊天、随机话题）。每个小标题是一段对话，条目按对话顺序排列；每条前的【说话人】只供理解，不要翻译或输出。',
   '用符合角色性格的自然口语译成简体中文，聊天语气轻松简短；同一位偶像的口吻、自称和对制作人的称呼要一致。「制作人回复」是玩家可选的回复：选项短句与回复全文分别成条，意思保持一致。',
@@ -59,11 +66,12 @@ export function renderCompactInput(batch, contexts = new Map()) {
   const chat = batch.rows.length > 0 && batch.rows.every(isChat)
   const lines = [
     `# SideM GS ${chat ? '聊天' : characterLines ? '角色台词' : '资料'}翻译 · ${batch.batch_id}`, '',
-    ...(chat ? CHAT_RULES : characterLines ? CHARACTER_LINE_RULES : [
+    ...(chat ? [...CHAT_RULES, ...promptRules().chat_rules] : characterLines ? [...CHARACTER_LINE_RULES, ...promptRules().global_rules] : [
     '你是日中游戏本地化译者。将下面每条日文译成自然、准确的简体中文，供资料馆的名称、图鉴说明和技能说明使用。',
     '本批只含通用资料，不含剧情台词、首页对话或工作通讯。名称简洁有辨识度，说明按中文自然组织；技能严格保留触发条件、概率、时长、对象和效果。不要机械逐词直译，也不要擅自润色成角色对白。',
     '每个短编号独立翻译，不能漏条、合并、拆分或把含义搬到相邻条目。名称可有创意，但不能添加原文没有的事实、获取来源、衣装关联或解锁条件。同一专名保持一致；英文专名保留，普通日语语法译成中文。',
     '原样保留数字、小数、参数 <value>、图标 [stamina]、占位符及其他程序标记；数值不能变，技能中数值顺序也不能变。换行可按中文调整。可参考 glossary.md 的项目姓名表；它不是官方中文译名，不确定时必须标记疑义。']), '',
+    ...((chat || characterLines) && relevantTerms(batch.rows).length ? ['## 本批相关定译（原文出现这些词时按此处理）', ...relevantTerms(batch.rows), ''] : []),
     '## 回传格式（只输出标记行和译文，不复制原文、上下文、章节标题或检查过程）',
     '第一行原样输出下面这行，然后每个编号恰好一次：',
     returnHeading(batch),
@@ -74,7 +82,7 @@ export function renderCompactInput(batch, contexts = new Map()) {
     `本批共 ${batch.rows.length} 条。提交前对照编号集合，检查漏条、重复、数值、占位符和专名一致性；不输出检查过程。`, '',
     '## 待译原文（【名称上下文】只供理解，不是另一条待译文本）', '',
   ]
-  let group = ''
+  let group = '', noteSpeaker = ''
   batch.rows.forEach((row,index)=>{
     if (isChat(row)) {
       const conversation = conversationOf(row)
@@ -85,7 +93,12 @@ export function renderCompactInput(batch, contexts = new Map()) {
     }
     const speaker = isCharacterLine(row) ? speakerOf(row) : ''
     const next = `${speaker}:${row.kind}:${row.field}`
-    if (next !== group) { lines.push(`### ${speaker ? `说话人：${speakerLabel(speaker)} · ` : ''}${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next }
+    if (next !== group) {
+      lines.push(`### ${speaker ? `说话人：${speakerLabel(speaker)} · ` : ''}${kinds[row.kind] || row.kind} · ${fields[row.field] || row.field}`); group = next
+      const note = speaker && speaker !== noteSpeaker ? promptRules().speakers[speaker] : ''
+      if (speaker) noteSpeaker = speaker
+      if (note) lines.push(`【角色备注：${note}】`)
+    }
     const context = contexts.get(row.key)
     if (context && context !== row.source) lines.push(`【名称上下文：${context.replace(/[\r\n]+/g,' ')}】`)
     lines.push(`[${rid(index)}]${row.source}`, '')

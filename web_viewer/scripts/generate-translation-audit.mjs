@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import assert from 'node:assert/strict'
-import {sourceUnits,planBatches,loadGeneralRevisions,corpusHash} from './lib/general-translation-batches.mjs'
+import {shards,sourceUnits,planBatches,loadGeneralRevisions,corpusHash} from './lib/general-translation-batches.mjs'
 import {loadStudioIndexes,loadStudioDocument,sha256} from './lib/ai-studio-source.mjs'
 import {validateStoryTranslationOverlay} from '../src/localization/story/TranslationRepository.js'
 import {normalizeEntitySourceText,validateEntityTranslationOverlay} from '../src/localization/story/EntityTranslationRepository.js'
@@ -11,7 +11,13 @@ import zh from '../src/localization/ui/locales/zh-CN.js'
 import ja from '../src/localization/ui/locales/ja-JP.js'
 
 const root=process.cwd(), read=file=>JSON.parse(fs.readFileSync(path.join(root,file),'utf8'))
-const units=sourceUnits(root), drafts=read('public/translations/zh-CN/archive-general.json').entries, revisions=loadGeneralRevisions(root,units)
+// Card-line and chat kinds live only in lazy shards, not the root overlay.
+const generalDrafts=()=>{
+ const entries={...read('public/translations/zh-CN/archive-general.json').entries}
+ for(const name of Object.keys(shards))Object.assign(entries,read(`public/translations/zh-CN/archive-general/${name}.json`).entries)
+ return entries
+}
+const units=sourceUnits(root), drafts=generalDrafts(), revisions=loadGeneralRevisions(root,units)
 const batches=planBatches(units), batchByKey=new Map(batches.flatMap(b=>b.rows.map(r=>[r.key,b.batch_id])))
 const tally=()=>({total:0,draft:0,reviewed:0,final:0,missing:0,stale:0,uncertain:0,keptSource:0})
 const groups=new Map(), group=(id,label)=>{if(!groups.has(id))groups.set(id,{id,label,...tally()});return groups.get(id)}
