@@ -703,7 +703,7 @@ function openRelation(item) {
 .card-text-block p { margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; line-height: 2; }
 .voice-list, .scenario-link-list { display: grid; }
 .voice-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(220px, 340px) auto; align-items: center; gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
-.voice-row.is-focused { margin: 0 calc(-1 * var(--gs-space-3)); padding-inline: var(--gs-space-3); border-radius: var(--gs-radius-control); background: color-mix(in srgb, var(--gs-mint) 10%, transparent); box-shadow: inset 3px 0 0 var(--gs-mint); }
+.voice-row.is-focused { margin: 0 calc(-1 * var(--gs-space-3)); padding-inline: var(--gs-space-3); border-radius: var(--gs-radius-control); background: var(--gs-selected-bg); box-shadow: inset 3px 0 0 var(--gs-selected-line); }
 .voice-row > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .voice-row audio { width: 100%; height: 32px; }
 .voice-copy { min-width: 0; }

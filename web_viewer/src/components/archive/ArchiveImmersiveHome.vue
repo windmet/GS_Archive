@@ -183,11 +183,51 @@
         <button type="button" aria-label="下一句台词" title="下一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(1)">
           <ChevronRight :size="18" />
         </button>
-        <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
+        <!-- The counter opens the line directory: every touch line of this idol, by card. -->
+        <button type="button" class="cue-index-trigger" aria-haspopup="dialog" :aria-expanded="cueIndexOpen" title="台词目录" :aria-label="`台词目录，当前第 ${cueIndex + 1} 句，共 ${activeIdol.cues.length} 句`" @click="openCueIndex">
+          <List :size="15" aria-hidden="true" />{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}
+        </button>
         <ArchiveLanguageSwitch class="home-language-switch" />
       </div>
       <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
+
+    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex">
+      <header>
+        <div>
+          <h3 id="cue-index-title">台词目录</h3>
+          <p>{{ activeIdolName }} · {{ activeIdol.cues.length }} 句触摸语音，点选即播放</p>
+        </div>
+        <button type="button" aria-label="关闭台词目录" title="关闭" @click="closeCueIndex">
+          <X :size="21" />
+        </button>
+      </header>
+      <div class="cue-index-filters">
+        <label class="cue-index-search">
+          <Search :size="15" aria-hidden="true" />
+          <input v-model="cueQuery" type="search" placeholder="按台词或卡名查找" aria-label="查找台词" />
+        </label>
+        <div v-if="cueRarities.length > 1" class="background-variants" role="group" aria-label="按稀有度筛选">
+          <button type="button" :aria-pressed="!cueRarity" @click="cueRarity = ''">全部</button>
+          <button v-for="rarity in cueRarities" :key="rarity" type="button" :aria-pressed="cueRarity === rarity" @click="cueRarity = rarity">{{ rarity }}</button>
+        </div>
+      </div>
+      <div ref="cueIndexBody" class="settings-body cue-index-body">
+        <section v-for="group in cueGroups" :key="group.cardId" class="cue-index-card">
+          <h4><span>{{ group.rarity }}</span>{{ group.title }}</h4>
+          <ol>
+            <li v-for="row in group.rows" :key="row.cue.cue">
+              <button type="button" :data-cue-index="row.index" :aria-current="row.cue.cue === activeCue.cue ? 'true' : undefined" @click="chooseCue(row.cue)">
+                <span class="cue-index-number">{{ row.index + 1 }}</span>
+                <span class="cue-index-line" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
+                <Volume2 v-if="row.cue.cue === activeCue.cue" :size="15" aria-hidden="true" />
+              </button>
+            </li>
+          </ol>
+        </section>
+        <p v-if="!cueGroups.length" class="cue-index-empty" role="status">没有符合条件的台词。</p>
+      </div>
+    </dialog>
 
     <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
@@ -297,7 +337,9 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  List,
   RotateCcw,
+  Search,
   SlidersHorizontal,
   Square,
   Shirt,
@@ -349,7 +391,7 @@ const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
 const focusMode = ref(false)
-watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings() } })
+watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings(); closeCueIndex() } })
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 const performanceRevision = ref(0)
@@ -365,6 +407,17 @@ function closeSettings() {
   sceneSettingsRef.value?.close()
   settingsOpen.value = false
   restoreSettingsFocus()
+}
+// Line directory: grouped in source order (rarity, then card), filtered by rarity and by the shown
+// or source text / card title. Choosing a line jumps there and plays it.
+const cueIndexOpen = ref(false), cueIndexRef = ref(null), cueIndexBody = ref(null)
+const cueQuery = ref(''), cueRarity = ref('')
+let cueIndexReturnFocus = null
+function closeCueIndex() {
+  cueIndexRef.value?.close()
+  cueIndexOpen.value = false
+  if (cueIndexReturnFocus?.isConnected) cueIndexReturnFocus.focus({ preventScroll: true })
+  cueIndexReturnFocus = null
 }
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
@@ -385,6 +438,25 @@ const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.
 // A home cue is a card's touch voice: the same translated line as on the card page.
 void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
 const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], activeCue.value?.text))
+const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({
+  cue, index,
+  line: archiveLineText('card-lines', [['card-touch', 'text']], cue.text),
+  title: cardText('card', cue.cardTitle, 'title'),
+})))
+const cueRarities = computed(() => [...new Set(cueRows.value.map(row => row.cue.rarity).filter(Boolean))])
+const compactText = text => String(text || '').replace(/\s+/g, '').toLocaleLowerCase()
+const cueGroups = computed(() => {
+  const query = compactText(cueQuery.value)
+  const groups = []
+  for (const row of cueRows.value) {
+    if (cueRarity.value && row.cue.rarity !== cueRarity.value) continue
+    if (query && ![row.line.text, row.cue.text, row.title, row.cue.cardTitle].some(text => compactText(text).includes(query))) continue
+    let group = groups.at(-1)
+    if (group?.cardId !== row.cue.cardId) groups.push(group = { cardId: row.cue.cardId, rarity: row.cue.rarity, title: row.title, rows: [] })
+    group.rows.push(row)
+  }
+  return groups
+})
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
@@ -579,6 +651,35 @@ function stepCue(offset) {
   emit('update:selectedCue', cues[(cueIndex.value + offset + cues.length) % cues.length].cue)
 }
 
+async function openCueIndex() {
+  if (cueIndexOpen.value) return
+  cueIndexReturnFocus = document.activeElement
+  costumePickerOpen.value = false
+  closeSettings()
+  cueQuery.value = ''; cueRarity.value = ''
+  cueIndexOpen.value = true
+  await nextTick()
+  if (homeDisposed || !cueIndexOpen.value) return
+  cueIndexRef.value?.showModal()
+  const current = cueIndexBody.value?.querySelector('[aria-current="true"]')
+  current?.scrollIntoView({ block: 'center' })
+  current?.focus({ preventScroll: true })
+}
+
+async function chooseCue(cue) {
+  closeCueIndex()
+  stageTapAbort?.abort()
+  if (cue.cue !== activeCue.value?.cue) {
+    emit('update:selectedCue', cue.cue)
+    await nextTick()
+    if (homeDisposed || activeCue.value?.cue !== cue.cue) return
+  }
+  // The pick is the play request, whatever the auto-voice setting; replace its pending timer.
+  clearTimeout(autoVoiceTimer); autoVoiceTimer = null
+  if (playing.value) stopVoice()
+  toggleVoice()
+}
+
 function openCueCard() {
   const cue = activeCue.value
   if (!cue?.cardId) return
@@ -696,7 +797,8 @@ function resetPreferences() {
 
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
-  if (settingsOpen.value) closeSettings()
+  if (cueIndexOpen.value) closeCueIndex()
+  else if (settingsOpen.value) closeSettings()
   else if (focusMode.value) focusMode.value = false
   if (costumePickerOpen.value) costumePickerOpen.value = false
 }
@@ -723,6 +825,7 @@ onBeforeUnmount(() => {
   emit('focus-change', false)
   clearTimeout(autoVoiceTimer)
   sceneSettingsRef.value?.close()
+  cueIndexRef.value?.close()
   restoreSettingsFocus()
   delete document.documentElement.dataset.archiveHomeTheme
   queuedVoiceAbort?.abort()
@@ -747,6 +850,25 @@ onBeforeUnmount(() => {
 .dialogue-card-link em { display:inline-flex;align-items:center;flex:none;margin-left:auto;font-style:normal;color:var(--gs-mint-ink); }
 .dialogue-card-link:hover span { color:var(--gs-ink);text-decoration:underline; }
 .dialogue-actions button:disabled { opacity:.4; }
+.dialogue-actions .cue-index-trigger { display:inline-flex;align-items:center;gap:5px;width:auto;flex:none;padding:0 10px;font-size:var(--gs-text-meta);color:var(--gs-ink-2);font-variant-numeric:tabular-nums; }
+.cue-index { width:min(560px, calc(100% - 28px)); }
+.cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
+.cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
+.cue-index-search input { flex:1;min-width:0;border:0;outline:0;background:none;color:var(--gs-ink);font:inherit;font-size:var(--gs-text-ui); }
+.cue-index-search:focus-within { border-color:var(--gs-mint); }
+.cue-index-filters .background-variants { margin:0; }
+.cue-index-body { gap:16px; }
+.cue-index-card h4 { display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);color:var(--gs-ink); }
+.cue-index-card h4 span { flex:none;min-width:34px;font-size:var(--gs-text-meta);color:var(--gs-mint-ink); }
+.cue-index-card ol { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px; }
+.cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
+.cue-index-card li button:hover { background:var(--gs-paper); }
+.cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
+.cue-index-card li button > svg { flex:none;margin-top:3px;color:var(--gs-mint-ink); }
+.cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
+.cue-index-line { flex:1;min-width:0;font-size:var(--gs-text-ui);line-height:1.65;white-space:pre-line; }
+.cue-index-line.is-pending { visibility:hidden; }
+.cue-index-empty { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
