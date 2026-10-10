@@ -6,7 +6,8 @@ import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
 
 // Shell titles and catalogue search need these names without eagerly loading metadata.
 const entries=shallowRef({}), pending=new Map();
-const transport=createBoundedTextTransport();
+// The card-lines shard alone is over 1 MiB (every card line, touch voice and call title).
+const transport=createBoundedTextTransport({maxBytes:4*1024*1024,cacheBytes:8*1024*1024});
 const record=value=>value !== null && typeof value === 'object' && !Array.isArray(value);
 const loaders=Object.fromEntries(['cards','costumes','photos','profiles','card-lines','chats'].map(domain=>[domain,async()=>{
     const url=`/translations/zh-CN/archive-general/${domain}.json?rev=${translationRelease.release}`;
