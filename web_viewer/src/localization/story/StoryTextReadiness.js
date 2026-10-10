@@ -24,7 +24,9 @@ export const STORY_TEXT_WAIT_MS = 1200
 export function storyTextNeeds(kind, detail) {
   const page = PAGE_TEXT[kind]
   if (!page) throw new Error(`Unknown story page kind: ${kind}`)
-  const documents = (detail?.view?.readingEntries || []).map(entry => entry?.document_id).filter(Boolean)
+  // A page that lists documents without their manifest entries (the seasonal ledger) names them by id.
+  const documents = [...(detail?.view?.readingEntries || []).map(entry => entry?.document_id),
+    ...(detail?.view?.documentIds || [])].filter(Boolean)
   return { documents, names: page.names }
 }
 

@@ -14,8 +14,12 @@ export function useStoryArchiveNavigation({
   let pendingWorkNavigation = 0
   let pendingIdolStoryNavigation = 0
 
-  const currentSeasonalCampaign = computed(() => seasonalReadModelDetail.value?.id === currentStorySection.value
-    ? seasonalReadModelDetail.value.view.campaign : null)
+  // The seasonal page is the ledger of all four campaigns; a selected campaign (story_section) only
+  // highlights its column and adds that campaign's source evidence.
+  const currentSeasonalPage = computed(() => seasonalReadModelDetail.value &&
+    seasonalReadModelDetail.value.id === currentStorySection.value ? seasonalReadModelDetail.value.view : null)
+  const currentSeasonalCampaign = computed(() => currentSeasonalPage.value?.campaign || null)
+  let seasonalLedger = null
 
   const currentWorkIdol = computed(() => workReadModelDetail.value?.id === currentCharacterId.value
     ? workReadModelDetail.value.view.idol : null)
@@ -41,16 +45,39 @@ export function useStoryArchiveNavigation({
     })()
   }
 
-  async function loadSeasonalDetail(requestedId = 'valentine_2023', options = navigation.getLoadOptions?.() || {}) {
+  async function loadSeasonalLedger(rows, options = navigation.getLoadOptions?.() || {}) {
+    if (seasonalLedger) return seasonalLedger
+    const index = await readModelClient.load(archiveBootstrap.domains['seasonal-ledger'], options)
+    const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor, options)))
+    const row = pages.flatMap(page => page.rows || []).find(entry => entry.id === 'all')
+    if (!row?.detail) throw new Error('Seasonal ledger missing from its directory')
+    const detail = await readModelClient.load({ ...row.detail, expectedId: 'all' }, { ...options, expectedId: 'all', validate: data => {
+      const ledger = data.view?.ledger
+      if (!Array.isArray(ledger?.campaigns) || !Array.isArray(ledger.participants) ||
+        ledger.campaigns.length !== rows.length || ledger.campaigns.some(campaign => !rows.some(entry => entry.id === campaign.id)))
+        throw new Error('Seasonal ledger shape or campaign identity mismatch')
+    } })
+    options.signal?.throwIfAborted()
+    seasonalLedger = detail.view.ledger
+    return seasonalLedger
+  }
+
+  // No (or an unknown) campaign is the whole ledger; a known one also loads its source evidence.
+  async function loadSeasonalDetail(requestedId = '', options = navigation.getLoadOptions?.() || {}) {
     const rows = await loadSeasonalCatalog(options)
-    const row = rows.find(entry => entry.id === requestedId) ||
-      rows.find(entry => entry.id === 'valentine_2023') || rows[0]
-    if (!row) throw new Error('No seasonal campaigns available')
-    return withStoryText('seasonal', await readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
-      if (data.view?.campaign?.id !== row.id || data.view.campaign.year !== row.year ||
-        data.view.campaign.season !== row.season || !Array.isArray(data.view.campaign.participants))
-        throw new Error('Seasonal campaign identity or shape mismatch')
-    } }), options)
+    if (!rows.length) throw new Error('No seasonal campaigns available')
+    const row = rows.find(entry => entry.id === requestedId) || null
+    const [ledger, leaf] = await Promise.all([loadSeasonalLedger(rows, options),
+      row && readModelClient.load({...row.detail,expectedId: row.id}, { ...options, expectedId: row.id, validate: data => {
+        if (data.view?.campaign?.id !== row.id || data.view.campaign.year !== row.year ||
+          data.view.campaign.season !== row.season || !Array.isArray(data.view.campaign.participants))
+          throw new Error('Seasonal campaign identity or shape mismatch')
+      } })])
+    const episodes = [...ledger.campaigns.flatMap(campaign => campaign.introduction),
+      ...ledger.participants.flatMap(participant => Object.values(participant.episodes).flat())]
+    return withStoryText('seasonal', { id: row?.id || '', view: { ledger, campaign: leaf?.view.campaign || null,
+      sourceEvidence: leaf?.view.sourceEvidence || null,
+      documentIds: episodes.map(episode => episode.reading?.document_id).filter(Boolean) } }, options)
   }
 
   async function loadWorkCatalog(options = navigation.getLoadOptions?.() || {}) {
@@ -108,7 +135,7 @@ export function useStoryArchiveNavigation({
     } }), options)
   }
 
-  function openSeasonalCampaign(campaignId = 'valentine_2023') {
+  function openSeasonalCampaign(campaignId = '', participantCode = '') {
     const request = ++pendingSeasonalNavigation
     navigation.invalidate()
     const revision = navigation.getRevision()
@@ -122,6 +149,7 @@ export function useStoryArchiveNavigation({
       currentStoryDomain.value = 'seasonal_campaign'
       currentStoryMode.value = 'portal'
       currentStorySection.value = detail.id
+      currentCharacterId.value = participantCode
       commitView('seasonal_campaign')
     }).catch(error => {
       if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision()) return
@@ -151,8 +179,24 @@ export function useStoryArchiveNavigation({
     })
   }
 
+  function selectSeasonalParticipant(code = '') {
+    if (currentCharacterId.value === code) return
+    currentCharacterId.value = code
+    commitArchiveSelection()
+  }
+
   function playSeasonalCampaignStory(file) {
     if (file) loadScenario(file, 'seasonal_campaign')
+  }
+
+  // A participant's arc plays file by file: 2022's two parts share one compiled story.
+  function playSeasonalParticipant(episodes) {
+    const queue = []
+    for (const episode of episodes || []) {
+      if (!episode?.playable || !episode.compiled_file || queue.some(entry => entry.file === episode.compiled_file)) continue
+      queue.push({ id: episode.compiled_file, file: episode.compiled_file, exists: true, title: episode.title, label: episode.label || '' })
+    }
+    if (queue.length) startEpisodeQueue(queue, 0, 'seasonal_campaign')
   }
 
   function openWorkArchive(idolCode = '') {
@@ -400,8 +444,8 @@ export function useStoryArchiveNavigation({
   }
 
   return {
-    currentSeasonalCampaign, currentWorkIdol, idolStoryOptions, currentIdolStoryPage,
-    openSeasonalCampaign, selectSeasonalCampaign, playSeasonalCampaignStory,
+    currentSeasonalPage, currentSeasonalCampaign, currentWorkIdol, idolStoryOptions, currentIdolStoryPage,
+    openSeasonalCampaign, selectSeasonalCampaign, selectSeasonalParticipant, playSeasonalCampaignStory, playSeasonalParticipant,
     openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
     openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
     playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,

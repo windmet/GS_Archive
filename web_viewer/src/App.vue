@@ -398,15 +398,17 @@
       />
 
       <ArchiveSeasonalCampaign
-        v-if="view === 'seasonal_campaign'"
-        :campaign="currentSeasonalCampaign"
-        :campaigns="seasonalReadModelCatalog || []"
-        :source-evidence="seasonalReadModelDetail?.view?.sourceEvidence || null"
+        v-if="view === 'seasonal_campaign' && currentSeasonalPage"
+        :page="currentSeasonalPage"
+        :focus-id="currentStorySection"
+        :participant-code="currentCharacterId"
+        :idols="archiveBootstrap.idols"
         :idol-name="idolDisplayName"
-        :reading-entries="seasonalReadModelDetail?.view?.readingEntries || []"
         @read="openSeasonalReader"
         @select="selectSeasonalCampaign"
+        @select-participant="selectSeasonalParticipant"
         @play="playSeasonalCampaignStory"
+        @play-participant="playSeasonalParticipant"
       />
 
       <ArchiveWorkStory
@@ -1206,8 +1208,8 @@ const categoryFilterPlaceholder = computed(() => {
 const mainStoryDomain = computed(() => storyCatalogLanding.value?.main || null)
 
 const {
-  currentSeasonalCampaign, currentWorkIdol, idolStoryOptions, currentIdolStoryPage,
-  openSeasonalCampaign, selectSeasonalCampaign, playSeasonalCampaignStory,
+  currentSeasonalPage, currentSeasonalCampaign, currentWorkIdol, idolStoryOptions, currentIdolStoryPage,
+  openSeasonalCampaign, selectSeasonalCampaign, selectSeasonalParticipant, playSeasonalCampaignStory, playSeasonalParticipant,
   openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
   openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
   playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
@@ -1463,7 +1465,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
   if (view.value === 'story_collection') return storyCollectionTitle(currentStoryCollection.value, idolDisplayName) || '故事章节'
-  if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
+  if (view.value === 'seasonal_campaign') return '季节企划'
   if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} 工作档案`.trim()
   if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} 个人故事`.trim()
   if (view.value === 'mobile_archive') return '通信'
@@ -1533,7 +1535,7 @@ const archiveBreadcrumbs = computed(() => {
       domainLabel: currentStory.value?.domainLabel,
     },
     seasonal_campaign: {
-      title: currentSeasonalCampaign.value?.name,
+      title: currentSeasonalCampaign.value?.name || '季节企划',
       id: currentStorySection.value,
     },
     work_archive: {
@@ -1798,6 +1800,8 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     const validRouteIdol = !route.idol || (['groups', 'files'].includes(idolOwnerView) && aliasRoute?.groups
       ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'song_catalog', 'story_catalog', 'event_catalog'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
+      // The seasonal ledger also lists the two office staff, who are not archive idols, and the shared openings.
+      : idolOwnerView === 'seasonal_campaign' ? /^(?:[0-9]{3}[a-z]{3}|common)$/.test(route.idol)
       : Boolean(bootstrapIdolDictionary.by_idol_code[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
       idol_detail: 'profile',
@@ -1903,7 +1907,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
-    else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
+    else if (route.view === 'seasonal_campaign' && !currentSeasonalPage.value) view.value = 'story_catalog'
     else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
     else if (route.view === 'idol_story_archive' && !currentIdolStoryPage.value) view.value = 'story_catalog'
     else if (route.view === 'mobile_archive' && !mobileIdolReadModelDetail.value) view.value = 'story_catalog'

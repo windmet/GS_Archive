@@ -157,9 +157,9 @@ export function useReaderNavigation({
       const revision = navigation.getRevision()
       return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
     }
-    if (currentStoryDomain.value === 'seasonal_campaign' && currentStorySection.value) {
+    if (currentStoryDomain.value === 'seasonal_campaign') {
       const pending = applyArchiveRoute({ view: 'seasonal_campaign', storyType: 'seasonal_campaign',
-        storySection: currentStorySection.value }, { restoring: false })
+        storySection: currentStorySection.value, idol: currentCharacterId.value }, { restoring: false })
       const revision = navigation.getRevision()
       return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
     }
@@ -204,7 +204,8 @@ export function useReaderNavigation({
   }
 
   function openSeasonalReader(documentId) {
-    return openStoryReader(documentId, { storyType: 'seasonal_campaign', storySection: currentStorySection.value })
+    return openStoryReader(documentId, { storyType: 'seasonal_campaign', storySection: currentStorySection.value,
+      idol: currentCharacterId.value })
   }
 
   function openWorkReader(file) {

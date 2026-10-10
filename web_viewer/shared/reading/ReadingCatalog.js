@@ -1,29 +1,44 @@
 export const READING_SOURCE_FILE = /^(?:episodes\/)?[A-Za-z0-9_-]+\.json$/
+const pick = (value, keys) => Object.fromEntries(keys.filter(key => value[key] !== undefined).map(key => [key, value[key]]))
 
 /** Catalog-owned discovery; readCompiled is injected so no directory crawl or
  * media loader decides what is published. Missing/invalid inputs stay audited. */
 // Seasonal campaigns (Valentine / White Day) are not in the story catalog; their index names every
 // story file and the episode resource ids it holds, so they read like any other collection: one
-// document per listed episode, each participant's episodes one directory by their shared source.
+// document per listed episode. A participant's episodes across all campaigns form one Reader
+// chapter (Valentine → White Day, 2022 → 2023); the four shared openings form another.
+export const SEASONAL_SEASON_LABEL = { valentine: '情人节', white_day: '白色情人节' }
+const SEASON_ORDER = { valentine: 0, white_day: 1 }
+const CIRCLED = ['①', '②', '③', '④']
+export const seasonalCampaignOrder = campaigns => [...campaigns]
+  .sort((a, b) => a.year - b.year || SEASON_ORDER[a.season] - SEASON_ORDER[b.season])
+export const seasonalDirectoryId = participant => participant ? `seasonal-participant:${participant.participant_code}` : 'seasonal-common'
+
 export function seasonalReadingEntries(seasonalIndex) {
   const byFile = new Map()
-  for (const campaign of seasonalIndex?.campaigns || []) {
+  seasonalCampaignOrder(seasonalIndex?.campaigns || []).forEach((campaign, campaignOrder) => {
+    const campaignLabel = `${campaign.year} ${SEASONAL_SEASON_LABEL[campaign.season]}`
+    const directory = (participant, episodes, episode) => {
+      const position = episodes.indexOf(episode)
+      return { directory_id: seasonalDirectoryId(participant), directory_order: campaignOrder * 10 + position,
+        navigation_label: episodes.length > 1 ? `${campaignLabel} ${CIRCLED[position]}` : campaignLabel }
+    }
     const episodes = [
-      ...(campaign.introduction || []).map(episode => ({ episode, label: '共通导入' })),
+      ...(campaign.introduction || []).map(episode => ({ episode, ...directory(null, campaign.introduction, episode) })),
       ...(campaign.participants || []).flatMap(participant => (participant.episodes || [])
-        .map(episode => ({ episode, label: `Lv.${episode.required_valentine_level || 1}` }))),
+        .map(episode => ({ episode, ...directory(participant, participant.episodes, episode) }))),
     ]
-    for (const { episode, label } of episodes) {
+    for (const { episode, ...reading } of episodes) {
       if (!episode.compiled_file) continue
       const entry = byFile.get(episode.compiled_file) || { domain: 'seasonal', file: episode.compiled_file,
         exists: episode.compiled_exists === true, resourceIds: [], readingEpisodes: {} }
       entry.resourceIds.push(episode.resource_id)
-      entry.readingEpisodes[episode.resource_id] = { title: episode.title || null, navigation_label: label }
+      entry.readingEpisodes[episode.resource_id] = { title: episode.title || null, ...reading }
       // A file without episode boundaries is one document named after the file.
-      entry.readingEpisodes[episode.compiled_file.replace(/\.json$/, '')] ||= { title: episode.title || null, navigation_label: label }
+      entry.readingEpisodes[episode.compiled_file.replace(/\.json$/, '')] ||= { title: episode.title || null, ...reading }
       byFile.set(episode.compiled_file, entry)
     }
-  }
+  })
   return [...byFile.values()]
 }
 
@@ -79,7 +94,7 @@ export async function discoverReadingSources({ catalog, publications, readCompil
         // Directory-only label: it goes to the manifest entry, not the document body, so reviewed
         // documents keep the bytes their translation receipts pinned.
         ...(entry.domain === 'idol_story' ? idolDirectory(id) : {}),
-        ...(entry.readingEpisodes?.[id] ? { navigation_label: entry.readingEpisodes[id].navigation_label } : {}),
+        ...(entry.readingEpisodes?.[id] ? pick(entry.readingEpisodes[id], ['navigation_label', 'directory_id', 'directory_order']) : {}),
         publication: publication ? { kind: 'authoritative-registry', ownership: publication.ownership }
           : { kind: 'catalog-compatibility', aggregate_file: entry.file } }
       const previous = candidates.get(id)

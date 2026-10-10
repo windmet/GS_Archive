@@ -91,6 +91,10 @@ function fixture({ cached = true } = {}) {
       : domain.kind === 'work' ? { idol: { idol_code: row.id, short_stories: [], scene_lines: [] }, sourceEvidence: { entries: [] }, readingEntries: [] }
         : { page: { idol_code: row.id, sections: [] }, readingEntries: [] } })
   }
+  // The seasonal page always carries the four-campaign ledger beside the selected campaign.
+  data.set('seasonal-ledger:index', { count: 1, pages: [{ key: 'seasonal-ledger:page' }] })
+  data.set('seasonal-ledger:page', { rows: [{ id: 'all', detail: { key: 'seasonal-ledger:all' } }] })
+  data.set('seasonal-ledger:all', { id: 'all', view: { ledger: { campaigns: [domains[0].id, domains[0].other].map(id => ({ id, introduction: [] })), participants: [] } } })
   const collections = ids.map(id => ({ id: 'birthday:' + id, domain: 'birthday', sectionId: id, title: id, detail: { key: 'birthday:' + id } }))
   data.set('collections:index', { count: collections.length, pages: [{ key: 'collections:page' }] })
   data.set('collections:page', { rows: collections })
@@ -98,7 +102,7 @@ function fixture({ cached = true } = {}) {
   data.set('stories:index', { count: 0, pages: [], landing: Object.fromEntries(['main', 'extra', 'birthday'].map(key => [key, { key: 'landing:' + key }])) })
   for (const key of ['main', 'extra', 'birthday']) data.set('landing:' + key, { value: { collections: [] } })
   const context = { ...state, navigation, useStoryArchiveNavigation, usePortalNavigation,
-    archiveBootstrap: { idols: ids.map(id => ({ id })), domains: Object.fromEntries([...domains.map(domain => domain.kind), 'stories', 'collections'].map(key => [key, { key: key + ':index' }])), counts: { catalog_story_entries: 0 } },
+    archiveBootstrap: { idols: ids.map(id => ({ id })), domains: Object.fromEntries([...domains.map(domain => domain.kind), 'seasonal-ledger', 'stories', 'collections'].map(key => [key, { key: key + ':index' }])), counts: { catalog_story_entries: 0 } },
     readModelClient: { load: async (descriptor, options = {}) => {
       const key = descriptor?.key; loads.push({ key, descriptor, options })
       const value = jobs.has(key) ? await jobs.get(key).promise : data.get(key)
@@ -196,15 +200,16 @@ try {
     next.resolve(t.data.get(nextKey)); await switching
     assert.equal(t.state[domain.prefix + 'ReadModelDetail'].value.id, domain.other); assert.deepEqual(t.calls, [['selection']]); t.stop()
   }
-  // Seasonal selection: requested identity, configured default, then first available row.
+  // Seasonal selection: a requested campaign adds its leaf; no or an unknown campaign is the whole ledger.
   {
     const t = fixture()
-    t.state.seasonalReadModelCatalog.value = [...t.state.seasonalReadModelCatalog.value].reverse()
-    assert.equal(t.state.seasonalReadModelCatalog.value[0].id, 'white_day_2023', 'default must not be the first row in this fallback fixture')
-    assert.equal((await t.loadSeasonalDetail('white_day_2023')).id, 'white_day_2023')
-    assert.equal((await t.loadSeasonalDetail('missing')).id, 'valentine_2023', 'configured default takes precedence over the first row')
-    t.state.seasonalReadModelCatalog.value = t.state.seasonalReadModelCatalog.value.filter(row => row.id !== 'valentine_2023')
-    assert.equal((await t.loadSeasonalDetail('missing')).id, 'white_day_2023')
+    const selected = await t.loadSeasonalDetail('white_day_2023')
+    assert.equal(selected.id, 'white_day_2023'); assert.equal(selected.view.campaign.id, 'white_day_2023')
+    assert.deepEqual(selected.view.ledger.campaigns.map(campaign => campaign.id), ['valentine_2023', 'white_day_2023'])
+    for (const id of ['missing', '', undefined]) {
+      const whole = await t.loadSeasonalDetail(id)
+      assert.equal(whole.id, ''); assert.equal(whole.view.campaign, null); assert.ok(whole.view.ledger)
+    }
     t.state.seasonalReadModelCatalog.value = []; await assert.rejects(t.loadSeasonalDetail(), /No seasonal campaigns/)
     t.stop()
   }
@@ -312,8 +317,10 @@ try {
     await t[domain.catalog](); assert.equal(t.loads.length, count)
     const controller = new AbortController(), options = { signal: controller.signal, priority: 'background' }
     await t[domain.detail](domain.id, options)
-    assert.equal(t.loads.at(-1).options.signal, controller.signal); assert.equal(t.loads.at(-1).options.priority, 'background')
-    assert.equal(t.loads.at(-1).options.expectedId, domain.id); assert.equal(t.loads.at(-1).descriptor.expectedId, domain.id)
+    // The seasonal ledger loads beside the leaf, so find the leaf rather than the last request.
+    const leaf = t.loads.findLast(load => load.key === domain.kind + ':' + domain.id)
+    assert.equal(leaf.options.signal, controller.signal); assert.equal(leaf.options.priority, 'background')
+    assert.equal(leaf.options.expectedId, domain.id); assert.equal(leaf.descriptor.expectedId, domain.id)
     // The actual detail loader must forward cancellation to the client even when its catalog is cached.
     const transport = t.context.readModelClient.load
     t.context.readModelClient.load = (descriptor, request) => { request.signal?.throwIfAborted(); return transport(descriptor, request) }
@@ -352,10 +359,12 @@ try {
     if (domain.kind === 'seasonal') route.storySection = 'missing'
     await t.restore(route)
     assert.equal(t.invalidations(), 1, 'every history restore revokes the three private domain counters')
-    assert.ok(t.loads.some(load => load.key === domain.kind + ':' + domain.id), `${domain.kind} App restore calls the production preparer`)
-    assert.equal(t.state[domain.prefix + 'ReadModelDetail'].value.id, domain.id)
+    // An unknown seasonal campaign restores the whole ledger rather than a guessed campaign.
+    const restoredId = domain.kind === 'seasonal' ? '' : domain.id
+    assert.ok(t.loads.some(load => load.key === (domain.kind === 'seasonal' ? 'seasonal-ledger:all' : domain.kind + ':' + domain.id)), `${domain.kind} App restore calls the production preparer`)
+    assert.equal(t.state[domain.prefix + 'ReadModelDetail'].value.id, restoredId)
     assert.equal(t.applied.length, 1); assert.equal(t.applied[0].view, domain.view)
-    if (domain.kind === 'seasonal') assert.equal(t.applied[0].storySection, domain.id, 'App adopts the canonical seasonal route returned by preparation')
+    if (domain.kind === 'seasonal') assert.equal(t.applied[0].storySection, '', 'App adopts the canonical seasonal route returned by preparation')
     t.stop()
     const failed = restoreFixture(), failure = deferred(), key = domain.kind + ':' + domain.id
     failed.jobs.set(key, failure)
@@ -384,6 +393,12 @@ try {
     const t = fixture(), episodes = [{ id: 1, file: 'one.json', exists: true }, { id: 2, file: 'missing.json', exists: false }, { id: 3, exists: true }, { id: 4, file: 'four.json', exists: true }]
     t.playSeasonalCampaignStory('season.json'); t.playWorkStory('work.json')
     assert.deepEqual(t.calls.slice(0, 2), [['play', 'season.json', 'seasonal_campaign'], ['play', 'work.json', 'work_archive']])
+    // A participant's arc queues each compiled story once: 2022's two parts share a file.
+    t.playSeasonalParticipant([{ compiled_file: 'v22.json', playable: true, title: 'a', label: '2022 情人节' }, { compiled_file: 'v22.json', playable: true, title: 'b' },
+      { compiled_file: 'w22.json', playable: false }, { compiled_file: 'v23.json', playable: true, title: 'c', label: '2023 情人节' }])
+    assert.deepEqual(t.calls.at(-1), ['queue', [{ id: 'v22.json', file: 'v22.json', exists: true, title: 'a', label: '2022 情人节' },
+      { id: 'v23.json', file: 'v23.json', exists: true, title: 'c', label: '2023 情人节' }], 0, 'seasonal_campaign'])
+    const before = t.calls.length; t.playSeasonalParticipant([{ compiled_file: 'x.json', playable: false }]); assert.equal(t.calls.length, before)
     t.playIdolStorySection({ episodes }); assert.deepEqual(t.calls.at(-1), ['queue', [episodes[0], episodes[3]], 0, 'idol_story_archive'])
     t.playIdolStoryEpisode({ section: { episodes }, episode: episodes[3] }); assert.deepEqual(t.calls.at(-1), ['queue', [episodes[0], episodes[3]], 1, 'idol_story_archive'])
     const count = t.calls.length; t.playIdolStoryEpisode({ section: { episodes }, episode: episodes[1] }); t.playIdolStorySection({ episodes: [episodes[1], episodes[2]] }); assert.equal(t.calls.length, count); t.stop()

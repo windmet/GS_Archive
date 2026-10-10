@@ -6,6 +6,7 @@ import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
 import { applyDomainExpansion } from './domain_expansion.mjs';
+import { buildSeasonalLedger } from './seasonal_ledger.mjs';
 
 export const INPUTS = {
  domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
@@ -243,6 +244,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
         sourceEvidence:{campaign:campaign._source||null,
           episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
+    'seasonal-ledger': { records:[{id:'all',summary:{name:'季节企划'},
+      view:{ledger:buildSeasonalLedger(data.seasonalCampaign,data.readingManifest.entries)}}] },
   };
   const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
