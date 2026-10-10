@@ -4,7 +4,7 @@ import path from 'node:path'
 import {execFileSync} from 'node:child_process'
 import {parseJsonStrict} from './lib/strict-json.mjs'
 import {planCompactBatches,compactContexts,renderCompactInput,renderCompactTemplate,parseCompactReturn} from './lib/general-translation-markdown.mjs'
-import {sourceUnits,corpusHash,planBatches,hash,validateGeneralReturn,loadGeneralRevisions} from './lib/general-translation-batches.mjs'
+import {sourceUnits,corpusHash,planBatches,hash,validateGeneralReturn,loadGeneralRevisions,shards,GENERAL_REPAIRS} from './lib/general-translation-batches.mjs'
 
 const root=process.cwd(), [command,...args]=process.argv.slice(2)
 const read=file=>parseJsonStrict(fs.readFileSync(file,'utf8'),file)
@@ -69,7 +69,8 @@ if(command==='export') {
   const batch=read(args[0]), returned=readReturn(args[1],batch), entries=validateGeneralReturn(batch,returned,units)
   if(command==='import') {
     assert(args[2]?.trim(),'Provide translator/model identity')
-    assert(/^G-(photos|costumes|cards|skills|items|honors|card-lines)-\d{3}$/.test(batch.batch_id),'Unsafe batch ID')
+    // Every published shard can take batches; the ID only names one of them.
+    assert(Object.keys(shards).some(domain=>batch.batch_id===`G-${domain}-${batch.batch_id.slice(-3)}`) && /-\d{3}$/.test(batch.batch_id),'Unsafe batch ID')
     const existing=loadGeneralRevisions(root,units)
     assert(entries.every(e=>!existing.has(e.key)),'Batch overlaps an existing revision')
     const folder=path.join(root,'translation/studio/general/revisions');fs.mkdirSync(folder,{recursive:true})
@@ -83,6 +84,28 @@ if(command==='export') {
   const batch=read(args[0]),returned=readReturn(args[1],batch);validateGeneralReturn(batch,returned,units)
   fs.writeFileSync(args[2],JSON.stringify(returned,null,2)+'\n',{flag:'wx'})
   console.log(JSON.stringify({structure:'PASS',output:path.resolve(args[2]),published:false}))
+} else if(command==='amend') {
+  // Apply a named mechanical repair to imported revisions. The approval stays bound to the reviewed
+  // return; the amendment records each before/after so the loader can undo it and check that binding.
+  const [repairName,...files]=args, repair=GENERAL_REPAIRS[repairName]
+  assert(repair&&files.length,`Usage: amend <${Object.keys(GENERAL_REPAIRS).join('|')}> <revision.json>...`)
+  const base=path.join(root,'translation/studio/general/revisions')+path.sep
+  for(const file of files) {
+    const target=path.resolve(file); assert(target.startsWith(base),'Amend only repository revisions')
+    const record=read(target), changes=[]
+    assert.equal(record.return_sha256,hash(JSON.stringify(record.return)),'Return receipt drift')
+    const entries=record.return.entries.map(entry=>{
+      const after=repair(entry.translation)
+      if(after===entry.translation)return entry
+      changes.push({key:entry.key,before:entry.translation,after});return {...entry,translation:after}
+    })
+    if(!changes.length){console.log(JSON.stringify({batch_id:record.batch.batch_id,changes:0}));continue}
+    const returned={...record.return,entries}, to=hash(JSON.stringify(returned))
+    validateGeneralReturn(record.batch,returned,units)
+    write(target,{...record,return:returned,return_sha256:to,amendments:[...(record.amendments||[]),
+      {repair:repairName,date:new Date().toISOString().slice(0,10),from_return_sha256:record.return_sha256,to_return_sha256:to,changes}]})
+    console.log(JSON.stringify({batch_id:record.batch.batch_id,repair:repairName,changes:changes.length,status:record.status}))
+  }
 } else if(command==='review') {
   assert(args[0]&&args[1],'Usage: review <revision.json> <human-approval.json>')
   const target=path.resolve(args[0]), base=path.join(root,'translation/studio/general/revisions')+path.sep
@@ -94,4 +117,4 @@ if(command==='export') {
   assert(entries.every(e=>e.decision!=='uncertain'),'Resolve uncertainty before review')
   write(target,{...record,status:'reviewed',not_final:true,approval})
   console.log(JSON.stringify({batch_id:approval.batch_id,status:'reviewed',units:entries.length,published:false}))
-} else throw Error('Usage: general-translation-workflow.mjs export <new-out-dir> [--max-rows 400 --max-chars 16000 --legacy-json] | normalize <map> <output.md> <new-json> | check|import <map> <return> [translator] | review <revision> <approval>')
+} else throw Error('Usage: general-translation-workflow.mjs export <new-out-dir> [--max-rows 400 --max-chars 16000 --legacy-json] | normalize <map> <output.md> <new-json> | check|import <map> <return> [translator] | amend <repair> <revision>... | review <revision> <approval>')

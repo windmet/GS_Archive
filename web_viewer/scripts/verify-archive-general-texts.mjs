@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
-import {sourceUnits,loadGeneralRevisions,shards} from './lib/general-translation-batches.mjs';
+import {sourceUnits,loadGeneralRevisions,shards,rootOverlayEntries} from './lib/general-translation-batches.mjs';
 import {resolveArchiveGeneralText as text, honorBondSource} from '../src/presentation/ArchiveGeneralText.mjs';
 import {domainInlineParts} from '../src/presentation/DomainInlineText.mjs';
 import {historicalPeriod} from '../src/components/archive/DomainPresentation.mjs';
@@ -12,7 +12,6 @@ const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const translation = read('public/translations/zh-CN/archive-general.json');
 const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()));
 const hasRevision=(kind,source,field='name')=>[...revisions.values()].some(r=>r.kind===kind&&r.field===field&&r.source===source);
-for(const row of revisions.values())assert.equal(text(row.kind,row.source,row.field),row.translation,'Imported revisions must override initial drafts');
 // The shard list is the one the batches and the generator use.
 const shardNames=Object.keys(shards);
 const shardEntries={};
@@ -23,7 +22,9 @@ for (const name of shardNames) {
     shardEntries[kind]=fields;
   }
 }
-assert.deepEqual(shardEntries,translation.entries,'Page shards must be exactly the source-bound index');
+// The bundled root overlay is the shards minus the lazy-only spoken lines (card lines, chats).
+assert.deepEqual(rootOverlayEntries(shardEntries),translation.entries,'Page shards must be exactly the source-bound index');
+for(const row of revisions.values())assert.equal(Object.hasOwn(translation.entries,row.kind)?text(row.kind,row.source,row.field):shardEntries[row.kind]?.[row.field]?.[row.source],row.translation,'Imported revisions must override initial drafts');
 const bonds = read('public/data/editorial/honor-bonds.json');
 const sources = new Set(corpus.map(row => JSON.stringify([row.kind,row.field,row.source])));
 let count = 0;

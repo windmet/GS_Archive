@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto'
 import {parseJsonStrict} from './strict-json.mjs'
 import {archiveGeneralTextCorpus} from './archive-general-text-corpus.mjs'
 import {validateItemIdolNames} from './item-idol-name-policy.mjs'
+import {validateProducerAddressingOverlay,PRODUCER_NAME_WITH_P_TOKEN} from '../../src/localization/story/ProducerAddressing.js'
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
@@ -71,12 +72,37 @@ export function validateGeneralReturn(batch, value, units) {
     if(entry.decision==='keep-source')assert.equal(entry.translation,row.source,'keep-source must preserve source')
     if(entry.decision==='uncertain')assert(entry.notes.length,'Uncertainty needs a note')
     assert.deepEqual(protectedTokens(entry.translation),protectedTokens(row.source),`Number/placeholder drift ${entry.key}`)
+    // Same contract as story overlays: the translation keeps the source's Producer macros verbatim.
+    assert(validateProducerAddressingOverlay(row.source,entry.translation),`Producer slot changed ${entry.key}`)
     if(['skill','center-skill'].includes(row.kind) && row.field==='description')assert.deepEqual(entry.translation.match(/\d+(?:\.\d+)?/g),row.source.match(/\d+(?:\.\d+)?/g),'Skill number order changed')
     assert(!/<(?:script|iframe|img)\b|javascript:/i.test(entry.translation),'Unsafe markup')
     if(['item','honor'].includes(row.kind))validateItemIdolNames(row.source,entry.translation,entry.decision)
     return {...entry,kind:row.kind,field:row.field,references:row.references,status:'draft'}
   })
   return entries
+}
+// Mechanical repairs that leave the reviewed wording alone. Each amendment lists the entries it
+// changed; every change must be exactly what its repair produces, and undoing the amendments in
+// order must give back the return the approval was bound to.
+export const GENERAL_REPAIRS = {
+  // Card lines before 2026-10-10 were exported with raw ●●●● and came back as ●●●●制作人.
+  'producer-slot-restore': text => text.replace(/(?<!●)●{4}(?!●)制作人/gu, PRODUCER_NAME_WITH_P_TOKEN),
+}
+function approvedReturnHash(record) {
+  const entries=record.return.entries.map(entry=>({...entry}))
+  const returnHash=()=>hash(JSON.stringify({...record.return,entries}))
+  for(const amendment of [...(record.amendments||[])].reverse()) {
+    const repair=GENERAL_REPAIRS[amendment.repair]
+    assert(repair,`Unknown repair ${amendment.repair}`)
+    assert.equal(returnHash(),amendment.to_return_sha256,'Amendment chain drift')
+    for(const change of amendment.changes) {
+      const entry=entries.find(e=>e.key===change.key)
+      assert(entry && entry.translation===change.after && change.before!==change.after && repair(change.before)===change.after,`Amendment is not ${amendment.repair}: ${change.key}`)
+      entry.translation=change.before
+    }
+    assert.equal(returnHash(),amendment.from_return_sha256,'Amendment chain drift')
+  }
+  return returnHash()
 }
 export function loadGeneralRevisions(root, units) {
   const folder=path.join(root,'translation/studio/general/revisions'), output=new Map()
@@ -91,10 +117,10 @@ export function loadGeneralRevisions(root, units) {
     if(record.status==='reviewed') {
       assert.equal(record.approval?.approved,true,'Missing review approval')
       assert.equal(record.approval?.batch_id,record.batch.batch_id,'Approval bound to different batch')
-      assert.equal(record.approval?.return_sha256,record.return_sha256,'Approval bound to different translation')
+      assert.equal(record.approval?.return_sha256,approvedReturnHash(record),'Approval bound to different translation')
       assert(record.approval?.reviewer?.trim() && record.approval?.statement?.trim(),'Missing reviewer/statement')
       assert(entries.every(e=>e.decision!=='uncertain'),'Unresolved entries cannot be reviewed')
-    } else assert.equal(record.status,'draft')
+    } else { assert.equal(record.status,'draft'); approvedReturnHash(record) }
     for(const entry of entries) {
       assert(!output.has(entry.key),`Overlapping revision ${entry.key}; supersede old batch explicitly`)
       output.set(entry.key,{...entry,status:record.status,batch_id:record.batch.batch_id,translator:record.translator,reviewer:record.approval?.reviewer||null})

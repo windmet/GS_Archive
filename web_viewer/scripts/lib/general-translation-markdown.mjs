@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { hash, shards, CARD_LINE_KINDS, CHAT_KINDS } from './general-translation-batches.mjs'
+import { protectProducerAddressingForTranslation, restoreProducerAddressingAfterTranslation } from '../../src/localization/story/ProducerAddressing.js'
 
 const kinds = { 'chat-line':'对白','chat-choice':'制作人回复','card-line':'卡面台词','card-touch':'首页触摸语音','call-title':'电话标题',card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
 const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词' }
@@ -32,18 +33,25 @@ const relevantTerms = rows => {
   const text = rows.map(row => row.source).join('\n')
   return promptRules().terms.filter(term => text.includes(term.src)).map(term => `- ${term.src} → ${term.zh}${term.note ? `（${term.note}）` : ''}`)
 }
+// Producer macros reach the model only as story-style markers and come back to the source macro
+// (restoreAddress), so an overlay never holds a translated slot such as ●●●●制作人.
+const ADDRESS_RULE = '{{GS_ADDRESS:编号:类型}} 是程序替换的制作人称呼（玩家设定的名字，未设定时显示“制作人”），整体是不可改动的占位符：可以随中文语序移动，但不能翻译、改写、删除或重复，也不要在它后面再补“制作人”。producer_name_with_p 本身已含“制作人”；后面原文的さん不译，ちゃん→酱、くん→君照常。producer_name 后面跟着的称呼（監督、ぴぃちゃん、番長さん、ボス等）照常翻译。'
+const sourceForModel = source => protectProducerAddressingForTranslation(source).text
+const restoreAddress = (translation, source) => translation.includes('{{GS_ADDRESS:')
+  ? restoreProducerAddressingAfterTranslation(translation, protectProducerAddressingForTranslation(source)) : translation
 const CHAT_RULES = [
   '你是日中游戏本地化译者。下面是偶像与制作人的手机聊天（个人聊天、组合聊天、随机话题）。每个小标题是一段对话，条目按对话顺序排列；每条前的【说话人】只供理解，不要翻译或输出。',
   '用符合角色性格的自然口语译成简体中文，聊天语气轻松简短；同一位偶像的口吻、自称和对制作人的称呼要一致。「制作人回复」是玩家可选的回复：选项短句与回复全文分别成条，意思保持一致。',
   '同一句原文只出现一次（在第一次出现的对话里），译文会用于所有出现位置，所以不要依赖只在这一段对话里才成立的特殊含义。',
   '称呼规则：「プロデューサーさん」「プロデューサー」译为“制作人”，不加“先生”；人名+さん 译为“先生”（女性用“小姐/女士”）；くん→君，ちゃん→酱，先生（せんせい）→老师；直呼就直呼。',
-  '●●●● 是制作人名字的占位符，必须原样保留（包括“●●●●プロデューサー”整体，不翻译、不拆开、不删掉）。原样保留数字、表情标记（如 <emoji>…</emoji>）和其他程序标记；换行可按中文调整。姓名参照 glossary.md，不确定时标记疑义。',
+  ADDRESS_RULE,
+  '原样保留数字、表情标记（如 <emoji>…</emoji>）和其他程序标记；换行可按中文调整。姓名参照 glossary.md，不确定时标记疑义。',
 ]
 const CHARACTER_LINE_RULES = [
   '你是日中游戏本地化译者。下面是偶像角色自己说的台词：卡面台词（普通/特训/额外）、首页点触立绘时的语音和电话标题。按小标题标明的说话人，用符合该角色性格的自然口语译成简体中文。',
   '每条是独立的一句或一段，没有上下文；同一位偶像的口吻、自称和对制作人的称呼要前后一致。不要添加原文没有的内容，也不要把多条合并。',
   '称呼规则：「プロデューサーさん」「プロデューサー」译为“制作人”，不加“先生”；人名+さん 译为“先生”（女性用“小姐/女士”）；くん→君，ちゃん→酱，先生（せんせい）→老师；直呼就直呼。',
-  '●●●● 是制作人名字的占位符，必须原样保留（包括“●●●●プロデューサー”整体，不翻译、不拆开、不删掉），程序会替换成玩家设定的名字。',
+  ADDRESS_RULE,
   '原样保留数字、程序标记和表情标记；换行可按中文调整。姓名参照 glossary.md 的项目姓名表，不确定时标记疑义。',
   '个别条目是数据内部标签而不是台词（如「2023年プロミ_限定_SR_天ヶ瀬 冬馬」），用 [编号=] 保留原文。',
 ]
@@ -88,7 +96,7 @@ export function renderCompactInput(batch, contexts = new Map()) {
       const conversation = conversationOf(row)
       if (conversation !== group) { lines.push(`### 对话：${ownerLabel(firstReference(row).owner)} · ${conversation.replace(/\.json$/, '')}`); group = conversation }
       const speaker = speakerOf(row)
-      lines.push(`【说话人：${speaker === 'producer' ? `制作人（${row.field === 'detail' ? '回复全文' : '回复选项'}）` : speakerLabel(speaker)}】`, `[${rid(index)}]${row.source}`, '')
+      lines.push(`【说话人：${speaker === 'producer' ? `制作人（${row.field === 'detail' ? '回复全文' : '回复选项'}）` : speakerLabel(speaker)}】`, `[${rid(index)}]${sourceForModel(row.source)}`, '')
       return
     }
     const speaker = isCharacterLine(row) ? speakerOf(row) : ''
@@ -101,7 +109,7 @@ export function renderCompactInput(batch, contexts = new Map()) {
     }
     const context = contexts.get(row.key)
     if (context && context !== row.source) lines.push(`【名称上下文：${context.replace(/[\r\n]+/g,' ')}】`)
-    lines.push(`[${rid(index)}]${row.source}`, '')
+    lines.push(`[${rid(index)}]${sourceForModel(row.source)}`, '')
   })
   return lines.join('\n') + '\n'
 }
@@ -166,6 +174,6 @@ export function parseCompactReturn(batch, markdown) {
     if (decision==='keep-source') assert(!translation,'Keep-source marker must have no text')
     else assert(translation,`Empty translation ${rid(index)}`)
     if(decision==='uncertain')assert(record.notes.length,`Uncertainty needs a note ${rid(index)}`)
-    return {key:row.key,source_hash:row.sourceHash,source:row.source,translation:decision==='keep-source'?row.source:translation,decision,notes:record.notes}
+    return {key:row.key,source_hash:row.sourceHash,source:row.source,translation:decision==='keep-source'?row.source:restoreAddress(translation,row.source),decision,notes:record.notes}
   })}
 }
