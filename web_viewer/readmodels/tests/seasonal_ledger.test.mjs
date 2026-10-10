@@ -49,5 +49,6 @@ test('Reader chapter navigation steps through participants after the shared open
   const next = navigation.chapters[navigation.chapters.findIndex(chapter => chapter.id === '001tom') + 1];
   assert.equal(next.id, '002sht');
   assert.equal(next.documentId, '5_01_002_22_a');
+  assert.equal(next.label, '御手洗 翔太'); assert.equal(next.title, '頑張る源');
   assert.ok(next.storyFile && navigation.chapters.every(chapter => chapter.documentId && chapter.storyFile));
 });

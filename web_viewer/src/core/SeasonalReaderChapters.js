@@ -14,7 +14,8 @@ export function seasonalReaderChapters(ledger, participantName = participant => 
     const readable = row.episodes.filter(episode => episode.reading?.source_file)
     for (const episode of readable) entries.push({ document_id: episode.reading.document_id, source_file: episode.reading.source_file,
       sha256: episode.reading.sha256, status: 'ready' })
-    return { id: row.id, label: row.name, title: row.name, file: readable[0]?.compiled_file || '',
+    // The name is the chapter label; its first episode's title is the chapter title, as in a 话 list.
+    return { id: row.id, label: row.name, title: readable[0]?.title || row.name, file: readable[0]?.compiled_file || '',
       episodes: readable.map(episode => ({ id: episode.reading.document_id, file: episode.reading.source_file })) }
   }).filter(chapter => chapter.episodes.length)
   return { collection: { chapters }, entries }

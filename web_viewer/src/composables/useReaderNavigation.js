@@ -139,6 +139,11 @@ export function useReaderNavigation({
     const source = readArchiveSourceRoute(context.sourceRoute || '')
     if (source.view === 'story_collection' && source.storyType === context.storyType && source.storySection === context.storySection)
       context.sourceRoute = buildArchiveSourceQuery({ ...source, story:target.storyFile })
+    // A seasonal chapter is a participant: the page behind the Reader opens on them on return.
+    if (context.storyType === 'seasonal_campaign') {
+      context.idol = chapterId
+      if (source.view === 'seasonal_campaign') context.sourceRoute = buildArchiveSourceQuery({ ...source, idol: chapterId })
+    }
     const pending = applyArchiveRoute({ ...context, view:'reader', story:target.storyFile,
       reading:target.documentId, readingRow:'', readingRev:'' }, { restoring:false })
     syncArchiveRoute()
