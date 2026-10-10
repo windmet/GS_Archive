@@ -11,7 +11,7 @@
     </header>
 
     <section class="unit-description">
-      <p>{{ archiveNamedText('unit-profile', unit.description, 'description') }}</p>
+      <p class="gs-flow">{{ reflowText(archiveNamedText('unit-profile', unit.description, 'description')) }}</p>
     </section>
 
     <section class="unit-section unit-card-summary" aria-labelledby="unit-cards-title">
@@ -126,6 +126,7 @@ import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { reflowText } from '../../../shared/reading/ReadingTypography.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },

@@ -36,7 +36,7 @@
       </div>
       <blockquote class="event-synopsis" :aria-busy="synopsisView.pending.value || undefined">
         <strong v-if="synopsisTitle" :class="{ 'is-pending': synopsisView.titlePending.value }">{{ presentProducerAddressingText(synopsisTitle) }}</strong>
-        <p v-if="synopsisView.view.value.primary.text" :lang="synopsisView.view.value.primary.locale" :class="{ 'is-pending': synopsisView.pending.value }">{{ presentProducerAddressingText(synopsisView.view.value.primary.text) }}</p>
+        <p v-if="synopsisView.view.value.primary.text" class="gs-flow" :lang="synopsisView.view.value.primary.locale" :class="{ 'is-pending': synopsisView.pending.value }">{{ flowForLocale(presentProducerAddressingText(synopsisView.view.value.primary.text), synopsisView.view.value.primary.locale) }}</p>
         <p v-else>{{ view.seasonalCampaign ? '引子及角色篇章已收录于关联季节企划。' : event.exists ? '剧情已收录，可选择章节观看。' : '剧情暂未收录。' }}</p>
         <small v-if="synopsisView.notice.value" class="event-synopsis-notice" role="status">{{ synopsisView.notice.value }}</small>
       </blockquote>
@@ -182,6 +182,7 @@ import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {eventResources} from '../../data/eventResourceGraph.js'
 import { useStorySynopsis } from './useStorySynopsis.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { flowForLocale } from '../../../shared/reading/ReadingTypography.js'
 import {rewardConditions} from './DomainPresentation.mjs'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))

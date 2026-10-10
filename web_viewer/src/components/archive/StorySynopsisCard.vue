@@ -21,7 +21,7 @@ const modes=[{id:'original',label:'原文'},{id:'translation',label:'译文'},{i
 button { min-height:44px; min-width:44px; padding:6px 8px; border:0; border-radius:3px; background:transparent; color:var(--reader-text-sub, var(--gs-ink-2)); font:inherit; font-size:12px; cursor:pointer; }
 button[aria-pressed=true] { color:var(--reader-accent-text, var(--gs-mint-ink)); background:var(--reader-bg-page, var(--gs-mint-wash)); font-weight:700; }
 strong { display:block; margin-bottom:10px; font-size:17px; line-height:1.6; }
-p { margin:6px 0; max-width:52em; font-size:16px; line-height:1.85; white-space:pre-wrap; overflow-wrap:break-word; line-break:strict; }
+p { margin:6px 0; max-width:52em; font-size:16px; line-height:1.85; white-space:pre-line; overflow-wrap:break-word; line-break:strict; text-wrap:pretty; }
 .synopsis-secondary { color:var(--reader-text-sub, var(--gs-ink-3)); font-size:15px; }
 .synopsis-notice { font-size:12px; color:var(--reader-text-sub, var(--gs-ink-3)); }
 /* Waiting for the translation: keep the source text's space so nothing jumps, but do not show it. */

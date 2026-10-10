@@ -174,7 +174,7 @@
         <span v-else class="dialogue-card">{{ cueCardLabel }}</span>
         <ArchiveLanguageSwitch class="home-language-switch" inline />
       </header>
-      <p class="dialogue-line" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p>
+      <div class="dialogue-text"><Transition name="dialogue-fade" mode="out-in"><p :key="cueLine.text" class="dialogue-line gs-flow" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p></Transition></div>
       <div class="dialogue-actions">
         <button type="button" aria-label="上一句台词" title="上一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(-1)">
           <ChevronLeft :size="20" />
@@ -223,7 +223,7 @@
             <li v-for="row in group.rows" :key="row.cue.cue">
               <button type="button" :data-cue-index="row.index" :aria-current="row.cue.cue === activeCue.cue ? 'true' : undefined" @click="chooseCue(row.cue)">
                 <span class="cue-index-number">{{ row.index + 1 }}</span>
-                <span class="cue-index-line" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
+                <span class="cue-index-line gs-flow" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
                 <span v-if="row.cue.cue === activeCue.cue" class="cue-index-now" :class="{ 'is-playing': playing }" aria-hidden="true"><i></i><i></i><i></i></span>
               </button>
             </li>
@@ -857,7 +857,12 @@ onBeforeUnmount(() => {
 .dialogue-card svg { flex:none; }
 button.dialogue-card { cursor:pointer; }
 button.dialogue-card:hover { color:var(--gs-selected-ink); }
-.home-dialogue .dialogue-line { margin:0;padding:2px 2px 4px;font-size:var(--gs-text-subtitle);line-height:1.7; }
+/* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
+.home-dialogue .dialogue-text { min-height:calc(3 * 1.7em);font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
+.home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
+.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity .12s ease; }
+.dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
+@media (prefers-reduced-motion:reduce) { .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:none; } }
 .home-dialogue .is-pending { visibility:hidden; }
 .home-dialogue .dialogue-actions { display:flex;align-items:center;gap:2px;margin:4px -6px 0;padding-top:4px;border-top:1px solid var(--gs-line); }
 .home-dialogue .dialogue-actions button { display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
@@ -867,8 +872,8 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
 .cue-index-trigger small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
 @media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
-@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-line { font-size:var(--gs-text-body); } }
-@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-line { font-size:var(--gs-text-ui);line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
+@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { font-size:var(--gs-text-body); } }
+@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);min-height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
 .scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in .22s ease-out; }
 .scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
 .scene-settings.cue-index > header { background:transparent; }

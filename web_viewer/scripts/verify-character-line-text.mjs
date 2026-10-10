@@ -39,7 +39,8 @@ try {
   await new Promise(resolve => setTimeout(resolve, 0))
   assert.equal(touch(plain[0]).pending, true, 'no Japanese flash while the shard loads')
   release(); await loading
-  assert.deepEqual(touch(plain[0]), { text: plain[1], lang: 'zh-CN', pending: false })
+  // Translations join the game's textbox wraps (the container wraps instead); the Japanese original keeps them.
+  assert.deepEqual(touch(plain[0]), { text: plain[1].split(String.fromCharCode(10)).join(''), lang: 'zh-CN', pending: false })
 
   // Producer macros: never raw dots; the unnamed word follows the shown language; a set name replaces it.
   assert.ok(!touch(withP[0]).text.includes('●') && touch(withP[0]).text.includes('制作人，'))

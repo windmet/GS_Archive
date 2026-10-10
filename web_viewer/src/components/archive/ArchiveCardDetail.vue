@@ -214,7 +214,7 @@
               <strong>触摸语音 {{ index + 1 }}</strong>
               <p v-if="cue.preview?.text" v-bind="cardLine('card-touch', 'text', cue.preview.text).attrs"><span class="authored-text">{{ cardLine('card-touch', 'text', cue.preview.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-touch', 'text', cue.preview.text).text) }}</span></p>
             </div>
-            <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
+            <ArchiveVoiceRow compact :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
@@ -231,7 +231,7 @@
               </div>
               <p v-if="cue.text?.trim() && cue.text.trim() !== '0'" v-bind="operationalLine(cue.text).attrs"><span class="authored-text">{{ operationalLine(cue.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(operationalLine(cue.text).text) }}</span></p>
             </div>
-            <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
+            <ArchiveVoiceRow compact :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
           </div>
         </div>
@@ -700,15 +700,18 @@ function openRelation(item) {
 .card-text-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gs-space-4); }
 .card-text-voice { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); min-width: 0; }
 .card-text-voice audio { width: min(300px, 32vw); height: 32px; }
-.card-text-block p { margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; line-height: 2; }
+.card-text-block p { max-width: 44em; letter-spacing: .02em; text-wrap: pretty; line-break: strict; margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; line-height: 1.85; }
 .voice-list, .scenario-link-list { display: grid; }
-.voice-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(220px, 340px) auto; align-items: center; gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
-.voice-row.is-focused { margin: 0 calc(-1 * var(--gs-space-3)); padding-inline: var(--gs-space-3); border-radius: var(--gs-radius-control); background: var(--gs-selected-bg); box-shadow: inset 3px 0 0 var(--gs-selected-line); }
+.voice-list { gap: var(--gs-space-3); }
+/* One voice, one tile: copy on the left, a quiet play control and the preview on the right. */
+.voice-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: start; gap: var(--gs-space-4); padding: var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); }
+.voice-row > .archive-voice, .voice-row > .voice-preview-btn { align-self: center; }
+.voice-row.is-focused { background: var(--gs-selected-bg); box-shadow: inset 3px 0 0 var(--gs-selected-line); }
 .voice-row > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .voice-row audio { width: 100%; height: 32px; }
 .voice-copy { min-width: 0; }
 .voice-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
-.voice-copy p { margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.7; }
+.voice-copy p { max-width: 44em; letter-spacing: .02em; text-wrap: pretty; line-break: strict; margin: var(--gs-space-2) 0 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.8; }
 .voice-label { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3); }
 .voice-label small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .voice-label small.source-curated { color: var(--gs-mint-ink); }

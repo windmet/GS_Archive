@@ -125,3 +125,7 @@
 [lang|="ja"]:not(html) { font-family: var(--gs-font-jp); }
 
 [data-archive-scroll-container], .studio-focus-drawer, .terminal-dialog-body, .settings-body, .reader-sheet-content { scrollbar-gutter: stable; }
+
+/* Reading flow: prose whose game-textbox wraps were joined by reflowText. Only paragraph
+   edges survive as newlines; the container decides every other break. */
+.gs-flow { white-space: pre-line; overflow-wrap: break-word; word-break: normal; line-break: strict; text-wrap: pretty; }

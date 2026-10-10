@@ -11,11 +11,12 @@
     </div>
     <span v-if="loading" class="media-music-status" role="status">正在准备音频…</span>
   </div>
-  <div v-else class="media-transport" role="group" :aria-label="label">
+  <div v-else class="media-transport" :class="{ 'is-compact': compact }" role="group" :aria-label="label">
     <button class="media-toggle" type="button" :disabled="!ready" :aria-label="playing ? '暂停' : '播放'" :title="playing ? '暂停' : '播放'" @click="$emit('toggle')"><Pause v-if="playing" :size="14" fill="currentColor" aria-hidden="true" /><Play v-else class="media-toggle-play" :size="14" fill="currentColor" aria-hidden="true" /></button>
-    <button class="media-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')"><RotateCcw :size="15" aria-hidden="true" /></button>
-    <input type="range" min="0" :max="knownDuration ? duration : 1" step="0.01" :value="currentTime" :disabled="!ready || !knownDuration" aria-label="播放进度" @input="$emit('seek', Number($event.target.value))" />
-    <span class="media-time">{{ time(currentTime) }} / {{ knownDuration ? time(duration) : '待播放' }}</span>
+    <button v-if="!compact" class="media-restart" type="button" :disabled="!ready || !knownDuration" aria-label="回到开头" title="回到开头" @click="$emit('restart')"><RotateCcw :size="15" aria-hidden="true" /></button>
+    <input v-if="!compact" type="range" min="0" :max="knownDuration ? duration : 1" step="0.01" :value="currentTime" :disabled="!ready || !knownDuration" aria-label="播放进度" @input="$emit('seek', Number($event.target.value))" />
+    <span v-if="!compact" class="media-time">{{ time(currentTime) }} / {{ knownDuration ? time(duration) : '待播放' }}</span>
+    <span v-else-if="knownDuration" class="media-time">{{ time(playing ? currentTime : duration) }}</span>
     <span v-if="loading" role="status">正在准备音频…</span>
     <slot />
   </div>
@@ -23,7 +24,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Play, Pause, RotateCcw } from '@lucide/vue'
-const props = defineProps({ music: { type: Boolean, default: false }, playing: Boolean, ready: { type: Boolean, default: true }, loading: Boolean, currentTime: { type: Number, default: 0 }, duration: Number, label: { type: String, default: '音频播放' } })
+const props = defineProps({ music: { type: Boolean, default: false }, compact: Boolean, playing: Boolean, ready: { type: Boolean, default: true }, loading: Boolean, currentTime: { type: Number, default: 0 }, duration: Number, label: { type: String, default: '音频播放' } })
 defineEmits(['toggle', 'restart', 'seek'])
 const knownDuration = computed(() => Number.isFinite(props.duration) && props.duration > 0)
 const time = value => { const n = Math.floor(Math.max(0, Number(value) || 0)); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}` }
@@ -43,6 +44,7 @@ button:disabled, input:disabled { opacity: .45; cursor: default; }
 input { flex: 1 1 80px; min-width: 80px; min-height: var(--gs-control-touch); accent-color: var(--gs-mint); }
 button:focus-visible, input:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
 @media (pointer: coarse) { .media-toggle, .media-restart { width: var(--gs-control-touch); height: var(--gs-control-touch); min-height: var(--gs-control-touch); } }
+.media-transport.is-compact { flex-wrap: nowrap; padding: 0; }
 .media-time { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .media-transport-music { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-4); font-family: var(--gs-font-body); }
 .media-music-progress { display: grid; min-width: 0; }

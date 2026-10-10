@@ -3,6 +3,7 @@ import {uiLocale} from '../../localization/ui/UiLocaleStore.js';
 import {archiveGeneralText, archiveBackgroundLabel} from '../../presentation/ArchiveGeneralTextCore.mjs';
 import translationRelease from '../../../config/translation-release.json' with {type:'json'};
 import {createBoundedTextTransport} from '../../utils/BoundedTextTransport.js';
+import {flowForLocale} from '../../../shared/reading/ReadingTypography.js';
 import {presentProducerAddressingText} from '../../presentation/ProducerAddressingText.js';
 
 // Shell titles and catalogue search need these names without eagerly loading metadata.
@@ -56,7 +57,7 @@ export function archiveLineText(domain,keys,source) {
   if(status.value[domain] === 'loading') return {...original,pending:true};
   for(const [kind,field] of keys) {
     const translated=archiveGeneralText(entries.value,kind,text,field,'zh-CN');
-    if(translated && translated !== text) return {text:presentProducerAddressingText(translated,'zh-CN'),lang:'zh-CN',pending:false};
+    if(translated && translated !== text) return {text:flowForLocale(presentProducerAddressingText(translated,'zh-CN'),'zh-CN'),lang:'zh-CN',pending:false};
   }
   return original;
 }
