@@ -128,7 +128,11 @@ let framingObserver = null
 let presentationScale = 1
 function updateFraming() {
   if (!props.portraitFraming || !viewportRef.value || !containerRef.value) return
-  const frame = storyStageFrame(viewportRef.value.clientWidth, viewportRef.value.clientHeight)
+  // clientWidth/Height round to whole pixels, so at fractional browser zoom the
+  // scaled canvas could end up a sliver short of the viewport and expose the page
+  // behind it. Size from the fractional box rounded up; the root clips the excess.
+  const box = viewportRef.value.getBoundingClientRect()
+  const frame = storyStageFrame(Math.ceil(box.width), Math.ceil(box.height))
   if (!frame) return
   const style = { width: `${frame.width}px`, height: `${frame.height}px`, transform: `scale(${frame.scale})`, transformOrigin: 'top left' }
   presentationScale = frame.scale
