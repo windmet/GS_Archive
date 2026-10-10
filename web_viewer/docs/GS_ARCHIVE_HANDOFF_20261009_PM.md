@@ -46,8 +46,10 @@
 - 生日：制作人生日问候的篇名（如「プロデューサーは……。」）。
 - 通信：列表预览句。
 
-### 1.3 季节企划要走 AI Studio 剧情翻译，先补发布登记
-`scripts/lib/ai-studio-source.mjs` 的 `releaseRawHash` 要求每篇文档有发布来源；季节企划的编译文件不在发布登记里，导出批次会报 `No publication provenance`。要先给这 208 组补发布记录（参考 `publish-raw-selection-flow.mjs` 生成 release 的方式），再用 `prepare-ai-studio-batches.mjs --documents …` 导出。
+### 1.3 季节企划 AI Studio 批次（2026-10-10 更正：已导出）
+原判断「要先补发布登记」不成立：306 篇季节阅读正文都自带 `source.raw_hash`，来源校验直接通过。真正缺的是导出脚本的领域表没有 `seasonal`，已在 `a7bb83c5` 补上（整库基线同步为 32760）。
+
+已导出三批，在 `web_viewer/.analysis/translation-studio/seasonal-20261010/`：B036（共通导入 + 001–018，995 行）、B037（019–037，991 行）、B038（038–049 + 事务所，653 行）。按参与者分批，同一偶像的 6 段在同一批。每批把 `input.md` 交给 AI Studio，回答原样存为同目录 `output.md`，再运行 `node scripts/check-ai-studio-batch.mjs <批次目录>` 和 `node scripts/import-ai-studio-batch.mjs <批次目录>`。
 
 ---
 
