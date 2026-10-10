@@ -17,12 +17,16 @@ export function cardVoicePreviewStep(card, cue) {
   return home.preview
 }
 
-export function buildCardVoicePreviewScenario(card, cue) {
+// translate(source) returns the touch voice's archive translation ('' for none). The player then
+// shows it like any story line, following the reader's text setting.
+export function buildCardVoicePreviewScenario(card, cue, { translate } = {}) {
   const preview = cardVoicePreviewStep(card, cue)
   if (!preview) return null
   const cueId = typeof cue === 'string' ? cue : cue.cue
   const step = JSON.parse(JSON.stringify(preview.preview_step))
   step.step_id = 1
+  const translated = typeof translate === 'function' ? translate(step.dialogue.text) : ''
+  if (translated) step.dialogue.text_cn = translated
   return {
     scenario_id: `card_voice_preview_${card.resource_id}_${cueId}`,
     source_scenario_id: preview.scenario_id,

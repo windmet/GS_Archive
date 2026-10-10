@@ -164,7 +164,7 @@
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
       <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
-      <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
+      <p :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p>
       <div class="dialogue-meta">
         <span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span>
 
@@ -298,7 +298,7 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
-import { archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
+import { archiveLineText, archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
@@ -306,7 +306,6 @@ import { producerName } from '../../utils/LanguageStore.js'
 import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
 import {archiveText} from './useArchiveCostumeText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
-import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
 import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
@@ -370,6 +369,9 @@ const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+// A home cue is a card's touch voice: the same translated line as on the card page.
+void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], activeCue.value?.text))
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
@@ -716,6 +718,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .dialogue-actions { min-width:0;flex-wrap:wrap;row-gap:6px; }
 .dialogue-actions > span { flex:none; }
+.home-dialogue .is-pending { visibility:hidden; }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }

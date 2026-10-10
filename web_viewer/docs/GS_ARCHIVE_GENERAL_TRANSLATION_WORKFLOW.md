@@ -48,6 +48,19 @@ node scripts/verify-archive-general-texts.mjs
 
 审计页仍在「资源 → 数据与资源状态」的「翻译与校对进度」。同一字段多处使用不重复计校对量；按原文、译文、状态、批次、ID、使用位置检索仍读取完整本地映射。剧情继续保留自己的 Reader/compiled/source_hash 身份，使用原有剧情 batch。
 
+## 制作人称呼占位（与剧情同一合同）
+
+原文的 `●●●●プロデューサー`（名字+P）与 `●●●●●●●●●●`（名字）是程序宏。合同只有一条：**译文必须原样保留原文的宏**，显示时才由 `renderProducerAddressing` 按玩家 P 名和显示语言替换（未设名：中文“制作人”、日文“プロデューサー”；`●●●●プロデューサー酱` 显示“P酱”；10 点后接監督/P酱等称呼时只显示称呼）。
+
+- 导出：`input.md` 里的宏换成剧情批次同款 `{{GS_ADDRESS:编号:类型}}` 标记，模型看不到原始圆点，不会再把 `プロデューサー` 半译成 `●●●●制作人`。
+- 导入：标记还原成原文宏；标记被改、删、重复或新造都拒绝。旧包回传直接写宏也接受。
+- 校验：`validateGeneralReturn` 与剧情 overlay 同用 `validateProducerAddressingOverlay`；修订加载、生成器、审计都经过它，宏被翻译或丢失即失败。
+- 机械修复：`node scripts/general-translation-workflow.mjs amend producer-slot-restore <revision.json>...`。修订保留用户原批准，追加 `amendments`（每条 before/after）；加载时逐条验证确为该修复，并撤回到批准时的 `return_sha256`，任何措辞改动都会被拒。2026-10-10 用它修复了 G-card-lines-001~005 的 242 条 `●●●●制作人`。
+
+## 台词在页面上的唯一通路
+
+卡面台词、首页触摸语音、演出语音、电话标题和聊天都通过 `useArchiveNamedText.js` 的 `archiveLineText(分片, [[kind, field]...], 原文)`：按资料语言选译文、分片加载中隐藏（不闪日文）、无译文回落原文，最后统一替换制作人宏。页面只需在 setup 里 `loadArchiveNames(分片)` 一次。接入点：卡面详情、首页偶像互动对话框、P 名设置预览、手机电话标题与聊天；卡面“演出预览”经 `translatedVoicePreview` 把触摸语音译文带进播放器，随剧情阅读设置显示。新增显示台词的页面直接用它，不要再自写查表。`verify-character-line-text.mjs` 覆盖这条通路。
+
 ## 人工确认后标记已校对
 
 逐批读完或修订并重新导入后，记录用户对**这一个批次和确切回传版本**的确认。不能因为模型说“已检查”就提升状态，也不能沿用其他批次的确认。保存人工确认文件，例如：

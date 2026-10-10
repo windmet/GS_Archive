@@ -229,7 +229,7 @@
                 <strong>{{ cue.label }}</strong>
                 <small :class="`source-${cue.text_source}`">{{ cue.text?.trim() && cue.text.trim() !== '0' ? voiceSourceLabel(cue.text_source) : '仅音频' }}</small>
               </div>
-              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'"><span class="authored-text">{{ presentProducerAddressingText(cue.text) }}</span><span class="reflowed-text">{{ reflowArchiveText(presentProducerAddressingText(cue.text)) }}</span></p>
+              <p v-if="cue.text?.trim() && cue.text.trim() !== '0'" v-bind="operationalLine(cue.text).attrs"><span class="authored-text">{{ operationalLine(cue.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(operationalLine(cue.text).text) }}</span></p>
             </div>
             <ArchiveVoiceRow :src="voiceUrl(cue.cue)" />
             <button v-if="cardVoicePreviewStep(card, cue)" class="voice-preview-btn" @click="emit('preview-voice', cue)">演出预览</button>
@@ -284,23 +284,15 @@
 
 <script setup>
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
-import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
-import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
-import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { ANY_CARD_LINE, archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
 import { computed, ref, watch } from 'vue'
 
-// Card lines and touch voices come from the lazily loaded card-lines overlay. While it loads the
-// source line keeps its place hidden (no Japanese flash); without a translation it stays Japanese.
-const cardLinesState = ref('loading')
-loadArchiveNames('card-lines').then(() => { cardLinesState.value = 'ready' }, () => { cardLinesState.value = 'failed' })
-function cardLine(kind, field, source) {
-  const original = { text: presentProducerAddressingText(source || ''), attrs: { lang: 'ja' } }
-  if (uiLocale.value !== 'zh-CN') return original
-  if (cardLinesState.value === 'loading') return { ...original, attrs: { lang: 'ja', class: 'is-pending' } }
-  const translated = archiveNamedText(kind, source, field)
-  return translated && translated !== source ? { text: presentProducerAddressingText(translated), attrs: { lang: 'zh-CN' } } : original
-}
+// Card lines, touch voices and operational voices: the shared spoken-line path (archiveLineText).
+void loadArchiveNames('card-lines').catch(() => {})
+const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
+const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
+const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
 import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'

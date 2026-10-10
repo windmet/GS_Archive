@@ -170,7 +170,10 @@ export function useStoryPlaybackController({ state, navigation, loadPlayer, prel
       try {
         await withLoadDeadline(() => loadPlayer(), { signal: owner.controller.signal, timeoutMs: 25000, label: 'player-preview-module' })
         if (!owner.current()) return false
-        return publish(owner, makeScenario(), { ...options, previewCue: cue })
+        // A preview may wait on its text (card voice translations); a newer navigation still wins.
+        const scenario = await makeScenario()
+        if (!owner.current()) return false
+        return publish(owner, scenario, { ...options, previewCue: cue })
       } catch (failure) {
         if (!owner.current()) return false
         error.value = failure.message

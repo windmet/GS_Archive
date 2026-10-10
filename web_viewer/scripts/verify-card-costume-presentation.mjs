@@ -223,7 +223,8 @@ const imports = {
   '../../data/eventResourceGraph.js': { eventBannerUrl },
   './useArchiveCardText.js': { archiveText }, './useArchiveGashaText.js': { gashaText },
   // Card lines come from the lazy card-lines overlay; this contract covers costumes, so lines stay source.
-  './useArchiveNamedText.js': { archiveNamedText: (_kind, source) => source, loadArchiveNames: () => Promise.resolve() },
+  './useArchiveNamedText.js': { archiveNamedText: (_kind, source) => source, loadArchiveNames: () => Promise.resolve(), ANY_CARD_LINE: [],
+    archiveLineText: (_domain, _keys, source) => ({ text: presentProducerAddressingText(source || ''), lang: 'ja', pending: false }) },
   '../../localization/ui/UiLocaleStore.js': { uiLocale },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',

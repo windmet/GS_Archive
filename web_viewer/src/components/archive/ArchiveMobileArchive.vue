@@ -144,7 +144,7 @@
 </template>
 
 <script setup>
-import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
+import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { presentMissionText } from '../../presentation/missionText.js'
 import { uiLocale } from '../../localization/ui/UiLocaleStore.js'
 import { chapterLabel } from '../../presentation/chapterLabel.js'
@@ -283,20 +283,11 @@ function unlockTitle(unlock) {
 // A call's reading document is named after its compiled file.
 const callDocumentId = bundle => String(bundle.file || '').replace(/\.json$/u, '')
 // Chat previews and topic titles are chat lines, translated with the chats overlay.
-const chatsState = ref('loading')
-loadArchiveNames('chats').then(() => { chatsState.value = 'ready' }, () => { chatsState.value = 'failed' })
-function chatText(source) {
-  const zh = uiLocale.value === 'zh-CN'
-  const translated = zh ? ['chat-line:text', 'chat-choice:text', 'chat-choice:detail'].map(key => archiveNamedText(key.split(':')[0], source, key.split(':')[1])).find(text => text && text !== source) : ''
-  return { text: presentProducerAddressingText(translated || source || ''), lang: translated ? 'zh-CN' : 'ja', pending: zh && chatsState.value === 'loading' }
-}
-const cardLinesState = ref('loading')
-loadArchiveNames('card-lines').then(() => { cardLinesState.value = 'ready' }, () => { cardLinesState.value = 'failed' })
-function callTitleText(bundle) {
-  const source = callTitle(bundle), translated = uiLocale.value === 'zh-CN' ? archiveNamedText('call-title', source, 'title') : source
-  const own = translated && translated !== source
-  return { text: presentProducerAddressingText(own ? translated : source), lang: own ? 'zh-CN' : 'ja', pending: uiLocale.value === 'zh-CN' && cardLinesState.value === 'loading' }
-}
+void loadArchiveNames('chats').catch(() => {})
+const CHAT_KEYS = [['chat-line', 'text'], ['chat-choice', 'text'], ['chat-choice', 'detail']]
+const chatText = source => archiveLineText('chats', CHAT_KEYS, source)
+void loadArchiveNames('card-lines').catch(() => {})
+const callTitleText = bundle => archiveLineText('card-lines', [['call-title', 'title']], callTitle(bundle))
 function callTitle(bundle) {
   return bundle.kind === 'idol_phone' ? bundle.scenarios[0]?.title || '' : ''
 }

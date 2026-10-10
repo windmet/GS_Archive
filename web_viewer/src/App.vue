@@ -609,7 +609,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import {loadArchiveNames,archiveNamedText,archiveNamedSearchText} from './components/archive/useArchiveNamedText.js'
+import {loadArchiveNames,archiveNamedText,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -1718,7 +1718,7 @@ async function restoreVoicePreview(route, intent) {
   if (!card || !route.voice) return false
   const cue = findCardVoiceCue(card, route.voice, card.operational_voice_cues || [])
   if (!cue) return false
-  const scenario = buildCardVoicePreviewScenario(card, cue)
+  const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
   loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => scenario,
@@ -2414,8 +2414,17 @@ async function selectPlayerEpisode(request) {
 
 function playNextEpisode(request = {}) { return playbackController.next(request.instance, { chapter: request.chapter === true }) }
 
+// Card voice previews are touch voices; the player gets their card-lines translation inline. Null when
+// the cue has no stage preview; otherwise the scenario promise, whose shard load overlaps the player's
+// and which the playback controller awaits under its own navigation ownership.
+function translatedVoicePreview(card, cue) {
+  if (!buildCardVoicePreviewScenario(card, cue)) return null
+  return loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+    .then(() => buildCardVoicePreviewScenario(card, cue, { translate: source => archiveNamedTranslation('card-touch', source, 'text') }))
+}
+
 async function openVoicePreview(card, cue, returnView) {
-  const scenario = buildCardVoicePreviewScenario(card, cue)
+  const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
   loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => scenario,
