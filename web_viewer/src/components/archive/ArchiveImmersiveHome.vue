@@ -45,9 +45,9 @@
       <button v-if="canReturnToArchive && !focusMode" type="button" class="home-return" @click="emit('return-to-archive')">
         <ArrowLeft :size="15" aria-hidden="true" />返回资料馆
       </button>
-      <button type="button" class="idol-heading" :aria-label="`查看${activeIdol.name}的资料`" @click="emit('open-archive')">
+      <button type="button" class="idol-heading" :aria-label="`查看${activeIdolName}的资料`" @click="emit('open-archive')">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
-        <h2>{{ activeIdol.name }}</h2>
+        <h2>{{ activeIdolName }}</h2>
         <small>{{ activeIdol.kana }}</small>
         <em v-if="!focusMode" class="idol-heading-cta">查看资料<ChevronRight :size="14" aria-hidden="true" /></em>
       </button>
@@ -59,7 +59,7 @@
         <span>首页偶像</span>
         <select v-model="selectedId" aria-label="首页偶像">
           <option v-for="idol in idols" :key="idol.id" :value="idol.id">
-            {{ idol.name }}
+            {{ displayName(idol) }}
           </option>
         </select>
       </label>
@@ -93,7 +93,7 @@
       <span>选择首页偶像</span>
       <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <select v-model="selectedId" aria-label="选择首页偶像">
-        <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
+        <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
       </select>
     </label>
 
@@ -139,7 +139,7 @@
       <header>
         <div>
           <span>首页服装</span>
-          <strong id="costume-picker-title">{{ activeIdol.name }}</strong>
+          <strong id="costume-picker-title">{{ activeIdolName }}</strong>
         </div>
         <button type="button" aria-label="关闭服装选择" @click="costumePickerOpen = false">
           <X :size="18" />
@@ -163,16 +163,25 @@
     <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
-      <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
+      <!-- A touch voice is always the home idol speaking; the cue's own speaker field is the source-language name. -->
+      <div class="dialogue-name">{{ activeIdolName }}</div>
       <p :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p>
-      <div class="dialogue-meta">
+      <!-- The line's card: opens its detail page at this touch voice. -->
+      <button v-if="activeCue.cardId" type="button" class="dialogue-meta dialogue-card-link" title="在卡片详情中查看这句台词" @click="openCueCard">
         <span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span>
-
-      </div>
+        <em>查看卡面<ChevronRight :size="13" aria-hidden="true" /></em>
+      </button>
+      <div v-else class="dialogue-meta"><span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span></div>
       <div class="dialogue-actions">
+        <button type="button" aria-label="上一句台词" title="上一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(-1)">
+          <ChevronLeft :size="18" />
+        </button>
         <button type="button" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
           <Square v-if="playing" :size="16" fill="currentColor" />
           <Volume2 v-else :size="18" />
+        </button>
+        <button type="button" aria-label="下一句台词" title="下一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(1)">
+          <ChevronRight :size="18" />
         </button>
         <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
         <ArchiveLanguageSwitch class="home-language-switch" />
@@ -224,7 +233,7 @@
         <label class="settings-field">
           <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
-            <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
+            <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
           </select>
         </label>
 
@@ -286,6 +295,7 @@ import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, r
 import {
   ArrowLeft,
   Check,
+  ChevronLeft,
   ChevronRight,
   RotateCcw,
   SlidersHorizontal,
@@ -325,8 +335,9 @@ const props = defineProps({
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
+  idolName: { type: Function, default: null },
 })
-const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'open-card', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -369,6 +380,8 @@ const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+const displayName = idol => props.idolName?.(idol.id, idol.name) || idol.name
+const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.value) : '')
 // A home cue is a card's touch voice: the same translated line as on the card page.
 void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
 const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], activeCue.value?.text))
@@ -558,9 +571,19 @@ function resolveNextCue() {
   return cues[nextIndex]
 }
 
-function nextCue() {
-  const next = resolveNextCue()
-  if (next) emit('update:selectedCue', next.cue)
+// Explicit stepping is always in source order, whatever the stage tap's order setting.
+function stepCue(offset) {
+  const cues = activeIdol.value?.cues || []
+  if (cues.length < 2) return
+  stageTapAbort?.abort()
+  emit('update:selectedCue', cues[(cueIndex.value + offset + cues.length) % cues.length].cue)
+}
+
+function openCueCard() {
+  const cue = activeCue.value
+  if (!cue?.cardId) return
+  stopVoice()
+  emit('open-card', { idolId: activeIdol.value.id, cardId: cue.cardId, voice: cue.cue })
 }
 
 async function handleStageTap() {
@@ -719,6 +742,11 @@ onBeforeUnmount(() => {
 .dialogue-actions { min-width:0;flex-wrap:wrap;row-gap:6px; }
 .dialogue-actions > span { flex:none; }
 .home-dialogue .is-pending { visibility:hidden; }
+.dialogue-card-link { display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:0;border:0;background:none;font:inherit;color:var(--gs-ink-3);text-align:left;cursor:pointer;pointer-events:auto; }
+.dialogue-card-link span { min-width:0; }
+.dialogue-card-link em { display:inline-flex;align-items:center;flex:none;margin-left:auto;font-style:normal;color:var(--gs-mint-ink); }
+.dialogue-card-link:hover span { color:var(--gs-ink);text-decoration:underline; }
+.dialogue-actions button:disabled { opacity:.4; }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }

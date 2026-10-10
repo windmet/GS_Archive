@@ -1,5 +1,5 @@
 <template>
-  <section class="screen list-screen" data-archive-scroll-container>
+  <section ref="detailRoot" class="screen list-screen" data-archive-scroll-container>
     <ArchiveListHeader v-if="!embedded" :title="displayCardTitle || '卡片详情'" @back="emit('back')" />
     <div v-if="card" class="card-detail">
       <section class="card-hero" :class="`is-${stage.layout}`">
@@ -209,7 +209,7 @@
       <section v-if="card.home_voice_cues?.length" class="card-detail-section">
         <h4>首页触摸语音</h4>
         <div class="voice-list">
-          <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row">
+          <div v-for="(cue, index) in card.home_voice_cues" :key="cue.cue" class="voice-row" :data-voice-cue="cue.cue" :class="{ 'is-focused': cue.cue === focusVoice }">
             <div class="voice-copy">
               <strong>触摸语音 {{ index + 1 }}</strong>
               <p v-if="cue.preview?.text" v-bind="cardLine('card-touch', 'text', cue.preview.text).attrs"><span class="authored-text">{{ cardLine('card-touch', 'text', cue.preview.text).text }}</span><span class="reflowed-text">{{ reflowArchiveText(cardLine('card-touch', 'text', cue.preview.text).text) }}</span></p>
@@ -286,7 +286,7 @@
 import { reflowArchiveText } from '../../presentation/ArchiveText.js'
 import { ANY_CARD_LINE, archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
 import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 // Card lines, touch voices and operational voices: the shared spoken-line path (archiveLineText).
 void loadArchiveNames('card-lines').catch(() => {})
@@ -328,6 +328,8 @@ const props = defineProps({
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
   limitbreakMaterial: { type: Object, default: null },
+  // A touch voice the reader came for (from the home dialogue): scrolled to and marked.
+  focusVoice: { type: String, default: '' },
 })
 // What the card opens in 通信: calls after limit break, training or acquisition, and the chat
 // after scouting it. None of these is an ADV story.
@@ -393,6 +395,13 @@ const stage = computed(() => {
   return { layout: icons.length > 1 ? 'pair' : 'single', items: icons }
 })
 const attributeKey = computed(() => attributeKeyOf(props.card?.gameplay?.attribute?.name))
+
+const detailRoot = ref(null)
+watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
+  if (!voice) return
+  await nextTick()
+  detailRoot.value?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)?.scrollIntoView({ block: 'center' })
+}, { immediate: true, flush: 'post' })
 
 watch(() => props.card?.resource_id, () => {
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
@@ -694,6 +703,7 @@ function openRelation(item) {
 .card-text-block p { margin: 0; padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; line-height: 2; }
 .voice-list, .scenario-link-list { display: grid; }
 .voice-row { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(220px, 340px) auto; align-items: center; gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
+.voice-row.is-focused { margin: 0 calc(-1 * var(--gs-space-3)); padding-inline: var(--gs-space-3); border-radius: var(--gs-radius-control); background: color-mix(in srgb, var(--gs-mint) 10%, transparent); box-shadow: inset 3px 0 0 var(--gs-mint); }
 .voice-row > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 .voice-row audio { width: 100%; height: 32px; }
 .voice-copy { min-width: 0; }

@@ -87,6 +87,7 @@
         v-model:selected-costume="homeSelectedCostume"
         :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
+        :idol-name="idolDisplayName"
         :home-mode="userPreferences.homeMode === 'card' ? 'card' : 'spine'"
         @update:home-mode="storeUserPreferences({ homeMode: $event })"
         @focus-change="homeFocus = $event"
@@ -99,6 +100,7 @@
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"
         @open-chat="openHomeChat"
+        @open-card="openHomeCard"
       />
 
       <ArchiveAbout v-if="view === 'about'" />
@@ -175,6 +177,7 @@
         :series-cards="currentSeriesCards"
         :event-relation="currentCardEventRelation"
         :gasha-relation="currentCardGashaRelation"
+        :focus-voice="homeCardFocus.card === currentCard?.resource_id ? homeCardFocus.voice : ''"
         @back="goArchiveBack"
         @preview-voice="previewCardVoice"
         @open-scenario="openCardScenario"
@@ -2186,6 +2189,15 @@ function openHomeIdol(idolId) {
 
 function openHomeCards(idolId) {
   return openPrimaryCards(idolId, { captureSource: true })
+}
+
+// The home dialogue's card link: the card page, scrolled to that touch voice. The mark lasts
+// while the reader stays on the card (including its voice previews), not as part of the route.
+const homeCardFocus = ref({ card: '', voice: '' })
+watch(view, next => { if (!['card_detail', 'player'].includes(next)) homeCardFocus.value = { card: '', voice: '' } })
+function openHomeCard({ idolId, cardId, voice }) {
+  homeCardFocus.value = { card: cardId, voice }
+  return openCard({ resource_id: cardId, character_id: idolId }, { resetContext: true, captureSource: true })
 }
 
 function openHomeChat(idolId) {
