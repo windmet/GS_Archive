@@ -22,7 +22,7 @@ assert(out.startsWith(base + path.sep), 'Output must stay under .analysis/transl
 await fs.mkdir(base, { recursive: true })
 await fs.mkdir(out)
 
-const order = ['main', 'unit_story', 'idol_story', 'event', 'birthday', 'extra', 'work', 'card_scenarios']
+const order = ['main', 'unit_story', 'idol_story', 'event', 'birthday', 'extra', 'work', 'card_scenarios', 'seasonal']
 const indexes = await loadStudioIndexes()
 const policy = await loadStudioPolicy({ version: 3 })
 const byDomain = new Map(order.map(domain => [domain, []]))
@@ -104,7 +104,8 @@ for (const domain of targetBatch ? [] : order) {
   if (current.length) await writeBatch(domain, current)
 }
 assert.equal(plan.documents, selectedDocuments.length || indexes.reading.entries.length)
-if (!targetBatch) assert.equal(plan.units, 30121, 'Text coverage changed; audit the new baseline')
+// 32760 since 2026-10-09: the 306 seasonal campaign documents add exactly 2639 rows (as in verify-ai-studio-batches).
+if (!targetBatch) assert.equal(plan.units, 32760, 'Text coverage changed; audit the new baseline')
 assert(plan.batches.every(batch => batch.units <= hardRows && batch.source_characters <= hardCharacters))
 await fs.writeFile(path.join(out, 'plan.json'), JSON.stringify(plan, null, 2) + '\n', { flag: 'wx' })
 console.log(JSON.stringify({ out, documents: plan.documents, units: plan.units,

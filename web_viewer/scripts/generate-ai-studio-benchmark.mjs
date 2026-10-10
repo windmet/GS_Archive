@@ -8,6 +8,8 @@ if (process.argv.length > (check ? 3 : 2)) throw Error('Usage: node scripts/gene
 const domains = ['main', 'unit_story', 'idol_story', 'event', 'birthday', 'extra', 'work', 'card_scenarios']
 const indexes = await loadStudioIndexes(), pool = new Map(domains.map(domain => [domain, []]))
 for (const entry of indexes.reading.entries) {
+  // The v1 sample is fixed to these eight domains; later domains (seasonal) are not sampled.
+  if (!pool.has(entry.domain)) continue
   const item = await loadStudioDocument(entry, indexes)
   for (const row of item.rows) {
     const protectedText = item.draft.entries[row.text_ref.unit_id].source
