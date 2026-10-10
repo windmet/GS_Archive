@@ -163,40 +163,44 @@
     <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
-      <!-- A touch voice is always the home idol speaking; the cue's own speaker field is the source-language name. -->
-      <div class="dialogue-name">{{ activeIdolName }}</div>
-      <p :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p>
-      <!-- The line's card: opens its detail page at this touch voice. -->
-      <button v-if="activeCue.cardId" type="button" class="dialogue-meta dialogue-card-link" title="在卡片详情中查看这句台词" @click="openCueCard">
-        <span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span>
-        <em>查看卡面<ChevronRight :size="13" aria-hidden="true" /></em>
-      </button>
-      <div v-else class="dialogue-meta"><span>{{ activeCue.rarity }} · {{ cardText('card',activeCue.cardTitle,'title') }}</span></div>
+      <!-- Three rows, as a game dialogue box: who and from which card / the line / the player bar. -->
+      <header class="dialogue-head">
+        <!-- A touch voice is always the home idol speaking; the cue's own speaker field is the source-language name. -->
+        <div class="dialogue-name">{{ activeIdolName }}</div>
+        <!-- The line's card: opens its detail page at this touch voice. -->
+        <button v-if="activeCue.cardId" type="button" class="dialogue-card" :title="`查看卡面：${cueCardLabel}`" :aria-label="`查看卡面：${cueCardLabel}`" @click="openCueCard">
+          <span>{{ cueCardLabel }}</span><ChevronRight :size="14" aria-hidden="true" />
+        </button>
+        <span v-else class="dialogue-card">{{ cueCardLabel }}</span>
+        <ArchiveLanguageSwitch class="home-language-switch" inline />
+      </header>
+      <p class="dialogue-line" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p>
       <div class="dialogue-actions">
         <button type="button" aria-label="上一句台词" title="上一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(-1)">
-          <ChevronLeft :size="18" />
+          <ChevronLeft :size="20" />
         </button>
-        <button type="button" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
-          <Square v-if="playing" :size="16" fill="currentColor" />
-          <Volume2 v-else :size="18" />
+        <button type="button" class="dialogue-play" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
+          <Square v-if="playing" :size="14" fill="currentColor" />
+          <Play v-else :size="16" fill="currentColor" />
         </button>
         <button type="button" aria-label="下一句台词" title="下一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(1)">
-          <ChevronRight :size="18" />
+          <ChevronRight :size="20" />
         </button>
         <!-- The counter opens the line directory: every touch line of this idol, by card. -->
         <button type="button" class="cue-index-trigger" aria-haspopup="dialog" :aria-expanded="cueIndexOpen" title="台词目录" :aria-label="`台词目录，当前第 ${cueIndex + 1} 句，共 ${activeIdol.cues.length} 句`" @click="openCueIndex">
-          <List :size="15" aria-hidden="true" />{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}
+          <span>{{ cueIndex + 1 }}<small> / {{ activeIdol.cues.length }}</small></span><List :size="17" aria-hidden="true" />
         </button>
-        <ArchiveLanguageSwitch class="home-language-switch" />
       </div>
       <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
 
-    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex">
+    <!-- A side drawer (bottom sheet on phones) over the stage's side, so the idol stays in view while
+         lines are auditioned; it stays open on a pick. A backdrop click closes it. -->
+    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
       <header>
         <div>
           <h3 id="cue-index-title">台词目录</h3>
-          <p>{{ activeIdolName }} · {{ activeIdol.cues.length }} 句触摸语音，点选即播放</p>
+          <p>{{ activeIdolName }} · {{ activeIdol.cues.length }} 句触摸语音 · 点选即播放</p>
         </div>
         <button type="button" aria-label="关闭台词目录" title="关闭" @click="closeCueIndex">
           <X :size="21" />
@@ -220,7 +224,7 @@
               <button type="button" :data-cue-index="row.index" :aria-current="row.cue.cue === activeCue.cue ? 'true' : undefined" @click="chooseCue(row.cue)">
                 <span class="cue-index-number">{{ row.index + 1 }}</span>
                 <span class="cue-index-line" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
-                <Volume2 v-if="row.cue.cue === activeCue.cue" :size="15" aria-hidden="true" />
+                <span v-if="row.cue.cue === activeCue.cue" class="cue-index-now" :class="{ 'is-playing': playing }" aria-hidden="true"><i></i><i></i><i></i></span>
               </button>
             </li>
           </ol>
@@ -338,6 +342,7 @@ import {
   ChevronLeft,
   ChevronRight,
   List,
+  Play,
   RotateCcw,
   Search,
   SlidersHorizontal,
@@ -443,6 +448,7 @@ const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) =
   line: archiveLineText('card-lines', [['card-touch', 'text']], cue.text),
   title: cardText('card', cue.cardTitle, 'title'),
 })))
+const cueCardLabel = computed(() => [activeCue.value?.rarity, cardText('card', activeCue.value?.cardTitle, 'title')].filter(Boolean).join(' · '))
 const cueRarities = computed(() => [...new Set(cueRows.value.map(row => row.cue.rarity).filter(Boolean))])
 const compactText = text => String(text || '').replace(/\s+/g, '').toLocaleLowerCase()
 const cueGroups = computed(() => {
@@ -667,7 +673,6 @@ async function openCueIndex() {
 }
 
 async function chooseCue(cue) {
-  closeCueIndex()
   stageTapAbort?.abort()
   if (cue.cue !== activeCue.value?.cue) {
     emit('update:selectedCue', cue.cue)
@@ -842,16 +847,36 @@ onBeforeUnmount(() => {
 <style scoped src="../../styles/archive-home-day.css"></style>
 
 <style scoped>
-.dialogue-actions { min-width:0;flex-wrap:wrap;row-gap:6px; }
-.dialogue-actions > span { flex:none; }
+/* Dialogue box: plain white (the opacity setting sets its alpha), the idol's
+   colour as a top edge like the masthead stripe, the in-game nameplate kept green. */
+.home-dialogue { padding:12px 16px 8px;border-top:3px solid var(--idol-color);background:rgb(255 255 255 / var(--interface-alpha)); }
+.dialogue-head { display:flex;align-items:center;gap:10px;min-width:0;margin-bottom:8px; }
+.home-dialogue .dialogue-name { flex:none;min-width:0;margin:0; }
+.dialogue-card { display:inline-flex;align-items:center;gap:2px;min-width:0;min-height:32px;padding:0;border:0;background:none;font:inherit;font-size:var(--gs-text-meta);color:var(--gs-ink-3);text-align:left;pointer-events:auto; }
+.dialogue-card span { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.dialogue-card svg { flex:none; }
+button.dialogue-card { cursor:pointer; }
+button.dialogue-card:hover { color:var(--gs-selected-ink); }
+.home-dialogue .dialogue-line { margin:0;padding:2px 2px 4px;font-size:var(--gs-text-subtitle);line-height:1.7; }
 .home-dialogue .is-pending { visibility:hidden; }
-.dialogue-card-link { display:flex;align-items:center;gap:8px;width:100%;min-height:32px;padding:0;border:0;background:none;font:inherit;color:var(--gs-ink-3);text-align:left;cursor:pointer;pointer-events:auto; }
-.dialogue-card-link span { min-width:0; }
-.dialogue-card-link em { display:inline-flex;align-items:center;flex:none;margin-left:auto;font-style:normal;color:var(--gs-mint-ink); }
-.dialogue-card-link:hover span { color:var(--gs-ink);text-decoration:underline; }
-.dialogue-actions button:disabled { opacity:.4; }
-.dialogue-actions .cue-index-trigger { display:inline-flex;align-items:center;gap:5px;width:auto;flex:none;padding:0 10px;font-size:var(--gs-text-meta);color:var(--gs-ink-2);font-variant-numeric:tabular-nums; }
-.cue-index { width:min(560px, calc(100% - 28px)); }
+.home-dialogue .dialogue-actions { display:flex;align-items:center;gap:2px;margin:4px -6px 0;padding-top:4px;border-top:1px solid var(--gs-line); }
+.home-dialogue .dialogue-actions button { display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
+.home-dialogue .dialogue-actions button:hover:not(:disabled) { background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.home-dialogue .dialogue-actions button:disabled { opacity:.35; }
+.home-dialogue .dialogue-actions .dialogue-play { color:var(--gs-mint-ink); }
+.home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
+.cue-index-trigger small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
+@media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
+@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-line { font-size:var(--gs-text-body); } }
+@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-line { font-size:var(--gs-text-ui);line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
+.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in .22s ease-out; }
+.scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
+.scene-settings.cue-index > header { background:transparent; }
+@keyframes cue-drawer-in { from { transform:translateX(24px);opacity:0; } }
+@keyframes cue-sheet-in { from { transform:translateY(24px);opacity:0; } }
+@media (max-width:760px) {
+  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in; }
+}
 .cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
 .cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
 .cue-index-search input { flex:1;min-width:0;border:0;outline:0;background:none;color:var(--gs-ink);font:inherit;font-size:var(--gs-text-ui); }
@@ -864,7 +889,13 @@ onBeforeUnmount(() => {
 .cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
 .cue-index-card li button:hover { background:var(--gs-paper); }
 .cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
-.cue-index-card li button > svg { flex:none;margin-top:3px;color:var(--gs-mint-ink); }
+.cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
+.cue-index-now i { flex:1;height:40%;background:var(--gs-mint); }
+.cue-index-now.is-playing i { animation:cue-now 0.9s ease-in-out infinite; }
+.cue-index-now.is-playing i:nth-child(2) { animation-delay:-.3s; }
+.cue-index-now.is-playing i:nth-child(3) { animation-delay:-.6s; }
+@keyframes cue-now { 0%, 100% { height:30%; } 50% { height:100%; } }
+@media (prefers-reduced-motion: reduce) { .scene-settings.cue-index, .cue-index-now.is-playing i { animation:none; } }
 .cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
 .cue-index-line { flex:1;min-width:0;font-size:var(--gs-text-ui);line-height:1.65;white-space:pre-line; }
 .cue-index-line.is-pending { visibility:hidden; }
