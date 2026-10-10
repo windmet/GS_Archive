@@ -103,10 +103,31 @@
 5. **舞台光只标「现在」**：选中、播放中、进度。编队、表情等格子不按偶像色或薄荷色铺底，选中项用舞台光圈。
 6. **工程信息进维护者模式**：引擎版本、资源路径、实验字样只在 `?maintainer=1` 显示。
 
-控件高度 compact 32 / normal 36 / toolbar 40 / touch 44；触摸输入框字号至少 16px。反馈动效 120ms、`--gs-motion-ease`，不引入入场或循环动画，遵守 reduced-motion。
+控件高度 compact 32 / normal 36 / toolbar 40 / touch 44；触摸输入框字号至少 16px。工具内的反馈动效 120ms、`--gs-motion-ease`，不引入循环动画；浮层进出场按下方「动效」一节。
+
+### 动效（2026-10-10 起生效）
+
+动效只用来说明「位置变了」：一页换成另一页、一层浮到页面上、一张图到了。不装饰、不循环、不拖住操作，内容从第一帧起就能点。实现集中在 [gs-motion.css](../src/styles/gs-motion.css) 与 [imageReveal.js](../src/presentation/imageReveal.js)，由 `npm run verify:archive-motion` 守护。
+
+| 场合 | 处理 | 时长 |
+| --- | --- | --- |
+| 换页 | 新页从纸面淡入；旧页立即离开，不等它退场。只用透明度：页面根上的 transform 会让页内固定栏在淡入期间错位 | `--gs-motion-page` 160ms |
+| 对话框、弹出层 | 上浮 8px、缩放 .985 并淡入；关闭时淡出，内容保留到淡出结束再卸载 | 进 `--gs-motion-enter` 180ms / 出 `--gs-motion-exit` 120ms |
+| 抽屉 | 宽屏从右侧移入 32px；手机变成底部抽屉时整段升起 | 180ms / 手机 `--gs-motion-sheet` 240ms |
+| 底部抽屉（筛选、阅读设置、引导） | 从底边整段升起 | 240ms，是全站上限 |
+| 图片 | 加载完成（或失败）才显示并淡入，加载中露出所在格子的底色，不再一条条画出来；同一张图换源不重播 | 180ms |
+| 按压 | 有悬停的设备靠悬停反馈；触屏按下立即变淡（.64），松开 120ms 恢复；去掉系统灰色点击高亮 | 120ms |
+
+- **退场短于入场**；不需要退场的地方直接消失，不为对称硬加。
+- **组件只改距离和时长**：`--gs-enter-travel` / `--gs-enter-duration`、`--gs-dialog-travel` / `--gs-dialog-duration`，不直接写 `--gs-*-from`，否则会压过 reduced-motion。
+- **reduced-motion**：去掉位移，只保留淡入淡出。
+- 原生 `<dialog>` 的退场依赖浏览器能为 `display` 做过渡（`@starting-style` / `allow-discrete`）；不支持的浏览器直接出现、直接关闭。
+- **同一页面的新条目从顶部开始**：在卡片详情里点「下一张」、换偶像等会新增历史记录的跳转，滚动回到顶部；返回时恢复原位置，页面数据晚到时会继续跟到原来的深度，读者自己滚动后立即停止跟随。阅读器按锚点定位，不在此列。
+- 按压态和图片显隐都写在 `:where()` 里，特异性为 0：组件自己写的过渡或按下样式始终优先。
 
 ### 守护
 
+- `npm run verify:archive-motion`：动效时长阶梯与上限、reduced-motion、按压与图片显隐的零特异性、换页只用透明度、各浮层的进出场接线。
 - `npm run verify:design-tokens`：逐文件棘轮，统计裸字号、低于 12px 的字号、十六进制颜色、非角色圆角与三档以外的视口断点，任何一项都不许增加；迁移后用 `--update` 下调基线。
 - 本地真实数据：dev 默认没有 read-model 目录，门户与各目录页会降级。验收前在 `readmodels/` 运行 `node tools/build_readmodels.mjs --repo <仓库根> --out <仓库外新目录> --data-revision <已发布 64 位修订> --media-epoch local-dev`（约 1 分钟），再以 `SIDEM_READMODEL_CANDIDATE=<该目录>` 启动 dev server；构建产物不进入仓库，生产构建也不读取该变量。门户卡面属性索引绑定已发布版本，本地版本下属性计数会显示为不可用。
 - 页面画廊 `qa/gallery/`：用 `public/data` 真实数据挂载各页面组件；`npm run gallery:capture -- <标签>` 在 1280 / 768 / 390 三档宽度截图到 `.analysis/gallery/<标签>/`，空渲染、横向滚动或页面报错即失败。截图时预置「已完成引导」的偏好，另有 `app-onboarding` 场景专门截新访客引导。每个阶段以前后两组画廊截图验收。

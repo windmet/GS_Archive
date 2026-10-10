@@ -11,7 +11,7 @@ import * as CatalogIdolScope from '../src/presentation/CatalogIdolScope.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
-import { buildArchiveViewContext, saveArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
+import { buildArchiveViewContext, saveArchiveViewRestoration, readArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
 
 // Execute the actual SFC setup/template, model directives and App callbacks.
 // Synthetic catalog rows and memory-renderer geometry are contract evidence;
@@ -127,7 +127,7 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
   const window = { location: { href: buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).href }, history: { state: { sidemArchiveEntryId: 'entry-fixture' } } }
   const context = vm.createContext({
     ...state, window, nextTick: Vue.nextTick, normalizeEventBrowseState, buildArchiveViewContext,
-    archiveRouteReady: true, archiveViewRestoreRevision: 0, activeArchiveViewContext: null, pendingEventCatalogRestore: null, pendingPhotoCatalogRestore: null,
+    archiveRouteReady: true, archiveViewRestoreRevision: 0, adoptedArchiveView: "", activeArchiveViewContext: null, pendingEventCatalogRestore: null, pendingPhotoCatalogRestore: null,
     loading: { value: false }, console, pendingEventNavigation: 0,
     eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
     navigation: { getRevision: () => revision, invalidate: () => revision++, isDisposed: () => disposed, isRestoring: () => false },
@@ -135,6 +135,7 @@ function fixture(initial = {}, { delayed = false, fail = false, saved = null, le
       window.location.href = buildArchiveUrl(window.location.href, value).href
       writes.push({ route: readArchiveRoute(window.location.href), options })
     },
+    readArchiveViewRestoration: value => readArchiveViewRestoration(value, storage),
     restoreArchiveViewState: value => { restores.push(value); return restoreArchiveViewState(value, { root: document, storage }) },
     buildArchiveSourceQuery, readArchiveSourceRoute, prepareArchivePage: (_view, value) => value,
     eventReadModelCatalog: Vue.ref(rows), readModelClient: { async load(descriptor, options) { const value = eventFixtureDetail(options.expectedId); options.validate(value); return value } }, commitView: view => { state.view.value = view },

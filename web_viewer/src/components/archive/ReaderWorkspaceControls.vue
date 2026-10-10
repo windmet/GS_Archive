@@ -23,18 +23,18 @@
       <span class="dock-divider" aria-hidden="true"></span>
       <button class="icon-button" aria-label="阅读设置" title="阅读设置" aria-haspopup="dialog" :aria-expanded="panel === 'settings' || panel === 'search'" @click="openPanel('settings', $event)"><Settings2 :size="19" aria-hidden="true" /></button>
     </nav>
-    <dialog ref="dialog" class="reader-sheet" :aria-label="panelTitle" @cancel.prevent="closePanel" @click="onBackdrop">
+    <dialog ref="dialog" class="reader-sheet gs-dialog-motion" :aria-label="panelTitle" @cancel.prevent="closePanel" @click="onBackdrop">
       <div class="reader-sheet-content">
         <header class="sheet-header"><h2>{{ panelTitle }}</h2><button class="icon-button" aria-label="关闭面板" @click="closePanel"><X :size="20" aria-hidden="true" /></button></header>
-        <template v-if="panel === 'directory' || panel === 'chapters'">
+        <template v-if="shownPanel === 'directory' || shownPanel === 'chapters'">
           <p class="sheet-context">{{ chapterLabel }} · {{ title }}</p>
-          <ReaderStoryNavigation :segments="panel === 'directory' ? segments : []" :document-id="activeDocumentId" :chapter-navigation="panel === 'chapters' ? chapterNavigation : null" :expand-chapters="panel === 'chapters'" :allow-unlinked="allowUnlinked" @select="selectSegment" @chapter="selectChapter" />
+          <ReaderStoryNavigation :segments="shownPanel === 'directory' ? segments : []" :document-id="activeDocumentId" :chapter-navigation="shownPanel === 'chapters' ? chapterNavigation : null" :expand-chapters="shownPanel === 'chapters'" :allow-unlinked="allowUnlinked" @select="selectSegment" @chapter="selectChapter" />
         </template>
         <template v-else>
-          <ReaderControlBar v-if="panel === 'settings' || panel === 'producer'" :producer-only="panel === 'producer'" :mode="mode" :searchable="searchable" @mode="emit('mode', $event)" @search="openPanel('search')" />
-          <slot v-if="panel === 'search'" name="search" />
-          <p v-if="panel === 'settings'" class="settings-note">配色和 P 名字会保存在本机。篇内查找包含已载入的所有分支。</p>
-          <p v-if="panel === 'producer'" class="settings-note">显示名保存在本机，用于剧情、首页与卡面中的制作人称呼。留空时保留来源占位符。</p>
+          <ReaderControlBar v-if="shownPanel === 'settings' || shownPanel === 'producer'" :producer-only="shownPanel === 'producer'" :mode="mode" :searchable="searchable" @mode="emit('mode', $event)" @search="openPanel('search')" />
+          <slot v-if="shownPanel === 'search'" name="search" />
+          <p v-if="shownPanel === 'settings'" class="settings-note">配色和 P 名字会保存在本机。篇内查找包含已载入的所有分支。</p>
+          <p v-if="shownPanel === 'producer'" class="settings-note">显示名保存在本机，用于剧情、首页与卡面中的制作人称呼。留空时保留来源占位符。</p>
         </template>
       </div>
     </dialog>
@@ -53,7 +53,10 @@ const props = defineProps({ title:String, titlePending:Boolean, subtitle:String,
 const emit = defineEmits(['back','chapter','select','mode'])
 const modes = [{id:'original',label:'原文'},{id:'translation',label:'译文'},{id:'bilingual',label:'双语'}]
 const dialog = ref(null), heading = ref(null), panel = ref('')
-let opener = null
+// What the sheet shows. It outlives panel by the exit fade (gs-motion.css) so a closing sheet keeps
+// its content instead of flashing to the settings view; it then clears and the content unmounts.
+const shownPanel = ref(''), SHEET_EXIT_MS = 160
+let opener = null, releaseTimer = 0
 const chapterLabel = computed(() => presentChapter(props.chapterNavigation?.chapters.find(chapter => chapter.id === props.chapterNavigation.chapterId)?.label || ''))
 const previousSegment = computed(() => readerSegmentNeighbour(props.segments, props.activeDocumentId, -1, props.allowUnlinked))
 const nextSegment = computed(() => readerSegmentNeighbour(props.segments, props.activeDocumentId, 1, props.allowUnlinked))
@@ -61,16 +64,19 @@ const hasDirectory = computed(() => props.segments.length > 0)
 const hasChapters = computed(() => props.chapterNavigation?.chapters.length > 1)
 const segmentLabel = segment => presentIdolEpisodeLabel({sourceName:segment.label,format:'reader'})
 const activeLabel = computed(() => segmentLabel(props.segments.find(segment => (segment.documentId || segment.episodeKey) === props.activeDocumentId) || {label:props.subtitle}) || '目录')
-const panelTitle = computed(() => panel.value === 'chapters' ? '切换话目' : panel.value === 'directory' ? '本话 EP 目录' : panel.value === 'search' ? '篇内查找' : panel.value === 'producer' ? 'P 名字' : '阅读设置')
+const panelTitle = computed(() => shownPanel.value === 'chapters' ? '切换话目' : shownPanel.value === 'directory' ? '本话 EP 目录' : shownPanel.value === 'search' ? '篇内查找' : shownPanel.value === 'producer' ? 'P 名字' : '阅读设置')
 async function openPanel(name, event) {
   if (!dialog.value?.open) opener = event?.currentTarget || globalThis.document?.activeElement
-  panel.value = name
+  clearTimeout(releaseTimer)
+  panel.value = shownPanel.value = name
   await nextTick()
   if (!dialog.value?.open) dialog.value?.showModal()
   if (name === 'search') dialog.value?.querySelector('input[type="search"]')?.focus()
 }
 function closePanel({ restoreFocus = true } = {}) {
   dialog.value?.close(); panel.value = ''
+  clearTimeout(releaseTimer)
+  releaseTimer = setTimeout(() => { if (!panel.value) shownPanel.value = '' }, SHEET_EXIT_MS)
   if (restoreFocus) {
     if (opener?.isConnected && opener.getClientRects().length) opener.focus({preventScroll:true})
     else heading.value?.focus({preventScroll:true})
@@ -85,7 +91,7 @@ function onReaderKey(event) {
   if (segment) { event.preventDefault(); emit('select', segment) }
 }
 watch(() => props.chapterNavigation?.chapterId, () => closePanel({restoreFocus:false}))
-onBeforeUnmount(() => dialog.value?.close())
+onBeforeUnmount(() => { clearTimeout(releaseTimer); dialog.value?.close() })
 defineExpose({openSearch:() => openPanel('search'),closePanel,focusHeading:() => heading.value?.focus({preventScroll:true}),onReaderKey})
 </script>
 <style scoped>
@@ -134,7 +140,7 @@ h1 { flex:1; min-width:0; margin:0; font-size:17px; line-height:1.4; outline:non
   .dock-story { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:600; }
   .dock-episode { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--reader-accent-text); }
   .dock-divider { width:1px; height:20px; background:var(--reader-border); margin:0 2px; }
-  .reader-sheet { width:100%; max-height:80dvh; max-width:100%; margin:0; inset:auto 0 0; border-radius:20px 20px 0 0; border-bottom:0; }
+  .reader-sheet { width:100%; max-height:80dvh; max-width:100%; margin:0; inset:auto 0 0; border-radius:20px 20px 0 0; border-bottom:0; --gs-dialog-travel:translateY(100%); --gs-dialog-duration:var(--gs-motion-sheet); }
   .reader-sheet-content { padding:8px max(16px,var(--archive-safe-right)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,var(--archive-safe-left)); }
 }
 </style>

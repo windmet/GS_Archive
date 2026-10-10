@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
-    <div class="collection-quick-backdrop" @click.self="emit('close')">
-      <section ref="dialog" class="domain-page collection-quick-dialog" role="dialog" aria-modal="true" aria-label="藏品快捷查看" @keydown.esc.stop.prevent="emit('close')" @keydown.tab="cycleFocus">
+    <div class="collection-quick-backdrop gs-enter-backdrop" @click.self="emit('close')">
+      <section ref="dialog" class="domain-page collection-quick-dialog gs-enter-drawer" role="dialog" aria-modal="true" aria-label="藏品快捷查看" @keydown.esc.stop.prevent="emit('close')" @keydown.tab="cycleFocus">
         <header><h2>藏品快捷查看</h2><button ref="closeButton" type="button" aria-label="关闭藏品快捷查看" @click="emit('close')"><X :size="20" /></button></header>
         <p v-if="state.busy" role="status" class="domain-muted">正在读取藏品资料…</p>
         <p v-else-if="state.error" role="alert" class="domain-error">{{ state.error }}<button type="button" @click="preview.open(entityKey)">重试</button></p>

@@ -314,6 +314,9 @@ const mobileNavigation = computed(() => {
 }
 .archive-content { grid-column: 2; min-width: 0; min-height: 0; overflow: hidden; background: var(--gs-paper); }
 .archive-content :deep(.list-screen), .archive-content :deep(.home-screen) { height: 100%; }
+/* A new page fades up from the paper as it mounts; the old one is already gone, so nothing waits on
+   it. Opacity only: a transform here would re-anchor the pages' fixed bars while it ran. */
+.archive-content > :deep(*) { animation: gs-fade-in var(--gs-motion-page) var(--gs-ease-out) backwards; }
 .archive-inspector {
   grid-column: 3;
   grid-row: 2;
@@ -502,6 +505,6 @@ const mobileNavigation = computed(() => {
  .is-compact-mobile .archive-topbar:not(:has(.archive-search)) :deep(.archive-language-switch) {grid-column:3;}
  .is-compact-mobile .archive-search-toggle {display:grid;place-items:center;grid-column:3;grid-row:1;width:44px;height:44px;padding:0;border:0;background:transparent;color:#52777b;cursor:pointer;}
  .is-compact-mobile .archive-search {display:none;grid-column:1/-1;grid-row:2;height:var(--gs-control-touch);width:100%;margin-bottom:var(--gs-space-3);}
- .is-compact-mobile .archive-search.is-open {display:flex;}
+ .is-compact-mobile .archive-search.is-open {display:flex;animation:gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards;}
 }
 </style>

@@ -96,8 +96,9 @@
     </section>
 
     <Teleport to="body">
-      <div v-if="drawer" class="seasonal-drawer-backdrop" @click.self="close">
-        <section ref="drawerElement" class="seasonal-drawer" role="dialog" aria-modal="true" :aria-label="`${drawer.name} 的季节企划`" @keydown.esc.stop.prevent="close" @keydown.tab="cycleFocus">
+      <Transition name="gs-overlay">
+      <div v-if="drawer" class="seasonal-drawer-backdrop gs-enter-backdrop" @click.self="close">
+        <section ref="drawerElement" class="seasonal-drawer gs-enter-drawer" role="dialog" aria-modal="true" :aria-label="`${drawer.name} 的季节企划`" @keydown.esc.stop.prevent="close" @keydown.tab="cycleFocus">
           <header class="drawer-head">
             <ArchiveIdolAvatar v-if="drawer.code !== COMMON" :idol-code="drawer.code" :accent-color="drawer.color" :size="52" :ring-width="3" decorative :fallback-text="drawer.name.slice(0, 1)" />
             <span v-else class="who-mark large" aria-hidden="true"><Users :size="22" /></span>
@@ -139,6 +140,7 @@
           </footer>
         </section>
       </div>
+      </Transition>
     </Teleport>
   </section>
 </template>
@@ -350,7 +352,7 @@ function cycleFocus(event) {
 
 @media (max-width: 760px) {
   .seasonal-drawer-backdrop { align-items: flex-end; }
-  .seasonal-drawer { width: 100%; height: 85dvh; padding-top: 0; padding-right: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); }
+  .seasonal-drawer { width: 100%; height: 85dvh; padding-top: 0; padding-right: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); --gs-enter-travel: translateY(100%); --gs-enter-duration: var(--gs-motion-sheet); }
 }
 @media (prefers-reduced-motion: reduce) { .campaign-head { transition: none; } }
 </style>

@@ -20,7 +20,7 @@
           <button class="overview-search-submit" type="submit">搜索</button>
         </form>
 
-        <div v-if="searchOpen" id="portal-search-results" class="overview-search-results" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
+        <div v-if="searchOpen" id="portal-search-results" class="overview-search-results gs-enter-popover" role="region" aria-label="搜索结果" :aria-busy="Boolean(globalSearch.loading)">
           <button class="overview-search-collapse" type="button" aria-label="收起搜索结果" @click="searchOpen = false"><X :size="16" />收起</button>
           <div v-if="quickSearchTerms.length" class="overview-search-shortcuts" aria-label="担当相关搜索"><span>相关搜索</span><button v-for="term in quickSearchTerms" :key="term" type="button" :aria-label="`搜索 ${term}`" @click="emit('search',term)">{{ term }}</button></div>
           <p v-if="globalSearch.loading" class="overview-status" role="status">正在搜索档案…</p>

@@ -1,5 +1,5 @@
 <template>
-  <dialog ref="dialog" class="onboarding" aria-labelledby="onboarding-title" @cancel.prevent="finish(false)">
+  <dialog ref="dialog" class="onboarding gs-dialog-motion" aria-labelledby="onboarding-title" @cancel.prevent="finish(false)">
     <form class="onboarding-sheet" method="dialog" @submit.prevent="next">
       <header class="onboarding-header">
         <span class="onboarding-brand">SideM <b>资料馆</b></span>
@@ -104,7 +104,7 @@ onMounted(() => { dialog.value?.showModal(); heading.value?.focus({ preventScrol
 .onboarding-name :deep(.producer-preview) { padding: var(--gs-space-4) var(--gs-space-5); border-left: 3px solid var(--gs-mint); background: var(--gs-surface); }
 
 @media (max-width: 760px) {
-  .onboarding { width: 100vw; max-width: none; max-height: 92dvh; margin: auto 0 0; border-radius: var(--gs-radius-surface); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+  .onboarding { width: 100vw; max-width: none; max-height: 92dvh; margin: auto 0 0; border-radius: var(--gs-radius-surface); border-bottom-left-radius: 0; border-bottom-right-radius: 0; --gs-dialog-travel: translateY(100%); --gs-dialog-duration: var(--gs-motion-sheet); }
   .onboarding-header { flex-wrap: wrap; padding: var(--gs-space-4) var(--gs-space-5); gap: var(--gs-space-3); }
   .onboarding-steps { order: 3; flex-basis: 100%; justify-content: start; }
   .onboarding-skip { margin-left: auto; min-height: var(--gs-control-touch); }

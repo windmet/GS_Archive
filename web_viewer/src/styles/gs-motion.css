@@ -1,0 +1,81 @@
+/* GS Archive motion: how things arrive, leave and answer a press (docs/GS_UI_CONSTITUTION.md, 动效).
+   Motion only explains a change of place: a page replacing a page, a layer rising over the page,
+   an image arriving. It never decorates, loops or delays input; content is usable from the first
+   frame. Exits are shorter than entrances. Reduced motion keeps the fades and drops the travel. */
+
+:root {
+  --gs-motion-exit: 120ms;        /* leaving layers; equals the feedback step */
+  --gs-motion-page: 160ms;        /* a new page fading up from the paper */
+  --gs-motion-enter: 180ms;       /* dialogs, popovers, drawers, images */
+  --gs-motion-sheet: 240ms;       /* a bottom sheet travelling its own height; the ceiling */
+  --gs-ease-out: var(--gs-motion-ease);
+  --gs-ease-in: cubic-bezier(.4, 0, 1, 1);
+}
+
+/* Press feedback. Pointer devices already answer with hover; touch has no hover, so a press dims
+   the control at once and it recovers on release. :where() keeps all of this at zero specificity:
+   any component that styles its own transition or pressed state wins. */
+:where(button, a[href], summary, label, [role="button"], [role="tab"], [role="option"]) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+:where(button, a[href], summary, [role="button"], [role="tab"], [role="option"]) {
+  transition: color var(--gs-motion-feedback) var(--gs-ease-out), background-color var(--gs-motion-feedback) var(--gs-ease-out),
+    border-color var(--gs-motion-feedback) var(--gs-ease-out), box-shadow var(--gs-motion-feedback) var(--gs-ease-out),
+    opacity var(--gs-motion-feedback) var(--gs-ease-out);
+}
+@media (hover: none) {
+  :where(button, a[href], summary, [role="button"], [role="tab"], [role="option"]):where(:active:not(:disabled, [aria-disabled="true"])) {
+    opacity: .64;
+    transition-duration: 0s;
+  }
+}
+
+/* Images arrive instead of painting in strips. presentation/imageReveal.js marks every image that
+   finished (or failed, so alt text and fallbacks still show); until then it is transparent and its
+   box shows the surface beneath. Layout is untouched: the image keeps its size while hidden. */
+:where(#story-viewer, body > :not(#app)) :where(img:not([data-gs-loaded])) { opacity: 0; }
+:where(#story-viewer, body > :not(#app)) :where(img) { transition: opacity var(--gs-motion-enter) var(--gs-ease-out); }
+
+/* Layers that mount over the page. A component that changes how far or how long a layer travels
+   (a drawer that becomes a bottom sheet on phones) sets --gs-enter-travel / --gs-enter-duration,
+   never --gs-enter-from, so the reduced-motion rule below still wins. Leaving is a plain fade owned
+   by <Transition name="gs-overlay"> where the component owns its v-if; elsewhere the layer simply goes. */
+@keyframes gs-fade-in { from { opacity: 0; } }
+@keyframes gs-enter { from { opacity: 0; transform: var(--gs-enter-from); } }
+.gs-enter-backdrop { animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; }
+.gs-enter-panel { --gs-enter-from: var(--gs-enter-travel, translateY(8px) scale(.985)); }
+.gs-enter-popover { --gs-enter-from: var(--gs-enter-travel, translateY(-4px)); }
+.gs-enter-drawer { --gs-enter-from: var(--gs-enter-travel, translateX(32px)); }
+.gs-enter-sheet { --gs-enter-from: var(--gs-enter-travel, translateY(100%)); --gs-enter-duration: var(--gs-motion-sheet); }
+:is(.gs-enter-panel, .gs-enter-popover, .gs-enter-drawer, .gs-enter-sheet) { animation: gs-enter var(--gs-enter-duration, var(--gs-motion-enter)) var(--gs-ease-out) backwards; }
+.gs-overlay-leave-active { transition: opacity var(--gs-motion-exit) var(--gs-ease-in); }
+.gs-overlay-leave-to { opacity: 0; }
+
+/* Native <dialog>: rises in on showModal() and fades out on close() where the browser can animate
+   display (otherwise it simply appears and goes). A component that turns the dialog into a bottom
+   sheet sets --gs-dialog-travel: translateY(100%) and --gs-dialog-duration: var(--gs-motion-sheet).
+   ::backdrop does not inherit custom properties everywhere, so its timings are literal. */
+.gs-dialog-motion {
+  --gs-dialog-from: var(--gs-dialog-travel, translateY(8px) scale(.985));
+  opacity: 0;
+  transform: var(--gs-dialog-from);
+  transition: opacity var(--gs-motion-exit) var(--gs-ease-in), transform var(--gs-motion-exit) var(--gs-ease-in),
+    overlay var(--gs-motion-exit) allow-discrete, display var(--gs-motion-exit) allow-discrete;
+}
+.gs-dialog-motion[open] {
+  opacity: 1;
+  transform: none;
+  transition-duration: var(--gs-dialog-duration, var(--gs-motion-enter));
+  transition-timing-function: var(--gs-ease-out);
+}
+@starting-style { .gs-dialog-motion[open] { opacity: 0; transform: var(--gs-dialog-from); } }
+.gs-dialog-motion::backdrop { opacity: 0; transition: opacity 120ms ease-in, overlay 120ms allow-discrete, display 120ms allow-discrete; }
+.gs-dialog-motion[open]::backdrop { opacity: 1; transition-duration: 180ms; transition-timing-function: ease-out; }
+@starting-style { .gs-dialog-motion[open]::backdrop { opacity: 0; } }
+
+/* Same specificity as the rules above and later in the file, so it wins over every default. */
+@media (prefers-reduced-motion: reduce) {
+  .gs-enter-panel, .gs-enter-popover, .gs-enter-drawer, .gs-enter-sheet { --gs-enter-from: none; }
+  .gs-dialog-motion { --gs-dialog-from: none; }
+}

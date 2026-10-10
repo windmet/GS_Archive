@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body" :disabled="!modal">
-    <div :class="modal ? 'collection-sheet-backdrop' : 'collection-inspector-host'" @click.self="modal && emit('close')">
-      <section ref="panel" class="collection-inspector" :class="{'is-sheet':modal,'is-honors':kind==='honors'}" :role="modal?'dialog':'region'" :aria-modal="modal?'true':undefined" :aria-label="title" @keydown.esc.stop.prevent="emit('close')" @keydown.tab="cycleFocus">
+    <div :class="modal ? 'collection-sheet-backdrop gs-enter-backdrop' : 'collection-inspector-host'" @click.self="modal && emit('close')">
+      <section ref="panel" class="collection-inspector" :class="{'is-sheet':modal,'gs-enter-panel':modal,'is-honors':kind==='honors'}" :role="modal?'dialog':'region'" :aria-modal="modal?'true':undefined" :aria-label="title" @keydown.esc.stop.prevent="emit('close')" @keydown.tab="cycleFocus">
         <header class="collection-inspector-header"><h2>{{ title }}</h2><button ref="closeButton" type="button" aria-label="关闭藏品详情" @click="emit('close')"><X :size="18"/>关闭</button></header>
         <div class="collection-inspector-body">
           <p v-if="busy" role="status" class="domain-muted">正在读取所选藏品…</p>

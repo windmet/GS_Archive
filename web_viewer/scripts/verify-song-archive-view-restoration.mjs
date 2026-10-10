@@ -85,7 +85,7 @@ function appFixture({ missingTarget = false, prepared = true, navigateOnFocus = 
       history: { state: { sidemArchiveEntryId: 'song-audio-return' } } },
     view: { value: 'song_detail' }, currentSongId: { value: 'flslgt' },
     songDetailView: { value: null }, pendingSongDetailRestore: null,
-    activeArchiveViewContext: null, archiveViewRestoreRevision: 0,
+    activeArchiveViewContext: null, archiveViewRestoreRevision: 0, adoptedArchiveView: "",
     pendingEventCatalogRestore: null, pendingPhotoCatalogRestore: null,
     console: { error: (...args) => errors.push(args) },
   })

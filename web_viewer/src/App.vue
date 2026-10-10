@@ -1013,6 +1013,7 @@ let archiveRouteReady = false
 let pendingPreReadyRoute = null
 let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
+let adoptedArchiveView = ''
 let pendingEventCatalogRestore = null
 let pendingPhotoCatalogRestore = null
 const songDetailView = ref(null)
@@ -1616,11 +1617,13 @@ function captureActiveArchiveView() {
   if (activeArchiveViewContext) captureArchiveViewState(activeArchiveViewContext)
 }
 
-function adoptArchiveViewContext({ restore = true } = {}) {
+function adoptArchiveViewContext({ restore = true, fresh = false } = {}) {
   activeArchiveViewContext = buildArchiveViewContext(window.location.href, window.history.state)
   const context = activeArchiveViewContext
   const revision = ++archiveViewRestoreRevision
   const navigationRevision = navigation.getRevision()
+  const stayedOnView = adoptedArchiveView === view.value
+  adoptedArchiveView = view.value
   pendingSongDetailRestore = null
   pendingPortalRestore = restore && view.value === 'portal' ? {context,revision,navigationRevision} : null
   pendingEventCatalogRestore = restore && view.value==='event_catalog'
@@ -1638,6 +1641,13 @@ function adoptArchiveViewContext({ restore = true } = {}) {
     const isCurrent = () => context === activeArchiveViewContext && revision === archiveViewRestoreRevision &&
       navigationRevision === navigation.getRevision() && !navigation.isDisposed()
     if (!isCurrent()) return
+    // A new history entry on the same page (the next card, another idol) starts at its top, not at
+    // whatever depth the previous entry was read to; a different page mounts its own scroll area at
+    // the top already. The reader positions itself by anchor and is left alone.
+    if (fresh && stayedOnView && view.value !== 'reader' && !readArchiveViewRestoration(context)) {
+      document.querySelector('[data-archive-scroll-container]')?.scrollTo({ top: 0 })
+      return
+    }
     restoreArchiveViewState(context, { isCurrent }).catch(error => {
       console.error('[ArchiveNavigation] Failed to restore view position:', error)
     })
@@ -1683,7 +1693,7 @@ async function restoreSongDetailView({ songId } = {}) {
 function syncArchiveRoute({ replace = false, restoreView = true } = {}) {
   if (!archiveRouteReady || navigation.isRestoring()) return
   writeArchiveRoute(currentArchiveRoute(), { replace })
-  adoptArchiveViewContext({ restore: restoreView })
+  adoptArchiveViewContext({ restore: restoreView, fresh: !replace })
 }
 
 function commitView(nextView, options = {}) {

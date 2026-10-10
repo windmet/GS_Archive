@@ -109,9 +109,29 @@ export async function restoreArchiveViewState(context, {
     if (!isCurrent()) return false
     const maxScroll = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight)
     scrollContainer.scrollTop = Math.min(saved.scrollTop, maxScroll)
+    if (saved.scrollTop > maxScroll && typeof globalThis.requestAnimationFrame === 'function') {
+      void followContentGrowth(scrollContainer, saved.scrollTop, isCurrent)
+    }
     return true
   }
   return false
+}
+
+// A page coming back from history often renders its upper part first and the rest once its data
+// arrives, so the saved depth does not exist yet on the first frame. Keep moving down as the page
+// grows, for a bounded number of frames, and stop the moment the reader scrolls on their own.
+async function followContentGrowth(scrollContainer, target, isCurrent, frames = 180) {
+  let applied = scrollContainer.scrollTop
+  for (let frame = 0; frame < frames; frame += 1) {
+    await nextFrame()
+    if (!isCurrent() || scrollContainer.isConnected === false || Math.abs(scrollContainer.scrollTop - applied) > 1) return
+    const maxScroll = Math.max(0, scrollContainer.scrollHeight - scrollContainer.clientHeight)
+    if (maxScroll > applied) {
+      scrollContainer.scrollTop = Math.min(target, maxScroll)
+      applied = scrollContainer.scrollTop
+    }
+    if (applied >= target - 1) return
+  }
 }
 
 export { STORAGE_KEY as ARCHIVE_VIEW_RESTORATION_STORAGE_KEY }

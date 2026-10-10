@@ -11,7 +11,7 @@ import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchive
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { usePhotoCatalogNavigation } from '../src/composables/usePhotoCatalogNavigation.js'
 import { parse as parseScript } from '@babel/parser'
-import { buildArchiveViewContext, captureArchiveViewState, saveArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
+import { buildArchiveViewContext, captureArchiveViewState, saveArchiveViewRestoration, readArchiveViewRestoration, restoreArchiveViewState } from '../src/core/archiveViewRestoration.js'
 const assert = { ...strictAssert, equal(actual, expected, message) {
   if ((actual?.type || expected?.type) && actual !== expected) strictAssert.fail((message || 'Host-node identity differs') + ': ' + (actual?.type || actual) + ' #' + actual?.id + ' vs ' + (expected?.type || expected) + ' #' + expected?.id)
   strictAssert.equal(actual, expected, message)
@@ -102,7 +102,7 @@ const renderer = Vue.createRenderer({
 })
 let mobile = true
 const expectedErrors = []
-const context = vm.createContext({ AbortController,
+const context = vm.createContext({ AbortController, setTimeout, clearTimeout,
   window: { matchMedia: () => ({ matches: mobile }) },
   document: { get activeElement(){return activeRoot?.activeElement || null} },
   console: { ...console, error: (...args) => expectedErrors.push(args) },
@@ -151,13 +151,14 @@ function fixture(initial, {saved=null,leaveOnReady=false,disposeOnReady=false,qu
   const values=new Map(),storage={getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)}
   const document={get activeElement(){return root.activeElement},querySelector:()=>all(root).find(item=>Object.hasOwn(item.props,'data-archive-scroll-container')),querySelectorAll:()=>all(root).filter(item=>item.dataset?.archiveFocusId)}
   const parent=vm.createContext({
-    ...navigationState,window,nextTick:Vue.nextTick,archiveRouteReady:true,archiveViewRestoreRevision:0,
+    ...navigationState,window,nextTick:Vue.nextTick,archiveRouteReady:true,archiveViewRestoreRevision:0,adoptedArchiveView:"",
     activeArchiveViewContext:null,pendingEventCatalogRestore:null,pendingPhotoCatalogRestore:null,
     buildArchiveViewContext,buildArchiveSourceQuery,readArchiveSourceRoute,ownsArchiveSource,
     loading:{value:false},loadingPurpose:{value:''},playbackController:{reset:()=>{}},primeArchiveRouteComponent:()=>{},
     navigation:{getRevision:()=>revision,invalidate:()=>revision++,isDisposed:()=>disposed,isRestoring:()=>false},console,
     writeArchiveRoute(route,options){window.location.href=buildArchiveUrl(window.location.href,route).href;writes.push({route:readArchiveRoute(window.location.href),options})},
     captureArchiveViewState:value=>captureArchiveViewState(value,{root:document,storage}),
+    readArchiveViewRestoration:value=>readArchiveViewRestoration(value,storage),
     restoreArchiveViewState:value=>{restores.push(value);return restoreArchiveViewState(value,{root:document,storage})},
     goHome:()=>{navigationState.view.value='home'},
     applyArchiveRoute:async route=>{
