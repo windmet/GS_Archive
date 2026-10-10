@@ -11,10 +11,10 @@ const root = fileURLToPath(new URL('..', import.meta.url))
 const read = file => readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n')
 const motion = read('src/styles/gs-motion.css')
 
-// Durations: one ladder, nothing past the sheet ceiling, exit < page < enter <= sheet.
+// Durations: one ladder, nothing past the sheet ceiling, page <= exit < enter <= sheet.
 const ms = name => Number(motion.match(new RegExp(`--gs-motion-${name}:\\s*(\\d+)ms`))?.[1])
 const [exit, page, enter, sheet] = ['exit', 'page', 'enter', 'sheet'].map(ms)
-assert.ok(exit < page && page < enter && enter <= sheet && sheet <= 240, `motion ladder ${exit}/${page}/${enter}/${sheet}`)
+assert.ok(page <= exit && exit < enter && enter <= sheet && sheet <= 240, `motion ladder ${exit}/${page}/${enter}/${sheet}`)
 for (const [, value] of motion.matchAll(/(\d+)ms/g)) assert.ok(Number(value) <= 240, `no motion step above 240ms (${value}ms)`)
 assert.ok(!/infinite/.test(motion), 'no looping motion')
 
@@ -40,7 +40,7 @@ for (const file of walk(path.join(root, 'src'))) {
 
 // Press feedback and image reveal stay at zero specificity so components keep the last word.
 assert.match(motion, /^:where\(button, a\[href\], summary, \[role="button"\], \[role="tab"\], \[role="option"\]\) \{\n  transition:/m)
-assert.match(motion, /@media \(hover: none\) \{\n  :where\(button[^{]*:where\(:active:not\(:disabled, \[aria-disabled="true"\]\)\) \{\n    opacity: \.64;/)
+assert.match(motion, /@media \(hover: none\) \{\n  :where\(button[^{]*:where\(:active:not\(:disabled, \[aria-disabled="true"\]\)\) \{\n    transform: scale\(\.97\);\n    filter: brightness\(\.92\);/)
 assert.match(motion, /:where\(#story-viewer, body > :not\(#app\)\) :where\(img:not\(\[data-gs-loaded\]\)\) \{ opacity: 0; \}/)
 
 const main = read('src/main.js')
@@ -73,7 +73,8 @@ assert.ok(main.indexOf('installImageReveal()') > -1 && main.indexOf('installImag
 // Page change: a fade only. A transform on the page root would re-anchor its fixed bars mid-fade.
 const shell = read('src/components/archive/ArchiveShell.vue')
 const pageRule = shell.match(/\.archive-content > :deep\(\*\) \{([^}]*)\}/)?.[1] || ''
-assert.match(pageRule, /animation: gs-fade-in var\(--gs-motion-page\)/)
+assert.match(pageRule, /animation: gs-page-in var\(--gs-motion-page\)/)
+assert.match(motion, /--gs-page-from: \.[1-5]\d*;/, 'a page never starts fully transparent')
 assert.ok(!/transform/.test(pageRule))
 
 // Layers: each enters with the shared motion and keeps its content while leaving.

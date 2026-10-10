@@ -314,9 +314,11 @@ const mobileNavigation = computed(() => {
 }
 .archive-content { grid-column: 2; min-width: 0; min-height: 0; overflow: hidden; background: var(--gs-paper); }
 .archive-content :deep(.list-screen), .archive-content :deep(.home-screen) { height: 100%; }
-/* A new page fades up from the paper as it mounts; the old one is already gone, so nothing waits on
-   it. Opacity only: a transform here would re-anchor the pages' fixed bars while it ran. */
-.archive-content > :deep(*) { animation: gs-fade-in var(--gs-motion-page) var(--gs-ease-out) backwards; }
+/* A new page rises from a dimmed paper as it mounts (never from fully transparent: the bare paper
+   between two pages is what reads as a blink); the old one is already gone, so nothing waits on it.
+   Opacity only: a transform here would re-anchor the pages' fixed bars while it ran. The shell around
+   this slot never animates. */
+.archive-content > :deep(*) { animation: gs-page-in var(--gs-motion-page) var(--gs-ease-out) backwards; }
 .archive-inspector {
   grid-column: 3;
   grid-row: 2;

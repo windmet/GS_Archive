@@ -5,15 +5,17 @@
 
 :root {
   --gs-motion-exit: 120ms;        /* leaving layers; equals the feedback step */
-  --gs-motion-page: 160ms;        /* a new page fading up from the paper */
+  --gs-motion-page: 110ms;        /* a new page rising from a dimmed paper; short, so quick page hops do not strobe */
   --gs-motion-enter: 180ms;       /* dialogs, popovers, drawers, images */
   --gs-motion-sheet: 240ms;       /* a bottom sheet travelling its own height; the ceiling */
-  --gs-ease-out: var(--gs-motion-ease);
+  --gs-ease-out: cubic-bezier(.16, 1, .3, 1);   /* fast arrival, soft stop */
+  --gs-page-from: .3;             /* a page never starts from nothing: paper flashing through reads as a blink */
   --gs-ease-in: cubic-bezier(.4, 0, 1, 1);
 }
 
 /* Press feedback. Pointer devices already answer with hover; touch has no hover, so a press dims
-   the control at once and it recovers on release. :where() keeps all of this at zero specificity:
+   the control at once (a small press-in and dim, not a fade: transparency reads as disabled) and it
+   recovers on release. :where() keeps all of this at zero specificity:
    any component that styles its own transition or pressed state wins. */
 :where(button, a[href], summary, label, [role="button"], [role="tab"], [role="option"]) {
   -webkit-tap-highlight-color: transparent;
@@ -22,11 +24,13 @@
 :where(button, a[href], summary, [role="button"], [role="tab"], [role="option"]) {
   transition: color var(--gs-motion-feedback) var(--gs-ease-out), background-color var(--gs-motion-feedback) var(--gs-ease-out),
     border-color var(--gs-motion-feedback) var(--gs-ease-out), box-shadow var(--gs-motion-feedback) var(--gs-ease-out),
-    opacity var(--gs-motion-feedback) var(--gs-ease-out);
+    opacity var(--gs-motion-feedback) var(--gs-ease-out), transform var(--gs-motion-feedback) var(--gs-ease-out),
+    filter var(--gs-motion-feedback) var(--gs-ease-out);
 }
 @media (hover: none) {
   :where(button, a[href], summary, [role="button"], [role="tab"], [role="option"]):where(:active:not(:disabled, [aria-disabled="true"])) {
-    opacity: .64;
+    transform: scale(.97);
+    filter: brightness(.92);
     transition-duration: 0s;
   }
 }
@@ -42,6 +46,7 @@
    never --gs-enter-from, so the reduced-motion rule below still wins. Leaving is a plain fade owned
    by <Transition name="gs-overlay"> where the component owns its v-if; elsewhere the layer simply goes. */
 @keyframes gs-fade-in { from { opacity: 0; } }
+@keyframes gs-page-in { from { opacity: var(--gs-page-from); } }
 @keyframes gs-enter { from { opacity: 0; transform: var(--gs-enter-from); } }
 .gs-enter-backdrop { animation: gs-fade-in var(--gs-motion-enter) var(--gs-ease-out) backwards; }
 .gs-enter-panel { --gs-enter-from: var(--gs-enter-travel, translateY(8px) scale(.985)); }
@@ -71,7 +76,7 @@
 }
 @starting-style { .gs-dialog-motion[open] { opacity: 0; transform: var(--gs-dialog-from); } }
 .gs-dialog-motion::backdrop { opacity: 0; transition: opacity 120ms ease-in, overlay 120ms allow-discrete, display 120ms allow-discrete; }
-.gs-dialog-motion[open]::backdrop { opacity: 1; transition-duration: 180ms; transition-timing-function: ease-out; }
+.gs-dialog-motion[open]::backdrop { opacity: 1; transition-duration: 180ms; transition-timing-function: cubic-bezier(.16, 1, .3, 1); }
 @starting-style { .gs-dialog-motion[open]::backdrop { opacity: 0; } }
 
 /* Same specificity as the rules above and later in the file, so it wins over every default. */

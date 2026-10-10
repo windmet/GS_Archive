@@ -36,3 +36,17 @@
 - 慢网络下，大图要等整张下完才显示，比以前逐行出现更晚看到第一笔；换来的是不再有半张图。
 - 工作区另有其他窗口未提交的改动（`ArchiveImmersiveHome.vue`、`ArchiveCardDetail.vue`、`ArchiveEventDetail.vue`、`GS_UI_TOKENS.css` 等），本批没有碰这些文件，所以首页场景设置 / 台词目录这两个对话框还没接入动效；动效令牌放在新文件 `gs-motion.css`，没有写进 `GS_UI_TOKENS.css`。
 - 未推送、未部署。
+
+## 第二轮：切页频闪与按压手感（2026-10-10）
+
+外部评审指出：快速连续切页时，旧页立即消失、新页从 opacity 0 起，纸面底色夹在两页之间，像闪烁。
+
+| 采纳 | 处理 |
+| --- | --- |
+| 切页频闪 | 新页改用 `gs-page-in`，从 `--gs-page-from: .3` 起（不再从 0），时长 160 → 110ms；外壳（侧栏、顶栏）本来就在动画范围之外，保持不动 |
+| 按压像「禁用」 | 触屏按下由 opacity .64 改为 `scale(.97)` + `brightness(.92)`，过渡补上 transform / filter |
+| 缓动 | 动效专用 `--gs-ease-out` 改为 `cubic-bezier(.16, 1, .3, 1)`（快进、轻刹）；悬停反馈沿用 `--gs-motion-ease`，没动 `GS_UI_TOKENS.css` |
+
+没采纳：页面根 `translateY(4px)`（页内固定栏会在动画期间错位，宪法里已明确禁止；用 .3 起始透明度解决同一问题）；View Transitions API（页面切换由应用状态驱动，截图交叉淡入会与滚动恢复、固定栏重新锚定相互牵制，需要单独评估，不在本轮）；主色占位与 blur-up（需要数据层提供主色/缩略图，属另一批工作）。
+
+验证：`verify-archive-motion.mjs` 更新阶梯（页 ≤ 退场 < 进场）、按压规则与页面起始透明度并通过。触屏手感仍需真机确认。
