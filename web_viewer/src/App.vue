@@ -664,6 +664,7 @@ import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigati
 import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
 import { useStoryNavigation } from './composables/useStoryNavigation.js'
 import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { SEASONAL_SEASON_LABEL } from '../shared/reading/ReadingCatalog.js'
 import { useResourceNavigation } from './composables/useResourceNavigation.js'
 import { useGashaNavigation } from './composables/useGashaNavigation.js'
 import { useCardNavigation } from './composables/useCardNavigation.js'
@@ -1535,7 +1536,7 @@ const archiveBreadcrumbs = computed(() => {
       domainLabel: currentStory.value?.domainLabel,
     },
     seasonal_campaign: {
-      title: currentSeasonalCampaign.value?.name || '季节企划',
+      title: currentSeasonalCampaign.value ? `${currentSeasonalCampaign.value.year} ${SEASONAL_SEASON_LABEL[currentSeasonalCampaign.value.season] || ''}`.trim() : '季节企划',
       id: currentStorySection.value,
     },
     work_archive: {

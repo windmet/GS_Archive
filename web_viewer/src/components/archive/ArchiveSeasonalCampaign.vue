@@ -134,7 +134,7 @@
           </div>
 
           <footer class="drawer-actions">
-            <button type="button" class="story-action primary" :disabled="!drawer.firstReading" @click="emit('read', drawer.firstReading)"><BookOpen :size="16" />阅读{{ drawer.campaignCount }}期 · {{ drawer.episodes.length }} 段</button>
+            <button type="button" class="story-action primary" :disabled="!drawer.firstReading" @click="emit('read', drawer.firstReading)"><BookOpen :size="16" />阅读 {{ drawer.campaignCount }} 期 · {{ drawer.episodes.length }} 段</button>
             <button type="button" class="story-action" :disabled="!drawer.playableCount" @click="emit('play-participant', drawer.episodes)"><Play :size="15" fill="currentColor" />连播演出</button>
           </footer>
         </section>

@@ -83,7 +83,7 @@ export function useArchiveNavigationState() {
         ...(currentStoryDomain.value === 'work' ? { workMode: currentWorkMode.value } : {}),
         event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
         ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
-        idol: ['work', 'idol_story'].includes(currentStoryDomain.value) ? currentCharacterId.value : '',
+        idol: ['work', 'idol_story', 'seasonal_campaign'].includes(currentStoryDomain.value) ? currentCharacterId.value : '',
         ...(currentStoryDomain.value === 'idol_story' ? { episode: currentEpisodeId.value } : {}),
         ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
           startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
