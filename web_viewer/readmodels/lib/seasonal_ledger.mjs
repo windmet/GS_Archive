@@ -13,7 +13,7 @@ export function buildSeasonalLedger(seasonalIndex, readingEntries) {
     const matches = ready.filter(entry => entry.document_id === episode.resource_id ||
       (entry.source_file === episode.compiled_file && entry.parent_file === episode.compiled_file));
     assert(matches.length <= 1, `Ambiguous seasonal reading document: ${episode.resource_id}`);
-    return matches[0] ? { document_id: matches[0].document_id, sha256: matches[0].sha256 } : null;
+    return matches[0] ? { document_id: matches[0].document_id, sha256: matches[0].sha256, source_file: matches[0].source_file } : null;
   };
   const episodeView = episode => ({ id: episode.id, title: episode.title || '', episode_no: episode.episode_no ?? null,
     level: episode.required_valentine_level ?? null, compiled_file: episode.compiled_file || null,

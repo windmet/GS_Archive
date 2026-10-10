@@ -62,6 +62,11 @@ export function useStoryArchiveNavigation({
     return seasonalLedger
   }
 
+  // The ledger alone, for the Reader's participant chapters.
+  async function loadSeasonalLedgerOnly(options = navigation.getLoadOptions?.() || {}) {
+    return loadSeasonalLedger(await loadSeasonalCatalog(options), options)
+  }
+
   // No (or an unknown) campaign is the whole ledger; a known one also loads its source evidence.
   async function loadSeasonalDetail(requestedId = '', options = navigation.getLoadOptions?.() || {}) {
     const rows = await loadSeasonalCatalog(options)
@@ -449,7 +454,7 @@ export function useStoryArchiveNavigation({
     openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
     openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
     playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
-    loadSeasonalCatalog, loadSeasonalDetail, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
+    loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
     goBackFromSeasonalCampaign, goBackFromWorkArchive, goBackFromIdolStoryArchive,
     invalidateStoryArchiveNavigation, prepareStoryArchiveRoute,
   }

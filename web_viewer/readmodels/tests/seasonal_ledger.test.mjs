@@ -17,6 +17,8 @@ test('seasonal ledger lists every participant across the four campaigns with a r
   assert.equal(episodes.length, index.meta.raw_episode_count);
   // Every listed episode opens its own document, and no document is listed twice.
   assert.ok(episodes.every(episode => episode.reading?.document_id && /^sha256:/.test(episode.reading.sha256)));
+  const bySource = new Map(manifest.entries.map(entry => [entry.document_id, entry.source_file]));
+  assert.ok(episodes.every(episode => episode.reading.source_file === bySource.get(episode.reading.document_id)));
   assert.equal(new Set(episodes.map(episode => episode.reading.document_id)).size, episodes.length);
   for (const row of ledger.participants) assert.deepEqual(Object.keys(row.episodes), ledger.campaigns.map(campaign => campaign.id));
   const toma = ledger.participants.find(row => row.participant_code === '001tom');
@@ -32,4 +34,20 @@ test('seasonal reading chapters follow one participant through the campaigns', a
     ['2022 情人节 ①', '2022 情人节 ②', '2022 白色情人节 ①', '2022 白色情人节 ②', '2023 情人节', '2023 白色情人节']);
   assert.equal(manifest.entries.filter(entry => entry.directory_id === 'seasonal-common').length, 4);
   assert.ok(manifest.entries.filter(entry => entry.domain === 'seasonal').every(entry => entry.directory_id));
+});
+
+test('Reader chapter navigation steps through participants after the shared openings', async () => {
+  const { seasonalReaderChapters } = await import('../../src/core/SeasonalReaderChapters.js');
+  const { readerChapterNavigation } = await import('../../src/core/ReaderChapterNavigation.js');
+  const ledger = buildSeasonalLedger(await read('masterdata/seasonal_campaign_index.json'), (await read('reading/manifest.json')).entries);
+  const { collection, entries } = seasonalReaderChapters(ledger);
+  assert.equal(collection.chapters.length, 52);
+  assert.deepEqual(collection.chapters.slice(0, 3).map(chapter => chapter.id), ['common', '001tom', '002sht']);
+  // Any of Toma's segments places the Reader in his chapter; the next chapter opens Shota's first segment.
+  const navigation = readerChapterNavigation(collection, entries, '5_02_001_22_b');
+  assert.equal(navigation.chapterId, '001tom');
+  const next = navigation.chapters[navigation.chapters.findIndex(chapter => chapter.id === '001tom') + 1];
+  assert.equal(next.id, '002sht');
+  assert.equal(next.documentId, '5_01_002_22_a');
+  assert.ok(next.storyFile && navigation.chapters.every(chapter => chapter.documentId && chapter.storyFile));
 });

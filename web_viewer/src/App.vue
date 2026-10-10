@@ -1214,7 +1214,7 @@ const {
   openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
   openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
   playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
-  loadSeasonalCatalog, loadSeasonalDetail, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
+  loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
   goBackFromSeasonalCampaign, goBackFromWorkArchive, goBackFromIdolStoryArchive,
   invalidateStoryArchiveNavigation, prepareStoryArchiveRoute,
 } = useStoryArchiveNavigation({
@@ -1404,6 +1404,8 @@ const {
   workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
   currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
   applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
+  loadSeasonalLedger: () => loadSeasonalLedgerOnly(),
+  seasonalParticipantName: participant => (participant.participant_type === 'idol' && idolDisplayName(participant.participant_code, participant.display_name)) || participant.display_name,
 })
 const pickerPreparing = ref(false)
 let pickerRequest = 0
@@ -2272,6 +2274,7 @@ function openIdolDomain(domain) {
     openIdolStoryArchive(currentCharacterId.value)
     return
   }
+  if (domain === 'seasonal') return openSeasonalCampaign('', currentCharacterId.value)
   if (domain === 'chat' || domain === 'phone') {
     openMobileArchive({
       idolCode: currentCharacterId.value,

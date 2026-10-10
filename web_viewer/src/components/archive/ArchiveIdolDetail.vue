@@ -112,7 +112,7 @@
 <script setup>
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed, ref } from 'vue'
-import { BookOpenText, ChevronRight, Images, Camera, Info, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
+import { BookOpenText, ChevronRight, Images, Camera, Heart, Info, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
 import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
@@ -208,6 +208,8 @@ const communicationCount = (value, unit) => value == null
   : `${value} ${unit}`
 const related = computed(() => [
   { id: 'stories', label: '个人故事', count: communicationCount(props.stats.stories, '篇'), icon: BookOpenText },
+  // Every archive idol has a Valentine / White Day arc; the seasonal page opens on theirs.
+  { id: 'seasonal', label: '季节企划', count: '情人节与白色情人节', icon: Heart },
   { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },
   { id: 'chat', label: '个人聊天', count: communicationCount(props.stats.chats, '条'), icon: MessageSquareText },
   ...(props.photo?[{id:'photos',label:'摄影姿势与语音',count:`${props.photo.faceCount} 表情 · ${props.photo.poseCount} 姿势 · ${props.photo.cueCount} 语音`,icon:Camera}]:[]),

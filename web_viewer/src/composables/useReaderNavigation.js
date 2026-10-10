@@ -1,6 +1,7 @@
 import { ref, shallowRef, computed } from 'vue'
 import { chapterReadingPlan, createChapterReadingSession, directoryReadingPlan } from '../core/ChapterReadingPlan.js'
 import { readerChapterNavigation } from '../core/ReaderChapterNavigation.js'
+import { seasonalReaderChapters } from '../core/SeasonalReaderChapters.js'
 import { readerScopeForViewport } from '../core/ReaderViewport.js'
 import { readingPlaybackTarget } from '../core/ReadingPlayback.js'
 import { createReadingRepository } from '../data/ReadingRepository.js'
@@ -20,6 +21,7 @@ export function useReaderNavigation({
   workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
   currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
   applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
+  loadSeasonalLedger = null, seasonalParticipantName = undefined,
 }) {
   const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
 
@@ -27,9 +29,20 @@ export function useReaderNavigation({
 
   const readerCollectionDetail = shallowRef(null)
 
-  const readingChapterNavigation = computed(() => readerCollectionDetail.value && readerChapterNavigation(
-    readerCollectionDetail.value.view.collection, readerCollectionDetail.value.view.readingEntries,
-    readingDocumentId.value, currentStoryFile.value))
+  // Seasonal chapters (one per participant) are navigation only: kept apart from the collection
+  // directory so they never stand in for a chapter plan or a document locator.
+  const seasonalChapters = shallowRef(null)
+  const readingChapterNavigation = computed(() => {
+    if (readerCollectionDetail.value) return readerChapterNavigation(readerCollectionDetail.value.view.collection,
+      readerCollectionDetail.value.view.readingEntries, readingDocumentId.value, currentStoryFile.value)
+    return currentStoryDomain.value === 'seasonal_campaign' && seasonalChapters.value
+      ? readerChapterNavigation(seasonalChapters.value.collection, seasonalChapters.value.entries, readingDocumentId.value) : null
+  })
+  function prepareSeasonalChapters(route) {
+    if (route.storyType !== 'seasonal_campaign' || seasonalChapters.value || !loadSeasonalLedger) return
+    loadSeasonalLedger().then(ledger => { seasonalChapters.value = seasonalReaderChapters(ledger, seasonalParticipantName) })
+      .catch(() => { /* Optional chapter navigation must not block a readable document. */ })
+  }
 
   const readingPlaybackNotice = ref('')
 
@@ -321,6 +334,7 @@ export function useReaderNavigation({
     chapterReadingSession.close()
     if (route.readingScope !== 'chapter' || !reusableDirectory) chapterReadingState.value = null
     readerCollectionDetail.value = reusableDirectory
+    prepareSeasonalChapters(route)
     currentStoryDomain.value = route.storyType || ''
     currentStorySection.value = route.storySection || ''
     currentEpisodeId.value = route.episode || ''
