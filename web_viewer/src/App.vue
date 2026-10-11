@@ -601,6 +601,7 @@
 </template>
 
 <script setup>
+import { resolveHomeSelection } from './core/HomeSelection.js'
 import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
 import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
 import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
@@ -1873,13 +1874,11 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     const requestedHomeIdol = route.homeIdol
       ? archiveHomeIdols.value.find(idol => idol.id === route.homeIdol)
       : null
-    homeSelectedId.value = requestedHomeIdol?.id || ''
+    const homeSelection = resolveHomeSelection(requestedHomeIdol, route)
+    homeSelectedId.value = homeSelection.id
     homeFrom.value = route.view === 'home' ? route.homeFrom || '' : ''
-    homeSelectedCue.value = requestedHomeIdol?.cues?.find(cue => cue.cue === route.homeCue)?.cue || requestedHomeIdol?.cues?.[0]?.cue || ''
-    const defaultHomeModel = requestedHomeIdol?.cues?.find(cue => cue.cue === homeSelectedCue.value)?.modelId
-    homeSelectedCostume.value = requestedHomeIdol?.costumes?.find(costume => costume.modelId === route.homeCostume)?.modelId ||
-      requestedHomeIdol?.costumes?.find(costume => costume.modelId === defaultHomeModel)?.modelId ||
-      requestedHomeIdol?.costumes?.[0]?.modelId || ''
+    homeSelectedCue.value = homeSelection.cue
+    homeSelectedCostume.value = homeSelection.costume
     const restoresEventContext = route.view === 'event_detail' ||
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (

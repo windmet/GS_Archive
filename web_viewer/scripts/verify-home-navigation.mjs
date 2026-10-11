@@ -18,6 +18,7 @@ import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
 import { buildPortalReturnQuery, readHomeReturnRoute } from '../src/core/archiveRoute.js'
 import { usePortalNavigation } from '../src/composables/usePortalNavigation.js'
+import { resolveHomeSelection } from '../src/core/HomeSelection.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
@@ -213,4 +214,15 @@ try {
     t.stop()
   }
 } finally { console.error = originalError }
+// Home default selection: requested → cue's costume → first, with unknown values falling back.
+{
+  const idol = { id: 'a', cues: [{ cue: 'c1', modelId: 'm1' }, { cue: 'c2', modelId: 'm2' }], costumes: [{ modelId: 'm0' }, { modelId: 'm1' }, { modelId: 'm2' }] }
+  assert.deepEqual(resolveHomeSelection(null, { homeCue: 'c1' }), { id: '', cue: '', costume: '' })
+  assert.deepEqual(resolveHomeSelection(idol, {}), { id: 'a', cue: 'c1', costume: 'm1' }, 'first cue and its costume')
+  assert.deepEqual(resolveHomeSelection(idol, { homeCue: 'c2' }), { id: 'a', cue: 'c2', costume: 'm2' }, 'requested cue selects its costume')
+  assert.deepEqual(resolveHomeSelection(idol, { homeCue: 'c2', homeCostume: 'm0' }), { id: 'a', cue: 'c2', costume: 'm0' }, 'requested costume beats cue costume')
+  assert.deepEqual(resolveHomeSelection(idol, { homeCue: 'x', homeCostume: 'y' }), { id: 'a', cue: 'c1', costume: 'm1' }, 'unknown values fall back')
+  assert.deepEqual(resolveHomeSelection({ id: 'b', cues: [{ cue: 'c', modelId: 'zz' }], costumes: [{ modelId: 'm9' }] }, {}), { id: 'b', cue: 'c', costume: 'm9' }, 'cue costume missing: first costume')
+  assert.deepEqual(resolveHomeSelection({ id: 'e' }, {}), { id: 'e', cue: '', costume: '' })
+}
 console.log('Home navigation: real App setup/watcher/unmount/restore, strict hydration, cancellation, LRU, shared races, preference isolation and visit return preservation passed')
