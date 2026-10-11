@@ -59,7 +59,7 @@ assert.equal(bootstrapContext.isBootstrapRoute({ view: 'spine_lab' }), true,
   'Spine Lab owns its manifest and must not wait for the global archive batch')
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'chibi_stage' }), true,
   'Chibi Stage must load its own stage resources and bounded song detail without the global archive batch')
-const source = app.slice(app.indexOf('let startupRouteNormalized = false'), app.indexOf('\nwatch([filterQuery', app.indexOf('onMounted(async () => {')))
+const source = app.slice(app.indexOf('async function prepareRouteData('), app.indexOf('\nwatch([filterQuery', app.indexOf('onMounted(async () => {')))
 function deferred() {
   let resolve
   const promise = new Promise(done => { resolve = done })

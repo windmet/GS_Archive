@@ -40,6 +40,9 @@ for (const view of VALID_VIEWS) {
       for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
       const expected = legacyProjection(navigation)
+      // The route-schema change intentionally stopped leaking a previous
+      // Player's return destination into non-Player pages.
+      if (view !== 'player') expected.returnView = ''
       if (view === 'chibi_stage') expected.stageId = actual.stageId
       if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
         expected.story = actual.story
