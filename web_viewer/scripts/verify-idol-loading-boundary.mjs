@@ -60,7 +60,7 @@ function restoreFixture() {
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, writeArchiveRoute() {},
     applyArchiveRoute: async route => { applied.push(route); c.view.value = route.view },
   })
-  const node = body.find(node => node.id?.name === 'restoreRoute'), source = script.slice(node.start, node.end)
+  const source = ['prepareRouteData', 'restoreRoute'].map(name => { const node = body.find(item => item.id?.name === name); return script.slice(node.start, node.end) }).join('\n')
   for (const match of source.matchAll(/\+\+(pending\w+)/g)) c[match[1]] = 0
   vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + source, c)
   return { ...t, applied }

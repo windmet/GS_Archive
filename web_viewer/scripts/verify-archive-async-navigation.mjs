@@ -15,6 +15,7 @@ import { useStageNavigation } from '../src/composables/useStageNavigation.js'
 import { parse as parseSfc } from '@vue/compiler-sfc'
 import { parse as parseJavascript } from '@babel/parser'
 import { ref } from 'vue'
+import { resolveHomeSelection } from '../src/core/HomeSelection.js'
 import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
@@ -53,7 +54,7 @@ function setup() {
   const storyIndex = { count: 0, pages: [], landing: { main: 'landing:main', extra: 'landing:extra', birthday: 'landing:birthday' } }
   const storyTransport = { index: async () => storyIndex, idolDetail: async () => { throw Error('Unexpected idol story hydration') } }
   const context = vm.createContext({
-    isDirectScenarioEntry, playerReturnRoute,
+    isDirectScenarioEntry, playerReturnRoute, resolveHomeSelection,
     prepareArchivePage: (_view, data) => data,
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     EXTERNAL_STORY_RESOURCES_ENABLED: false,
