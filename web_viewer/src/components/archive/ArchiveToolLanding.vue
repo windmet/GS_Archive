@@ -1,7 +1,7 @@
 <template>
   <section class="experiments" data-archive-scroll-container>
-    <h2>{{ tool.title }}</h2>
-    <article class="experiment" :aria-labelledby="`tool-${tool.id}`">
+    <h2>{{ kind === 'studio' ? '摄影工作台' : 'LIVE' }}</h2>
+    <article v-for="tool in tools" :key="tool.id" class="experiment" :aria-labelledby="`tool-${tool.id}`">
       <img :src="tool.image" :alt="tool.imageAlt" width="960" height="540" decoding="async" />
       <div class="experiment-copy">
         <h3 :id="`tool-${tool.id}`">{{ tool.heading }}</h3>
@@ -18,20 +18,26 @@
 </template>
 <script setup>
 import { computed } from 'vue'
+import chartImage from '../../assets/tools/chart.webp'
 import stageImage from '../../assets/tools/stage.webp'
 import studioImage from '../../assets/tools/studio.webp'
 const props = defineProps({ kind: { type: String, default: 'live' } })
 defineEmits(['charts', 'photo', 'stage', 'photo-catalog'])
-// Two landing pages share one layout: a large picture of what the destination makes, a sentence and three
+// Each tool has its own picture and entry; the two landing pages share one layout and three
 // facts. Sizes are what a cold first open downloads (current request list × the deployed files'
 // bytes on the wire, re-measured 2026-10-07 after pictures moved to q90 WebP); re-measure when a
 // tool's first screen or the deployed images change.
 const TOOLS = {
-  live: { id: 'live', title: 'LIVE', heading: '谱面与2D舞台', image: stageImage, imageAlt: 'LIVE：三位偶像的小人在舞台上跳舞',
-    summary: '按游戏里的 LIVE 来看一首歌：看音符落下的谱面，或看小人们按编舞唱跳的 2D舞台。',
-    points: ['谱面：透视轨道 / 长轨图，4 档难度，可导出 PNG 或 SVG', '2D舞台：60 首曲目，最多 5 人同台，可切换声部和服装', '两边各自选曲，歌曲详情里也能直接进入'],
-    size: '谱面 3 MB / 2D舞台 12 MB', sizeNote: '2D舞台含一首歌的音频', heavy: true,
-    actions: [{ id: 'charts', label: '谱面' }, { id: 'stage', label: '2D舞台' }] },
+  charts: { id: 'charts', heading: '谱面预览', image: chartImage, imageAlt: '谱面预览：DRIVE A LIVE EXPERT 的透视轨道',
+    summary: '选一首歌，像在游戏里一样看音符落下，也可以展开成整首的长轨图逐段读。',
+    points: ['透视轨道 / 长轨图两种看法', '4 档难度，可调播放速度和音符落速', '导出 PNG 或 SVG'],
+    size: '3 MB', sizeNote: '之后每首不到 0.1 MB', heavy: false,
+    actions: [{ id: 'charts', label: '谱面预览' }] },
+  stage: { id: 'stage', heading: '2D舞台', image: stageImage, imageAlt: '2D舞台：三位偶像的小人在舞台上跳舞',
+    summary: '挑一首歌、编进想看的偶像，看小人们按游戏里的编舞唱跳一整首。',
+    points: ['60 首曲目，最多 5 人同台', '切换演唱声部和服装', '纯净模式与舞台截图'],
+    size: '12 MB', sizeNote: '含一首歌的音频', heavy: true,
+    actions: [{ id: 'stage', label: '2D舞台' }] },
   studio: { id: 'photo', title: '摄影工作台', heading: '背景与人像的自由图层', image: studioImage, imageAlt: '摄影工作台：两位偶像和贴纸摆在街景前',
     summary: '把背景、偶像和贴纸当作图层自由摆放，拼出自己的画面。',
     points: ['133 个地点，49 位偶像，184 张贴纸', '每位偶像可换服装、表情和动作', '保存构图下次接着编，或导出 PNG'],
@@ -39,7 +45,7 @@ const TOOLS = {
     actions: [{ id: 'photo', label: '摄影工作台' }],
     link: { id: 'photo-catalog', label: '先去收藏查看背景与人像资源' } },
 }
-const tool = computed(() => TOOLS[props.kind] || TOOLS.live)
+const tools = computed(() => props.kind === 'studio' ? [TOOLS.studio] : [TOOLS.charts, TOOLS.stage])
 </script>
 <style scoped>
 .experiments { height: 100%; box-sizing: border-box; overflow: auto; padding: var(--gs-space-7); background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); }
