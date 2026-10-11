@@ -61,14 +61,16 @@ export function createReaderFixtureTransport() {
     records.set(entry.document_id, { entry, bytes })
     return entry
   }
+  // Locators are published in hash shards (reading-docs.shard); the fixture serves every registered
+  // document as a row of whichever shard is requested, as the repository's resolver selects rows by id.
   const readModelClient = { invalidate() {}, async load(descriptor, options = {}) {
-    assert.equal(descriptor.kind, 'reading-docs.detail')
+    assert.equal(descriptor.kind, 'reading-docs.shard')
     requests.push({ kind: 'locator', id: descriptor.expectedId })
-    const entry = records.get(descriptor.expectedId)?.entry
-    const entries = locators.get(descriptor.expectedId) || (entry ? [...records.values()].map(row => row.entry).filter(row => row.logical_id === entry.logical_id) : [])
-    const data = structuredClone({ view: { entry: entry || null, entries } })
-    if (entry) options.validate?.(data)
-    else { const error = Error('Reading fixture is absent'); error.code = 'RELEASE_OR_ARTIFACT_MISSING'; throw error }
+    const all = [...records.values()].map(row => row.entry)
+    const rows = all.map(entry => ({ id: entry.document_id,
+      view: { entry, entries: locators.get(entry.document_id) || all.filter(row => row.logical_id === entry.logical_id) } }))
+    const data = structuredClone({ rows })
+    options.validate?.(data)
     return data
   } }
   const fetch = async url => {
