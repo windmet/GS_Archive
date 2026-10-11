@@ -5,6 +5,7 @@
 // Usage: node scripts/audit-route-schema.mjs [--json]
 import { ref } from 'vue'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
+import { ROUTE_SCHEMA } from '../src/core/routeSchema.js'
 import { buildArchiveUrl, readArchiveRoute, VALID_VIEWS, ROUTE_QUERY_KEYS } from '../src/core/archiveRoute.js'
 
 const DIRTY = {
@@ -25,30 +26,7 @@ const QUERY_VALUES = { view: '', pick: 'profile', category: 'idol', story_mode: 
   from: '?view=story_catalog', portal_from: '?view=idols&category=idol', home_from: '?view=portal', scenario: 'a.json', start_step: '1', end_step: '9', at_step: '3',
   reading: 'doc1', reading_mode: 'bilingual', reading_scope: 'chapter', play_mode: 'segment', story_type: 'main', event_kind: 'fixed_unit_event', event_sort: 'oldest' }
 
-// DRAFT per-view ownership (proposal, derived from the page contracts and generic builder; each entry still needs the
-// owning page confirmed before it is enforced). Context-only params (from/portal_from/home_from) are excluded: they
-// now live in history state and are written to the URL only by legacy builders.
-const CATALOG = ['q']
-const DRAFT = {
-  welcome: [], idol_picker: ['pick'], portal: ['portal_scope', 'q'], home: ['home_idol', 'home_cue', 'home_costume'],
-  idols: ['category', 'idol', 'unit_filter', 'q'], groups: ['category', 'idol'], files: ['category', 'idol', 'group'],
-  episode_zero_units: [], episodes: ['unit'], idol_detail: ['category', 'idol'],
-  cards: ['idol', 'q', 'rarity', 'card_attribute', 'asset_state', 'relation_state'], card_detail: ['card'],
-  event_catalog: ['event_kind', 'event_sort', 'event_page'], event_detail: ['event', 'parent', 'category', 'unit'],
-  collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
-  photo_catalog: ['photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent'],
-  song_catalog: ['song_scope'], song_detail: ['song', 'song_scope', 'parent', 'unit'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
-  experiments: [], about: [], archive_status: [], spine_lab: [],
-  story_catalog: ['story_mode', 'story_type', 'event_scope', 'availability', 'sort', 'idol', 'q'],
-  external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
-  seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
-  idol_story_archive: ['idol', 'story_type', 'story_section', 'episode'], mobile_archive: ['idol', 'unit', 'mobile_mode', 'mobile_scenario'],
-  unit_catalog: [], unit_detail: ['unit'],
-  reader: ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev'],
-  'player(return=reader)': ['reading', 'reading_row', 'reading_mode', 'reading_scope', 'reading_rev', 'scenario', 'start_step', 'end_step', 'at_step', 'play_mode', 'return'],
-  'player(return=event_detail)': ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return', 'event', 'parent', 'category', 'unit'],
-  'player(return=files)': ['scenario', 'start_step', 'end_step', 'at_step', 'voice', 'play_mode', 'return', 'category', 'idol', 'group'],
-}
+const DRAFT = Object.fromEntries(Object.entries(ROUTE_SCHEMA).map(([key, list]) => [key.replace(/^player:(.*)$/, 'player(return=$1)'), list]))
 const LEGACY_CONTEXT = new Set(['from', 'portal_from', 'home_from'])
 const extras = (list, name) => list.filter(key => !(DRAFT[name] || []).includes(key) && !LEGACY_CONTEXT.has(key))
 const params = url => [...new Set([...url.searchParams.keys()])].filter(key => key !== 'view').sort()

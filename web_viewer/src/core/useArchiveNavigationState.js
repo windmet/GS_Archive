@@ -164,7 +164,7 @@ export function useArchiveNavigationState() {
       startStep: view.value === 'player' ? currentScenarioStartStep.value : 0,
       endStep: view.value === 'player' ? currentScenarioEndStep.value : 0,
       voice: view.value === 'player' ? currentPreviewCue.value : '',
-      returnView: returnViewAfterPlayer.value,
+      returnView: view.value === 'player' ? returnViewAfterPlayer.value : '', // a stale player return never reaches another page's URL
       parentView: preservesEventContext
         ? eventParentView.value
         : (preservesStoryDetailContext
