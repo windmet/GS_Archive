@@ -147,7 +147,9 @@ function restoreFixture() {
     context[name] = () => { assert.fail(`Unexpected restore domain boundary: ${name}`) }
   }
   bindSongNavigation(app, context).stop()
-  const restoreSource = script.slice(restoreBinding.start, restoreBinding.end)
+  const prepareBinding = body.find(node => node.type === 'FunctionDeclaration' && node.id.name === 'prepareRouteData')
+  assert.ok(prepareBinding, 'App keeps its shared route preparation')
+  const restoreSource = script.slice(prepareBinding.start, prepareBinding.end) + '\n' + script.slice(restoreBinding.start, restoreBinding.end)
   for (const match of restoreSource.matchAll(/\+\+(pending\w+)/g)) context[match[1]] = 0
   const setup = ['startupRouteNormalized', 'restoreRequest'].map(name => {
     const node = body.find(node => node.type === 'VariableDeclaration' && node.declarations.some(item => item.id.name === name))
