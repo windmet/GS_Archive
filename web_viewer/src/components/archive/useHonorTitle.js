@@ -16,4 +16,3 @@ export function honorTitle(entry, displayIdolName = () => '') {
   const idol = honorIdol(entry, displayIdolName)
   return FES_TITLES[idol?.kind] ? `${FES_TITLES[idol.kind]} · ${idol.name}` : archiveText('honor', entry?.nameJa || entry?.name)
 }
-
