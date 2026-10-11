@@ -608,7 +608,7 @@ export function readArchiveRoute(input = null) {
     portalScope: params.get('portal_scope'),
     portalQuery: params.get('q'),
     homeFrom: params.get('home_from'),
-    sourceRoute: params.get('from'),
+    sourceRoute: params.get('from') ?? (input ? null : historySourceRoute()),
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
@@ -754,13 +754,29 @@ export function buildArchiveUrl(input, route) {
   return url
 }
 
+// How the user arrived (the Reader/Player return source) is navigation context, not page identity:
+// the address bar keeps only the canonical page, and the source rides this history entry so back,
+// forward and refresh restore it. A copied URL carries no source and falls back to its canonical
+// parent. Older `from=` URLs are still read; the next write moves their source into history state.
+const HISTORY_SOURCE_KEY = 'sidemArchiveSource'
+
+function historySourceRoute() {
+  if (typeof window === 'undefined') return null
+  const source = window.history.state?.[HISTORY_SOURCE_KEY]
+  return typeof source === 'string' && source.startsWith('?') ? source : null
+}
+
 export function writeArchiveRoute(route, { replace = false } = {}) {
   const url = buildArchiveUrl(window.location.href, route)
+  const source = url.searchParams.get('from') || ''
+  url.searchParams.delete('from')
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
     ? existingEntryId
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
   const state = { ...window.history.state, archiveRoute: true, sidemArchiveEntryId: entryId }
+  if (source) state[HISTORY_SOURCE_KEY] = source
+  else delete state[HISTORY_SOURCE_KEY]
   window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
 }
 

@@ -7,6 +7,7 @@ import {
   normalizeArchiveRoute,
   readArchiveRoute,
   readArchiveSourceRoute,
+  writeArchiveRoute,
 } from '../src/core/archiveRoute.js'
 
 const legacyScenario = readArchiveRoute('http://localhost/?file=1_4_001_01')
@@ -400,5 +401,32 @@ assert.equal(songBreadcrumbs[1].route.song, '')
 const songCatalogBreadcrumbs = buildArchiveBreadcrumbs({ view: 'song_catalog', song: '' })
 assert.deepEqual(songCatalogBreadcrumbs.map(item => item.label), ['资料馆', '歌曲'])
 assert.equal(songCatalogBreadcrumbs.length, 2)
+
+// Return source is navigation context: the address bar stays canonical, history state carries the source.
+{
+  const entries = [{ state: null, href: 'http://localhost/?view=home' }]; let index = 0
+  globalThis.window = { get location() { return new URL(entries[index].href) },
+    get history() { return { get state() { return entries[index].state },
+      pushState(state, _t, url) { entries.splice(index + 1); entries.push({ state, href: new URL(url, entries[index].href).href }); index++ },
+      replaceState(state, _t, url) { entries[index] = { state, href: new URL(url, entries[index].href).href } } } } }
+  try {
+    const source = buildArchiveSourceQuery({ view: 'event_detail', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup' })
+    assert.ok(source)
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source })
+    assert.ok(!new URL(window.location).searchParams.has('from'), 'source is not written into the address bar')
+    assert.equal(readArchiveRoute().sourceRoute, source, 'same history entry restores the source (refresh, back)')
+    assert.equal(readArchiveRoute(window.location.href).sourceRoute, undefined, 'a copied URL carries no source')
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source }, { replace: true })
+    assert.equal(readArchiveRoute().sourceRoute, source)
+    writeArchiveRoute({ view: 'event_detail', event: '10001' })
+    assert.ok(!readArchiveRoute().sourceRoute, 'a later entry without a source does not inherit the earlier one')
+    index--; assert.equal(readArchiveRoute().sourceRoute, source, 'back restores the earlier entry source')
+    entries[index] = { state: null, href: 'http://localhost/' + buildArchiveUrl('http://localhost/', { view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source }).search }
+    assert.equal(readArchiveRoute().sourceRoute, source, 'legacy from= URL is still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('from'), 'legacy URL is shortened on the next write')
+    assert.equal(readArchiveRoute().sourceRoute, source, 'and its source moved into history state')
+  } finally { delete globalThis.window }
+}
 
 console.log('Archive route contract: story portal and detail routes verified')
