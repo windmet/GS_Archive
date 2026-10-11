@@ -9,6 +9,7 @@ import { createSSRApp, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
+import { buildSeasonalLedger } from '../readmodels/lib/seasonal_ledger.mjs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const json = path => JSON.parse(read(`public/data/${path}`))
@@ -31,7 +32,7 @@ assert.equal(byId.brndnf.attributeLabel, 'Intelli')
 assert.equal(byId.drvalv.attributeLabel, 'ALL')
 assert.ok(presentations.every(song => ['Physical', 'Intelli', 'Mental', 'ALL'].includes(song.attributeLabel)))
 assert.equal(buildSongPresentation({ ...catalog.songs.brndnf, attribute: undefined }, identity).attributeLabel, '待确认')
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /Chibi 舞台演出/)
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /2D舞台演出/)
 assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /openStage\(\{ songCode: song\.id, choreographyId: song\.stageCandidate\.id \}\)/, 'stage navigation preserves its own source identity')
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
@@ -103,7 +104,7 @@ function leaks(template) {
     if (!technical && node.type === 2 && /\b(?:RAW|ACB|cue|Confirmed|Derived)\b|表\s*46|字段\s*\d/.test(node.content)) failures.push(node.content)
     for (const child of node.children || []) walk(child, technical)
   }
-  walk(baseParse(template))
+  walk(baseParse(template, parserOptions))
   return failures
 }
 assert.ok(leaks('<p>{{ item.resource_id }}</p>').length)
@@ -195,7 +196,8 @@ try {
   }
   const sourceEvent = json('masterdata/event_index.json').events[0]
   await checkPage('ArchiveEventDetail', { view: {identity:{id:'test',eventCode:'test',title:'测试活动',kind:'theater'},period:{},media:{},provenance:{detailTable:113},rewards:{cards:[],general:[]},cast:[],cards:[],story:{entry:{event_id:'test',event_code:'test',title:'测试活动',exists:false}}} }, ['剧情暂未收录'])
-  for (const campaign of json('masterdata/seasonal_campaign_index.json').campaigns) await checkPage('ArchiveSeasonalCampaign', { campaign })
+  const seasonalLedger = buildSeasonalLedger(json('masterdata/seasonal_campaign_index.json'), json('reading/manifest.json').entries)
+  for (const campaign of seasonalLedger.campaigns) await checkPage('ArchiveSeasonalCampaign', { page: { ledger: seasonalLedger }, focusId: campaign.id })
   for (const idol of json('masterdata/work_story_index.json').idols) await checkPage('ArchiveWorkStory', { idol })
   // The page takes read-model records; render it with the production projection so the
   // check cannot pass on an empty page (it used to receive a retired `archive` prop).
