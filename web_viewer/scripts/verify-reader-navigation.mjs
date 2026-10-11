@@ -15,6 +15,7 @@ import { ReadModelClient, entityShardDescriptor } from '../readmodels/runtime/Re
 import { withLoadDeadline } from '../src/core/AsyncLoadBoundary.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { readerReturnDecision } from '../src/core/ReaderReturnPolicy.js'
 import { storyContentMode } from '../src/utils/LanguageStore.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
@@ -448,6 +449,25 @@ try {
       assert.equal((await proof(new Response(t.artifacts.get('/data/compiled/' + entries[2].source_file)))).steps.length, documents[2].source.step_count)
     }
     t.stop()
+  }
+  // Pure return policy: branch order is user-visible (legacy event source first, then work, seasonal, event, collection).
+  {
+    const base = { detailSourceRoute: '', storyDomain: 'main', characterId: '', storyFile: '', workMode: '', storySection: '', eventId: '', eventParentView: '', categoryId: '', unitCode: '' }
+    const decide = patch => readerReturnDecision({ ...base, ...patch })
+    const source = buildArchiveSourceQuery({ view: 'story_catalog' }), eventSource = buildArchiveSourceQuery({ view: 'event_detail', event: '1' }), otherSource = buildArchiveSourceQuery({ view: 'unit_detail', unit: '01jup' })
+    assert.deepEqual(decide({ detailSourceRoute: source }), { action: 'restore-source' }, 'catalog source restores')
+    assert.deepEqual(decide({ detailSourceRoute: otherSource, storySection: '1' }), { action: 'restore-source' }, 'no event id: any source restores')
+    assert.deepEqual(decide({ detailSourceRoute: eventSource, eventId: '1', characterId: '001tom', storyDomain: 'work' }), { action: 'restore-source' }, 'legacy event source wins over work')
+    assert.deepEqual(decide({ detailSourceRoute: otherSource, eventId: '1', eventParentView: 'unit_detail', categoryId: 'c', unitCode: '01jup' }).route,
+      { view: 'event_detail', event: '1', parentView: 'unit_detail', category: 'c', unit: '01jup', sourceRoute: otherSource }, 'event with non-event source returns to event')
+    assert.deepEqual(decide({ storyDomain: 'work', characterId: '001tom', storyFile: 'w.json', workMode: 'lines', eventId: '1' }).route,
+      { view: 'work_archive', storyType: 'work', idol: '001tom', story: 'w.json', workMode: 'lines' }, 'work wins over event')
+    assert.equal(decide({ storyDomain: 'work', storySection: '3', storyFile: 'w.json' }).route.view, 'story_collection', 'work without character falls through to collection')
+    assert.deepEqual(decide({ storyDomain: 'seasonal_campaign', storySection: 's', characterId: '001tom', eventId: '1' }).route,
+      { view: 'seasonal_campaign', storyType: 'seasonal_campaign', storySection: 's', idol: '001tom' }, 'seasonal wins over event')
+    assert.deepEqual(decide({}), { action: 'catalog' }, 'no context opens the catalog')
+    assert.deepEqual(decide({ storySection: '9', storyFile: 'a.json' }).route, { view: 'story_collection', storyType: 'main', storySection: '9', story: 'a.json' })
+    assert.deepEqual(decide({ storyFile: 'a.json' }).route, { view: 'story_detail', storyType: 'main', storySection: '', story: 'a.json' })
   }
   console.log(`Reader navigation: actual App/controller/story bindings, real repository/read-model/session transport, route/queue delegation, revision/range proof, cancellation, refresh and Reader return passed (${localSources ? 'local published compiled bytes' : 'source-only synthetic compiled bytes'})`)
 } finally {

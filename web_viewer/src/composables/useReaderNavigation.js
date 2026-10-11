@@ -1,5 +1,6 @@
 import { ref, shallowRef, computed } from 'vue'
 import { chapterReadingPlan, createChapterReadingSession, directoryReadingPlan } from '../core/ChapterReadingPlan.js'
+import { readerReturnDecision } from '../core/ReaderReturnPolicy.js'
 import { readerChapterNavigation } from '../core/ReaderChapterNavigation.js'
 import { seasonalReaderChapters } from '../core/SeasonalReaderChapters.js'
 import { readerScopeForViewport } from '../core/ReaderViewport.js'
@@ -166,31 +167,14 @@ export function useReaderNavigation({
   }
 
   function closeStoryReader() {
-    // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
-    if (detailSourceRoute.value && (!currentEventId.value ||
-        ['event_detail','story_catalog'].includes(readArchiveSourceRoute(detailSourceRoute.value).view))) return restoreDetailSource(openStoryCatalog)
-    if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
-      const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
-        story: currentStoryFile.value, workMode: currentWorkMode.value }, { restoring: false })
-      const revision = navigation.getRevision()
-      return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-    }
-    if (currentStoryDomain.value === 'seasonal_campaign') {
-      const pending = applyArchiveRoute({ view: 'seasonal_campaign', storyType: 'seasonal_campaign',
-        storySection: currentStorySection.value, idol: currentCharacterId.value }, { restoring: false })
-      const revision = navigation.getRevision()
-      return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-    }
-    if (currentEventId.value) {
-      const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
-        parentView: eventParentView.value, category: currentCategoryId.value,
-        unit: currentArchiveUnitCode.value, sourceRoute: detailSourceRoute.value }, { restoring: false })
-      const revision = navigation.getRevision()
-      return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-    }
-    if (!currentStorySection.value && !currentStoryFile.value) return openStoryCatalog()
-    const pending = applyArchiveRoute({ view: currentStorySection.value ? 'story_collection' : 'story_detail', storyType: currentStoryDomain.value,
-      storySection: currentStorySection.value, story: currentStoryFile.value }, { restoring: false })
+    const decision = readerReturnDecision({
+      detailSourceRoute: detailSourceRoute.value, storyDomain: currentStoryDomain.value, characterId: currentCharacterId.value,
+      storyFile: currentStoryFile.value, workMode: currentWorkMode.value, storySection: currentStorySection.value,
+      eventId: currentEventId.value, eventParentView: eventParentView.value, categoryId: currentCategoryId.value, unitCode: currentArchiveUnitCode.value,
+    })
+    if (decision.action === 'restore-source') return restoreDetailSource(openStoryCatalog)
+    if (decision.action === 'catalog') return openStoryCatalog()
+    const pending = applyArchiveRoute(decision.route, { restoring: false })
     const revision = navigation.getRevision()
     return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
   }
