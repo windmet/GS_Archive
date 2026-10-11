@@ -19,8 +19,19 @@ const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest, costumeDictio
 const stats = archiveHomeStateStats(idols)
 
 assert.equal(stats.idols, 49)
-assert.equal(stats.cues, 2564)
-assert.equal(stats.playable, 2564)
+assert.equal(stats.cues, 2356)
+assert.equal(stats.playable, 2356)
+// Different source records can point at the same home cue. Every distinct
+// playable cue must survive, while each idol's directory identity stays unique.
+for (const idol of idols) {
+  const sourceCues = new Set(cardIndex.cards
+    .filter(card => card.character_id === idol.id)
+    .flatMap(card => card.home_voice_cues || [])
+    .filter(cue => cue.preview?.preview_step?.state && cue.preview?.voice)
+    .map(cue => cue.cue))
+  assert.equal(new Set(idol.cues.map(cue => cue.cue)).size, idol.cues.length, idol.id)
+  assert.deepEqual(new Set(idol.cues.map(cue => cue.cue)), sourceCues, idol.id)
+}
 assert.equal(stats.backgrounds, 1)
 assert.equal(stats.models, 57)
 
