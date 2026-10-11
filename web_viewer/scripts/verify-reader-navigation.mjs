@@ -159,12 +159,14 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     assert.ok(artifacts.has(path), 'Unexpected network request: ' + path)
     return new Response(artifacts.get(path), { headers: { 'content-type': 'application/json' } })
   }
+  const prepared = []; let prepareHook = async route => route
   const context = { ...state, computed, navigation, readModelClient, useReaderNavigation, useStoryNavigation, useStoryPlaybackController, useEpisodeQueue,
     archiveBootstrap: { release, idols: [{ id: '001tom' }], domains: { collections: collectionIndex, stories: storyIndex }, counts: { catalog_story_entries: 0 } },
     isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation, withLoadDeadline,
     primeArchiveRouteComponent: () => {}, captureActiveArchiveView: () => {},
     syncArchiveRoute: options => syncs.push({ route: state.currentArchiveRoute(), options, pending: navigation.isPending() }),
     prepareArchivePage: (_view, task) => task,
+    prepareRouteData: async (route, isCurrent) => { prepared.push(route.view); return prepareHook(route, isCurrent) },
     captureDetailSource: () => { state.detailSourceRoute.value = buildArchiveSourceQuery(state.currentArchiveRoute()) },
     commitView: view => { navigation.invalidate(); state.view.value = view; state.loading.value = false },
     commitArchiveSelection: () => navigation.invalidate(),
@@ -207,7 +209,7 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     await updateLocators()
     return sample
   }
-  return { ...api, context, state, controller, navigation, requests, syncs, destinations, media, artifacts, statuses, jobs,
+  return { ...api, prepared, setPrepareHook: hook => { prepareHook = hook }, context, state, controller, navigation, requests, syncs, destinations, media, artifacts, statuses, jobs,
     selected, collection, collectionData, collectionDescriptor, remoteDescriptor, locatorUrls, updateLocators, publicationGates, validated, addReading, stop,
     apply: context.applyArchiveRoute, queue: context.loadPlayerQueue }
 }
@@ -377,6 +379,17 @@ try {
     assert.equal(t.state.view.value, 'reader', 'actual generic story factory late callback reaches Reader')
     assert.equal(t.readingState.value.document?.document_id, event.firstReadingId)
     assert.equal(t.state.currentEventId.value, event.id); t.stop()
+  }
+  // Leaving the Reader prepares the target page's data first (refresh / shared link has none loaded),
+  // and a superseded preparation must not apply a stale route.
+  {
+    const t = await fixture(); await t.apply(single(0, { event: '10001', parentView: 'event_detail' }))
+    t.prepared.length = 0; { const n = t.destinations.length
+      await t.closeStoryReader(); assert.deepEqual(t.prepared, ['event_detail'], 'event data is prepared before the route is applied')
+      assert.equal(t.destinations.length, n + 1); assert.equal(t.destinations.at(-1).view, 'event_detail') }
+    t.setPrepareHook(async route => { t.navigation.invalidate(); return route })
+    await t.apply(single(0, { event: '10001', parentView: 'event_detail' })); const m = t.destinations.length
+    await t.closeStoryReader(); assert.equal(t.destinations.length, m, 'superseded preparation applies nothing'); t.stop()
   }
   {
     const t = await fixture(); await t.apply(single(0, { storyType: 'work', idol: '001tom', story: 'work.json', workMode: 'lines' }))

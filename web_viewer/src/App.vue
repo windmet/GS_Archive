@@ -906,7 +906,7 @@ const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
 const readModelClient = new ReadModelClient({ release: archiveBootstrap.release, observe: event => tracePlayer('read-model', event) })
 const initialArchiveStartup = resolveArchiveStartup(window.location.href, initialUserPreferences.preferences,
-  archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id))
+  archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id), { history: true })
 const bootstrapIdolDictionary = { by_idol_code: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
   display_name: idol.name, unit_name: idol.unitName, color: idol.color,
 }])) }
@@ -1409,6 +1409,7 @@ const {
   workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
   currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
   applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
+  prepareReturnRoute: prepareRouteData,
   loadSeasonalLedger: () => loadSeasonalLedgerOnly(),
   seasonalParticipantName: participant => (participant.participant_type === 'idol' && idolDisplayName(participant.participant_code, participant.display_name)) || participant.display_name,
 })
@@ -2501,6 +2502,32 @@ function isBootstrapRoute(route) {
     route.view === 'idols'
 }
 
+// Loads the read-model data a route's page needs; null when superseded. Shared by URL restore and Reader returns.
+async function prepareRouteData(route, isCurrent) {
+  route = await prepareHomeRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareLegacyAliasRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareMobileRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareIdolRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareUnitRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareGashaRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareCardRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareEventRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareStoryArchiveRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareStoryRoute(route, { isCurrent })
+  if (!route) return null
+  if (!await prepareSongRoute(route, { isCurrent })) return null
+  return route
+}
+
 let startupRouteNormalized = false
 let restoreRequest = 0
 async function restoreRoute(route, { restoring = true } = {}) {
@@ -2525,37 +2552,8 @@ async function restoreRoute(route, { restoring = true } = {}) {
     if (!isDirectScenarioEntry(route)) {
       legacyEntryStatus.value = ''
       route = normalizeStoryRoute(route)
-      const preparedHomeRoute = await prepareHomeRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedHomeRoute) return
-      route = preparedHomeRoute
-      const preparedLegacyRoute = await prepareLegacyAliasRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedLegacyRoute) return
-      route = preparedLegacyRoute
-      const preparedMobileRoute = await prepareMobileRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedMobileRoute) return
-      route = preparedMobileRoute
-      const preparedIdolRoute = await prepareIdolRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedIdolRoute) return
-      route = preparedIdolRoute
-      const preparedUnitRoute = await prepareUnitRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedUnitRoute) return
-      route = preparedUnitRoute
-      const preparedGashaRoute = await prepareGashaRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedGashaRoute) return
-      route = preparedGashaRoute
-      const preparedCardRoute = await prepareCardRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedCardRoute) return
-      route = preparedCardRoute
-      const preparedEventRoute = await prepareEventRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedEventRoute) return
-      route = preparedEventRoute
-      const preparedStoryArchiveRoute = await prepareStoryArchiveRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedStoryArchiveRoute) return
-      route = preparedStoryArchiveRoute
-      const preparedStoryRoute = await prepareStoryRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })
-      if (!preparedStoryRoute) return
-      route = preparedStoryRoute
-      if (!await prepareSongRoute(route, { isCurrent: () => intent.isCurrent() && request === restoreRequest })) return
+      route = await prepareRouteData(route, () => intent.isCurrent() && request === restoreRequest)
+      if (!route) return
     }
     if (navigation.isDisposed() || !intent.isCurrent() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route, { restoring, intent })

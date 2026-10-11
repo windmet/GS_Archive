@@ -22,7 +22,7 @@ export function useReaderNavigation({
   workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
   currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
   applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
-  loadSeasonalLedger = null, seasonalParticipantName = undefined,
+  prepareReturnRoute = async route => route, loadSeasonalLedger = null, seasonalParticipantName = undefined,
 }) {
   const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
 
@@ -174,9 +174,14 @@ export function useReaderNavigation({
     })
     if (decision.action === 'restore-source') return restoreDetailSource(openStoryCatalog)
     if (decision.action === 'catalog') return openStoryCatalog()
-    const pending = applyArchiveRoute(decision.route, { restoring: false })
-    const revision = navigation.getRevision()
-    return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+    // The target page's data may not be loaded (refresh or a shared link opened straight into the Reader).
+    const entryRevision = navigation.getRevision()
+    return prepareReturnRoute(decision.route, () => navigation.getRevision() === entryRevision).then(route => {
+      if (!route || navigation.getRevision() !== entryRevision) return
+      const pending = applyArchiveRoute(route, { restoring: false })
+      const revision = navigation.getRevision()
+      return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
+    })
   }
 
   function returnToReader() {

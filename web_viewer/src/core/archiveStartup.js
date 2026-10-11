@@ -23,9 +23,9 @@ function validIdol(idolCode, validHomeIdols) {
   return typeof idolCode === 'string' && validHomeIdols.includes(idolCode)
 }
 
-export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
+export function resolveArchiveStartup(input, preferences, validHomeIdols = [], { history = false } = {}) {
   if (!isBareArchiveEntry(input)) {
-    const route = readArchiveRoute(input)
+    const route = readArchiveRoute(input, { history })
     return {
       route,
       lightweight: route.view === 'welcome' || route.view === 'portal' ||

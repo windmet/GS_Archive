@@ -23,6 +23,8 @@ export function bindReaderNavigation(app, context = {}) {
     navigation: createArchiveNavigationCoordinator(), archiveBootstrap: { release: '0'.repeat(64), idols: [], domains: {} },
     readModelClient: { load: unexpected('readModelClient.load'), invalidate: unexpected('readModelClient.invalidate') },
     playbackController: { reset: unexpected('playbackController.reset'), load: unexpected('playbackController.load') },
+    // App's route data preparation; a fixture overrides it to observe or supersede a Reader return.
+    prepareRouteData: async route => route,
   }
   for (const name of ['collectionReadModelDetail', 'storyReadModelDetail', 'eventReadModelDetail', 'workReadModelDetail',
     'idolStoryReadModelDetail', 'currentStoryCollection', 'currentStory', 'currentEventProjection', 'currentWorkIdol', 'currentIdolStoryPage']) defaults[name] = ref(null)

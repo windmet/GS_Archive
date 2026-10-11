@@ -596,7 +596,9 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   return [home, current(fallbackDomains[route.view] || '资料')]
 }
 
-export function readArchiveRoute(input = null) {
+// `history` merges the current history entry's source: implied for the live location, opt-in for an
+// explicitly passed current URL; independent links never inherit one.
+export function readArchiveRoute(input = null, { history = !input } = {}) {
   const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
@@ -608,7 +610,7 @@ export function readArchiveRoute(input = null) {
     portalScope: params.get('portal_scope'),
     portalQuery: params.get('q'),
     homeFrom: params.get('home_from'),
-    sourceRoute: params.get('from') ?? (input ? null : historySourceRoute()),
+    sourceRoute: params.get('from') ?? (history ? historySourceRoute() : null),
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
