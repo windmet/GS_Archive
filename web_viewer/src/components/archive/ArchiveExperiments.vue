@@ -29,7 +29,7 @@ const tools = [
     summary: '选一首歌，像在游戏里一样看音符落下，也可以展开成整首的长轨图逐段读。',
     points: ['透视轨道 / 长轨图两种看法', '4 档难度，可调播放速度和音符落速', '导出 PNG 或 SVG'],
     size: '3 MB', sizeNote: '之后每首不到 0.1 MB', heavy: false },
-  { id: 'stage', title: '舞台小人', image: stageImage, imageAlt: '舞台小人：三位偶像的小人在舞台上跳舞',
+  { id: 'stage', title: '2D舞台', image: stageImage, imageAlt: '2D舞台：三位偶像的小人在舞台上跳舞',
     summary: '挑一首歌、编进想看的偶像，看小人们按游戏里的编舞唱跳一整首。',
     points: ['60 首曲目，最多 5 人同台', '切换演唱声部和服装', '纯净模式与舞台截图'],
     size: '12 MB', sizeNote: '含一首歌的音频', heavy: true },

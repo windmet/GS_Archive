@@ -27,7 +27,7 @@
       <ArchiveSongExperimentalPlayer v-if="song.playback.experiment" ref="songPlayer" :song="song" :audio-experiment="song.playback.experiment" :idol-directory="idolDirectory" :idol-name="idolName" :idol-search="idolSearch" @open-stage="openStage" />
       <ArchiveSongSinglePlayer v-else-if="song.playback.track" ref="songPlayer" :song="song" :track="song.playback.track" />
       <p v-else class="song-block-note song-playback-unavailable" role="status">{{ song.playbackLabel || '暂未提供试听' }}</p>
-      <button v-if="song.stageCandidate" class="stage-open-button" type="button" @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : 'Chibi 舞台演出' }} →</button>
+      <button v-if="song.stageCandidate" class="stage-open-button" type="button" @click="openStage({ songCode: song.id, choreographyId: song.stageCandidate.id })">{{ song.stageCandidate.stageKind === 'special_single' ? '社长特别演出' : '2D舞台演出' }} →</button>
       </div>
       <div class="song-record-column">
       <section v-if="song.gameplay" class="song-block song-gameplay">

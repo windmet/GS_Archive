@@ -104,7 +104,7 @@
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
       <div class="stage-header-title">
-        <h1><span class="stage-title-full">{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</span><span class="stage-title-compact">{{ isSpecialSingle ? '特别演出' : '舞台小人' }}</span></h1>
+        <h1><span class="stage-title-full">{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '2D舞台 · 多人舞台' }}</span><span class="stage-title-compact">{{ isSpecialSingle ? '特别演出' : '2D舞台' }}</span></h1>
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
       <ArchiveLanguageSwitch on-dark />

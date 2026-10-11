@@ -67,9 +67,12 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
       if (!profile) return null
       const membership = memberships[idolCode] || {}
       const cards = resolveCharacterCards(cardsByCharacter, idolCode)
+      // 源表里不同记录 ID 可指向同一 cue，按 card+cue 身份去重（不按文本）。
+      const seenCueIds = new Set()
       const cues = cards.flatMap(card => (card.home_voice_cues || [])
         .map(cue => normalizeHomeCue(card, cue))
         .filter(Boolean))
+        .filter(cue => !seenCueIds.has(cue.id) && seenCueIds.add(cue.id))
       if (!cues.length) return null
       const costumes = [...(costumesByIdol.get(idolCode) || [])]
       const knownModels = new Set(costumes.map(costume => costume.modelId))
