@@ -18,7 +18,7 @@ from pathlib import Path
 from PIL import Image
 
 
-def encode(src, dst):
+def encode(src, dst, lossy=False):
     im = Image.open(src).convert("RGBA")
     pixels = bytearray(im.tobytes())
 
@@ -33,6 +33,14 @@ def encode(src, dst):
 
     clean = Image.frombytes("RGBA", im.size, bytes(pixels))
     Path(dst).parent.mkdir(parents=True, exist_ok=True)
+    if lossy:
+        # Lossy colour at q90; an opaque picture drops the alpha plane, any other keeps it
+        # lossless with `exact` so transparent pixels stay zeroed.
+        opaque = clean.getextrema()[3][0] == 255
+        (clean.convert("RGB") if opaque else clean).save(
+            dst, "WEBP", quality=90, alpha_quality=100, method=6, exact=True,
+        )
+        return {"width": im.size[0], "height": im.size[1], "alphaClearedPixels": cleared, "opaque": opaque}
     clean.save(
         dst,
         "WEBP",
@@ -53,7 +61,7 @@ def main():
         if job.get("op") == "shutdown":
             return
         try:
-            result = encode(job["source"], job["target"])
+            result = encode(job["source"], job["target"], job.get("lossy", False))
             result["id"] = job["id"]
             result["ok"] = True
         except Exception as exc:  # noqa: BLE001 - reported to the Node caller

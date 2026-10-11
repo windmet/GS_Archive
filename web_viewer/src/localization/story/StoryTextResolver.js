@@ -4,7 +4,7 @@ const VALID_MODES = new Set(['original', 'translation', 'bilingual'])
 const VALID_PRIMARY = new Set(['original', 'translation'])
 
 const DEFAULT_PREFERENCES = Object.freeze({
-  story_content_mode: 'original',
+  story_content_mode: 'translation',
   story_translation_locale: 'zh-CN',
   bilingual_primary: 'original',
   missing_translation_policy: 'fallback-source',
@@ -106,15 +106,16 @@ export function resolveStoryText({
   speaker = null,
   overlayEntry = null,
   entityNames = null,
+  speakerLabelNames = null,
   preferences = null,
   allowStale = false,
 } = {}) {
   const sourceText = textValue(source)
   const prefs = normalizePreferences(preferences)
   const translation = translationState({ overlayEntry, textRef, allowStale, sourceText })
-  const original = originalBlock(renderProducerAddressing(sourceText, prefs.producer_name))
+  const original = originalBlock(renderProducerAddressing(sourceText, prefs.producer_name, { locale: 'ja' }))
   const localized = translationBlock(prefs.story_translation_locale,
-    renderProducerAddressing(translation.text, prefs.producer_name))
+    renderProducerAddressing(translation.text, prefs.producer_name, { locale: prefs.story_translation_locale }))
   const normalizedSpeaker = normalizeSpeaker(speaker)
 
   let primary = original
@@ -143,9 +144,18 @@ export function resolveStoryText({
     normalizedSpeaker.entityId,
     prefs.story_translation_locale,
     normalizedSpeaker.entityType,
-  )
+  ) || (typeof speakerLabelNames === 'function'
+    ? textValue(speakerLabelNames(normalizedSpeaker, prefs.story_translation_locale)) : '')
   const preferTranslatedSpeaker = prefs.story_content_mode === 'translation'
     || (prefs.story_content_mode === 'bilingual' && prefs.bilingual_primary === 'translation')
+  // A Producer nameplate is presentation, not a translation of the source label.
+  // Do not replace fixed forms of address inside dialogue or mutate identity.
+  // Without a name the nameplate reads 制作人 wherever the line itself is shown translated.
+  const producerSpeakerDisplay = normalizedSpeaker.kind === 'producer'
+    ? (prefs.producer_name ? `${prefs.producer_name}P`
+      : preferTranslatedSpeaker ? '制作人'
+        : (normalizedSpeaker.source === '<P>' ? 'プロデューサー' : normalizedSpeaker.source))
+    : null
 
   return {
     unitId: textValue(textRef?.unit_id) || null,
@@ -154,9 +164,9 @@ export function resolveStoryText({
       entityType: normalizedSpeaker.entityType,
       entityId: normalizedSpeaker.entityId,
       source: normalizedSpeaker.source,
-      display: preferTranslatedSpeaker && translatedSpeaker
+      display: producerSpeakerDisplay ?? (normalizedSpeaker.kind !== 'unknown' && preferTranslatedSpeaker && translatedSpeaker
         ? translatedSpeaker
-        : normalizedSpeaker.source,
+        : normalizedSpeaker.source),
     },
     primary,
     secondary,

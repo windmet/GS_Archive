@@ -5,8 +5,17 @@ import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.m
 import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
+import { buildReadingParents } from './reading_parent_projection.mjs';
+import { applyDomainExpansion } from './domain_expansion.mjs';
+import { buildSeasonalLedger } from './seasonal_ledger.mjs';
 
 export const INPUTS = {
+ domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
+ domainEvents:'data/masterdata/domains/event_supplement_index.json', domainPhotoIndex:'data/masterdata/domains/photo_index.json',
+ domainPhotoMaterials:'data/masterdata/domains/photo_materials.json',
+ domainLogin:'data/masterdata/domains/login_campaign_catalog.json',
+ domainCollectionMedia:'data/masterdata/domains/collection_media.json', domainPhotoMedia:'data/masterdata/domains/photo_media.json',
+ domainEventMedia:'data/masterdata/domains/event_media.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
@@ -35,6 +44,7 @@ const HELPERS = {
  idolStories: 'src/data/idolCommunicationSelectors.js',
  mobile: 'src/data/idolCommunicationSelectors.js',
  characterImages: 'src/utils/CharacterImageResolver.js',
+ readingDirectory: 'src/data/ReadingDirectory.js',
 };
 export function projectUnitRecord(entry, stories, songs) {
   const unit = entry.unit;
@@ -51,10 +61,13 @@ export function projectUnitRecord(entry, stories, songs) {
 /** Production adapter: executes the existing, checkout-owned pure selectors. No hand-reimplementation of card precedence or story identity. */
 export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const sources = {}, data = {};
-  for (const [key, name] of Object.entries(INPUTS)) {
+  const readSource = async name => {
     const bytes = await safeRead(path.join(viewer, 'public'), name);
-    sources[name] = { sha256: sha256(bytes), bytes: bytes.length };
-    data[key] = JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+    sources[name] = { sha256:sha256(bytes), bytes:bytes.length };
+    return JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
+  };
+  for (const [key, name] of Object.entries(INPUTS)) {
+    data[key] = await readSource(name);
   }
   const codeHashes = {};
   // Include transitive pure-module code in the release digest, not only direct import entrypoints.
@@ -70,6 +83,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  // Imported by the portal's pure event selectors; bind its bytes to this release too.
+  await readSource('data/editorial/event-resource-graph.json');
   assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&
     data.songTimelines.songs && typeof data.songTimelines.songs === 'object', 'Song timeline manifest contract mismatch');
   const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
@@ -138,11 +153,17 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
       audioExperiment:data.songExperimentalAudio.songs?.[song.song_code]||null,manifest:data.archiveManifest}),
       stageCandidate: stageCandidate ? pick(stageCandidate,['id','stageKind']) : null }];
   }));
+  // A card's gasha relation carries that gasha's own banner, as the gasha pages show it.
+  const gashaBanners = new Map((data.gashaIndex.gashas || []).map(gasha => [String(gasha.id), gasha.banner_url || null]));
+  const gashaRelation = card => {
+    const relation = data.gashaIndex.relations_by_card?.[card.resource_id];
+    return relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null;
+  };
   const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
     ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
     assetStatus:data.archiveManifest.card_assets_by_id?.[card.resource_id]||null,
     eventRelation:data.archiveManifest.event_card_relations_by_card?.[card.resource_id]||null,
-    gashaRelation:data.gashaIndex.relations_by_card?.[card.resource_id]||null,
+    gashaRelation:gashaRelation(card),
   }]));
   const identities = Object.entries(data.idolUnit.by_idol_code).map(([id, profile]) => ({
     id, name: profile.display_name, kana: profile.name_fields?.kana || '', color: profile.color || '',
@@ -209,7 +230,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'legacy-files': { records:legacyAliases.fileRecords },
     'legacy-episodes': { records:legacyAliases.episodeRecords },
     'legacy-zero': { records:legacyAliases.zeroRecords },
-    'reading-docs': { records:buildReadingLocatorRecords(data.readingManifest) },
+    'reading-docs': null, // built below, once the owner records it inverts have been expanded
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         readingEntries:readingEntriesForFiles(data.readingManifest.entries,
@@ -218,14 +239,34 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
           .filter(entry=>entry._source).map(entry=>({id:entry.id,source:entry._source}))}}})) },
     seasonal: { searchable:true,records:data.seasonalCampaign.campaigns.map(campaign=>({id:campaign.id,
       summary:pick(campaign,['name','title','year','season','start_at','end_at']),view:{campaign,
+        readingEntries:(files=>readingEntriesForFiles(data.readingManifest.entries,files,{includeChildrenOf:files}))(
+          [...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
+            .map(episode=>episode.compiled_file)),
         sourceEvidence:{campaign:campaign._source||null,
           episodes:[...(campaign.introduction||[]),...(campaign.participants||[]).flatMap(participant=>participant.episodes||[])]
             .filter(episode=>episode._source).map(episode=>({id:episode.id,source:episode._source}))}}})) },
+    'seasonal-ledger': { records:[{id:'all',summary:{name:'季节企划'},
+      view:{ledger:buildSeasonalLedger(data.seasonalCampaign,data.readingManifest.entries)}}] },
   };
+  const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
+    { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
+  // Each reading document's canonical parent comes from the owner records above, so the locator names exactly
+  // the page the Reader's own entry points would have opened (see reading_parent_projection.mjs).
+  const parentFor = buildReadingParents({
+    events: extraDomains.events.records, collections: extraDomains.collections.records,
+    idolStories: extraDomains['idol-stories'].records, work: extraDomains.work.records, seasonal: extraDomains.seasonal.records,
+    stories: stories.map(story => ({ id: story.id, readingEntries: storyViews[story.id].readingEntries })),
+  });
+  extraDomains['reading-docs'] = { sharded:true,
+    records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries, parentFor) };
+  for (const [resourceId, material] of Object.entries(materialContexts || {})) {
+    if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
+  }
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
       seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length },
+    portalPortraits:data.rawCharacterImagePromotions, portalStageManifest:data.songTimelines,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
     playback: data.songPlaybackAudio.songs, experimental: data.songExperimentalAudio.songs, extraDomains },

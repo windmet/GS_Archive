@@ -162,6 +162,14 @@ export class ReadModelClient {
     this.queue = []; this.flights.clear(); this.cache.clear(); this.retainedBytes = 0;
   }
 }
+// Sharded domains (see readmodels/lib/common.mjs shardKey): the shard holds many entities; the
+// caller selects its id from data.rows.
+export async function entityShardDescriptor(bootstrap, domain, id, kind) {
+  if (!/^[a-z-]+$/.test(domain)) throw new TypeError('Invalid domain');
+  const key = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(id))))]
+    .slice(0, 1).map(x => x.toString(16).padStart(2, '0')).join('');
+  return { url: `/_catalog/v/${bootstrap.release}/${domain}/shards/${key}.json`, kind, expectedId: key, maxBytes: 768 * 1024 };
+}
 export async function entityDescriptor(bootstrap, domain, id, kind) {
   if (!/^[a-z-]+$/.test(domain)) throw new TypeError('Invalid domain');
   const hash = [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(id))))]

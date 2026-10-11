@@ -3,6 +3,9 @@ import fs from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { createReadingDocument, readingAvatarEntity } from '../shared/reading/ReadingDocument.js'
 import { validateReadingDocument, validateReadingManifest } from '../shared/reading/ReadingContract.js'
+import { sourceHash } from './audit-reading-diagnostics.mjs'
+import { projectReadingChoiceRows } from '../src/presentation/ReadingChoiceMetadata.js'
+import { seasonalReadingEntries } from '../shared/reading/ReadingCatalog.js'
 
 const read = async file => JSON.parse(await fs.readFile(new URL(`../${file}`, import.meta.url), 'utf8'))
 const hash = value => `sha256:${createHash('sha256').update(value).digest('hex')}`
@@ -25,7 +28,11 @@ for (const sectionId of selection.main_collection_sections || []) {
   }
 }
 for (const id of expectedIds) assert.ok(manifest.entries.some(entry => entry.document_id === id), `regression sample ${id}`)
-for (const entry of manifest.entries) assert.ok(storyCatalog.entries.some(source => source.file === entry.parent_file && source.exists), `published catalog parent ${entry.document_id}`)
+// Parents come from the story catalog or, for seasonal campaigns, from the seasonal index (the same
+// discovery entries the generator reads).
+const catalogParents = [...storyCatalog.entries, ...seasonalReadingEntries(await read('public/data/masterdata/seasonal_campaign_index.json'))]
+for (const entry of manifest.entries) assert.ok(catalogParents.some(source => source.file === entry.parent_file && source.exists && source.domain === entry.domain), `published catalog parent ${entry.document_id}`)
+assert.equal(manifest.entries.filter(entry => entry.domain === 'seasonal').length, 306, 'every seasonal campaign episode has a reading document')
 const byDomain = {}
 for (const entry of manifest.entries) { const counts = byDomain[entry.domain] ||= {}; counts[entry.status] = (counts[entry.status] || 0) + 1 }
 assert.deepEqual((await read('public/data/reading/coverage.json')).by_domain, byDomain)
@@ -42,7 +49,7 @@ for (const entry of manifest.entries) {
   assert.equal(new Set(doc.rows.map(r => r.anchor.row_id)).size, doc.rows.length)
   for (const row of doc.rows) {
     assert.equal(typeof row.source_text, 'string')
-    if (row.text_ref) assert.equal(hash(row.source_text), row.text_ref.source_hash)
+    if (row.text_ref) assert.equal(sourceHash(row.source_text), row.text_ref.source_hash)
     assert.ok(row.anchor.step_index >= 0 && row.anchor.step_index < doc.source.step_count)
     assert.equal(row.anchor.playback, undefined)
     assert.equal(doc.playback.file, doc.source.file)
@@ -63,17 +70,41 @@ const strictChoice = documents.find(d => d.document_id === '1_4_001_01_a')
 assert.equal(strictChoice.status, 'ready')
 assert.ok(strictChoice.rows.some(r => r.kind === 'caption'))
 assert.equal(strictChoice.controls.length, 2)
-assert.ok(strictChoice.rows.some(r => r.kind === 'choice_detail' && r.source_text === 'appeal'))
+assert.ok(strictChoice.rows.some(r => r.kind === 'choice_metadata' && r.source_text === 'appeal'))
+let markers = 0, longReplies = 0
+for (const doc of documents) {
+  const before = JSON.stringify(doc)
+  const projection = projectReadingChoiceRows(doc)
+  for (const row of doc.rows) {
+    if (!['choice_detail','choice_metadata'].includes(row.kind)) continue
+    if (row.kind === 'choice_metadata') {
+      markers++
+      assert.ok(!projection.some(item => item.row === row), 'RAW marker is not reading prose')
+      assert.equal(projection.filter(item => item.anchorAliases.includes(row.anchor.row_id)).length, 1, 'one actual choice owns the legacy anchor')
+    } else {
+      longReplies++
+      assert.ok(projection.some(item => item.row === row), 'genuine choice details survive')
+    }
+  }
+  assert.equal(JSON.stringify(doc), before, 'presentation never rewrites source evidence')
+}
+assert.equal(markers, 12)
+assert.ok(longReplies > 0)
 assert.equal(documents.find(d => d.document_id === '1_4_001_02_a').status, 'ready')
 const multi = documents.find(d => d.document_id === '1_4_001_03_h')
-assert.equal(multi.status, 'unsupported')
+assert.equal(multi.status, 'ready')
 assert.equal(multi.controls[0].options.length, 3)
-assert.ok(multi.diagnostics.some(d => d.code === 'branch-exits-unavailable'))
-const birthday = documents.find(d => d.document_id === '1_2_001_12')
-assert.equal(birthday.status, 'ready')
-assert.equal(birthday.source.file, '1_x_001tom_2_1_2_001_12.json')
-assert.equal(birthday.playback.file, birthday.source.file)
-assert.equal(birthday.rows.filter(row => row.kind === 'dialogue').length, 15)
+assert.ok(multi.controls[0].fork)
+// Birthday small talks read one document per talk, sliced from the aggregate like every other
+// lettered group (001tom's combined small-talk file was split into its parts on 2026-10-09).
+assert.equal(documents.some(d => d.document_id === '1_2_001_12'), false, 'the combined small-talk document is retired')
+const birthday = ['a', 'b', 'c'].map(part => documents.find(d => d.document_id === `1_2_001_12_${part}`))
+for (const [index, talk] of birthday.entries()) {
+  assert.equal(talk.status, 'ready')
+  assert.equal(talk.source.file, `episodes/1_2_001_12_${'abc'[index]}.json`)
+  assert.equal(talk.playback.file, talk.source.file)
+}
+assert.deepEqual(birthday.map(talk => talk.rows.filter(row => row.kind === 'dialogue').length), [5, 5, 5])
 
 // A non-contiguous source ID is not a zero-based playback offset.
 const input = { scenario_id: 'test', steps: [

@@ -1,4 +1,6 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { claimMusicAudioSession, releaseMusicAudioSession } from '../utils/musicAudioSession.js'
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 
 const START_LEAD_SECONDS = 0.05
 
@@ -49,9 +51,10 @@ export function buildSingerGateSchedule(performerLineup = [], events = [], offse
   return scheduled
 }
 
-export function useSongPerformanceSession({ contextFactory = createAudioContext } = {}) {
+export function useSongPerformanceSession({ contextFactory = createAudioContext, resumeTimeoutMs = 8000 } = {}) {
   const ready = ref(false)
   const playing = ref(false)
+  const starting = ref(false)
   const currentTime = ref(0)
   const duration = ref(0)
   const error = ref('')
@@ -61,6 +64,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   const lineup = ref([])
   const singerEvents = ref([])
   const loadedIdolCodes = ref([])
+  const outputPeak = ref(0)
 
   let context = null
   let backingBuffer = null
@@ -71,10 +75,17 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   let animationFrame = 0
   let loadSequence = 0
   let playbackGeneration = 0
+  let playIntent = 0
+  let pendingStart = null
+  let disposed = false
+  let resumeController = null
+  let closePending = false, closeError = ''
   let loadAbortController = null
   let logicalOffset = 0
   let logicalEpoch = 0
   let continuousVocals = false
+  let analyser = null, samples = null, lastMeterTime = 0
+  const audioSessionOwner = {}
 
   const currentSingerEvent = computed(() => [...singerEvents.value]
     .reverse()
@@ -90,14 +101,27 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   ))
 
   function ensureContext() {
+    if (disposed) throw new Error('Audio session is disposed')
     if (context) return context
     context = contextFactory()
     backingBus = context.createGain()
     vocalBus = context.createGain()
     backingBus.gain.value = clampGain(backingGain.value)
     vocalBus.gain.value = clampGain(vocalGain.value)
-    backingBus.connect(context.destination)
-    vocalBus.connect(context.destination)
+    if (context.createAnalyser) {
+      analyser = context.createAnalyser()
+      analyser.fftSize = 512
+      samples = new Float32Array(analyser.fftSize)
+      analyser.connect(context.destination)
+    }
+    backingBus.connect(analyser || context.destination)
+    vocalBus.connect(analyser || context.destination)
+    context.onstatechange = () => {
+      if (playing.value && context.state !== 'running') {
+        pause()
+        error.value = '播放已中断，请点击播放继续。'
+      }
+    }
     return context
   }
 
@@ -125,11 +149,19 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   }
 
   function pause() {
+    // Cancels playback intent, including a resume() that has not settled yet.
+    playIntent += 1
+    resumeController?.abort()
+    resumeController = null
+    pendingStart = null
+    starting.value = false
     if (playing.value) logicalOffset = logicalTime()
     currentTime.value = logicalOffset
     playing.value = false
+    outputPeak.value = 0
     stopAnimation()
     stopSources()
+    releaseMusicAudioSession(audioSessionOwner)
   }
 
   function release({ resetTime = true } = {}) {
@@ -157,6 +189,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   }
 
   async function configure({ experiment, events, performerLineup, continuous = false }) {
+    if (disposed) return
     const resumeAt = logicalOffset
     release({ resetTime: false })
     lineup.value = [...performerLineup]
@@ -221,42 +254,54 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     const generation = ++playbackGeneration
     const gates = new Map()
     const sources = []
-
-    const backingSource = ctx.createBufferSource()
-    backingSource.buffer = backingBuffer
-    backingSource.playbackRate.value = playbackRate.value
-    const backingGate = ctx.createGain()
-    backingGate.gain.value = 1
-    backingSource.connect(backingGate).connect(backingBus)
-    sources.push({ source: backingSource, gate: backingGate })
-
-    for (const [idolCode, buffer] of vocalBuffers) {
-      if (offset >= buffer.duration) continue
-      const source = ctx.createBufferSource()
-      const gate = ctx.createGain()
-      source.buffer = buffer
-      source.playbackRate.value = playbackRate.value
-      gate.gain.value = 0
-      source.connect(gate).connect(vocalBus)
-      gates.set(idolCode, gate)
-      sources.push({ source, gate })
+    // Record ownership before any subsequent operation can throw.
+    function allocate(buffer, bus, initialGain) {
+      const record = { source: ctx.createBufferSource(), gate: null }
+      sources.push(record)
+      record.gate = ctx.createGain()
+      record.source.buffer = buffer
+      record.source.playbackRate.value = playbackRate.value
+      record.gate.gain.value = initialGain
+      record.source.connect(record.gate).connect(bus)
+      return record
     }
-    scheduleSingerGates(gates, startAt, offset)
-    for (const { source } of sources) source.start(startAt, offset)
-    backingSource.onended = () => {
-      if (generation !== playbackGeneration || !playing.value) return
-      logicalOffset = duration.value
-      currentTime.value = duration.value
-      playing.value = false
-      stopAnimation()
-      stopSources()
+    try {
+      const backingSource = allocate(backingBuffer, backingBus, 1).source
+      for (const [idolCode, buffer] of vocalBuffers) {
+        if (offset >= buffer.duration) continue
+        gates.set(idolCode, allocate(buffer, vocalBus, 0).gate)
+      }
+      scheduleSingerGates(gates, startAt, offset)
+      backingSource.onended = () => {
+        if (generation !== playbackGeneration || !playing.value) return
+        logicalOffset = duration.value
+        currentTime.value = duration.value
+        playing.value = false
+        stopAnimation()
+        stopSources()
+        releaseMusicAudioSession(audioSessionOwner)
+      }
+      for (const { source } of sources) source.start(startAt, offset)
+      activeSources = sources
+      logicalEpoch = startAt
+    } catch (cause) {
+      for (const { source, gate } of sources) {
+        source.onended = null
+        try { source.stop() } catch (_) {}
+        try { source.disconnect() } catch (_) {}
+        try { gate?.disconnect() } catch (_) {}
+      }
+      throw cause
     }
-    activeSources = sources
-    logicalEpoch = startAt
   }
 
-  function update() {
+  function update(now = 0) {
     if (!playing.value) return
+    if (analyser && now - lastMeterTime > 100) {
+      analyser.getFloatTimeDomainData(samples)
+      outputPeak.value = samples.reduce((peak, value) => Math.max(peak, Math.abs(value)), 0)
+      lastMeterTime = now
+    }
     currentTime.value = logicalTime()
     if (currentTime.value >= duration.value) {
       pause()
@@ -265,28 +310,71 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
     animationFrame = requestAnimationFrame(update)
   }
 
+  async function unlock() {
+    if (disposed) return false
+    const intent = playIntent
+    const controller = new AbortController()
+    resumeController = controller
+    try {
+      claimMusicAudioSession(audioSessionOwner)
+      const ctx = ensureContext()
+      // Invoke in the original gesture, before the first await (WebKit).
+      if (ctx.state !== 'running') await withLoadDeadline(() => ctx.resume(), {
+        signal: controller.signal, timeoutMs: resumeTimeoutMs, label: 'audio-resume',
+      })
+      if (disposed || intent !== playIntent) return false
+      if (ctx.state !== 'running') throw new Error('音频播放未恢复，请再点一次播放')
+      return true
+    } catch (playError) {
+      // An old native promise may settle after a newer session has claimed audio.
+      if (disposed || intent !== playIntent) return false
+      releaseMusicAudioSession(audioSessionOwner)
+      error.value = `无法恢复播放：${playError.message || playError}`
+      return false
+    } finally {
+      if (resumeController === controller) resumeController = null
+    }
+  }
+
   async function play() {
+    if (disposed) return false
+    if (playing.value) return true
+    if (pendingStart) return pendingStart.promise
     error.value = ''
     if (!ready.value || !backingBuffer) {
       error.value = '实验叠轨音频尚未准备。'
       return false
     }
     if (logicalOffset >= duration.value) logicalOffset = 0
-    try {
-      const ctx = ensureContext()
-      if (ctx.state === 'suspended') await ctx.resume()
-      if (ctx.state !== 'running') throw new Error('AudioContext 尚未进入运行状态')
-      createScheduledSources(logicalOffset)
-      playing.value = true
-      currentTime.value = logicalOffset
-      animationFrame = requestAnimationFrame(update)
-      return true
-    } catch (playError) {
-      stopSources()
-      error.value = `浏览器拒绝播放：${playError.message || playError}`
-      playing.value = false
-      return false
-    }
+    const sequence = loadSequence
+    const intent = ++playIntent
+    const current = () => !disposed && intent === playIntent && sequence === loadSequence
+    starting.value = true
+    const promise = (async () => {
+      try {
+        if (!await unlock()) return false
+        if (!current() || !ready.value || !backingBuffer) return false
+        createScheduledSources(logicalOffset)
+        playing.value = true
+        currentTime.value = logicalOffset
+        animationFrame = requestAnimationFrame(update)
+        return true
+      } catch (playError) {
+        if (!current()) return false
+        stopSources()
+        releaseMusicAudioSession(audioSessionOwner)
+        error.value = `浏览器拒绝播放：${playError.message || playError}`
+        playing.value = false
+        return false
+      } finally {
+        if (intent === playIntent) {
+          pendingStart = null
+          starting.value = false
+        }
+      }
+    })()
+    pendingStart = { intent, promise }
+    return promise
   }
 
   function seek(seconds) {
@@ -319,28 +407,52 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext 
   }
 
   watch([vocalGain, backingGain], syncBusVolumes)
-  onBeforeUnmount(() => {
+  function dispose() {
+    if (disposed) return
+    disposed = true
     release()
     try { backingBus?.disconnect() } catch (_) {}
     try { vocalBus?.disconnect() } catch (_) {}
-    if (context?.state !== 'closed') void context?.close()
+    try { analyser?.disconnect() } catch (_) {}
+    if (context) context.onstatechange = null
+    if (context && context.state !== 'closed') {
+      closePending = true
+      try {
+        Promise.resolve(context.close()).catch(cause => { closeError = String(cause) })
+          .finally(() => { closePending = false })
+      } catch (cause) { closePending = false; closeError = String(cause) }
+    }
     context = null
-  })
+  }
+  onBeforeUnmount(dispose)
+
+  function inspect() {
+    const bytes = buffer => buffer ? buffer.length * buffer.numberOfChannels * 4 : 0
+    return { disposed, ready: ready.value, starting: starting.value, playing: playing.value,
+      activeSources: activeSources.length, runningFrames: animationFrame ? 1 : 0,
+      decodedPcmBytes: bytes(backingBuffer) + [...vocalBuffers.values()].reduce((sum,buffer)=>sum+bytes(buffer),0),
+      pendingLoad: Boolean(loadAbortController), pendingResume: Boolean(resumeController), closePending, closeError }
+  }
 
   return {
     activeIdolCodes,
     activePerformerSlots,
     backingGain,
     configure,
+    dispose,
+    inspect,
     currentTime,
     duration,
     error,
     lineup,
     loadedIdolCodes,
+    outputPeak,
     pause,
     play,
+    unlock,
     playbackRate,
     playing,
+    starting,
     ready,
     release,
     reset,

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "033shr_403_2_4_033_03_09_a",
-  "logical_id": "story-collection:033shr_403_2_4_033_03_09_a",
+  "logical_id": "story:033shr_403_2_4_033_03_09_a",
   "scenario_id": "033shr_403_2_4_033_03_09_a",
   "text_catalog_id": "033shr_403_2_4_033_03_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "033shr_403_2_4_033_03_09_a.json",
-    "sha256": "sha256:cd279e65d97afe26b63f3bd51d07e01b5d715d9b1ec92639fa0b63c970275037",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:ea9c6014445e916b19943664f720bcb028f6f28318369e4c55971ef930b77428",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:02701b18d85b95fc3c181646c64bfde14df83984be6c57f2fa654a7df3cb21cd",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "033shr_403_2_4_033_03_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、お疲れさま！\n今日も収録、楽しかったなー！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1a3e93c9c056573874c588a31b2861f79ff38c721b555753526b77dacbb10e30"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "きょーだんに立つって、あんな感じなんだな。\nいつもと景色が反対で、すげー面白かった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3daf7f2166badd14b53b2cc42a48034dfc1d97ce0f337bce9bcdeedd4e0b9e5c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "でも、あのバラエティ番組の収録って、\n今日ので一旦おしまいなんだろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:068b7dd203423dde2dbebf23a713371ba98c62485fee42d2feb0ced9069320af"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "別に、寂しいとかじゃないけど！　オレ、\nもっと色んなこと教えてやってもよかったんだぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f81df0589643a488acbdc6dc06a567a0e6ecf872f17800bebb00f18a9d8d9bb8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "きっと次に\nつながります",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014:choice_short:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 14,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:836746db8532f9865a863e6f8eb35d23bac442a95fb13a82dcf7547e20cabac7"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,14 +264,14 @@
         "row_id": "033shr_403_2_4_033_03_09_a:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014",
+        "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014:000",
         "source_label": "phone_select1",
         "target_step_id": 7,
         "target_step_index": 6,
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "立派な先生でした！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1f187d9ec91b8d9a152a4dd22e86c66e7ac905d19dd88ca2de68dcae9dd237f8"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "033shr_403_2_4_033_03_09_a:step-6:option-1",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 14,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014",
+        "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000015:001",
         "source_label": "phone_select2",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "うん……だよなー！　先生役だってカンペキに\nできたし、みんなまた見たいって思ってくれたよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1cd8ed24bf3c2cc7b770b23bfbaf19d80b38aaba5b7b49788d74dfd52e58b138"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "へへ、当たり前だろ！　プロデューサーもオレに\n教えてほしいことあったら、言ってくれよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:29965877288a174fc445518144e12a815499c0a82de1a1751b007516fc2cd6bc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "……よっしゃ、またいつ出演することになっても\nいいように、オレも勉強しとかないと！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d08d37308c6cfa1167ab71d8cd5531f95fdd826e90eb74bb981c7eb7b615d997"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "宿題も……めんどくさい時もあるけど、頑張るぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:94f2fdf5e01d18d09796b6949eb77199608d8ac051a27bd7d7139d61ff2bcee0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回一緒だったみんなが勉強教えてくれたのも、\nなんか楽しかったしな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2ff780d37626ecd2e8a1fb1f913a72e20d65c726104ccdcb31291454ab94627e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -477,7 +583,18 @@
     {
       "kind": "choice",
       "source_text": "応援しています！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000032:choice_short:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 32,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f8705611e390009811effb1b7e63de91261ad726ae3dbfebebfbf89417d8f773"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -504,14 +621,14 @@
         "row_id": "033shr_403_2_4_033_03_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000032",
+        "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000032:000",
         "source_label": "phone_select3",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "サンキュ！　オレ、もっとビッグな男になるから、\n見ててくれよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0834d3e9eb8dfdfe6b57326dac0cfee9f9e361f262a2e7f5e7d1a7158b96bee1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "じゃ、今日はもう寝るから切るな！\nおやすみ、プロデューサー。また明日！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000037:phone_message:000",
+        "source": {
+          "scenario_id": "033shr_403_2_4_033_03_09_a",
+          "part_id": "2_4_033_03_09_a",
+          "file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+          "command_index": 37,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91ac1c4571fc5bf7d0fe37efba417987087978282038162a2505b3edaf3dc00a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "033shr",
         "sourceName": "橘 志狼"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "033shr_403_2_4_033_03_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_033_03_09_a",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null,
       "presentation": "call"
@@ -607,22 +742,79 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014",
+          "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014:000",
           "source_label": "phone_select1",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000014",
+          "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000015:001",
           "source_label": "phone_select2",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/033shr_403/scenario_2_4_033_03_09_a.json",
+        "raw_sha256": "sha256:36f1c8e9457cef6383e23c127bf46567605ab0cfe7974fe58a883065055c4af4",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          14,
+          15
+        ],
+        "join_command": 24,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              6
+            ],
+            "exit_index": 6,
+            "command_indices": [
+              16,
+              17,
+              18,
+              19
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              7
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              20,
+              21,
+              22,
+              23
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              8
+            ]
+          }
+        ]
+      }
     },
     {
       "step_id": 12,
@@ -630,8 +822,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000032",
+          "option_id": "choice-option:v1:033shr_403_2_4_033_03_09_a:2_4_033_03_09_a:cmd-000032:000",
           "source_label": "phone_select3",
           "target_step_id": 13,
           "target_step_index": 12,
@@ -640,93 +832,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、お疲れさま！",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "025suz_307_2_3_025_07_09_a",
-  "logical_id": "story-collection:025suz_307_2_3_025_07_09_a",
+  "logical_id": "story:025suz_307_2_3_025_07_09_a",
   "scenario_id": "025suz_307_2_3_025_07_09_a",
   "text_catalog_id": "025suz_307_2_3_025_07_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "025suz_307_2_3_025_07_09_a.json",
-    "sha256": "sha256:02cc73fcd27c7ed10fce3f4bec23b005a6db9547cac6d4282b38d874dc6a68a1",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:76cf9a70a0719e3b31517c43994e3464f6316eee76d945864e4e1148cacf8846",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:1a37329ca033f5497a0ee37b68a6e9d3c4e49d4c63c0da21c109acb7763c4b5f",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "025suz_307_2_3_025_07_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさんよぉっ、\n玄武のこと、相談に乗ってくれてありがとなッ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93c8e08706df0e9bd948f0eededf729b70e86c2fa68f213b8ec5bfb942f2eb3e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "勇気を出して話ができたのは、\nプロデューサーさんが背中を押してくれたおかげだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9ff46c1fdfe01d29cc332fe8d534d3824d913f9d1e1bdaf4258c85658c7ef09"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "なんか、いろいろ考えすぎちまって、\nプロデューサーさんにも面倒かけて悪かったな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:73a7a4f6243bc50781b57418bf422373d6f40aa143e3a06b7fc98697e3c76f34"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "もっと最初から、玄武に聞いてみりゃよかったぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:52feb593afdef4521bc8477798ddef4b8b329c7cd47257e33ff5120793fdf1bc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "玄武なら、ちゃんと話してくれるに\n決まってるんだからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:71407f8b96e8d6280e0db3c8d59f2b9f5e7408f80c29afee59ed75b7dc3920ce"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -227,7 +275,18 @@
     {
       "kind": "choice",
       "source_text": "これからは\n大丈夫そうですね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e4dd575a31a0f82be1478d7d939dd8a856c334d46a1d00781c444addbbf04483"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -254,14 +313,14 @@
         "row_id": "025suz_307_2_3_025_07_09_a:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 16,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016",
+        "option_id": "choice-option:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016:000",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -272,7 +331,18 @@
     {
       "kind": "choice",
       "source_text": "きちんと話せたようで\nよかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9a0206e56560e0280261a4287a8ccc131e23f4eba1512dcf0c0ab7de47f57e98"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -299,14 +369,14 @@
         "row_id": "025suz_307_2_3_025_07_09_a:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 16,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016",
+        "option_id": "choice-option:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000017:001",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "応ッ！　改めて、ありがとよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:765ccf1b79495567363b820a39a0bc7964aa4c112a54e508c9113c898306a356"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "玄武とは、これからも一緒に楽しい思い出を\n作っていこうって約束したからよ……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:79a080ddca75044b52167c7220bfc3781749357cbae3c22fb369f0fc01844624"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん！　オレら神速一魂のこと、\nこれからもよろしく頼むぜッ！！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "025suz_307_2_3_025_07_09_a",
+          "part_id": "2_3_025_07_09_a",
+          "file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e359bd12981d42fc1e341d90ada870cb4aaf41de80c43831200b7552513d5384"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "紅井 朱雀"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "025suz_307_2_3_025_07_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_025_07_09_a",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -442,86 +539,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016",
+          "option_id": "choice-option:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016:000",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000016",
+          "option_id": "choice-option:v1:025suz_307_2_3_025_07_09_a:2_3_025_07_09_a:cmd-000017:001",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/025suz_307/scenario_2_3_025_07_09_a.json",
+        "raw_sha256": "sha256:3b2ce1a472fb1eec524e2a41569dde1dd2eb91f85f39135268d7cd0ffbb99092",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーさんよぉっ、",
     "episode_label": null

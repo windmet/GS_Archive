@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_00_004_23_5_00_004_23",
-  "logical_id": "story-collection:5_00_004_23_5_00_004_23",
+  "logical_id": "story:5_00_004_23_5_00_004_23",
   "scenario_id": "5_00_004_23_5_00_004_23",
   "text_catalog_id": "5_00_004_23_5_00_004_23",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_00_004_23_5_00_004_23.json",
-    "sha256": "sha256:49c635eaa24b01b822c1f373b75f6c307921b0c5909f8987a767ffc56c905d1c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:5b89890d2df53c96cefe8c006a83ab981e71772011431400f1dccc4570995142",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:d4f7b4ba87f6b3707eea7a92a4d9abf3e17752cf36c90e53d3b5e9f7d9be4a8e",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_00_004_23_5_00_004_23.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "一緒に食べたお雑煮の思い出",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91959a8fccc342a7a33fbb01e1744462a949f8e8d5a879ac6464973a3cc89b8e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_00_004_23_5_00_004_23:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "新年を迎えた315プロダクション。\nアイドル達は気持ちも新たに、\nプロデューサーと挨拶を交わす。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34e73cd896f66dd802cdba9d0abbc85b94874a2227efaa28d45e9d9882865b4c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん、あけましておめでとう！\n仕事始め、楽しみ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000030:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 30,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5c4f5e8cde58acb5189188a7cfe4eca6d31c705a9602a4ea9a34ae12186df294"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -122,7 +158,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -131,21 +166,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あけましておめでとう！　今年はどんな仕事が\nできるのか、ワクワクするね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5d12952afcacb3bc4a183085896b9252c2cdc8b2d8aaff242e4c5587461a56b1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -161,30 +207,39 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_004_23_5_00_004_23:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あけましておめでとう、プロデューサー。\n今年もよろしくな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000042:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 42,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8e956684eddcaaefacbbcff0d17696d558e80ba0f35d89b3660398b70493ab95"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "009kyj",
         "sourceName": "鷹城 恭二"
       },
       "performance": {
@@ -200,26 +255,35 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_004_23_5_00_004_23:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 42,
+        "command_end": 42
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はい、よろしくお願いします！\n皆さん、お正月休みは楽しめましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000046:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 46,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:185ba2d4fc9ee2b39ba7c082b63fd68b00ab8ae8824c24250317ecc88bcbde53"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -246,21 +310,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 46,
+        "command_end": 46
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うん！　商店街のみんな、挨拶した！\nスマイルいっぱい、楽しかった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000054:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 54,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4586e29615c27a65244998782a958af7aeba4538c6a7184b3d0729a6b2b93383"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -276,30 +351,39 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_00_004_23_5_00_004_23:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 54,
+        "command_end": 54
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "年始の挨拶が済んでから、俺の家で一緒にお雑煮を\n食べたんだ。福笑いもやったんだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000061:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 61,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6061c82719061ea41e5d364664733fb9ad94f263ceba74cb4f36ac2e879ff704"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -316,7 +400,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -325,21 +408,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おもち、美味しかった！\n恭二のおもち、こーんな伸びた！　面白かったよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000074:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 74,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:824cb5775b7f241e999471cc5d9dcd3928fa678070e167cd174652fe014c4af0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "010pie",
         "sourceName": "ピエール"
       },
       "performance": {
@@ -356,7 +450,6 @@
         "stepId": 12
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -365,21 +458,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 74,
+        "command_end": 74
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あれは大変だった……。まあ\n正月らしい思い出にはなったけど。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000079:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 79,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8d2b9722d01bb027d30932008c702764b0526523deef1218083396d3b95c24ea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "009kyj",
         "sourceName": "鷹城 恭二"
       },
       "performance": {
@@ -396,7 +500,6 @@
         "stepId": 13
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -405,21 +508,32 @@
         "row_id": "5_00_004_23_5_00_004_23:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 79,
+        "command_end": 79
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "お正月も満喫したし、今日から仕事も頑張るよ。\n今年もよろしくね、プロデューサー！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_00_004_23_5_00_004_23:5_00_004_23:cmd-000085:dialogue:000",
+        "source": {
+          "scenario_id": "5_00_004_23_5_00_004_23",
+          "part_id": "5_00_004_23",
+          "file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+          "command_index": 85,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:db19a58b999477f84867ae57a0c867b109a866b5a10589b452ea8b67cd51c07a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -436,7 +550,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -445,77 +558,16 @@
         "row_id": "5_00_004_23_5_00_004_23:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_00_004_23",
+        "source_file": "assets/resources/scenariodata/5_00_004_23/scenario_5_00_004_23.json",
+        "command_start": 85,
+        "command_end": 85
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "新年を迎えた315プロダクション。",
     "episode_label": null

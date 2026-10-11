@@ -172,7 +172,7 @@ header strong { font-size: 1rem; }
 .actions button:hover, .close:hover { border-color: var(--player-active-border); background: var(--player-active-surface); color: var(--player-active-text); }
 .actions button:focus-visible, .close:focus-visible { outline: 2px solid var(--player-focus-inner); box-shadow: 0 0 0 4px var(--player-focus-outer); }
 .empty { margin: 50px 0; color: var(--player-ink-700); text-align: center; }
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .backlog { inset: 2%; border-radius: 18px; }
   header { padding: 14px 16px; }
   .entries { padding: 10px; }

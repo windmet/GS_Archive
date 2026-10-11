@@ -1,0 +1,122 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-09-29-story-text-identity-backfill-188",
+  "created_at": "2026-09-29T08:20:52.701Z",
+  "prepared_from_commit": "f5bc5d46911781f210a143861335a120a20c0f01",
+  "transaction_kind": "backfill",
+  "scope": {
+    "kind": "collection",
+    "ids": [
+      "5_03_000_22"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story-collection:5_03_000_22",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_5_03_000_22.unity3d",
+        "sha256": "fc20c729034e6567da8257055de64dc2f343d2a1381fd2a60598cb3b1eff172b",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_5_03_000_22_a",
+            "container_path": "assets/resources/scenariodata/5_03_000_22/scenario_5_03_000_22_a.json",
+            "path_id": null
+          },
+          {
+            "type": "TextAsset",
+            "name": "scenario_5_03_000_22_b",
+            "container_path": "assets/resources/scenariodata/5_03_000_22/scenario_5_03_000_22_b.json",
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_catalog",
+          "key": "5_03_000_22",
+          "evidence": "RAW group candidate supplies text coordinates only; mounted legacy Runtime fields remain unchanged"
+        }
+      ],
+      "transform": {
+        "tool": "backfill-story-text-identities.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/5_03_000_22.json",
+          "url": "/data/compiled/5_03_000_22.json",
+          "bytes": 166195,
+          "sha256": "a66de5febdd8b0af6c383358a72b1c6bed640a98fdc3e1fe3e48d35ae926ef3e"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/5_03_000_22_a.json",
+          "url": "/data/compiled/episodes/5_03_000_22_a.json",
+          "bytes": 71502,
+          "sha256": "85b70494cdcc5589f14c64583319b1f130a32f37a663081eb3c8b11163da7139"
+        },
+        {
+          "path": "web_viewer/public/data/compiled/episodes/5_03_000_22_b.json",
+          "url": "/data/compiled/episodes/5_03_000_22_b.json",
+          "bytes": 95095,
+          "sha256": "1784735bfa28110f87177a144dc875717aec438ac2d09637e218a6f92c94ea8d"
+        }
+      ],
+      "consumers": [
+        "Story Runtime",
+        "ReadingDocument",
+        "translation preflight"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Identity-only: all non-identity compiled fields deep-equal before and after",
+          "Reader row kind, source text, speaker source name, order, anchors, controls and status unchanged",
+          "RAW bundle, source coordinates, candidate hashes and source hashes verified; strict runtime candidate not mounted"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "not-tested",
+        "tested_url": null,
+        "tested_at": null,
+        "tested_commit": null,
+        "environment": null,
+        "evidence": []
+      },
+      "previous_state": {
+        "kind": "unmanaged-existing",
+        "release_id": null,
+        "artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/5_03_000_22.json",
+            "url": "/data/compiled/5_03_000_22.json",
+            "bytes": 155285,
+            "sha256": "e7f371d80c3d4f6248c5c46d6d27b1b442a689b7651da5e655f28c2f1cbbb136"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/5_03_000_22_a.json",
+            "url": "/data/compiled/episodes/5_03_000_22_a.json",
+            "bytes": 65670,
+            "sha256": "0da0d3cc448fd59a790fe8f7f14c16663df866449bf4d583f51c9d70f663c7af"
+          },
+          {
+            "path": "web_viewer/public/data/compiled/episodes/5_03_000_22_b.json",
+            "url": "/data/compiled/episodes/5_03_000_22_b.json",
+            "bytes": 90036,
+            "sha256": "520552177075c63f7ab6eef35d9328b65a3a482584a569254229b6bcbb015078"
+          }
+        ],
+        "evidence": [
+          "Git baseline f5bc5d46911781f210a143861335a120a20c0f01"
+        ]
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

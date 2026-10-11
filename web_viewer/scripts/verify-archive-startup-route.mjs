@@ -1,10 +1,42 @@
+import { bindResourceNavigation } from './lib/resource-navigation-harness.mjs'
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
+import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
+import { bindUnitNavigation } from './lib/unit-navigation-harness.mjs'
+import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
+import { bindHomeNavigation } from './lib/home-navigation-harness.mjs'
+import { bindEventNavigation } from './lib/event-navigation-harness.mjs'
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { ref } from 'vue'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+{
+  let preferences = { startupPage: 'portal', homeMode: 'card', startupIdol: null, onboardingComplete: true }
+  const opened = []
+  const context = {
+    view: { value: 'idol_picker' }, currentPickTarget: { value: 'home' }, homeSelectedId: { value: '' },
+    userPreferences: { value: preferences }, archivePickerIdols: { value: [{ id: '001tom' }] },
+    archiveHomeIdols: { value: [{ id: '001tom' }] },
+    storeUserPreferences: value => { preferences = { ...preferences, ...value }; context.userPreferences.value = preferences },
+    captureDetailSource: () => {}, openGameHome: idol => opened.push(idol),
+  }
+  vm.runInNewContext(app.match(/function chooseImmersiveIdol\([^]*?\n\}/)[0], context)
+  context.chooseImmersiveIdol({ idolCode: '001tom', rememberStartup: false })
+  assert.equal(preferences.startupPage, 'portal', 'opening Home from its picker keeps the archive startup choice')
+  assert.equal(preferences.startupIdol, '001tom')
+  assert.deepEqual(opened, ['001tom'])
+  context.view.value = 'welcome'
+  context.chooseImmersiveIdol({ idolCode: '001tom', rememberStartup: true, homeMode: 'card' })
+  assert.equal(preferences.homeMode, 'card', 'an explicit startup choice may update the default')
+}
 const bootstrapContext = { EXTERNAL_STORY_RESOURCES_ENABLED: false }
 vm.runInNewContext(app.match(/function isBootstrapRoute\([^]*?\n\}/)[0], bootstrapContext)
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'external_story_resources' }), true,
@@ -27,7 +59,7 @@ assert.equal(bootstrapContext.isBootstrapRoute({ view: 'spine_lab' }), true,
   'Spine Lab owns its manifest and must not wait for the global archive batch')
 assert.equal(bootstrapContext.isBootstrapRoute({ view: 'chibi_stage' }), true,
   'Chibi Stage must load its own stage resources and bounded song detail without the global archive batch')
-const source = app.slice(app.indexOf('let startupRouteNormalized = false'), app.indexOf('\nwatch([filterQuery', app.indexOf('onMounted(async () => {')))
+const source = app.slice(app.indexOf('async function prepareRouteData('), app.indexOf('\nwatch([filterQuery', app.indexOf('onMounted(async () => {')))
 function deferred() {
   let resolve
   const promise = new Promise(done => { resolve = done })
@@ -35,6 +67,8 @@ function deferred() {
 }
 for (const disposed of [false, true]) {
   const catalog = deferred()
+  const cardTransport = createCardFixtureTransport()
+  cardTransport.jobs.set('card-index', catalog)
   const translations = deferred()
   let mount, popState, isDisposed = false
   const route = { view: 'cards', idol: '001tom' }
@@ -45,9 +79,10 @@ for (const disposed of [false, true]) {
     localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } },
     userPreferences: { value: {} },
-    archiveBootstrap: { idols: [{ id: '002sht' }] },
+    archiveBootstrap: { ...cardTransport.bootstrap, idols: [{ id: '002sht' }] },
+    readModelClient: cardTransport.client,
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false, loadCardCatalog: () => catalog.promise,
     loadIdolDetail: async idolCode => ({ id: idolCode, view: { profile: { idol_code: idolCode } } }),
     loadIdolEntityTranslations: () => translations.promise,
@@ -63,12 +98,20 @@ for (const disposed of [false, true]) {
   // Supply refs used by the actual startup callback; execute its production
   // control flow rather than reproducing the order of awaits in a fixture.
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   const latestRoute = { view: 'idol_detail', idol: '002sht' }
   popState(latestRoute)
-  catalog.resolve([])
+  catalog.resolve(cardTransport.data.get('card-index'))
   isDisposed = disposed
   translations.resolve()
   await pending
@@ -82,6 +125,8 @@ for (const disposed of [false, true]) {
 }
 {
   const firstRestore = deferred()
+  const latestWritten = deferred()
+  const gashas = createGashaFixtureTransport()
   let mount, popState
   const navigation = createArchiveNavigationCoordinator()
   let route = { view: 'player', scenario: 'slow.json' }
@@ -91,17 +136,25 @@ for (const disposed of [false, true]) {
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { ...route }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
-    loadGashaCatalog: async () => ({ rows: [] }),
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    archiveBootstrap: { ...gashas.bootstrap, idols: [] }, readModelClient: gashas.client,
     isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: (value, { intent }) => navigation.run(async () => { applied.push(value); if (value.view === 'player') await firstRestore.promise }, { restoring: true, intent }),
-    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => written.push(value),
+    currentArchiveRoute: () => applied.at(-1), writeArchiveRoute: value => { written.push(value); latestWritten.resolve() },
     onArchivePopState: callback => { popState = callback; return () => {} },
     installSpineAnimationDebug: () => () => {}, adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -109,7 +162,8 @@ for (const disposed of [false, true]) {
   assert.equal(typeof popState, 'function', 'history listener must be active during initial route restoration')
   route = { view: 'gashas' }
   popState(route)
-  await new Promise(resolve => setImmediate(resolve))
+  await latestWritten.promise
+  assert.deepEqual(gashas.loads.map(entry => entry.descriptor.url), ['gasha-index', 'gasha-page-1', 'gasha-page-2'])
   assert.equal(written.length, 1, 'latest completed restoration must finalize startup without waiting for obsolete load')
   assert.deepEqual(written[0], route)
   firstRestore.resolve()
@@ -120,14 +174,14 @@ for (const disposed of [false, true]) {
 for (const asynchronous of [false, true]) {
   const initial = deferred(), next = deferred(), written = []
   let mount, page = 'home'
-  const loading = { value: true }
+  const loading = ref(true)
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
   const context = {
     isDirectScenarioEntry, tracePlayer: () => {}, playbackError: { value: '' },
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route: { view: 'player' }, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => false,
     loadIdolEntityTranslations: async () => {}, navigation,
     applyArchiveRoute: (_route, { intent: inherited }) => navigation.run(async intent => {
@@ -139,9 +193,17 @@ for (const asynchronous of [false, true]) {
     adoptArchiveViewContext: () => {}, console, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
   context.loading = loading
   const syncSource = app.slice(app.indexOf('function syncArchiveRoute('), app.indexOf('function commitView('))
   context.primeArchiveRouteComponent = () => {}
+  bindStoryArchiveNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source + '\n' + syncSource, context)
   const pending = mount()
   await new Promise(resolve => setImmediate(resolve))
@@ -180,10 +242,9 @@ for (const route of [
     onMounted: callback => { mount = callback }, localStorage: { getItem: () => null },
     window: { location: { href: 'http://localhost/' } }, userPreferences: { value: {} },
     initialArchiveStartup: { route, source: 'test' }, pendingPreReadyRoute: null, localStorageValue: () => null,
-    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingMobileNavigation: 0, pendingLegacyAliasNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
+    pendingHomeNavigation: 0, pendingSongNavigation: 0, pendingIdolNavigation: 0, pendingUnitNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0, pendingSeasonalNavigation: 0, pendingWorkNavigation: 0, pendingIdolStoryNavigation: 0, pendingCollectionNavigation: 0, pendingStoryDetailNavigation: 0, pendingResourceNavigation: 0, pendingLegacyNavigation: 0,
     isBootstrapRoute: () => true,
-    loadCollectionDetail: async () => { throw new Error('missing leaf') },
-    loadStoryReadModelDetail: async () => { throw new Error('missing leaf') },
+    readModelClient: { load: async () => { throw new Error('missing leaf') } },
     loadIdolEntityTranslations: async () => {},
     navigation: createArchiveNavigationCoordinator(),
     applyArchiveRoute: async value => { applied.push(value) },
@@ -193,6 +254,14 @@ for (const route of [
     console: { error: () => {} }, archiveRouteReady: false,
   }
   for (const match of source.matchAll(/\b(\w+)\.value\s*=/g)) context[match[1]] = { value: null }
+  // Setup-time cache ownership watcher (watch(view, ...)); not part of the startup callback.
+  context.watch = () => {}
+  context.view ??= { value: null }
+  bindStoryArchiveNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop(); bindEventNavigation(app, context).stop(); bindHomeNavigation(app, context).stop(); bindUnitNavigation(app, context); bindCardNavigation(app, context); bindGashaNavigation(app, context); bindResourceNavigation(app, context); bindIdolFixtureNavigation(app, context)
+  bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
+  bindLegacyAliasNavigation(app, context).stop()
   vm.runInNewContext(source, context)
   await mount()
   assert.doesNotMatch(source, /ensureLegacyArchiveData|loadArchiveData|runWhenLegacyReady/,

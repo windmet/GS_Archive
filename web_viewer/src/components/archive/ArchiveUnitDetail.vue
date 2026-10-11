@@ -4,21 +4,20 @@
       <span class="unit-hero-shade" aria-hidden="true"></span>
       <div class="unit-hero-copy">
         <img class="unit-hero-logo" :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-        <span>UNIT ARCHIVE</span>
         <h2>{{ unit.unit_name }}</h2>
-        <p>{{ unit.unit_kana }}</p>
+        <p lang="ja">{{ unit.unit_kana }}</p>
       </div>
       <span class="unit-swatch" :style="{ backgroundColor: unit.unit_color || '#23a99f' }" :title="unit.unit_color"></span>
     </header>
 
     <section class="unit-description">
-      <p>{{ unit.description }}</p>
+      <p class="gs-flow">{{ reflowText(archiveNamedText('unit-profile', unit.description, 'description')) }}</p>
     </section>
 
     <section class="unit-section unit-card-summary" aria-labelledby="unit-cards-title">
       <div class="section-heading">
         <h3 id="unit-cards-title">成员卡片</h3>
-        <button class="section-command" @click="emit('open-cards')">
+        <button class="section-command" :data-archive-focus-id="`unit-cards:${unit.unit_code}`" @click="emit('open-cards')">
           <Images :size="16" />
           <span>查看卡片</span>
           <ChevronRight :size="15" />
@@ -60,7 +59,7 @@
         <span>{{ songs.length }} 首</span>
       </div>
       <div class="unit-songs">
-        <button v-for="song in songs" :key="song.song_code" @click="emit('open-song', song.song_code)">
+        <button v-for="song in songs" :key="song.song_code" :data-archive-focus-id="`unit-song:${unit.unit_code}:${song.song_code}`" @click="emit('open-song', song.song_code)">
           <img v-if="song.jacket_url" :src="song.jacket_url" :alt="`${song.title} 封面`" />
           <Music v-else :size="20" aria-hidden="true" />
           <span>
@@ -102,7 +101,7 @@
         <span>{{ stories.length }}</span>
       </div>
       <div class="unit-stories">
-        <button v-for="story in stories" :key="story.id" @click="emit('open-story', story)">
+        <button v-for="story in stories" :key="story.id" :data-archive-focus-id="`unit-story:${unit.unit_code}:${story.id}`" @click="emit('open-story', story)">
           <Play :size="15" fill="currentColor" />
           <span>
             <strong>{{ story.title }}</strong>
@@ -117,18 +116,23 @@
 </template>
 
 <script setup>
+import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
+void loadArchiveNames('profiles').catch(() => {})
 import { computed } from 'vue'
 import { ChevronRight, Images, Music, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import { eventBannerUrl } from '../../data/eventResourceGraph.js'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { buildIdolReference } from '../../presentation/IdolReferencePresentation.js'
 import { getBgUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
+import { reflowText } from '../../../shared/reading/ReadingTypography.js'
 
 const props = defineProps({
   unit: { type: Object, default: null },
   members: { type: Array, default: () => [] },
   identity: { type: Object, default: null },
+  idolName: { type: Function, default: () => '' },
   manifest: { type: Object, default: null },
   stories: { type: Array, default: () => [] },
   songs: { type: Array, default: () => [] },
@@ -139,13 +143,13 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['open-idol', 'open-story', 'open-event', 'open-cards', 'open-song'])
-const memberReferences = computed(() => props.members.map(member => ({
-  member,
-  reference: buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`),
-})))
+const memberReferences = computed(() => props.members.map(member => {
+  const reference = buildIdolReference(member.idol_code, props.identity, props.manifest, `unit:${props.unit?.unit_code || ''}`)
+  return { member, reference: reference.actionable ? {...reference, displayName: props.idolName(reference.idolCode) || reference.displayName} : reference }
+}))
 
 function matchingMemberNames(event) {
-  const names = new Map(props.members.map(member => [member.idol_code, member.display_name]))
+  const names = new Map(props.members.map(member => [member.idol_code, props.idolName(member.idol_code) || member.display_name]))
   return (event.matching_character_ids || []).map(idolCode => names.get(idolCode) || '姓名待确认').join('、')
 }
 
@@ -164,6 +168,8 @@ function relationItems(events, label, meta) {
       statusLabel: event.exists ? '可播放' : '缺少剧情',
       statusTone: event.exists ? 'available' : 'missing',
       resource: event.file,
+      imageUrl: eventBannerUrl(event),
+      imageAlt: event.title,
       payload: event,
     }
   })
@@ -187,52 +193,55 @@ const mixedEventItems = computed(() => relationItems(
 </script>
 
 <style scoped>
-.unit-detail { height: 100%; padding: 20px; overflow-y: auto; background: #f7f9fa; }
-.unit-hero { position: relative; display: flex; align-items: flex-end; min-height: 220px; padding: 26px 28px; overflow: hidden; background-position: center; background-size: cover; color: #fff; }
-.unit-hero-shade { position: absolute; inset: 0; background: rgba(15, 24, 31, 0.62); }
-.unit-hero-copy { position: relative; z-index: 1; }
-.unit-hero-logo { display: block; width: min(220px, 55vw); height: 74px; margin-bottom: 10px; object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45)); }
-.unit-hero-copy > span { color: #6bd6ce; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.67rem; }
-.unit-hero h2 { margin: 7px 0 5px; font-size: 1.8rem; letter-spacing: 0; }
-.unit-hero p { margin: 0; color: #d5dde2; font-size: 0.72rem; }
-.unit-swatch { position: absolute; z-index: 1; top: 20px; right: 20px; width: 20px; height: 20px; border: 2px solid #fff; border-radius: 50%; }
-.unit-description, .unit-section { margin-top: 12px; padding: 18px; border: 1px solid #dfe4e8; background: #fff; }
-.unit-description p { margin: 0; white-space: pre-wrap; color: #46535c; font-size: 0.76rem; line-height: 1.75; }
-.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.section-heading h3 { margin: 0; font-size: 0.86rem; }
-.section-heading span { color: #7a858e; font-size: 0.66rem; }
-.section-command { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 5px 8px; border: 1px solid #cbd5da; border-radius: 5px; background: #fff; color: #247c77; cursor: pointer; font-size: 0.68rem; }
-.section-command:hover { border-color: #73c9c2; background: #f2fbfa; }
-.unit-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin: 0; background: #e5e9ec; }
-.unit-stat-grid > div { min-width: 0; padding: 12px; background: #f8fafb; }
-.unit-stat-grid dt { overflow: hidden; color: #68747c; font-size: 0.64rem; text-overflow: ellipsis; white-space: nowrap; }
-.unit-stat-grid dd { margin: 5px 0 0; color: #233039; font-size: 1.12rem; font-weight: 700; }
-.unit-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
-.unit-songs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-.unit-songs button { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 58px; padding: 7px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
-.unit-songs button:hover { border-color: #73c9c2; background: #f2fbfa; }
-.unit-songs img { width: 44px; height: 44px; border-radius: 5px; object-fit: cover; }
-.unit-songs button > svg:first-child { margin: auto; color: #15978e; }
-.unit-songs button > svg:last-child { color: #9ca5ad; }
-.unit-songs span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.unit-songs strong { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
-.unit-songs small { color: #7a858e; font-size: 0.63rem; }
-.unit-stories { display: flex; flex-direction: column; gap: 6px; }
-.unit-stories button { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 52px; padding: 7px 10px; border: 1px solid #e0e5e8; border-radius: 6px; background: #fff; color: #26313a; cursor: pointer; text-align: left; }
-.unit-stories button:hover { border-color: #73c9c2; background: #f2fbfa; }
-.unit-stories button > svg { color: #15978e; }
-.unit-stories button > span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.unit-stories strong { overflow: hidden; font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
-.unit-stories small { color: #7a858e; font-size: 0.63rem; }
-
-@media (max-width: 560px) {
-  .unit-detail { padding: 10px; }
-  .unit-hero { min-height: 170px; padding: 20px; }
-  .unit-hero h2 { font-size: 1.45rem; }
-  .unit-description, .unit-section { margin-top: 8px; padding: 14px; }
-  .unit-members { grid-template-columns: 1fr; }
-  .unit-songs { grid-template-columns: 1fr; }
-  .unit-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+/* Unit detail: the unit's own stage art as a cover image, then flat sections on paper. */
+.unit-detail { display: grid; align-content: start; gap: var(--gs-space-section); height: 100%; padding: var(--gs-space-8); overflow-y: auto; background: var(--gs-paper); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body); }
+.unit-detail > * { width: 100%; max-width: var(--gs-content-width); margin-inline: auto; }
+.unit-hero { position: relative; display: flex; align-items: flex-end; min-height: 240px; padding: var(--gs-space-8); overflow: hidden; border-radius: var(--gs-radius-media); background-position: center; background-size: cover; color: #fff; }
+.unit-hero-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgb(19 33 58 / 82%), rgb(19 33 58 / 24%)); }
+.unit-hero-copy { position: relative; z-index: 1; min-width: 0; max-width: 100%; }
+.unit-hero-logo { display: block; width: min(220px, 55vw); height: 74px; margin-bottom: var(--gs-space-4); object-fit: contain; object-position: left center; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 45%)); }
+.unit-hero h2 { margin: 0 0 var(--gs-space-2); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; }
+.unit-hero p { margin: 0; color: rgb(255 255 255 / 78%); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.unit-swatch { position: absolute; z-index: 1; top: var(--gs-space-6); right: var(--gs-space-6); width: 14px; height: 14px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.unit-description p { max-width: 70ch; margin: 0; white-space: pre-wrap; color: var(--gs-ink-2); line-height: 1.9; overflow-wrap: anywhere; }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
+.section-heading h3 { margin: 0; min-width: 0; font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); overflow-wrap: anywhere; }
+.section-heading > span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.section-command { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.section-command svg { flex: none; }
+/* Card counts read as one line of figures, not tiles. */
+.unit-stat-grid { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-8); margin: var(--gs-space-4) 0 0; }
+.unit-stat-grid > div { display: flex; flex-direction: row-reverse; align-items: baseline; gap: var(--gs-space-2); }
+.unit-stat-grid dt { color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
+.unit-stat-grid dd { margin: 0; font-family: var(--gs-font-stage); font-size: var(--gs-text-section); font-weight: var(--gs-weight-semibold); }
+.unit-members { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0 var(--gs-space-7); }
+.unit-members :deep(.archive-idol-reference) { border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
+.unit-members :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
+.unit-members :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); white-space: normal; overflow-wrap: anywhere; }
+.unit-songs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0 var(--gs-space-7); }
+.unit-songs button, .unit-stories button { display: grid; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.unit-songs button { grid-template-columns: 48px minmax(0, 1fr) auto; }
+.unit-songs img { width: 48px; height: 48px; border-radius: var(--gs-radius-media); object-fit: cover; }
+.unit-songs button > svg, .unit-stories button > svg { margin: auto; color: var(--gs-ink-3); }
+.unit-songs span, .unit-stories button > span { display: grid; min-width: 0; }
+.unit-songs strong, .unit-stories strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.unit-stories { display: grid; }
+.unit-stories button { grid-template-columns: 22px minmax(0, 1fr) auto; }
+.unit-stories small { color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.unit-detail :deep(.relation-row) { border-radius: var(--gs-radius-control); }
+.unit-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); white-space: normal; overflow-wrap: anywhere; }
+.unit-detail :deep(.relation-labels strong), .unit-detail :deep(.relation-labels small), .unit-detail :deep(.relation-meta) { font-size: var(--gs-text-meta); }
+.unit-detail button:focus-visible, .unit-detail :deep(button.archive-idol-reference:focus-visible), .unit-detail :deep(.relation-row:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@media (hover: hover) {
+  .section-command:hover { text-decoration: underline; }
+  .unit-songs button:hover strong, .unit-stories button:hover strong { color: var(--gs-mint-ink); }
+}
+@media (max-width: 760px) {
+  .unit-detail { gap: var(--gs-space-8); padding: var(--gs-space-5); }
+  .unit-hero { min-height: 180px; padding: var(--gs-space-6); }
+  .unit-hero h2 { font-size: var(--gs-text-section); }
+  .section-command { min-height: var(--gs-control-touch); }
+  .unit-members, .unit-songs { grid-template-columns: 1fr; }
   .unit-stories button { grid-template-columns: 20px minmax(0, 1fr); }
   .unit-stories button > small { grid-column: 2; }
 }

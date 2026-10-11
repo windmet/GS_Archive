@@ -57,12 +57,57 @@ assert.deepEqual(buildMainStoryDomainIdentity(reactive(generated)), legacyMainId
 assert.deepEqual(buildBirthdayStoryDomainIdentity(reactive(generated)), legacyBirthdayIdentity(master))
 for (const overlay of [null, presentation]) {
   const expected = legacy(master, overlay)
-  const actual = buildStoryCatalog(generated, overlay)
-  verifyCollections(master, generated, actual)
-  assert.equal(actual.length, expected.length)
-  for (const [index, entry] of expected.entries()) {
-    assert.deepEqual(actual[index], entry, `catalog property/order parity: ${entry.id}`)
+  // Deliberate addition to v0: whole-file dialogue/voice counts from the presentation index, so
+  // birthday and extra stories (no episode boundaries) show real counts instead of a fixed 0.
+  const counted = buildStoryCatalog(generated, overlay)
+  for (const entry of counted) {
+    const row = overlay?.by_file?.[entry.file]
+    assert.equal(entry.dialogueCount, row?.dialogue_count ?? 0, `dialogue count follows the presentation index: ${entry.id}`)
+    assert.equal(entry.voiceCount, row?.voice_count ?? entry.summary?.voice_count ?? 0, `voice count follows the presentation index: ${entry.id}`)
   }
+  if (overlay) assert.ok(counted.some(entry => entry.domain === 'birthday' && entry.dialogueCount > 0), 'birthday stories carry dialogue counts')
+  const actual = counted.map(({ dialogueCount, voiceCount, ...entry }) => entry)
+  verifyCollections(master, generated, actual)
+  if (overlay) {
+    const extra = buildStoryCollections(generated, counted, { extraDomain: buildExtraStoryDomainIdentity(generated) })
+      .filter(collection => collection.domain === 'extra').flatMap(collection => collection.chapters)
+    const counts = extra.filter(chapter => chapter.exists && !overlay.by_file[chapter.file]?.episodes?.length).map(chapter => [chapter.episodes[0].dialogueCount, overlay.by_file[chapter.file]?.dialogue_count])
+    assert.ok(counts.length > 0 && counts.every(([shown, source]) => shown === source), 'extra chapters show the presentation-index dialogue count')
+  }
+  assert.equal(actual.length, expected.length)
+  // Deliberate departure from v0: card_scenarios are phone calls (labelled 电话) whose source rows put the
+  // call's first line in officialTitle and the room id in releaseAt. They must show the call's
+  // own title (the last of titles) with an unknown date; every other field keeps parity.
+  const phoneFields = ['domainLabel', 'officialTitle', 'title', 'subtitle', 'searchText', 'releaseAt']
+  const omit = entry => Object.fromEntries(Object.entries(entry).filter(([key]) => !phoneFields.includes(key)))
+  let phones = 0
+  // Deliberate departure from v0: a personal story's section is its owner, the idol numbered in its
+  // resource ids. v0 took the first cast code, which filed 30 birthday-era chapters under a guest.
+  let movedOwners = 0
+  for (const [index, entry] of expected.entries()) {
+    if (entry.domain === 'idol_story') {
+      const { sectionId, ...rest } = actual[index]
+      assert.deepEqual(rest, Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'sectionId')), `personal story parity: ${entry.id}`)
+      const owner = entry.resourceIds.map(id => id.match(/^1_2_(\d{3})_/)?.[1]).find(Boolean)
+      assert.ok(entry.characters.includes(sectionId) && sectionId.startsWith(owner), `personal story is filed under its owner: ${entry.id}`)
+      if (sectionId !== entry.sectionId) movedOwners++
+      continue
+    }
+    if (entry.domain !== 'card_scenarios') {
+      assert.deepEqual(actual[index], entry, `catalog property/order parity: ${entry.id}`)
+      continue
+    }
+    phones++
+    const phone = actual[index]
+    assert.deepEqual(omit(phone), omit(entry), `phone property/order parity: ${entry.id}`)
+    assert.equal(phone.domainLabel, '电话', `phone is labelled as a call: ${entry.id}`)
+    assert.equal(phone.title, entry.titles.at(-1), `phone shows its own title: ${entry.id}`)
+    assert.notEqual(phone.title, entry.title, `phone title is no longer the first line: ${entry.id}`)
+    assert.ok(Number.isNaN(phone.releaseAt), `phone room id is not a release date: ${entry.id}`)
+    assert.ok(phone.searchText.includes(phone.title.toLowerCase()), `phone title is searchable: ${entry.id}`)
+  }
+  assert.equal(phones, 342, 'all phone calls are checked')
+  assert.equal(movedOwners, 30, 'every chapter v0 filed under a guest moves to its owner')
 }
 assert.throws(() => validateStoryCatalog(master), /named v1/)
 for (const mutate of [
@@ -104,7 +149,8 @@ const fixturePath = fileURLToPath(new URL('../fixtures/story-catalog/edge-cases.
 const fixture = JSON.parse(readFileSync(fixturePath, 'utf8'))
 const edge = JSON.parse(execFileSync('python', [pipeline, '--input', fixturePath], { encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }))
 const overlay = { by_file: { 'shared.json': { preplay_synopsis: { title: 'Overlay', text: 'Search overlay' }, playable_step_count: 0, playable_start_index: 3 } } }
-const edgeActual = buildStoryCatalog(edge, overlay)
+// The whole-file counts are the documented addition checked above; edge parity covers every other field.
+const edgeActual = buildStoryCatalog(edge, overlay).map(({ dialogueCount, voiceCount, ...entry }) => entry)
 verifyFileMetadata(fixture, edge)
 assert.deepEqual(buildMainStoryDomainIdentity(edge), legacyMainIdentity(fixture))
 assert.deepEqual(buildBirthdayStoryDomainIdentity(edge), legacyBirthdayIdentity(fixture))

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
+import { bindReaderNavigation, createReaderFixtureTransport } from './lib/reader-navigation-harness.mjs'
 import { createHash } from 'node:crypto'
 import { ref } from 'vue'
 import { readingPlaybackTarget } from '../src/core/ReadingPlayback.js'
@@ -8,14 +9,14 @@ import { prepareScenario } from '../src/data/prepareScenario.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
 import { createArchiveNavigationCoordinator } from '../src/core/ArchiveNavigationCoordinator.js'
-import { createReadingSession } from '../src/core/ReadingSession.js'
 import { isDirectScenarioEntry } from '../src/core/PlayerEntryRequest.js'
-import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { storyContentMode } from '../src/utils/LanguageStore.js'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url))
 const manifest = JSON.parse(read('public/data/reading/manifest.json'))
 const document = JSON.parse(read('public/data/reading/1_4_001_01_d.json'))
-const entry = manifest.entries.find(e => e.document_id === document.document_id)
+let entry = manifest.entries.find(e => e.document_id === document.document_id)
 const row = document.rows[1]
 const localSources = process.argv.includes('--local-sources')
 if (localSources) {
@@ -34,10 +35,14 @@ else {
   const steps = Array.from({ length: document.source.step_count }, (_, index) => ({ step_id: index + 1, type: 'dialogue' }))
   steps[row.anchor.step_index].step_id = 1007
   row.anchor.step_id = 1007
+  row.visual.stepId = 1007
   bytes = Buffer.from(JSON.stringify({ steps }))
   document.source.sha256 = `sha256:${createHash('sha256').update(bytes).digest('hex')}`
   entry.source_sha256 = document.source.sha256
 }
+const transport = createReaderFixtureTransport()
+entry = transport.register(document, entry)
+const restoreFetch = transport.install()
 const target = readingPlaybackTarget(document, row.anchor.row_id, entry.sha256, entry)
 assert.equal(target.initialStep, row.anchor.step_index + 1)
 assert.equal(target.startStep, 1)
@@ -46,6 +51,19 @@ const full = readingPlaybackTarget(document, '', entry.sha256, entry, { fullDocu
 assert.equal(full.initialStep, 1, 'full playback includes opening steps before the first dialogue')
 assert.equal(full.endStep, document.source.step_count)
 await full.readScenario(new Response(bytes))
+// A historical CRLF digest must load the exact LF publication without accepting
+// changed source values or unrelated whitespace. Receipts remain untouched.
+const lfSource=Buffer.from(JSON.stringify(JSON.parse(bytes),null,2)+'\n')
+const crlfSource=Buffer.from(lfSource.toString('utf8').replace(/\n/g,'\r\n'))
+for(const bound of [lfSource,crlfSource]) {
+  const doc=structuredClone(document)
+  doc.source.sha256=`sha256:${createHash('sha256').update(bound).digest('hex')}`
+  const alternate=readingPlaybackTarget(doc,'',entry.sha256,entry,{fullDocument:true})
+  await alternate.readScenario(new Response(lfSource))
+  await alternate.readScenario(new Response(crlfSource))
+  await assert.rejects(alternate.readScenario(new Response(lfSource.toString('utf8').replace('steps','wrong'))), /来源已更新/)
+  await assert.rejects(alternate.readScenario(new Response(' '+lfSource.toString('utf8'))), /来源已更新/)
+}
 await assert.rejects(full.readScenario(new Response('{}')), /来源已更新/)
 assert.throws(() => readingPlaybackTarget(document, row.anchor.row_id, 'old', entry), /版本已变化/)
 assert.throws(() => readingPlaybackTarget(document, 'missing-row', entry.sha256, entry), /不能定位/)
@@ -58,17 +76,16 @@ assert.equal(media, 0, 'mismatched bytes must fail before player import or media
 await prepare(bytes)
 assert.equal(media, 2)
 
-// Execute the production App actions against real coordinator/controller/session.
-const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0),
-  readingState: ref({}), readingPlaybackNotice: ref('') }
+// Execute App's actual dispatcher and factory with real repository/coordinator/controller.
+const state = { ...useArchiveNavigationState(), loading: ref(false), loadingPurpose: ref('archive-data'), preloadProgress: ref(0) }
 const navigation = createArchiveNavigationCoordinator()
-let url = new URL('http://localhost/')
-const context = { ...state, navigation, readingPlaybackTarget, readArchiveSourceRoute, isDirectScenarioEntry,
-  captureActiveArchiveView: () => {},
-  primeArchiveRouteComponent: () => {},
+let url = new URL('http://localhost/'), eventCloseRoute = null
+let loadDirectory = async () => { throw Error('optional directory unavailable') }
+let loadQueue = async () => { throw Error('unexpected queue request') }
+const context = { ...state, navigation, isDirectScenarioEntry, readModelClient:transport.readModelClient,
+  loadCollectionDetail:(...args)=>loadDirectory(...args), loadPlayerQueue:(...args)=>loadQueue(...args),
+  captureActiveArchiveView() {}, primeArchiveRouteComponent() {},
   syncArchiveRoute: () => { url = buildArchiveUrl(url, state.currentArchiveRoute()) },
-  readingSession: createReadingSession({ repository: { manifest: async () => manifest,
-    load: async () => ({ status: 'ready', document }) }, publish: value => { state.readingState.value = value } }),
 }
 let pendingFetch = null
 context.playbackController = useStoryPlaybackController({ state, navigation,
@@ -77,9 +94,15 @@ context.playbackController = useStoryPlaybackController({ state, navigation,
   returnTo: () => context.returnToReader(), onError: () => {} })
 context.playbackError = context.playbackController.error
 const app = read('src/App.vue').toString()
-for (const name of ['applyArchiveRoute', 'openReaderPlayback', 'returnToReader', 'closeStoryReader']) {
-  vm.runInNewContext(app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0], context)
+vm.runInNewContext(app.match(/async function applyArchiveRoute\([^]*?\n\}/)[0], context)
+const applyArchiveRoute = context.applyArchiveRoute
+context.applyArchiveRoute = (route,...args) => {
+  if(route.view==='event_detail') { eventCloseRoute=route;state.view.value=route.view;return Promise.resolve() }
+  return applyArchiveRoute(route,...args)
 }
+const bound = bindReaderNavigation(app, context)
+// The controller and assertions observe the factory's actual refs, never a replacement session.
+Object.assign(state,{readingState:context.readingState,readingPlaybackNotice:context.readingPlaybackNotice})
 await context.applyArchiveRoute({ view: 'reader', reading: document.document_id, readingMode: 'bilingual', storyType: 'main', storySection: '101', story: '1_4_001_01.json' })
 // Reader's complete event origin survives player return and a Reader refresh.
 const eventSourceRoute = buildArchiveSourceQuery({ view: 'unit_detail', category: 'idol', unit: '01jup' })
@@ -102,11 +125,7 @@ assert.equal(returnedEventReader.unit, '01jup')
 assert.equal(returnedEventReader.sourceRoute, eventSourceRoute)
 await context.applyArchiveRoute(eventPlayback)
 await context.playbackController.close()
-let eventCloseRoute = null
-const applyArchiveRoute = context.applyArchiveRoute
-context.applyArchiveRoute = async route => { eventCloseRoute = route; state.view.value = route.view }
 await context.closeStoryReader()
-context.applyArchiveRoute = applyArchiveRoute
 const returnedEvent = readArchiveRoute(buildArchiveUrl(url, eventCloseRoute))
 assert.equal(returnedEvent.view, 'event_detail')
 assert.equal(returnedEvent.event, '10001')
@@ -140,7 +159,7 @@ assert.equal(shared.story, '1_4_001_01.json')
 assert.equal(shared.storySection, '101')
 assert.equal(shared.readingRev, entry.sha256)
 assert.equal(shared.readingRow, row.anchor.row_id)
-assert.equal(shared.readingMode, 'bilingual')
+assert.equal(shared.readingMode || storyContentMode.value, 'bilingual', 'Reader playback retains the effective text mode; the saved choice is omitted from the URL')
 assert.equal(shared.initialStep, target.initialStep)
 await context.playbackController.close()
 assert.equal(state.view.value, 'reader')
@@ -157,6 +176,33 @@ assert.equal(state.view.value, 'player', 'full playback URL restores without tre
 assert.equal(state.currentScenarioInitialStep.value, 1)
 await context.playbackController.close()
 assert.equal(state.readingRowId.value, row.anchor.row_id)
+const selectedDocument=JSON.parse(JSON.stringify(document).replaceAll(document.document_id,'picker-refresh-proof'))
+selectedDocument.source.file='picker-refresh-proof.json'
+selectedDocument.playback.file=selectedDocument.source.file
+const selectedEntry=transport.register(selectedDocument,entry)
+transport.locators.set(document.document_id,[entry,selectedEntry])
+// Production normalization omits at_step when starting at the queue boundary.
+const selectedShare=readArchiveRoute(buildArchiveUrl(url,{...fullShared,scenario:selectedDocument.source.file,initialStep:0}))
+await context.applyArchiveRoute(selectedShare)
+assert.equal(state.view.value,'player',`refresh restores picked segment: ${state.readingPlaybackNotice.value}`)
+assert.equal(state.currentScenarioFile.value,selectedDocument.source.file)
+assert.equal(state.readingDocumentId.value,document.document_id)
+assert.equal(state.readingRowId.value,row.anchor.row_id)
+await context.playbackController.close()
+loadQueue=async()=>({episodes:[{file:selectedDocument.source.file,startStep:2,endStep:document.source.step_count}]})
+await context.applyArchiveRoute({...selectedShare,startStep:2})
+assert.equal(state.view.value,'player','a source-verified picked segment can restore its exact canonical synopsis-excluding range')
+assert.equal(state.currentScenarioStartStep.value,2)
+await context.playbackController.close()
+await context.applyArchiveRoute({...selectedShare,startStep:3})
+assert.equal(state.view.value,'reader','a guessed subrange is rejected even inside the verified file')
+assert.match(state.readingPlaybackNotice.value,/正式目录/)
+assert.equal(state.view.value,'reader')
+await context.applyArchiveRoute({...fullShared,scenario:selectedDocument.source.file,initialStep:2})
+assert.equal(state.view.value,'reader','picked segment cannot invent an initial position')
+await context.applyArchiveRoute({...fullShared,scenario:'unrelated.json',initialStep:0})
+assert.equal(state.view.value,'reader','picked refresh source must belong to the original bounded locator')
+transport.locators.set(document.document_id,[entry])
 await context.applyArchiveRoute(shared)
 assert.equal(state.view.value, 'player', 'refresh restores validated media entry')
 await context.applyArchiveRoute({ ...shared, initialStep: shared.initialStep + 1 })
@@ -177,5 +223,39 @@ settleFetch(new Response(bytes))
 await obsolete
 assert.equal(state.view.value, 'portal', 'late source verification must not reopen media after leaving')
 assert.equal(context.playbackController.currentScenario.value, null)
+// Execute the production resolver for explicit adjacent-chapter continuation.
+const adjacentDocuments=['next-a','next-b'].map(id=>{
+  const next=JSON.parse(JSON.stringify(document).replaceAll(document.document_id,id))
+  next.source.file=`${id}.json`;next.playback.file=next.source.file
+  return next
+})
+const adjacentEntries=adjacentDocuments.map(doc=>transport.register(doc,entry))
+for(const item of adjacentEntries)transport.locators.set(item.document_id,[item])
+const adjacentChapters=[{exists:true,episodes:[{file:document.source.file,exists:true}]},
+  {exists:true,episodes:adjacentEntries.map(item=>({file:item.source_file,exists:true}))}]
+const sourceRoute={view:'reader',reading:document.document_id,storyType:'main',storySection:'101'}
+const loadAdjacentCollection=async(type,section)=>{assert.equal(type,'main');assert.equal(section,'101');return {view:{collection:{chapters:adjacentChapters},readingEntries:adjacentEntries}}}
+const sourceContext={readingDocumentId:ref(document.document_id),currentScenarioFile:ref(document.source.file),currentArchiveRoute:()=>sourceRoute,
+  loadCollectionDetail:loadAdjacentCollection,readModelClient:transport.readModelClient}
+const sourceBound=bindReaderNavigation(app,sourceContext)
+const adjacentGuard=await sourceContext.resolveReaderContinuationSource('next-a.json')
+await adjacentGuard(new Response(bytes))
+await assert.rejects(adjacentGuard(new Response('{}')),/来源已更新/)
+await assert.rejects(sourceContext.resolveReaderContinuationSource('next-b.json'),/明确入口/)
+sourceContext.currentScenarioFile.value='next-a.json'
+await sourceContext.resolveReaderContinuationSource('next-b.json')
+sourceContext.currentScenarioFile.value=document.source.file
+adjacentChapters.splice(1,0,{exists:true,canonicalRelation:{},episodes:[]})
+await assert.rejects(sourceContext.resolveReaderContinuationSource('next-a.json'),/明确入口/)
+adjacentChapters.splice(1,1)
+loadDirectory=loadAdjacentCollection
+pendingFetch=null
+await context.applyArchiveRoute({...fullShared,scenario:'next-a.json',initialStep:0})
+assert.equal(state.view.value,'player','a refreshed adjacent chapter uses its independently verified document while retaining the original Reader')
+assert.equal(state.currentScenarioFile.value,'next-a.json')
+assert.equal(state.readingDocumentId.value,document.document_id)
+await context.playbackController.close()
+bound.stop();sourceBound.stop();context.playbackController.dispose();restoreFetch()
+console.log('Reader adjacent chapter: exact source mapping, guarded bytes, current chapter membership and unskippable canonical relation passed')
 console.log(localSources ? 'LOCAL published source verified' : 'CI synthetic non-sequential source verified')
 console.log('Reading playback verified: source integrity before media, versioned URL, App round trip, refresh, invalid links and separate target/range')

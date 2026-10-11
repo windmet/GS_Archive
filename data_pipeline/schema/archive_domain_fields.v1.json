@@ -1,0 +1,2560 @@
+{
+  "schema_version": 1,
+  "source": {
+    "commit": "7b1d4e0c3f655805263a7ad3f1607e82fdc8a547",
+    "git_blob": "9f0789d93d228591e4a91fb6b3a3ecdebb348dc7",
+    "path": "data_pipeline/schema/il2cpp_protobuf_schema.json",
+    "root_model": "Growing.Models.Data.Masterdata",
+    "method": "manually transcribed verified field-number constants; scalar/packed rules are explicit audit interpretations, not a full .proto descriptor"
+  },
+  "table_registry": {
+    "1": "Cards",
+    "2": "Idols",
+    "3": "BasicMasters",
+    "4": "MainStoryChapters",
+    "5": "MainStorySections",
+    "6": "MainStoryEpisodes",
+    "7": "IdolStoryChapters",
+    "8": "IdolStorySections",
+    "9": "IdolStoryEpisodes",
+    "10": "EventStoryChapters",
+    "11": "EventStorySections",
+    "12": "EventStoryEpisodes",
+    "13": "EpisodeZeroStoryChapters",
+    "14": "EpisodeZeroStorySections",
+    "15": "EpisodeZeroStoryEpisodes",
+    "16": "Items",
+    "18": "CardRarities",
+    "19": "CardAwakeningItems",
+    "20": "Skills",
+    "21": "SkillDetails",
+    "22": "SkillLevels",
+    "23": "CardCenterSkills",
+    "24": "IdolUnits",
+    "25": "IdolParameters",
+    "26": "IdolLevels",
+    "27": "LiveCostumes",
+    "28": "StoryCostumes",
+    "29": "IdolGroups",
+    "30": "IdolGroupMembers",
+    "32": "IdolTalkScenarios",
+    "34": "IdolUnitTalkScenarios",
+    "36": "IdolGroupTalkScenarios",
+    "38": "ProductResources",
+    "39": "Honors",
+    "40": "ProducerLevels",
+    "41": "ProducerRanks",
+    "43": "IdolPhoneScenarios",
+    "44": "MobilePriorities",
+    "45": "IdolReliabilities",
+    "46": "Songs",
+    "47": "SongDifficulties",
+    "48": "SongHighScoreRanks",
+    "49": "SongMaxComboRanks",
+    "50": "SongClearCountRanks",
+    "51": "SongRewards",
+    "52": "SongRemixIdolUnits",
+    "53": "Jobs",
+    "54": "JobStories",
+    "55": "JobStoryAppendixes",
+    "56": "ItemDays",
+    "57": "PhotoFaces",
+    "58": "PhotoPoses",
+    "60": "PhotoFilters",
+    "61": "PhotoStickers",
+    "62": "BasicTextMasters",
+    "63": "MobileScenarioGroups",
+    "64": "DialogTexts",
+    "65": "StoryCharacters",
+    "66": "MainStoryProducts",
+    "67": "MainStoryCharacterSets",
+    "68": "IdolStoryProducts",
+    "69": "IdolStoryCharacterSets",
+    "70": "EventStoryProducts",
+    "71": "EventStoryCharacterSets",
+    "72": "EpisodeZeroStoryProducts",
+    "73": "EpisodeZeroStoryCharacterSets",
+    "74": "SkillDetailEffects",
+    "75": "SkillCategories",
+    "76": "BirthdayStoryChapters",
+    "77": "BirthdayStorySections",
+    "78": "BirthdayStoryEpisodes",
+    "79": "BirthdayStoryProducts",
+    "80": "BirthdayStoryCharacterSets",
+    "81": "MissionCategories",
+    "82": "LoginBonuses",
+    "83": "LoginBonusProducts",
+    "84": "LoginBonusResources",
+    "85": "LoginBonusResourceSchedules",
+    "86": "IdolBirthdayLoginBonuses",
+    "87": "ProducerSkills",
+    "88": "ProducerSkillEffects",
+    "89": "FeatureReleaseConditions",
+    "90": "IdolSystemScenarios",
+    "91": "CardSystemScenarios",
+    "92": "HelpCategories",
+    "93": "HomeBackgrounds",
+    "94": "IdolMobiles",
+    "95": "IdolMobileEvents",
+    "96": "IdolUnitMobiles",
+    "97": "IdolUnitMobileEvents",
+    "98": "IdolGroupMobiles",
+    "99": "IdolGroupMobileEvents",
+    "100": "SubCharacters",
+    "101": "SubCharacterMobiles",
+    "102": "SubCharacterMobileEvents",
+    "103": "TalkRooms",
+    "104": "ChatTopics",
+    "105": "ChatIntros",
+    "106": "ChatSegments",
+    "107": "PhotoSpots",
+    "108": "PhotoScenes",
+    "109": "ChoosableCards",
+    "110": "MenuBackgrounds",
+    "111": "PhotoFrames",
+    "112": "Events",
+    "113": "EventTheaters",
+    "114": "EventTheaterRewards",
+    "115": "EventTheaterRankingRewards",
+    "116": "CampaignLoginBonuses",
+    "117": "CampaignLoginBonusProducts",
+    "118": "EventCollections",
+    "121": "Boosts",
+    "122": "PhotoPoseVoices",
+    "123": "StoryEpisodeLives",
+    "124": "EventTours",
+    "125": "EventTourRankingRewards",
+    "126": "EventTourRewards",
+    "128": "EventTourSongPanelRewards",
+    "129": "TutorialStoryRewards",
+    "130": "CardCenterSkillCategories",
+    "131": "ContinuousLoginBonuses",
+    "132": "ContinuousLoginBonusProducts",
+    "133": "HomeBgms",
+    "134": "InitialPhotoFilters",
+    "135": "InitialPhotoStickers",
+    "136": "InitialPhotoSpots",
+    "137": "InitialPhotoScenes",
+    "138": "InitialPhotoFrames",
+    "139": "ForcePageTransitionSituations",
+    "140": "FeatureSwitches",
+    "142": "HomeSchedules",
+    "143": "HomeStoryChapters",
+    "144": "HomeStorySections",
+    "145": "HomeStoryEpisodes",
+    "146": "EventValentines",
+    "147": "EventValentineIdols",
+    "148": "EventValentineSubCharacters",
+    "149": "EventValentineLevels",
+    "150": "EventValentineRankingRewards",
+    "153": "EventWhitedays",
+    "156": "PremiumPacks",
+    "157": "EventValentineIdolStoryChapters",
+    "158": "EventValentineIdolStorySections",
+    "159": "EventValentineIdolStoryEpisodes",
+    "160": "EventValentineSubCharacterStoryChapters",
+    "161": "EventValentineSubCharacterStorySections",
+    "162": "EventValentineSubCharacterStoryEpisodes",
+    "163": "EventWhitedayIdolStoryChapters",
+    "164": "EventWhitedayIdolStorySections",
+    "165": "EventWhitedayIdolStoryEpisodes",
+    "166": "EventWhitedaySubCharacterStoryChapters",
+    "167": "EventWhitedaySubCharacterStorySections",
+    "168": "EventWhitedaySubCharacterStoryEpisodes",
+    "169": "EventTheaterRepeatedRewards",
+    "170": "EventTourRepeatedRewards",
+    "171": "SnsShareMessages",
+    "172": "SubCharacterSystemScenarios",
+    "173": "EventNotifications",
+    "174": "StoryLimitedReleases",
+    "175": "MovieAnnounces",
+    "176": "StoryCostumeFaces",
+    "177": "HomeStoryCharacterSets",
+    "178": "ExtraStoryChapters",
+    "179": "TitleScreens",
+    "180": "MobileReleaseConditions",
+    "181": "ChangeCostumes",
+    "183": "HomeStoryProducts"
+  },
+  "table_models": {
+    "38": "ProductResourceData",
+    "16": "ItemData",
+    "39": "HonorData",
+    "56": "ItemDayData",
+    "60": "PhotoFilterData",
+    "111": "PhotoFrameData",
+    "61": "PhotoStickerData",
+    "107": "PhotoSpotData",
+    "108": "PhotoSceneData",
+    "57": "PhotoFaceData",
+    "58": "PhotoPoseData",
+    "122": "PhotoPoseVoiceData",
+    "134": "InitialPhotoFilterData",
+    "135": "InitialPhotoStickerData",
+    "136": "InitialPhotoSpotData",
+    "137": "InitialPhotoSceneData",
+    "138": "InitialPhotoFrameData",
+    "110": "MenuBackgroundData",
+    "112": "EventData",
+    "113": "EventTheaterData",
+    "118": "EventCollectionData",
+    "124": "EventTourData",
+    "114": "EventTheaterRewardData",
+    "126": "EventTourRewardData",
+    "115": "EventTheaterRankingRewardData",
+    "125": "EventTourRankingRewardData",
+    "169": "EventTheaterRepeatedRewardData",
+    "170": "EventTourRepeatedRewardData",
+    "128": "EventTourSongPanelRewardData",
+    "146": "EventValentineData",
+    "147": "EventValentineIdolData",
+    "148": "EventValentineSubCharacterData",
+    "149": "EventValentineLevelData",
+    "150": "EventValentineRankingRewardData",
+    "153": "EventWhitedayData",
+    "10": "EventStoryChapterData",
+    "11": "EventStorySectionData",
+    "12": "EventStoryEpisodeData",
+    "66": "MainStoryProductData",
+    "68": "IdolStoryProductData",
+    "70": "EventStoryProductData",
+    "72": "EpisodeZeroStoryProductData",
+    "79": "BirthdayStoryProductData",
+    "183": "HomeStoryProductData",
+    "159": "EventValentineIdolStoryEpisodeData",
+    "162": "EventValentineSubCharacterStoryEpisodeData",
+    "165": "EventWhitedayIdolStoryEpisodeData",
+    "168": "EventWhitedaySubCharacterStoryEpisodeData",
+    "157": "EventValentineIdolStoryChapterData",
+    "158": "EventValentineIdolStorySectionData",
+    "160": "EventValentineSubCharacterStoryChapterData",
+    "161": "EventValentineSubCharacterStorySectionData",
+    "163": "EventWhitedayIdolStoryChapterData",
+    "164": "EventWhitedayIdolStorySectionData",
+    "166": "EventWhitedaySubCharacterStoryChapterData",
+    "167": "EventWhitedaySubCharacterStorySectionData",
+    "173": "EventNotificationData",
+    "82": "LoginBonusData",
+    "83": "LoginBonusProductData",
+    "84": "LoginBonusResourceData",
+    "85": "LoginBonusResourceScheduleData",
+    "86": "IdolBirthdayLoginBonusData",
+    "40": "ProducerLevelData",
+    "41": "ProducerRankData",
+    "87": "ProducerSkillData",
+    "88": "ProducerSkillEffectData",
+    "156": "PremiumPackData",
+    "133": "HomeBgmData",
+    "142": "HomeScheduleData",
+    "1": "CardData",
+    "2": "IdolData",
+    "27": "LiveCostumeData",
+    "28": "StoryCostumeData",
+    "46": "SongData",
+    "100": "SubCharacterData",
+    "32": "IdolTalkScenarioData",
+    "34": "IdolUnitTalkScenarioData",
+    "19": "CardAwakeningItemData",
+    "20": "SkillData",
+    "21": "SkillDetailData",
+    "74": "SkillDetailEffectData",
+    "116": "CampaignLoginBonusData",
+    "117": "CampaignLoginBonusProductData",
+    "171": "SnsShareMessageData",
+    "174": "StoryLimitedReleaseData"
+  },
+  "models": {
+    "TermData": {
+      "fields": {
+        "1": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "2": {
+          "name": "CloseAt",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProductData": {
+      "fields": {
+        "1": {
+          "name": "Type",
+          "type": "u"
+        },
+        "2": {
+          "name": "ProductId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Amount",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProductResourceData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Type",
+          "type": "u"
+        },
+        "3": {
+          "name": "Name",
+          "type": "s"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "5": {
+          "name": "Description",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ItemData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "ItemType",
+          "type": "u"
+        },
+        "3": {
+          "name": "Value",
+          "type": "u"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "5": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "6": {
+          "name": "Name",
+          "type": "s"
+        },
+        "7": {
+          "name": "Description",
+          "type": "s"
+        },
+        "8": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "9": {
+          "name": "MaxAmount",
+          "type": "u"
+        },
+        "10": {
+          "name": "ExpireType",
+          "type": "u"
+        },
+        "11": {
+          "name": "ExpireDays",
+          "type": "u"
+        },
+        "12": {
+          "name": "DisplayName",
+          "type": "s"
+        },
+        "13": {
+          "name": "LabelType",
+          "type": "u"
+        },
+        "14": {
+          "name": "RarityResourceId",
+          "type": "s"
+        },
+        "15": {
+          "name": "IsDiscardExceeded",
+          "type": "b"
+        }
+      },
+      "field_set_complete": true
+    },
+    "HonorData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "4": {
+          "name": "HonorType",
+          "type": "u"
+        },
+        "5": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "6": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "7": {
+          "name": "Description",
+          "type": "s"
+        },
+        "8": {
+          "name": "EffectType",
+          "type": "u"
+        },
+        "9": {
+          "name": "PrefabResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ItemDayData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "IdolType",
+          "type": "u"
+        },
+        "3": {
+          "name": "Weekday",
+          "type": "u"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoFilterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "4": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "Description",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoFrameData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "4": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "Description",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoStickerData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "4": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "Description",
+          "type": "s"
+        },
+        "7": {
+          "name": "DisplayName",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoSpotData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "4": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "PhotoSceneGroupId",
+          "type": "u"
+        },
+        "7": {
+          "name": "Description",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoSceneData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Name",
+          "type": "s"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "5": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "6": {
+          "name": "BackgroundResourceId",
+          "type": "s"
+        },
+        "7": {
+          "name": "EffectResourceId",
+          "type": "s"
+        },
+        "8": {
+          "name": "Description",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoFaceData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "7": {
+          "name": "AnimationName",
+          "type": "s"
+        },
+        "11": {
+          "name": "ScenarioResourceId",
+          "type": "s"
+        },
+        "12": {
+          "name": "StoryCostumeId",
+          "type": "u"
+        },
+        "13": {
+          "name": "IconResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoPoseData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "7": {
+          "name": "AnimationName",
+          "type": "s"
+        },
+        "12": {
+          "name": "ScenarioResourceId",
+          "type": "s"
+        },
+        "14": {
+          "name": "StoryCostumeId",
+          "type": "u"
+        },
+        "15": {
+          "name": "IconResourceId",
+          "type": "s"
+        },
+        "16": {
+          "name": "DefaultPhotoFaceId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PhotoPoseVoiceData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoPoseId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Weight",
+          "type": "u"
+        },
+        "5": {
+          "name": "CueSheetName",
+          "type": "s"
+        },
+        "6": {
+          "name": "CueName",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "InitialPhotoFilterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoFilterId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "InitialPhotoStickerData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoStickerId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "InitialPhotoSpotData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoSpotId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "InitialPhotoSceneData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoSceneId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "InitialPhotoFrameData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "PhotoFrameId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "MenuBackgroundData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "Type",
+          "type": "u"
+        },
+        "4": {
+          "name": "EventDetailId",
+          "type": "u"
+        },
+        "5": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "6": {
+          "name": "DisplayTerm",
+          "type": "m/TermData"
+        },
+        "7": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "8": {
+          "name": "LogoResourceId",
+          "type": "s"
+        },
+        "9": {
+          "name": "BackgroundResourceId",
+          "type": "s"
+        },
+        "10": {
+          "name": "ResultBgResourceId",
+          "type": "s"
+        },
+        "11": {
+          "name": "BannerResourceId",
+          "type": "s"
+        },
+        "12": {
+          "name": "ExchangeTerm",
+          "type": "m/TermData"
+        },
+        "14": {
+          "name": "BgmResourceId",
+          "type": "s"
+        },
+        "15": {
+          "name": "LogoPositionOffsetY",
+          "type": "i"
+        },
+        "16": {
+          "name": "HasReprint",
+          "type": "b"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTheaterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "SongId",
+          "type": "u"
+        },
+        "3": {
+          "name": "ItemId",
+          "type": "u"
+        },
+        "4": {
+          "name": "EventTheaterRewardGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "EventTheaterRankingRewardGroupId",
+          "type": "u"
+        },
+        "6": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "7": {
+          "name": "AggregationTerm",
+          "type": "m/TermData"
+        },
+        "8": {
+          "name": "AnnouncementTerm",
+          "type": "m/TermData"
+        },
+        "9": {
+          "name": "EventTheaterRepeatedRewardGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventCollectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "NormalItemId",
+          "type": "u"
+        },
+        "3": {
+          "name": "RareItemId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "SongId",
+          "type": "u"
+        },
+        "3": {
+          "name": "EventTourRankingRewardGroupId",
+          "type": "u"
+        },
+        "4": {
+          "name": "AggregationTerm",
+          "type": "m/TermData"
+        },
+        "5": {
+          "name": "AnnouncementTerm",
+          "type": "m/TermData"
+        },
+        "6": {
+          "name": "EventTourRewardGroupId",
+          "type": "u"
+        },
+        "8": {
+          "name": "EventTourSongPanelRewardGroupId",
+          "type": "u"
+        },
+        "9": {
+          "name": "EventTourRepeatedRewardGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTheaterRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "TotalPoint",
+          "type": "u"
+        },
+        "4": {
+          "name": "IsLimited",
+          "type": "b"
+        },
+        "5": {
+          "name": "Product",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "TotalPoint",
+          "type": "u"
+        },
+        "4": {
+          "name": "IsLimited",
+          "type": "b"
+        },
+        "5": {
+          "name": "Product",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTheaterRankingRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "UpperRank",
+          "type": "u"
+        },
+        "4": {
+          "name": "LowerRank",
+          "type": "u"
+        },
+        "5": {
+          "name": "HonorId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourRankingRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "UpperRank",
+          "type": "u"
+        },
+        "4": {
+          "name": "LowerRank",
+          "type": "u"
+        },
+        "5": {
+          "name": "HonorId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTheaterRepeatedRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "OffsetPoint",
+          "type": "u"
+        },
+        "4": {
+          "name": "IntervalPoint",
+          "type": "u"
+        },
+        "5": {
+          "name": "LimitPoint",
+          "type": "u"
+        },
+        "6": {
+          "name": "Product",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourRepeatedRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "OffsetPoint",
+          "type": "u"
+        },
+        "4": {
+          "name": "IntervalPoint",
+          "type": "u"
+        },
+        "5": {
+          "name": "LimitPoint",
+          "type": "u"
+        },
+        "6": {
+          "name": "Product",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourPanelData": {
+      "fields": {
+        "1": {
+          "name": "Position",
+          "type": "u"
+        },
+        "2": {
+          "name": "SongId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventTourSongPanelRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "TotalCount",
+          "type": "u"
+        },
+        "4": {
+          "name": "IsLimited",
+          "type": "b"
+        },
+        "5": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "6": {
+          "name": "Panels",
+          "type": "rm/EventTourPanelData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "NormalItemId",
+          "type": "u"
+        },
+        "3": {
+          "name": "RareItemId",
+          "type": "u"
+        },
+        "4": {
+          "name": "AggregationTerm",
+          "type": "m/TermData"
+        },
+        "5": {
+          "name": "AnnouncementTerm",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineIdolData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        },
+        "3": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "EventValentineLevelGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineSubCharacterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        },
+        "3": {
+          "name": "SubCharacterId",
+          "type": "u"
+        },
+        "4": {
+          "name": "EventValentineLevelGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineLevelData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Level",
+          "type": "u"
+        },
+        "4": {
+          "name": "TotalPoint",
+          "type": "u"
+        },
+        "5": {
+          "name": "Products",
+          "type": "rm/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineRankingRewardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        },
+        "3": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "UpperRank",
+          "type": "u"
+        },
+        "5": {
+          "name": "LowerRank",
+          "type": "u"
+        },
+        "6": {
+          "name": "HonorId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedayData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventStoryChapterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventId",
+          "type": "u"
+        },
+        "3": {
+          "name": "ReprintEventId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventStorySectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventStoryChapterId",
+          "type": "u"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "5": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "8": {
+          "name": "EventStoryProductGroupId",
+          "type": "u"
+        },
+        "9": {
+          "name": "ScenarioTitle",
+          "type": "s"
+        },
+        "10": {
+          "name": "OpenAt",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventStoryEpisodeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventStorySectionId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Name",
+          "type": "s"
+        },
+        "4": {
+          "name": "ReleaseConditions",
+          "type": "raw"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "7": {
+          "name": "EventStoryProductGroupId",
+          "type": "u"
+        },
+        "8": {
+          "name": "EventStoryCharacterSetId",
+          "type": "u"
+        },
+        "9": {
+          "name": "InTermEventStoryProductGroupId",
+          "type": "u"
+        },
+        "10": {
+          "name": "EventPoint",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "MainStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "IdolStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EpisodeZeroStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "BirthdayStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "HomeStoryProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineIdolStoryEpisodeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineIdolStorySectionId",
+          "type": "u"
+        },
+        "3": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "RequiredValentineLevel",
+          "type": "u"
+        },
+        "9": {
+          "name": "Title",
+          "type": "s"
+        },
+        "7": {
+          "name": "Products",
+          "type": "rm/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineSubCharacterStoryEpisodeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineSubCharacterStorySectionId",
+          "type": "u"
+        },
+        "3": {
+          "name": "SubCharacterId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "RequiredValentineLevel",
+          "type": "u"
+        },
+        "9": {
+          "name": "Title",
+          "type": "s"
+        },
+        "7": {
+          "name": "Products",
+          "type": "rm/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedayIdolStoryEpisodeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedayIdolStorySectionId",
+          "type": "u"
+        },
+        "3": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "RequiredValentineLevel",
+          "type": "u"
+        },
+        "9": {
+          "name": "Title",
+          "type": "s"
+        },
+        "7": {
+          "name": "IsAlwaysReleased",
+          "type": "b"
+        },
+        "8": {
+          "name": "Products",
+          "type": "rm/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedaySubCharacterStoryEpisodeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedaySubCharacterStorySectionId",
+          "type": "u"
+        },
+        "3": {
+          "name": "SubCharacterId",
+          "type": "u"
+        },
+        "4": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "RequiredValentineLevel",
+          "type": "u"
+        },
+        "9": {
+          "name": "Title",
+          "type": "s"
+        },
+        "7": {
+          "name": "IsAlwaysReleased",
+          "type": "b"
+        },
+        "8": {
+          "name": "Products",
+          "type": "rm/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineIdolStoryChapterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineIdolStorySectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineIdolStoryChapterId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineSubCharacterStoryChapterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventValentineSubCharacterStorySectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventValentineSubCharacterStoryChapterId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedayIdolStoryChapterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedayId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedayIdolStorySectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedayIdolStoryChapterId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedaySubCharacterStoryChapterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedayId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventWhitedaySubCharacterStorySectionData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "EventWhitedaySubCharacterStoryChapterId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "EventNotificationData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "3": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "4": {
+          "name": "Priority",
+          "type": "u"
+        },
+        "5": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "6": {
+          "name": "TransitionType",
+          "type": "u"
+        },
+        "7": {
+          "name": "TransitionParamA",
+          "type": "u"
+        },
+        "8": {
+          "name": "HomeIconDisplay",
+          "type": "b"
+        },
+        "9": {
+          "name": "HomeIconResourceId",
+          "type": "s"
+        },
+        "10": {
+          "name": "ButtonText",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "LoginBonusData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "LoginBonusProductGroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "LoginBonusResourceScheduleGroupId",
+          "type": "u"
+        },
+        "4": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "LoginBonusProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "4": {
+          "name": "DayCount",
+          "type": "u"
+        },
+        "5": {
+          "name": "PresentMessageId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "LoginBonusResourceData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Type",
+          "type": "u"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "LoginBonusResourceScheduleData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "LoginBonusResourceGroupId",
+          "type": "u"
+        },
+        "4": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "IdolBirthdayLoginBonusData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "IdolId",
+          "type": "u"
+        },
+        "3": {
+          "name": "DisplayName",
+          "type": "s"
+        },
+        "4": {
+          "name": "Message",
+          "type": "s"
+        },
+        "5": {
+          "name": "LoginBonusProductGroupId",
+          "type": "u"
+        },
+        "6": {
+          "name": "LoginBonusResourceGroupId",
+          "type": "u"
+        },
+        "7": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "8": {
+          "name": "Character",
+          "type": "raw"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProducerLevelData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Level",
+          "type": "u"
+        },
+        "3": {
+          "name": "TotalExp",
+          "type": "u"
+        },
+        "4": {
+          "name": "FriendAmount",
+          "type": "u"
+        },
+        "5": {
+          "name": "SupportAmount",
+          "type": "u"
+        },
+        "7": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "8": {
+          "name": "ProducerSkillId",
+          "type": "u"
+        },
+        "9": {
+          "name": "ChatSegmentGroupId",
+          "type": "u"
+        },
+        "10": {
+          "name": "StaminaAutoRecoverLimit",
+          "type": "u"
+        },
+        "11": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "12": {
+          "name": "RepeatedExp",
+          "type": "u"
+        },
+        "13": {
+          "name": "RepeatedRewardProduct",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProducerRankData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Rank",
+          "type": "s"
+        },
+        "3": {
+          "name": "SumFanAmount",
+          "type": "u"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "5": {
+          "name": "Product",
+          "type": "m/ProductData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProducerSkillData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "Description",
+          "type": "s"
+        },
+        "4": {
+          "name": "ProducerSkillEffectGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "6": {
+          "name": "Duration",
+          "type": "u"
+        },
+        "7": {
+          "name": "ResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "ProducerSkillEffectData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Type",
+          "type": "u"
+        },
+        "4": {
+          "name": "EffectGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "Param1",
+          "type": "u"
+        },
+        "6": {
+          "name": "Param2",
+          "type": "u"
+        },
+        "7": {
+          "name": "Param3",
+          "type": "u"
+        },
+        "8": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "PremiumPackData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "ExpireDays",
+          "type": "u"
+        },
+        "3": {
+          "name": "StaminaRecoverySeconds",
+          "type": "u"
+        },
+        "4": {
+          "name": "HasDailyGasha",
+          "type": "b"
+        },
+        "5": {
+          "name": "OpenAt",
+          "type": "u"
+        },
+        "6": {
+          "name": "Priority",
+          "type": "u"
+        },
+        "7": {
+          "name": "StaminaRecoveryRate",
+          "type": "s"
+        },
+        "8": {
+          "name": "Name",
+          "type": "s"
+        },
+        "9": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "10": {
+          "name": "StaminaRecoveryGrade",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "HomeBgmData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "SourceSwitchName",
+          "type": "s"
+        },
+        "4": {
+          "name": "CueSheetName",
+          "type": "s"
+        },
+        "5": {
+          "name": "CueName",
+          "type": "s"
+        },
+        "6": {
+          "name": "SwitchName",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "HomeScheduleData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "HomeTransitionType",
+          "type": "u"
+        },
+        "3": {
+          "name": "HomeTransitionParam",
+          "type": "s"
+        },
+        "4": {
+          "name": "OpenTime",
+          "type": "s"
+        },
+        "5": {
+          "name": "IsNight",
+          "type": "b"
+        },
+        "6": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "7": {
+          "name": "IsForceBackground",
+          "type": "b"
+        }
+      },
+      "field_set_complete": true
+    },
+    "CardData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "IdolData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "LiveCostumeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "StoryCostumeData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "SongData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "SubCharacterData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        }
+      },
+      "field_set_complete": false
+    },
+    "IdolTalkScenarioData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "3": {
+          "name": "Name",
+          "type": "s"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "7": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "8": {
+          "name": "IdolMobileId",
+          "type": "u"
+        },
+        "9": {
+          "name": "ScenarioResourceId",
+          "type": "s"
+        },
+        "10": {
+          "name": "ScenarioLabelResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "IdolUnitTalkScenarioData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "3": {
+          "name": "Name",
+          "type": "s"
+        },
+        "4": {
+          "name": "ResourceId",
+          "type": "s"
+        },
+        "7": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "8": {
+          "name": "IdolUnitMobileId",
+          "type": "u"
+        },
+        "9": {
+          "name": "ScenarioResourceId",
+          "type": "s"
+        },
+        "10": {
+          "name": "ScenarioLabelResourceId",
+          "type": "s"
+        }
+      },
+      "field_set_complete": true
+    },
+    "CardAwakeningItemData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "CardRarityId",
+          "type": "u"
+        },
+        "3": {
+          "name": "IdolType",
+          "type": "u"
+        },
+        "4": {
+          "name": "ItemId",
+          "type": "u"
+        },
+        "5": {
+          "name": "ItemAmount",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "SkillData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Name",
+          "type": "s"
+        },
+        "3": {
+          "name": "Description",
+          "type": "s"
+        },
+        "4": {
+          "name": "SkillLevelGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "SkillDetailGroupId",
+          "type": "u"
+        },
+        "7": {
+          "name": "SortOrder",
+          "type": "u"
+        },
+        "8": {
+          "name": "SkillCategoryId",
+          "type": "u"
+        },
+        "9": {
+          "name": "IsUserSkill",
+          "type": "b"
+        },
+        "10": {
+          "name": "OpenAt",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "SkillDetailData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Level",
+          "type": "u"
+        },
+        "8": {
+          "name": "SkillDetailEffectGroupId",
+          "type": "u"
+        },
+        "10": {
+          "name": "Rate",
+          "type": "u"
+        },
+        "11": {
+          "name": "Interval",
+          "type": "u"
+        },
+        "12": {
+          "name": "Duration",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "SkillDetailEffectData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "Type",
+          "type": "u"
+        },
+        "4": {
+          "name": "EffectGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "Param1",
+          "type": "u"
+        },
+        "6": {
+          "name": "Param2",
+          "type": "u"
+        },
+        "7": {
+          "name": "Param3",
+          "type": "u"
+        },
+        "8": {
+          "name": "SortOrder",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "CampaignLoginBonusData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Type",
+          "type": "u"
+        },
+        "3": {
+          "name": "CampaignLoginBonusProductGroupId",
+          "type": "u"
+        },
+        "4": {
+          "name": "LoginBonusResourceGroupId",
+          "type": "u"
+        },
+        "5": {
+          "name": "Term",
+          "type": "m/TermData"
+        },
+        "6": {
+          "name": "LoginBonusResourceScheduleGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "CampaignLoginBonusProductData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "GroupId",
+          "type": "u"
+        },
+        "3": {
+          "name": "DayCount",
+          "type": "u"
+        },
+        "4": {
+          "name": "Product",
+          "type": "m/ProductData"
+        },
+        "5": {
+          "name": "LoginBonusResourceGroupId",
+          "type": "u"
+        }
+      },
+      "field_set_complete": true
+    },
+    "SnsShareMessageData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Type",
+          "type": "u"
+        },
+        "3": {
+          "name": "Text",
+          "type": "s"
+        },
+        "4": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    },
+    "StoryLimitedReleaseData": {
+      "fields": {
+        "1": {
+          "name": "Id",
+          "type": "u"
+        },
+        "2": {
+          "name": "Type",
+          "type": "u"
+        },
+        "3": {
+          "name": "TargetId",
+          "type": "u"
+        },
+        "4": {
+          "name": "ReleaseConditions",
+          "type": "raw"
+        },
+        "5": {
+          "name": "Term",
+          "type": "m/TermData"
+        }
+      },
+      "field_set_complete": true
+    }
+  }
+}

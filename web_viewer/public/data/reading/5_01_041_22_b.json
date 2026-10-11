@@ -1,0 +1,719 @@
+{
+  "schema_version": 2,
+  "document_id": "5_01_041_22_b",
+  "logical_id": "story-collection:5_01_041_22",
+  "scenario_id": "5_01_041_22_b",
+  "text_catalog_id": "5_01_041_22",
+  "playback": {
+    "file": "episodes/5_01_041_22_b.json",
+    "start_step_index": 0,
+    "end_step_index": 11
+  },
+  "source": {
+    "file": "episodes/5_01_041_22_b.json",
+    "sha256": "sha256:43ad2f590f30e25323ed9e016397f1fe78ba9cbdb0f463bf52e480eed0733e8b",
+    "schema_version": 1,
+    "runtime_contract": null,
+    "raw_hash": "sha256:7f3ae09be7f07f4c453b67ea48715d1ce0fb939742f4cbdd817478901e29cfc6",
+    "aggregate_source": {
+      "file": "5_01_041_22.json",
+      "scenario_id": "5_01_041_22",
+      "start_step_index": 7,
+      "end_step_index": 18
+    },
+    "step_count": 12,
+    "publication": {
+      "kind": "catalog-compatibility",
+      "aggregate_file": "5_01_041_22.json"
+    }
+  },
+  "status": "ready",
+  "rows": [
+    {
+      "kind": "dialogue",
+      "source_text": "わわっ、このバレンタインチョコ僕にですか！？",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000013:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 13,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:406e2299a6a9d5a6ad0a5c49317ded0086b0bf8ad0ccd2b8489b082ea11cc9b3"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 3
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-3:text",
+        "step_id": 3,
+        "step_index": 2,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 13,
+        "command_end": 13
+      },
+      "option": null
+    },
+    {
+      "kind": "choice",
+      "source_text": "そうですよ！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f43603f116846bb5a7663e50f15c778e63697b6a72368cab42f6a58c9b64de55"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 4
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-4:option-0",
+        "step_id": 4,
+        "step_index": 3,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 15,
+        "command_end": 15
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000015",
+        "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000015:000",
+        "source_label": "1-sel1",
+        "target_step_id": 5,
+        "target_step_index": 4,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ううっ、学校ではチョコをくれ、と言われ、\n女性アイドルとしてあげる側だった僕が、",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6bb7b6e608e2665cce3e5b3b4e36c8d834448fd62c8024252dd368e8a7b1c7a9"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 5
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-5:text",
+        "step_id": 5,
+        "step_index": 4,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 19,
+        "command_end": 19
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ファンからだけじゃなくて、プロデューサーさん\nからもチョコをもらえるなんて……。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:37a26d8b8a94921d5d0ceb96d736728d3725d40a70c9008698fb345f11c5518a"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 6
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-6:text",
+        "step_id": 6,
+        "step_index": 5,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 23,
+        "command_end": 23
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "感動です！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:67b56deff8c129f21b7eafd001a22af60f567df28693298bcbc20f3c9bce0ad6"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 7
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-7:text",
+        "step_id": 7,
+        "step_index": 6,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 27,
+        "command_end": 27
+      },
+      "option": null
+    },
+    {
+      "kind": "choice",
+      "source_text": "そんなに喜んでもらえて、私も嬉しいです！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000029:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 29,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9dcd50223c82a1a7f23c1db1aa71b0ff1c1999fb7b92e05b86a1179e7716def8"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-8:option-0",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 29,
+        "command_end": 30
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000029",
+        "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000029:000",
+        "source_label": "2-sel1",
+        "target_step_id": 9,
+        "target_step_index": 8,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "choice",
+      "source_text": "これから毎年、チョコを渡します！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000030:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 30,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:359a155a153d8dcc0885e052622e20a72093f338d4e92f001826864acae409b9"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-8:option-1",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 29,
+        "command_end": 30
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000029",
+        "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000030:001",
+        "source_label": "2-sel2",
+        "target_step_id": 10,
+        "target_step_index": 9,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "はい、とっても嬉しいです！\n今日のこと忘れません。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ba3a62510d231506e805fda61d85c90249b8c5cc16e5d5acfd0f2ce7746ddc6"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 9
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-9:text",
+        "step_id": 9,
+        "step_index": 8,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 35,
+        "command_end": 35
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "それなら僕は、プロデューサーさんがチョコを\nあげたいと思えるアイドルで居続けます！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000043:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 43,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5fd43f7c75cc9e171c253072f3970594dacfdb76e69e128d1240512c519b17d4"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 10
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-10:text",
+        "step_id": 10,
+        "step_index": 9,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 43,
+        "command_end": 43
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "このチョコは、大切に食べますね。\n本当にありがとうございます！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000052:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 52,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:314dd411cd414966a23add918e0fca7206640ad0e2d98ada8a13a29226b99c79"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 11
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-11:text",
+        "step_id": 11,
+        "step_index": 10,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 52,
+        "command_end": 52
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "ホワイトデーのお返し、はりきって用意します。\n楽しみにしていてください！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_041_22:5_01_041_22_b:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_041_22",
+          "part_id": "5_01_041_22_b",
+          "file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:92f3e89966947db4f186313c23bb7287daa7a2a18c02e848667474759f910b6a"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "sourceName": "秋月 涼"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "041ryo"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "041ryo",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 12
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_041_22_b:step-12:text",
+        "step_id": 12,
+        "step_index": 11,
+        "source_part_id": "5_01_041_22_b",
+        "source_file": "scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "command_start": 58,
+        "command_end": 58
+      },
+      "option": null
+    }
+  ],
+  "controls": [
+    {
+      "step_id": 4,
+      "step_index": 3,
+      "kind": "choice",
+      "options": [
+        {
+          "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000015",
+          "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000015:000",
+          "source_label": "1-sel1",
+          "target_step_id": 5,
+          "target_step_index": 4,
+          "resolution": "resolved"
+        }
+      ]
+    },
+    {
+      "step_id": 8,
+      "step_index": 7,
+      "kind": "choice",
+      "options": [
+        {
+          "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000029",
+          "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000029:000",
+          "source_label": "2-sel1",
+          "target_step_id": 9,
+          "target_step_index": 8,
+          "resolution": "resolved"
+        },
+        {
+          "choice_id": "choice:v1:5_01_041_22:5_01_041_22_b:cmd-000029",
+          "option_id": "choice-option:v1:5_01_041_22:5_01_041_22_b:cmd-000030:001",
+          "source_label": "2-sel2",
+          "target_step_id": 10,
+          "target_step_index": 9,
+          "resolution": "resolved"
+        }
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 10,
+        "join_step_id": 11,
+        "join_step_type": "adv",
+        "source_file": "assets/resources/scenariodata/5_01_041_22/scenario_5_01_041_22_b.json",
+        "raw_sha256": "sha256:4f94354aab672b078e9fc19e6cab7dc1d22f8871086f37a39874c2b15deee35a",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          29,
+          30
+        ],
+        "join_command": 47,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2-sel1",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              46
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              9
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "2-sel2",
+            "step_indices": [
+              9
+            ],
+            "exit_index": 9,
+            "command_indices": [
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45
+            ],
+            "step_types": [
+              "adv"
+            ],
+            "step_ids": [
+              10
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "compatibility-source-fields-may-be-missing",
+      "step_index": null,
+      "severity": "warning"
+    }
+  ],
+  "presentation": {
+    "title": "今年のバレンタインは！",
+    "episode_label": null
+  }
+}

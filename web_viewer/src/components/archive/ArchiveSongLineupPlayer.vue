@@ -3,14 +3,13 @@
     class="lineup-player"
     :data-lineup-ready="session.ready.value"
     :data-loaded-vocals="session.loadedIdolCodes.value.join(',')"
+    :data-output-peak="session.outputPeak.value"
     :data-active-performer-slots="session.activePerformerSlots.value.join(',')"
     :data-active-stage-positions="activeStagePositions.join(',')"
     :data-active-idols="session.activeIdolCodes.value.join(',')"
     data-clock-mode="audio-context-scheduled"
   >
-    <p class="lineup-note">
-      五个选择位与 Chibi 舞台位置 1–5 完全对应。空位会静音；重复偶像只播放一条声部，并合并其多个位置的演唱区间。
-    </p>
+    <details class="lineup-note"><summary>编成规则</summary><p>五个位置对应舞台位置。空位静音；重复偶像共用声部与演唱区间。</p></details>
 
     <label v-if="arrangements.length > 1" class="arrangement-select">
       演唱切换表
@@ -20,7 +19,7 @@
     </label>
 
     <fieldset class="performer-lineup">
-      <legend>五个舞台位置（与 Chibi 一致）</legend>
+      <legend>自由编成 · 五个舞台位置</legend>
       <label
         v-for="stagePosition in stagePositions"
         :key="stagePosition"
@@ -33,9 +32,9 @@
           :aria-label="`舞台位置 ${stagePosition}${stagePosition === 3 ? '，中心' : ''}`"
           @change="handleStagePositionChange(stagePosition, $event.target.value)"
         >
-          <option value="">空位</option>
+          <option value="">空 / 静音</option>
           <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.displayName }}
+            {{ idolLabel(entry) }}
           </option>
         </select>
         <small>
@@ -52,9 +51,9 @@
       <strong v-else>无人 / 当前槽为空</strong>
     </div>
 
-    <ArchiveMediaTransport :ready="session.ready.value" :playing="session.playing.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
+    <ArchiveMediaTransport music :ready="session.ready.value" :playing="session.playing.value || session.starting.value" :duration="session.duration.value" :current-time="session.currentTime.value" @toggle="togglePlayback" @restart="session.reset" @seek="session.seek" />
 
-    <div class="lineup-gains">
+    <details><summary>音轨平衡</summary><div class="lineup-gains">
       <label>
         演唱音量
         <input v-model.number="session.vocalGain.value" type="range" min="0" max="1" step="0.01" aria-label="五槽声部音量" />
@@ -65,38 +64,46 @@
       </label>
     </div>
 
+    </details>
     <div v-if="selectedArrangement?.capabilities?.stage?.kind === 'choreography_candidate'" class="lineup-stage-handoff">
-      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">以当前编成进入舞台</button>
-      <p>{{ stageLineup.some(Boolean) ? '先停止歌曲页试听，再把舞台位置、声部选择和音量带入；舞台从 00:00 暂停开始。' : '至少选择一位偶像后才能进入舞台。' }}</p>
+      <button type="button" :disabled="!session.ready.value || !stageLineup.some(Boolean)" @click="openStageWithLineup">进入 Chibi 舞台 →</button>
+
     </div>
 
     <ArchiveSongLyrics :song-code="audioExperiment.song_code" :source-timeline="selectedArrangement"
       stage-clock :current-time="session.currentTime.value" :ready="session.ready.value" @seek="session.seek" />
-    <ArchiveTechnicalDetails label="编成试听技术信息" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
+    <ArchiveTechnicalDetails v-if="maintainer" label="编成试听说明" :evidence="{ stagePositions: stagePositions.map(stagePosition => ({ stagePosition, performerSlot: performerSlotForStagePosition(stagePosition) })) }">
       <p class="lineup-evidence">
         所有轨道会在播放前完整解码，并由同一个音频时钟同步启动、预排演唱切换；当前混音采用活动偶像数的 1/√n 归一化与居中声像，仅为浏览器近似。重复选择不代表原游戏允许重复成员编组。
       </p>
     </ArchiveTechnicalDetails>
     <p v-if="loadingTimeline" class="lineup-status">正在准备所选演唱成员的音频…</p>
-    <p v-else-if="session.error.value" class="lineup-error" role="alert">{{ session.error.value }}</p>
+    <ArchiveErrorNote v-else-if="session.error.value" class="lineup-error">{{ session.error.value }}</ArchiveErrorNote>
   </div>
 </template>
 
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 import { fetchSongPerformanceArrangements } from '../../utils/songPerformanceData.js'
 import { createSongStageHandoff } from '../../core/songStageHandoff.js'
 
+// Decoding, clocks and the 1/√n mix are maintainer notes, not reader copy.
+const maintainer = isMaintainerMode()
+
 const props = defineProps({
   audioExperiment: { type: Object, required: true },
+  idolName: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open-stage'])
+const emit = defineEmits(['open-stage', 'request-play'])
 
 const session = useSongPerformanceSession()
+defineExpose({ pause: () => session.pause() })
 const slotNumbers = [1, 2, 3, 4, 5]
 const stagePositions = [1, 2, 3, 4, 5]
 const arrangements = ref([])
@@ -107,6 +114,7 @@ let loadGeneration = 0
 let disposed = false
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
+function idolLabel(entry) { return (entry?.idol_code && props.idolName(entry.idol_code, entry.displayName)) || entry?.displayName || '姓名待确认' }
 const selectedArrangement = computed(() => arrangements.value
   .find(entry => entry.id === selectedArrangementId.value) || null)
 const activeStagePositions = computed(() => session.activePerformerSlots.value
@@ -120,7 +128,7 @@ const activeSingerEntries = computed(() => {
     if (!idolCode) continue
     if (!byIdol.has(idolCode)) byIdol.set(idolCode, {
       idolCode,
-      name: props.audioExperiment.solo_tracks?.[idolCode]?.displayName || '姓名待确认',
+      name: idolLabel(props.audioExperiment.solo_tracks?.[idolCode]),
       slots: [],
       stagePositions: [],
     })
@@ -200,8 +208,8 @@ async function reloadSession() {
 }
 
 async function togglePlayback() {
-  if (session.playing.value) session.pause()
-  else await session.play()
+  if (session.playing.value || session.starting.value) session.pause()
+  else { emit('request-play'); await session.play() }
 }
 
 function openStageWithLineup() {
@@ -231,44 +239,33 @@ onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 </script>
 
 <style scoped>
-.lineup-player { margin-top: 14px; padding: 12px; border: 1px solid #cfe2ed; border-radius: 7px; background: #f4f9fc; }
-.lineup-note, .lineup-evidence, .lineup-status, .lineup-error { margin: 0; color: #60717d; font-size: 0.7rem; line-height: 1.6; }
-.arrangement-select { display: grid; gap: 5px; margin-top: 12px; color: #5c6771; font-size: 0.72rem; font-weight: 700; }
-.arrangement-select select { max-width: 320px; padding: 7px 9px; border: 1px solid #c9d8d8; border-radius: 5px; background: #fff; }
-.performer-lineup { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin: 14px 0 0; padding: 10px; border: 1px solid #d6e4eb; border-radius: 7px; }
-.performer-lineup legend { padding: 0 6px; color: #3f697e; font-size: 0.7rem; font-weight: 800; }
-.performer-slot { min-width: 0; display: grid; gap: 5px; padding: 8px; border: 1px solid transparent; border-radius: 6px; background: #fff; }
-.performer-slot.active { border-color: #20a59c; background: #e9faf7; box-shadow: 0 0 0 2px rgba(32, 165, 156, 0.08); }
-.performer-slot > span { color: #356578; font-size: 0.68rem; font-weight: 800; }
-.performer-slot select { min-width: 0; width: 100%; padding: 6px; border: 1px solid #c8d7de; border-radius: 5px; background: #fff; font-size: 0.68rem; }
-.performer-slot small { color: #84939c; font-size: 0.62rem; }
-.performer-slot.active small { color: #14877f; font-weight: 700; }
-.current-singers { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-top: 12px; padding: 9px 11px; border-left: 3px solid #20a59c; background: #eaf8f6; }
-.current-singers span { color: #668079; font-size: 0.66rem; font-weight: 700; }
-.current-singers strong { color: #235d58; font-size: 0.76rem; }
-.lineup-transport { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.lineup-transport button { padding: 7px 12px; border: 0; border-radius: 5px; cursor: pointer; font: inherit; font-size: 0.72rem; }
-.lineup-transport button:disabled { cursor: wait; opacity: 0.55; }
-.lineup-play { background: #158f87; color: #fff; }
-.lineup-reset { background: #dceeed; color: #316a67; }
-.lineup-transport input { flex: 1 1 180px; min-width: 120px; accent-color: #158f87; }
-.lineup-transport span { color: #5c6771; font-variant-numeric: tabular-nums; font-size: 0.7rem; }
-.lineup-gains { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
-.lineup-gains label { display: grid; gap: 5px; color: #5c6771; font-size: 0.7rem; font-weight: 700; }
-.lineup-gains input { accent-color: #158f87; }
-.lineup-stage-handoff { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid #d6e4eb; }
-.lineup-stage-handoff button { min-height: 44px; padding: 8px 16px; border: 0; border-radius: 22px; background: #176f69; color: #fff; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer; }
-.lineup-stage-handoff button:disabled { cursor: wait; opacity: .55; }
-.lineup-stage-handoff button:focus-visible { outline: 3px solid #37a9a1; outline-offset: 3px; }
-.lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: #60717d; font-size: .7rem; line-height: 1.5; }
-.lineup-evidence { margin-top: 12px; }
-.lineup-status { margin-top: 8px; }
-.lineup-error { margin-top: 8px; color: #a04747; }
-@media (max-width: 820px) {
-  .performer-lineup { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 560px) {
-  .performer-lineup { grid-template-columns: 1fr; }
-  .lineup-gains { grid-template-columns: 1fr; }
-}
+/* Five-slot lineup: on the paper; slots are a row of plain selects, the singing ones marked with stage light. */
+.lineup-player { margin-top: var(--gs-space-4); }
+.lineup-note, .lineup-evidence, .lineup-status, .lineup-error { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.arrangement-select { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.arrangement-select select { max-width: 320px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.performer-lineup { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--gs-space-3); margin: var(--gs-space-4) 0 0; padding: 0; border: 0; }
+.performer-lineup legend { margin-bottom: var(--gs-space-3); padding: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.performer-slot { display: grid; gap: var(--gs-space-2); min-width: 0; padding-top: var(--gs-space-2); border-top: 2px solid var(--gs-line); }
+.performer-slot.active { border-top-color: var(--gs-mint); }
+.performer-slot > span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.performer-slot select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.performer-slot small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.performer-slot.active small { color: var(--gs-mint-ink); }
+.current-singers { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); margin-top: var(--gs-space-4); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); }
+.current-singers span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.current-singers strong { color: var(--gs-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.lineup-gains { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-3); }
+.lineup-gains label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.lineup-gains input { accent-color: var(--gs-mint-ink); }
+.lineup-stage-handoff { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-3) var(--gs-space-4); margin-top: var(--gs-space-4); padding-top: var(--gs-space-4); border-top: 1px solid var(--gs-line); }
+.lineup-stage-handoff button { min-height: var(--gs-control-touch); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
+.lineup-stage-handoff button:disabled { opacity: .45; cursor: wait; }
+.lineup-stage-handoff p { flex: 1 1 230px; margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.5; }
+.lineup-evidence { margin-top: var(--gs-space-3); }
+.lineup-status, .lineup-error { margin-top: var(--gs-space-3); }
+.lineup-error { color: var(--gs-critical); }
+summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+.lineup-player :is(button, select, input, summary):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@container (max-width: 640px) { .performer-lineup { grid-template-columns: repeat(2, minmax(0, 1fr)); } .lineup-gains { grid-template-columns: 1fr; } }
 </style>

@@ -94,7 +94,7 @@ const capsuleStyle = computed(() => ({
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.28);
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .call-avatar {
     width: 76px;
     height: 76px;

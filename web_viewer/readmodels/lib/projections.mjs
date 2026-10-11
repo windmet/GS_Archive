@@ -1,9 +1,19 @@
-import { ArtifactWriter, assert, entityKey, pick, stripEvidence, jsonBytes } from './common.mjs';
+import { portalProjection } from './portal_projection.mjs';
+import { ArtifactWriter, assert, entityKey, shardKey, pick, stripEvidence, jsonBytes } from './common.mjs';
+
+/** Directory identity comes from the same confirmed mapping and idol references as song detail. */
+export function projectSongPerformance(song, view) {
+  return {
+    scope: song.performance_mapping?.performer_scope || '',
+    unitName: song.performance_mapping?.confirmed_unit?.unit_name || '',
+    performers: (view?.performers || []).map(entry => pick(entry, ['id', 'displayName'])),
+  };
+}
 
 /** Pure-projection output consumes existing checkout selectors; it never reinterprets RAW commands. */
 export async function writeReadModels(root, release, product, provenance = {}) {
   const writer = new ArtifactWriter(root, release);
-  const domains = {}; const coverage = {};
+  const domains = {}; const coverage = {}; const domainRows = {};
   const detailIds = new Set();
   const detail = async (domain, id, data, kind = `${domain}.detail`) => {
     assert(id !== undefined && id !== null && String(id), `Missing ${domain} id`);
@@ -12,6 +22,7 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     return writer.emit(name, kind, { id: String(id), ...data });
   };
   async function directory(domain, rows, { searchRows = null, meta = {} } = {}) {
+    domainRows[domain] = rows;
     const pages = await writer.pages(`${domain}/catalog`, `${domain}.page`, rows);
     const searchPages = searchRows ? await writer.pages(`${domain}/search`, `${domain}.search`, searchRows) : [];
     domains[domain] = await writer.emit(`${domain}/index.json`, `${domain}.index`,
@@ -53,9 +64,9 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       release_series_id: card.release_series?.series_id || null,
       // Consumers must use these explicit booleans, not ask for the old entire index.
       has_event_relation: !!context.eventRelation, has_gasha_relation: !!context.gashaRelation,
-      has_release_series: !!card.release_series, asset_status: context.assetStatus || null, ownerReference:context.ownerReference || null, detail: descriptor };
+      has_release_series: !!card.release_series, attribute:card.gameplay?.attribute?.name || '', asset_status: context.assetStatus || null, ownerReference:context.ownerReference || null, detail: descriptor };
     cardRows.push(row);
-    cardSearch.push({ ...pick(row, ['id','resource_id','character_id','rarity','title','title_full','release_at','single_state','has_story','has_home_voice','scenario_count','home_voice_count','release_series_id','has_event_relation','has_gasha_relation','has_release_series','asset_status']), detail: descriptor });
+    cardSearch.push({ ...pick(row, ['id','resource_id','character_id','rarity','title','title_full','release_at','single_state','has_story','has_home_voice','scenario_count','home_voice_count','release_series_id','has_event_relation','has_gasha_relation','has_release_series','attribute','asset_status']), detail: descriptor });
   }
   await directory('cards', cardRows, { searchRows: cardSearch });
 
@@ -70,13 +81,17 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     storySearch.push({ ...pick(row, ['id','file','title','subtitle','domain','exists','unitId','sectionId']),
       resourceIds: story.resourceIds || [], characters: story.characters || [], detail: descriptor });
   }
+  const locatorShards = {};
+  for (const row of storyRows) (locatorShards[(parseInt(entityKey(row.file).slice(0,2),16)%32).toString(16).padStart(2,'0')] ||= []).push({file:row.file,detail:row.detail});
+  const detailLocatorShards = {};
+  for (const [key, rows] of Object.entries(locatorShards)) detailLocatorShards[key] = await writer.emit(`stories/locators/${key}.json`, 'stories.locator', {rows}, {maxRaw:32*1024});
   const landing = product.storyCatalogView || {};
   const landingDescriptors = {};
   for (const [key, value] of Object.entries({ main: landing.mainDomain, extra: landing.extraDomain, birthday: landing.birthdayDomain })) {
     if (value) landingDescriptors[key] = await writer.emit(`stories/landing/${key}.json`, `stories.landing.${key}`, { value: stripEvidence(value) });
   }
   await directory('stories', storyRows, { searchRows: storySearch,
-    meta: { landing: landingDescriptors, seasonalCount: landing.seasonalCount || 0, workCount: landing.workCount || 0 } });
+    meta: { detailLocatorShards, landing: landingDescriptors, seasonalCount: landing.seasonalCount || 0, workCount: landing.workCount || 0 } });
 
   const songRows = [];
   for (const song of product.songs) {
@@ -85,6 +100,7 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       experimental: product.experimental?.[song.song_code] || null });
     if (song.variant_kind !== 'primary') continue;
     songRows.push({ ...pick(song, ['song_code','title','kana','credits','song_id','audio_form','jacket_url','variant_kind']),
+      performance: projectSongPerformance(song, product.songViews?.[song.song_code]),
       movies: (song.movies || []).map(m => pick(m, ['kind'])),
       variants: (song.variants || []).map(v => pick(v, ['song_code','title','archive_status'])), detail: descriptor });
   }
@@ -107,8 +123,50 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   for (const [domain, value] of Object.entries(product.extraDomains || {})) {
     assert(/^[a-z-]+$/.test(domain) && !Object.hasOwn(domains, domain), `Invalid extra domain: ${domain}`);
     const rows = [];
+    if (value.packed) {
+      assert(new Set(value.records.map(record => String(record.id))).size === value.records.length &&
+        value.records.every(record => record.id !== null && record.id !== undefined && String(record.id)), `Duplicate/missing ${domain} identity`);
+      // Collections share bounded detail pages to stay within the existing file
+      // budget; the consumer selects and verifies an entity inside the page.
+      const pages = await writer.pages(`${domain}/details`, `${domain}.details`,
+        value.records.map(record => ({id:String(record.id),view:stripEvidence(record.view)})));
+      const fs = await import('node:fs/promises'); const path = await import('node:path');
+      const pageById = new Map();
+      for (const page of pages) {
+        const payload = JSON.parse(await fs.readFile(path.join(root,'pages',page.url.slice(1)), 'utf8'));
+        for (const record of payload.data.rows) pageById.set(record.id,page);
+      }
+      for (const record of value.records) rows.push({id:String(record.id),...record.summary,detail:pageById.get(String(record.id))});
+      await directory(domain, rows, {searchRows:value.searchable ? rows : null});
+      continue;
+    }
+    if (value.sharded) {
+      // One file per entity does not scale with the Reader corpus (one locator per segment); a
+      // hash shard keeps the id-only lookup while bounding the file count at 256.
+      assert(new Set(value.records.map(record => String(record.id))).size === value.records.length, `Duplicate ${domain} identity`);
+      const groups = new Map();
+      for (const record of value.records) {
+        const key = shardKey(record.id);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push({ id: String(record.id), view: stripEvidence(record.view) });
+      }
+      const byId = new Map();
+      for (const key of [...groups.keys()].sort()) {
+        const descriptor = await writer.emit(`${domain}/shards/${key}.json`, `${domain}.shard`, { id: key, rows: groups.get(key) });
+        for (const row of groups.get(key)) byId.set(row.id, descriptor);
+      }
+      for (const record of value.records) rows.push({ id: String(record.id), ...record.summary, detail: byId.get(String(record.id)) });
+      await directory(domain, rows, { searchRows: value.searchable ? rows : null });
+      continue;
+    }
     for (const record of value.records) {
-      const descriptor = await detail(domain, record.id, { view: stripEvidence(record.view) });
+      let view=stripEvidence(record.view);
+      if(domain==='events'){
+        const generalPages=await writer.pages(`events/rewards/${entityKey(record.id)}`,'events.rewards',view.rewards.general,{maxRaw:192*1024});
+        const {general,...rewards}=view.rewards;
+        view={...view,rewards:{...rewards,generalPages,generalCount:general.length}};
+      }
+      const descriptor = await detail(domain, record.id, { view });
       rows.push({ id: String(record.id), ...record.summary, detail: descriptor });
     }
     await directory(domain, rows, { searchRows: value.searchable ? rows : null });
@@ -125,6 +183,16 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     // These are source release contracts, NOT a fabricated claim that media is versioned by this read-model digest.
     legacy: { data_revision: provenance.dataRevision || null, media_epoch: provenance.mediaEpoch || null },
   };
+  if (product.portalStageManifest) {
+  const summaries = {};
+  for (const preferredIdol of [null,...bootstrap.idols]) {
+    const id = preferredIdol?.id || 'all';
+    const overview = portalProjection({bootstrap,rows:domainRows,product,preferredIdol});
+    summaries[id] = await writer.emit(`portal/scopes/${id}.json`, 'portal.scope',
+      {id,overview}, {maxRaw:preferredIdol ? 32*1024 : 64*1024});
+  }
+  domains.portal = await writer.emit('portal/index.json','portal.index',{scopes:summaries},{maxRaw:32*1024});
+  }
   assert(jsonBytes(bootstrap).length <= 64 * 1024, 'Bootstrap must fit 64 KiB decoded; never embed domain-wide descriptors');
   const fs = await import('node:fs/promises'); const path = await import('node:path');
   await fs.mkdir(path.join(root, 'pages', '_catalog'), { recursive: true });

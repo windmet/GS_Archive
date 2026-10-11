@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_016sei_1_7_016_01",
-  "logical_id": "story-collection:1_x_016sei_1_7_016_01",
+  "logical_id": "story:1_x_016sei_1_7_016_01",
   "scenario_id": "1_x_016sei_1_7_016_01",
   "text_catalog_id": "1_x_016sei_1_7_016_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_016sei_1_7_016_01.json",
-    "sha256": "sha256:b04bb6a25426c1a05d2583c1087f788b09727e1926b4a2a06f936c4c8c35c17e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:31cf334578338d1e697c55ec3c2595e44a05142458719213a2000392f1f0a35d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:93ba13b3e3141223fffd6627b85602714218370dc8c4961814feca19557270cb",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_016sei_1_7_016_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "誠司さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_016sei_1_7_016_01:1_7_016_01:cmd-000012:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_016sei_1_7_016_01",
+          "part_id": "1_7_016_01",
+          "file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+          "command_index": 12,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5aa022cda58cab1136460489421d5b8fcee58bb948986a1ccf5c602de1b24b03"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_016sei_1_7_016_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_016_01",
+        "source_file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "自分の誕生日を覚えていてくれたのか？\nそうか……ありがとう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_016sei_1_7_016_01:1_7_016_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_016sei_1_7_016_01",
+          "part_id": "1_7_016_01",
+          "file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a07beb3585005dbab638e34166246caad76a09e7a7c1c93c1a3da5178e08adde"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_016sei_1_7_016_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_016_01",
+        "source_file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "家族以外の人に祝ってもらうことに\n慣れていなくてな。少し照れくさいが、嬉しいよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_016sei_1_7_016_01:1_7_016_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_016sei_1_7_016_01",
+          "part_id": "1_7_016_01",
+          "file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b895ccedbee9d80f7b431b057949759472a5e7cb522821d03cf909c562f87696"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -125,7 +160,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_016sei_1_7_016_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_016_01",
+        "source_file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "自分はアイドルとして駆け出したばかりだが、\nその分、全力で任務に当たっていく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_016sei_1_7_016_01:1_7_016_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_016sei_1_7_016_01",
+          "part_id": "1_7_016_01",
+          "file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:78806f808eeb3659b5856d721c6892258753eb8637d5a58537d573233f494970"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -165,7 +210,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -174,21 +218,32 @@
         "row_id": "1_x_016sei_1_7_016_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_016_01",
+        "source_file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、\nこれからも支援をよろしく頼む！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_016sei_1_7_016_01:1_7_016_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_016sei_1_7_016_01",
+          "part_id": "1_7_016_01",
+          "file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a34f2de170d1744d88253128a9fd11f2090344843b5c51c1c6724048fb2d67d9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -205,7 +260,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -214,47 +268,16 @@
         "row_id": "1_x_016sei_1_7_016_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_016_01",
+        "source_file": "assets/resources/scenariodata/1_x_016sei/scenario_1_7_016_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "誠司さん、お誕生日おめでとうございます！",
     "episode_label": null

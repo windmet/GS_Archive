@@ -1,0 +1,2527 @@
+{
+  "scenario_id": "1_2_004_02_e",
+  "total_steps": 26,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0,
+          "delay": 0
+        },
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 2,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": {
+          "cue": "wagon_carrying_cake",
+          "delay": 0.5
+        },
+        "se_events": [
+          {
+            "cue": "clap_applause_group",
+            "delay": 0
+          },
+          {
+            "cue": "clap_applause_group",
+            "delay": 0.5
+          },
+          {
+            "cue": "wagon_carrying_cake",
+            "delay": 0.5
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "dialogue": {
+        "speaker": "",
+        "text": "（スタッフや共演者たちの拍手が鳴り響く中、\n照明を落としたスタジオへ大きなケーキが届く…）",
+        "text_jp": "（スタッフや共演者たちの拍手が鳴り響く中、\n照明を落としたスタジオへ大きなケーキが届く…）",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000022:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 22,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:293f68243319cc7b7da5ea64365ae6ca02bbf1660c6af14fc5d5417a8bf1e1a3"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 3,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.7,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 4,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_shy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1,
+          "type": "spine_anim",
+          "chara_id": "006tsu",
+          "value": "hello"
+        }
+      ],
+      "lipSync": false,
+      "dialogue": {
+        "speaker": "",
+        "text": "誕生日、おめでとうございます！",
+        "text_jp": "誕生日、おめでとうございます！",
+        "text_cn": "",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000032:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 32,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:422a21cde551d01007396c56b4d2bfaca118f14703dd78c7700c12d667050983"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 5,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "cracker_solo",
+          "delay": 0.2
+        },
+        "se_events": [
+          {
+            "cue": "clap_applause_group",
+            "delay": 0
+          },
+          {
+            "cue": "cracker_solo",
+            "delay": 0
+          },
+          {
+            "cue": "cracker_solo",
+            "delay": 0.2
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_shy",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "timeline": [
+        {
+          "time": 1,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 4.2,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "すげえ、これをおまえたちで作ったのかよ！\nしかも、想像していた以上にでかいぜ。",
+        "text_jp": "すげえ、これをおまえたちで作ったのかよ！\nしかも、想像していた以上にでかいぜ。",
+        "text_cn": "",
+        "voice": "e1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1003.json",
+          "frames": 498
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000039:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 39,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:020c8aa94ade54d9a4d0bfa9f18aa5cae86a90c7c0971db3f56b3381d49fdb95"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 7,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_neck_anim",
+          "chara_id": "004ter",
+          "value": "neck_question"
+        }
+      ],
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "ケーキだけに景気がいいな、なんつって！",
+        "text_jp": "ケーキだけに景気がいいな、なんつって！",
+        "text_cn": "",
+        "voice": "e1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1004.json",
+          "frames": 250
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000044:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 44,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:f4817485df5a314222743f2e3e2d48473015976d468d2012262b35a8c57977cf"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_surprise",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_neck_anim",
+          "chara_id": "004ter",
+          "value": "neck_question"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "005kao",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_anim",
+          "chara_id": "005kao",
+          "value": "wait_loop"
+        },
+        {
+          "time": 3.8,
+          "type": "spine_neck_stop",
+          "chara_id": "004ter",
+          "value": ""
+        }
+      ],
+      "chara_id": "005kao",
+      "dialogue": {
+        "speaker": "桜庭 薫",
+        "text": "ダジャレはいいから、早く火を消せ。\nろうそくが溶けている。",
+        "text_jp": "ダジャレはいいから、早く火を消せ。\nろうそくが溶けている。",
+        "text_cn": "",
+        "voice": "e1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1005.json",
+          "frames": 254
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000053:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 53,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:a6566b4f22e03bf9c8712e09eec5b06f0caa6bfd9e5a4949e783d53936391eee"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_swet",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.5,
+          "type": "spine_anim",
+          "chara_id": "004ter",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "ギャグだっての！\nって、言っている間にろうそくが溶けてきてるな。",
+        "text_jp": "ギャグだっての！\nって、言っている間にろうそくが溶けてきてるな。",
+        "text_cn": "",
+        "voice": "e1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1006.json",
+          "frames": 299
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000057:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 57,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:21e87d863d4954519750f45bc9b618b9106134f347dea886c2c704f16bcc3bcc"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 10,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "counsel_heartful",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 6.2,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 7,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_shy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "このケーキ作りに関わってくれたみんな、\nそれから、桜庭、翼。ありがとう！",
+        "text_jp": "このケーキ作りに関わってくれたみんな、\nそれから、桜庭、翼。ありがとう！",
+        "text_cn": "",
+        "voice": "e1007.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1007.json",
+          "frames": 448
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000062:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 62,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:fb86bcd93c4865b4e03cf3c582c5436f0d92a09b5e89c5b6f635bf3638cf4b62"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 11,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_shy",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": 0,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.6,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 12,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.6,
+          "offset_x": 0,
+          "offset_y": 80,
+          "duration": 0.5,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 13,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.6,
+          "offset_x": 0,
+          "offset_y": 80,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1.7,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "timeline": [
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 14,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.6,
+          "offset_x": 0,
+          "offset_y": 80,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 15,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_10",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 1.6,
+          "offset_x": 0,
+          "offset_y": 80,
+          "duration": 0.5
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [
+          {
+            "type": "fadein",
+            "delay": 0,
+            "duration": 2.5,
+            "color": "#FFFFFF",
+            "alpha": 1
+          }
+        ],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "004ter",
+      "lipSync": false,
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "ふーっ！",
+        "text_jp": "ふーっ！",
+        "text_cn": "",
+        "voice": "e1008.m4a",
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000079:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 79,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:8f7aef2e31aef6850091961acf0390e70115ca96e29c3a800bcf550326c4a41f"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 16,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0,
+              "duration": 0
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0,
+          "delay": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 17,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": null,
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 18,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "clap_applause_group",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "clap_applause_group",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 2.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 19,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 0.2,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 20,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "なあ、ひとくち食っていいか？",
+        "text_jp": "なあ、ひとくち食っていいか？",
+        "text_cn": "",
+        "voice": "e1010.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1010.json",
+          "frames": 157
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000095:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 95,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:fde395037abdc0211ff8a0762c6725c1a9cf1d270fb7d1cf9fdcadef383853c5"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 21,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_shy",
+            "anim": "joy",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 1.5,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.5,
+          "type": "spine_anim",
+          "chara_id": "006tsu",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "006tsu",
+      "dialogue": {
+        "speaker": "柏木 翼",
+        "text": "もちろんです！\nひとくちと言わず、いくらでもどうぞ。",
+        "text_jp": "もちろんです！\nひとくちと言わず、いくらでもどうぞ。",
+        "text_cn": "",
+        "voice": "e1011.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1011.json",
+          "frames": 311
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000101:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 101,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:1b327c286e5ecc9ccd5b3cd64fb22ac54f6939e346492d6947c34b25a32b7ec4"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 22,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "teacup_on_table_cafepare",
+          "delay": 1.3
+        },
+        "se_events": [
+          {
+            "cue": "teacup_on_table_cafepare",
+            "delay": 1.3
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 4.5,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6.5,
+          "type": "spine_face",
+          "chara_id": "004ter",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 8,
+          "type": "spine_anim",
+          "chara_id": "004ter",
+          "value": "joy"
+        }
+      ],
+      "chara_id": "004ter",
+      "dialogue": {
+        "speaker": "天道 輝",
+        "text": "いただきます！　……く～、美味い！\n桜庭、翼、ありがとうな！",
+        "text_jp": "いただきます！　……く～、美味い！\n桜庭、翼、ありがとうな！",
+        "text_cn": "",
+        "voice": "e1012.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1012.json",
+          "frames": 606
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000107:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 107,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:028e610964479e96264078baaaf12b82c1ac7a5f29bbabb754d0a9a9d3556d6b"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 23,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_joy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "chara_id": "005kao",
+      "dialogue": {
+        "speaker": "桜庭 薫",
+        "text": "当然だ。",
+        "text_jp": "当然だ。",
+        "text_cn": "",
+        "voice": "e1013.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1013.json",
+          "frames": 75
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000112:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 112,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:a5956b20ab6c3350618258e1e5fd92e2a1e644ced463071b822f913e7a91dd5e"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 24,
+      "type": "adv",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_shy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "timeline": [
+        {
+          "time": 3.5,
+          "type": "spine_face",
+          "chara_id": "006tsu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.5,
+          "type": "spine_anim",
+          "chara_id": "006tsu",
+          "value": "hello"
+        }
+      ],
+      "chara_id": "006tsu",
+      "dialogue": {
+        "speaker": "柏木 翼",
+        "text": "ふふ、よかったです。たくさん食べてくださいね。",
+        "text_jp": "ふふ、よかったです。たくさん食べてくださいね。",
+        "text_cn": "",
+        "voice": "e1014.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/004ter/1_2_004_02/1_2_004_02_e/1_2_004_02_e1014.json",
+          "frames": 353
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:1_2_004ter_02_1_2_004_02:1_2_004_02_e:cmd-000119:dialogue:000",
+          "source": {
+            "scenario_id": "1_2_004ter_02_1_2_004_02",
+            "part_id": "1_2_004_02_e",
+            "file": "assets/resources/scenariodata/1_2_004ter_02/scenario_1_2_004_02_e.json",
+            "command_index": 119,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:fec913c2a56966d439bb72cd3eb60968da53d7ae70c18be77975eb9c6bd70311"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 25,
+      "type": "stage",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_joy",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "duration": 1,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "e"
+    },
+    {
+      "step_id": 26,
+      "type": "fadein",
+      "state": {
+        "bg": "bg222_tvstudiotalk_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": null,
+        "bgm": "adv_idol_birthday",
+        "bgm_volume": 0,
+        "se": {
+          "cue": "whiteout",
+          "delay": 0
+        },
+        "se_events": [
+          {
+            "cue": "whiteout",
+            "delay": 0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_room"
+        },
+        "spines": [
+          {
+            "id": "006tsu",
+            "model": "006tsu_003_00",
+            "face": "face_joy",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "005kao",
+            "model": "005kao_003_00",
+            "face": "face_happy",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": -400,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          },
+          {
+            "id": "004ter",
+            "model": "004ter_003_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": -50,
+            "pos_y": 0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": {
+          "zoom": 0.9,
+          "offset_x": 0,
+          "offset_y": 0,
+          "duration": 0
+        },
+        "screen_fade": {
+          "type": "out",
+          "duration": 2.5,
+          "delay": 0,
+          "color": "#FFFFFF"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "episode_index": 0,
+      "episode_part": "e"
+    }
+  ],
+  "jump_points": {},
+  "episodes": [
+    {
+      "episode_index": 0,
+      "episode_no": 1,
+      "part": "e",
+      "source_scenario_id": "1_2_004_02_e",
+      "start_step_index": 0,
+      "start_step_id": 1,
+      "end_step_index": 25,
+      "end_step_id": 26,
+      "step_count": 26
+    }
+  ],
+  "aggregate_source": {
+    "file": "1_2_004ter_02_1_2_004_02.json",
+    "scenario_id": "1_2_004ter_02_1_2_004_02",
+    "start_step_index": 76,
+    "end_step_index": 101
+  }
+}

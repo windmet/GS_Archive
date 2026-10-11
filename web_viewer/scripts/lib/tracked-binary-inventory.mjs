@@ -50,6 +50,16 @@ function basenameWithoutExtension(filename) {
 function classify(relativePath) {
   const stem = basenameWithoutExtension(relativePath)
   const logicalStem = stem.toLowerCase()
+  if (relativePath === 'web_viewer/public/assets/song-chart-sprites/native-note-comparison.png') {
+    return { category:'documentation-evidence', logical_id:'documentation-evidence:native-note-comparison',
+      consumer:['GS_SONG_NATIVE_NOTE_SPRITES_20261001'], reason_tracked:'derived comparison sheet of verified native sprites, referenced by the rendering audit',
+      force_add_allowed:true, owner_release:'2026-10-01-native-song-chart-sprites-001', grandfathered:false }
+  }
+  if (/^web_viewer\/public\/assets\/song-chart-(sprites|hints|track)\/[A-Za-z0-9_/-]+\.png$/.test(relativePath)) {
+    return { category:'stable-promoted-asset', logical_id:`song-chart-native:${relativePath.split("/assets/")[1].toLowerCase().replaceAll("/",":").replace(/\.png$/,"")}`,
+      consumer:['SongChartPreview'], reason_tracked:'bounded native Unity note sprites and flick texture cells; SHA and pixel provenance in song-chart rendering audits',
+      force_add_allowed:true, owner_release:'2026-10-01-native-song-chart-sprites-001', grandfathered:false }
+  }
 
   if (relativePath === 'web_viewer/public/assets/portal/image_mobile_background_common.png') {
     return {
@@ -84,6 +94,12 @@ function classify(relativePath) {
   }
 
   const eventMatch = stem.match(/^image_chara_event_story_visual_(.+)$/)
+  const storyPortrait = stem.match(/^image_chara_story_visual_(\d{3}[a-z0-9]{3})$/)
+  if (storyPortrait && relativePath.includes('/assets/stories/characters/')) return {
+    category: 'stable-promoted-asset', logical_id: `story-visual:${storyPortrait[1]}`,
+    consumer: ['ArchivePortalOverview'], reason_tracked: 'source-bound single idol archive portrait',
+    force_add_allowed: true, owner_release: '2026-10-04-portal-story-portraits-001', grandfathered: false,
+  }
   if (eventMatch) {
     return {
       category: 'stable-promoted-asset',

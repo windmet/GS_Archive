@@ -31,6 +31,12 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
+from live_chibi_object_commands import field_map, parse_object_layer
+from live_chibi_color_commands import parse_color_layer
+from live_chibi_body_colors import body_color_events
+from live_chibi_image_colors import image_color_events
+from live_chibi_camera_controls import camera_controls
+from live_chibi_backmonitor import parse_backmonitor_row
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi"
@@ -517,6 +523,7 @@ def read_choreography_scripts(
         object_layer_events = []
         lyric_events = []
         whole_screen_color_events = []
+        whole_screen_color_layer_events = []
         character_light_events = []
         spotlight_events = []
         pinspotlight_events = []
@@ -524,8 +531,20 @@ def read_choreography_scripts(
         motion_group_events = []
         motion_group_changes = []
         with io.StringIO(payload.decode("utf-8-sig"), newline="") as handle:
-            for row in csv.reader(handle):
+            reader = csv.reader(handle)
+            header = next(reader)
+            object_fields = field_map(header)
+            body_color_rows = [header]
+            image_color_rows = [header]
+            camera_rows = [header]
+            for row in reader:
                 if not row:
+                    continue
+                if row[0] == "Image_color":
+                    image_color_rows.append(row)
+                    continue
+                if row[0] == "Livechara_body_color":
+                    body_color_rows.append(row)
                     continue
                 if row[0] == "SwitchSinger" and len(row) >= 7:
                     states = [parse_number(value) for value in row[2:7]]
@@ -548,6 +567,7 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Camera" and len(row) >= 10:
+                    camera_rows.append(row)
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
@@ -566,21 +586,9 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Backmonitor" and len(row) >= 9:
-                    event_time = parse_optional_number(row[1])
-                    if event_time is None:
-                        continue
-                    backmonitor_events.append(
-                        {
-                            "time": event_time,
-                            "movie": row[2].strip() or None,
-                            "transition": row[3].strip() or None,
-                            "x": parse_optional_number(row[4]),
-                            "y": parse_optional_number(row[5]),
-                            "scale": parse_optional_number(row[6]),
-                            "rotation": parse_optional_number(row[7]),
-                            "opacity": parse_optional_number(row[8]),
-                        }
-                    )
+                    event = parse_backmonitor_row(row)
+                    if event is not None:
+                        backmonitor_events.append(event)
                     continue
                 if row[0] in {"Image_layer", "Image_layer_2"} and len(row) >= 4:
                     event_time = parse_optional_number(row[1])
@@ -602,30 +610,9 @@ def read_choreography_scripts(
                     )
                     continue
                 if row[0] == "Object_layer" and len(row) >= 3:
-                    event_time = parse_optional_number(row[1])
-                    asset = row[2].strip()
-                    if event_time is None or not asset:
-                        continue
-                    hide = len(row) > 17 and row[17].strip() == "1"
-                    object_layer_events.append(
-                        {
-                            "time": event_time,
-                            "asset": asset,
-                            "duration": (
-                                parse_number(row[18], 1)
-                                if hide and len(row) > 18
-                                else parse_number(row[3], 1)
-                            ),
-                            "x": parse_optional_number(row[4]),
-                            "y": parse_optional_number(row[5]),
-                            "scale": parse_optional_number(row[6]),
-                            "depth": parse_optional_number(row[7]),
-                            "hide": hide,
-                            "raw19": row[19].strip()
-                            if len(row) > 19 and row[19].strip()
-                            else None,
-                        }
-                    )
+                    event = parse_object_layer(row, object_fields)
+                    if event is not None:
+                        object_layer_events.append(event)
                     continue
                 if row[0] == "Lyric" and len(row) >= 4:
                     event_time = parse_optional_number(row[1])
@@ -639,6 +626,9 @@ def read_choreography_scripts(
                         if lyric_event["text"] != raw_text:
                             lyric_event["rawText"] = raw_text
                         lyric_events.append(lyric_event)
+                    continue
+                if row[0] == "Whole_screen_color_2":
+                    whole_screen_color_layer_events.append(parse_color_layer(row, object_fields))
                     continue
                 if row[0] == "Whole_screen_color" and len(row) >= 6:
                     event_time = parse_optional_number(row[1])
@@ -705,8 +695,8 @@ def read_choreography_scripts(
                             "time": event_time,
                             "id": parse_number(row[2]),
                             "asset": row[3].strip() or None,
-                            # The client prefab proves column 5 is the position
-                            # tween duration and column 6 is the performer slot.
+                            # Preserve the current CSV duration/target mapping.
+                            # Prefab bindings alone do not prove CSV semantics.
                             "parameter4": parse_optional_number(row[4]),
                             "targetSlot": parse_optional_number(row[6]),
                             "x": parse_optional_number(row[7]),
@@ -809,7 +799,11 @@ def read_choreography_scripts(
             )
         for event in events:
             event["stagePosition"] = stage_position_map.get(event["position"], event["position"])
-        for event in camera_events:
+        controls = camera_controls(camera_rows)
+        if [event['time'] for event in camera_events] != [control['time'] for control in controls]:
+            raise ValueError('Camera events and named controls differ')
+        for event, control in zip(camera_events, controls):
+            event.update(control)
             focus_slot = event.get("focusSlot")
             event["stagePosition"] = (
                 stage_position_map.get(focus_slot) if focus_slot and focus_slot > 0 else None
@@ -882,6 +876,11 @@ def read_choreography_scripts(
                 "wholeScreenColorEvents": sorted(
                     whole_screen_color_events, key=lambda event: event["time"]
                 ),
+                "wholeScreenColorLayerEvents": sorted(
+                    whole_screen_color_layer_events, key=lambda event: event["time"]
+                ),
+                "bodyColorEvents": body_color_events(body_color_rows, stage_position_map),
+                "imageColorEvents": image_color_events(image_color_rows),
                 "characterLightEvents": sorted(
                     character_light_events, key=lambda event: event["time"]
                 ),
@@ -995,7 +994,7 @@ def export_choreography(
 
     choreography_relative = Path("choreography") / "index.json"
     choreography = {
-        "schemaVersion": 11,
+        "schemaVersion": 16,
         "bodyTypes": body_types,
         "stats": {
             "songs": len(songs),
@@ -1016,6 +1015,11 @@ def export_choreography(
             "wholeScreenColorEvents": sum(
                 len(song["wholeScreenColorEvents"]) for song in songs
             ),
+            "wholeScreenColorLayerEvents": sum(
+                len(song["wholeScreenColorLayerEvents"]) for song in songs
+            ),
+            "bodyColorEvents": sum(len(song["bodyColorEvents"]) for song in songs),
+            "imageColorEvents": sum(len(song["imageColorEvents"]) for song in songs),
             "characterLightEvents": sum(
                 len(song["characterLightEvents"]) for song in songs
             ),

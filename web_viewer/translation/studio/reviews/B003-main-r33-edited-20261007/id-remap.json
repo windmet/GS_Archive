@@ -1,0 +1,21 @@
+{
+  "schema": "GS-STUDIO-ID-REMAP-V1",
+  "batch_id": "B003-main",
+  "date": "2026-10-07",
+  "reason": "Model wrote T000100 as T001000 and continued; every ID from T001000 to T001891 is offset by +900. Text unchanged.",
+  "rule": "T00xxxx (>= T001000) → minus 900",
+  "remapped_rows": 892,
+  "original_sha256": "sha256:2d4626c51ab4c63f44b0f5157235050aeb6174c2c31394bd8f47ca7790e77eb7",
+  "output_sha256": "sha256:3ab2301404638e9fa9b139d49698dc464276fdaf84fd5da8f9104367a3b86520",
+  "evidence": {
+    "rows": 991,
+    "one_to_one_cover": true,
+    "slot_and_emoji_match": "991/991",
+    "feature_agreement": {
+      "offset_899": "0/50",
+      "offset_900": "47/50",
+      "offset_901": "0/51"
+    },
+    "chapter_titles": "第2–7話 all land on 第N话"
+  }
+}

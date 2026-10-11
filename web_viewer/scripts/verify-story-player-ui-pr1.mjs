@@ -33,14 +33,15 @@ const [
 
 assert.match(storyViewer, /<PlayerTopBar[\s\S]*<PlayerControlDock/, 'StoryViewer must delegate shell presentation')
 assert.doesNotMatch(storyViewer, /\{\{\s*currentStep\.type\s*\}\}/, 'production UI must not expose the raw step type')
-assert.doesNotMatch(storyViewer, /:episode-label=/, 'top bar must not claim an unaudited episode label')
+assert.match(storyViewer, /:episode-label="positionLabel"/, 'top bar episode label must come from the audited positionLabel prop')
+assert.doesNotMatch(storyViewer, /:episode-label="(?!positionLabel")/, 'top bar must not derive an episode label inside StoryViewer')
 assert.doesNotMatch(storyNavigation, /currentEpisodeLabel|`EP\$\{/, 'navigation must preserve boundaries without fabricating EP labels')
 assert.match(storyViewer, /:debug-controls="RUNTIME_DEBUG"/, 'Spine debug controls must require runtimeDebug=1')
 assert.match(spineStage, /debugControls:\s*\{\s*type:\s*Boolean,\s*default:\s*false\s*\}/, 'Spine debug controls must default off')
 
 assert.match(advUi, /bottom:\s*var\(--player-dialogue-bottom\)/, 'ADV must use the shared dialogue safe area')
 assert.match(advUi, /max-height:\s*34vh/, 'desktop ADV must retain a bounded adaptive height')
-assert.match(advUi, /@media \(max-width:\s*699px\)/, 'ADV must include the mobile layout contract')
+assert.match(advUi, /@media \(max-width:\s*760px\)/, 'ADV must include the mobile layout contract')
 
 assert.match(iconButton, /:aria-pressed="toggle \? active : undefined"/, 'toggle controls must expose pressed state')
 assert.match(controlDock, /toggle @click="\$emit\('auto'\)"/, 'AUTO must opt into toggle semantics')

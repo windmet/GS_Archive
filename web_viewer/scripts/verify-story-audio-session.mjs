@@ -611,7 +611,7 @@ assert.equal(useArchiveNavigationState().view.value, '__boot__', 'startup must n
 // Route-specific loading is verified by verify-archive-startup-route. The
 // audio safety boundary is the non-audible __boot__ view until restoration,
 // not a global loading overlay (bootstrap routes deliberately avoid it).
-assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio \}\)/)
+assert.match(homeSource, /new StoryAudioSession\(\{ disabled: props\.noAudio, masterVolume: homeAudioPreferences\.master, busVolumes: homeAudioPreferences \}\)/)
 assert.match(homeSource, /audioSession: homeAudioSession/)
 assert.doesNotMatch(voicePlayerSource, /new \(window\.AudioContext/)
 assert.doesNotMatch(audioManagerSource, /new \(window\.AudioContext/)

@@ -78,7 +78,7 @@ const displayMessage = computed(() => props.readiness?.status === 'waiting' ? 'æ
   padding: 2px;
   overflow: auto;
   overscroll-behavior: contain;
-  font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--gs-font-body);
 }
 .loading-details { display: grid; gap: 5px; min-width: 0; }
 .load-count { margin: 0; color: var(--load-copy); font-size: 0.8125rem; line-height: 1.65; overflow-wrap: anywhere; }

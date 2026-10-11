@@ -25,3 +25,16 @@ test('[local-corpus] Resource status projection preserves displayed source field
   assert.ok(!Object.hasOwn(record.view.manifest, 'unit_event_relations'))
   assert.ok(!Object.hasOwn(record.view.uiAssets, 'entries'))
 })
+
+test('[local-corpus] card gasha relations carry their gasha banner', async () => {
+  const viewer = fileURLToPath(new URL('../..', import.meta.url))
+  const { product } = await readCheckout(viewer, { dataRevision: 'test', mediaEpoch: 'test' })
+  const gashaIndex = JSON.parse(await fs.readFile(new URL('../../public/data/masterdata/gasha_index.json', import.meta.url), 'utf8'))
+  const banners = new Map(gashaIndex.gashas.map(gasha => [String(gasha.id), gasha.banner_url]))
+  const relations = Object.values(product.cardContext).map(context => context.gashaRelation).filter(Boolean)
+  assert.equal(relations.length, Object.keys(gashaIndex.relations_by_card).length)
+  for (const relation of relations) {
+    assert.equal(relation.banner_url, banners.get(String(relation.announcement_id)), `${relation.card_resource_id}: the related gasha's own banner`)
+    assert.match(relation.banner_url, /^\/assets\/gasha\//)
+  }
+})

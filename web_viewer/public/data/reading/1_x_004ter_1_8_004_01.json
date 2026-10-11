@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_004ter_1_8_004_01",
-  "logical_id": "story-collection:1_x_004ter_1_8_004_01",
+  "logical_id": "story:1_x_004ter_1_8_004_01",
   "scenario_id": "1_x_004ter_1_8_004_01",
   "text_catalog_id": "1_x_004ter_1_8_004_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_004ter_1_8_004_01.json",
-    "sha256": "sha256:d3491d6d6509620d7d362247f5830bf2a8f41e45a4a15395e3d3171532cfe8ff",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:e57d9a95158361d3e519558d3d175493d9909b57cc81ed3c75aaa2c7eceda53d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_004ter_1_8_004_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "なあ、●●●●プロデューサー。\nちょっといいか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_004ter_1_8_004_01:1_8_004_01:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_004ter_1_8_004_01",
+          "part_id": "1_8_004_01",
+          "file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:95ce757f0354d0efa9a2de709676d284b73f54fa91b9c2845744aaaffbfebd35"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -47,30 +61,39 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_004ter_1_8_004_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_004_01",
+        "source_file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日は●●●●プロデューサーの誕生日だよな。\n誕生日おめでとう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_004ter_1_8_004_01:1_8_004_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_004ter_1_8_004_01",
+          "part_id": "1_8_004_01",
+          "file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9850f08a0165366bfc330d8feb5e32697a9b5185e027cac4b0f97488723d7dd7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -87,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -96,17 +118,28 @@
         "row_id": "1_x_004ter_1_8_004_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_004_01",
+        "source_file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます、輝さん！\n覚えていてくださって、嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_004ter_1_8_004_01:1_8_004_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_004ter_1_8_004_01",
+          "part_id": "1_8_004_01",
+          "file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bda97ced4acb215872cc02b13d9cb296fed1c06edb061788e7daaffcf4bdb940"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -133,21 +166,32 @@
         "row_id": "1_x_004ter_1_8_004_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_004_01",
+        "source_file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "どういたしまして。\nへへっ、俺もあんたの誕生日が祝えて嬉しいぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_004ter_1_8_004_01:1_8_004_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_004ter_1_8_004_01",
+          "part_id": "1_8_004_01",
+          "file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:65da25a042dd0c6efdc2b6483922477d6a59acfba76926f7164e41262c7f1517"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -163,30 +207,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_004ter_1_8_004_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_004_01",
+        "source_file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日はあんたが生まれた大切な日だ。\nいい1日にしようぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_004ter_1_8_004_01:1_8_004_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_004ter_1_8_004_01",
+          "part_id": "1_8_004_01",
+          "file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b00bdfea130055bf1b5254ac55405be4e7462b7c2fb0ffa91a452e735c3ec97a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_004ter_1_8_004_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_004_01",
+        "source_file": "assets/resources/scenariodata/1_x_004ter/scenario_1_8_004_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "なあ、●●●●プロデューサー。",
     "episode_label": null

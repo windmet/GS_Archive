@@ -1,4 +1,18 @@
 export default Object.freeze({
+  'player.picker.select': '選択',
+  'player.picker.loading': '選択したパートを準備しています…',
+  'player.picker.current': '再生中',
+  'player.picker.missing': '未収録',
+  'player.picker.cancel': 'パートの読み込みをキャンセル',
+  'player.picker.failed': 'この話の一覧を読み込めませんでした',
+
+  'reader.chapter': '一話を読む',
+  'reader.playSegment': 'このパートを再生',
+  'player.picker.title': 'この話のパート一覧',
+  'player.picker.restart': 'このパートを最初から再生',
+  'player.picker.back': '再生設定に戻る',
+
+  'player.settings.paused': 'ストーリーを一時停止中',
   'player.voice.backend': '音声の再生方式',
   'player.voice.auto': '自動',
   'player.voice.compat': '互換モードで再生',

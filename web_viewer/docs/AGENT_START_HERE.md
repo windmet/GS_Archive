@@ -19,6 +19,10 @@
 - `notes/03_audit/GS_ARCHIVE_PRODUCT_HISTORY_RECONCILIATION_20260730.md`；
 - `notes/04_refactor/GS_ARCHIVE_POST_MERGE_NEXT_STEPS_20260729.md`。
 
+任务涉及界面、版式、手机适配或设计系统时，先读
+`docs/GS_ARCHIVE_UI_HANDOFF_20261005.md`（当前 UI 主线、顺序与坑）和
+`docs/GS_UI_CONSTITUTION.md` 的「视觉语言」一节。
+
 只有任务涉及 Pixi/Spine 舞台时再读 `docs/SMOKE_CASES.md`、
 `docs/SMOKE_EXPECTATIONS.md` 和 `docs/DO_NOT_REOPEN.md`。前两者是人工兼容
 样例，不是自动化 Story Runtime 门禁。
@@ -44,7 +48,10 @@ Gate。按以下顺序执行：
 2. P2-B preflight 已提供跨播放器卸载的 v2 recorder、Story lifecycle/timer
    指标、quiet endpoint 和 analyzer；
 3. 下一步执行 P2-B 2–4 小时 Runtime 长稳；P2-B 仍是 `NOT EXECUTED`；
-4. P2-B 完成前不选择下一个 strict-v2 collection。
+4. P2-B 完成前不选择下一个会改变 Runtime 语义的 strict-v2 collection；
+   只新增 RAW 可证的文本 `text_ref`、Runtime stripped deep-equal 且 Reader
+   parity 的 identity-only backfill 走独立门禁，见
+   [`GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md`](GS_STORY_TEXT_IDENTITY_BACKFILL_20260929.md)。
 
 不得因为长稳降为 P2 就写成已经通过，也不得在普通门户批次中顺手执行或伪造
 长稳结论。

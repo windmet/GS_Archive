@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_036rui_1_8_036_01",
-  "logical_id": "story-collection:1_x_036rui_1_8_036_01",
+  "logical_id": "story:1_x_036rui_1_8_036_01",
   "scenario_id": "1_x_036rui_1_8_036_01",
   "text_catalog_id": "1_x_036rui_1_8_036_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_036rui_1_8_036_01.json",
-    "sha256": "sha256:dd7303ca252c2da8e174f451041689c934ea37462a525f790a8255ba960ee8bd",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a663b1ca820505a8788e6427d6a45a18c25cd8d81ce3e7319659c57edc1a9683",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_036rui_1_8_036_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーちゃん\nhappy birthday<emoji>image_talk_emoji_40</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000009:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_036rui_1_8_036_01",
+          "part_id": "1_8_036_01",
+          "file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+          "command_index": 9,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e42432c16f54e36498a9b4b2f1c4f1a877badc14d2dde0ddf8ac35fb3068ede"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_036rui_1_8_036_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_036_01",
+        "source_file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "talk"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日になった瞬間に\nお祝いしたかったんだ<emoji>image_talk_emoji_24</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000011:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_036rui_1_8_036_01",
+          "part_id": "1_8_036_01",
+          "file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+          "command_index": 11,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:845e4a8d411b5ec41cdf4f2e1dccd130a0376d1120dbf38391b663a659f08a67"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_036rui_1_8_036_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_036_01",
+        "source_file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "talk"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺のsurpriseは\n成功だったかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000013:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_036rui_1_8_036_01",
+          "part_id": "1_8_036_01",
+          "file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+          "command_index": 13,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:384fcb2ca98eafbdace683c890734088e6d01df6d09407f2153a32bada7bd2bf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_036rui_1_8_036_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_036_01",
+        "source_file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "talk"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "びっくりしました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_036rui_1_8_036_01",
+          "part_id": "1_8_036_01",
+          "file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:baa3224755e11fc72daa17f321a67fc356fcc983a1290878ec26102ea8cb9caa"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "1_x_036rui_1_8_036_01:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_036_01",
+        "source_file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000015",
+        "option_id": "choice-option:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000015:000",
         "source_label": "talk_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "事務所でもお祝いするから、\n楽しみにしててね♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000018:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_036rui_1_8_036_01",
+          "part_id": "1_8_036_01",
+          "file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+          "command_index": 18,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:808e3650ec0853ff9830a7b8167a8c49b81f48c887fef347266758424696490f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "036rui",
         "sourceName": "舞田 類"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_036rui_1_8_036_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_036_01",
+        "source_file": "assets/resources/scenariodata/1_x_036rui/scenario_1_8_036_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "talk"
@@ -237,8 +287,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000015",
+          "option_id": "choice-option:v1:1_x_036rui_1_8_036_01:1_8_036_01:cmd-000015:000",
           "source_label": "talk_select1",
           "target_step_id": 8,
           "target_step_index": 7,
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーちゃん",
     "episode_label": null

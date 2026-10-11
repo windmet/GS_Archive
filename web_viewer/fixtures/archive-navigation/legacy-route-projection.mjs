@@ -1,6 +1,6 @@
 // Frozen from 59c906e for migration parity only; no product import.
 export function legacyProjection(state) {
-  const { view, returnViewAfterPlayer, storyCollectionParentView, songParentView, eventParentView, homeSelectedId, homeSelectedCue, homeSelectedCostume, currentCategoryId, currentCharacterId, currentGroup, currentArchiveUnitCode, currentUnit, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentStoryFile, currentMobileMode, currentMobileScenarioId, currentEventScope, currentStoryAvailability, currentStorySort, currentEpisodeId, currentCardId, currentSongId, currentSongScope, currentEventId, currentGashaId, currentGashaCategory, currentCardRarity, currentCardAssetState, currentCardRelationState, filterQuery, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentPreviewCue, storyDetailParentView } = state
+  const { view, returnViewAfterPlayer, storyCollectionParentView, songParentView, eventParentView, homeSelectedId, homeSelectedCue, homeSelectedCostume, currentCategoryId, currentCharacterId, currentGroup, currentArchiveUnitCode, currentUnit, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentStoryFile, currentMobileMode, currentMobileScenarioId, currentEventScope, currentStoryAvailability, currentStorySort, currentEpisodeId, currentCardId, currentSongId, currentSongScope, currentEventId, currentGashaId, currentGashaCategory, currentCardRarity, currentCardAttribute, currentCardAssetState, currentCardRelationState, filterQuery, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentPreviewCue, storyDetailParentView } = state
 function currentArchiveRoute() {
   const returnsToEvent = view.value === 'player' && returnViewAfterPlayer.value === 'event_detail'
   const returnsToStory = view.value === 'player' && returnViewAfterPlayer.value === 'story_detail'
@@ -47,6 +47,7 @@ function currentArchiveRoute() {
     gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
     gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
     rarity: currentCardRarity.value,
+    cardAttribute: currentCardAttribute.value, // added after the 59c906e freeze; mirrors useArchiveNavigationState
     assetState: currentCardAssetState.value,
     relationState: currentCardRelationState.value,
     query: filterQuery.value,

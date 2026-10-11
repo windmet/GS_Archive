@@ -14,6 +14,7 @@ import { createHash } from 'node:crypto'
 const PROMOTABLE_KINDS = new Set([
   'birthday_visual',
   'event_story_visual',
+  'story_visual',
 ])
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 const MAX_BATCH_SIZE = 5
@@ -197,6 +198,7 @@ function stableTargetFor(candidate) {
       prefix: 'image_chara_event_story_visual_',
       directory: 'events/characters',
     },
+    story_visual: { prefix: 'image_chara_story_visual_', directory: 'stories/characters' },
   }[candidate.kind]
   if (!target) {
     throw new Error(`${candidate.kind} has no approved stable target`)
@@ -276,6 +278,13 @@ function validateStoryMasterEvidence(candidate) {
     masterEvidence.references.length !== masterEvidence.reference_count
   ) {
     throw new Error(`${candidate.kind} master-data ownership evidence is incomplete`)
+  }
+  if (candidate.kind === 'story_visual') {
+    if (masterEvidence.domain !== 'idol_story' || masterEvidence.references.some(row =>
+      !row.compiled_file?.startsWith(`1_2_${candidate.idol_code}_`) || row.compiled_exists !== true || !row.characters?.includes(candidate.idol_code))) {
+      throw new Error('Personal story master-data ownership evidence is incomplete')
+    }
+    return masterEvidence
   }
   if (candidate.kind === 'birthday_visual') {
     if (

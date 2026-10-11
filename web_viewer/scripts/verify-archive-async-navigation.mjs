@@ -1,5 +1,7 @@
+import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
 import { ownsArchiveSource } from '../src/core/archiveRoute.js'
+import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
@@ -9,10 +11,28 @@ import { buildCardVoicePreviewScenario, findCardVoiceCue } from '../src/data/car
 import { useEpisodeQueue } from '../src/core/useEpisodeQueue.js'
 import { prepareScenario } from '../src/data/prepareScenario.js'
 import { useStoryPlaybackController } from '../src/core/useStoryPlaybackController.js'
+import { useStageNavigation } from '../src/composables/useStageNavigation.js'
+import { parse as parseSfc } from '@vue/compiler-sfc'
+import { parse as parseJavascript } from '@babel/parser'
+import { ref } from 'vue'
+import { resolveHomeSelection } from '../src/core/HomeSelection.js'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
+const appScript = parseSfc(app).descriptor.scriptSetup.content
+const appBody = parseJavascript(appScript, { sourceType: 'module' }).program.body
+const productionFunction = name => {
+  const node = appBody.find(node => node.type === 'FunctionDeclaration' && node.id.name === name)
+  assert.ok(node, `Missing production function: ${name}`)
+  return appScript.slice(node.start, node.end)
+}
+const stageBinding = appBody
+  .filter(node => node.type === 'VariableDeclaration').flatMap(node => node.declarations)
+  .find(node => node.init?.type === 'CallExpression' && node.init.callee.name === 'useStageNavigation')
+assert.ok(stageBinding, 'App binds the stage navigation composable')
 const functionSource = (start, end) => app.slice(app.indexOf(start), app.indexOf(end, app.indexOf(start)))
-const scenarioSource = functionSource('async function loadScenario(', 'async function loadHomeIndex(')
+const scenarioSource = productionFunction('loadScenario')
 const flush = async (predicate = null) => {
   if (!predicate) { for (let i = 0; i < 20; i++) await Promise.resolve(); return }
   const deadline = Date.now() + 3000
@@ -29,29 +49,42 @@ function deferred() {
 function setup() {
   const requests = [], writes = [], errors = []
   const state = useArchiveNavigationState()
-  const loading = { value: false }
+  const loading = ref(false)
   const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false } })
+  const storyIndex = { count: 0, pages: [], landing: { main: 'landing:main', extra: 'landing:extra', birthday: 'landing:birthday' } }
+  const storyTransport = { index: async () => storyIndex, idolDetail: async () => { throw Error('Unexpected idol story hydration') } }
   const context = vm.createContext({
-    isDirectScenarioEntry, playerReturnRoute,
+    isDirectScenarioEntry, playerReturnRoute, resolveHomeSelection,
     prepareArchivePage: (_view, data) => data,
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     EXTERNAL_STORY_RESOURCES_ENABLED: false,
     buildCardVoicePreviewScenario, findCardVoiceCue, idolDisplayName: id => `speaker:${id}`,
+    loadArchiveNames: () => Promise.resolve(), archiveNamedTranslation: () => '',
     cardReadModelDetail: { value: null },
     archiveRouteReady: true,
     archiveHomeIdols: { value: [] }, idolEpisodeData: { value: {} },
-    archiveBootstrap: { idols: [{ id: '038tak' }] },
+    archiveBootstrap: { idols: [{ id: '038tak' }], domains: { stories: 'story-index' }, counts: { catalog_story_entries: 0 } },
+    userPreferences: {value:{portalDefaultScope:'all'}},
     mobileArchiveData: { value: {} }, idolUnitData: { value: {} },
-    idolStoryReadModelDetail: { value: null }, loadIdolStoryDetail: async () => ({ id: '038tak', view: { page: { idol_code: '038tak' } } }),
-    ensureIdolCommunicationData: async () => {},
-    loadStoryReadModelLanding: async () => {},
-    loadLegacyAliasRoute: async () => null, publishLegacyAliasRoute: () => {},
+    idolStoryReadModelDetail: ref(null),
+    idolStoryReadModelCatalog: ref([{ id: '038tak', detail: { url: 'idol:038tak' } }]),
+    readModelClient: { load: async (descriptor, options) => {
+      if (descriptor?.url === 'idol:038tak') {
+        const detail = await storyTransport.idolDetail(); options.validate(detail); return detail
+      }
+      if (descriptor === 'story-index') return storyTransport.index()
+      assert.ok(['landing:main', 'landing:extra', 'landing:birthday'].includes(descriptor))
+      return { value: { collections: [] } }
+    } },
     resolveRouteGroup: () => null, resolveRouteUnit: () => null, resolveRouteEpisode: () => null,
-    currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] }, currentIdolStoryPage: { value: null },
+    currentStoryCollection: { value: null }, currentEventEpisodes: { value: [] },
     spineViewerLoader: async () => {}, chibiStageViewerLoader: async () => {},
-    captureDetailSource: () => {}, ownsArchiveSource,
+    captureDetailSource: () => {}, ownsArchiveSource, normalizeEventBrowseState,
     currentScenario: { value: null }, currentScenarioInstance: { value: 0 },
     stageHandoff: { value: null },
+    songReadModelDetail: { value: null },
+    loadSongDetail: async id => ({ id }), ensureSongCatalog: async () => {},
+    restoreDetailSource: fallback => fallback(), goHome: () => {},
     episodeQueue: useEpisodeQueue(),
     storyViewerLoader: async () => {},
     Preloader: { preloadScenario: async () => {} },
@@ -76,16 +109,24 @@ function setup() {
     functionSource('function syncArchiveRoute(', 'async function restoreVoicePreview('),
     functionSource('async function applyArchiveRoute(', 'function goHome('),
     functionSource('async function restoreVoicePreview(', 'async function applyArchiveRoute('),
-    functionSource('function playbackEpisodes(', 'async function openEventCard('),
-    functionSource('async function openStoryCatalog(', 'function openExternalStoryResources('),
-    functionSource('async function openSpineLab(', 'async function openChibiStage('),
-    functionSource('async function openVoicePreview(', 'async function openGroup('),
+    productionFunction('translatedVoicePreview'),
+    productionFunction('openVoicePreview'),
     functionSource('function onPlayerReady(', 'async function loadScenario('),
     scenarioSource,
-    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openStoryCatalog, openSpineLab, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
+    '({ load: loadScenario, restore: applyArchiveRoute, commit: commitView, select: commitArchiveSelection, onPlayerReady, openVoicePreview, sync: syncArchiveRoute, filter: updateArchiveFilter })',
   ].join('\n'), context)
+  bindLegacyAliasNavigation(app, context).stop()
+  bindStoryArchiveNavigation(app, context).stop()
+  bindStoryNavigation(app, context).stop()
+  production.openStoryCatalog = context.openStoryCatalog
+  // Keep transport replaceable after setup while exercising App's real dependency wiring.
+  const stageContext = { ...context, useStageNavigation,
+    spineViewerLoader: (...args) => context.spineViewerLoader(...args),
+    chibiStageViewerLoader: (...args) => context.chibiStageViewerLoader(...args),
+  }
+  Object.assign(production, vm.runInNewContext(appScript.slice(stageBinding.init.start, stageBinding.init.end), stageContext))
   const respond = (index, name) => requests[index].resolve(new Response(JSON.stringify({ name, steps: [] })))
-  return { context, state, ...production, requests, respond, writes, errors }
+  return { context, state, ...production, requests, respond, writes, errors, storyTransport, storyIndex }
 }
 {
   const t = setup()
@@ -135,12 +176,13 @@ function setup() {
 // A raw player deep link saves return identity without blocking on owner payloads.
 {
   const t = setup(), data = deferred()
-  t.context.loadIdolStoryDetail = () => data.promise
+  let parentLoads = 0
+  t.storyTransport.idolDetail = () => { parentLoads++; return data.promise }
   const pending = t.restore({ view: 'player', scenario: 'birthday-b.json', returnView: 'idol_story_archive', idol: '038tak' })
   await flush()
   assert.equal(t.requests.length, 1, 'scenario restoration must precede owner hydration')
-  t.context.currentIdolStoryPage.value = { sections: [{ episodes: [{ file: 'birthday-b.json' }] }] }
-  data.resolve({ id: '038tak', view: { page: t.context.currentIdolStoryPage.value } })
+  assert.equal(parentLoads, 0, 'raw player entry must not request its parent leaf')
+  data.resolve({ id: '038tak', view: { page: { idol_code: '038tak', sections: [] }, readingEntries: [] } })
   await flush(() => t.requests.length === 1)
   t.respond(0, 'birthday'); await pending
   assert.equal(t.state.playerEntryRoute.value.idol, '038tak')
@@ -151,10 +193,10 @@ function setup() {
 // Older history restore cannot write selections after its data dependency resolves.
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.restore({ view: 'story_catalog', query: 'old' })
   await t.restore({ view: 'home', query: 'current' })
-  data.resolve(); await old
+  data.resolve(t.storyIndex); await old
   assert.equal(t.state.view.value, 'home')
   assert.equal(t.state.filterQuery.value, 'current')
   assert.equal(t.writes.length, 0)
@@ -163,10 +205,10 @@ function setup() {
 // release the new restore's history-write suppression.
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.restore({ view: 'story_catalog' })
   const current = t.restore({ view: 'player', scenario: 'current.json', startStep: 3, endStep: 9, returnView: 'story_collection', storyType: 'main', storySection: '101' })
-  data.resolve(); await old
+  data.resolve(t.storyIndex); await old
   assert.equal(t.context.navigation.isRestoring(), true)
   t.sync({ replace: true }); assert.equal(t.writes.length, 0)
   await flush(() => t.requests.length === 1)
@@ -194,9 +236,9 @@ function setup() {
 }
 {
   const t = setup(), data = deferred()
-  t.context.ensureIdolCommunicationData = () => data.promise
+  t.storyTransport.index = () => data.promise
   const old = t.openStoryCatalog()
-  t.commit('home'); data.resolve(); await old
+  t.commit('home'); data.resolve(t.storyIndex); await old
   assert.equal(t.state.view.value, 'home')
   assert.equal(t.writes.length, 1)
 }
@@ -244,12 +286,12 @@ const previewCard = (id, cue) => ({ resource_id: `${id}_card`, character_id: id,
 {
   const t = setup(), detail = deferred()
   t.state.view.value = 'cards'
-  t.context.loadStoryReadModelLanding = () => detail.promise
+  t.storyTransport.index = () => detail.promise
   const pending = t.restore({ view: 'story_catalog', query: 'old route' })
   await flush()
   t.filter('filterQuery', 'new search')
   assert.equal(t.context.navigation.isPending(), false, 'explicit user filtering supersedes pending route restoration')
-  detail.resolve()
+  detail.resolve(t.storyIndex)
   await pending
   assert.equal(t.state.view.value, 'cards')
   assert.equal(t.state.filterQuery.value, 'new search')
@@ -402,4 +444,13 @@ for (const response of [
   assert.equal(t.state.view.value, 'portal')
   assert.equal(t.context.cardReadModelDetail.value, null, 'late voice owner must not publish after navigation')
 }
-console.log('Archive async navigation: preparation, races, filters, failures and card voice leaf restoration passed')
+{
+  const t = setup()
+  await t.restore({ view: 'event_catalog', query: 'Cafe', eventBrowse: { kind: 'tour', sort: 'oldest', page: 2 } })
+  assert.equal(t.state.view.value, 'event_catalog')
+  assert.equal(t.state.filterQuery.value, 'Cafe')
+  assert.deepEqual(t.state.currentEventBrowseState.value, { kind: 'tour', sort: 'oldest', page: 2 }, 'route hydration owns event kind/sort/page together')
+  await t.restore({ view: 'event_catalog' })
+  assert.deepEqual(t.state.currentEventBrowseState.value, { kind: '', sort: 'newest', page: 0 }, 'legacy event URL starts from defaults')
+}
+console.log('Archive async navigation: preparation, races, filters, failures, card voice leaf and independent event catalog browse restoration passed')

@@ -1,0 +1,44 @@
+import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
+
+// Display lookup only. A public, explicitly written name is sufficient to
+// translate its label, but must never create actor identity or reveal ???.
+const compact = value => String(value || '').normalize('NFKC').replace(/\s+/gu, '')
+const labels = new Map()
+for (const [entityId, sourceName] of Object.entries(IDOL_ID_TO_NAME)) {
+  const entityType = /^0\d{2}[a-z]{3}$/u.test(entityId) ? 'idol'
+    : ['101ken', '102sha', '241sub'].includes(entityId) ? 'npc' : null
+  if (entityType) labels.set(compact(sourceName), Object.freeze({ entityType, entityId, sourceName }))
+}
+// Published masterdata spells out the same explicitly visible Aslan name.
+labels.set(compact('アスラン＝ベルゼビュートⅡ世'), labels.get(compact(IDOL_ID_TO_NAME['029ass'])))
+
+export function speakerDisplayLookup(speaker) {
+  if (!['named', 'idol', 'npc'].includes(speaker?.kind)) return null
+  const source = speaker.sourceName ?? speaker.source_name ?? speaker.source
+  const target = labels.get(compact(source))
+  if (!target) return null
+  const id = speaker.entityId ?? speaker.entity_id
+  const type = speaker.entityType ?? speaker.entity_type
+  if (id && id !== target.entityId) return null
+  // Some legacy NPC labels were typed idol. Only the three explicit public
+  // NPC codes above may use this display exception, with no identity mutation.
+  if (type && type !== target.entityType && !(type === 'idol' && target.entityType === 'npc')) return null
+  return target
+}
+
+// Nameplates without an entity (staff, relatives, roles, variants such as 圭（テレビの音声）) are
+// translated as text from a label dictionary. A label never becomes an identity, so ??? and
+// producer plates stay out. The dictionary may scope a label to a story prefix where the same
+// word means something else (監督 is the football coach in 1_1_005, a director elsewhere).
+export function speakerLabelKey(speaker) {
+  if (!['named', 'idol', 'npc'].includes(speaker?.kind) || speakerDisplayLookup(speaker)) return ''
+  return compact(speaker.sourceName ?? speaker.source_name ?? speaker.source)
+}
+
+/** Dictionary ids to try for one label, most specific story scope first. */
+export function speakerLabelCandidates(key, catalogId = '') {
+  if (!key) return []
+  const parts = String(catalogId || '').split('_')
+  const scopes = parts.map((_, index) => parts.slice(0, parts.length - index).join('_')).filter(Boolean)
+  return [...scopes.map(scope => `${key}@${scope}`), key]
+}

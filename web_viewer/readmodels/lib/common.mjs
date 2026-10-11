@@ -5,6 +5,9 @@ import { gzipSync } from 'node:zlib';
 
 export const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 export const entityKey = id => sha256(String(id)).slice(0, 32);
+// Sharded domains: an entity lives in the shard named by the first two hex digits of its key
+// (256 shards). The client derives the same name from the id alone (entityShardDescriptor).
+export const shardKey = id => entityKey(id).slice(0, 2);
 export const wire = value => JSON.parse(JSON.stringify(value)); // NaN -> null: explicit wire contract.
 export function stable(value) {
   if (Array.isArray(value)) return value.map(stable);

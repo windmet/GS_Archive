@@ -21,7 +21,8 @@ export function createArchiveNavigationCoordinator({ onFinish = () => {} } = {})
     revision++
     active = null
     const previous = activeController
-    activeController = null
+    // Plain directory navigations also own cancellable reads, even without a run().
+    activeController = disposed ? null : new AbortController()
     previous?.abort()
   }
   function finish(intent) {
@@ -44,6 +45,7 @@ export function createArchiveNavigationCoordinator({ onFinish = () => {} } = {})
     run,
     isDisposed: () => disposed,
     getRevision: () => revision,
+    getLoadOptions: () => ({signal:activeController?.signal,priority:'foreground'}),
     isPending: () => !!active?.pending,
     isRestoring: () => !!(active?.pending && active.restoring),
     invalidate,

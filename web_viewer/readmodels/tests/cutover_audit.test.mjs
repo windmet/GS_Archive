@@ -9,7 +9,7 @@ const ledger = JSON.parse(await fs.readFile(new URL('../contracts/routes.json', 
 const policy = JSON.parse(await fs.readFile(new URL('../contracts/startup-policy.json', import.meta.url), 'utf8'));
 test('Progress ledger covers actual public routes without promoting local samples', () => {
   const result = summarizeRoutes(ledger, VALID_VIEWS);
-  assert.equal(result.counts.routes, 32);
+  assert.equal(result.counts.routes, VALID_VIEWS.size);
   assert.ok(result.counts.entryMigrated > 0);
   assert.equal(result.allPublicRoutesMigrated, false);
   assert.equal(result.deviceReviewAccepted, false);

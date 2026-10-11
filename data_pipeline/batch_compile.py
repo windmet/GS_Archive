@@ -242,6 +242,7 @@ def split_compiled_episodes():
                     if target is None:
                         continue
                     target = int(target)
+                    if option.get('target_kind') == 'end': continue
                     if target < first_step_id or target > last_step_id:
                         raise ValueError(f"Cross-episode choice in {fn}: {source_id} -> step {target}")
                     option["step_id"] = target - first_step_id + 1
@@ -276,6 +277,8 @@ def split_compiled_episodes():
                     "end_step_index": end,
                 },
             }
+            from sidem_scenario.control_flow import relocate_control_flow
+            relocate_control_flow(scenario, result, start, end)
             out_name = f"{source_id}.json"
             with open(os.path.join(EPISODE_OUTPUT_DIR, out_name), "w", encoding="utf-8") as f:
                 json.dump(result, f, ensure_ascii=False, indent=2)

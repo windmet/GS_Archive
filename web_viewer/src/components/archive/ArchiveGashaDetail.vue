@@ -1,40 +1,50 @@
 <template>
   <section v-if="gasha" class="gasha-detail" data-archive-scroll-container>
-    <div class="gasha-identity">
+    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'}">
       <div class="gasha-banner">
-        <img :src="gasha.banner_url" :alt="gasha.display_name" />
+        <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
+        <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
       </div>
       <div class="gasha-summary">
-        <div class="gasha-kicker">
-          <span>GASHA ARCHIVE</span>
-          <small class="curated">{{ categoryLabel(gasha.category) }}</small>
-          <small v-if="gasha.is_reprint" class="reprint">复刻</small>
-        </div>
-        <h2>{{ gasha.display_name }}</h2>
+        <h2>{{ gashaText(gasha.display_name) }}</h2>
+        <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
+        <p class="gasha-category">{{ categoryLabel(gasha.category) }}<template v-if="gasha.is_reprint"> · 复刻</template></p>
         <dl>
           <div><dt>开放</dt><dd>{{ formatDateTime(gasha.start_at) }}</dd></div>
           <div><dt>结束</dt><dd>{{ formatDateTime(gasha.end_at) }}</dd></div>
-          <div><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         </dl>
-        <a
-          v-if="gasha.name_source?.source_url"
-          :href="gasha.name_source.source_url"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <ExternalLink :size="15" />
-          {{ gasha.name_source.source_label || '名称核对来源' }}
-        </a>
+        <ArchiveSourceLink :url="gasha.name_source?.source_url" :label="gasha.name_source?.source_label || '名称核对来源'" />
       </div>
     </div>
 
-    <section class="detail-section">
+    <section v-if="gasha.tickets?.length" class="detail-section">
+      <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
+      <p v-if="gasha.ticket_link_ambiguous" class="gasha-note">这些券对应同名卡池，现有道具记录无法区分两次 STAGE 公告。</p>
+      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">道具名称证明了此招募记录；开放时间和卡片范围尚未收录。</p>
+      <ul class="ticket-list">
+        <li v-for="ticket in gasha.tickets" :key="ticket.id">
+          <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">
+            <span class="ticket-art" aria-hidden="true">
+              <img v-if="ticket.image?.url && !failedTickets.has(ticket.id)" :src="ticket.image.url" :width="ticket.image.width" :height="ticket.image.height" alt="" loading="lazy" decoding="async" @error="failedTickets=new Set([...failedTickets,ticket.id])" />
+              <Ticket v-else :size="24" />
+            </span>
+            <span class="ticket-copy">
+              <strong>{{ archiveText('item',ticket.source_name) }}</strong>
+              <small>{{ archiveText('item',ticket.source_description,'description') }}</small>
+            </span>
+            <ChevronRight class="ticket-chevron" :size="16" aria-hidden="true" />
+          </button>
+        </li>
+      </ul>
+    </section>
+
+    <section v-if="gasha.source_type!=='item-masterdata'" class="detail-section">
       <div class="section-heading">
         <div>
           <h3>关联卡片</h3>
           <p>{{ relationDescription }}</p>
         </div>
-        <span class="derived-badge">{{ relationBadge }} · {{ pickupCards.length }}</span>
+        <span class="relation-count">{{ pickupCards.length }} 张 · {{ relationBadge }}</span>
       </div>
       <ArchiveRelationList
         layout="grid"
@@ -44,39 +54,45 @@
     </section>
 
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
-      <section class="detail-section evidence-section">
-        <div class="section-heading"><h3>资料来源</h3></div>
-        <dl class="evidence-grid">
-          <div><dt>公告</dt><dd>Raw · client_master_data table 173</dd></div>
-          <div><dt>卡片关系</dt><dd>{{ relationEvidence }}</dd></div>
-          <div><dt>名称</dt><dd>Curated · {{ gasha.name_source?.source_label || 'wiki / banner 核对' }}</dd></div>
-          <div><dt>逻辑卡池</dt><dd>{{ gasha.logical_id }}</dd></div>
-          <div><dt>服务实例</dt><dd>Missing · GashaListReply 未留存</dd></div>
-        </dl>
-      </section>
+      <dl class="evidence-grid">
+        <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
+        <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'游戏内主数据' }}</dd></div>
+        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
+        <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
+        <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>{{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
+        <div><dt>服务端卡池信息</dt><dd>关服后未能保存</dd></div>
+      </dl>
     </ArchiveTechnicalDetails>
   </section>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { ExternalLink } from '@lucide/vue'
+import { computed, shallowRef, watch } from 'vue'
+import { ChevronRight, Ticket } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
+import {gashaText} from './useArchiveGashaText.js'
+import {archiveText} from './useArchiveCollectionText.js'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
 
 const props = defineProps({
   gasha: { type: Object, default: null },
   idolName: { type: Function, required: true },
 })
-const emit = defineEmits(['open-card'])
+const emit = defineEmits(['open-card','open-item'])
 
 const CATEGORY_LABELS = {
   standard_pickup: '通常招募',
   growing_fes: 'GROWING FES',
   stage_step_up: 'STAGE 招募',
   full_roster_series: '全员系列',
+  ticket_named: '道具补录',
 }
+
+const failedTickets = shallowRef(new Set())
+watch(() => props.gasha?.id, () => { failedTickets.value = new Set() })
 
 const pickupCards = computed(() => {
   const direct = props.gasha?.derived_pickup_cards || []
@@ -99,22 +115,20 @@ const relationDescription = computed(() => {
     : '根据突破素材与开放时间推定的关联，尚未确认实际招募内容。'
 })
 const relationEvidence = computed(() => {
-  if (isReprintRelation.value) return `Curated · 外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
+  if (isReprintRelation.value) return `外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
   return usesRelatedCards.value
-    ? `Grouped · 同逻辑卡池主公告 ${props.gasha?.primary_code || ''}`
-    : 'Derived · 精确时间与突破道具'
+    ? `同一卡池主公告 ${props.gasha?.primary_code || ''} 收录`
+    : '按开放时间与突破道具推定'
 })
 const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   id: `card-${card.card_resource_id}`,
   kind: 'card',
-  label: usesRelatedCards.value ? relationBadge.value : '卡池 Pickup',
-  title: card.card_title || '卡名待确认',
+  label: usesRelatedCards.value ? relationBadge.value : '',
+  title: cardText('card',card.card_title,'title') || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
   evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
   evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
   evidence: relationEvidence.value,
-  statusLabel: '已建档',
-  statusTone: 'available',
   resource: card.card_resource_id,
   imageUrl: getCardIconUrl(card.card_resource_id, true),
   imageAlt: card.card_title || '卡名待确认',
@@ -140,37 +154,74 @@ function formatDateTime(timestamp) {
 </script>
 
 <style scoped>
-.gasha-detail { height: 100%; overflow-y: auto; background: #f7f9fa; }
-.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: 28px; padding: 26px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #dfe5e8; background: #fff; }
-.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid #e2e5e7; border-radius: 6px; background: #eef1f2; }
+.gasha-detail { height: 100%; overflow-y: auto; background: var(--gs-paper); container-type: inline-size; font-family: var(--gs-font-directory); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); }
+.gasha-identity { display: grid; grid-template-columns: minmax(420px, 1.45fr) minmax(280px, 0.55fr); gap: var(--gs-space-7); padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
+.gasha-banner { align-self: start; overflow: hidden; aspect-ratio: 940 / 510; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-media); background: var(--gs-line); }
 .gasha-banner img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.gasha-summary { min-width: 0; padding-top: 4px; }
-.gasha-kicker { display: flex; align-items: center; gap: 8px; color: #1c8880; font-size: 0.63rem; font-weight: 800; }
-.gasha-kicker small { padding: 2px 5px; border-radius: 3px; background: #eef1f3; color: #7b858b; font-size: 0.55rem; font-weight: 600; }
-.gasha-kicker small.curated { background: #e8f7f5; color: #177b74; }
-.gasha-kicker small.reprint { background: #fff0db; color: #965f13; }
-.gasha-summary h2 { margin: 10px 0 20px; font-size: 1.18rem; line-height: 1.45; }
+.gasha-summary { min-width: 0; padding-top: var(--gs-space-2); }
+.gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
+.gasha-original { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
+.gasha-note { color:var(--gs-color-muted);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
+.ticket-banner-label { display:grid;min-height:120px;place-items:center;color:var(--gs-ink-3); }
+.gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
+.ticket-only .gasha-banner { aspect-ratio:auto; }
+.ticket-only .ticket-banner-label { min-height:42px;margin:0;font-size:var(--gs-text-ui); }
+/* Tickets read like the item catalogue: icon well on paper, name, then what it draws. */
+.ticket-list { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:0 var(--gs-space-7);border-top:1px solid var(--gs-rule); }
+.ticket-list li { min-width:0;border-bottom:1px solid var(--gs-line); }
+.ticket-open { display:grid;grid-template-columns:88px minmax(0,1fr) 16px;align-items:center;gap:var(--gs-space-4);width:100%;min-height:var(--gs-control-touch);margin:var(--gs-space-3) 0;padding:var(--gs-space-3);border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2);text-align:left;cursor:pointer;font:inherit;transition:background var(--gs-motion-feedback); }
+.ticket-open:hover { background:var(--gs-mint-wash); }
+.ticket-art { display:grid;place-items:center;width:88px;height:64px;border-radius:var(--gs-radius-media);background:var(--gs-surface);color:var(--gs-mint-ink); }
+.ticket-art img { display:block;width:76px;height:52px;object-fit:contain; }
+.ticket-copy { display:grid;gap:var(--gs-space-2);min-width:0; }
+.ticket-copy strong { color:var(--gs-ink);font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.5;overflow-wrap:anywhere; }
+.ticket-copy small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.6;overflow-wrap:anywhere; }
+.ticket-chevron { color:var(--gs-ink-3); }
+.ticket-open:hover .ticket-chevron, .ticket-open:hover strong { color:var(--gs-mint-ink); }
 .gasha-summary dl { margin: 0; }
-.gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; padding: 7px 0; border-bottom: 1px solid #edf0f2; font-size: 0.68rem; }
-.gasha-summary dt { color: #849097; }
-.gasha-summary dd { margin: 0; color: #36474f; font-variant-numeric: tabular-nums; }
-.gasha-summary a { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: #167d76; font-size: 0.68rem; text-decoration: none; }
-.detail-section { padding: 22px max(24px, calc((100% - 1120px) / 2)); border-bottom: 1px solid #e1e6e8; background: #fff; }
-.detail-section + .detail-section { margin-top: 12px; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 14px; }
-.section-heading h3 { margin: 0; color: #26363e; font-size: 0.88rem; }
-.section-heading p { margin: 4px 0 0; color: #88939a; font-size: 0.61rem; }
-.derived-badge { padding: 4px 7px; border-radius: 4px; background: #fff2d6; color: #8b6413; font-size: 0.6rem; font-weight: 700; }
-.evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; }
-.evidence-grid div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; padding: 8px 0; border-bottom: 1px solid #edf0f2; }
-.evidence-grid dt { color: #7d898f; font-size: 0.64rem; }
-.evidence-grid dd { margin: 0; color: #394a52; font-size: 0.66rem; }
+.gasha-summary dl div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); font-size: var(--gs-text-meta); }
+.gasha-summary dt { color: var(--gs-ink-3); font-weight: var(--gs-weight-medium); }
+.gasha-summary dd { margin: 0; color: var(--gs-ink-2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+/* Keep the source icon beside the first text line when a long label wraps. */
+.gasha-summary :deep(.archive-source-link) { display: block; max-width: 100%; min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
+.gasha-summary :deep(.archive-source-link svg) { display: inline; margin-right: var(--gs-space-2); vertical-align: middle; }
+.gasha-summary :deep(.archive-source-link small) { display: block; margin-top: var(--gs-space-2); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-regular); }
+.detail-section { padding: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)); border-bottom: 1px solid var(--gs-line); background: transparent; }
+.detail-section + .detail-section { margin-top: var(--gs-space-4); }
+.section-heading { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-4); margin-bottom: var(--gs-space-5); }
+.section-heading > div { flex: 1 1 240px; min-width: 0; }
+.section-heading > span { font-size: var(--gs-text-meta); }
+.gasha-category { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.relation-count { flex: 0 0 auto; color: var(--gs-ink-3); font-size: var(--gs-text-meta); white-space: nowrap; }
+.section-heading h3 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
+.section-heading p { margin: var(--gs-space-2) 0 0; color: var(--gs-color-muted); font-size: var(--gs-text-body); font-weight: var(--gs-weight-regular); line-height: 1.6; }
+.evidence-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--gs-space-7); margin: 0; }
+.evidence-grid div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: var(--gs-space-4); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); }
+.evidence-grid dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
+.evidence-grid dd { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
+.gasha-detail :deep(.relation-labels strong) { font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
+.gasha-detail :deep(.relation-labels small) { font-size: var(--gs-text-caption); font-weight: var(--gs-weight-medium); }
+.gasha-detail :deep(.relation-copy b) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-bold); }
+.gasha-detail :deep(.relation-meta), .gasha-detail :deep(.relation-proof) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.gasha-detail :deep(.relation-copy code) { font-size: var(--gs-text-caption); }
+.gasha-detail > :deep(.archive-technical) { margin: var(--gs-space-7) max(var(--gs-space-7), calc((100% - 1120px) / 2)) var(--gs-space-9); }
+.gasha-detail :deep(.archive-technical summary) { min-height: var(--gs-control-touch); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.gasha-detail :deep(.archive-technical-body) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
+.gasha-detail :deep(.archive-technical pre) { font-size: var(--gs-text-caption); }
+.gasha-detail :deep(button:focus-visible), .gasha-detail :deep(a:focus-visible), .gasha-detail :deep(summary:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-color-accent); outline-offset: var(--gs-focus-offset); }
+@container (max-width: 800px) {
+  .gasha-identity { grid-template-columns: 1fr; gap: var(--gs-space-5); padding: var(--gs-space-5); }
+}
 @media (max-width: 800px) {
-  .gasha-identity { grid-template-columns: 1fr; gap: 18px; padding: 16px; }
-  .detail-section { padding: 18px 16px; }
+  .detail-section { padding: var(--gs-space-6) var(--gs-space-5); }
+}
+@media (max-width: 760px), (pointer: coarse) {
+  .gasha-summary :deep(.archive-source-link) { min-height: var(--gs-control-touch); }
 }
 @media (max-width: 520px) {
   .evidence-grid { grid-template-columns: 1fr; }
-  .gasha-summary h2 { font-size: 1rem; }
+  .ticket-open { grid-template-columns: 72px minmax(0, 1fr) 16px; gap: var(--gs-space-3); }
+  .ticket-art { width: 72px; height: 54px; }
+  .ticket-art img { width: 64px; height: 44px; }
 }
 </style>

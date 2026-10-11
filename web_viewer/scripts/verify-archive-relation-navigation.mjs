@@ -1,50 +1,56 @@
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
+import { bindCardNavigation, createCardFixtureTransport } from './lib/card-navigation-harness.mjs'
+import { bindUnitNavigation, createUnitFixtureTransport } from './lib/unit-navigation-harness.mjs'
+import { bindIdolFixtureNavigation } from './lib/idol-navigation-harness.mjs'
+import { bindEventNavigation, createEventFixtureTransport } from './lib/event-navigation-harness.mjs'
+import { bindMobileNavigation } from './lib/mobile-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
+import { bindSongNavigation } from './lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const roundTrip = route => readArchiveRoute(buildArchiveUrl('http://localhost/', route))
 const source = route => readArchiveSourceRoute(roundTrip(route).sourceRoute)
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const state = useArchiveNavigationState()
-const card = { resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
+const gashas = createGashaFixtureTransport()
+const cards = createCardFixtureTransport()
+const card = { ...cards.data.get('card-page-1').rows[0], id: '002sht_sr01', resource_id: '002sht_sr01', character_id: '002sht', card_id: 42 }
+const cardDetail = cards.data.get('card:first')
+cardDetail.id = card.resource_id; cardDetail.card = { ...cardDetail.card, ...card }
+card.detail = { url: 'card:002sht_sr01' }; cards.data.set(card.detail.url, cardDetail)
 const unit = { unit_code: '01jup', unit_id: 1 }
+const units = createUnitFixtureTransport(['1'])
+units.data.get('unit-page').rows[0].catalog.unit.unit_code = '01jup'
+units.data.get('unit:1').view.entry.unit.unit_code = '01jup'
+const events = createEventFixtureTransport(['430018'])
 const context = vm.createContext({
+  eventReadModelCatalog: { value: events.rows },
     prepareArchivePage: (_view, data) => data,
   ...state, buildArchiveSourceQuery,
-  songCatalogData: { value: { songs: { brndnf: {} } } },
+  songReadModelCatalog: { value: { songs: { brndnf: { detail: 'brndnf' } } } },
   songReadModelStatus: { value: '' }, songReadModelDetail: { value: null },
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
   cardReadModelCatalog: { value: [card] }, cardReadModelStatus: { value: '' }, cardReadModelDetail: { value: null },
-  pendingSongNavigation: 0, pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
+  pendingGashaNavigation: 0, pendingCardNavigation: 0, pendingEventNavigation: 0,
   eventReadModelStatus: { value: '' }, eventReadModelDetail: { value: null },
   loading: { value: false }, archiveDataReady: { value: true },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
-  loadSongDetail: async songCode => ({ id: songCode, song: { song_code: songCode }, view: { id: songCode } }),
-  loadGashaDetail: async id => ({ id, gasha: { id } }),
-  loadCardDetail: async id => ({ id, card: { resource_id: id } }),
-  loadCardCatalog: async () => [card], unitReadModelStatus: { value: '' },
-  loadEventDetail: async id => ({ id, view: { event: { event_id: id } } }),
+  readModelClient: { load: async (songCode, options) => {
+    if (gashas.data.has(songCode?.url)) return gashas.client.load(songCode, options)
+    if (cards.data.has(songCode?.url)) return cards.client.load(songCode, options)
+    if (units.data.has(songCode?.url)) return units.client.load(songCode, options)
+    if (songCode?.url?.startsWith('event:')) return events.client.load(songCode, options)
+    const detail = { id: songCode, song: { song_code: songCode }, view: { id: songCode } }
+    options.validate(detail)
+    return detail
+  } },
+  unitReadModelStatus: { value: '' },
   idolUnitData: { value: { units: [unit], by_idol_code: { '002sht': {}, '003hok': {} } } },
-  archiveBootstrap: { idols: [{ id: '002sht' }, { id: '003hok' }] },
-  openIdolReadModel: (idolCode, options = {}) => {
-    if (options.captureSource) context.captureDetailSource()
-    state.currentCharacterId.value = idolCode
-    state.view.value = 'idol_detail'
-  },
-  openArchiveUnit: unit => {
-    context.captureDetailSource()
-    state.currentArchiveUnitCode.value = String(unit.unit_code || unit.unit_id)
-    state.view.value = 'unit_detail'
-  },
-  openPrimaryCards: idolCode => {
-    context.captureDetailSource()
-    state.currentCategoryId.value = 'cards'
-    state.currentCharacterId.value = idolCode
-    state.currentCardId.value = ''
-    state.view.value = 'cards'
-  },
+  archiveBootstrap: { idols: [{ id: '002sht', unitId: '1' }, { id: '003hok', unitId: '1' }], domains: { ...units.bootstrap.domains, ...gashas.bootstrap.domains }, counts: gashas.bootstrap.counts },
   cardMap: { value: new Map([[card.resource_id, card]]) },
   cardIndexData: { value: { cards: [card] } },
   mobileIdolReadModelDetail: { value: { view: { cardRefs: [card] } } },
@@ -53,15 +59,21 @@ const context = vm.createContext({
   normalizedPrimaryIdol: code => code,
   commitView: view => { state.view.value = view },
 })
-const handlers = ['captureDetailSource', 'openSong', 'openSongIdol', 'openSongUnit',
-  'openPrimaryIdol', 'openUnitMember', 'openUnitCards', 'openIdolDomain',
-  'openEventIdol', 'openEventUnit', 'openCard', 'openGasha', 'openGashaCard', 'openEventCard',
-  'openMobileCard', 'openStoryIdol', 'openRelatedCard', 'openEventDetail']
+const handlers = ['captureDetailSource',
+  'openIdolDomain']
 for (const name of handlers) {
   const code = app.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))?.[0]
   assert.ok(code, name)
   vm.runInContext(code, context)
 }
+bindIdolFixtureNavigation(app, context)
+bindUnitNavigation(app, context)
+bindCardNavigation(app, context)
+bindGashaNavigation(app, context)
+bindStoryNavigation(app, context).stop()
+bindEventNavigation(app, context).stop()
+bindSongNavigation(app, context).stop()
+  bindMobileNavigation(app, context).stop()
 const fixtures = [
   ['song_detail', 'openSongIdol', '002sht', 'idol_detail'],
   ['song_detail', 'openSongUnit', '01jup', 'unit_detail'],
@@ -72,13 +84,14 @@ const fixtures = [
   ['idol_detail', 'openIdolDomain', 'cards', 'cards'],
   ['event_detail', 'openEventIdol', { idol_code: '002sht' }, 'idol_detail'],
   ['event_detail', 'openEventUnit', unit, 'unit_detail'],
-  ['card_detail', 'openGasha', { id: '1300011' }, 'gasha_detail'],
+  ['card_detail', 'openGasha', { id: gashas.ids[0] }, 'gasha_detail'],
   ['gasha_detail', 'openGashaCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['event_detail', 'openEventCard', { card_resource_id: card.resource_id }, 'card_detail'],
   ['mobile_archive', 'openMobileCard', 42, 'card_detail'],
   ['story_detail', 'openStoryIdol', '002sht', 'idol_detail'],
   ['card_detail', 'openRelatedCard', card, 'card_detail'],
   ['idol_detail', 'openEventDetail', { event_id: 430018 }, 'event_detail'],
+  ['unit_detail', 'openUnitEvent', { event_id: 430018 }, 'event_detail'],
 ]
 for (const [view, handler, arg, target] of fixtures) {
   for (const [key, ref] of Object.entries(useArchiveNavigationState())) {
@@ -97,6 +110,9 @@ for (const [view, handler, arg, target] of fixtures) {
   state.detailSourceRoute.value = buildArchiveSourceQuery({ view: 'song_catalog', query: 'BRAND' })
   const before = roundTrip(state.currentArchiveRoute())
   await context[handler](arg)
+  // Some production cross-domain dispatchers intentionally do not return their
+  // async leaf load. Observe after that real request has had a turn to settle.
+  await new Promise(resolve => setImmediate(resolve))
   const after = roundTrip(state.currentArchiveRoute())
   assert.equal(after.view, target, handler)
   assert.deepEqual(source(after), before, `${handler}: exact prior identity, filters and ancestors`)

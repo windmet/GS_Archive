@@ -1,0 +1,91 @@
+{
+  "schema_version": 2,
+  "release_id": "2026-09-29-story-text-identity-standalone-001",
+  "created_at": "2026-09-29T08:25:04.141Z",
+  "prepared_from_commit": "7c67d69099b651c5336eed2c9b523e158252749e",
+  "transaction_kind": "backfill",
+  "scope": {
+    "kind": "item",
+    "ids": [
+      "025suz_403_2_4_025_03_09_b"
+    ]
+  },
+  "entries": [
+    {
+      "logical_id": "story:025suz_403_2_4_025_03_09_b",
+      "domain": "story",
+      "source": {
+        "archive_relative_path": "asset/scenario_2_4_025_03.unity3d",
+        "sha256": "0d42c31feb047b48b083c98a622e68b78b577b3ff34b2d92f2b91b12595aa9fa",
+        "objects": [
+          {
+            "type": "TextAsset",
+            "name": "scenario_2_4_025_03_09_b",
+            "container_path": "assets/resources/scenariodata/025suz_403/scenario_2_4_025_03_09_b.json",
+            "path_id": null
+          }
+        ]
+      },
+      "semantic_evidence": [
+        {
+          "product": "story_catalog",
+          "key": "025suz_403_2_4_025_03_09_b",
+          "evidence": "RAW-derived text coordinates only; target_step_id=0 and all mounted Runtime fields retained"
+        }
+      ],
+      "transform": {
+        "tool": "backfill-standalone-choice-text-identities.mjs",
+        "contract_version": 1
+      },
+      "published": [
+        {
+          "path": "web_viewer/public/data/compiled/025suz_403_2_4_025_03_09_b.json",
+          "url": "/data/compiled/025suz_403_2_4_025_03_09_b.json",
+          "bytes": 34237,
+          "sha256": "0fc64f146ac11ee2e3f80155fe22f0c0a069eb736f6671191282694091655940"
+        }
+      ],
+      "consumers": [
+        "Story Runtime",
+        "ReadingDocument",
+        "translation preflight"
+      ],
+      "comparison": {
+        "state": "parity-verified",
+        "evidence": [
+          "Identity-only stripped deep-equal; Reader text, speaker source name, controls and status unchanged",
+          "RAW bundle and candidate hashes verified; choice target remains 0; strict Runtime candidate not mounted"
+        ]
+      },
+      "browser_acceptance": {
+        "state": "not-tested",
+        "tested_url": null,
+        "tested_at": null,
+        "tested_commit": null,
+        "environment": null,
+        "evidence": []
+      },
+      "previous_state": {
+        "kind": "unmanaged-existing",
+        "release_id": null,
+        "artifacts": [
+          {
+            "path": "web_viewer/public/data/compiled/025suz_403_2_4_025_03_09_b.json",
+            "url": "/data/compiled/025suz_403_2_4_025_03_09_b.json",
+            "bytes": 27953,
+            "sha256": "c61b775a0c26063e6a1f1d8428b67c078eca15a93868a0cf22541f5f59a3b131"
+          }
+        ],
+        "evidence": [
+          "Git baseline 7c67d69099b651c5336eed2c9b523e158252749e; exact old bytes in rollback ZIP"
+        ]
+      },
+      "rollback_evidence": {
+        "performed": false,
+        "backup_manifest": null,
+        "restored_artifacts": [],
+        "final_republish_verified": false
+      }
+    }
+  ]
+}

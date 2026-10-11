@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_041ryo_1_7_041_01",
-  "logical_id": "story-collection:1_x_041ryo_1_7_041_01",
+  "logical_id": "story:1_x_041ryo_1_7_041_01",
   "scenario_id": "1_x_041ryo_1_7_041_01",
   "text_catalog_id": "1_x_041ryo_1_7_041_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_041ryo_1_7_041_01.json",
-    "sha256": "sha256:7c6fcddae24469960947d8a1c0d72eb1d5511b8f583959062789ec3ff286f283",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:47ddf2891b0b6985453359014b13ad9c9bee7d4fa43d88674c0ede42bedeaa68",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:63e16108085c0a96f650e6b7881d364889f05e228d28aa60ebc3a93808fe3266",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_041ryo_1_7_041_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "涼さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_041ryo_1_7_041_01:1_7_041_01:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_041ryo_1_7_041_01",
+          "part_id": "1_7_041_01",
+          "file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1ea37407bc68dcbb3fbf19403dc9e097d0c778c1fee078994221c66ebab12504"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_041ryo_1_7_041_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_041_01",
+        "source_file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わぁ！　ありがとうございます、\n●●●●プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_041ryo_1_7_041_01:1_7_041_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_041ryo_1_7_041_01",
+          "part_id": "1_7_041_01",
+          "file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f2262b51a075b94b9731bd8db9d91033ddec3f4c61c5fef9628b02cb1b0d5855"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_041ryo_1_7_041_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_041_01",
+        "source_file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "えへへ♪\n僕の誕生日、覚えててくれて嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_041ryo_1_7_041_01:1_7_041_01:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_041ryo_1_7_041_01",
+          "part_id": "1_7_041_01",
+          "file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:75d5686acc7a36a1c8ba0f5b312ca51fd1d0f6c9bde14fe3c8d204df4850f835"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -124,30 +159,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_041ryo_1_7_041_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_041_01",
+        "source_file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさんの\nお祝いの言葉で、力が湧いてきました！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_041ryo_1_7_041_01:1_7_041_01:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_041ryo_1_7_041_01",
+          "part_id": "1_7_041_01",
+          "file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2748cfd65495a117bf21c18bbd8daf8dcea41ae55e508fb0c7978d86abf21a7b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_041ryo_1_7_041_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_041_01",
+        "source_file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これから1年、男性アイドルとして\nたくさん成長できるよう頑張ります！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_041ryo_1_7_041_01:1_7_041_01:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_041ryo_1_7_041_01",
+          "part_id": "1_7_041_01",
+          "file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f2f02460a411c45e5c3ab6b04e9c14e7af1d649a783eb76d879f7bb34a7bcb6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "秋月 涼"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_041ryo_1_7_041_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_041_01",
+        "source_file": "assets/resources/scenariodata/1_x_041ryo/scenario_1_7_041_01.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "涼さん、お誕生日おめでとうございます！",
     "episode_label": null

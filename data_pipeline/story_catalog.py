@@ -271,7 +271,11 @@ def build_story_catalog(data):
                     section_label = group.get("3") or ""
                     parents.insert(0, group.get("3"))
                 else:
-                    section_id = next((c for c in info.get("characters", []) if re.fullmatch(r"\d{3}[a-z0-9]{3}", c, re.I)), "")
+                    # The owner is the idol numbered in the resource id (1_2_002_12_a -> 002); a birthday
+                    # chapter's cast lists its guests too, so the first cast code can be someone else.
+                    idols = [c for c in info.get("characters", []) if re.fullmatch(r"\d{3}[a-z0-9]{3}", c, re.I)]
+                    owner = re.match(r"1_2_(\d{3})_", resource or "")
+                    section_id = next((c for c in idols if owner and c[:3] == owner.group(1)), idols[0] if idols else "")
             elif domain == "event":
                 title = group.get("9") or info.get("title") or ""
                 episode_label = info.get("title") or ""

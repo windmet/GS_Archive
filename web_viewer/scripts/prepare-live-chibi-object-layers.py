@@ -22,6 +22,8 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
+from live_chibi_texture import sprite_image
+from live_chibi_object_transform import local_matrix, relative_matrix, decompose
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "public" / "assets" / "live-chibi" / "object-layers"
@@ -58,74 +60,6 @@ def pptr_path_id(value) -> int:
     if isinstance(value, dict):
         return int(value.get("m_PathID", 0))
     return int(getattr(value, "path_id", 0))
-
-
-def quaternion_z(rotation) -> float:
-    x = float(rotation.x)
-    y = float(rotation.y)
-    z = float(rotation.z)
-    w = float(rotation.w)
-    return math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z))
-
-
-def multiply(left: tuple[float, ...], right: tuple[float, ...]) -> tuple[float, ...]:
-    a, b, c, d, tx, ty = left
-    e, f, g, h, ux, uy = right
-    return (
-        a * e + c * f,
-        b * e + d * f,
-        a * g + c * h,
-        b * g + d * h,
-        a * ux + c * uy + tx,
-        b * ux + d * uy + ty,
-    )
-
-
-def local_matrix(transform) -> tuple[float, ...]:
-    angle = quaternion_z(transform.m_LocalRotation)
-    cosine = math.cos(angle)
-    sine = math.sin(angle)
-    scale_x = float(transform.m_LocalScale.x)
-    scale_y = float(transform.m_LocalScale.y)
-    return (
-        cosine * scale_x,
-        sine * scale_x,
-        -sine * scale_y,
-        cosine * scale_y,
-        float(transform.m_LocalPosition.x),
-        float(transform.m_LocalPosition.y),
-    )
-
-
-def relative_matrix(transform, root_path_id: int) -> tuple[float, ...]:
-    chain = []
-    current = transform
-    while current is not None:
-        go_path_id = current.m_GameObject.path_id
-        if go_path_id == root_path_id:
-            break
-        chain.append(local_matrix(current))
-        father = current.m_Father
-        current = father.read() if father.path_id else None
-    result = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
-    for matrix in reversed(chain):
-        result = multiply(result, matrix)
-    return result
-
-
-def decompose(matrix: tuple[float, ...]) -> dict:
-    a, b, c, d, tx, ty = matrix
-    scale_x = math.hypot(a, b)
-    determinant = a * d - b * c
-    scale_y = determinant / scale_x if scale_x else math.hypot(c, d)
-    rotation = math.degrees(math.atan2(b, a)) if scale_x else 0
-    return {
-        "x": round(tx * 100, 4),
-        "y": round(-ty * 100, 4),
-        "scaleX": round(scale_x, 6),
-        "scaleY": round(scale_y, 6),
-        "rotation": round(-rotation, 4),
-    }
 
 
 def renderer_materials(renderer) -> list[str]:
@@ -183,6 +117,7 @@ def inspect_asset(
     asset: str,
     output_root: Path,
     force: bool,
+    astcenc=None,
 ) -> dict | None:
     environment = UnityPy.load(str(bundle))
     objects_by_id = {int(obj.path_id): obj for obj in environment.objects}
@@ -214,7 +149,7 @@ def inspect_asset(
         if sprite_id not in textures:
             filename = f"{safe_name(asset)}__{safe_name(sprite.m_Name)}__{abs(sprite_id)}.png"
             target = output_root / "sprites" / filename
-            metadata = save_sprite(sprite.image, target, force)
+            metadata = save_sprite(sprite_image(sprite, astcenc), target, force)
             textures[sprite_id] = {
                 "id": str(sprite_id),
                 "name": sprite.m_Name,
@@ -301,6 +236,7 @@ def main() -> None:
         help="Only prepare this referenced object-layer asset. Repeat for multiple assets.",
     )
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--astcenc", type=Path, help="Official Arm astcenc CLI for native ASTC HDR sprites")
     args = parser.parse_args()
 
     sources = load_archive_sources(args.sources_config)
@@ -336,7 +272,7 @@ def main() -> None:
     for index, (asset, song_codes) in enumerate(sorted(references.items()), 1):
         entry = None
         for bundle in candidate_bundles(asset, song_codes, filenames):
-            entry = inspect_asset(bundle, asset, output_root, args.force)
+            entry = inspect_asset(bundle, asset, output_root, args.force, args.astcenc)
             if entry is not None:
                 break
         if entry is None:

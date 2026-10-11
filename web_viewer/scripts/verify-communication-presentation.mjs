@@ -74,4 +74,67 @@ const cancellation = useStoryRuntimeCues({ compiledData: { value: mixed }, curre
 cancellation.handleStepChange(); cancellation.cancelCurrentStep(); release({ status: 'ready' }); await settle()
 assert.equal(cancelledSignal.aborted, true); assert.equal(last.status, 'waiting')
 cancellation.cleanup()
-console.log('Communication presentation: standalone, ADV/call/ADV, chat/choice/ADV, assets, Reader stamps and stale readiness passed')
+
+// A one-to-one call or chat belongs to its owner's room. Others may speak in it (Haruna and
+// Amehiko in Ren's card call 040ren_403_2_4_040_03_09_c), but background, theme and caller
+// card stay the owner's; the guest is named on the line. The owner is read from the scenario
+// id and must agree with the communication index for every one-to-one record.
+{
+  const { readFileSync } = await import('node:fs')
+  const { communicationOwnerId, resolveCommunicationContext } = await import('../src/core/story-runtime/CommunicationPresentationContext.js')
+  const mobile = JSON.parse(readFileSync(new URL('../public/data/masterdata/mobile_archive_index.json', import.meta.url), 'utf8'))
+  const oneToOne = Object.values(mobile.scenarios).filter(row => ['idol_phone', 'idol_talk'].includes(row.kind))
+  assert.ok(oneToOne.length > 1000, 'one-to-one communications are present')
+  for (const row of oneToOne) assert.equal(communicationOwnerId(row.compiled_file), row.idol_code, `owner of ${row.compiled_file}`)
+  const guestCall = { scenario_id: '040ren_403_2_4_040_03_09_c', steps: [
+    { type: 'call', chara_id: '040ren', dialogue: { speaker: '牙崎 漣', text: 'a' } },
+    { type: 'call', chara_id: '023har', dialogue: { speaker: '若里 春名', text: 'b' } }] }
+  const context = resolveCommunicationContext({ step: guestCall.steps[1], stepIndex: 1, historyStack: [0], steps: guestCall.steps, scenarioId: guestCall.scenario_id })
+  assert.equal(context.ownerCharaId, '040ren', 'a guest line keeps the call in the owner room')
+  const callScene = readFileSync(new URL('../src/components/mobile/MobileCallScene.vue', import.meta.url), 'utf8')
+  for (const marker of [
+    'const roomCharaId = computed(() => context.value.ownerCharaId || charaId.value)',
+    'const bgUrl = computed(() => (roomCharaId.value ? getMobileBgUrl(roomCharaId.value)',
+    'getUnitCodeByCharaId(roomCharaId.value)',
+    '<MobileCallProfile :chara-id="roomCharaId"',
+    'v-if="guestSpeaker" class="dialogue-speaker"',
+  ]) assert.ok(callScene.includes(marker), `call scene keeps the owner room: ${marker}`)
+}
+// Every chat sits on a unit's background, as in the game: a one-to-one chat on its owner's unit,
+// a story chat among members of one unit on that unit, titled as the unit's group chat.
+{
+  const { readFileSync } = await import('node:fs')
+  const { resolveCommunicationContext } = await import('../src/core/story-runtime/CommunicationPresentationContext.js')
+  const chatContext = file => {
+    const doc = JSON.parse(readFileSync(new URL(`../public/data/compiled/${file}`, import.meta.url), 'utf8'))
+    const index = doc.steps.findIndex(step => step.type === 'talk')
+    return resolveCommunicationContext({ step: doc.steps[index], stepIndex: index, historyStack: [], steps: doc.steps, scenarioId: doc.scenario_id })
+  }
+  const minori = chatContext('1_x_011min_1_8_011_01.json')
+  assert.equal(minori.isGroup, false, 'a private chat is one-to-one')
+  assert.equal(minori.unitCode, '04bei', 'Minori’s private chat sits on Beit’s background')
+  const cfirst = chatContext('1_3_10001_01.json')
+  assert.equal(cfirst.isGroup, true, 'Shu, Momohito and Eishin chatting in their event story is a group chat')
+  assert.equal(cfirst.unitCode, '16cfi', 'their chat sits on C.FIRST’s background')
+}
+
+// The communication read model names who else is on a call, per call, from the story catalog.
+{
+  const { existsSync, readFileSync } = await import('node:fs')
+  const read = path => JSON.parse(readFileSync(new URL('../public/data/' + path, import.meta.url), 'utf8'))
+  // compiled/index.json is gitignored corpus and only supplies group titles; CI runs without it.
+  const compiledIndex = () => existsSync(new URL('../public/data/compiled/index.json', import.meta.url)) ? read('compiled/index.json')
+    : (console.log('compiled/index.json not mounted: group titles fall back to source names'), { characters: [], categories: [] })
+  const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
+  const records = buildMobileRecords({ mobileArchive: read('masterdata/mobile_archive_index.json'),
+    randomTalkPresentation: read('masterdata/random_talk_presentation_index.json'), compiledIndex: compiledIndex(),
+    idolUnit: read('masterdata/idol_unit_dictionary.json'), archiveManifest: read('archive_manifest.json'),
+    cardIndex: read('masterdata/card_index.json'), idolEpisode: read('masterdata/idol_episode_index.json'),
+    storyCatalog: read('masterdata/story_catalog.json') }, await import('../src/data/idolCommunicationSelectors.js'))
+  const phones = records.idolRecords.flatMap(record => record.view.phoneBundles.map(bundle => [record.id, bundle]))
+  const shared = phones.filter(([, bundle]) => bundle.guests.length)
+  assert.deepEqual(shared.map(([owner, bundle]) => [owner, bundle.file, bundle.guests]),
+    [['040ren', '040ren_403_2_4_040_03_09_c.json', ['023har', '044ame']]], 'only Ren’s card call has others on the line')
+  assert.ok(phones.every(([owner, bundle]) => !bundle.guests.includes(owner)), 'the owner is never listed as a guest')
+}
+console.log('Communication presentation: standalone, ADV/call/ADV, chat/choice/ADV, assets, Reader stamps and stale readiness passed; calls stay in the owner room')

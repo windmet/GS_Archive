@@ -93,12 +93,17 @@ def build(public_root: Path, card_art_root: Path, *, derivatives: bool = False,
                 'Scenes are opaque published catalogue assets, NOT an original-game Home eligibility whitelist.']}
     output_assets: dict[str, bytes] = {}
     direction = art_direction or {}
-    source_signature = digest(encode({'sources': sources, 'direction': direction, 'derivatives': derivatives, 'limit': wallpaper_limit}))
-    def derivative(image: Image.Image, stem: str, width: int, quality: int) -> tuple[str, int, int]:
+    source_signature = digest(encode({'sources': sources, 'direction': direction, 'derivatives': derivatives, 'limit': wallpaper_limit, 'encoding': 'webp-lossless-exact'}))
+    def derivative(image: Image.Image, stem: str, width: int) -> tuple[str, int, int]:
         img = image.copy()
         if img.width > width:
             img = img.resize((width, max(1, round(img.height * width / img.width))), Image.Resampling.LANCZOS)
-        stream = io.BytesIO(); img.save(stream, 'WEBP', quality=quality, method=4)
+        if img.mode == 'RGBA':
+            transparent = img.getchannel('A').point(lambda alpha: 255 if alpha == 0 else 0)
+            img.paste((0, 0, 0, 0), mask=transparent)
+        # These are responsive derivatives; keep their established dimensions,
+        # but encode their pixels losslessly, matching the archive upload policy.
+        stream = io.BytesIO(); img.save(stream, 'WEBP', lossless=True, exact=True, method=6)
         raw = stream.getvalue()
         name = f'assets/terminal/{stem}-{digest(raw)[:16]}.webp'
         output_assets[name] = raw
@@ -142,11 +147,11 @@ def build(public_root: Path, card_art_root: Path, *, derivatives: bool = False,
                 # Encode only after both original images passed; no orphan half-pairs.
                 for orientation, image, info, item in pair:
                     if derivatives:
-                        url, w, h = derivative(image, f'{resource}{suffix}-{orientation}', 720 if orientation == 'portrait' else 1600, 82)
+                        url, w, h = derivative(image, f'{resource}{suffix}-{orientation}', 720 if orientation == 'portrait' else 1600)
                         item.update(url=url, width=w, height=h)
                     entry[orientation] = item
                     evidence['images'].append({'id': key, 'orientation': orientation, **info})
-                entry['thumbnail'] = derivative(pair[0][1], f'{resource}{suffix}-thumb', 160, 74)[0]
+                entry['thumbnail'] = derivative(pair[0][1], f'{resource}{suffix}-thumb', 160)[0]
                 wallpaper_entries.append(entry)
             except (OSError, ValueError, Image.DecompressionBombError) as error:
                 evidence['rejected'].append({'id': key, 'reason': str(error)})
@@ -161,7 +166,7 @@ def build(public_root: Path, card_art_root: Path, *, derivatives: bool = False,
             variants = [str(x.get('variant')) for x in meta.get('picture_studio_scenes', []) if x.get('variant')]
             label = ' / '.join(dict.fromkeys(names + variants)) or bg_id
             scene_entries.append({'id': bg_id, 'label': label, 'published': True, 'url': f'/assets/bg/{bg_id}.png',
-                                  'thumbnail': derivative(image, f'{bg_id}-thumb', 240, 72)[0],
+                                  'thumbnail': derivative(image, f'{bg_id}-thumb', 240)[0],
                                   'sourceSha256': info['sha256']})
             evidence['images'].append({'id': bg_id, 'orientation': 'scene', **info})
         except (OSError, ValueError, Image.DecompressionBombError) as error:

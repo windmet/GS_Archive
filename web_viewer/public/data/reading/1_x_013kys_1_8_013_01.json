@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_013kys_1_8_013_01",
-  "logical_id": "story-collection:1_x_013kys_1_8_013_01",
+  "logical_id": "story:1_x_013kys_1_8_013_01",
   "scenario_id": "1_x_013kys_1_8_013_01",
   "text_catalog_id": "1_x_013kys_1_8_013_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_013kys_1_8_013_01.json",
-    "sha256": "sha256:bf6bfe452bcdf8864c77f64fd9c48d321807df2ee5757ce4c68d684ab5d2a77b",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:b7b9948ceb7a3cead5887e7102afaf03c0056ef0782ea17eedce5ffc7f86a5a3",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_013kys_1_8_013_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●監督、\nお誕生日おめでとう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000013:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_8_013_01",
+          "part_id": "1_8_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+          "command_index": 13,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0a935e77ad7847a94c4e6bb14564635eca63d5935c75fc6c2c1b5a7af88a0ae6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_013kys_1_8_013_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "talk"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "悠介さんと同じ\nタイミングですね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_8_013_01",
+          "part_id": "1_8_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fcddcb69aab69828a355b283610d3f2d9618250647eabc4c9b222b1a9b1252e3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "1_x_013kys_1_8_013_01:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000015",
+        "option_id": "choice-option:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000015:000",
         "source_label": "talk_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "へへ、びっくりした？\n悠介と話し合って\n同時に送ることにしたんだ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000017:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_8_013_01",
+          "part_id": "1_8_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+          "command_index": 17,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0fb1943e08d32b06cb1cbe44b5501fc17e70060279bee182c76db6a17540ecbd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_013kys_1_8_013_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "talk"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "電話でもよかったけど、\n同時に通話はできないからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000019:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_8_013_01",
+          "part_id": "1_8_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+          "command_index": 19,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:734090d0e36e0b3120307a1eec74067ccfbd5f66f05dc5251b8767f34de2691a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_013kys_1_8_013_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "talk"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "また事務所でお祝いさせて。\nそれじゃ、また！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000021:mobile_message:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_8_013_01",
+          "part_id": "1_8_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+          "command_index": 21,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5a24b9220b27f7d65911fec2e6584c86c8f4b679cec710dbd0428675011a2b0c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "1_x_013kys_1_8_013_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_8_013_01.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "talk"
@@ -237,8 +287,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000015",
+          "option_id": "choice-option:v1:1_x_013kys_1_8_013_01:1_8_013_01:cmd-000015:000",
           "source_label": "talk_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●●●●●●●監督、",
     "episode_label": null

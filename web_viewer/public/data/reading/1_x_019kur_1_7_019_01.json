@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_019kur_1_7_019_01",
-  "logical_id": "story-collection:1_x_019kur_1_7_019_01",
+  "logical_id": "story:1_x_019kur_1_7_019_01",
   "scenario_id": "1_x_019kur_1_7_019_01",
   "text_catalog_id": "1_x_019kur_1_7_019_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_019kur_1_7_019_01.json",
-    "sha256": "sha256:c2051b4eac49007faffe399b03cfb8434f2e1e4e8952008fe01b176367667e79",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:96398c182e136163c19e07cc6ed31e25d8654bcc682088a20c16f33369d4d69b",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:1bc3c382ee54e00cbf538a004abb7389ac0130540afa5b529de4010222ae0236",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_019kur_1_7_019_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "九郎さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_019kur_1_7_019_01:1_7_019_01:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_019kur_1_7_019_01",
+          "part_id": "1_7_019_01",
+          "file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c8b92c1641869014cad23e576946be770499bf2da7cfa8332e9c477b8a964b2a"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_019kur_1_7_019_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_019_01",
+        "source_file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なんと……。\nすみません、少し驚いてしまいまして。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_019kur_1_7_019_01:1_7_019_01:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_019kur_1_7_019_01",
+          "part_id": "1_7_019_01",
+          "file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6093aed2c4990d95b2323ed79e68b58d1243998523870cc76303d68e431e3c9d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_019kur_1_7_019_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_019_01",
+        "source_file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "まさか●●●●プロデューサーさんに\n誕生日を祝っていただけるとは。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_019kur_1_7_019_01:1_7_019_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_019kur_1_7_019_01",
+          "part_id": "1_7_019_01",
+          "file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d34289e250fc9f51437b86963e5629b77da4e451c601a5710e2f82d7109c5347"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -124,30 +159,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_019kur_1_7_019_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_019_01",
+        "source_file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "覚えていてくださり、ありがとうございます。\nとても嬉しいです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_019kur_1_7_019_01:1_7_019_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_019kur_1_7_019_01",
+          "part_id": "1_7_019_01",
+          "file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c59c1071c2f8f6df510273f4112ef796385839a5904376a6ef7a39be4d414529"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_019kur_1_7_019_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_019_01",
+        "source_file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "私はアイドルとしてまだまだ若輩者ですが、\nどうぞよろしくお願いいたします。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_019kur_1_7_019_01:1_7_019_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_019kur_1_7_019_01",
+          "part_id": "1_7_019_01",
+          "file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1bed42d95546e6ad126354bf2812608cad9cfb21375d4f241ae162c8dcbf3bfd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "019kur",
         "sourceName": "清澄 九郎"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_019kur_1_7_019_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_019_01",
+        "source_file": "assets/resources/scenariodata/1_x_019kur/scenario_1_7_019_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "九郎さん、お誕生日おめでとうございます！",
     "episode_label": null

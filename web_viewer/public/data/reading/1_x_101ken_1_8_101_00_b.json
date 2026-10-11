@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_101ken_1_8_101_00_b",
-  "logical_id": "story-collection:1_x_101ken_1_8_101_00_b",
+  "logical_id": "story:1_x_101ken_1_8_101_00_b",
   "scenario_id": "1_x_101ken_1_8_101_00_b",
   "text_catalog_id": "1_x_101ken_1_8_101_00_b",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_101ken_1_8_101_00_b.json",
-    "sha256": "sha256:2c67d4eaca3404d8d0e718dfdb9efb2fe401f5d4a70f99bb0aca69560e3efae4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:71c8132b8df9b469dade89714a3941743a202b40b64ec2db974afa046312f532",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 2,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_101ken_1_8_101_00_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "お祝いしてくれたアイドルはいますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_101ken_1_8_101_00_b:1_8_101_00_b:cmd-000010:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_101ken_1_8_101_00_b",
+          "part_id": "1_8_101_00_b",
+          "file": "assets/resources/scenariodata/1_x_101ken/scenario_1_8_101_00_b.json",
+          "command_index": 10,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4a26c081b299abd843cb4a7d7bb87e53b8c73b88dc5546f1e1a075ec5b313587"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
         "sourceName": "山村 賢"
       },
       "performance": {
@@ -56,27 +70,16 @@
         "row_id": "1_x_101ken_1_8_101_00_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_101_00_b",
+        "source_file": "assets/resources/scenariodata/1_x_101ken/scenario_1_8_101_00_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お祝いしてくれたアイドルはいますか？",
     "episode_label": null

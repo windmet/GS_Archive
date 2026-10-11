@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "042dai_403_2_4_042_03_09_b",
-  "logical_id": "story-collection:042dai_403_2_4_042_03_09_b",
+  "logical_id": "story:042dai_403_2_4_042_03_09_b",
   "scenario_id": "042dai_403_2_4_042_03_09_b",
   "text_catalog_id": "042dai_403_2_4_042_03_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "042dai_403_2_4_042_03_09_b.json",
-    "sha256": "sha256:5c908dc0f0e68bd0fb4f99904a3399ebdb9b8e2a6b3230111fd0442135a6e428",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d24d9a995aa0f29b0d4b2e7081ff988ef2f90a3de70d5f4545cb9c9f3d1eed29",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:04e0821770abe94eec2dba70a2cbd94e4f5511798d1aff56b0fb593ab89824c2",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "042dai_403_2_4_042_03_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●ボス、お疲れさん！\n忘年会配信の資料、さっき読み終わった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1a5a03b02744938ee622514db1d742790b61b6e3757fa1388008bf503309c81f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "ミニコーナーで、みんなでゲームをするって\n書いてあったじゃろ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:75edb66d056285a2f60a1866b74fb18c175d89800989d9266555e780e03a28d7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "どんなゲームか、もう決まっとるんか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bf2cc4451ed7a5093c14d8c87206b0191c89cf89230ae27ef10e9e8c07232ad1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "アナログゲームを\nやります",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7e50b2fbcd0f7580d8a05c7c9a3dbd1921c455ae2ebc21d11e446da92f2a2cd"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "042dai_403_2_4_042_03_09_b:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 12,
+        "command_end": 13
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012",
+        "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012:000",
         "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -192,7 +233,18 @@
     {
       "kind": "choice",
       "source_text": "トランプを使う\n予定です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000013:choice_short:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 13,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:75366ce36013c6406e8f4aed0d9b196dcfe4adb49c5c10a7fff2861f385f3efb"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -219,14 +271,14 @@
         "row_id": "042dai_403_2_4_042_03_09_b:step-5:option-1",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 12,
+        "command_end": 13
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012",
+        "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000013:001",
         "source_label": "phone_select2",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "おお！\nそれなら、みんなで盛り上がれそうじゃな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:162e5ea55651a476f79674cac8c76c45f817b5df4024cb7efca214f62be038ea"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "格闘ゲームとはまた違った勝負になるが、\nワシも活躍できるように頑張るぞ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e5059d476a9255590bac67e998fb38ad68913d1e368ee84b6f887cfbe966ccd8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "配信までに特訓したいけぇ、ゲームの詳細が\n決まったら教えてくれるか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a65f47d09b7eb0371f40e36c510da78aa404d76dea1418bf8abbd64355e770a2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回の配信のメンバーは、\nなかなか手強そうじゃからのぉ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:06bb78f986de9ce486bb21bf362dda58d44540595cd72307992a47dd44bcda00"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,7 +485,18 @@
     {
       "kind": "choice",
       "source_text": "もちろんです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000025:choice_short:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 25,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c3e0eab7135bbf0124c363d162784a0708abfe045d94917138ffb36a58b21a3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -424,14 +523,14 @@
         "row_id": "042dai_403_2_4_042_03_09_b:step-10:option-0",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000025",
+        "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000025:000",
         "source_label": "phone_select3",
         "target_step_id": 11,
         "target_step_index": 10,
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "恩に着るぞ、ボス！\nどんなゲームをするのか、今から楽しみじゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "042dai_403_2_4_042_03_09_b",
+          "part_id": "2_4_042_03_09_b",
+          "file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:35a013f1b864386ed0686fb5f5b0ea3ea12ca2590c3d9d2383339fe8cee8f3e6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "042dai",
         "sourceName": "兜 大吾"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "042dai_403_2_4_042_03_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_042_03_09_b",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -487,22 +595,59 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012",
+          "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012:000",
           "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000012",
+          "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000013:001",
           "source_label": "phone_select2",
           "target_step_id": 6,
           "target_step_index": 5,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/042dai_403/scenario_2_4_042_03_09_b.json",
+        "raw_sha256": "sha256:ef243a9241e0fb2b13fc59181a0c54dd16517f5f86b12eb0e7a4ef9d2ff9162a",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          12,
+          13
+        ],
+        "join_command": 15,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              14
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     },
     {
       "step_id": 10,
@@ -510,8 +655,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000025",
+          "option_id": "choice-option:v1:042dai_403_2_4_042_03_09_b:2_4_042_03_09_b:cmd-000025:000",
           "source_label": "phone_select3",
           "target_step_id": 11,
           "target_step_index": 10,
@@ -520,73 +665,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 4,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●●●●●●●ボス、お疲れさん！",
     "episode_label": null

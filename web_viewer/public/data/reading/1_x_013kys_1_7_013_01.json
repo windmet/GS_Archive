@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_013kys_1_7_013_01",
-  "logical_id": "story-collection:1_x_013kys_1_7_013_01",
+  "logical_id": "story:1_x_013kys_1_7_013_01",
   "scenario_id": "1_x_013kys_1_7_013_01",
   "text_catalog_id": "1_x_013kys_1_7_013_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_013kys_1_7_013_01.json",
-    "sha256": "sha256:f475f03203a0d6f6714ea33333f99612dd0459f4bef652797403bf8d095f24ef",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:6c67ffa133694757db8a5779249220f9a303ada93511cc65ff16e7b9ad94b112",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:631dc5ffdcdcd8e9daeedba3c8a2c3cdeb928f04a8161cb429e7a06addbd786e",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_013kys_1_7_013_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "享介さん、今日お誕生日ですよね！\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_7_013_01:1_7_013_01:cmd-000011:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_7_013_01",
+          "part_id": "1_7_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+          "command_index": 11,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce102472a4020d5333ce84d9cf70e723f492d1199a06ca786c0c167a003fa70e"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_013kys_1_7_013_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "えっ、俺だけ？\n……そっか、悠介は別にお祝いしたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_7_013_01:1_7_013_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_7_013_01",
+          "part_id": "1_7_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3aa2b0c6361f73829ca5340772885fd2782c9a1f3f4d9093d6b18f9d7e2c313"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -85,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_013kys_1_7_013_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日はいつも悠介と一緒に祝われるから、\nビックリしたよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_7_013_01:1_7_013_01:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_7_013_01",
+          "part_id": "1_7_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c1323b1194e8489e4744a42e32fdcdc2ebc566fb4471b1b8967164c39893d481"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -124,30 +159,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_013kys_1_7_013_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "なんか新鮮っていうか……。\nくすぐったいなーって。へへっ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_7_013_01:1_7_013_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_7_013_01",
+          "part_id": "1_7_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f0a2da886e43a7293824756b627a174883c04d2233f5722204c482cf94f356f8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_013kys_1_7_013_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがと、●●●●●●●●●●監督。\nすごく嬉しいぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_013kys_1_7_013_01:1_7_013_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_013kys_1_7_013_01",
+          "part_id": "1_7_013_01",
+          "file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2d07c7a10dd1fa7bd5a9a23c671ab86e4bf8a8fe007f7019617080f74b7b35b5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "蒼井 享介"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_013kys_1_7_013_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_013_01",
+        "source_file": "assets/resources/scenariodata/1_x_013kys/scenario_1_7_013_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "享介さん、今日お誕生日ですよね！",
     "episode_label": null

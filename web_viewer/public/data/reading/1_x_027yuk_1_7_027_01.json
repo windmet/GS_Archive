@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_027yuk_1_7_027_01",
-  "logical_id": "story-collection:1_x_027yuk_1_7_027_01",
+  "logical_id": "story:1_x_027yuk_1_7_027_01",
   "scenario_id": "1_x_027yuk_1_7_027_01",
   "text_catalog_id": "1_x_027yuk_1_7_027_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_027yuk_1_7_027_01.json",
-    "sha256": "sha256:1f6ce6bbc8e28caa28ccb21679159c2d0513064354084e7d712d9390f5ea6964",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3432ccbe6eb5c57463444508db92d36e7d42719ef3166d0a49e30ab125f30c88",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:a667c0b351278f3a5c9f78a936e6bcb40bf5fdd2ecffb971cfc25ffcde29596d",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_027yuk_1_7_027_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "おや、●●●●プロデューサーさん。\n何かいいことでもあったのかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_027yuk_1_7_027_01:1_7_027_01:cmd-000014:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_027yuk_1_7_027_01",
+          "part_id": "1_7_027_01",
+          "file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+          "command_index": 14,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:830e99bb9a4667c62e7943621a68ffffd148a8e9032cdfd9f8c8529b4c7fa2c4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -48,7 +62,6 @@
         "stepId": 3
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -57,17 +70,28 @@
         "row_id": "1_x_027yuk_1_7_027_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_027_01",
+        "source_file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日は幸広さんの誕生日ですから。\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_027yuk_1_7_027_01:1_7_027_01:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_027yuk_1_7_027_01",
+          "part_id": "1_7_027_01",
+          "file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e352d84078a58cacfff21318587eff4f9706fa1fcadcacf76105a7635b710805"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -94,21 +118,32 @@
         "row_id": "1_x_027yuk_1_7_027_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_027_01",
+        "source_file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "え？　誕生日……。\nああ、そういえば今日は俺の誕生日だった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_027yuk_1_7_027_01:1_7_027_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_027yuk_1_7_027_01",
+          "part_id": "1_7_027_01",
+          "file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ea679fb8b6e1dbfe079aad8a62c85dd0182fbbe3ef88394f461707832d35e1bc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -125,7 +160,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_027yuk_1_7_027_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_027_01",
+        "source_file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "はは、昔からこうでね。\n●●●●プロデューサーさんのおかげで思い出した。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_027yuk_1_7_027_01:1_7_027_01:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_027yuk_1_7_027_01",
+          "part_id": "1_7_027_01",
+          "file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:47b6e41667dab619243681c1e73723a1681df15d239472842d8d4771b8024c27"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -164,30 +209,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_027yuk_1_7_027_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_027_01",
+        "source_file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとう、●●●●プロデューサーさん。\n君に祝ってもらえて、嬉しいよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_027yuk_1_7_027_01:1_7_027_01:cmd-000032:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_027yuk_1_7_027_01",
+          "part_id": "1_7_027_01",
+          "file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+          "command_index": 32,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e8cfb18139da881caaec7b4eaf7412ae7bb8a801f530e445f9f37de18bc8aa70"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_027yuk_1_7_027_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_027_01",
+        "source_file": "assets/resources/scenariodata/1_x_027yuk/scenario_1_7_027_01.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おや、●●●●プロデューサーさん。",
     "episode_label": null

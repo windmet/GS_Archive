@@ -1,3 +1,5 @@
+import { readingDirectoryKey } from './ReadingDirectory.js'
+import { createBoundedTextTransport } from '../utils/BoundedTextTransport.js'
 import { validateReadingDocument, validateReadingManifest } from '../../shared/reading/ReadingContract.js'
 
 function freeze(value) {
@@ -8,65 +10,80 @@ function freeze(value) {
   return value
 }
 
+// The locator's canonical parent is advisory navigation data: anything malformed is ignored, never an error.
+export function readingParent(value) {
+  const route = value?.route
+  if (!route || typeof route.view !== 'string' || !route.view) return null
+  const clean = {}
+  for (const [key, field] of Object.entries(route)) {
+    if (typeof field !== 'string' || !field.trim()) return null
+    clean[key] = field
+  }
+  return Object.freeze({ route: Object.freeze(clean), source: typeof value.source === 'string' ? value.source : '' })
+}
+
 export function createReadingRepository({ fetchImpl = (...args) => fetch(...args),
   digest = async bytes => `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')}`,
-  locatorResolver = null,
+  locatorResolver = null, timeoutMs = 12000,
 } = {}) {
-  let manifestRequest = null
+  // The whole manifest is only a fallback when no read-model locator is wired; at 3113 documents
+  // (seasonal campaigns included) it is 2.1 MB uncompressed, so the bound leaves room above that.
+  const transport = createBoundedTextTransport({fetchImpl,timeoutMs,binary:true,maxBytes:3*1024*1024,cacheBytes:6*1024*1024,maxEntries:16})
   const documents = new Map()
-  async function request(url) {
-    const response = await fetchImpl(url)
-    if (!response.ok) throw Error(`Reading HTTP ${response.status}`)
-    if ((response.headers.get('content-type') || '').includes('text/html')) throw Error('Reading received HTML')
-    return response
+  let manifestRevision = 0
+  const cacheKey = entry => `${entry.schema_version}:${entry.document_id}:${entry.sha256}`
+  const sameEntry = (a, b) => !Object.keys(a).some(key => a[key] !== b[key]) && !Object.keys(b).some(key => b[key] !== a[key])
+  function peek(documentId, entry) {
+    if (!entry || entry.document_id !== documentId) return null
+    const cached = documents.get(cacheKey(entry))
+    if (!cached?.document || !sameEntry(entry, cached.entry)) return null
+    return {status:cached.document.status,document:cached.document}
   }
-  function manifest({ fresh = false } = {}) {
-    if (!manifestRequest || fresh) {
-      const pending = request('/data/reading/manifest.json').then(r => r.json())
-        .then(validateReadingManifest).then(freeze).catch(error => {
-          if (manifestRequest === pending) manifestRequest = null
-          throw error
-        })
-      manifestRequest = pending
-    }
-    return manifestRequest
+  async function manifest({ fresh = false, signal } = {}) {
+    const url='/data/reading/manifest.json'
+    if (fresh) {manifestRevision++; transport.invalidate(url)}
+    const revision = manifestRevision
+    try {return freeze(validateReadingManifest(JSON.parse(new TextDecoder().decode(await transport.load(url,{signal})))))}
+    catch(error) {if (!signal?.aborted && revision === manifestRevision) transport.invalidate(url); throw error}
   }
-  async function locator(documentId, { fresh = false } = {}) {
+  async function locator(documentId, { fresh = false, signal } = {}) {
     if (!/^[A-Za-z0-9_-]+$/.test(documentId || '')) throw new TypeError('Invalid reading document ID')
     if (!locatorResolver) {
-      const entries = (await manifest({ fresh })).entries
+      const entries = (await manifest({ fresh,signal })).entries
       return { entry: entries.find(entry => entry.document_id === documentId) || null, entries }
     }
-    const result = await locatorResolver(documentId, { fresh })
+    const result = await locatorResolver(documentId, { fresh,signal })
     const entries = validateReadingManifest({ schema_version: 1, entries: result.entries }).entries
     const entry = entries.find(candidate => candidate.document_id === documentId)
     if (!entry && result.entry === null && entries.length === 0) return freeze({ entry: null, entries })
     if (!entry || Object.keys(entry).some(key => entry[key] !== result.entry?.[key]) ||
       Object.keys(result.entry).some(key => entry[key] !== result.entry[key])) throw Error('Reading locator identity mismatch')
-    if (entries.some(candidate => candidate.logical_id !== entry.logical_id)) throw Error('Reading locator segment mismatch')
-    return freeze({ entry, entries })
+    if (entries.some(candidate => readingDirectoryKey(candidate) !== readingDirectoryKey(entry))) throw Error('Reading locator segment mismatch')
+    return freeze({ entry, entries, parent: readingParent(result.parent) })
   }
-  async function load(documentId, knownEntry = undefined) {
+  async function load(documentId, knownEntry = undefined, {signal} = {}) {
     if (!/^[A-Za-z0-9_-]+$/.test(documentId || '')) throw new TypeError('Invalid reading document ID')
-    const entry = knownEntry === undefined ? (await locator(documentId)).entry : knownEntry
+    const entry = knownEntry === undefined ? (await locator(documentId,{signal})).entry : knownEntry
     if (entry && entry.document_id !== documentId) throw Error('Reading locator identity mismatch')
     if (!entry) return { status: 'not-generated', document: null }
-    const key = `${entry.schema_version}:${entry.document_id}:${entry.sha256}`
-    if (!documents.has(key)) {
-      const pending = request(`/data/reading/${entry.file}?rev=${entry.sha256.slice(7)}`)
-        .then(async response => {
-          const bytes = await response.arrayBuffer()
-          if (await digest(bytes) !== entry.sha256) throw Error('Reading document digest mismatch')
-          return freeze(validateReadingDocument(JSON.parse(new TextDecoder().decode(bytes)), entry))
-        }).catch(error => {
-          if (documents.get(key) === pending) documents.delete(key)
-          throw error
-        })
-      documents.set(key, pending)
-      if (documents.size > 16) documents.delete(documents.keys().next().value)
+    const key = cacheKey(entry)
+    if (documents.has(key) && !sameEntry(entry, documents.get(key).entry)) throw Error('Reading locator identity mismatch')
+    signal?.throwIfAborted()
+    let document = documents.get(key)?.document
+    if (!document) {
+      const url = `/data/reading/${entry.file}?rev=${entry.sha256.slice(7)}`
+      try {
+        const bytes = await transport.load(url,{signal})
+        if (await digest(bytes) !== entry.sha256) throw Error('Reading document digest mismatch')
+        signal?.throwIfAborted()
+        document = freeze(validateReadingDocument(JSON.parse(new TextDecoder().decode(bytes)),entry))
+        if (documents.has(key) && !sameEntry(entry,documents.get(key).entry)) throw Error('Reading locator identity mismatch')
+        if (documents.has(key)) document=documents.get(key).document
+        else documents.set(key,{entry:{...entry},document})
+        while (documents.size > 16) documents.delete(documents.keys().next().value)
+      } catch(error) {if (!signal?.aborted) transport.invalidate(url); throw error}
     }
-    const document = await documents.get(key)
     return { status: document.status, document }
   }
-  return { manifest, locator, load }
+  return { manifest, locator, load, peek }
 }

@@ -95,13 +95,15 @@ export function createArchiveDataRepository({ fetchImpl = (...args) => globalThi
     return { idolEpisode, mobileArchive, randomTalkPresentation }
   }
 
+  function loadCharacterPortraitData() { return fetchJson('rawCharacterImagePromotions', ARCHIVE_SOURCES.rawCharacterImagePromotions) }
+
   function clearArchiveDataCache() {
     payloadCache.clear()
   }
 
-  return { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, clearArchiveDataCache }
+  return { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, loadCharacterPortraitData, clearArchiveDataCache }
 }
 
-export const { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, clearArchiveDataCache } = createArchiveDataRepository()
+export const { loadArchiveData, loadCardDetailData, loadIdolCommunicationData, loadCharacterPortraitData, clearArchiveDataCache } = createArchiveDataRepository()
 
 export { ARCHIVE_SOURCES, CARD_DETAIL_SOURCE, IDOL_COMMUNICATION_SOURCES }

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "008rei_403_2_4_008_03_09_b",
-  "logical_id": "story-collection:008rei_403_2_4_008_03_09_b",
+  "logical_id": "story:008rei_403_2_4_008_03_09_b",
   "scenario_id": "008rei_403_2_4_008_03_09_b",
   "text_catalog_id": "008rei_403_2_4_008_03_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "008rei_403_2_4_008_03_09_b.json",
-    "sha256": "sha256:e0742e60aa9cccbc5fe0d99c0dbd991fb6e9972a17606b6f8099a2a4f464b132",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:c9f6641649af742cd59734c9f9154fb2c955fb4b1ff40621e57af973d437876a",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:94a57e060bb50982ab367f54c1ca99002e9fb25ca47d8e356733330db9152176",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "008rei_403_2_4_008_03_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "もしもし、神楽だ。こちらは今練習を終えて、\n公園を出るところだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e0bfcd6a296c2e0ebdaf615e6f500c18aa0ff97972ac5425af93ea7b85edd6b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "長めに時間を取れたお陰で、無事に目標としていた\nステップに到達することができた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:24b4e81f2704b5c6f12a3666db34a219f18691d5bc14eaf24a38fca60b2092b2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "できればまた来週、時間を取りたい。\n調整を頼めるだろうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8c1327711037679bae521121fa7b3547ccf503dcd2c4e99b136958306577d8af"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "承知しました",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000013:choice_short:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 13,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c3fadad763e0ebc1b8fcec1a15db9e400c87ef3d92d46d5a45197ac093cc4c66"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "008rei_403_2_4_008_03_09_b:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000013",
+        "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000013:000",
         "source_label": "phone_select1",
         "target_step_id": 7,
         "target_step_index": 6,
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4e0b8a523dce367faa4b2cacf8af4e6fce2398b767caa3e9206a19310bff5e1f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "お疲れでは\nないですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:044885a26a0bba031c79c6f80f85ae0367ab2d06aea0557e4ec2b462fbfd69f9"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "008rei_403_2_4_008_03_09_b:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018",
+        "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018:000",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -277,7 +338,18 @@
     {
       "kind": "choice",
       "source_text": "無理はしないで\nくださいね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:980172cb006ba827fb5426bb9e16c36769e6515f69de593a987efe843712bd58"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -304,14 +376,14 @@
         "row_id": "008rei_403_2_4_008_03_09_b:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018",
+        "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000019:001",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "大変な部分もあるが、今は純粋に、\n練習を楽しいと感じている。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d995cd9f01b1626eee2d991a859e6e74f61338edeb5fde710b177b362ffa3c8c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "仕事の参考にと、プロの選手たちの映像を\n見ているうちに、感化されたのかもしれないな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bab65fbbe7a850efdb37e2a2889619ae5dee12997392c667aeac3ce034b22fe5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "もちろん、怪我などをして\n撮影当日に響くことはないよう気をつけるが……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:199111cf980a00392e94bcf720e14dbb034154ce0e4c39be3e86d1d76829bbfc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "本番当日までに、\n習得したいトリックもあるからな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:19b09a0f994d47a436a93aa573b25a964b2a50a7c11fbfb8b92599f58e64b73d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "スケジュールに問題がなければ、\nもう少し練習に時間を割きたいと思っている。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c8a5240e0e693d952bdd3dcffcb6b35e32d6b071ddc5d275a9cf8b27980573b0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "調整が取れ次第、教えてくれ。\nでは、こちらからもまた連絡する。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000032:phone_message:000",
+        "source": {
+          "scenario_id": "008rei_403_2_4_008_03_09_b",
+          "part_id": "2_4_008_03_09_b",
+          "file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+          "command_index": 32,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a56ef0ab06af96e4d6dd5360adf769bf5d3ef7e9f6216a3351ff5e7ea827f3b7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "神楽 麗"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "008rei_403_2_4_008_03_09_b:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_008_03_09_b",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "command_start": 32,
+        "command_end": 32
       },
       "option": null,
       "presentation": "call"
@@ -567,8 +693,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000013",
+          "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000013:000",
           "source_label": "phone_select1",
           "target_step_id": 7,
           "target_step_index": 6,
@@ -582,101 +708,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018",
+          "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018:000",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000018",
+          "option_id": "choice-option:v1:008rei_403_2_4_008_03_09_b:2_4_008_03_09_b:cmd-000019:001",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/008rei_403/scenario_2_4_008_03_09_b.json",
+        "raw_sha256": "sha256:32c8bea11ab4c6749cbc29487c6f022e2207d36730889a3c87088124bd8d2f07",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          18,
+          19
+        ],
+        "join_command": 20,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、神楽だ。こちらは今練習を終えて、",
     "episode_label": null

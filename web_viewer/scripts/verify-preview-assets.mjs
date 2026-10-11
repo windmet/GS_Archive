@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
-import { COPY_TRANSFORM, LOSSLESS_WEBP_TRANSFORM, previewTransformKind, resolvePreviewObjectKey } from '../shared/deploy/PreviewAssetTransform.js'
+import { COPY_TRANSFORM, LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM, previewTransformKind, resolvePreviewObjectKey } from '../shared/deploy/PreviewAssetTransform.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const manifest = JSON.parse(await fs.readFile(path.join(root, '.deploy', 'r2-manifest.json'), 'utf8'))
@@ -28,16 +28,19 @@ for (const entry of manifest.entries) {
   // Re-derive the expected policy from the request key rather than trusting the
   // manifest's own `transform` label; otherwise a labelling bug self-validates.
   assert.equal(entry.object_key, resolvePreviewObjectKey(entry.request_key), `Object key does not match the shared transform policy: ${entry.request_key}`)
-  assert.equal(entry.transform, previewTransformKind(entry.request_key), `Manifest transform disagrees with the shared policy: ${entry.request_key}`)
+  // A stage written before 2026-10-06 holds now-lossy pictures as lossless WebP under the same key.
+  const policy = previewTransformKind(entry.request_key)
+  assert.ok(entry.transform === policy || (policy === LOSSY_WEBP_TRANSFORM && entry.transform === LOSSLESS_WEBP_TRANSFORM),
+    `Manifest transform disagrees with the shared policy: ${entry.request_key}`)
   const expectedWebp = entry.object_key.endsWith('.webp')
   assert.equal(entry.deployed_content_type === 'image/webp', expectedWebp, `Content type disagrees with the physical extension: ${entry.object_key}`)
 
-  const transformed = previewTransformKind(entry.request_key) === LOSSLESS_WEBP_TRANSFORM
+  const transformed = [LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM].includes(policy)
   if (!transformed) {
     assert.equal(entry.request_key, entry.object_key, `Copy entry must not be renamed: ${entry.request_key}`)
     assert.equal(entry.deployed_content_type, entry.source_content_type, `Copy entry changed content type: ${entry.request_key}`)
   } else {
-    assert.equal(entry.transform, LOSSLESS_WEBP_TRANSFORM, `Unknown transform for ${entry.request_key}`)
+    assert.ok([LOSSLESS_WEBP_TRANSFORM, LOSSY_WEBP_TRANSFORM].includes(entry.transform), `Unknown transform for ${entry.request_key}`)
     assert.ok(entry.request_key.endsWith('.png'), `Transform source must be a PNG: ${entry.request_key}`)
     assert.ok(entry.object_key.endsWith('.webp'), `Transform target must be a WebP: ${entry.object_key}`)
     assert.equal(entry.deployed_content_type, 'image/webp', `Transform target must be served as WebP: ${entry.object_key}`)

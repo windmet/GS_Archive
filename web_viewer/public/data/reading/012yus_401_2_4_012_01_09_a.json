@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "012yus_401_2_4_012_01_09_a",
-  "logical_id": "story-collection:012yus_401_2_4_012_01_09_a",
+  "logical_id": "story:012yus_401_2_4_012_01_09_a",
   "scenario_id": "012yus_401_2_4_012_01_09_a",
   "text_catalog_id": "012yus_401_2_4_012_01_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "012yus_401_2_4_012_01_09_a.json",
-    "sha256": "sha256:bd04fd07a595ede247d0a31301117734b644b798ff148fb8f6cf7ea6b60abe7a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:9b73afdbf25104e5705b3ab61491aeddcaf5d4df0288aebfe8d89b233ee6244b",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:48dfe26cf8739904a1f8d4aae714e792af2a5622aec739b32749ac04b062c083",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "012yus_401_2_4_012_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "監督！　今って話せる？\nこの間さ、享介と行ってきたんだよ、遊園地！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:37ba79b9a7177aca8772d4c36001d413ae6ed031370ee50b7bbff2446ed6df06"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "オレの土産話を聞いて、\n享介も行きたくなったんだって！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d4cbf911863fd2d83d961db55a724d6515ab6ab1f96020b65df8da818e7a2eaa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "開園と同時に入場して、\n全部の乗り物を制覇してきたんだぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:194c9568884ceee9eee7e4e8153f32bf4e168d78fe08ee595d7ec7c0e16d8010"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "聞いているだけでも\n楽しそうです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000012:choice_short:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 12,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:543465e71e0bbb62858c30e7dc2c921fb4e6f035fd847d4f2887fb8203d496c6"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "012yus_401_2_4_012_01_09_a:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000012",
+        "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000012:000",
         "source_label": "phone_select1",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "うん！　夜遅くまでめいっぱい遊んだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a6a9becf04adf86bd1a29b920c95c6f4f2d03eb35e0fcfc8e78c457e3d813e0e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "出店で食べて、アトラクションに乗って、\nまた食べて……サイコーだったなあ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5a7e1f320b2a7652a150cb5fbbc7b40e357394b8f878b0a595ab4a3ce9f4fef1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -272,7 +331,18 @@
     {
       "kind": "choice",
       "source_text": "満喫してますね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91753603d9fde8d3eae881687453d3e10eedf2b852c96cbe0c0476237798178d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -299,14 +369,14 @@
         "row_id": "012yus_401_2_4_012_01_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000018",
+        "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000018:000",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "へへ、そーだね！\nそれで、思ったんだけどさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4ac41412611ba23826de36e060b963c025f984332a1f0f952a3beebc58d0b395"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "いつか事務所のみんなで遊園地に行けたら、\nサイコーじゃない？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:214de4785e33f9509e12abe96f4e6679a98435047385ff414a13102a7b66f138"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "貸し切りとかにしちゃってさ！\nどうかな、監督？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:91007e17cfb2498a2323dae5d3768c975ae3a27cef6e800646e13994ef9fe032"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -437,7 +534,18 @@
     {
       "kind": "choice",
       "source_text": "とても素敵だと\n思います！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027:choice_short:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 27,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5b11f35994eaa281e6ead6d4d1b6b7f94ca04f714868bbe33716c84345b06f1a"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -464,14 +572,14 @@
         "row_id": "012yus_401_2_4_012_01_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027",
+        "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027:000",
         "source_label": "phone_select3",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -482,7 +590,18 @@
     {
       "kind": "choice",
       "source_text": "すごく楽しそうです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000028:choice_short:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 28,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d6323e9c2ce376e5f5c7a1642338ec4a54b39d8eb95190f09c828fdc8b4058fe"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -509,14 +628,14 @@
         "row_id": "012yus_401_2_4_012_01_09_a:step-12:option-1",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027",
+        "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000028:001",
         "source_label": "phone_select3",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -527,11 +646,22 @@
     {
       "kind": "dialogue",
       "source_text": "だよね！　みんなで朝から晩まで遊ぶなんて、\n想像しただけでもスッゲー楽しそうだよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:95b0441f10c3869693e727f32a788a6d6277e97b714556243f8ca2e6c5ba0e08"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -547,19 +677,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -567,11 +695,22 @@
     {
       "kind": "dialogue",
       "source_text": "あれだけ人数いるから難しいかもしれないけど、\nいつか実現したらいいよな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7b7bf8ca42851dd5cf2d1db27cc3ecfc023a006f091d1cea39a868f20a794992"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -587,19 +726,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -607,11 +744,22 @@
     {
       "kind": "dialogue",
       "source_text": "監督も一緒に遊園地行こうぜ！\nそれじゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "012yus_401_2_4_012_01_09_a",
+          "part_id": "2_4_012_01_09_a",
+          "file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:83b68f15faf71e6aa9ec3c03554b6774ef40f04e90775ab81adcac7697c07830"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "012yus",
         "sourceName": "蒼井 悠介"
       },
       "performance": {
@@ -627,19 +775,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "012yus_401_2_4_012_01_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_012_01_09_a",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -652,8 +798,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000012",
+          "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000012:000",
           "source_label": "phone_select1",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -667,8 +813,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000018",
+          "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000018:000",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
@@ -682,111 +828,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027",
+          "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027:000",
           "source_label": "phone_select3",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000027",
+          "option_id": "choice-option:v1:012yus_401_2_4_012_01_09_a:2_4_012_01_09_a:cmd-000028:001",
           "source_label": "phone_select3",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 11,
+        "choice_step_id": 12,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/012yus_401/scenario_2_4_012_01_09_a.json",
+        "raw_sha256": "sha256:13a5c17dee83d336ee7e7189de20be3f7f0f123f4689572f734515f705758136",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          27,
+          28
+        ],
+        "join_command": 29,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "監督！　今って話せる？",
     "episode_label": null

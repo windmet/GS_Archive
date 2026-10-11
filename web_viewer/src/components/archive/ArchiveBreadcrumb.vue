@@ -87,7 +87,7 @@ function itemHref(item) {
 }
 
 .archive-breadcrumb a {
-  color: #177f79;
+  color: var(--gs-mint-ink);
   text-decoration: none;
 }
 

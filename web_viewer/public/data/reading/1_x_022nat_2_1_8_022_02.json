@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_022nat_2_1_8_022_02",
-  "logical_id": "story-collection:1_x_022nat_2_1_8_022_02",
+  "logical_id": "story:1_x_022nat_2_1_8_022_02",
   "scenario_id": "1_x_022nat_2_1_8_022_02",
   "text_catalog_id": "1_x_022nat_2_1_8_022_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_022nat_2_1_8_022_02.json",
-    "sha256": "sha256:f60dbd6f8252a14c35dfce656fd332d50a6a6ff66ac6ff9173f65d196467cb57",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f2465bdbec44e1fe7ddd4d15cac524ed6ec55a79739b009a992ec981c80931a5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_022nat_2_1_8_022_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "……誕生日おめでとう、\n●●●●プロデューサーさん……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000011:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 11,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:64e8b91e0eaace3b19531477752b5f423d20e08431f7cd8d0249dbee797eddc0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "022nat",
         "sourceName": "榊 夏来"
       },
       "performance": {
@@ -47,30 +61,39 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_022nat_2_1_8_022_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今年は……ちゃんと日付を覚えてた。だから、\n打ち合わせの時に伝えようって思ってて……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6846b9d9a1047aaa5c67f989238502a6a9fd95a85429ea3b9ce196f7b01100b7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "022nat",
         "sourceName": "榊 夏来"
       },
       "performance": {
@@ -87,7 +110,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -96,17 +118,28 @@
         "row_id": "1_x_022nat_2_1_8_022_02:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます、夏来さん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:51b75595d6af4c3eca1986c84cf09c7619858a2c6188bd686fe843616ed9327d"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -133,21 +166,32 @@
         "row_id": "1_x_022nat_2_1_8_022_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……ううん。\nお礼を言うのは俺のほう、かも……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:755bbab39f2c0b9201e17029985b533fd1a14bf77a2f220c38cdb736797f8756"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "022nat",
         "sourceName": "榊 夏来"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_022nat_2_1_8_022_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさんといることで……\nジュンも楽しそうな顔をすることが多くなったし……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c9d66b1bc2c24c0d51b51153595fb3f9d77bca61fa06ebe41fd9de6452e465dd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "022nat",
         "sourceName": "榊 夏来"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,21 +266,32 @@
         "row_id": "1_x_022nat_2_1_8_022_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "……俺も、前より毎日が楽しい気がする……から。\nありがとう、ね。●●●●プロデューサーさん……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_022nat_2_1_8_022_02:1_8_022_02:cmd-000033:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_022nat_2_1_8_022_02",
+          "part_id": "1_8_022_02",
+          "file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+          "command_index": 33,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34c8d2a942eefe6d30eb3559cdd329bdc870fed1c147957dfaf8f6b49a4c4fb3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "022nat",
         "sourceName": "榊 夏来"
       },
       "performance": {
@@ -244,7 +308,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -253,52 +316,16 @@
         "row_id": "1_x_022nat_2_1_8_022_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_022_02",
+        "source_file": "assets/resources/scenariodata/1_x_022nat_2/scenario_1_8_022_02.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "……誕生日おめでとう、",
     "episode_label": null

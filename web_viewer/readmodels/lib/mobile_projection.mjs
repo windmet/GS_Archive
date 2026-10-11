@@ -38,8 +38,13 @@ function referencedEpisodes(bundles, episodeIndex) {
 }
 
 export function buildMobileRecords({ mobileArchive, randomTalkPresentation, compiledIndex,
-  idolUnit, archiveManifest, cardIndex, idolEpisode }, selectors) {
+  idolUnit, archiveManifest, cardIndex, idolEpisode, storyCatalog }, selectors) {
   const titleMap = selectors.buildCompiledGroupTitleMap(compiledIndex);
+  // Others who speak in a one-to-one call (Haruna and Amehiko in one of Ren's card calls).
+  // The room stays the owner's; the archive only names who else is on the line.
+  const speakersByFile = new Map((storyCatalog?.entries || []).map(entry => [entry.file, entry.characters || []]));
+  const withGuests = (bundles, owner) => bundles.map(bundle => ({ ...bundle,
+    guests: (speakersByFile.get(bundle.file) || []).filter(code => code !== owner) }));
   const scenarioById = new Map((mobileArchive.scenarios || []).map(scenario => [scenario.id, scenario]));
   const group = (ids, kind) => selectors.groupMobileScenarios((ids || [])
     .map(id => scenarioById.get(id)).filter(scenario => scenario?.kind === kind), titleMap)
@@ -47,7 +52,7 @@ export function buildMobileRecords({ mobileArchive, randomTalkPresentation, comp
   const idolRecords = Object.keys(mobileArchive.by_idol_code || {}).map(idolCode => {
     const ids = mobileArchive.by_idol_code[idolCode];
     const personalBundles = group(ids, 'idol_talk');
-    const phoneBundles = group(ids, 'idol_phone');
+    const phoneBundles = withGuests(group(ids, 'idol_phone'), idolCode);
     const randomBundles = selectors.buildRandomTalkBundles(mobileArchive, idolCode, titleMap,
       randomTalkPresentation).map(bundle => ({
       id: bundle.id, file: bundle.file, exists: bundle.exists, title: bundle.title,

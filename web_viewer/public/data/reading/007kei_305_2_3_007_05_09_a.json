@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "007kei_305_2_3_007_05_09_a",
-  "logical_id": "story-collection:007kei_305_2_3_007_05_09_a",
+  "logical_id": "story:007kei_305_2_3_007_05_09_a",
   "scenario_id": "007kei_305_2_3_007_05_09_a",
   "text_catalog_id": "007kei_305_2_3_007_05_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "007kei_305_2_3_007_05_09_a.json",
-    "sha256": "sha256:da36075e885a5295612b80a65947ba7da50f5c53209b9b83e21e2d7edbbda34c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:44e839ade94e1d80569445e58241e66780aa1eec0d81a11564f54dc5f1667502",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:be6a59eb13636a16abd711cec557fd87eac7165b797d998b9a43e2142e155913",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "007kei_305_2_3_007_05_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "こんにちは、●●●●プロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3e6e5853bb65e9f1e62c18e0802747a396ce8aef7bc2352098e950891036a185"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "この前のイベントに来ていた子から、\n手紙が届いたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b51ef1fbc18ace927eed6bca52bc5194619096e6104b223a0847a884bc33b3b4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "好きなことを仕事にするのは辛くないか、って\n僕たちに質問をしてくれた子だよ。覚えてる？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7928ff5d6b8aeb44f0fed8c11f2a91527443ba38696b6585ef4932e02037418a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "僕たちと話してから、\n好きなことを仕事にしたみたいだよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:30244a9cb965d053d7a2bf861a38d93150310cfd18dbb3bc4212ff49c08e235c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "大変なこともあるけれど、\nそれ以上に充実しているって教えてくれた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a8519cf0086297a8ec0e355802146b62923ffa5c9259598a227ff2f7632575d3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "「あの時、背中を押してくれてありがとう」\n最後に、そう書いてあったんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c0f5b9414cf2cb8a4314b53815bd341eee1f74747a512493657d30a93fff46ab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -267,7 +324,18 @@
     {
       "kind": "choice",
       "source_text": "圭さんたちの想いが\n届きましたね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f64daeef20807a3d617e6b4eae6f667a8f9854a81241c2437e81ba09b6c1fd00"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -294,14 +362,14 @@
         "row_id": "007kei_305_2_3_007_05_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000018",
+        "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000018:000",
         "source_label": "phone_select1",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうだね。誰かの力になれたのは嬉しいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f15beb0ea76e7ddf12e2af74bbbe1e0fa29af6ef7a832ec0a7f79e53f846ce9d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "これもきっかけをくれた\n●●●●プロデューサーさんのおかげだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9a44e2f0bbe67cfda1fcc4f96fe0b12add1f6a1796e0f405917c55445ed5999e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -392,11 +478,22 @@
     {
       "kind": "dialogue",
       "source_text": "こんな僕だけど、\nこれからも一緒にいてくれるかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4aceb90bf9caef129eaea0242f66b8be5c17e4fc865be89e8646a0105c127bec"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -412,19 +509,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -432,7 +527,18 @@
     {
       "kind": "choice",
       "source_text": "もちろんです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027:choice_short:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 27,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c3e0eab7135bbf0124c363d162784a0708abfe045d94917138ffb36a58b21a3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -459,14 +565,14 @@
         "row_id": "007kei_305_2_3_007_05_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027",
+        "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027:000",
         "source_label": "phone_select2",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -477,7 +583,18 @@
     {
       "kind": "choice",
       "source_text": "はい！　これからも\nよろしくお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000028:choice_short:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 28,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2a6fe2a2959cc37f24cdd79308cb9dc669b4cd9c1650e2bc8bb12ed742fa7f0b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -504,14 +621,14 @@
         "row_id": "007kei_305_2_3_007_05_09_a:step-12:option-1",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 27,
+        "command_end": 28
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027",
+        "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000028:001",
         "source_label": "phone_select2",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "うん、ありがとう。それじゃあ、またね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "007kei_305_2_3_007_05_09_a",
+          "part_id": "2_3_007_05_09_a",
+          "file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e4098deb1d8a8922528a101fffa245ddce93acc414e99e625ec8bda9601e87d0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "007kei",
         "sourceName": "都築 圭"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "007kei_305_2_3_007_05_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_007_05_09_a",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -567,8 +693,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000018",
+          "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000018:000",
           "source_label": "phone_select1",
           "target_step_id": 9,
           "target_step_index": 8,
@@ -582,101 +708,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027",
+          "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027:000",
           "source_label": "phone_select2",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000027",
+          "option_id": "choice-option:v1:007kei_305_2_3_007_05_09_a:2_3_007_05_09_a:cmd-000028:001",
           "source_label": "phone_select2",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 11,
+        "choice_step_id": 12,
+        "join_index": 12,
+        "join_step_id": 13,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/007kei_305/scenario_2_3_007_05_09_a.json",
+        "raw_sha256": "sha256:87a4db587a4bef58f077e73d0750be567957e83a4f84aa55a797fdfa401da51c",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          27,
+          28
+        ],
+        "join_command": 29,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "こんにちは、●●●●プロデューサーさん。",
     "episode_label": null

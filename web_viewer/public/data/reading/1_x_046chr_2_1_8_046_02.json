@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_046chr_2_1_8_046_02",
-  "logical_id": "story-collection:1_x_046chr_2_1_8_046_02",
+  "logical_id": "story:1_x_046chr_2_1_8_046_02",
   "scenario_id": "1_x_046chr_2_1_8_046_02",
   "text_catalog_id": "1_x_046chr_2_1_8_046_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_046chr_2_1_8_046_02.json",
-    "sha256": "sha256:61fdd521c65a9e82941fcfde1107c02bf36cfb0a1ad6cbf6102538a1470d74de",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3c71da640cb66e4a9493731825af3d5f3edbbd6c28232691ba1218a9b46066f5",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_046chr_2_1_8_046_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "narration",
       "source_text": "留守番メッセージ・・・1件",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000005:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 5,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2740a9fbfe2632fdd6ea8222aca8e9c7dd1fe9a7ba345685e6ba452c2a64cc79"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_046chr_2_1_8_046_02:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 5,
+        "command_end": 5
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "おはようございます、●●●●プロデューサーさん。\nお誕生日おめでとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0a355f4316eb158d3e2a1522d4f45cc4425ef2f84aa9edd7b6805e75e000cc35"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -84,19 +109,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_046chr_2_1_8_046_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -104,11 +127,22 @@
     {
       "kind": "dialogue",
       "source_text": "豪快で美しい波の音が、電話越しにも伝わる\nでしょうか？　今、海辺で日の出を見ているのです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3f072027daeca39343c3828ba0b9c1bacd3a9c0d7c3bab0a8764f8b8a3abd05d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -124,19 +158,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_046chr_2_1_8_046_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -144,11 +176,22 @@
     {
       "kind": "dialogue",
       "source_text": "まるであなたを祝福しているかのような、\n素晴らしい輝きですよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14908859c9356aff33b5d3b99df94b146cae7e552c96afad77dbe6c7754bbdf8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -164,19 +207,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_046chr_2_1_8_046_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -184,11 +225,22 @@
     {
       "kind": "dialogue",
       "source_text": "写真を撮ったので、後でお会いした際に\nお見せしますね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5274e887810530d90dd708258e6014bda698adaadb4c3312519eb7560f7b302f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -204,19 +256,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_046chr_2_1_8_046_02:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -224,11 +274,22 @@
     {
       "kind": "dialogue",
       "source_text": "それでは、よい1年を過ごしてください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_046chr_2_1_8_046_02:1_8_046_02:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_046chr_2_1_8_046_02",
+          "part_id": "1_8_046_02",
+          "file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:15c779e122a4f377a46fb4ed091dff6a74ebe279fd7f2582c8115e67204df328"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -244,62 +305,24 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_046chr_2_1_8_046_02:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_046_02",
+        "source_file": "assets/resources/scenariodata/1_x_046chr_2/scenario_1_8_046_02.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "留守番メッセージ・・・1件",
     "episode_label": null

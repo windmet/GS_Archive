@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -49,6 +50,19 @@ class MediaTests(unittest.TestCase):
         a=m.build(self.pub,self.art)[0]
         self.cards[0]['title']='changed';self.write('data/masterdata/card_index.json',{'cards':self.cards})
         b=m.build(self.pub,self.art)[0];self.assertNotEqual(a['sourceSignature'],b['sourceSignature'])
+    def test_derivative_pixels_are_lossless(self):
+        file=self.art/'image_card_landscape/image_card_landscape_040ren_ssr03.png'
+        source=Image.new('RGBA',(320,180))
+        pixels=[(x*7%256,y*11%256,x*y%256,0 if x%7==0 else 128 if y%3==0 else 255) for y in range(180) for x in range(320)]
+        source.putdata(pixels)
+        source.save(file)
+        wallpapers,_,_,assets=m.build(self.pub,self.art,derivatives=True)
+        key=wallpapers['entries'][0]['landscape']['url'].lstrip('/')
+        with Image.open(io.BytesIO(assets[key])) as decoded:
+            self.assertEqual(decoded.size,source.size)
+            expected=Image.new('RGBA',source.size)
+            expected.putdata([(0,0,0,0) if pixel[3]==0 else pixel for pixel in pixels])
+            self.assertEqual(decoded.convert('RGBA').tobytes(),expected.tobytes())
     def test_budget_limit_explicit(self):
         w,_,r,_=m.build(self.pub,self.art,wallpaper_limit=1)
         self.assertEqual(len(w['entries']),1);self.assertTrue(any(x['reason']=='explicit-batch-limit' for x in r['rejected']))

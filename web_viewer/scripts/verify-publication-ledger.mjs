@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import Ajv2020 from 'ajv/dist/2020.js'
 import addFormats from 'ajv-formats'
+import {publicationGitSnapshot} from './lib/publication-git-snapshot.mjs'
 import {
   appendOnlyLedgerFailures,
   annotationIndexPath,
@@ -22,6 +23,16 @@ import {
   versionPolicySchemaPath,
 } from './lib/publication-ledger.mjs'
 
+// Same HEAD throughout one verifier process: memoize proof, not acceptance.
+const ancestorResults = new Map()
+function assertAncestor(commit) {
+  if (!ancestorResults.has(commit)) {
+    try {execFileSync('git',['merge-base','--is-ancestor',commit,'HEAD'],{cwd:projectRoot,stdio:'ignore'});ancestorResults.set(commit,true)}
+    catch {ancestorResults.set(commit,false)}
+  }
+  if(!ancestorResults.get(commit))throw Error('Not an ancestor of HEAD')
+}
+const trackedPaths = new Set(execFileSync('git',['ls-files','-z'],{cwd:repositoryRoot,encoding:'utf8'}).split('\0'))
 const failures = []
 const readJson = filename => readFile(filename, 'utf8').then(JSON.parse)
 const [
@@ -95,11 +106,7 @@ for (const [releaseIndex, record] of releases.entries()) {
   }
 
   try {
-    execFileSync(
-      'git',
-      ['merge-base', '--is-ancestor', release.prepared_from_commit, 'HEAD'],
-      { cwd: projectRoot, stdio: 'ignore' },
-    )
+    assertAncestor(release.prepared_from_commit)
   } catch {
     failures.push(`${filename} prepared_from_commit is not an ancestor of HEAD`)
   }
@@ -164,11 +171,7 @@ for (const [releaseIndex, record] of releases.entries()) {
       const acceptance = entry.browser_acceptance
       if (['sample-accepted', 'browser-accepted'].includes(acceptance.state)) {
         try {
-          execFileSync(
-            'git',
-            ['merge-base', '--is-ancestor', acceptance.tested_commit, 'HEAD'],
-            { cwd: projectRoot, stdio: 'ignore' },
-          )
+          assertAncestor(acceptance.tested_commit)
         } catch {
           failures.push(`${filename} browser tested_commit is not an ancestor of HEAD`)
         }
@@ -268,11 +271,7 @@ for (const { filename, annotation } of annotations) {
   }
 
   try {
-    execFileSync(
-      'git',
-      ['merge-base', '--is-ancestor', annotation.prepared_from_commit, 'HEAD'],
-      { cwd: projectRoot, stdio: 'ignore' },
-    )
+    assertAncestor(annotation.prepared_from_commit)
   } catch {
     failures.push(`${filename} prepared_from_commit is not an ancestor of HEAD`)
   }
@@ -322,16 +321,14 @@ if (baseSha && !/^[a-f0-9]{40}$/.test(baseSha)) {
   }
 }
 
+const currentPaths=[...new Set(Object.values(generated.by_logical_id).flatMap(state=>state.artifacts.map(artifact=>artifact.path)))]
+const gitSnapshot=publicationGitSnapshot(currentPaths,repositoryRoot)
 for (const state of Object.values(generated.by_logical_id)) {
   for (const artifact of state.artifacts) {
-    const failure = verifyPublishedArtifact(artifact)
+    const failure = verifyPublishedArtifact(artifact,gitSnapshot(artifact.path))
     if (failure) failures.push(failure)
     try {
-      execFileSync(
-        'git',
-        ['ls-files', '--error-unmatch', '--', artifact.path],
-        { cwd: repositoryRoot, stdio: 'ignore' },
-      )
+      if(!trackedPaths.has(artifact.path))throw Error('Not tracked')
     } catch {
       failures.push(`current stable artifact is not Git tracked: ${artifact.path}`)
     }

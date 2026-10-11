@@ -73,17 +73,20 @@ async function verifyFixtures() {
     scenarioId: '1_4_001_01',
     locale: 'zh-CN',
   }), { valid: true, errors: [] })
-  assert.equal(Object.keys(formalOverlay.entries).length, 3)
+  assert.equal(Object.keys(formalOverlay.entries).length, 209)
+  assert(Object.values(formalOverlay.entries).every(entry => entry.status === 'reviewed'))
   const formalEvidencePath = 'public/data/compiled/episodes/1_4_001_01_d.json'
   if (existsSync(path.resolve(ROOT, formalEvidencePath))) {
+    const segmentOverlay = { ...formalOverlay, entries: Object.fromEntries(Object.entries(formalOverlay.entries)
+      .filter(([unitId]) => unitId.startsWith('story-text:v1:1_4_001_01:1_4_001_01_d:'))) }
     const formalReport = diagnoseStoryTranslations({
       evidence: await loadJson(formalEvidencePath),
-      overlay: formalOverlay,
+      overlay: segmentOverlay,
       locale: 'zh-CN',
     })
     assert.equal(formalReport.counts.source_units, 27)
-    assert.equal(formalReport.counts.valid, 3)
-    assert.equal(formalReport.counts.missing, 24)
+    assert.equal(formalReport.counts.valid, 27)
+    assert.equal(formalReport.counts.missing, 0)
     assert.equal(formalReport.counts.stale, 0)
     assert.equal(formalReport.counts.orphaned, 0)
   }
@@ -92,7 +95,7 @@ async function verifyFixtures() {
   console.log('  missing/stale/orphaned/collision/invalid/control-character cases covered')
   console.log('  duplicate JSON keys rejected before object materialization')
   console.log('  1_4_001_01_d fixture: 3 translated, 5 explicitly reported missing')
-  console.log('  formal 1_4_001_01 overlay: strict schema; 3 valid and 24 explicit fallback units when corpus is mounted')
+  console.log('  formal 1_4_001_01 overlay: 209 reviewed entries; sampled segment has 27 valid source-bound units')
 }
 
 async function main() {

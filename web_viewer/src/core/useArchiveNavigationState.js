@@ -1,5 +1,7 @@
 import { ref } from 'vue'
+import { storyContentMode } from '../utils/LanguageStore.js'
 import { ownsArchiveSource } from './archiveRoute.js'
+import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 
 // Own URL-facing state; consumers receive the original refs, never copies.
 // Resource payloads, playback queues and async loading are feature-owned.
@@ -8,11 +10,13 @@ export function useArchiveNavigationState() {
   const playerEntryRoute = ref(null)
   const currentPickTarget = ref('')
   const portalFrom = ref('')
+  const portalScope = ref(''), portalQuery = ref(''), homeFrom = ref('')
   const detailSourceRoute = ref('')
   const readingDocumentId = ref('')
   const readingRowId = ref('')
-  const readingMode = ref('original')
+  const readingMode = ref(storyContentMode.value)
   const readingRevision = ref('')
+  const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)
   const returnViewAfterPlayer = ref('files')
   const storyCollectionParentView = ref('')
@@ -44,8 +48,14 @@ export function useArchiveNavigationState() {
   const stageTargetId = ref('')
   const currentSongScope = ref('all')
   const currentEventId = ref('')
+  const currentEventBrowseState = ref(normalizeEventBrowseState())
+  const currentEntityKey = ref('')
+  const currentCollectionState = ref({kind:'items',category:'',idol:'',unit:'',attribute:'',page:0})
+  const currentPhotoIdol = ref('')
+  const currentPhotoEntity = ref('')
   const currentGashaId = ref('')
   const currentGashaCategory = ref('all')
+  const currentCardAttribute = ref('all')
   const currentCardRarity = ref('all')
   const currentCardAssetState = ref('all')
   const currentCardRelationState = ref('all')
@@ -61,26 +71,28 @@ export function useArchiveNavigationState() {
       ...playerEntryRoute.value, view: 'player', scenario: currentScenarioFile.value,
       startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
       initialStep: currentScenarioInitialStep.value, voice: currentPreviewCue.value,
-      returnView: returnViewAfterPlayer.value,
+      returnView: returnViewAfterPlayer.value, ...(playMode.value ? { playMode:playMode.value } : {}),
     }
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-        readingMode: readingMode.value, readingRev: readingRevision.value,
+        readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
         ...(currentStoryDomain.value === 'work' ? { workMode: currentWorkMode.value } : {}),
         event: currentEventId.value, parentView: currentEventId.value ? eventParentView.value : '',
         ...(detailSourceRoute.value.startsWith('?') ? { sourceRoute: detailSourceRoute.value } : {}),
-        idol: ['work', 'idol_story'].includes(currentStoryDomain.value) ? currentCharacterId.value : '',
+        idol: ['work', 'idol_story', 'seasonal_campaign'].includes(currentStoryDomain.value) ? currentCharacterId.value : '',
         ...(currentStoryDomain.value === 'idol_story' ? { episode: currentEpisodeId.value } : {}),
         ...(view.value === 'player' ? { scenario: currentScenarioFile.value,
           startStep: currentScenarioStartStep.value, endStep: currentScenarioEndStep.value,
           initialStep: currentScenarioInitialStep.value, returnView: 'reader' } : {}),
       }
     }
-    if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value }
+    if (view.value === 'portal') return { view: 'portal', portalFrom: portalFrom.value,
+      ...(portalScope.value ? { portalScope: portalScope.value } : {}),
+      ...(portalQuery.value ? { portalQuery: portalQuery.value } : {}) }
     if (view.value === 'welcome' || view.value === 'idol_picker') return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
@@ -92,7 +104,7 @@ export function useArchiveNavigationState() {
     const preservesEventContext = view.value === 'event_detail' || returnsToEvent
     const preservesStoryDetailContext = view.value === 'story_detail' || returnsToStory
     const preservesStoryCollectionContext = view.value === 'story_collection' || returnsToStoryCollection
-    const preservesSongContext = view.value === 'song_detail' ||
+    const preservesSongContext = ['song_detail', 'chart_lab'].includes(view.value) ||
       (view.value === 'chibi_stage' && Boolean(currentSongId.value)) ||
       (preservesStoryCollectionContext && storyCollectionParentView.value === 'song_detail')
     const preservesArchiveUnit = view.value === 'unit_detail' ||
@@ -104,12 +116,16 @@ export function useArchiveNavigationState() {
     return {
       view: view.value,
       ...(view.value === 'idol_picker' ? { pickTarget: currentPickTarget.value } : {}),
+      ...(view.value === 'collection_catalog' ? {entity:currentEntityKey.value,collection:currentCollectionState.value} : {}),
+      ...(view.value === 'event_catalog' ? {eventBrowse:currentEventBrowseState.value} : {}),
+      ...(['photo_catalog','picture_studio'].includes(view.value) ? {photoIdol:currentPhotoIdol.value,photoEntity:currentPhotoEntity.value} : {}),
       ...(ownsArchiveSource(view.value, returnViewAfterPlayer.value) && detailSourceRoute.value.startsWith('?')
         ? { sourceRoute: detailSourceRoute.value } : {}),
       ...(view.value === 'player' && currentScenarioInitialStep.value ? { initialStep: currentScenarioInitialStep.value } : {}),
       homeIdol: view.value === 'home' ? homeSelectedId.value : '',
       homeCue: view.value === 'home' ? homeSelectedCue.value : '',
       homeCostume: view.value === 'home' ? homeSelectedCostume.value : '',
+      ...(view.value === 'home' && homeFrom.value ? { homeFrom: homeFrom.value } : {}),
       category: currentCategoryId.value,
       idol: currentCharacterId.value,
       group: currentGroup.value?.id || '',
@@ -140,6 +156,7 @@ export function useArchiveNavigationState() {
       gasha: view.value === 'gasha_detail' ? currentGashaId.value : '',
       gashaType: ['gashas', 'gasha_detail'].includes(view.value) ? currentGashaCategory.value : 'all',
       rarity: currentCardRarity.value,
+      cardAttribute: currentCardAttribute.value,
       assetState: currentCardAssetState.value,
       relationState: currentCardRelationState.value,
       query: filterQuery.value,
@@ -147,7 +164,7 @@ export function useArchiveNavigationState() {
       startStep: view.value === 'player' ? currentScenarioStartStep.value : 0,
       endStep: view.value === 'player' ? currentScenarioEndStep.value : 0,
       voice: view.value === 'player' ? currentPreviewCue.value : '',
-      returnView: returnViewAfterPlayer.value,
+      returnView: view.value === 'player' ? returnViewAfterPlayer.value : '', // a stale player return never reaches another page's URL
       parentView: preservesEventContext
         ? eventParentView.value
         : (preservesStoryDetailContext
@@ -161,15 +178,20 @@ export function useArchiveNavigationState() {
   }
 
   return {
+    currentEntityKey,
+    currentCollectionState,
+    currentPhotoIdol,
+    currentPhotoEntity,
     view,
     playerEntryRoute,
     currentPickTarget,
     portalFrom,
+    portalScope, portalQuery, homeFrom,
     detailSourceRoute,
     readingDocumentId,
     readingRowId,
     readingMode,
-    readingRevision,
+    readingRevision, readingScope, playMode,
     currentScenarioInitialStep,
     returnViewAfterPlayer,
     storyCollectionParentView,
@@ -201,9 +223,11 @@ export function useArchiveNavigationState() {
     stageTargetId,
     currentSongScope,
     currentEventId,
+    currentEventBrowseState,
     currentGashaId,
     currentGashaCategory,
     currentCardRarity,
+    currentCardAttribute,
     currentCardAssetState,
     currentCardRelationState,
     filterQuery,

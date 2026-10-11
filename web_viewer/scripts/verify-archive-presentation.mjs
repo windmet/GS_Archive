@@ -1,17 +1,22 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { parse } from '@vue/compiler-sfc'
 import { parseExpression } from '@babel/parser'
 import { baseParse, parserOptions } from '@vue/compiler-dom'
 import { createServer } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { createSSRApp } from 'vue'
+import { createSSRApp, h } from 'vue'
 import { renderToString } from '@vue/server-renderer'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 import { cardScenarioTitle } from '../src/presentation/CardPresentation.js'
+import { buildSeasonalLedger } from '../readmodels/lib/seasonal_ledger.mjs'
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8')
 const json = path => JSON.parse(read(`public/data/${path}`))
+// compiled/index.json is gitignored corpus; it only supplies group titles. Without it (CI) the
+// projection runs with an empty index and every assertion below still applies.
+const compiledIndex = () => existsSync(new URL('../public/data/compiled/index.json', import.meta.url)) ? json('compiled/index.json')
+  : (console.log('compiled/index.json not mounted: group titles fall back to source names'), { characters: [], categories: [] })
 const catalog = json('song_catalog.json')
 const identity = json('masterdata/idol_unit_dictionary.json')
 const manifest = json('archive_manifest.json')
@@ -23,8 +28,12 @@ const presentations = Object.values(catalog.songs).map(song => buildSongPresenta
 }))
 const byId = Object.fromEntries(presentations.map(song => [song.id, song]))
 assert.equal(byId.brndnf.unit.displayName, 'Jupiter')
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /打开默认舞台编成/)
-assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /不继承上方试听中的演唱选择/)
+assert.equal(byId.brndnf.attributeLabel, 'Intelli')
+assert.equal(byId.drvalv.attributeLabel, 'ALL')
+assert.ok(presentations.every(song => ['Physical', 'Intelli', 'Mental', 'ALL'].includes(song.attributeLabel)))
+assert.equal(buildSongPresentation({ ...catalog.songs.brndnf, attribute: undefined }, identity).attributeLabel, '待确认')
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /2D舞台演出/)
+assert.match(read('src/components/archive/ArchiveSongDetail.vue'), /openStage\(\{ songCode: song\.id, choreographyId: song\.stageCandidate\.id \}\)/, 'stage navigation preserves its own source identity')
 assert.equal(byId.brndnf.performers[0].displayName, '天ヶ瀬 冬馬')
 assert.equal(byId.brndnf.performers[0].reference.unitName, 'Jupiter')
 assert.equal(byId.brndnf.performers[0].reference.imageCandidates[0].kind, 'idol_icon')
@@ -65,7 +74,7 @@ assert.equal(before, JSON.stringify([catalog, identity, manifest, playback, expe
 // Guard rendered text, not keys, URLs or event payloads. Explicit technical slots are exempt.
 // This is a bounded migrated-surface gate, not a claim about every archive page.
 const technicalField = /(?:_(?:id|code)$|^(?:id|code|resourceId|classification_source|_source|raw_category|raw_selector|script_label|evidenceLabel|evidence|resource|cue)$)/
-const namedProjections = new Set(['filterCount', 'tabCount', 'idolName', 'characterName', 'formatDate', 'formatDateTime', 'formatNumber', 'formatDuration', 'formatTime', 'locationLabel', 'unlockText', 'unlockTitle', 'timeWindow', 'shortType', 'voiceSourceLabel', 'scenarioSubtitle'])
+const namedProjections = new Set(['filterCount', 'tabCount', 'idolName', 'displayIdolName', 'characterName', 'formatDate', 'formatDateTime', 'formatNumber', 'formatDuration', 'formatTime', 'locationLabel', 'unlockText', 'unlockTitle', 'timeWindow', 'shortType', 'voiceSourceLabel', 'scenarioSubtitle'])
 function technicalOutput(node) {
   if (!node) return false
   if (node.type === 'MemberExpression' || node.type === 'OptionalMemberExpression') return technicalField.test(node.property.name || node.property.value || '')
@@ -95,7 +104,7 @@ function leaks(template) {
     if (!technical && node.type === 2 && /\b(?:RAW|ACB|cue|Confirmed|Derived)\b|表\s*46|字段\s*\d/.test(node.content)) failures.push(node.content)
     for (const child of node.children || []) walk(child, technical)
   }
-  walk(baseParse(template))
+  walk(baseParse(template, parserOptions))
   return failures
 }
 assert.ok(leaks('<p>{{ item.resource_id }}</p>').length)
@@ -126,9 +135,24 @@ try {
   for (const song of presentations) {
     const html = await renderToString(createSSRApp(Detail, { song }))
     assert.ok(!/\b\d{3}[a-z]{3}\b|表\s*46|\bRAW\b|\bACB\b/.test(publicText(html)), song.id)
-    assert.ok(html.includes('data-technical-details'), song.id)
+    assert.ok(!html.includes('<pre'), `${song.id}: readers never receive raw evidence JSON`)
     assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(html), 'evidence is closed by default')
   }
+  // Raw evidence JSON is a maintainer tool; written-out sources stay visible to readers.
+  const { default: Technical } = await server.ssrLoadModule('/src/components/archive/ArchiveTechnicalDetails.vue')
+  const renderTechnical = (slot, evidence = { resource_id: 'x1' }) => renderToString(createSSRApp({
+    render: () => h(Technical, { evidence }, slot ? { default: () => h('p', '来源说明') } : undefined),
+  }))
+  const readerBare = await renderTechnical(false)
+  const readerWritten = await renderTechnical(true)
+  assert.ok(!readerBare.includes('data-technical-details'), 'no slot and no maintainer: nothing is rendered')
+  assert.ok(readerWritten.includes('data-technical-details') && readerWritten.includes('来源说明') && !readerWritten.includes('<pre') && !readerWritten.includes('resource_id'))
+  globalThis.location = { search: '?maintainer=1' }
+  try {
+    const maintainer = await renderTechnical(false)
+    assert.ok(maintainer.includes('data-technical-details') && maintainer.includes('resource_id'), 'maintainer mode exposes raw evidence')
+    assert.ok(!/<details[^>]*\sopen(?:[\s=>])/.test(maintainer))
+  } finally { delete globalThis.location }
   async function checkPage(name, props, expected = []) {
     const { default: Component } = await server.ssrLoadModule(`/src/components/archive/${name}.vue`)
     const html = await renderToString(createSSRApp(Component, props))
@@ -171,11 +195,23 @@ try {
     if (card.voice_candidates?.unmapped_card_only?.length) assert.ok(html.includes(card.voice_candidates.unmapped_card_only[0]))
   }
   const sourceEvent = json('masterdata/event_index.json').events[0]
-  await checkPage('ArchiveEventDetail', { event: { event_id: 'test', event_code: 'test', title: '测试活动', exists: false }, masterEvent: sourceEvent, idols: identity.idols }, ['剧情暂未收录'])
-  for (const campaign of json('masterdata/seasonal_campaign_index.json').campaigns) await checkPage('ArchiveSeasonalCampaign', { campaign })
+  await checkPage('ArchiveEventDetail', { view: {identity:{id:'test',eventCode:'test',title:'测试活动',kind:'theater'},period:{},media:{},provenance:{detailTable:113},rewards:{cards:[],general:[]},cast:[],cards:[],story:{entry:{event_id:'test',event_code:'test',title:'测试活动',exists:false}}} }, ['剧情暂未收录'])
+  const seasonalLedger = buildSeasonalLedger(json('masterdata/seasonal_campaign_index.json'), json('reading/manifest.json').entries)
+  for (const campaign of seasonalLedger.campaigns) await checkPage('ArchiveSeasonalCampaign', { page: { ledger: seasonalLedger }, focusId: campaign.id })
   for (const idol of json('masterdata/work_story_index.json').idols) await checkPage('ArchiveWorkStory', { idol })
-  const archive = json('masterdata/mobile_archive_index.json')
-  for (const mode of ['personal', 'phone', 'unit', 'random']) await checkPage('ArchiveMobileArchive', { archive, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units, cards, idolEpisodes: json('masterdata/idol_episode_index.json') })
+  // The page takes read-model records; render it with the production projection so the
+  // check cannot pass on an empty page (it used to receive a retired `archive` prop).
+  const { buildMobileRecords } = await import('../readmodels/lib/mobile_projection.mjs')
+  const mobileRecords = buildMobileRecords({
+    mobileArchive: json('masterdata/mobile_archive_index.json'), randomTalkPresentation: json('masterdata/random_talk_presentation_index.json'),
+    compiledIndex: compiledIndex(), idolUnit: identity, archiveManifest: manifest, cardIndex: { cards }, idolEpisode: json('masterdata/idol_episode_index.json'),
+  }, await import('../src/data/idolCommunicationSelectors.js'))
+  const idolData = mobileRecords.idolRecords.find(record => record.id === '001tom')
+  const unitData = mobileRecords.unitRecords.find(record => record.id === '01jup')
+  for (const mode of ['personal', 'phone', 'unit', 'random']) {
+    const { visible } = await checkPage('ArchiveMobileArchive', { idolData, unitData, mode, selectedIdol: '001tom', selectedUnit: '01jup', idols: identity.idols, units: identity.units })
+    assert.ok(visible.trim().length > 40, `ArchiveMobileArchive ${mode} renders content`)
+  }
   await checkPage('ArchiveStoryDetail', { story: { id: 'sample', title: '测试剧情', resourceId: '1_1_resource', file: 'sample.json', exists: false }, idolName }, ['暂未收录'])
   const { buildStoryCatalog } = await import('../src/data/archiveSelectors.js')
   const { buildStoryCollections } = await import('../src/data/storyCollections.js')
@@ -196,7 +232,12 @@ try {
   const normal = await renderToString(createSSRApp(Relations, { items }))
   assert.ok(publicText(normal).includes('可播放'))
   assert.ok(!publicText(normal).includes('Derived'))
-  assert.ok(normal.includes('relation_basis') && normal.includes('1_3_source'), 'evidence remains accessible')
+  assert.ok(!normal.includes('relation_basis') && !normal.includes('1_3_source'), 'relation evidence is hidden from readers')
+  globalThis.location = { search: '?maintainer=1' }
+  try {
+    const maintainerView = await renderToString(createSSRApp(Relations, { items }))
+    assert.ok(maintainerView.includes('relation_basis') && maintainerView.includes('1_3_source'), 'evidence remains accessible to maintainers')
+  } finally { delete globalThis.location }
   const technical = await renderToString(createSSRApp(Relations, { items, showEvidence: true }))
   assert.ok(publicText(technical).includes('Derived'))
   assert.ok(publicText(technical).includes('1_3_source'))

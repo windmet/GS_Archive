@@ -8,6 +8,8 @@
       :model-value="filterQuery"
       @update:model-value="updateArchiveFilter('filterQuery', $event)"
       :active-section="archiveSection"
+      compact-mobile
+      :immersive-tool="view === 'song_detail'"
       :home-focus="view === 'home' && homeFocus"
       :title="archiveTitle"
       :searchable="archiveSearchable"
@@ -17,15 +19,41 @@
       @navigate="navigateArchiveSection"
       @back="goArchiveBack"
     >
-      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId"
-        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="openStoryReader" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
+      <template #sidebar-identity>
+        <ArchiveStageIdolSwitch
+          :idol="preferredArchiveIdol"
+          :name="preferredArchiveIdol ? idolDisplayName(preferredArchiveIdol.id) || preferredArchiveIdol.name : ''"
+          :stage-light="Boolean(stageLightIdol)"
+          :idols="archivePickerIdols"
+          :idol-name="idolDisplayName"
+          :idol-search="idolEntitySearchText"
+          @save-preferred="savePreferredIdol"
+          @save-startup="storeUserPreferences"
+        />
+      </template>
+      <ArchiveStoryReader v-if="view === 'reader'" :state="readingState" :chapter="chapterReadingState" :chapter-navigation="readingChapterNavigation" @chapter="selectReaderChapter" :document-id="readingDocumentId" :mode="readingMode" :anchor="readingRowId" :idol-directory="archiveBootstrap.idols"
+        :related-event="currentEventId" @open-event="openEventDetail({event_id:currentEventId},'reader')"
+        :notice="readingPlaybackNotice" :busy="loading" @refresh="refreshStoryReader" @play-document="openReaderPlayback(readingRowId, { fullDocument: true })" @select="selectReaderDocument" @retry-segment="chapterReadingSession.retry" @play-segment="playChapterReadingSegment" @locate-segment="locateChapterReadingRow" @mode="updateReadingMode" @locate="locateReadingRow" @back="closeStoryReader" @retry="openStoryReader(readingDocumentId)" />
       <ArchivePortalLauncher
         v-if="view === 'portal'"
         :preferred-reference="preferredArchiveIdolReference"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :idols="archivePickerIdols"
         :preference-notice="userPreferenceNotice"
+        :view-reference="portalViewReference"
+        @select-scope="portalData.selectScope"
+        :desktop-overview="portalData.overview.value"
+        :global-search="portalData.search.value"
+        @search="portalData.updateSearch"
+        @open-result="openPortalResult"
+        @open-directory="openPortalDirectory"
+        @open-stage="openPortalStage"
+        @retry-overview="portalData.refresh"
+        @expand-cards="portalData.expandCardPool"
         @save-preferred="savePreferredIdol"
-        :loading-section="homeEntryStatus || legacyEntryStatus"
+        :loading-section="gashaReadModelStatus || homeEntryStatus || legacyEntryStatus"
+        :retry-section="gashaReadModelStatus && !loading ? 'gashas' : ''"
         :can-go-back="Boolean(portalFrom)"
         @navigate="navigateArchiveSection"
         @back="closeArchivePortal"
@@ -36,37 +64,47 @@
       <ArchiveWelcome
         v-if="view === 'welcome' || view === 'idol_picker' || (view === 'home' && !homeSelectedId)"
         :idols="view === 'idol_picker' && currentPickTarget !== 'home' ? archivePickerIdols : archiveHomeIdols"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :preferences="userPreferences"
         :preferred-idols="archivePickerIdols"
         :notice="userPreferenceNotice"
         :data-ready="archiveBootstrap.idols.length > 0"
         :selection-only="view === 'home' || view === 'idol_picker'"
-        :can-cancel="view === 'idol_picker' || (view === 'welcome' && Boolean(detailSourceRoute))"
+        :can-cancel="view === 'idol_picker' || view === 'welcome'"
         :target-label="idolPickerLabel"
         @cancel="cancelWelcomeOrPicker"
-        @choose-later="chooseStartupLater"
         @choose-idol="chooseImmersiveIdol"
         @save-preferred="savePreferredIdol"
-        @clear-preferences="clearUserPreferences"
+        @save-startup="storeUserPreferences"
+        @settings-applied="userPreferences = loadArchiveUserPreferences().preferences"
       />
-      <p v-if="view === 'home' && homeEntryStatus" class="home-read-model-status" role="status">{{ homeEntryStatus }}</p>
       <ArchiveImmersiveHome
         v-if="view === 'home' && homeSelectedId"
-        v-model:selected-id="homeSelectedId"
+        :selected-id="homeSelectedId"
+        @update:selected-id="selectHomeIdol"
         v-model:selected-cue="homeSelectedCue"
         v-model:selected-costume="homeSelectedCostume"
         :no-audio="NO_AUDIO"
         :idols="archiveHomeIdols"
+        :idol-name="idolDisplayName"
         :home-mode="userPreferences.homeMode === 'card' ? 'card' : 'spine'"
         @update:home-mode="storeUserPreferences({ homeMode: $event })"
         @focus-change="homeFocus = $event"
+        :can-return-to-archive="Boolean(homeFrom)"
+        @open-archive="openArchivePortal(homeSelectedId)"
+        @settings="openWelcomeSettings"
+        @return-to-archive="closeHomeVisit"
         :stats="archiveStats"
         @open-story="navigateArchiveSection('stories')"
         @open-cards="openHomeCards"
         @open-idol="openHomeIdol"
         @open-chat="openHomeChat"
+        @open-card="openHomeCard"
       />
 
+      <ArchiveAbout v-if="view === 'about'" />
+      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -75,13 +113,14 @@
         :title="categoryHeaderText"
         :filter-placeholder="categoryFilterPlaceholder"
         :idols="filteredIdols"
+        :idol-name="idolDisplayName"
         :unit-options="idolUnitOptions"
         :current-unit="currentIdolUnitFilter"
         :idols-before-unit-filter="searchMatchedIdols.length"
         @back="goArchiveBack"
         @select="openIdol"
         @select-unit="updateArchiveFilter('currentIdolUnitFilter', $event)"
-        @open-units="openUnitCatalog"
+        @open-unit="openArchiveUnit"
       />
 
       <ArchiveCardList
@@ -91,8 +130,10 @@
         @update:model-value="updateArchiveFilter('filterQuery', $event)"
         :title="currentCardCharacterName"
         :cards="filteredCardRows"
+        :idol-name="idolDisplayName"
         :rarity-tabs="cardRarityTabs"
         :current-rarity="currentCardRarity"
+        :current-attribute="currentCardAttribute"
         :current-asset-state="currentCardAssetState"
         :current-relation-state="currentCardRelationState"
         :idols="bootstrapIdolSwitcher"
@@ -101,6 +142,7 @@
         @back="goArchiveBack"
         @select-card="openCard"
         @select-rarity="updateArchiveFilter('currentCardRarity', $event)"
+        @select-attribute="updateArchiveFilter('currentCardAttribute', $event)"
         @select-asset-state="updateArchiveFilter('currentCardAssetState', $event)"
         @select-relation-state="updateArchiveFilter('currentCardRelationState', $event)"
         @select-idol="selectCardIdol"
@@ -109,18 +151,18 @@
       <ArchiveIdolDetail
         v-if="view === 'idol_detail'"
         :idol="currentIdolProfile"
-        :stats="currentIdolStats"
+        :idol-name="idolDisplayName"
+        :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
         :selected-idol="currentCharacterId"
-        @open-domain="openIdolDomain"
+        @open-domain="openIdolDomain" @open-honor="openCollectionEntity"
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
         @select-idol="selectPrimaryIdol"
       />
-      <p v-if="['idols', 'idol_detail'].includes(view) && idolReadModelStatus" class="idol-read-model-status" role="status">{{ idolReadModelStatus }}</p>
 
       <ArchiveCardDetail
         v-if="view === 'card_detail'"
@@ -128,12 +170,14 @@
         :card="currentCard"
         :owner-reference="currentCardOwnerReference"
         :asset-status="currentCardAssetStatus"
+        :limitbreak-material="currentCardLimitbreakMaterial"
         :art-mode="cardArtMode"
         :previous-card="previousCard"
         :next-card="nextCard"
         :series-cards="currentSeriesCards"
         :event-relation="currentCardEventRelation"
         :gasha-relation="currentCardGashaRelation"
+        :focus-voice="homeCardFocus.card === currentCard?.resource_id ? homeCardFocus.voice : ''"
         @back="goArchiveBack"
         @preview-voice="previewCardVoice"
         @open-scenario="openCardScenario"
@@ -142,6 +186,7 @@
         @open-event="openCardEvent"
         @open-gasha="openCardGasha"
         @open-idol="openCardIdol"
+        @open-entity="openCollectionEntity"
         @update:art-mode="cardArtMode = $event"
       />
 
@@ -153,6 +198,11 @@
         :total-gashas="gashaCatalog.length"
         :announcement-count="gashaReadModelCatalog?.summary?.gasha_count || 0"
         :pickup-count="gashaReadModelCatalog?.summary?.derived_pickup_count || 0"
+        :supplement-count="gashaReadModelCatalog?.summary?.ticket_supplement_count || 0"
+        :loaded="Boolean(gashaReadModelCatalog)"
+        :busy="loading"
+        :status="gashaReadModelStatus"
+        @retry="openGashaCatalog({preserveBrowse:true})"
         @select="openGasha"
         @update:category="updateArchiveFilter('currentGashaCategory', $event)"
       />
@@ -162,11 +212,15 @@
         :gasha="currentGasha"
         :idol-name="idolDisplayName"
         @open-card="openGashaCard"
+        @open-item="openCollectionEntity"
       />
 
       <ArchiveSongCatalog
         v-if="view === 'song_catalog'"
         :catalog="songReadModelCatalog"
+        :scope-idol="catalogScopeIdol" @clear-idol="clearCatalogIdol"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :status="songReadModelStatus"
         :scope="currentSongScope"
         :query="filterQuery"
@@ -176,41 +230,49 @@
         @update:query="updateArchiveFilter('filterQuery', $event)"
       />
 
-      <p v-if="view === 'song_detail' && (songReadModelStatus || legacyEntryStatus)" class="song-read-model-status" role="status">{{ songReadModelStatus || legacyEntryStatus }}</p>
       <ArchiveSongDetail
         v-if="view === 'song_detail' && currentSongPresentation"
+        :key="currentSongPresentation.id"
+        ref="songDetailView"
         :song="currentSongPresentation"
+        :idol-directory="archiveBootstrap.idols"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
+        @open-chart="openChartLab"
         @open-song="openSong"
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
         @open-related-story="openSongRelatedStory"
         @open-stage="openSongStage"
+        @ready="restoreSongDetailView"
       />
 
       <ArchiveEventDetail
         v-if="view === 'event_detail'"
-        :event="currentEvent"
-        :master-event="currentMasterEvent"
-        :story="currentEventStory"
-        :episodes="currentEventEpisodes"
-        :cards="currentEventCards"
-        :idols="currentEventIdols"
-        :units="currentEventUnits"
-        :projected-cast-references="currentEventProjection?.castReferences || null"
-        :identity="bootstrapIdolDictionary"
-        :manifest="bootstrapMembership"
-        :raw-visual-url="eventStoryIdolRawCandidateUrl"
+        :view="currentEventProjection" :load-reading-document="loadSynopsisReadingDocument"
+        :client="readModelClient" :bootstrap="archiveBootstrap"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentEventExternalResources : []"
-        :reading-entries="readingCatalogEntries"
         @read="openEventReader"
+        :display-idol-name="idolDisplayName"
         @play="playCurrentEvent"
         @play-episode="playCurrentEventEpisode"
         @open-card="openEventCard"
+        @open-collection-card="openCollectionCard"
         @open-idol="openEventIdol"
         @open-unit="openEventUnit"
+        @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
+        @open-event="openEventDetail($event, 'event_detail')"
       />
 
-      <p v-if="['groups', 'files', 'episodes', 'episode_zero_units'].includes(view) && legacyAliasStatus" class="idol-read-model-status" role="status">{{ legacyAliasStatus }}</p>
+      <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
+        :scope-idol="catalogScopeIdol" :idol-name="idolDisplayName" :load-idol="loadIdolDetail" @clear-idol="clearCatalogIdol"
+        :browse-state="currentEventBrowseState" @query="updateEventCatalogQuery" @browse="updateEventBrowse" @ready="onEventCatalogReady" @open-event="openEventDetail($event,view)" />
+      <ArchiveCollectionCatalog v-if="view==='collection_catalog'" :display-idol-name="idolDisplayName" :client="readModelClient" :bootstrap="archiveBootstrap" :entity="currentEntityKey" :browse-state="currentCollectionState" :query="filterQuery"
+        @query="filterQuery=$event; currentCollectionState={...currentCollectionState,page:0}; syncArchiveRoute({replace:true})" @browse="updateCollectionBrowse" @entity="openCollectionEntity" @open-card="openCollectionCard" @open-event="openEventDetail($event,view)" @open-gasha="openGasha" @open-idol="code => openIdolReadModel(code, { captureSource: true, resetContext: true })" />
+      <ArchivePhotoCatalog v-if="view==='photo_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :query="filterQuery" :display-idol-name="idolDisplayName"
+        @query="updatePhotoCatalogQuery" @photo-idol="selectPhotoIdol" @photo-entity="selectPhotoEntity" @ready="onPhotoCatalogReady" @open-studio="openPictureStudio" />
+
+
       <ArchiveGroupList
         v-if="view === 'groups'"
         embedded
@@ -260,7 +322,13 @@
       <ArchiveStoryCatalog
         v-if="view === 'story_catalog'"
         :entries="visibleStoryCatalogEntries"
-        :all-entries="storyCatalogEntries"
+        :scope-idol="catalogScopeIdol" @clear-idol="clearCatalogIdol"
+        :all-entries="catalogStoryEntries"
+        :search-entries="filteredStoryCatalog"
+        :idol-directory="archiveBootstrap.idols"
+        :search-query="filterQuery" @update:search-query="updateArchiveFilter('filterQuery',$event)"
+        :idol-name="idolDisplayName"
+        :idol-search="idolEntitySearchText"
         :domain-options="storyDomainOptions"
         :domain="currentStoryDomain"
         :section="currentStorySection"
@@ -269,7 +337,7 @@
         :event-scope="currentEventScope"
         :availability="currentStoryAvailability"
         :sort="currentStorySort"
-        :catalog-total="storyCatalogEntries.length"
+        :catalog-total="catalogStoryEntries.length"
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-count="storyCatalogIndex?.seasonalCount ?? 0"
         :work-count="storyCatalogIndex?.workCount ?? 0"
@@ -279,11 +347,12 @@
         :extra-domain="extraStoryDomain"
         :birthday-domain="birthdayStoryDomain"
         @select="openCatalogStory"
+        @open-event="openEventDetail($event,'story_catalog')"
         @browse="browseStoryCollection"
         @open-external-resources="openExternalStoryResources"
         @open-seasonal="openSeasonalCampaign()"
         @open-work="openWorkArchive()"
-        @open-idol-story="openIdolStoryArchive()"
+        @open-idol-story="openIdolStoryArchive($event)"
         @load-more="storyVisibleLimit += 80"
         @clear-section="updateArchiveFilter('currentStorySection', '')"
         @update:mode="setStoryMode"
@@ -321,7 +390,8 @@
         :collection="currentStoryCollection"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentStoryCollectionExternalResources : []"
         :initial-chapter-id="currentStoryCollectionChapter?.id || ''"
-        :reading-entries="readingCatalogEntries"
+        :idol-name="idolDisplayName"
+        :reading-entries="readingCatalogEntries" :reader-source="currentArchiveRoute()" :load-reading-document="loadSynopsisReadingDocument"
         @read-episode="openCollectionReader"
         @play-chapter="playStoryCollectionChapter"
         @play-episode="playStoryCollectionEpisode"
@@ -331,18 +401,24 @@
       />
 
       <ArchiveSeasonalCampaign
-        v-if="view === 'seasonal_campaign'"
-        :campaign="currentSeasonalCampaign"
-        :campaigns="seasonalReadModelCatalog || []"
-        :source-evidence="seasonalReadModelDetail?.view?.sourceEvidence || null"
+        v-if="view === 'seasonal_campaign' && currentSeasonalPage"
+        :page="currentSeasonalPage"
+        :focus-id="currentStorySection"
+        :participant-code="currentCharacterId"
+        :idols="archiveBootstrap.idols"
+        :idol-name="idolDisplayName"
+        @read="openSeasonalReader"
         @select="selectSeasonalCampaign"
+        @select-participant="selectSeasonalParticipant"
         @play="playSeasonalCampaignStory"
+        @play-participant="playSeasonalParticipant"
       />
 
       <ArchiveWorkStory
         v-if="view === 'work_archive'"
-        :idol="currentWorkIdol"
+        :idol="currentWorkIdol" :load-reading-document="loadSynopsisReadingDocument"
         :idols="workReadModelCatalog || []"
+        :idol-name="idolDisplayName"
         :source-evidence="workReadModelDetail?.view?.sourceEvidence || null"
         :reading-entries="readingCatalogEntries"
         :initial-file="currentStoryFile"
@@ -355,10 +431,11 @@
 
       <ArchiveIdolStory
         v-if="view === 'idol_story_archive'"
-        :story="currentIdolStoryPage"
+        :story="currentIdolStoryPage" :load-reading-document="loadSynopsisReadingDocument"
         :reading-entries="readingCatalogEntries"
         @read-episode="openIdolStoryReader"
         :idols="idolStoryOptions"
+        :idol-name="idolDisplayName"
         :external-resources="EXTERNAL_STORY_RESOURCES_ENABLED ? currentIdolStoryExternalResources : []"
         :focused-section-id="currentStorySection"
         :focused-episode-id="currentEpisodeId"
@@ -369,10 +446,9 @@
         @open-birthday="openIdolBirthdayArchive"
       />
 
-      <p v-if="view === 'mobile_archive' && mobileReadModelStatus" class="idol-read-model-status" role="status">{{ mobileReadModelStatus }}</p>
       <ArchiveMobileArchive
         v-if="view === 'mobile_archive'"
-        :idol-data="mobileIdolReadModelDetail"
+        :idol-data="mobileIdolReadModelDetail" :load-reading-document="loadSynopsisReadingDocument"
         :unit-data="mobileUnitReadModelDetail"
         :idols="mobileIdolOptions"
         :units="mobileUnitOptions"
@@ -380,6 +456,7 @@
         :selected-unit="currentArchiveUnitCode"
         :mode="currentMobileMode"
         :focused-scenario-id="currentMobileScenarioId"
+        :idol-name-from-source="idolDisplayNameFromSource"
         @select-idol="selectMobileIdol"
         @select-unit="selectMobileUnit"
         @update:mode="setMobileMode"
@@ -397,6 +474,7 @@
 
       <ArchiveUnitDetail
         v-if="view === 'unit_detail'"
+        :idol-name="idolDisplayName"
         :unit="currentArchiveUnit"
         :members="currentArchiveUnitMembers"
         :identity="bootstrapIdolDictionary"
@@ -411,36 +489,38 @@
         @open-cards="openUnitCards"
         @open-song="openSong"
       />
-      <p v-if="!loading && cardReadModelStatus" role="status">{{ cardReadModelStatus }}</p>
-      <p v-if="!loading && gashaReadModelStatus" role="status">{{ gashaReadModelStatus }}</p>
-      <p v-if="!loading && eventReadModelStatus" role="status">{{ eventReadModelStatus }}</p>
-      <p v-if="!loading && seasonalReadModelStatus" role="status">{{ seasonalReadModelStatus }}</p>
-      <p v-if="!loading && workReadModelStatus" role="status">{{ workReadModelStatus }}</p>
-      <p v-if="!loading && idolStoryReadModelStatus" role="status">{{ idolStoryReadModelStatus }}</p>
-      <p v-if="!loading && collectionReadModelStatus" role="status">{{ collectionReadModelStatus }}</p>
-      <p v-if="!loading && storyReadModelStatus" role="status">{{ storyReadModelStatus }}</p>
-      <p v-if="!loading && resourceReadModelStatus" role="status">{{ resourceReadModelStatus }}</p>
-      <p v-if="['unit_catalog', 'unit_detail'].includes(view) && unitReadModelStatus" class="unit-read-model-status" role="status">{{ unitReadModelStatus }}</p>
       <template #pending>
-        <GsLoadingIndicator v-if="routePending" variant="inline" message="正在准备下一页…" />
+        <GsLoadingIndicator v-if="routePending" variant="inline" :message="routePendingMessage" />
+        <GsLoadingIndicator v-else-if="loadNotice?.kind === 'loading'" variant="inline" :message="loadNotice.message" />
+        <ArchiveLoadNotice v-else-if="loadNotice" :message="loadNotice.message" />
       </template>
     </ArchiveShell>
+    <ArchiveOnboarding
+      v-if="view === 'portal' && !userPreferences.onboardingComplete && archivePickerIdols.length"
+      :idols="archivePickerIdols"
+      :home-idol-ids="validArchiveHomeIdols"
+      :idol-name="idolDisplayName"
+      :idol-search="idolEntitySearchText"
+      :initial-favorite="userPreferences.preferredIdol || ''"
+      @finish="completeOnboarding"
+    />
 
     <!-- ====== STORY PLAYER ====== -->
-    <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" class="playback-failure" role="alert">
+    <PlayerSessionShell v-if="playerSessionOpen">
+    <section v-if="(playbackError || playbackReadiness?.status === 'blocked') && !loading" ref="playbackFailure" class="playback-failure" role="alert" tabindex="-1">
       <p v-if="playbackError">演出暂时无法载入，请重试或返回。</p>
       <p v-else>当前段落的必要{{ playbackReadiness.reason === 'voice-renderable' ? '语音' : '画面' }}未能准备完成，请重试或返回。</p>
-      <details><summary>查看加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
+      <details v-if="MAINTAINER"><summary>加载详情</summary><p>{{ playbackError || playbackReadiness?.reason }}</p></details>
       <div class="playback-failure-actions">
         <button v-if="playbackController.canRetry.value" type="button" @click="playbackController.retry()">重试载入</button>
         <button v-else-if="playbackReadiness?.status === 'blocked'" type="button" @click="playbackController.retryCurrentStep()">重试当前段落</button>
         <button type="button" @click="playbackController.close()">返回</button>
       </div>
-      <details v-if="preloadStatus?.failed"><summary>查看失败资源</summary>
+      <details v-if="MAINTAINER && preloadStatus?.failed"><summary>失败资源</summary>
         <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
       </details>
     </section>
-    <details v-if="view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
+    <details v-if="MAINTAINER && view === 'player' && !loading && preloadStatus?.failed" class="preload-notice">
       <summary>预载诊断记录（{{ preloadStatus.failed }} 项）</summary>
       <p>以下是先前预载未成功的记录，不代表当前画面仍然缺失。当前段落状态以播放器提示为准。</p>
       <ul><li v-for="task in preloadStatus.tasks.filter(task => task.state === 'failed')" :key="task.key">{{ task.id }}：{{ task.error }}</li></ul>
@@ -457,22 +537,45 @@
       :end-step="currentScenarioEndStep"
       :initial-step="currentScenarioInitialStep"
       :has-next-episode="hasNextPlaybackEpisode"
+      :next-target="playbackController.nextTarget.value"
+      :position-label="[playbackController.continuation.value?.currentLabel, presentIdolEpisodeLabel({ sourceName:playbackController.queue.current.value?.label, format:'player' })].filter(Boolean).join(' · ')"
+      :return-label="returnViewAfterPlayer === 'reader' ? '返回阅读页' : returnViewAfterPlayer === 'mobile_archive' ? '返回通信' : '返回来源目录'"
       :transition-pending="loading && Boolean(playbackController.pendingEntry.value)"
+      :recovery-open="Boolean(playbackError || playbackReadiness?.status === 'blocked') && !loading"
       :queue-status="playbackController.queueStatus.value"
+      :queue-snapshot="playbackController.queue.snapshot.value" @select-episode="selectPlayerEpisode"
       :queue-error="playbackController.queueError.value"
       @retry-queue="playbackController.ensureQueue({ retry: true })"
-      :continuous-playback="continuousPlayback"
+      :continuous-playback="playbackController.continuationOverride.value ?? continuousPlayback"
       @back="closePlayer"
       @ready="onPlayerReady"
       @next-episode="playNextEpisode"
-      @update:continuous-playback="continuousPlayback = $event"
-    />
+      @update:continuous-playback="playbackController.setContinuous($event)"
+      :format-episode-label="playerEpisodeLabel"
+    >
+      <template #language-switch><ArchiveLanguageSwitch /></template>
+    </StoryViewer>
 
+    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
+    </PlayerSessionShell>
+
+    <ArchiveExperimentFrame v-if="view === 'chart_lab'" title="谱面预览" :back-label="detailSourceRoute ? '返回来源页' : currentSongId ? '返回歌曲' : '返回 LIVE'" @back="closeFullScreenExperiment">
+      <ArchiveChartLab v-if="!currentSongId || currentSongPresentation?.gameplay" :song="currentSongPresentation?.gameplay ? currentSongPresentation : null"
+        :songs="chartSongs" :status="songReadModelStatus" @select-song="selectChartSong" />
+      <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
+    </ArchiveExperimentFrame>
+    <PictureStudio v-if="view === 'picture_studio'" standalone :client="readModelClient" :bootstrap="archiveBootstrap" :photo-idol="currentPhotoIdol" :photo-entity="currentPhotoEntity" :idol-name="idolDisplayName" :idol-search="idolEntitySearchText" @back="closeFullScreenExperiment" />
     <!-- ====== SPINE LAB ====== -->
-    <SpineViewer v-if="view === 'spine_lab'" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
+    <SpineViewer v-if="view === 'spine_lab'" :idol-name="idolDisplayName" :back-label="labBackLabel" @back="closeArchiveExperiment" @open-stage="openChibiStage" />
     <ChibiStageViewer
       v-if="view === 'chibi_stage'"
       :audio-experiments="stageAudioExperiments"
+      :idol-directory="archiveBootstrap.idols"
+      :idol-name="idolDisplayName"
+      :idol-search="idolEntitySearchText"
+      :original-performers="stageOriginalPerformers"
+      :original-slot-ordered="stageOriginalSlotOrdered"
+      :song-directory="stageSongDirectory"
       :stage-target-id="stageTargetId"
       :stage-song-code="currentSongId"
       :stage-handoff="stageHandoff"
@@ -491,67 +594,96 @@
     <!-- ====== PRELOADER LOADING SCREEN ====== -->
     <GsLoadingIndicator v-if="routePending && !archiveShellVisible" class="archive-route-pending-fallback"
       variant="inline" message="正在准备下一页…" />
-    <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="(hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage"
+    <LoadingScreen v-if="!playerSessionOpen" :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && view !== 'reader' && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage"
       :surface="loadingPurpose === 'stage' ? 'stage' : (playbackBuffering || view === 'player' || loadingPurpose === 'story-playback' ? 'player' : 'archive')" />
 
   </div>
 </template>
 
 <script setup>
-import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from './core/PlayerEntryRequest.js'
+import { resolveHomeSelection } from './core/HomeSelection.js'
+import ArchiveExperimentFrame from './components/archive/ArchiveExperimentFrame.vue'
+import ArchivePageLoadError from './components/archive/ArchivePageLoadError.vue'
+import ArchiveLoadNotice from './components/archive/ArchiveLoadNotice.vue'
+import ArchiveLanguageSwitch from './components/archive/ArchiveLanguageSwitch.vue'
+import { eventResources } from './data/eventResourceGraph.js'
+import { fetchSongTimelineManifest } from './utils/songPerformanceData.js'
+import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from './core/PlayerEntryRequest.js'
 import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
+import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import { buildCardRarityTabs, filterArchiveCards } from './data/cardFilters.js'
+import {loadArchiveNames,archiveNamedText,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
+import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { IDOL_ID_TO_NAME } from './utils/IdolNameMap.js'
-import { Preloader } from './utils/Preloader.js'
+const preloadScenario = async (...args) => (await import('./utils/Preloader.js')).Preloader.preloadScenario(...args)
 import { prepareArchiveRoute } from './core/prepareArchiveRoute.js'
+import PlayerSessionShell from './components/player/PlayerSessionShell.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 import GsLoadingIndicator from './components/GsLoadingIndicator.vue'
-import StoryReleaseSoakPanel from './components/player/StoryReleaseSoakPanel.vue'
 import ArchiveShell from './components/archive/ArchiveShell.vue'
-import { readingPlaybackTarget } from './core/ReadingPlayback.js'
-import { createReadingRepository } from './data/ReadingRepository.js'
-import { createReadingSession } from './core/ReadingSession.js'
+import ArchiveStageIdolSwitch from './components/archive/ArchiveStageIdolSwitch.vue'
 import ArchivePortalLauncher from './components/archive/ArchivePortalLauncher.vue'
+import { useArchivePortalData } from './components/archive/useArchivePortalData.js'
 import ArchiveWelcome from './components/archive/ArchiveWelcome.vue'
 import { buildIdolReference } from './presentation/IdolReferencePresentation.js'
+import { STAGE_LIGHT_TOKENS, idolStageLightProperties } from './presentation/idolStageLight.js'
+import { presentIdolEpisodeLabel, queueEpisodeLabel, playerEpisodeLabel } from './presentation/idolEpisodeLabel.js'
 import { resolveMobileArchiveUnit } from './core/mobileArchiveIdentity.js'
-import { readyEpisodeReading } from './data/IdolStoryReading.js'
 import {
-  clearArchiveUserPreferences,
   loadArchiveUserPreferences,
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
-import { ReadModelClient, entityDescriptor } from '../readmodels/runtime/ReadModelClient.mjs'
-import { hydrateHomeProfile } from '../readmodels/runtime/hydrateHomeProfile.mjs'
+import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
   buildArchiveSourceQuery,
   ownsArchiveSource,
-  buildPortalReturnQuery,
   readArchiveSourceRoute,
-  readPortalReturnRoute,
+  buildArchiveUrl,
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
 } from './core/archiveRoute.js'
+import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
 import {
   buildArchiveViewContext,
   captureArchiveViewState,
+  readArchiveViewRestoration,
   restoreArchiveViewState,
 } from './core/archiveViewRestoration.js'
 import { installSpineAnimationDebug } from './debug/installSpineAnimationDebug.js'
+import { useStageSongProjection } from './composables/useStageSongProjection.js'
+import { useStageNavigation } from './composables/useStageNavigation.js'
+import { useSongNavigation } from './composables/useSongNavigation.js'
+import { usePhotoCatalogNavigation } from './composables/usePhotoCatalogNavigation.js'
+import { useStoryCatalogProjection } from './composables/useStoryCatalogProjection.js'
+import { useStoryNavigation } from './composables/useStoryNavigation.js'
+import { useStoryArchiveNavigation } from './composables/useStoryArchiveNavigation.js'
+import { SEASONAL_SEASON_LABEL } from '../shared/reading/ReadingCatalog.js'
+import { useResourceNavigation } from './composables/useResourceNavigation.js'
+import { useGashaNavigation } from './composables/useGashaNavigation.js'
+import { useCardNavigation } from './composables/useCardNavigation.js'
+import { useUnitNavigation } from './composables/useUnitNavigation.js'
+import { useIdolNavigation } from './composables/useIdolNavigation.js'
+import { useHomeNavigation } from './composables/useHomeNavigation.js'
+import { useEventNavigation } from './composables/useEventNavigation.js'
+import { useLegacyAliasNavigation } from './composables/useLegacyAliasNavigation.js'
+import { useMobileNavigation } from './composables/useMobileNavigation.js'
+import { useReaderNavigation } from './composables/useReaderNavigation.js'
+import { usePortalNavigation } from './composables/usePortalNavigation.js'
 import { EntityTranslationRepository } from './localization/story/EntityTranslationRepository.js'
+import { storyCollectionTitle } from './presentation/StoryPageTitle.js'
 import { PlayerPreferencesRepository } from './core/story-runtime/PlayerPreferencesRepository.js'
+import { communicationOwnerId } from './core/story-runtime/CommunicationPresentationContext.js'
 import {
   setStoryLanguagePreferences,
   storyTranslationLocale,
@@ -563,7 +695,6 @@ import {
 } from './utils/CharacterImageResolver.js'
 import {
   externalResourcesForCollection,
-  externalResourcesForEvent,
   externalResourcesForIdolStory,
   externalResourcesForStory,
 } from './data/externalStoryResources.js'
@@ -573,6 +704,7 @@ const entityTranslationRepository = new EntityTranslationRepository()
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const NO_AUDIO = URL_FLAGS.get('noAudio') === '1'
 const RUNTIME_DEBUG = URL_FLAGS.get('runtimeDebug') === '1'
+const MAINTAINER = isMaintainerMode()
 
 function localStorageValue(key) {
   try { return window.localStorage.getItem(key) } catch { return null }
@@ -592,10 +724,22 @@ const immersiveHomeLoader = () => import('./components/archive/ArchiveImmersiveH
 const spineViewerLoader = () => import('./components/SpineViewer.vue')
 const chibiStageViewerLoader = () => import('./components/ChibiStageViewer.vue')
 const StoryViewer = defineAsyncComponent(storyViewerLoader)
+// Maintainer-only (?runtimeDebug=1): keep it out of the main bundle.
+const StoryReleaseSoakPanel = defineAsyncComponent(() => import('./components/player/StoryReleaseSoakPanel.vue'))
+// Only a first visit needs it.
+const ArchiveOnboarding = defineAsyncComponent(() => import('./components/archive/ArchiveOnboarding.vue'))
 const ArchiveImmersiveHome = defineAsyncComponent(immersiveHomeLoader)
 const SpineViewer = defineAsyncComponent(spineViewerLoader)
 const ChibiStageViewer = defineAsyncComponent(chibiStageViewerLoader)
 const archiveRouteLoaders = {
+  event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
+  collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
+  photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
+  live: () => import('./components/archive/ArchiveToolLanding.vue'),
+  studio: () => import('./components/archive/ArchiveToolLanding.vue'),
+  about: () => import('./components/archive/ArchiveAbout.vue'),
+  chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
+  picture_studio: () => import('./components/archive/PictureStudio.vue'),
   reader: () => import('./components/archive/ArchiveStoryReader.vue'),
   event_detail: () => import('./components/archive/ArchiveEventDetail.vue'),
   story_catalog: () => import('./components/archive/ArchiveStoryCatalog.vue'),
@@ -622,31 +766,39 @@ const archiveRouteLoaders = {
   archive_status: () => import('./components/archive/ArchiveStatus.vue'),
   external_story_resources: () => import('./components/archive/ArchiveExternalStoryResources.vue'),
 }
-const ArchiveStoryReader = defineAsyncComponent(archiveRouteLoaders.reader)
-const ArchiveEventDetail = defineAsyncComponent(archiveRouteLoaders.event_detail)
-const ArchiveStoryCatalog = defineAsyncComponent(archiveRouteLoaders.story_catalog)
-const ArchiveStoryDetail = defineAsyncComponent(archiveRouteLoaders.story_detail)
-const ArchiveStoryCollection = defineAsyncComponent(archiveRouteLoaders.story_collection)
-const ArchiveSeasonalCampaign = defineAsyncComponent(archiveRouteLoaders.seasonal_campaign)
-const ArchiveWorkStory = defineAsyncComponent(archiveRouteLoaders.work_archive)
-const ArchiveIdolStory = defineAsyncComponent(archiveRouteLoaders.idol_story_archive)
-const ArchiveCardList = defineAsyncComponent(archiveRouteLoaders.cards)
-const ArchiveCardDetail = defineAsyncComponent(archiveRouteLoaders.card_detail)
-const ArchiveGashaCatalog = defineAsyncComponent(archiveRouteLoaders.gashas)
-const ArchiveGashaDetail = defineAsyncComponent(archiveRouteLoaders.gasha_detail)
-const ArchiveSongCatalog = defineAsyncComponent(archiveRouteLoaders.song_catalog)
-const ArchiveSongDetail = defineAsyncComponent(archiveRouteLoaders.song_detail)
-const ArchiveMobileArchive = defineAsyncComponent(archiveRouteLoaders.mobile_archive)
-const ArchiveUnitCatalog = defineAsyncComponent(archiveRouteLoaders.unit_catalog)
-const ArchiveUnitDetail = defineAsyncComponent(archiveRouteLoaders.unit_detail)
-const ArchiveIdolGrid = defineAsyncComponent(archiveRouteLoaders.idols)
-const ArchiveIdolDetail = defineAsyncComponent(archiveRouteLoaders.idol_detail)
-const ArchiveGroupList = defineAsyncComponent(archiveRouteLoaders.groups)
-const ArchiveFileList = defineAsyncComponent(archiveRouteLoaders.files)
-const ArchiveUnitGrid = defineAsyncComponent(archiveRouteLoaders.episode_zero_units)
-const ArchiveEpisodeList = defineAsyncComponent(archiveRouteLoaders.episodes)
-const ArchiveStatus = defineAsyncComponent(archiveRouteLoaders.archive_status)
-const ArchiveExternalStoryResources = defineAsyncComponent(archiveRouteLoaders.external_story_resources)
+const defineArchivePage = loader => defineAsyncComponent({ loader, errorComponent: ArchivePageLoadError })
+const ArchiveStoryReader = defineArchivePage(archiveRouteLoaders.reader)
+const ArchiveEventDetail = defineArchivePage(archiveRouteLoaders.event_detail)
+const ArchiveEventCatalog = defineArchivePage(archiveRouteLoaders.event_catalog)
+const ArchiveCollectionCatalog = defineArchivePage(archiveRouteLoaders.collection_catalog)
+const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
+const ArchiveToolLanding = defineArchivePage(archiveRouteLoaders.live)
+const ArchiveAbout = defineArchivePage(archiveRouteLoaders.about)
+const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
+const PictureStudio = defineArchivePage(archiveRouteLoaders.picture_studio)
+const ArchiveStoryCatalog = defineArchivePage(archiveRouteLoaders.story_catalog)
+const ArchiveStoryDetail = defineArchivePage(archiveRouteLoaders.story_detail)
+const ArchiveStoryCollection = defineArchivePage(archiveRouteLoaders.story_collection)
+const ArchiveSeasonalCampaign = defineArchivePage(archiveRouteLoaders.seasonal_campaign)
+const ArchiveWorkStory = defineArchivePage(archiveRouteLoaders.work_archive)
+const ArchiveIdolStory = defineArchivePage(archiveRouteLoaders.idol_story_archive)
+const ArchiveCardList = defineArchivePage(archiveRouteLoaders.cards)
+const ArchiveCardDetail = defineArchivePage(archiveRouteLoaders.card_detail)
+const ArchiveGashaCatalog = defineArchivePage(archiveRouteLoaders.gashas)
+const ArchiveGashaDetail = defineArchivePage(archiveRouteLoaders.gasha_detail)
+const ArchiveSongCatalog = defineArchivePage(archiveRouteLoaders.song_catalog)
+const ArchiveSongDetail = defineArchivePage(archiveRouteLoaders.song_detail)
+const ArchiveMobileArchive = defineArchivePage(archiveRouteLoaders.mobile_archive)
+const ArchiveUnitCatalog = defineArchivePage(archiveRouteLoaders.unit_catalog)
+const ArchiveUnitDetail = defineArchivePage(archiveRouteLoaders.unit_detail)
+const ArchiveIdolGrid = defineArchivePage(archiveRouteLoaders.idols)
+const ArchiveIdolDetail = defineArchivePage(archiveRouteLoaders.idol_detail)
+const ArchiveGroupList = defineArchivePage(archiveRouteLoaders.groups)
+const ArchiveFileList = defineArchivePage(archiveRouteLoaders.files)
+const ArchiveUnitGrid = defineArchivePage(archiveRouteLoaders.episode_zero_units)
+const ArchiveEpisodeList = defineArchivePage(archiveRouteLoaders.episodes)
+const ArchiveStatus = defineArchivePage(archiveRouteLoaders.archive_status)
+const ArchiveExternalStoryResources = defineArchivePage(archiveRouteLoaders.external_story_resources)
 function prepareArchivePage(routeView, data) {
   // The shared pending notice owns progress; discard notices from superseded routes.
   for (const status of [mobileReadModelStatus, songReadModelStatus, idolReadModelStatus,
@@ -656,9 +808,22 @@ function prepareArchivePage(routeView, data) {
   return prepareArchiveRoute(archiveRouteLoaders, routeView, data)
 }
 
+const archiveComponentPending = ref(false)
+const routePendingMessage = ref('正在准备下一页…')
+let componentLoadRevision = 0
 function primeArchiveRouteComponent(routeView) {
+  const revision = ++componentLoadRevision
+  const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
+    portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'收藏',
+    picture_studio:'摄影工作台',photo_catalog:'摄影资源',story_catalog:'故事目录'}
+  routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
+  archiveComponentPending.value = Boolean(load)
   if (load) load().catch(error => console.error(`[ArchiveRoute] Could not load ${routeView}:`, error))
+    .finally(async () => {
+      await nextTick()
+      if (revision === componentLoadRevision) archiveComponentPending.value = false
+    })
 }
 
 const {
@@ -666,11 +831,12 @@ const {
   playerEntryRoute,
   currentPickTarget,
   portalFrom,
+  portalScope, portalQuery, homeFrom,
   detailSourceRoute,
   readingDocumentId,
   readingRowId,
   readingMode,
-  readingRevision,
+  readingRevision, readingScope, playMode,
   currentScenarioInitialStep,
   returnViewAfterPlayer,
   storyCollectionParentView,
@@ -702,9 +868,15 @@ const {
   stageTargetId,
   currentSongScope,
   currentEventId,
+  currentEventBrowseState,
+  currentEntityKey,
+  currentCollectionState,
+  currentPhotoIdol,
+  currentPhotoEntity,
   currentGashaId,
   currentGashaCategory,
   currentCardRarity,
+  currentCardAttribute,
   currentCardAssetState,
   currentCardRelationState,
   filterQuery,
@@ -735,7 +907,7 @@ const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
 const readModelClient = new ReadModelClient({ release: archiveBootstrap.release, observe: event => tracePlayer('read-model', event) })
 const initialArchiveStartup = resolveArchiveStartup(window.location.href, initialUserPreferences.preferences,
-  archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id))
+  archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id), { history: true })
 const bootstrapIdolDictionary = { by_idol_code: Object.fromEntries(archiveBootstrap.idols.map(idol => [idol.id, {
   display_name: idol.name, unit_name: idol.unitName, color: idol.color,
 }])) }
@@ -743,106 +915,96 @@ const bootstrapMembership = { unit_membership_by_idol: Object.fromEntries(archiv
   unit_name: idol.unitName,
   unit_code: idol.unitCode,
 }])) }
-const bootstrapIdolSwitcher = archiveBootstrap.idols.map(idol => ({
-  idol_code: idol.id, display_name: idol.name, unit_name: idol.unitName,
-}))
-const mobileIdolReadModelCatalog = ref(null)
-const mobileUnitReadModelCatalog = ref(null)
-const mobileIdolReadModelDetail = ref(null)
-const mobileUnitReadModelDetail = ref(null)
-const mobileReadModelStatus = ref('')
-const legacyGroupReadModelDetail = ref(null)
-const legacyFileReadModelDetail = ref(null)
-const legacyZeroReadModelDetail = ref(null)
-const legacyEpisodeReadModelDetail = ref(null)
-const legacyAliasStatus = ref('')
-let pendingLegacyAliasNavigation = 0
-const mobileIdolOptions = archiveBootstrap.idols.map(idol => ({ idol_code: idol.id, display_name: idol.name, color: idol.color }))
-const mobileUnitOptions = computed(() => (mobileUnitReadModelCatalog.value || []).map(unit => ({
-  unit_code: unit.id, unit_name: unit.name, unit_color: unit.color,
+const bootstrapIdolSwitcher = computed(() => archiveBootstrap.idols.map(idol => ({
+  idol_code: idol.id, display_name: idolDisplayName(idol.id), unit_name: idol.unitName,
 })))
-let mobileIdolCatalogPromise = null
-let mobileUnitCatalogPromise = null
-let pendingMobileNavigation = 0
+const mobileIdolReadModelCatalog = shallowRef(null)
+const mobileUnitReadModelCatalog = shallowRef(null)
+const mobileIdolReadModelDetail = shallowRef(null)
+const mobileUnitReadModelDetail = shallowRef(null)
+const mobileReadModelStatus = ref('')
+const legacyGroupReadModelDetail = shallowRef(null)
+const legacyFileReadModelDetail = shallowRef(null)
+const legacyZeroReadModelDetail = shallowRef(null)
+const legacyEpisodeReadModelDetail = shallowRef(null)
+const legacyAliasStatus = ref('')
 const homeFocus = ref(false)
 const userPreferences = ref(initialUserPreferences.preferences)
 const userPreferenceNotice = ref(initialUserPreferences.issue)
 const legacyEntryStatus = ref('')
-const songReadModelCatalog = ref(null)
-const songReadModelDetail = ref(null)
+const songReadModelCatalog = shallowRef(null)
+const songReadModelDetail = shallowRef(null)
 const songReadModelStatus = ref('')
-let songCatalogPromise = null
-let pendingSongNavigation = 0
-const idolReadModelCatalog = ref(null)
-const idolReadModelDetail = ref(null)
+const idolReadModelCatalog = shallowRef(null)
+const idolReadModelDetail = shallowRef(null)
 const idolReadModelStatus = ref('')
-let idolCatalogPromise = null
-let pendingIdolNavigation = 0
-const unitReadModelCatalog = ref(null)
-const unitReadModelDetail = ref(null)
+const unitReadModelCatalog = shallowRef(null)
+const unitReadModelDetail = shallowRef(null)
 const unitReadModelStatus = ref('')
-let unitCatalogPromise = null
-let pendingUnitNavigation = 0
-const gashaReadModelCatalog = ref(null)
+const gashaReadModelCatalog = shallowRef(null)
 const gashaCatalogFunctions = shallowRef(null)
-const gashaReadModelDetail = ref(null)
+const gashaReadModelDetail = shallowRef(null)
 const gashaReadModelStatus = ref('')
-let gashaCatalogPromise = null
-let pendingGashaNavigation = 0
-const cardReadModelCatalog = ref(null)
-const cardReadModelDetail = ref(null)
+const cardReadModelCatalog = shallowRef(null)
+const cardReadModelDetail = shallowRef(null)
 const cardReadModelStatus = ref('')
-let cardCatalogPromise = null
-let pendingCardNavigation = 0
-const eventReadModelCatalog = ref(null)
-const eventReadModelDetail = ref(null)
+const eventReadModelCatalog = shallowRef(null)
+const eventReadModelDetail = shallowRef(null)
 const eventReadModelStatus = ref('')
-let eventCatalogPromise = null
-let pendingEventNavigation = 0
 const seasonalReadModelCatalog = shallowRef(null)
 const seasonalReadModelDetail = shallowRef(null)
 const seasonalReadModelStatus = ref('')
-let seasonalCatalogPromise = null
-let pendingSeasonalNavigation = 0
 const workReadModelCatalog = shallowRef(null)
 const workReadModelDetail = shallowRef(null)
 const workReadModelStatus = ref('')
-let workCatalogPromise = null
-let pendingWorkNavigation = 0
 const idolStoryReadModelCatalog = shallowRef(null)
 const idolStoryReadModelDetail = shallowRef(null)
 const idolStoryReadModelStatus = ref('')
-let idolStoryCatalogPromise = null
-let pendingIdolStoryNavigation = 0
 const collectionReadModelCatalog = shallowRef(null)
 const collectionReadModelDetail = shallowRef(null)
 const collectionReadModelStatus = ref('')
-let collectionCatalogPromise = null
-let pendingCollectionNavigation = 0
 const storyReadModelCatalog = shallowRef(null)
 const storyReadModelDetail = shallowRef(null)
 const storyReadModelStatus = ref('')
 const storyCatalogIndex = shallowRef(null)
 const storyCatalogLanding = shallowRef(null)
-let storyCatalogPromise = null
-let storyLandingPromise = null
-let pendingStoryDetailNavigation = 0
 const resourceReadModelDetail = shallowRef(null)
 const resourceReadModelStatus = ref('')
-let resourceDetailPromise = null
-let pendingResourceNavigation = 0
-const homeReadModelIndex = ref(null)
-const homeReadModelProfiles = ref({})
+const homeReadModelIndex = shallowRef(null)
+const homeReadModelProfiles = shallowRef({})
 const homeEntryStatus = ref('')
-let homeIndexPromise = null
-const homeProfilePromises = new Map()
-const recentHomeProfiles = []
-let pendingHomeNavigation = 0
+// One reader-facing message for whatever archive page is being read. Producers keep
+// their own status refs (each navigation function is tested against them); this is
+// the single place that decides which one is shown and how.
+const LEGACY_DIRECTORY_VIEWS = ['groups', 'files', 'episodes', 'episode_zero_units']
+const loadNotice = computed(() => {
+  const current = view.value
+  const scoped = [
+    [current === 'home', homeEntryStatus.value],
+    [['idols', 'idol_detail'].includes(current), idolReadModelStatus.value],
+    [current === 'song_detail', songReadModelStatus.value || legacyEntryStatus.value],
+    [LEGACY_DIRECTORY_VIEWS.includes(current), legacyAliasStatus.value],
+    [current === 'mobile_archive', mobileReadModelStatus.value],
+    [['unit_catalog', 'unit_detail'].includes(current), unitReadModelStatus.value],
+  ].filter(([applies]) => applies).map(([, message]) => message)
+  const ambient = loading.value ? [] : [
+    cardReadModelStatus.value,
+    ['portal', 'gashas'].includes(current) ? '' : gashaReadModelStatus.value,
+    eventReadModelStatus.value, seasonalReadModelStatus.value, workReadModelStatus.value,
+    idolStoryReadModelStatus.value, collectionReadModelStatus.value, storyReadModelStatus.value,
+    resourceReadModelStatus.value,
+  ]
+  const message = [...scoped, ...ambient].find(Boolean)
+  if (!message) return null
+  const inProgress = message.startsWith('正在')
+  // A full-page loading screen already covers in-progress reads; only failures stay visible.
+  return inProgress && loading.value ? null : { message, kind: inProgress ? 'loading' : 'error' }
+})
 const continuousPlayback = ref(localStorageValue('sidem:continuous-playback') === '1')
 const loading = ref(initialArchiveStartup.route.view === 'player' || !isBootstrapRoute(initialArchiveStartup.route) || ['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(initialArchiveStartup.route.view) || initialArchiveStartup.route.view === 'home' && Boolean(initialArchiveStartup.route.homeIdol))
 const loadingPurpose = ref('archive-data')
 const hardLoading = computed(() => loading.value && (view.value === '__boot__' || loadingPurpose.value !== 'archive-data'))
-const routePending = computed(() => loading.value && !hardLoading.value)
+const routePending = computed(() => archiveComponentPending.value || (loading.value && !hardLoading.value))
 const preloadProgress = ref(0)
 
 // View preferences and history lifecycle (navigation refs are owned above).
@@ -853,31 +1015,45 @@ let archiveRouteReady = false
 let pendingPreReadyRoute = null
 let activeArchiveViewContext = null
 let archiveViewRestoreRevision = 0
+let adoptedArchiveView = ''
+let pendingEventCatalogRestore = null
+let pendingPhotoCatalogRestore = null
+const songDetailView = ref(null)
+let pendingSongDetailRestore = null
+let pendingPortalRestore = null
 const navigation = createArchiveNavigationCoordinator({ onFinish: () => { loading.value = false; loadingPurpose.value = 'archive-data' } })
 const playbackController = useStoryPlaybackController({
-  state: { view, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
+  state: { view, playMode, playerEntryRoute, currentArchiveRoute, loading, preloadProgress, currentScenarioFile, currentScenarioStartStep, currentScenarioEndStep, currentScenarioInitialStep, currentPreviewCue, returnViewAfterPlayer },
   navigation, loadPlayer: storyViewerLoader,
-  preloadAssets: (plan, progress, options) => Preloader.preloadScenario(plan, progress, options),
+  preloadAssets: (plan, progress, options) => preloadScenario(plan, progress, options),
   syncRoute: () => syncArchiveRoute(), returnTo: restorePlaybackDestination, resolveQueue: loadPlayerQueue,
+  resolveReaderSource: (...args) => resolveReaderContinuationSource(...args),
+  queue: useEpisodeQueue({ formatLabel: queueEpisodeLabel }),
 })
 const { currentScenario, currentScenarioInstance, hasNext: hasNextPlaybackEpisode, error: playbackError,
   preloadStatus, playbackBuffering, playbackReadiness } = playbackController
+const playerSessionOpen = computed(() => view.value === 'player' || Boolean(playbackController.pendingEntry.value))
 const loadingMessage = computed(() => playbackBuffering.value || view.value === 'player' || loadingPurpose.value === 'story-playback'
   ? '正在准备演出…'
   : loadingPurpose.value === 'stage' ? '正在准备舞台…' : '正在读取资料馆数据…')
 let removeArchivePopState = null
 let removeSpineAnimationDebug = null
 
-const CATEGORIES = [
-  { id: 'main_story', name: '主线剧情' },
-  { id: 'event', name: '活动剧情' },
-  { id: 'idol', name: '偶像个人' },
-  { id: 'idol_chat', name: '短信聊天' },
-  { id: 'idol_phone', name: '电话聊天' },
-  { id: 'cards', name: '卡片档案' },
-  { id: 'episode_zero', name: '第零话' },
-  { id: 'extra', name: '额外剧情' },
-]
+const {
+  openMobileArchive, openStoryCommunication, selectMobileIdol, selectMobileUnit,
+  setMobileMode, playMobileScenario, playRandomTalkTopic, openMobileCard,
+  openStoryPhone, loadMobileCatalog, loadMobileDetail, loadMobileRoute,
+  mobileIdolOptions, mobileUnitOptions, goBackFromMobileArchive, invalidateMobileNavigation,
+  prepareMobileRoute,
+} = useMobileNavigation({
+  mobileIdolReadModelCatalog, mobileUnitReadModelCatalog, mobileIdolReadModelDetail, mobileUnitReadModelDetail,
+  mobileReadModelStatus, legacyEntryStatus, currentCharacterId, currentMobileMode,
+  currentArchiveUnitCode, currentMobileScenarioId, currentStoryDomain, currentStoryMode,
+  currentCategoryId, currentCardId, cardReadModelDetail, archiveBootstrap,
+  bootstrapMembership, navigation, readModelClient, idolDisplayName,
+  openIdolPicker, captureDetailSource, commitView, commitArchiveSelection,
+  goHome, loadScenario, loadCardDetail: (...args) => loadCardDetail(...args),
+})
 
 const archiveStats = computed(() => homeReadModelIndex.value?.stats || [])
 const archiveHomeIdols = computed(() => homeReadModelIndex.value
@@ -898,6 +1074,54 @@ const idolPickerLabel = computed(() => ({
   story: '个人故事',
   mobile: '通信档案',
 })[currentPickTarget.value] || '首页')
+const {
+  loadHomeIndex, loadHomeIdol, openGameHome, closeHomeVisit,
+  homeVisits, handleHomeIdolChange, prepareHomeRoute, invalidateHomeNavigation,
+} = useHomeNavigation({
+  homeReadModelIndex, homeReadModelProfiles, homeEntryStatus, view,
+  loading, userPreferenceNotice, userPreferences, validArchiveHomeIdols,
+  homeSelectedId, homeSelectedCue, homeSelectedCostume, homeFrom,
+  portalFrom, detailSourceRoute, navigation, archiveBootstrap,
+  readModelClient, currentArchiveRoute, openIdolPicker, commitView,
+  captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+})
+
+const {
+  openPrimaryIdol, openIdolReadModel, openIdolDirectory, selectPrimaryIdol,
+  loadIdolCatalog, loadIdolDetail, currentIdolDetail, currentIdolProfile,
+  currentIdolDisplayName, currentIdolStats, currentIdolEvents, currentIdolSongs,
+  handleIdolDetailChange, prepareIdolRoute, invalidateIdolNavigation,
+} = useIdolNavigation({
+  idolReadModelCatalog, idolReadModelDetail, idolReadModelStatus, currentCharacterId,
+  currentEventId, eventParentView, currentCategoryId, currentGroup,
+  currentArchiveUnitCode, currentCardId, filterQuery, view,
+  loading, currentIdolUnitFilter, navigation, archiveBootstrap,
+  readModelClient, openIdolPicker, captureDetailSource, commitArchiveSelection,
+  commitView, idolDisplayName,
+})
+
+// The 担当 colour takes over the stage light when the producer opts in. The role tokens
+// resolve on :root, so the override must sit on the root element itself.
+const stageLightIdol = computed(() => userPreferences.value.stageLight === 'idol' ? preferredArchiveIdol.value : null)
+watch(() => stageLightIdol.value?.color || '', color => {
+  const root = document.documentElement
+  const properties = idolStageLightProperties(color)
+  for (const token of STAGE_LIGHT_TOKENS) {
+    if (properties[token]) root.style.setProperty(token, properties[token])
+    else root.style.removeProperty(token)
+  }
+}, { immediate: true })
+const portalData = useArchivePortalData({ view, bootstrap: archiveBootstrap, client: readModelClient,
+  scope: portalScope, searchQuery: portalQuery,
+  preferredIdol: preferredArchiveIdol,
+  loadCards: options => loadCardCatalog(options),
+  idolName: idolDisplayName, idolSearch: idolEntitySearchText,
+  cardTitle: source => archiveNamedText('card', source, 'title'),
+  cardSearch: source => archiveNamedSearchText('card', source, 'title'),
+  songTitle: source => source || '',
+})
+const portalViewReference = computed(() => portalData.scopeIdol.value
+  ? buildIdolReference(portalData.scopeIdol.value.id, bootstrapIdolDictionary, bootstrapMembership, 'portal:view') : null)
 const stageBackLabel = computed(() => (
   (detailSourceRoute.value && readArchiveSourceRoute(detailSourceRoute.value).view === 'song_detail') ||
   (!detailSourceRoute.value && stageTargetId.value && currentSongId.value)
@@ -953,55 +1177,64 @@ const idolUnitOptions = computed(() => {
     id: String(unit.unit_id),
     code: unit.unit_code,
     name: unit.unit_name,
+    color: unitReadModelCatalog.value?.find(row => row.id === String(unit.unit_id))?.catalog.unit.unit_color || '',
     count: counts.get(String(unit.unit_id)) || 0,
   })).filter(unit => unit.count)
 })
 
 // Group list.
-const filteredGroups = computed(() => {
-  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
-  if (legacyGroupReadModelDetail.value?.id !== aliasId) return []
-  const groups = legacyGroupReadModelDetail.value.view.groups
-  const q = filterQuery.value.toLowerCase()
-  return q ? groups.filter(group => group.title.toLowerCase().includes(q) || group.id.toLowerCase().includes(q)) : groups
-})
-
-const groupTitle = computed(() => {
-  const aliasId = currentCharacterId.value ? `${currentCategoryId.value}:${currentCharacterId.value}` : currentCategoryId.value
-  return legacyGroupReadModelDetail.value?.id === aliasId ? legacyGroupReadModelDetail.value.view.title : ''
+const {
+  openGroup, openScenarioEntry, openUnit, openEpisodeFiles,
+  goBackToUnits, goBackFromGroups, returnToMobilePicker, goBackToFiles,
+  loadLegacyAliasDetail, loadLegacyAliasRoute, publishLegacyAliasRoute, filteredGroups,
+  groupTitle, episodeZeroUnits, filteredFileEntries, prepareLegacyAliasRoute,
+  invalidateLegacyAliasNavigation,
+} = useLegacyAliasNavigation({
+  legacyGroupReadModelDetail, legacyFileReadModelDetail, legacyEpisodeReadModelDetail, legacyZeroReadModelDetail,
+  legacyAliasStatus, currentCharacterId, currentCategoryId, currentPickTarget,
+  currentGroup, currentUnit, currentEpisodeId, currentCardId,
+  filterQuery, detailSourceRoute, navigation, archiveBootstrap,
+  readModelClient, captureDetailSource, commitView, goHome,
+  loadScenario, openIdolReadModel,
 })
 
 const categoryHeaderText = computed(() => {
   if (currentCategoryId.value === 'cards') return '卡片档案'
   if (currentCategoryId.value === 'idol_chat') return '短信聊天'
   if (currentCategoryId.value === 'idol_phone') return '电话聊天'
-  return '偶像档案'
+  return '偶像与组合档案'
 })
 
 const categoryFilterPlaceholder = computed(() => {
   if (currentCategoryId.value === 'cards') return 'Search card idol...'
   if (currentCategoryId.value === 'idol_chat') return 'Search chat...'
   if (currentCategoryId.value === 'idol_phone') return 'Search phone...'
-  return 'Search idol...'
-})
-
-// Episode Zero units.
-const episodeZeroUnits = computed(() => {
-  return legacyZeroReadModelDetail.value?.id === 'episode_zero' ? legacyZeroReadModelDetail.value.view.units : []
+  return '搜索偶像姓名或组合…'
 })
 
 const mainStoryDomain = computed(() => storyCatalogLanding.value?.main || null)
 
-const currentSeasonalCampaign = computed(() => seasonalReadModelDetail.value?.id === currentStorySection.value
-  ? seasonalReadModelDetail.value.view.campaign : null)
-
-const currentWorkIdol = computed(() => workReadModelDetail.value?.id === currentCharacterId.value
-  ? workReadModelDetail.value.view.idol : null)
-
-const idolStoryOptions = computed(() => idolStoryReadModelCatalog.value || [])
-
-const currentIdolStoryPage = computed(() => idolStoryReadModelDetail.value?.id === currentCharacterId.value
-  ? idolStoryReadModelDetail.value.view.page : null)
+const {
+  currentSeasonalPage, currentSeasonalCampaign, currentWorkIdol, idolStoryOptions, currentIdolStoryPage,
+  openSeasonalCampaign, selectSeasonalCampaign, selectSeasonalParticipant, playSeasonalCampaignStory, playSeasonalParticipant,
+  openWorkArchive, selectWorkIdol, setWorkMode, playWorkStory,
+  openIdolStoryArchive, selectIdolStory, openBirthdayIdolStory, openIdolBirthdayArchive,
+  playIdolStorySection, playIdolStoryEpisode, openMobileIdolStory,
+  loadSeasonalCatalog, loadSeasonalDetail, loadSeasonalLedgerOnly, loadWorkCatalog, loadWorkDetail, loadIdolStoryCatalog, loadIdolStoryDetail,
+  goBackFromSeasonalCampaign, goBackFromWorkArchive, goBackFromIdolStoryArchive,
+  invalidateStoryArchiveNavigation, prepareStoryArchiveRoute,
+} = useStoryArchiveNavigation({
+  loading, filterQuery, currentStoryDomain, currentStoryMode, currentStorySection, currentStoryFile,
+  currentCharacterId, currentWorkMode, currentEpisodeId, currentMobileScenarioId, storyCollectionParentView,
+  currentMobileMode, mobileUnitReadModelDetail, mobileIdolReadModelDetail,
+  seasonalReadModelCatalog, seasonalReadModelDetail, seasonalReadModelStatus,
+  workReadModelCatalog, workReadModelDetail, workReadModelStatus,
+  idolStoryReadModelCatalog, idolStoryReadModelDetail, idolStoryReadModelStatus,
+  navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
+  openIdolPicker, loadScenario, startEpisodeQueue,
+  openStoryCatalog: (...args) => openStoryCatalog(...args),
+  openProjectedCollection: (...args) => openProjectedCollection(...args),
+})
 
 const currentIdolStoryExternalResources = computed(() =>
   externalResourcesForIdolStory(
@@ -1010,50 +1243,12 @@ const currentIdolStoryExternalResources = computed(() =>
   ),
 )
 
-const storyDomainOptions = computed(() => {
-  const counts = new Map()
-  const labels = new Map()
-  for (const entry of storyCatalogEntries.value) {
-    counts.set(entry.domain, (counts.get(entry.domain) || 0) + 1)
-    labels.set(entry.domain, entry.domainLabel)
-  }
-  return [...counts.entries()].map(([id, count]) => ({ id, count, label: labels.get(id) || id }))
+const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
+const catalogScopeIdol = computed(() => archiveBootstrap.idols.find(row => row.id === currentCharacterId.value) || null)
+const { storyDomainOptions, storyEventScopeOptions, catalogStoryEntries, filteredStoryCatalog, visibleStoryCatalogEntries } = useStoryCatalogProjection({
+  storyCatalogEntries, catalogScopeIdol, filterQuery, currentStoryAvailability, currentStoryDomain,
+  currentStorySection, currentEventScope, currentStorySort, storyVisibleLimit,
 })
-
-const storyEventScopeOptions = computed(() => {
-  const labels = {
-    fixed_unit_event: '固定组合团活',
-    attribute_event: '属性团曲',
-    mixed_unit_event: '跨组合团活',
-  }
-  return Object.entries(labels).map(([id, label]) => ({
-    id,
-    label,
-    count: storyCatalogEntries.value.filter(entry => entry.domain === 'event' && entry.eventScope === id).length,
-  }))
-})
-
-const filteredStoryCatalog = computed(() => {
-  const query = filterQuery.value.trim().toLowerCase()
-  const availability = currentStoryAvailability.value
-  const entries = storyCatalogEntries.value.filter(entry =>
-    (!currentStoryDomain.value || entry.domain === currentStoryDomain.value) &&
-    (!currentStorySection.value || entry.sectionId === currentStorySection.value) &&
-    (currentStoryDomain.value !== 'event' || currentEventScope.value === 'all' || entry.eventScope === currentEventScope.value) &&
-    (availability === 'all' || (availability === 'playable' ? entry.exists : !entry.exists)) &&
-    (!query || entry.searchText.includes(query) || entry.characters.some(characterId => (
-      idolEntitySearchText(characterId).includes(query)
-    ))),
-  )
-  const sorted = [...entries]
-  if (currentStorySort.value === 'title') sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'))
-  else if (currentStorySort.value === 'resource') sorted.sort((a, b) => a.resourceId.localeCompare(b.resourceId))
-  else if (currentStorySort.value === 'steps_desc') sorted.sort((a, b) => (b.summary?.step_count || 0) - (a.summary?.step_count || 0))
-  else sorted.sort((a, b) => a.domainOrder - b.domainOrder || a.resourceId.localeCompare(b.resourceId))
-  return sorted
-})
-
-const visibleStoryCatalogEntries = computed(() => filteredStoryCatalog.value.slice(0, storyVisibleLimit.value))
 
 const currentStory = computed(() => storyReadModelDetail.value?.story?.file === currentStoryFile.value
   ? storyReadModelDetail.value.story : null)
@@ -1086,9 +1281,6 @@ const externalStoryNavigationEntries = []
 
 const currentStoryRelated = computed(() => storyReadModelDetail.value?.view?.related || [])
 
-const currentEventStory = computed(() => currentEventProjection.value?.story || null)
-const currentEventEpisodes = computed(() => currentEventProjection.value?.episodes || [])
-
 watch(continuousPlayback, enabled => {
   setLocalStorageValue('sidem:continuous-playback', enabled ? '1' : '0')
 })
@@ -1114,151 +1306,139 @@ const currentStoryVisualUrl = computed(() => {
   return ''
 })
 
-function eventStoryIdolRawCandidateUrl(idolCode) {
-  return getRawCharacterImageCandidateUrl('event_story_visual', idolCode)
-}
-
-const unitCatalogEntries = computed(() => (unitReadModelCatalog.value || []).map(row => row.catalog))
-const storyCatalogEntries = computed(() => storyReadModelCatalog.value || [])
-const currentArchiveUnit = computed(() => {
-  const projected = unitReadModelDetail.value?.view.entry.unit
-  if (projected && [String(projected.unit_id), projected.unit_code].includes(currentArchiveUnitCode.value)) return projected
-  return unitCatalogEntries.value.find(entry =>
-    [String(entry.unit.unit_id), entry.unit.unit_code].includes(currentArchiveUnitCode.value))?.unit || null
-})
-const currentArchiveUnitEntry = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
-  ? unitReadModelDetail.value.view.entry
-  : unitCatalogEntries.value.find(entry =>
-  String(entry.unit.unit_id) === String(currentArchiveUnit.value?.unit_id || ''),
-) || null)
-const currentArchiveUnitMembers = computed(() => currentArchiveUnitEntry.value?.members || [])
-const currentArchiveUnitStories = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
-  ? unitReadModelDetail.value.view.stories : [])
-const currentArchiveUnitSongs = computed(() => unitReadModelDetail.value?.view.entry.unit === currentArchiveUnit.value
-  ? unitReadModelDetail.value.view.songs : [])
-
-const filteredFileEntries = computed(() => {
-  if (!currentGroup.value) return []
-  if (legacyFileReadModelDetail.value?.id !== String(currentGroup.value.id)) return []
-  const entries = legacyFileReadModelDetail.value.view.entries
-  const q = filterQuery.value.toLowerCase()
-  return q ? entries.filter(entry => entry.searchText.toLowerCase().includes(q)) : entries
+const {
+  openStoryCatalog, setStoryDomain, setStoryMode, browseStoryCollection, openExternalStoryResources, openExternalStoryInternal,
+  openProjectedCollection, openCatalogStory, openStoryDetail, selectStoryCollectionChapter, openStoryIdol,
+  playStoryDetail, playStoryCollectionChapter, playStoryCollectionEpisode,
+  loadCollectionCatalog, loadCollectionDetail, loadStoryReadModelCatalog, loadStoryReadModelLanding, loadStoryReadModelDetail,
+  goBackFromStoryCatalog, goBackFromStoryDetail, goBackFromStoryCollection,
+  invalidateStoryNavigation, normalizeStoryRoute, prepareStoryRoute,
+} = useStoryNavigation({
+  view, loading, detailSourceRoute, filterQuery, currentStoryDomain, currentCharacterId, currentStoryMode, currentStorySection, currentStoryFile,
+  storyDetailParentView, storyCollectionParentView, currentEventScope, currentStoryAvailability, currentStorySort,
+  currentMobileMode, currentMobileScenarioId, storyVisibleLimit, currentCategoryId, currentSongId, currentStory,
+  collectionReadModelCatalog, collectionReadModelDetail, collectionReadModelStatus,
+  storyReadModelCatalog, storyReadModelDetail, storyReadModelStatus, storyCatalogIndex, storyCatalogLanding,
+  navigation, archiveBootstrap, readModelClient, prepareArchivePage, captureDetailSource, commitView, commitArchiveSelection,
+  goHome, openEventDetail: (...args) => openEventDetail(...args), openIdolStoryArchive, openStoryPhone, loadScenario, startEpisodeQueue,
+  openStoryReader: (...args) => openStoryReader(...args),
+  idolStoryChapterOwner, openIdolStoryChapter,
 })
 
-const currentCards = computed(() => (cardReadModelCatalog.value || [])
-  .filter(card => !currentCharacterId.value || card.character_id === currentCharacterId.value))
-
-const cardRarityTabs = computed(() => buildCardRarityTabs(currentCards.value))
-
-const filteredCards = computed(() => filterArchiveCards(currentCards.value, {
-  query: filterQuery.value,
-  rarity: currentCardRarity.value,
-  assetState: currentCardAssetState.value,
-  relationState: currentCardRelationState.value,
-}))
-const filteredCardRows = computed(() => filteredCards.value.map(card => ({
-  ...card,
-  ownerReference: card.ownerReference,
-})))
-
-const currentCard = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.card : null)
-const currentCardOwnerReference = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.ownerReference : null)
-const currentCardAssetStatus = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.assetStatus : null)
-const currentCardEventRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.eventRelation : null)
-const currentCardGashaRelation = computed(() => cardReadModelDetail.value?.id === currentCardId.value
-  ? cardReadModelDetail.value.gashaRelation : null)
-const gashaCatalog = computed(() => gashaReadModelCatalog.value?.rows || [])
-const gashaCategoryOptions = computed(() => gashaCatalogFunctions.value?.buildGashaCategoryOptions(
-  { meta: gashaReadModelCatalog.value?.summary }, gashaCatalog.value) || [])
-const filteredGashas = computed(() => gashaCatalogFunctions.value?.filterGashaCatalog(gashaCatalog.value, {
-  query: filterQuery.value,
-  category: currentGashaCategory.value,
-  idolSearchText: idolEntitySearchText,
-}) || [])
-const currentGasha = computed(() => gashaReadModelDetail.value?.id === currentGashaId.value
-  ? gashaReadModelDetail.value.gasha
-  : null)
-const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
-  ? eventReadModelDetail.value.view : null)
-const currentEvent = computed(() => currentEventProjection.value?.event || null)
-const currentMasterEvent = computed(() => currentEventProjection.value?.masterEvent || null)
-const currentEventExternalResources = computed(() =>
-  externalResourcesForEvent(externalStoryResourcesData.value, currentEvent.value?.event_code),
-)
-const currentEventCards = computed(() => currentEventProjection.value?.cards || [])
-const currentEventIdols = computed(() => currentEventProjection.value?.idols || [])
-const currentEventUnits = computed(() => currentEventProjection.value?.units || [])
-const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
-const previousCard = computed(() => currentCardIndex.value > 0
-  ? currentCards.value[currentCardIndex.value - 1]
-  : null)
-const nextCard = computed(() => currentCardIndex.value >= 0 && currentCardIndex.value < currentCards.value.length - 1
-  ? currentCards.value[currentCardIndex.value + 1]
-  : null)
-const currentSeriesCards = computed(() => {
-  const seriesId = currentCard.value?.release_series?.series_id
-  if (!seriesId) return []
-  return (cardReadModelCatalog.value || [])
-    .filter(card => (card.release_series_id || card.release_series?.series_id) === seriesId)
-    .map(card => ({ ...card, character_name: idolSourceName(card.character_id) }))
+const {
+  openArchiveUnit, openUnitFromIdol, openUnitMember, openUnitStory,
+  openUnitEvent, loadUnitCatalog, loadUnitDetail, unitCatalogEntries,
+  currentArchiveUnit, currentArchiveUnitEntry, currentArchiveUnitMembers, currentArchiveUnitStories,
+  currentArchiveUnitSongs, prepareUnitRoute, invalidateUnitNavigation,
+} = useUnitNavigation({
+  unitReadModelCatalog, unitReadModelDetail, unitReadModelStatus, currentArchiveUnitCode,
+  currentEventId, eventParentView, currentCategoryId, currentCharacterId,
+  loading, navigation, archiveBootstrap, readModelClient,
+  prepareArchivePage, captureDetailSource, commitView, openIdolReadModel,
+  loadScenario, openEventDetail: (...args) => openEventDetail(...args),
 })
 
-const currentCardCharacterName = computed(() => {
-  const id = currentCharacterId.value
-  return idolSourceName(id) || 'Cards'
+const {
+  loadCardFacets, loadCardCatalog, loadCardDetail, openUnitCards,
+  openPrimaryCards, openCard, selectCardIdol, goBackToCards,
+  openCardIdol, openRelatedCard, openCollectionCard, goBackFromCards,
+  openCardScenario, openCardEvent, openCardGasha, currentCards,
+  cardRarityTabs, filteredCards, filteredCardRows, currentCard,
+  currentCardOwnerReference, currentCardAssetStatus, currentCardEventRelation, currentCardGashaRelation,
+  currentCardLimitbreakMaterial, currentCardIndex, previousCard, nextCard,
+  currentSeriesCards, currentCardCharacterName, prepareCardRoute, invalidateCardNavigation,
+} = useCardNavigation({
+  cardReadModelCatalog, cardReadModelDetail, cardReadModelStatus, currentCharacterId,
+  currentCardId, currentCardRarity, currentCardAttribute, currentCardAssetState,
+  currentCardRelationState, filterQuery, currentArchiveUnit, unitReadModelStatus,
+  currentCategoryId, currentArchiveUnitCode, currentIdolUnitFilter, currentGroup,
+  detailSourceRoute, currentEventId, eventParentView, view,
+  loading, navigation, archiveBootstrap, readModelClient,
+  prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
+  commitArchiveSelection, openIdolReadModel, loadScenario, openEventDetail: (...args) => openEventDetail(...args),
+  openGasha: (...args) => openGasha(...args), idolDisplayName, idolSourceName, archiveNamedSearchText,
+  fetch: (...args) => fetch(...args),
 })
 
-const currentIdolDetail = computed(() => idolReadModelDetail.value?.id === currentCharacterId.value
-  ? idolReadModelDetail.value.view : null)
-const currentIdolProfile = computed(() => currentIdolDetail.value?.profile || null)
-const currentIdolStats = computed(() => currentIdolDetail.value?.stats || {})
-const currentIdolEvents = computed(() => currentIdolDetail.value?.events || [])
-const currentIdolSongs = computed(() => currentIdolDetail.value?.songs || [])
-
-const readingState = ref({ status: 'idle', document: null, entries: [], error: '' })
-const readingPlaybackNotice = ref('')
-const readingRepository = createReadingRepository({ locatorResolver: async (documentId, { fresh }) => {
-  const descriptor = await entityDescriptor(archiveBootstrap, 'reading-docs', documentId, 'reading-docs.detail')
-  if (fresh) readModelClient.invalidate(descriptor)
-  try {
-    const detail = await readModelClient.load(descriptor, { expectedId: documentId,
-      validate: data => { if (!data.view?.entry || !Array.isArray(data.view.entries)) throw Error('Reading locator shape mismatch') } })
-    return detail.view
-  } catch (error) {
-    if (error.code !== 'RELEASE_OR_ARTIFACT_MISSING') throw error
-    const exists = (await readingRepository.manifest()).entries.some(entry => entry.document_id === documentId)
-    if (exists) throw error
-    return { entry: null, entries: [] }
+watch(view,nextView=>{
+  if (nextView === 'idols') void loadUnitCatalog().catch(error=>console.warn('Unit display metadata unavailable',error));
+  if (['portal','cards','card_detail','story_catalog','story_detail','mobile_archive','home'].includes(nextView)) {
+    void loadArchiveNames('cards').catch(error=>console.warn('Card name translations unavailable',error));
   }
-} })
-const readingCatalogEntries = computed(() => {
-  if (view.value === 'story_collection' && currentStoryCollection.value)
-    return collectionReadModelDetail.value.view.readingEntries
-  if (view.value === 'story_detail' && currentStory.value)
-    return storyReadModelDetail.value.view.readingEntries
-  if (view.value === 'event_detail' && currentEventProjection.value)
-    return eventReadModelDetail.value.view.readingEntries
-  if (view.value === 'work_archive' && currentWorkIdol.value)
-    return workReadModelDetail.value.view.readingEntries
-  if (view.value === 'idol_story_archive' && currentIdolStoryPage.value)
-    return idolStoryReadModelDetail.value.view.readingEntries
-  return []
+},{immediate:true});
+
+const {
+  openGashaCatalog, openGasha, goBackFromGasha, openGashaCard,
+  loadGashaCatalog, loadGashaDetail, gashaCatalog, gashaCategoryOptions,
+  filteredGashas, currentGasha, prepareGashaRoute, invalidateGashaNavigation,
+} = useGashaNavigation({
+  gashaReadModelCatalog, gashaReadModelDetail, gashaReadModelStatus, gashaCatalogFunctions,
+  currentGashaId, currentGashaCategory, gashaParentView, currentStoryDomain,
+  currentStoryCollection, cardReadModelCatalog, currentCategoryId, currentCharacterId,
+  currentCardId, filterQuery, detailSourceRoute, view,
+  loading, navigation, archiveBootstrap, readModelClient,
+  prepareArchivePage, captureDetailSource, commitView, loadCardCatalog,
+  openCard, idolEntitySearchText,
 })
-const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
+const {
+  openEventDetail, goBackFromEvent, playCurrentEvent, playCurrentEventEpisode,
+  openEventCard, openEventIdol, openEventUnit, loadEventCatalog,
+  loadEventDetail, currentEventProjection, currentEvent, currentEventEpisodes,
+  currentEventExternalResources, prepareEventRoute, invalidateEventNavigation,
+} = useEventNavigation({
+  eventReadModelCatalog, eventReadModelDetail, eventReadModelStatus, view,
+  loading, currentEventId, eventParentView, detailSourceRoute,
+  currentCharacterId, cardReadModelCatalog, currentCard, currentArchiveUnit,
+  externalStoryResourcesData, navigation, archiveBootstrap, readModelClient,
+  prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
+  openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
+  openCard, openIdolReadModel, openArchiveUnit,
+})
 
-const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage'].includes(view.value))
+const {
+  readingState, chapterReadingState, readingPlaybackNotice, readingCatalogEntries, readingChapterNavigation, chapterReadingSession,
+  loadSynopsisReadingDocument, openStoryReader, refreshStoryReader, openCollectionReader,
+  selectReaderDocument, selectReaderChapter, locateChapterReadingRow, playChapterReadingSegment,
+  closeStoryReader, returnToReader, openEventReader, openIdolStoryReader, openWorkReader, openSeasonalReader,
+  openReaderPlayback, updateReadingMode, locateReadingRow, resolveReaderContinuationSource,
+  applyReaderRoute, loadReaderQueue,
+} = useReaderNavigation({
+  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingScope,
+  currentStoryDomain, currentStorySection, currentEpisodeId, currentStoryFile, currentWorkMode, currentCharacterId,
+  currentEventId, eventParentView, currentCategoryId, currentArchiveUnitCode, detailSourceRoute, currentScenarioFile,
+  loading, loadingPurpose, collectionReadModelDetail, storyReadModelDetail, eventReadModelDetail,
+  workReadModelDetail, idolStoryReadModelDetail, currentStoryCollection, currentStory, currentEventProjection,
+  currentWorkIdol, currentIdolStoryPage, navigation, archiveBootstrap, readModelClient, playbackController, playbackError,
+  applyArchiveRoute, syncArchiveRoute, currentArchiveRoute, restoreDetailSource, openStoryCatalog, loadCollectionDetail, loadPlayerQueue,
+  prepareReturnRoute: prepareRouteData,
+  loadSeasonalLedger: () => loadSeasonalLedgerOnly(),
+  seasonalParticipantName: participant => (participant.participant_type === 'idol' && idolDisplayName(participant.participant_code, participant.display_name)) || participant.display_name,
+})
+const pickerPreparing = ref(false)
+let pickerRequest = 0
+const playbackFailure = ref(null)
+watch(() => Boolean(playbackError.value || playbackReadiness.value?.status === 'blocked') && !loading.value, async open => {
+  if (!open) return
+  await nextTick()
+  playbackFailure.value?.querySelector('button')?.focus()
+}, { flush:'post' })
 
-const currentSong = computed(() => songReadModelDetail.value?.id === currentSongId.value
-  ? songReadModelDetail.value.song : null)
-const stageAudioExperiments = computed(() => songReadModelDetail.value?.id === (currentSongId.value || (view.value === 'chibi_stage' ? 'drvalv' : '')) && songReadModelDetail.value?.experimental
-  ? { [songReadModelDetail.value.id]: songReadModelDetail.value.experimental }
-  : {})
-const currentSongPresentation = computed(() => songReadModelDetail.value?.id === currentSongId.value
-  ? songReadModelDetail.value.view : null)
+const archiveShellVisible = computed(() => !['__boot__', 'player', 'spine_lab', 'chibi_stage', 'chart_lab', 'picture_studio'].includes(view.value))
+
+const {
+  currentSong, currentSongPresentation, chartSongs,
+  loadSongCatalog, ensureSongCatalog, loadSongDetail,
+  openSongCatalog, openSong, openSongUnit, openSongIdol, openSongRelatedStory,
+  openChartLab, openChartTool, selectChartSong, closeChartTool, goBackFromSong,
+  invalidateSongNavigation, prepareSongRoute,
+} = useSongNavigation({
+  view, currentSongId, currentSongScope, songParentView, currentCharacterId, currentCategoryId, filterQuery, detailSourceRoute,
+  songReadModelCatalog, songReadModelDetail, songReadModelStatus, currentArchiveUnit, archiveBootstrap, readModelClient, navigation,
+  captureDetailSource, commitView, restoreDetailSource, goHome, openArchiveUnit, openPrimaryIdol, openProjectedCollection,
+})
+const { stageAudioExperiments, stageOriginalSlotOrdered, stageOriginalPerformers, stageSongDirectory } = useStageSongProjection({
+  songReadModelDetail, currentSongId, view, songReadModelCatalog,
+})
 
 const archiveSection = computed(() => archiveSectionForRoute({
   view: view.value,
@@ -1272,13 +1452,21 @@ const archiveSection = computed(() => archiveSectionForRoute({
   group: currentGroup.value?.id || '',
   scenario: view.value === 'player' ? currentScenarioFile.value : '',
   voice: view.value === 'player' ? currentPreviewCue.value : '',
+  collection: view.value === 'collection_catalog' ? currentCollectionState.value : undefined,
 }))
 
 const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
+  if (view.value === 'live') return 'LIVE'
+  if (view.value === 'studio') return '摄影工作台'
+  if (view.value === 'about') return '关于本站'
   if (view.value === 'archive_status') return '数据状态'
+  if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
+  if (view.value === 'photo_catalog') return '摄影资源'
+  if (view.value === 'picture_studio') return '摄影工作台'
+  if (view.value === 'event_catalog') return '活动一览'
   if (view.value === 'story_catalog') {
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'main') return '主线剧情'
     if (currentStoryMode.value === 'portal' && currentStoryDomain.value === 'extra') return '额外剧情'
@@ -1287,30 +1475,30 @@ const archiveTitle = computed(() => {
   }
   if (view.value === 'external_story_resources') return '社区中文剧情'
   if (view.value === 'story_detail') return currentStory.value?.title || '故事详情'
-  if (view.value === 'story_collection') return currentStoryCollection.value?.title || '故事章节'
-  if (view.value === 'seasonal_campaign') return currentSeasonalCampaign.value?.name || '季节企划'
-  if (view.value === 'work_archive') return `${currentWorkIdol.value?.display_name || ''} 工作档案`.trim()
-  if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value?.idol_name || ''} 个人故事`.trim()
-  if (view.value === 'mobile_archive') return 'Mobile 通信'
+  if (view.value === 'story_collection') return storyCollectionTitle(currentStoryCollection.value, idolDisplayName) || '故事章节'
+  if (view.value === 'seasonal_campaign') return '季节企划'
+  if (view.value === 'work_archive') return `${currentWorkIdol.value ? idolDisplayName(currentWorkIdol.value.idol_code, currentWorkIdol.value.display_name) : ''} 工作档案`.trim()
+  if (view.value === 'idol_story_archive') return `${currentIdolStoryPage.value ? idolDisplayName(currentIdolStoryPage.value.idol_code, currentIdolStoryPage.value.idol_name) : ''} 个人故事`.trim()
+  if (view.value === 'mobile_archive') return '通信'
   if (view.value === 'gashas') return '卡池档案'
-  if (view.value === 'gasha_detail') return currentGasha.value?.display_name || '卡池详情'
+  if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value) || '卡池详情'
   if (view.value === 'song_catalog') return '歌曲档案'
   if (view.value === 'song_detail') return currentSong.value?.title || '歌曲详情'
   if (view.value === 'event_detail') return currentEvent.value?.title || '活动详情'
   if (view.value === 'unit_catalog') return '组合资料'
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || '组合详情'
   if (view.value === 'idols') return categoryHeaderText.value
-  if (view.value === 'idol_detail') return currentIdolProfile.value?.display_name || '偶像详情'
+  if (view.value === 'idol_detail') return currentIdolDisplayName.value || '偶像详情'
   if (view.value === 'groups') return groupTitle.value
   if (view.value === 'cards') return currentCardCharacterName.value
-  if (view.value === 'card_detail') return currentCard.value?.title || '卡片详情'
+  if (view.value === 'card_detail') return archiveNamedText('card',currentCard.value?.title,'title') || '卡片详情'
   if (view.value === 'episode_zero_units') return '第零话'
   if (view.value === 'episodes') return currentUnit.value?.unit_name || '章节'
   if (view.value === 'files') return currentGroup.value?.title || '剧情文件'
   return 'SideM Archive'
 })
 
-const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value) || (view.value === 'story_catalog' && currentStoryMode.value === 'search'))
+const archiveSearchable = computed(() => ['idols', 'groups', 'cards', 'gashas', 'files'].includes(view.value))
 
 const archiveSearchPlaceholder = computed(() => {
   if (view.value === 'idols') return categoryFilterPlaceholder.value
@@ -1322,13 +1510,13 @@ const archiveSearchPlaceholder = computed(() => {
   return '搜索资料'
 })
 
-const archiveShowBack = computed(() => view.value !== 'home' && (view.value !== 'portal' || Boolean(portalFrom.value)))
+const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
 
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
   const entityByView = {
     idol_detail: {
-      title: currentIdolProfile.value?.display_name,
+      title: currentIdolDisplayName.value,
       id: currentCharacterId.value,
     },
     unit_detail: {
@@ -1336,11 +1524,11 @@ const archiveBreadcrumbs = computed(() => {
       id: currentArchiveUnitCode.value,
     },
     card_detail: {
-      title: currentCard.value?.title,
+      title: archiveNamedText('card',currentCard.value?.title,'title'),
       id: currentCardId.value,
     },
     gasha_detail: {
-      title: currentGasha.value?.display_name,
+      title: gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name,uiLocale.value),
       id: currentGashaId.value,
     },
     event_detail: {
@@ -1348,7 +1536,7 @@ const archiveBreadcrumbs = computed(() => {
       id: currentEventId.value,
     },
     story_collection: {
-      title: currentStoryCollection.value?.title,
+      title: storyCollectionTitle(currentStoryCollection.value, idolDisplayName),
       id: currentStorySection.value,
       domainLabel: currentStoryCollection.value?.domainLabel,
     },
@@ -1358,7 +1546,7 @@ const archiveBreadcrumbs = computed(() => {
       domainLabel: currentStory.value?.domainLabel,
     },
     seasonal_campaign: {
-      title: currentSeasonalCampaign.value?.name,
+      title: currentSeasonalCampaign.value ? `${currentSeasonalCampaign.value.year} ${SEASONAL_SEASON_LABEL[currentSeasonalCampaign.value.season] || ''}`.trim() : '季节企划',
       id: currentStorySection.value,
     },
     work_archive: {
@@ -1396,8 +1584,16 @@ function idolTranslatedName(id) {
   })?.name || ''
 }
 
-function idolDisplayName(id) {
-  const sourceName = idolSourceName(id)
+// A source (Japanese) idol name as it appears inside game text, shown in the reader's language.
+const idolCodeBySourceName = computed(() => new Map(Object.entries(bootstrapIdolDictionary.by_idol_code || {})
+  .map(([code, row]) => [String(row.display_name || '').replace(/\s+/g, ''), code])))
+function idolDisplayNameFromSource(sourceName) {
+  const code = idolCodeBySourceName.value.get(String(sourceName || '').replace(/\s+/g, ''))
+  return code ? idolDisplayName(code, sourceName) : sourceName
+}
+
+function idolDisplayName(id, fallbackSourceName = '') {
+  const sourceName = idolSourceName(id, fallbackSourceName)
   return uiLocale.value === 'ja-JP' ? sourceName : idolTranslatedName(id) || sourceName
 }
 
@@ -1425,22 +1621,83 @@ function captureActiveArchiveView() {
   if (activeArchiveViewContext) captureArchiveViewState(activeArchiveViewContext)
 }
 
-function adoptArchiveViewContext({ restore = true } = {}) {
+function adoptArchiveViewContext({ restore = true, fresh = false } = {}) {
   activeArchiveViewContext = buildArchiveViewContext(window.location.href, window.history.state)
+  const context = activeArchiveViewContext
   const revision = ++archiveViewRestoreRevision
+  const navigationRevision = navigation.getRevision()
+  const stayedOnView = adoptedArchiveView === view.value
+  adoptedArchiveView = view.value
+  pendingSongDetailRestore = null
+  pendingPortalRestore = restore && view.value === 'portal' ? {context,revision,navigationRevision} : null
+  pendingEventCatalogRestore = restore && view.value==='event_catalog'
+    ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
+  pendingPhotoCatalogRestore = restore && view.value==='photo_catalog'
+    ? {context:activeArchiveViewContext,revision,navigationRevision:navigation.getRevision()} : null
   if (!restore) return
+  if (view.value === 'portal') { nextTick(restorePortalPosition); return }
+  if (view.value === 'song_detail') {
+    pendingSongDetailRestore = { context, revision, navigationRevision, songId: currentSongId.value }
+    nextTick(() => restoreSongDetailView())
+    return
+  }
   nextTick(() => {
-    if (revision !== archiveViewRestoreRevision || navigation.isDisposed()) return
-    restoreArchiveViewState(activeArchiveViewContext).catch(error => {
+    const isCurrent = () => context === activeArchiveViewContext && revision === archiveViewRestoreRevision &&
+      navigationRevision === navigation.getRevision() && !navigation.isDisposed()
+    if (!isCurrent()) return
+    // A new history entry on the same page (the next card, another idol) starts at its top, not at
+    // whatever depth the previous entry was read to; a different page mounts its own scroll area at
+    // the top already. The reader positions itself by anchor and is left alone.
+    if (fresh && stayedOnView && view.value !== 'reader' && !readArchiveViewRestoration(context)) {
+      document.querySelector('[data-archive-scroll-container]')?.scrollTo({ top: 0 })
+      return
+    }
+    restoreArchiveViewState(context, { isCurrent }).catch(error => {
       console.error('[ArchiveNavigation] Failed to restore view position:', error)
     })
   })
 }
 
+async function restorePortalPosition() {
+  const pending = pendingPortalRestore
+  if (!pending || portalData.overview.value.loading || portalData.search.value.loading) return
+  const isCurrent = () => pending === pendingPortalRestore && pending.context === activeArchiveViewContext && pending.revision === archiveViewRestoreRevision && pending.navigationRevision === navigation.getRevision() && view.value === 'portal' && !navigation.isDisposed()
+  await nextTick()
+  if (!isCurrent()) return
+  await restoreArchiveViewState(pending.context, {isCurrent})
+  if (isCurrent()) pendingPortalRestore = null
+}
+watch([() => portalData.overview.value.loading, () => portalData.search.value.loading], () => { void restorePortalPosition() })
+
+async function restoreSongDetailView({ songId } = {}) {
+  const pending = pendingSongDetailRestore
+  const component = songDetailView.value
+  if (!pending || pending.running || (songId && songId !== pending.songId) ||
+      typeof component?.prepareRestoreFocus !== 'function') return false
+  const isCurrent = () => pending === pendingSongDetailRestore && component === songDetailView.value &&
+    pending.context === activeArchiveViewContext && pending.revision === archiveViewRestoreRevision &&
+    pending.navigationRevision === navigation.getRevision() && !navigation.isDisposed() &&
+    view.value === 'song_detail' && currentSongId.value === pending.songId
+  if (!isCurrent()) return false
+  pending.running = true
+  try {
+    const saved = readArchiveViewRestoration(pending.context)
+    if (!saved) return false
+    await component.prepareRestoreFocus({ focusId: saved.focusId, songId: pending.songId, isCurrent })
+    if (!isCurrent()) return false
+    return await restoreArchiveViewState(pending.context, { isCurrent })
+  } catch (error) {
+    console.error('[ArchiveNavigation] Failed to restore song detail position:', error)
+    return false
+  } finally {
+    if (pending === pendingSongDetailRestore) pendingSongDetailRestore = null
+  }
+}
+
 function syncArchiveRoute({ replace = false, restoreView = true } = {}) {
   if (!archiveRouteReady || navigation.isRestoring()) return
   writeArchiveRoute(currentArchiveRoute(), { replace })
-  adoptArchiveViewContext({ restore: restoreView })
+  adoptArchiveViewContext({ restore: restoreView, fresh: !replace })
 }
 
 function commitView(nextView, options = {}) {
@@ -1463,7 +1720,7 @@ function commitArchiveSelection() {
 
 function updateArchiveFilter(key, value) {
   const target = {
-    filterQuery, currentIdolUnitFilter, currentCardRarity, currentCardAssetState,
+    filterQuery, currentIdolUnitFilter, currentCardRarity, currentCardAttribute, currentCardAssetState,
     currentCardRelationState, currentGashaCategory, currentSongScope,
     currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort,
   }[key]
@@ -1478,7 +1735,7 @@ async function restoreVoicePreview(route, intent) {
   if (!card || !route.voice) return false
   const cue = findCardVoiceCue(card, route.voice, card.operational_voice_cues || [])
   if (!cue) return false
-  const scenario = buildCardVoicePreviewScenario(card, cue)
+  const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
   loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => scenario,
@@ -1496,39 +1753,16 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       const destination = playerReturnRoute(route)
       playbackController.reset()
       return playbackController.restore(route.scenario, destination.view,
-        { startStep: route.startStep, endStep: route.endStep, initialStep: route.initialStep },
+        { startStep: route.startStep, endStep: route.endStep, initialStep: route.initialStep, entryIntent: route.playMode },
         [], intent, destination)
     }
     if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
-      readingDocumentId.value = route.reading
-      readingRowId.value = route.readingRow || ''
-      readingMode.value = route.readingMode || 'original'
-      readingRevision.value = route.readingRev || ''
-      currentStoryDomain.value = route.storyType || ''
-      currentStorySection.value = route.storySection || ''
-      currentEpisodeId.value = route.episode || ''
-      currentStoryFile.value = route.story || ''
-      currentWorkMode.value = route.storyType === 'work' ? (route.workMode || 'stories') : 'stories'
-      currentCharacterId.value = route.idol || ''
-      currentEventId.value = route.event || ''
-      eventParentView.value = route.event ? (route.parentView || '') : ''
-      currentCategoryId.value = route.event ? (route.category || '') : ''
-      currentArchiveUnitCode.value = route.event && route.parentView === 'unit_detail' ? (route.unit || '') : ''
-      detailSourceRoute.value = route.sourceRoute || ''
-      readingPlaybackNotice.value = ''
-      playbackController.reset()
-      view.value = 'reader'
-      loading.value = false
-      await readingSession.open(route.reading, intent)
-      if (!intent.isCurrent()) return
-      if (route.view === 'player') await openReaderPlayback(route.readingRow, { intent, route })
-      else if (readingRevision.value && readingRevision.value !== readingState.value.entries.find(e => e.document_id === route.reading)?.sha256) {
-        readingPlaybackNotice.value = '阅读版本已变化。请重新选择本篇分段，确认最新正文后再演出。'
-      }
-      return
+      return applyReaderRoute(route, intent)
     }
     if (route.view === 'portal') {
       portalFrom.value = route.portalFrom || ''
+      portalScope.value = route.portalScope === 'all' || archiveBootstrap.idols.some(row => row.id === route.portalScope) ? route.portalScope : userPreferences.value.portalDefaultScope === 'all' ? 'all' : ''
+      portalQuery.value = route.portalQuery || ''
       playbackController.reset()
       view.value = 'portal'
       return
@@ -1574,6 +1808,9 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
       const detail = await loadStoryReadModelDetail(route.story)
       if (!intent.isCurrent()) return
+      // Old links to a phone call as a "card story" land on the call in the communication archive.
+      if (route.view === 'story_detail' && detail.story.domain === 'card_scenarios') return openStoryPhone(detail.story)
+      if (route.view === 'story_detail' && idolStoryChapterOwner(detail.story)) return openIdolStoryChapter(detail.story)
       storyReadModelDetail.value = detail
       route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
     }
@@ -1581,8 +1818,10 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     filterQuery.value = route.query || ''
     const idolOwnerView = route.view === 'player' ? route.returnView : route.view
     const validRouteIdol = !route.idol || (['groups', 'files'].includes(idolOwnerView) && aliasRoute?.groups
-      ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection'].includes(idolOwnerView)
+      ? true : ['idol_detail', 'cards', 'card_detail', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'song_catalog', 'story_catalog', 'event_catalog'].includes(idolOwnerView)
       ? archiveBootstrap.idols.some(idol => idol.id === route.idol)
+      // The seasonal ledger also lists the two office staff, who are not archive idols, and the shared openings.
+      : idolOwnerView === 'seasonal_campaign' ? /^(?:[0-9]{3}[a-z]{3}|common)$/.test(route.idol)
       : Boolean(bootstrapIdolDictionary.by_idol_code[route.idol]))
     const invalidIdolPickTarget = !validRouteIdol ? ({
       idol_detail: 'profile',
@@ -1595,6 +1834,11 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentCharacterId.value = validRouteIdol ? (route.idol || '') : ''
     currentCardId.value = route.card || ''
     currentEventId.value = route.event || ''
+    currentEventBrowseState.value = normalizeEventBrowseState(route.eventBrowse)
+    currentEntityKey.value = route.entity || ''
+    currentCollectionState.value = route.collection || {kind:'items',category:'',idol:'',unit:'',attribute:'',page:0}
+    currentPhotoIdol.value = route.photoIdol || ''
+    currentPhotoEntity.value = route.photoEntity || ''
     eventParentView.value = route.parentView || ''
     detailSourceRoute.value = ownsArchiveSource(route.view, route.returnView) ? (route.sourceRoute || '') : ''
     storyDetailParentView.value = (
@@ -1615,11 +1859,12 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     currentSongScope.value = route.songScope || 'all'
     songParentView.value = route.view === 'song_detail' ? (route.parentView || '') : ''
     currentCardRarity.value = route.rarity || 'all'
+    currentCardAttribute.value = route.cardAttribute || 'all'
     currentCardAssetState.value = route.assetState || 'all'
     currentCardRelationState.value = route.relationState || 'all'
     currentIdolUnitFilter.value = route.unitFilter || ''
     currentStoryDomain.value = route.storyType || ''
-    currentStoryMode.value = route.storyMode || 'portal'
+    currentStoryMode.value = route.view === 'story_catalog' && currentCharacterId.value ? 'search' : route.storyMode || 'portal'
     currentStorySection.value = route.storySection || ''
     currentStoryFile.value = route.story || ''
     currentWorkMode.value = route.workMode || 'stories'
@@ -1632,12 +1877,11 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     const requestedHomeIdol = route.homeIdol
       ? archiveHomeIdols.value.find(idol => idol.id === route.homeIdol)
       : null
-    homeSelectedId.value = requestedHomeIdol?.id || ''
-    homeSelectedCue.value = requestedHomeIdol?.cues?.find(cue => cue.cue === route.homeCue)?.cue || requestedHomeIdol?.cues?.[0]?.cue || ''
-    const defaultHomeModel = requestedHomeIdol?.cues?.find(cue => cue.cue === homeSelectedCue.value)?.modelId
-    homeSelectedCostume.value = requestedHomeIdol?.costumes?.find(costume => costume.modelId === route.homeCostume)?.modelId ||
-      requestedHomeIdol?.costumes?.find(costume => costume.modelId === defaultHomeModel)?.modelId ||
-      requestedHomeIdol?.costumes?.[0]?.modelId || ''
+    const homeSelection = resolveHomeSelection(requestedHomeIdol, route)
+    homeSelectedId.value = homeSelection.id
+    homeFrom.value = route.view === 'home' ? route.homeFrom || '' : ''
+    homeSelectedCue.value = homeSelection.cue
+    homeSelectedCostume.value = homeSelection.costume
     const restoresEventContext = route.view === 'event_detail' ||
       (route.view === 'player' && route.returnView === 'event_detail')
     currentArchiveUnitCode.value = (
@@ -1666,7 +1910,10 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
       return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
-    if (route.view === 'chibi_stage') await chibiStageViewerLoader()
+    if (route.view === 'chibi_stage') {
+      await chibiStageViewerLoader()
+      void ensureSongCatalog()
+    }
 
     if (!intent.isCurrent()) return
     if (invalidIdolPickTarget) view.value = 'idol_picker'
@@ -1678,7 +1925,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     else if (route.view === 'event_detail' && !currentEvent.value) view.value = 'story_catalog'
     else if (route.view === 'story_detail' && !currentStory.value) view.value = 'story_catalog'
     else if (route.view === 'story_collection' && !currentStoryCollection.value) view.value = 'story_catalog'
-    else if (route.view === 'seasonal_campaign' && !currentSeasonalCampaign.value) view.value = 'story_catalog'
+    else if (route.view === 'seasonal_campaign' && !currentSeasonalPage.value) view.value = 'story_catalog'
     else if (route.view === 'work_archive' && !currentWorkIdol.value) view.value = 'story_catalog'
     else if (route.view === 'idol_story_archive' && !currentIdolStoryPage.value) view.value = 'story_catalog'
     else if (route.view === 'mobile_archive' && !mobileIdolReadModelDetail.value) view.value = 'story_catalog'
@@ -1707,6 +1954,7 @@ function goHome() {
   currentSongScope.value = 'all'
   songParentView.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
   currentIdolUnitFilter.value = ''
@@ -1730,12 +1978,37 @@ function goHome() {
   }
 }
 
+function openPortalDirectory({ domain, idolCode = '', rarity = '', attribute = '' } = {}) {
+  if (view.value !== 'portal' || !['cards','songs','stories','events'].includes(domain)) return
+  if (idolCode && !archiveBootstrap.idols.some(row => row.id === idolCode)) return
+  captureDetailSource()
+  currentStoryDomain.value = ''; currentStorySection.value = ''; currentStoryFile.value = ''
+  currentStoryMode.value = 'portal'; currentStoryAvailability.value = 'all'; currentStorySort.value = 'domain'
+  currentEventScope.value = 'all'; currentSongScope.value = 'all'
+  currentCardRarity.value = 'all'; currentCardAttribute.value = 'all'
+  currentCardAssetState.value = 'all'; currentCardRelationState.value = 'all'
+  if (domain === 'cards') return openPrimaryCards(idolCode, { rarity, attribute })
+  if (domain === 'songs') return openSongCatalog({ idolCode })
+  if (domain === 'stories') return openStoryCatalog({ idolCode, mode: 'search' })
+  return openDomainCatalog('events', { idolCode })
+}
+
+function clearCatalogIdol() {
+  navigation.invalidate()
+  currentCharacterId.value = ''
+  currentStoryAvailability.value = 'all'
+  storyVisibleLimit.value = 80
+  currentEventBrowseState.value = { ...currentEventBrowseState.value, page: 0 }
+  syncArchiveRoute({ replace: true })
+}
+
 function navigateArchiveSection(section) {
+  if (section !== 'gashas') gashaReadModelStatus.value = ''
   if (section === 'portal') {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -1749,126 +2022,68 @@ function navigateArchiveSection(section) {
     else openIdolPicker('mobile')
   }
   else if (section === 'gashas') openGashaCatalog()
+  else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
+  else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'resources') openArchiveStatus()
+  else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
 }
 
-async function openStoryReader(documentId, source = {}, returnSourceRoute = '') {
-  const context = view.value === 'reader' ? currentArchiveRoute() : { ...source,
-    sourceRoute: returnSourceRoute || buildArchiveSourceQuery(currentArchiveRoute()) }
-  const pending = applyArchiveRoute({ ...context, view: 'reader', reading: documentId, readingRow: '', readingRev: '', readingMode: readingMode.value }, { restoring: false })
-  // Publish the requested route immediately, including while text is loading.
-  syncArchiveRoute()
-  await pending
+function openDomainCatalog(section, { idolCode = '' } = {}) {
+  currentEventBrowseState.value=normalizeEventBrowseState()
+  currentCollectionState.value={kind:section==='honors'?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}
+  filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
+  currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
+  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',photos:'photo_catalog'})[section])
 }
+function openCollectionEntity(key) {
+  if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
+  if (!/^(item|honor):\d+$/.test(key || '')) return
+  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value='';currentCollectionState.value={kind:key.startsWith('honor:')?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}}
+  currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
+  commitView('collection_catalog')
+}
+function updateCollectionBrowse(next) {
+  if(next.kind!==currentCollectionState.value.kind){currentEntityKey.value='';filterQuery.value=''}
+  currentCollectionState.value=next
+  syncArchiveRoute({replace:true})
+}
+function updateEventBrowse(next) {
+  currentEventBrowseState.value=normalizeEventBrowseState(next)
+  syncArchiveRoute({replace:true,restoreView:false})
+}
+function updateEventCatalogQuery(query) {
+  updateArchiveFilter('filterQuery',query)
+  currentEventBrowseState.value={...currentEventBrowseState.value,page:0}
+  syncArchiveRoute({replace:true,restoreView:false})
+}
+async function onEventCatalogReady() {
+  const pending=pendingEventCatalogRestore
+  pendingEventCatalogRestore=null
+  if(!pending)return
+  await nextTick()
+  if(view.value!=='event_catalog'||pending.context!==activeArchiveViewContext||pending.revision!==archiveViewRestoreRevision||pending.navigationRevision!==navigation.getRevision()||navigation.isDisposed())return
+  return restoreArchiveViewState(pending.context).catch(error=>{
+    console.error('[ArchiveNavigation] Failed to restore event directory position:',error)
+  })
+}
+const { selectPhotoIdol, updatePhotoCatalogQuery, selectPhotoEntity, openPictureStudio } = usePhotoCatalogNavigation({
+  view, currentPhotoIdol, currentPhotoEntity, filterQuery, syncArchiveRoute, captureDetailSource, commitView,
+})
 
-async function refreshStoryReader() {
-  return navigation.run(async intent => {
-    loading.value = true
-    try {
-      await readingRepository.locator(readingDocumentId.value, { fresh: true })
-      if (intent.isCurrent()) await openStoryReader(readingDocumentId.value)
-    } catch (error) {
-      if (intent.isCurrent()) readingPlaybackNotice.value = `正文刷新失败：${error.message}`
-    }
+async function onPhotoCatalogReady() {
+  const pending=pendingPhotoCatalogRestore
+  pendingPhotoCatalogRestore=null
+  if(!pending)return
+  await nextTick()
+  if(view.value!=='photo_catalog'||pending.context!==activeArchiveViewContext||pending.revision!==archiveViewRestoreRevision||pending.navigationRevision!==navigation.getRevision()||navigation.isDisposed())return
+  return restoreArchiveViewState(pending.context).catch(error=>{
+    console.error('[ArchiveNavigation] Failed to restore photo directory position:',error)
   })
 }
 
-function openCollectionReader({ chapter, documentId }) {
-  return openStoryReader(documentId, { storyType: currentStoryDomain.value,
-    storySection: currentStorySection.value, story: chapter.story?.file || '' })
-}
-
-function closeStoryReader() {
-  // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
-  if (detailSourceRoute.value && (!currentEventId.value ||
-      readArchiveSourceRoute(detailSourceRoute.value).view === 'event_detail')) return restoreDetailSource(openStoryCatalog)
-  if (currentStoryDomain.value === 'work' && currentCharacterId.value) {
-    const pending = applyArchiveRoute({ view: 'work_archive', storyType: 'work', idol: currentCharacterId.value,
-      story: currentStoryFile.value, workMode: currentWorkMode.value }, { restoring: false })
-    const revision = navigation.getRevision()
-    return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-  }
-  if (currentEventId.value) {
-    const pending = applyArchiveRoute({ view: 'event_detail', event: currentEventId.value,
-      parentView: eventParentView.value, category: currentCategoryId.value,
-      unit: currentArchiveUnitCode.value, sourceRoute: detailSourceRoute.value }, { restoring: false })
-    const revision = navigation.getRevision()
-    return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-  }
-  if (!currentStorySection.value && !currentStoryFile.value) return openStoryCatalog()
-  const pending = applyArchiveRoute({ view: currentStorySection.value ? 'story_collection' : 'story_detail', storyType: currentStoryDomain.value,
-    storySection: currentStorySection.value, story: currentStoryFile.value }, { restoring: false })
-  const revision = navigation.getRevision()
-  return pending.then(() => { if (navigation.getRevision() === revision) syncArchiveRoute() })
-}
-
-function returnToReader() {
-  const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-    readingMode: readingMode.value, readingRev: readingRevision.value,
-    category: currentEventId.value ? currentCategoryId.value : '',
-    unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
-    parentView: currentEventId.value ? eventParentView.value : '',
-    sourceRoute: detailSourceRoute.value }
-  const pending = applyArchiveRoute(route, { restoring: false })
-  syncArchiveRoute()
-  return pending
-}
-
-function openEventReader(documentId) {
-  return openStoryReader(documentId, { event: currentEventId.value, parentView: eventParentView.value,
-    category: currentCategoryId.value, unit: currentArchiveUnitCode.value,
-    sourceRoute: detailSourceRoute.value })
-}
-
-function openIdolStoryReader({ section, episode }) {
-  const entry = readyEpisodeReading(readingCatalogEntries.value, episode)
-  if (!entry) return
-  const source = { ...currentArchiveRoute(), view: 'idol_story_archive', storyType: 'idol_story',
-    idol: currentCharacterId.value, storySection: String(section.id), episode: String(episode.id), story: episode.file }
-  return openStoryReader(entry.document_id, source, buildArchiveSourceQuery(source))
-}
-
-function openWorkReader(file) {
-  const entry = readingCatalogEntries.value.find(entry => entry.source_file === file && entry.status === 'ready')
-  if (entry) return openStoryReader(entry.document_id, { storyType: 'work', idol: currentCharacterId.value,
-    story: file, workMode: currentWorkMode.value })
-}
-
-async function openReaderPlayback(rowId, { intent: inherited, route, fullDocument = false } = {}) {
-  return navigation.run(async intent => {
-    readingPlaybackNotice.value = ''
-    try {
-      const entry = readingState.value.entries.find(e => e.document_id === readingDocumentId.value)
-      const revision = route ? route.readingRev : (readingRevision.value || entry?.sha256)
-      // An initial index of 1 denotes the full episode; row remains the return location.
-      const target = readingPlaybackTarget(readingState.value.document, rowId, revision, entry,
-        { fullDocument: route ? route.initialStep === 1 : fullDocument })
-      if (route && (route.scenario !== target.file || route.startStep !== target.startStep ||
-          route.endStep !== target.endStep || route.initialStep !== target.initialStep)) {
-        throw Error('链接中的演出范围与正文定位不一致，请从正文重新打开演出。')
-      }
-      readingRevision.value = revision
-      readingRowId.value = rowId
-      // Pin the requested text version/row even if media preparation subsequently fails.
-      if (!route) syncArchiveRoute({ replace: true })
-      loadingPurpose.value = 'story-playback'
-      const loaded = await playbackController.load(target.file, 'reader', { ...target, intent, syncRoute: !route })
-      if (!loaded && intent.isCurrent()) readingPlaybackNotice.value = playbackError.value
-    } catch (error) {
-      if (intent.isCurrent()) readingPlaybackNotice.value = error.message
-    }
-  }, { intent: inherited })
-}
-
-function updateReadingMode(mode) {
-  readingMode.value = mode
-  syncArchiveRoute({ replace: true })
-}
-
-function locateReadingRow(rowId) {
-  if (view.value !== 'reader' || readingState.value.status !== 'ready' || !readingState.value.document.rows.some(row => row.anchor.row_id === rowId)) return
-  readingRowId.value = rowId
-  syncArchiveRoute({ replace: true })
+async function openDomainTarget(target){
+  if(target?.view==='card_detail' && /^[a-z0-9_]+$/.test(target.card || ''))return openEventCard({card_resource_id:target.card})
+  if(target?.view==='photo_catalog' && /^(spots|scenes|stickers|frames|filters):\d+$/.test(target.photoEntity || '')){captureDetailSource();currentPhotoIdol.value='';currentPhotoEntity.value=target.photoEntity;currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog')}
 }
 
 function storeUserPreferences(next) {
@@ -1889,16 +2104,26 @@ function openRootPortal() {
   })
 }
 
-function chooseStartupLater() {
-  if (view.value === 'welcome' && detailSourceRoute.value) return restoreDetailSource(openRootPortal)
-  openRootPortal()
+// First visit: the archive is the default start; the onboarding sheet records the producer
+// name (stored by its own field), a favourite idol, and may send the visitor to that idol's home.
+function completeOnboarding({ preferredIdol = '', openHome = false } = {}) {
+  const idol = archivePickerIdols.value.some(row => row.id === preferredIdol) ? preferredIdol : ''
+  const next = { onboardingComplete: true }
+  if (userPreferences.value.startupPage === 'unset') next.startupPage = 'portal'
+  if (idol) next.preferredIdol = idol
+  if (idol && validArchiveHomeIdols.value.includes(idol)) next.startupIdol = idol
+  storeUserPreferences(next)
+  if (openHome && next.startupIdol) openGameHome(idol)
 }
 
 function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = false, homeMode = 'spine' } = {}) {
   const isGeneralPicker = view.value === 'idol_picker' && currentPickTarget.value !== 'home'
   if (!(isGeneralPicker ? archivePickerIdols.value : archiveHomeIdols.value).some(idol => idol.id === idolCode)) return
   const next = {}
-  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) Object.assign(next, { homeMode: rememberStartup ? homeMode : (userPreferences.value.homeMode === 'card' ? 'card' : 'spine'), startupIdol: idolCode, onboardingComplete: true })
+  if (rememberStartup || currentPickTarget.value === 'home' || (view.value === 'home' && !homeSelectedId.value)) {
+    Object.assign(next, { startupIdol: idolCode, onboardingComplete: true })
+    if (rememberStartup) Object.assign(next, { startupPage: 'home', homeMode })
+  }
   if (setPreferred) next.preferredIdol = idolCode
   if (Object.keys(next).length) storeUserPreferences(next)
   if (view.value === 'idol_picker') {
@@ -1915,21 +2140,16 @@ function chooseImmersiveIdol({ idolCode, rememberStartup = true, setPreferred = 
   openGameHome(idolCode)
 }
 
+function selectHomeIdol(idolCode) {
+  if (!archiveHomeIdols.value.some(idol => idol.id === idolCode)) return
+  homeSelectedId.value = idolCode
+  storeUserPreferences({ startupIdol: idolCode })
+}
+
 function savePreferredIdol(idolCode) {
   if (idolCode && !archivePickerIdols.value.some(idol => idol.id === idolCode)) return
   const preferredIdol = idolCode || null
   storeUserPreferences({ preferredIdol })
-}
-
-function clearUserPreferences() {
-  legacyEntryStatus.value = ''
-  const result = clearArchiveUserPreferences()
-  userPreferences.value = result.preferences
-  userPreferenceNotice.value = result.issue || '启动与“我的偶像”设置已清除。'
-  homeSelectedId.value = ''
-  homeSelectedCue.value = ''
-  homeSelectedCostume.value = ''
-  commitView('welcome', { replace: true })
 }
 
 function openWelcomeSettings() {
@@ -1949,43 +2169,14 @@ function openIdolPicker(target) {
 function cancelWelcomeOrPicker() {
   legacyEntryStatus.value = ''
   if (detailSourceRoute.value) return restoreDetailSource(openRootPortal)
-  if (view.value === 'idol_picker') openRootPortal()
+  if (['idol_picker', 'welcome'].includes(view.value)) openRootPortal()
 }
 
-async function openGameHome(idolCode = '') {
-  const candidate = [idolCode, userPreferences.value.startupIdol, userPreferences.value.preferredIdol]
-    .find(code => validArchiveHomeIdols.value.includes(code)) || ''
-  if (!candidate) return openIdolPicker('home')
-  const request = ++pendingHomeNavigation
-  const revision = navigation.getRevision()
-  homeEntryStatus.value = '正在准备首页…'
-  try {
-    await loadHomeIdol(candidate)
-  } catch (error) {
-    if (request !== pendingHomeNavigation || revision !== navigation.getRevision()) return
-    console.error('[HomeReadModel] Failed to open Home:', error)
-    homeEntryStatus.value = '首页暂时无法打开，请重试。'
-    userPreferenceNotice.value = homeEntryStatus.value
-    return
-  }
-  if (request !== pendingHomeNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  homeEntryStatus.value = ''
-  detailSourceRoute.value = ''
-  portalFrom.value = ''
-  homeSelectedId.value = candidate
-  homeSelectedCue.value = ''
-  homeSelectedCostume.value = ''
-  commitView('home')
-}
-
-function openPreferredDestination(destination) {
-  if (destination === 'profile') {
-    const idolCode = preferredArchiveIdol.value?.id
-    if (idolCode) return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
-    return
-  }
-  const idolCode = preferredArchiveIdol.value?.id
-  if (!idolCode) return
+function openPreferredDestination(request) {
+  const destination = typeof request === 'string' ? request : request?.action
+  const idolCode = typeof request === 'string' ? preferredArchiveIdol.value?.id : request?.idolCode
+  if (!idolCode || !archiveBootstrap.idols.some(row => row.id === idolCode)) return
+  if (destination === 'profile') return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
   if (destination === 'cards') captureDetailSource()
   if (destination === 'cards') openPrimaryCards(idolCode)
   else if (destination === 'work') openWorkArchive(idolCode)
@@ -1993,99 +2184,15 @@ function openPreferredDestination(destination) {
   else if (destination === 'mobile') openMobileArchive({ idolCode, mode: 'personal' })
 }
 
-function openArchivePortal() {
-  if (!archiveShellVisible.value || view.value === 'portal') return
-  legacyEntryStatus.value = ''
-  const source = currentArchiveRoute()
-  portalFrom.value = ['welcome', 'idol_picker'].includes(source.view) ||
-    (source.view === 'home' && !source.homeIdol)
-    ? ''
-    : buildPortalReturnQuery(source)
-  commitView('portal')
-}
-
-async function closeArchivePortal() {
-  if (!portalFrom.value) return
-  let route = readPortalReturnRoute(portalFrom.value)
-  if (route.view === 'home' && route.homeIdol) await loadHomeIdol(route.homeIdol)
-  if (route.view === 'idol_detail' && route.idol) idolReadModelDetail.value = await loadIdolDetail(route.idol)
-  if (route.view === 'unit_catalog') await loadUnitCatalog()
-  if (route.view === 'unit_detail' && route.unit) unitReadModelDetail.value = await loadUnitDetail(route.unit)
-  if (route.view === 'gashas') await loadGashaCatalog()
-  if (route.view === 'gasha_detail' && route.gasha) gashaReadModelDetail.value = await loadGashaDetail(route.gasha)
-  if (route.view === 'cards') await loadCardCatalog()
-  if (route.view === 'card_detail' && route.card) cardReadModelDetail.value = await loadCardDetail(route.card)
-  if (route.view === 'event_detail' && route.event) eventReadModelDetail.value = await loadEventDetail(String(route.event))
-  if (route.view === 'seasonal_campaign') {
-    seasonalReadModelDetail.value = await loadSeasonalDetail(route.storySection)
-    route = { ...route, storySection: seasonalReadModelDetail.value.id }
-  }
-  if (route.view === 'work_archive' && route.idol) workReadModelDetail.value = await loadWorkDetail(route.idol)
-  if (route.view === 'idol_story_archive' && route.idol) idolStoryReadModelDetail.value = await loadIdolStoryDetail(route.idol)
-  if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
-  if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
-  const pending = applyArchiveRoute(route)
-  const expected = navigation.getRevision()
-  await pending
-  if (navigation.isDisposed() || expected !== navigation.getRevision()) return
-  syncArchiveRoute()
-}
-
-function openSongCatalog() {
-  if (view.value !== 'portal') detailSourceRoute.value = ''
-  currentSongId.value = ''
-  currentSongScope.value = 'all'
-  songParentView.value = ''
-  filterQuery.value = ''
-  currentCategoryId.value = ''
-  commitView('song_catalog')
-  ensureSongCatalog()
-}
-
-async function openSong(songCode) {
-  if (!songCode) return
-  const request = ++pendingSongNavigation
-  const revision = navigation.getRevision()
-  songReadModelStatus.value = '正在读取歌曲详情…'
-  try {
-    const detail = await loadSongDetail(songCode)
-    if (request !== pendingSongNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    songReadModelDetail.value = detail
-    songReadModelStatus.value = ''
-  } catch (error) {
-    if (request !== pendingSongNavigation || revision !== navigation.getRevision()) return
-    console.error('[SongReadModel] Failed to load song detail:', error)
-    songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
-    return
-  }
-  captureDetailSource()
-  if (view.value === 'idol_detail') songParentView.value = 'idol_detail'
-  else if (view.value === 'unit_detail') songParentView.value = 'unit_detail'
-  else if (view.value !== 'song_detail') songParentView.value = ''
-  currentSongId.value = songCode
-  commitView('song_detail')
-}
-
-function openSongStage(target) {
-  if (view.value !== 'song_detail' || target?.songCode !== currentSongId.value || !target.choreographyId) return
-  return openChibiStage(target)
-}
-
-function openSongUnit(unitCode) {
-  return openArchiveUnit({ unit_code: unitCode })
-}
-
-function openSongIdol(idolCode) {
-  captureDetailSource()
-  filterQuery.value = ''
-  openPrimaryIdol(idolCode)
-}
-
-function openSongRelatedStory(relation) {
-  if (relation?.entity_type !== 'story_collection') return
-  return openProjectedCollection({ domain: relation.story_type || 'extra',
-    section: relation.story_section || '', parent: 'song_detail' })
-}
+const { openArchivePortal, closeArchivePortal } = usePortalNavigation({
+  view, homeSelectedId, homeVisits, currentArchiveRoute, archiveShellVisible, legacyEntryStatus, archiveBootstrap,
+  portalScope, portalFrom, commitView, navigation, applyArchiveRoute, syncArchiveRoute,
+  loadHomeIdol, loadIdolDetail, idolReadModelDetail, loadUnitCatalog, loadUnitDetail, unitReadModelDetail,
+  loadGashaCatalog, loadGashaDetail, gashaReadModelDetail, loadCardCatalog, loadCardDetail, cardReadModelDetail,
+  loadEventDetail, eventReadModelDetail, loadSeasonalDetail, seasonalReadModelDetail, loadWorkDetail, workReadModelDetail,
+  loadIdolStoryDetail, idolStoryReadModelDetail, loadCollectionDetail, collectionReadModelDetail, loadStoryReadModelDetail, storyReadModelDetail,
+  ensureSongCatalog, loadSongDetail, songReadModelDetail,
+})
 
 function openHomeIdol(idolId) {
   currentCategoryId.value = 'idol'
@@ -2096,16 +2203,30 @@ function openHomeCards(idolId) {
   return openPrimaryCards(idolId, { captureSource: true })
 }
 
+// The home dialogue's card link: the card page, scrolled to that touch voice. The mark lasts
+// while the reader stays on the card (including its voice previews), not as part of the route.
+const homeCardFocus = ref({ card: '', voice: '' })
+watch(view, next => { if (!['card_detail', 'player'].includes(next)) homeCardFocus.value = { card: '', voice: '' } })
+function openHomeCard({ idolId, cardId, voice }) {
+  homeCardFocus.value = { card: cardId, voice }
+  return openCard({ resource_id: cardId, character_id: idolId }, { resetContext: true, captureSource: true })
+}
+
 function openHomeChat(idolId) {
   openMobileArchive({ idolCode: idolId, mode: 'personal' })
 }
 
 function goArchiveBack() {
+  if (view.value === 'home' && homeFrom.value) return closeHomeVisit()
   if (view.value === 'reader') return closeStoryReader()
   if (view.value === 'portal') return closeArchivePortal()
   if (view.value === 'welcome' || view.value === 'idol_picker') return cancelWelcomeOrPicker()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
   const backByView = {
+    event_catalog:goHome,
+    collection_catalog:goHome,
+    photo_catalog:goHome,
+    picture_studio:()=>commitView('studio'),
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,
@@ -2117,92 +2238,17 @@ function goArchiveBack() {
     gashas: goHome,
     gasha_detail: goBackFromGasha,
     song_catalog: goHome,
-    song_detail: () => {
-      const parent = songParentView.value
-      currentSongId.value = ''
-      songParentView.value = ''
-      if (parent === 'idol_detail' && archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) commitView('idol_detail')
-      else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
-      else {
-        commitView('song_catalog')
-        ensureSongCatalog()
-      }
-    },
+    song_detail: goBackFromSong,
     event_detail: goBackFromEvent,
     archive_status: goHome,
-    story_catalog: () => {
-      if (
-        currentStoryMode.value === 'portal' &&
-        ['main', 'extra', 'birthday'].includes(currentStoryDomain.value)
-      ) {
-        currentStoryDomain.value = ''
-        currentStorySection.value = ''
-        commitView('story_catalog')
-        return
-      }
-      goHome()
-    },
+    story_catalog: goBackFromStoryCatalog,
     external_story_resources: openStoryCatalog,
-    story_detail: () => {
-      const parent = storyDetailParentView.value
-      currentStoryFile.value = ''
-      storyDetailParentView.value = ''
-      if (parent === 'external_story_resources') {
-        commitView('external_story_resources')
-        return
-      }
-      return openStoryCatalog()
-    },
-    story_collection: () => {
-      const parent = storyCollectionParentView.value
-      if (parent === 'idol_story_archive' && currentCharacterId.value) {
-        currentStoryDomain.value = 'idol_story'
-        currentStorySection.value = ''
-        currentStoryFile.value = ''
-        storyCollectionParentView.value = ''
-        commitView('idol_story_archive')
-        return
-      }
-      if (parent === 'song_detail' && currentSongId.value) {
-        currentStoryDomain.value = ''
-        currentStorySection.value = ''
-        currentStoryFile.value = ''
-        storyCollectionParentView.value = ''
-        commitView('song_detail')
-        return
-      }
-      const domain = currentStoryDomain.value
-      const returnsToDomainLanding = ['main', 'extra', 'birthday'].includes(domain) && parent !== 'external_story_resources'
-      storyCollectionParentView.value = ''
-      if (parent === 'external_story_resources') {
-        currentStoryDomain.value = ''
-        currentStorySection.value = ''
-        currentStoryFile.value = ''
-        commitView('external_story_resources')
-        return
-      }
-      return openStoryCatalog({ domain: returnsToDomainLanding ? domain : '' })
-    },
-    seasonal_campaign: () => {
-      currentStoryDomain.value = ''
-      currentStorySection.value = ''
-      return openStoryCatalog()
-    },
-    work_archive: () => {
-      currentStoryDomain.value = ''
-      currentCharacterId.value = ''
-      return openStoryCatalog()
-    },
-    idol_story_archive: () => {
-      currentCharacterId.value = ''
-      return openStoryCatalog()
-    },
-    mobile_archive: () => {
-      currentCharacterId.value = ''
-      currentArchiveUnitCode.value = ''
-      currentMobileScenarioId.value = ''
-      goHome()
-    },
+    story_detail: goBackFromStoryDetail,
+    story_collection: goBackFromStoryCollection,
+    seasonal_campaign: goBackFromSeasonalCampaign,
+    work_archive: goBackFromWorkArchive,
+    idol_story_archive: goBackFromIdolStoryArchive,
+    mobile_archive: goBackFromMobileArchive,
     unit_catalog: () => commitView('idols'),
     unit_detail: () => {
       currentArchiveUnitCode.value = ''
@@ -2213,927 +2259,24 @@ function goArchiveBack() {
   handler()
 }
 
-async function openSpineLab() {
-  return navigation.run(async intent => {
-    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
-    loading.value = true
-    loadingPurpose.value = 'stage'
-    preloadProgress.value = 100
-    await spineViewerLoader()
-    if (!intent.isCurrent()) return
-    commitView('spine_lab')
-  })
+function closeFullScreenExperiment() {
+  if (view.value === 'chart_lab') return closeChartTool()
+  if (detailSourceRoute.value) return restoreDetailSource(goHome)
+  commitView('studio')
 }
 
-async function openChibiStage(target = null) {
-  return navigation.run(async intent => {
-    if (!['spine_lab', 'chibi_stage'].includes(view.value)) captureDetailSource()
-    loading.value = true
-    loadingPurpose.value = 'stage'
-    preloadProgress.value = 100
-    await chibiStageViewerLoader()
-    if (!intent.isCurrent()) return
-    const songCode = target?.songCode || 'drvalv'
-    if (songReadModelDetail.value?.id !== songCode) {
-      try {
-        const detail = await loadSongDetail(songCode)
-        if (!intent.isCurrent()) return
-        songReadModelDetail.value = detail
-      } catch (error) {
-        if (!intent.isCurrent()) return
-        console.error('[StageReadModel] Failed to load song audio experiment:', error)
-      }
-    }
-    stageTargetId.value = target?.choreographyId || ''
-    currentSongId.value = stageTargetId.value ? target.songCode : ''
-    stageHandoff.value = target?.stageHandoff || null
-    commitView('chibi_stage')
-  })
-}
+const { openSongStage, openSpineLab, openChibiStage, closeArchiveExperiment, updateStageTarget } = useStageNavigation({
+  view, currentSongId, detailSourceRoute, stageTargetId, stageHandoff, songReadModelDetail,
+  loading, loadingPurpose, preloadProgress, navigation, captureDetailSource, commitView, restoreDetailSource, goHome,
+  syncArchiveRoute, spineViewerLoader, chibiStageViewerLoader, loadSongDetail, ensureSongCatalog,
+})
 
-function closeArchiveExperiment() {
-  stageHandoff.value = null
-  if (view.value === 'chibi_stage' && !detailSourceRoute.value &&
-      stageTargetId.value && currentSongId.value) {
-    stageTargetId.value = ''
-    return commitView('song_detail')
-  }
-  return restoreDetailSource(goHome)
-}
-
-function updateStageTarget(target) {
-  if (view.value !== 'chibi_stage' || !target?.songCode || !target?.choreographyId) return
-  stageTargetId.value = target.choreographyId
-  currentSongId.value = target.songCode
-  stageHandoff.value = null
-  syncArchiveRoute({ replace: true, restoreView: false })
-  if (songReadModelDetail.value?.id === target.songCode) return
-  const revision = navigation.getRevision()
-  loadSongDetail(target.songCode).then(detail => {
-    if (navigation.isDisposed() || revision !== navigation.getRevision() ||
-        view.value !== 'chibi_stage' || currentSongId.value !== target.songCode) return
-    songReadModelDetail.value = detail
-  }).catch(error => {
-    if (revision === navigation.getRevision() && view.value === 'chibi_stage')
-      console.error('[StageReadModel] Failed to switch song audio experiment:', error)
-  })
-}
-
-function openArchiveStatus() {
-  const request = ++pendingResourceNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  resourceReadModelStatus.value = '正在读取资源状态…'
-  loading.value = true
-  return prepareArchivePage('archive_status', loadResourceStatus()).then(detail => {
-    if (request !== pendingResourceNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    resourceReadModelDetail.value = detail
-    resourceReadModelStatus.value = ''
-    if (view.value !== 'portal') detailSourceRoute.value = ''
-    filterQuery.value = ''
-    currentStoryDomain.value = ''
-    currentEventScope.value = 'all'
-    currentStoryAvailability.value = 'all'
-    currentStorySort.value = 'domain'
-    commitView('archive_status')
-  }).catch(error => {
-    if (request !== pendingResourceNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[ResourceReadModel] Failed to open status:', error)
-    resourceReadModelStatus.value = '资源状态暂时无法读取，请重试。'
-  })
-}
-
-function openGashaCatalog() {
-  const request = ++pendingGashaNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  gashaReadModelStatus.value = '正在读取卡池目录…'
-  loading.value = true
-  return prepareArchivePage('gashas', loadGashaCatalog()).then(() => {
-    if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    gashaReadModelStatus.value = ''
-    if (view.value !== 'portal') detailSourceRoute.value = ''
-    gashaParentView.value = ''
-    filterQuery.value = ''
-    currentCategoryId.value = ''
-    currentCharacterId.value = ''
-    currentCardId.value = ''
-    currentGashaId.value = ''
-    currentGashaCategory.value = 'all'
-    commitView('gashas')
-  }).catch(error => {
-    if (request !== pendingGashaNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[GashaReadModel] Failed to load catalog:', error)
-    gashaReadModelStatus.value = '卡池目录暂时无法读取，请重试。'
-  })
-}
-
-async function openStoryCatalog(options = {}) {
-  const domain = typeof options?.domain === 'string' ? options.domain : ''
-  if (view.value !== 'portal') detailSourceRoute.value = ''
-  loading.value = true
-  return navigation.run(async intent => {
-    await prepareArchivePage('story_catalog', loadStoryReadModelLanding())
-    if (!intent.isCurrent()) return
-    filterQuery.value = ''
-    currentStoryDomain.value = domain
-    currentStoryMode.value = 'portal'
-    currentStorySection.value = ''
-    currentStoryFile.value = ''
-    storyDetailParentView.value = ''
-    storyCollectionParentView.value = ''
-    currentEventScope.value = 'all'
-    currentStoryAvailability.value = 'all'
-    currentStorySort.value = 'domain'
-    currentMobileMode.value = 'personal'
-    currentMobileScenarioId.value = ''
-    storyVisibleLimit.value = 80
-    commitView('story_catalog')
-  }).catch(error => {
-    loading.value = false
-    console.error('[StoryReadModel] Failed to load catalog:', error)
-    storyReadModelStatus.value = '故事目录暂时无法读取，请重试。'
-  })
-}
-
-function openExternalStoryResources() {
-  detailSourceRoute.value = ''
-  filterQuery.value = ''
-  currentStoryDomain.value = ''
-  currentStorySection.value = ''
-  currentStoryFile.value = ''
-  storyDetailParentView.value = ''
-  storyCollectionParentView.value = ''
-  commitView('external_story_resources')
-}
-
-function openExternalStoryInternal(entry) {
-  const target = entry?.target
-  if (target?.kind === 'event') {
-    openEventDetail(target.event, 'external_story_resources')
-    return
-  }
-  if (target?.kind === 'story') {
-    openStoryDetail(target.story, 'external_story_resources')
-    return
-  }
-  if (target?.kind === 'idol-story') {
-    openIdolStoryArchive(target.idolCode)
-    return
-  }
-  if (target?.kind !== 'collection') return
-  return openProjectedCollection({ domain: target.domain, section: target.section,
-    storyFile: target.storyFile, parent: 'external_story_resources' })
-}
-
-function setStoryDomain(domain) {
-  currentStoryDomain.value = domain
-  currentStorySection.value = ''
-  currentStoryMode.value = 'search'
-  currentEventScope.value = 'all'
-  storyVisibleLimit.value = 80
-}
-
-function setStoryMode(mode) {
-  currentStoryMode.value = mode === 'search' ? 'search' : 'portal'
-  if (currentStoryMode.value === 'portal') {
-    filterQuery.value = ''
-    currentStoryDomain.value = ''
-    currentStorySection.value = ''
-  }
-}
-
-function browseStoryCollection({ domain, section = '', mode = '' }) {
-  if (section && ['main', 'unit_story', 'extra', 'birthday'].includes(domain)) {
-    return openProjectedCollection({ domain, section })
-  }
-  const opensFormalDomain = (mode === 'portal' && domain === 'main') ||
-    ['extra', 'birthday'].includes(domain)
-  if (opensFormalDomain) {
-    currentStoryDomain.value = domain
-    currentStorySection.value = ''
-    currentStoryMode.value = 'portal'
-    currentStoryFile.value = ''
-    storyCollectionParentView.value = ''
-    currentEventScope.value = 'all'
-    storyVisibleLimit.value = 80
-    commitView('story_catalog')
-    return
-  }
-  filterQuery.value = ''
-  currentStoryDomain.value = domain || ''
-  currentStorySection.value = section || ''
-  currentEventScope.value = 'all'
-  currentStoryMode.value = 'search'
-  storyVisibleLimit.value = 80
-}
-
-function openSeasonalCampaign(campaignId = 'valentine_2023') {
-  const request = ++pendingSeasonalNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  seasonalReadModelStatus.value = '正在读取季节企划…'
-  loading.value = true
-  return prepareArchivePage('seasonal_campaign', loadSeasonalDetail(campaignId)).then(detail => {
-    if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    seasonalReadModelDetail.value = detail
-    seasonalReadModelStatus.value = ''
-    captureDetailSource()
-    currentStoryDomain.value = 'seasonal_campaign'
-    currentStoryMode.value = 'portal'
-    currentStorySection.value = detail.id
-    commitView('seasonal_campaign')
-  }).catch(error => {
-    if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[SeasonalReadModel] Failed to load campaign:', error)
-    seasonalReadModelStatus.value = '季节企划暂时无法读取，请重试。'
-  })
-}
-
-function openProjectedCollection({ domain, section, storyFile = '', parent = '' }) {
-  const request = ++pendingCollectionNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  collectionReadModelStatus.value = '正在读取故事章节…'
-  loading.value = true
-  return prepareArchivePage('story_collection', loadCollectionDetail(domain, section)).then(detail => {
-    if (request !== pendingCollectionNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    collectionReadModelDetail.value = detail
-    collectionReadModelStatus.value = ''
-    captureDetailSource()
-    currentStoryDomain.value = domain
-    currentStorySection.value = String(section)
-    currentStoryMode.value = 'portal'
-    currentStoryFile.value = storyFile || ''
-    storyCollectionParentView.value = parent
-    commitView('story_collection')
-  }).catch(error => {
-    if (request !== pendingCollectionNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[CollectionReadModel] Failed to open collection:', error)
-    collectionReadModelStatus.value = '故事章节暂时无法读取，请重试。'
-  })
-}
-
-function selectSeasonalCampaign(campaignId) {
-  const request = ++pendingSeasonalNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  seasonalReadModelStatus.value = '正在切换季节企划…'
-  loading.value = true
-  return prepareArchivePage('seasonal_campaign', loadSeasonalDetail(campaignId)).then(detail => {
-    if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    seasonalReadModelDetail.value = detail
-    seasonalReadModelStatus.value = ''
-    currentStorySection.value = detail.id
-    commitArchiveSelection()
-  }).catch(error => {
-    if (request !== pendingSeasonalNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[SeasonalReadModel] Failed to switch campaign:', error)
-    seasonalReadModelStatus.value = '企划切换失败，请重试。'
-  })
-}
-
-function playSeasonalCampaignStory(file) {
-  if (file) loadScenario(file, 'seasonal_campaign')
-}
-
-function openWorkArchive(idolCode = '') {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('work')
-  const request = ++pendingWorkNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  workReadModelStatus.value = '正在读取工作档案…'
-  loading.value = true
-  return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
-    if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    workReadModelDetail.value = detail
-    workReadModelStatus.value = ''
-    captureDetailSource()
-    currentStoryDomain.value = 'work'
-    currentStoryFile.value = ''
-    currentWorkMode.value = 'stories'
-    currentStoryMode.value = 'portal'
-    currentStorySection.value = ''
-    currentCharacterId.value = idolCode
-    commitView('work_archive')
-  }).catch(error => {
-    if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[WorkReadModel] Failed to open idol:', error)
-    workReadModelStatus.value = '工作档案暂时无法读取，请重试。'
-  })
-}
-
-function selectWorkIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  const request = ++pendingWorkNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  workReadModelStatus.value = '正在切换工作档案…'
-  loading.value = true
-  return prepareArchivePage('work_archive', loadWorkDetail(idolCode)).then(detail => {
-    if (request !== pendingWorkNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    workReadModelDetail.value = detail
-    workReadModelStatus.value = ''
-    currentCharacterId.value = idolCode
-    currentStoryFile.value = ''
-    commitArchiveSelection()
-  }).catch(error => {
-    if (request !== pendingWorkNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[WorkReadModel] Failed to switch idol:', error)
-    workReadModelStatus.value = '工作档案切换失败，请重试。'
-  })
-}
-
-function setWorkMode(mode) {
-  if (!['stories', 'lines'].includes(mode) || currentWorkMode.value === mode) return
-  currentWorkMode.value = mode
-  currentStoryFile.value = ''
-  commitArchiveSelection()
-}
-
-function playWorkStory(file) {
-  if (file) loadScenario(file, 'work_archive')
-}
-
-function openIdolStoryArchive(idolCode = '') {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('story')
-  const request = ++pendingIdolStoryNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  idolStoryReadModelStatus.value = '正在读取个人故事…'
-  loading.value = true
-  return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
-    if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    idolStoryReadModelDetail.value = detail
-    idolStoryReadModelStatus.value = ''
-    captureDetailSource()
-    filterQuery.value = ''
-    currentStoryDomain.value = 'idol_story'
-    currentStoryMode.value = 'portal'
-    currentStorySection.value = ''
-    currentEpisodeId.value = ''
-    currentCharacterId.value = idolCode
-    currentMobileScenarioId.value = ''
-    commitView('idol_story_archive')
-  }).catch(error => {
-    if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[IdolStoryReadModel] Failed to open idol:', error)
-    idolStoryReadModelStatus.value = '个人故事暂时无法读取，请重试。'
-  })
-}
-
-function selectIdolStory(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  const request = ++pendingIdolStoryNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  idolStoryReadModelStatus.value = '正在切换个人故事…'
-  loading.value = true
-  return prepareArchivePage('idol_story_archive', loadIdolStoryDetail(idolCode)).then(detail => {
-    if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    idolStoryReadModelDetail.value = detail
-    idolStoryReadModelStatus.value = ''
-    currentCharacterId.value = idolCode
-    currentStorySection.value = ''
-    currentEpisodeId.value = ''
-    currentMobileScenarioId.value = ''
-    commitArchiveSelection()
-  }).catch(error => {
-    if (request !== pendingIdolStoryNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[IdolStoryReadModel] Failed to switch idol:', error)
-    idolStoryReadModelStatus.value = '个人故事切换失败，请重试。'
-  })
-}
-
-async function openBirthdayIdolStory(relation) {
-  if (!relation?.idolCode || !archiveBootstrap.idols.some(idol => idol.id === relation.idolCode)) return
-  return navigation.run(async intent => {
-    const detail = await loadIdolStoryDetail(relation.idolCode)
-    if (!intent.isCurrent()) return
-    if (!detail.view.page) return
-    idolStoryReadModelDetail.value = detail
-    captureDetailSource()
-    currentStoryDomain.value = 'idol_story'
-    currentStoryMode.value = 'portal'
-    currentCharacterId.value = relation.idolCode
-    currentStorySection.value = String(relation.sectionId || '')
-    currentEpisodeId.value = String(relation.episodeId || '')
-    currentStoryFile.value = ''
-    storyCollectionParentView.value = ''
-    commitView('idol_story_archive')
-  })
-}
-
-function openIdolBirthdayArchive() {
-  if (!currentCharacterId.value) return
-  return openProjectedCollection({ domain: 'birthday', section: currentCharacterId.value,
-    parent: 'idol_story_archive' })
-}
-
-function playIdolStorySection(section) {
-  const queue = (section?.episodes || []).filter(episode => episode.exists && episode.file)
-  if (queue.length) startEpisodeQueue(queue, 0, 'idol_story_archive')
-}
-
-function playIdolStoryEpisode({ section, episode }) {
-  const queue = (section?.episodes || []).filter(candidate => candidate.exists && candidate.file)
-  const index = queue.findIndex(candidate => candidate.id === episode?.id)
-  if (index >= 0) startEpisodeQueue(queue, index, 'idol_story_archive')
-}
-
-async function openMobileArchive({ idolCode = '', mode = 'personal', scenarioId = '', fromSection = false } = {}) {
-  return navigation.run(async intent => {
-    if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('mobile')
-    const selectedMode = ['personal', 'phone', 'unit', 'random'].includes(mode) ? mode : 'personal'
-    let mobile
-    try { mobile = await loadMobileRoute(idolCode, selectedMode) }
-    catch (error) {
-      if (intent.isCurrent()) {
-        console.error('[MobileReadModel] Failed to open archive:', error)
-        legacyEntryStatus.value = 'Mobile 通信暂时无法读取，请重试。'
-      }
-      return
-    }
-    if (!intent.isCurrent()) return
-    legacyEntryStatus.value = ''
-    mobileReadModelStatus.value = ''
-    if (!fromSection) captureDetailSource()
-    mobileIdolReadModelDetail.value = mobile.idol
-    mobileUnitReadModelDetail.value = mobile.unit
-    currentCharacterId.value = idolCode
-    currentMobileMode.value = selectedMode
-    currentArchiveUnitCode.value = mobile.unitCode
-    currentMobileScenarioId.value = scenarioId ? String(scenarioId) : ''
-    currentStoryDomain.value = 'mobile_archive'
-    currentStoryMode.value = 'portal'
-    commitView('mobile_archive')
-  })
-}
-
-function openStoryCommunication(scenario) {
-  openMobileArchive({
-    idolCode: scenario?.idol_code || currentCharacterId.value,
-    mode: scenario?.kind === 'idol_phone' ? 'phone' : 'personal',
-    scenarioId: scenario?.id || '',
-  })
-}
-
-async function selectMobileIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  const request = ++pendingMobileNavigation
-  const revision = navigation.getRevision()
-  let mobile
-  try { mobile = await loadMobileRoute(idolCode, currentMobileMode.value) }
-  catch (error) {
-    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
-      console.error('[MobileReadModel] Failed to switch idol:', error)
-      mobileReadModelStatus.value = '偶像通信暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  mobileIdolReadModelDetail.value = mobile.idol
-  mobileUnitReadModelDetail.value = mobile.unit
-  mobileReadModelStatus.value = ''
-  currentCharacterId.value = idolCode
-  currentArchiveUnitCode.value = mobile.unitCode
-  currentMobileScenarioId.value = ''
-  commitArchiveSelection()
-}
-
-async function selectMobileUnit(unitCode) {
-  if (!mobileUnitOptions.value.some(unit => unit.unit_code === unitCode)) return
-  const request = ++pendingMobileNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadMobileDetail('mobile-units', unitCode) }
-  catch (error) {
-    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
-      console.error('[MobileReadModel] Failed to switch unit:', error)
-      mobileReadModelStatus.value = '组合通信暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  mobileUnitReadModelDetail.value = detail
-  mobileReadModelStatus.value = ''
-  currentArchiveUnitCode.value = unitCode
-  currentMobileScenarioId.value = ''
-  commitArchiveSelection()
-}
-
-async function setMobileMode(mode) {
-  if (!['personal', 'phone', 'unit', 'random'].includes(mode)) return
-  const request = ++pendingMobileNavigation
-  const revision = navigation.getRevision()
-  let mobile
-  try { mobile = await loadMobileRoute(currentCharacterId.value, mode, currentArchiveUnitCode.value) }
-  catch (error) {
-    if (request === pendingMobileNavigation && revision === navigation.getRevision()) {
-      console.error('[MobileReadModel] Failed to switch mode:', error)
-      mobileReadModelStatus.value = '通信分类暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingMobileNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  mobileIdolReadModelDetail.value = mobile.idol
-  mobileUnitReadModelDetail.value = mobile.unit
-  mobileReadModelStatus.value = ''
-  currentMobileMode.value = mode
-  currentArchiveUnitCode.value = mobile.unitCode
-  currentMobileScenarioId.value = ''
-  commitArchiveSelection()
-}
-
-function playMobileScenario(file) {
-  if (file) loadScenario(file, 'mobile_archive')
-}
-
-function playRandomTalkTopic(topic) {
-  if (!topic?.file || !Number(topic.startStep)) return
-  loadScenario(topic.file, 'mobile_archive', {
-    startStep: topic.startStep,
-    endStep: topic.endStep,
-  })
-}
-
-async function openMobileCard(cardId) {
-  const refs = currentMobileMode.value === 'unit' ? mobileUnitReadModelDetail.value?.view?.cardRefs : mobileIdolReadModelDetail.value?.view?.cardRefs
-  const card = (refs || []).find(entry => Number(entry.card_id) === Number(cardId))
-  if (!card) return
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadCardDetail(card.resource_id) }
-  catch (error) { console.error('[CardReadModel] Failed to open mobile relation:', error); return }
-  if (revision !== navigation.getRevision() || navigation.isDisposed()) return
-  cardReadModelDetail.value = detail
-  captureDetailSource()
-  currentCategoryId.value = 'cards'
-  currentCharacterId.value = card.character_id
-  currentCardId.value = card.resource_id
-  commitView('card_detail')
-}
-
-async function openMobileIdolStory(episodeId) {
-  const refs = currentMobileMode.value === 'unit' ? mobileUnitReadModelDetail.value?.view?.episodeRefs : mobileIdolReadModelDetail.value?.view?.episodeRefs
-  const relation = (refs || []).find(entry => Number(entry.id) === Number(episodeId))
-  if (!relation) return
-  if (!relation.idolCode) return
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadIdolStoryDetail(relation.idolCode) }
-  catch (error) {
-    if (revision !== navigation.getRevision()) return
-    console.error('[IdolStoryReadModel] Failed to open mobile relation:', error)
-    idolStoryReadModelStatus.value = '个人故事暂时无法读取，请重试。'
-    return
-  }
-  if (revision !== navigation.getRevision() || navigation.isDisposed()) return
-  idolStoryReadModelDetail.value = detail
-  captureDetailSource()
-  currentStoryDomain.value = 'idol_story'
-  currentStoryMode.value = 'portal'
-  currentCharacterId.value = relation.idolCode
-  currentStorySection.value = String(relation.sectionId)
-  currentEpisodeId.value = String(episodeId)
-  currentMobileScenarioId.value = ''
-  commitView('idol_story_archive')
-}
-
-function openUnitCatalog() {
-  const request = ++pendingUnitNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  unitReadModelStatus.value = '正在读取组合目录…'
-  loading.value = true
-  return prepareArchivePage('unit_catalog', loadUnitCatalog()).then(() => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    unitReadModelStatus.value = ''
-    captureDetailSource()
-    filterQuery.value = ''
-    currentCategoryId.value = 'idol'
-    currentCharacterId.value = ''
-    currentArchiveUnitCode.value = ''
-    commitView('unit_catalog')
-  }).catch(error => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[UnitReadModel] Failed to load unit catalog:', error)
-    unitReadModelStatus.value = '组合目录暂时无法读取，请重试。'
-  })
-}
-
-function openArchiveUnit(unit, { clearEventContext = false } = {}) {
-  if (!unit) return
-  const code = String(unit.unit_code || unit.unit_id || '')
-  const request = ++pendingUnitNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  unitReadModelStatus.value = '正在读取组合详情…'
-  loading.value = true
-  return prepareArchivePage('unit_detail', loadUnitDetail(code)).then(detail => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    unitReadModelDetail.value = detail
-    unitReadModelStatus.value = ''
-    captureDetailSource()
-    if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
-    currentCategoryId.value = 'idol'
-    currentCharacterId.value = ''
-    currentArchiveUnitCode.value = detail.view.entry.unit.unit_code
-    commitView('unit_detail')
-  }).catch(error => {
-    if (request !== pendingUnitNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[UnitReadModel] Failed to load unit detail:', error)
-    unitReadModelStatus.value = '组合详情暂时无法读取，请重试。'
-  })
-}
-
-function openUnitFromIdol(idol) {
-  if (idol?.unit_code) return openArchiveUnit({ unit_code: idol.unit_code })
-}
-
-function openUnitMember(member) {
-  return openIdolReadModel(member.idol_code, { captureSource: true, resetContext: true, clearUnit: true })
-}
-
-function openUnitStory(story) {
-  if (story?.file && story.exists) return loadScenario(story.file, 'unit_detail')
-}
-
-function openUnitEvent(event) {
-  return openEventDetail(event, 'unit_detail')
-}
-
-function openUnitCards() {
-  const unitId = String(currentArchiveUnit.value?.unit_id || '')
-  if (!unitId) return
-  const request = ++pendingCardNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  unitReadModelStatus.value = '正在读取卡片目录…'
-  loading.value = true
-  return prepareArchivePage('cards', loadCardCatalog()).then(() => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    unitReadModelStatus.value = ''
-    captureDetailSource()
-    filterQuery.value = ''
-    currentCategoryId.value = 'cards'
-    currentCharacterId.value = ''
-    currentArchiveUnitCode.value = ''
-    currentIdolUnitFilter.value = unitId
-    currentCardRarity.value = 'all'
-    currentCardAssetState.value = 'all'
-    currentCardRelationState.value = 'all'
-    commitView('idols')
-  }).catch(error => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[CardReadModel] Failed to load unit cards:', error)
-    unitReadModelStatus.value = '卡片目录暂时无法读取，请重试。'
-  })
-}
-
-function openCatalogStory(entry) {
-  if (entry?.eventRelation) openEventDetail(entry.eventRelation, 'story_catalog')
-  else openStoryDetail(entry)
-}
-
-function openStoryDetail(entry, parentView = '') {
-  if (!entry?.file) return
-  const file = entry.file
-  const request = ++pendingStoryDetailNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  storyReadModelStatus.value = '正在读取故事详情…'
-  loading.value = true
-  return prepareArchivePage('story_detail', loadStoryReadModelDetail(file)).then(detail => {
-    if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    storyReadModelDetail.value = detail
-    storyReadModelStatus.value = ''
-    captureDetailSource()
-    currentStoryFile.value = file
-    currentStoryDomain.value = detail.story.domain
-    currentStorySection.value = detail.story.sectionId || ''
-    storyDetailParentView.value = parentView
-    commitView('story_detail')
-  }).catch(error => {
-    if (request !== pendingStoryDetailNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[StoryReadModel] Failed to open detail:', error)
-    storyReadModelStatus.value = '故事详情暂时无法读取，请重试。'
-  })
-}
-
-function playStoryDetail(entry = currentStory.value) {
-  if (entry?.file && entry.exists) loadScenario(entry.file, 'story_detail')
-}
-
-function playStoryCollectionChapter(chapter) {
-  selectStoryCollectionChapter(chapter, { sync: false })
-  const queue = (chapter?.episodes || []).filter(episode => episode.exists && episode.file)
-  if (queue.length) startEpisodeQueue(queue, 0, 'story_collection')
-  else if (chapter?.file && chapter.exists) loadScenario(chapter.file, 'story_collection')
-}
-
-function playStoryCollectionEpisode({ chapter, episode }) {
-  selectStoryCollectionChapter(chapter, { sync: false })
-  const queue = (chapter?.episodes || []).filter(candidate => candidate.exists && candidate.file)
-  const index = queue.findIndex(candidate => candidate.id === episode?.id)
-  if (index >= 0) startEpisodeQueue(queue, index, 'story_collection')
-}
-
-function selectStoryCollectionChapter(chapter, { sync = true } = {}) {
-  const file = chapter?.story?.file || chapter?.file || ''
-  if (!file || currentStoryFile.value === file) return
-  currentStoryFile.value = file
-  if (sync) commitArchiveSelection()
-}
-
-function openStoryIdol(idolCode) {
-  if (!/^\d{3}[a-z0-9]{3}$/i.test(idolCode)) return
-  captureDetailSource()
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = idolCode
-  commitView('idol_detail')
-}
-
-function goBackToCards() {
-  if (detailSourceRoute.value) {
-    currentCardId.value = ''
-    return restoreDetailSource(() => commitView('cards'))
-  }
-  currentCardId.value = ''
-  commitView('cards')
-}
-
-function goBackToUnits() {
-  currentUnit.value = null
-  currentEpisodeId.value = ''
-  currentGroup.value = null
-  commitView('episode_zero_units')
-}
-
-// Navigation.
-function openCategoryById(categoryId) {
-  const category = CATEGORIES.find(item => item.id === categoryId)
-  if (category) openCategory(category)
-}
-
-function openCategory(cat) {
-  filterQuery.value = ''
-  currentStoryDomain.value = ''
-  currentEventScope.value = 'all'
-  currentStoryAvailability.value = 'all'
-  currentStorySort.value = 'domain'
-  currentUnit.value = null
-  currentEpisodeId.value = ''
-  currentCardId.value = ''
-  currentIdolUnitFilter.value = ''
-  if (cat.id === 'idol') {
-    if (preferredArchiveIdol.value) openPrimaryIdol(preferredArchiveIdol.value.id)
-    else openIdolPicker('profile')
-  } else if (cat.id === 'cards') {
-    openPrimaryCards(preferredArchiveIdol.value?.id || '')
-  } else if (cat.id === 'idol_chat' || cat.id === 'idol_phone') {
-    if (preferredArchiveIdol.value) {
-      openMobileArchive({
-        idolCode: preferredArchiveIdol.value.id,
-        mode: cat.id === 'idol_phone' ? 'phone' : 'personal',
-      })
-    } else openIdolPicker('mobile')
-  } else if (cat.id === 'episode_zero') {
-    const request = ++pendingLegacyAliasNavigation
-    const revision = navigation.getRevision()
-    loadLegacyAliasDetail('legacy-zero', 'episode_zero').then(detail => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-      legacyZeroReadModelDetail.value = detail
-      legacyAliasStatus.value = ''
-      currentCategoryId.value = 'episode_zero'
-      commitView('episode_zero_units')
-    }).catch(error => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
-      console.error('[LegacyAliasReadModel] Failed to open episode zero:', error)
-      legacyAliasStatus.value = '第零话目录暂时无法读取，请重试。'
-    })
-  } else {
-    const request = ++pendingLegacyAliasNavigation
-    const revision = navigation.getRevision()
-    loadLegacyAliasDetail('legacy-groups', cat.id).then(detail => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-      legacyGroupReadModelDetail.value = detail
-      legacyAliasStatus.value = ''
-      currentCategoryId.value = cat.id
-      currentCharacterId.value = ''
-      currentGroup.value = null
-      commitView('groups')
-    }).catch(error => {
-      if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision()) return
-      console.error('[LegacyAliasReadModel] Failed to open groups:', error)
-      legacyAliasStatus.value = '剧情分组暂时无法读取，请重试。'
-    })
-  }
-}
-
-function openPrimaryIdol(idolCode = '') {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return openIdolPicker('profile')
-  return openIdolReadModel(idolCode, { resetContext: true })
-}
-
-async function openIdolReadModel(idolCode, { captureSource = false, resetContext = false, selection = false, clearUnit = false, clearEventContext = false } = {}) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  const request = ++pendingIdolNavigation
-  const revision = navigation.getRevision()
-  idolReadModelStatus.value = '正在读取偶像档案…'
-  loading.value = true
-  let detail
-  try {
-    detail = await loadIdolDetail(idolCode)
-  } catch (error) {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[IdolReadModel] Failed to load idol detail:', error)
-    idolReadModelStatus.value = '偶像档案暂时无法读取，请重试。'
-    return
-  }
-  if (request !== pendingIdolNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  idolReadModelDetail.value = detail
-  idolReadModelStatus.value = ''
-  if (captureSource) captureDetailSource()
-  if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
-  if (resetContext) {
-    currentCategoryId.value = 'idol'
-    currentGroup.value = null
-  }
-  if (clearUnit) currentArchiveUnitCode.value = ''
-  currentCharacterId.value = idolCode
-  currentCardId.value = ''
-  filterQuery.value = ''
-  if (selection && view.value === 'idol_detail') commitArchiveSelection()
-  else commitView('idol_detail')
-}
-
-function openIdolDirectory() {
-  filterQuery.value = ''
-  currentCategoryId.value = 'idol'
-  currentCharacterId.value = ''
-  currentIdolUnitFilter.value = ''
-  currentGroup.value = null
-  currentCardId.value = ''
-  commitView('idols')
-}
-
-function openPrimaryCards(idolCode = '', { captureSource = false } = {}) {
-  const request = ++pendingCardNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  cardReadModelStatus.value = '正在读取卡片目录…'
-  loading.value = true
-  return prepareArchivePage('cards', loadCardCatalog()).then(() => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    cardReadModelStatus.value = ''
-    if (captureSource) captureDetailSource()
-    filterQuery.value = ''
-    currentCategoryId.value = 'cards'
-    currentCharacterId.value = archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
-    currentGroup.value = null
-    currentCardId.value = ''
-    currentCardRarity.value = 'all'
-    currentCardAssetState.value = 'all'
-    currentCardRelationState.value = 'all'
-    commitView('cards')
-  }).catch(error => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[CardReadModel] Failed to load catalog:', error)
-    cardReadModelStatus.value = '卡片目录暂时无法读取，请重试。'
-  })
-}
-
-function selectPrimaryIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  return openIdolReadModel(idolCode, { selection: true })
-}
-
-function selectCardIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode)) return
-  currentCharacterId.value = idolCode
-  currentCardId.value = ''
-  filterQuery.value = ''
-  currentCardRarity.value = 'all'
-  currentCardAssetState.value = 'all'
-  currentCardRelationState.value = 'all'
-  commitArchiveSelection()
-}
+const { openArchiveStatus, loadResourceStatus, invalidateResourceNavigation } = useResourceNavigation({
+  resourceReadModelDetail, resourceReadModelStatus, view, loading,
+  detailSourceRoute, filterQuery, currentStoryDomain, currentEventScope,
+  currentStoryAvailability, currentStorySort, navigation, archiveBootstrap,
+  readModelClient, prepareArchivePage, commitView,
+})
 
 function openIdol(entry) {
   if (currentCategoryId.value !== 'cards') return openIdolReadModel(entry.id, { captureSource: true })
@@ -3142,17 +2285,20 @@ function openIdol(entry) {
   currentCharacterId.value = entry.id
   currentCardId.value = ''
   currentCardRarity.value = 'all'
+  currentCardAttribute.value = 'all'
   currentCardAssetState.value = 'all'
   currentCardRelationState.value = 'all'
   commitView('cards')
 }
 
 function openIdolDomain(domain) {
+  if(domain==='photos' && currentIdolDetail.value?.photo){captureDetailSource();currentPhotoIdol.value=String(currentIdolDetail.value.photo.idolId);currentPhotoEntity.value='';currentEventId.value='';currentCharacterId.value='';currentCategoryId.value='';filterQuery.value='';commitView('photo_catalog');return}
   if (domain === 'cards') return openPrimaryCards(currentCharacterId.value, { captureSource: true })
   if (domain === 'stories') {
     openIdolStoryArchive(currentCharacterId.value)
     return
   }
+  if (domain === 'seasonal') return openSeasonalCampaign('', currentCharacterId.value)
   if (domain === 'chat' || domain === 'phone') {
     openMobileArchive({
       idolCode: currentCharacterId.value,
@@ -3197,7 +2343,7 @@ async function restoreDetailSource(fallback) {
   if (route.view === 'story_collection' && route.storyType && route.storySection) collectionReadModelDetail.value = await loadCollectionDetail(route.storyType, route.storySection)
   if (route.view === 'story_detail' && route.story) storyReadModelDetail.value = await loadStoryReadModelDetail(route.story)
   if (route.view === 'song_catalog') await ensureSongCatalog()
-  if (route.view === 'song_detail' && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
+  if (['song_detail', 'chart_lab'].includes(route.view) && route.song) songReadModelDetail.value = await loadSongDetail(route.song)
   if (navigation.isDisposed() || beforeLoad !== navigation.getRevision()) return
   const pending = applyArchiveRoute(route, { restoring: false })
   const revision = navigation.getRevision()
@@ -3206,106 +2352,67 @@ async function restoreDetailSource(fallback) {
   })
 }
 
-function openCard(card, { resetContext = false, captureSource = false, clearEventContext = false } = {}) {
-  if (!card?.resource_id) return
-  const id = card.resource_id
-  const request = ++pendingCardNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  cardReadModelStatus.value = '正在读取卡片详情…'
-  loading.value = true
-  return prepareArchivePage('card_detail', loadCardDetail(id)).then(detail => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    cardReadModelDetail.value = detail
-    cardReadModelStatus.value = ''
-    if (captureSource || view.value !== 'card_detail') captureDetailSource()
-    if (clearEventContext) { currentEventId.value = ''; eventParentView.value = '' }
-    if (resetContext) {
-      currentCategoryId.value = 'cards'
-      currentCharacterId.value = card.character_id
-      filterQuery.value = ''
+async function openPortalResult(result) {
+  if (view.value !== 'portal' || !result?.target) return
+  const target = result.target, sourceRevision = navigation.getRevision()
+  const stillHere = () => view.value === 'portal' && sourceRevision === navigation.getRevision() && !navigation.isDisposed()
+  try {
+    if (target.domain === 'units' && target.view === 'unit_detail' && archiveBootstrap.idols.some(row => row.unitCode === target.unitCode)) {
+      return openArchiveUnit({unit_code: target.unitCode})
+    } else if (target.view === 'story_gateway') {
+      if (target.gateway === 'idol_story') return openIdolStoryArchive()
+      if (target.gateway === 'work') return openWorkArchive()
+      if (target.gateway === 'seasonal_campaign') return openSeasonalCampaign()
+      if (['birthday','extra'].includes(target.gateway)) {
+        captureDetailSource()
+        return openStoryCatalog({domain:target.gateway})
+      }
+    } else if (target.domain === 'collections' && target.view === 'story_collection') {
+      const rows = await loadCollectionCatalog()
+      if (stillHere() && rows.some(row => row.id === target.collectionId && row.chapterCount > 0)) return openProjectedCollection({domain: target.storyDomain, section: target.sectionId})
+    } else if (target.domain === 'cards' && target.view === 'card_detail') {
+      const rows = await loadCardCatalog()
+      if (!stillHere()) return
+      const card = rows.find(row => row.resource_id === target.cardId && row.character_id === target.idolCode)
+      if (card) return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
+    } else if (target.domain === 'songs' && target.view === 'song_detail') {
+      const catalog = await loadSongCatalog()
+      if (stillHere() && catalog.songs[target.songCode]) return openSong(target.songCode)
+    } else if (target.domain === 'idols' && target.view === 'idol_detail' && archiveBootstrap.idols.some(row => row.id === target.idolCode)) {
+      return openIdolReadModel(target.idolCode, { captureSource: true, resetContext: true, clearEventContext: true })
+    } else if (target.domain === 'stories' && target.view === 'story_detail') {
+      if (stillHere()) return openStoryDetail({ file: target.file, domain: target.storyDomain }, 'portal')
+    } else if (target.domain === 'events' && target.view === 'event_detail') {
+      const rows = await loadEventCatalog()
+      if (stillHere() && rows.some(row => String(row.id) === target.eventId)) return openEventDetail({ event_id: target.eventId }, 'portal')
     }
-    currentCardId.value = id
-    commitView('card_detail')
-  }).catch(error => {
-    if (request !== pendingCardNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[CardReadModel] Failed to load detail:', error)
-    cardReadModelStatus.value = '卡片详情暂时无法读取，请重试。'
-  })
-}
-
-function openCardIdol(idolCode) {
-  if (!archiveBootstrap.idols.some(idol => idol.id === idolCode) || currentCard.value?.character_id !== idolCode) return
-  return openIdolReadModel(idolCode, { captureSource: true, resetContext: true })
-}
-
-function openGasha(gasha) {
-  if (!gasha?.id) return
-  const id = String(gasha.id)
-  const request = ++pendingGashaNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  gashaReadModelStatus.value = '正在读取卡池详情…'
-  loading.value = true
-  return prepareArchivePage('gasha_detail', loadGashaDetail(id)).then(detail => {
-    if (request !== pendingGashaNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    gashaReadModelDetail.value = detail
-    gashaReadModelStatus.value = ''
-    captureDetailSource()
-    gashaParentView.value = view.value === 'story_collection' && currentStoryDomain.value === 'extra'
-      ? 'story_collection' : ''
-    const preserveCatalogQuery = view.value === 'gashas'
-    currentCategoryId.value = ''
-    currentCharacterId.value = ''
-    currentCardId.value = ''
-    currentGashaId.value = id
-    if (!preserveCatalogQuery) filterQuery.value = ''
-    commitView('gasha_detail')
-  }).catch(error => {
-    if (request !== pendingGashaNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[GashaReadModel] Failed to load detail:', error)
-    gashaReadModelStatus.value = '卡池详情暂时无法读取，请重试。'
-  })
-}
-
-function goBackFromGasha() {
-  const returnsToCollection = gashaParentView.value === 'story_collection' && currentStoryCollection.value
-  currentGashaId.value = ''
-  gashaParentView.value = ''
-  commitView(returnsToCollection ? 'story_collection' : 'gashas')
-}
-
-function openCardGasha(relation) {
-  if (!relation?.announcement_id) return
-  openGasha({ id: String(relation.announcement_id) })
-}
-
-async function openGashaCard(relation) {
-  if (!cardReadModelCatalog.value) await loadCardCatalog()
-  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id)
-  if (!card) return
-  return openCard(card, { resetContext: true })
-}
-
-function openRelatedCard(card) {
-  if (!card?.resource_id || !card?.character_id) return
-  return openCard(card, { resetContext: true, captureSource: true })
-}
-
-function goBackFromCards() {
-  currentCardId.value = ''
-  currentCardRarity.value = 'all'
-  filterQuery.value = ''
-  currentCategoryId.value = 'idol'
-  commitView('idol_detail')
-}
-
-function openCardScenario(entry) {
-  if (entry?.compiled_file) {
-    return loadScenario(entry.compiled_file, 'card_detail')
+  } catch (error) {
+    if (stillHere()) userPreferenceNotice.value = '该资料暂时无法打开，请重试。'
   }
+}
+
+async function openPortalStage(target) {
+  if (view.value !== 'portal' || !target?.songCode || !target?.choreographyId) return
+  const sourceRevision = navigation.getRevision()
+  try {
+    const [catalog, manifest] = await Promise.all([loadSongCatalog(), fetchSongTimelineManifest()])
+    if (view.value !== 'portal' || sourceRevision !== navigation.getRevision() || navigation.isDisposed()) return
+    const entry = manifest.songs[target.songCode]?.find(row => row.id === target.choreographyId && ['choreography_candidate', 'special_single'].includes(row.stageKind))
+    if (catalog.songs[target.songCode] && entry) return openChibiStage({ songCode: target.songCode, choreographyId: entry.id })
+  } catch (error) {
+    if (view.value === 'portal' && sourceRevision === navigation.getRevision()) userPreferenceNotice.value = '舞台资料暂时无法打开，请重试。'
+  }
+}
+
+// A personal-story chapter belongs to its owner's story page (episodes, small talks, follow-up
+// call), so catalog, search and portal links land on that chapter instead of a generic detail.
+// The owner comes from the file name: a birthday chapter's cast can list another idol first.
+function idolStoryChapterOwner(story) {
+  const idolCode = story?.domain === 'idol_story' ? communicationOwnerId(story.file) : ''
+  return archiveBootstrap.idols.some(idol => idol.id === idolCode) ? idolCode : ''
+}
+function openIdolStoryChapter(story) {
+  return openBirthdayIdolStory({ idolCode: idolStoryChapterOwner(story), compiledFile: story.file })
 }
 
 async function previewCardVoice(cue) {
@@ -3314,218 +2421,38 @@ async function previewCardVoice(cue) {
   await openVoicePreview(card, cue, 'card_detail')
 }
 
-function openCardEvent(event) {
-  return openEventDetail(event, 'card_detail')
+function startEpisodeQueue(episodes, index, returnView, options = {}) {
+  return playbackController.startQueue(episodes, index, returnView, { ...options, continuation: returnView === 'story_collection' ? selectCollectionContinuation(currentStoryCollection.value, episodes[index]?.file, episodes[index]) : null })
 }
 
-function openEventDetail(event, parentView = 'story_catalog') {
-  if (!event?.event_id) return
-  const id = String(event.event_id)
-  const request = ++pendingEventNavigation
-  navigation.invalidate()
-  const revision = navigation.getRevision()
-  eventReadModelStatus.value = '正在读取活动详情…'
-  loading.value = true
-  return prepareArchivePage('event_detail', loadEventDetail(id)).then(detail => {
-    if (request !== pendingEventNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-    eventReadModelDetail.value = detail
-    eventReadModelStatus.value = ''
-    captureDetailSource()
-    currentEventId.value = id
-    eventParentView.value = parentView
-    commitView('event_detail')
-  }).catch(error => {
-    if (request !== pendingEventNavigation || revision !== navigation.getRevision()) return
-    loading.value = false
-    console.error('[EventReadModel] Failed to load detail:', error)
-    eventReadModelStatus.value = '活动详情暂时无法读取，请重试。'
-  })
-}
-
-function goBackFromEvent() {
-  const parent = eventParentView.value
-  if (detailSourceRoute.value) {
-    currentEventId.value = ''
-    eventParentView.value = ''
-    return restoreDetailSource(openStoryCatalog)
-  }
-  currentEventId.value = ''
-  eventParentView.value = ''
-  if (parent === 'home') commitView('home')
-  else if (parent === 'external_story_resources') commitView('external_story_resources')
-  else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
-  else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
-  else if (parent === 'idol_detail' && archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) commitView('idol_detail')
-  else return openStoryCatalog()
-}
-
-function playCurrentEvent() {
-  const queue = currentEventEpisodes.value.filter(episode => episode.file)
-  if (queue.length) startEpisodeQueue(queue, 0, 'event_detail')
-  else if (currentEvent.value?.file && currentEvent.value.exists) loadScenario(currentEvent.value.file, 'event_detail')
-}
-
-function playCurrentEventEpisode(episode) {
-  const queue = currentEventEpisodes.value.filter(candidate => candidate.file)
-  const index = queue.findIndex(candidate => candidate.id === episode?.id)
-  if (index >= 0) startEpisodeQueue(queue, index, 'event_detail')
-}
-
-function startEpisodeQueue(episodes, index, returnView) {
-  return playbackController.startQueue(episodes, index, returnView)
-}
-
-function playbackEpisodes(returnView) {
-  if (returnView === 'story_collection') return (currentStoryCollection.value?.chapters || []).flatMap(chapter => chapter.episodes || [])
-  if (returnView === 'event_detail') return currentEventEpisodes.value
-  if (returnView === 'idol_story_archive') return (currentIdolStoryPage.value?.sections || []).flatMap(section => section.episodes || [])
-  return []
-}
-
-function playNextEpisode() { return playbackController.next() }
-
-async function openEventCard(relation) {
-  const revision = navigation.getRevision()
-  const eventId = currentEventId.value
+async function selectPlayerEpisode(request) {
+  const token = ++pickerRequest
+  pickerPreparing.value = true
   try {
-    if (!cardReadModelCatalog.value) await loadCardCatalog()
-  } catch (error) {
-    if (revision === navigation.getRevision() && currentEventId.value === eventId) {
-      console.error('[EventReadModel] Failed to load linked cards:', error)
-      eventReadModelStatus.value = '关联卡片暂时无法读取，请重试。'
-    }
-    return
+    const selected = await playbackController.selectEpisode(request)
+    if (token === pickerRequest) request.onComplete?.(selected)
+    return selected
   }
-  if (revision !== navigation.getRevision() || view.value !== 'event_detail' || currentEventId.value !== eventId) return
-  const card = cardReadModelCatalog.value?.find(row => row.resource_id === relation?.card_resource_id)
-  if (!card) return
-  return openCard(card, { resetContext: true, captureSource: true, clearEventContext: true })
+  finally { if (token === pickerRequest) pickerPreparing.value = false }
 }
 
-function openEventIdol(idol) {
-  return openIdolReadModel(idol.idol_code, { captureSource: true, resetContext: true, clearUnit: true, clearEventContext: true })
-}
+function playNextEpisode(request = {}) { return playbackController.next(request.instance, { chapter: request.chapter === true }) }
 
-function openEventUnit(unit) {
-  return openArchiveUnit(unit, { clearEventContext: true })
+// Card voice previews are touch voices; the player gets their card-lines translation inline. Null when
+// the cue has no stage preview; otherwise the scenario promise, whose shard load overlaps the player's
+// and which the playback controller awaits under its own navigation ownership.
+function translatedVoicePreview(card, cue) {
+  if (!buildCardVoicePreviewScenario(card, cue)) return null
+  return loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+    .then(() => buildCardVoicePreviewScenario(card, cue, { translate: source => archiveNamedTranslation('card-touch', source, 'text') }))
 }
 
 async function openVoicePreview(card, cue, returnView) {
-  const scenario = buildCardVoicePreviewScenario(card, cue)
+  const scenario = translatedVoicePreview(card, cue)
   if (!scenario) return false
   loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => scenario,
     typeof cue === 'string' ? cue : cue.cue, returnView)
-}
-
-async function openGroup(group) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-files', String(group.id)) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open files:', error)
-      legacyAliasStatus.value = '剧情文件暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyFileReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentGroup.value = detail.view.group
-  currentEpisodeId.value = ''
-  filterQuery.value = ''
-  commitView('files')
-}
-
-function openScenarioEntry(entry) {
-  if (entry?.file && !entry.missing) loadScenario(entry.file)
-}
-
-async function openUnit(unit) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-episodes', unit.unit_code) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open episodes:', error)
-      legacyAliasStatus.value = '组合前传目录暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyEpisodeReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentUnit.value = detail.view.unit
-  currentEpisodeId.value = ''
-  filterQuery.value = ''
-  commitView('episodes')
-}
-
-async function openEpisodeFiles(ep) {
-  const request = ++pendingLegacyAliasNavigation
-  const revision = navigation.getRevision()
-  let detail
-  try { detail = await loadLegacyAliasDetail('legacy-files', String(ep.id)) }
-  catch (error) {
-    if (request === pendingLegacyAliasNavigation && revision === navigation.getRevision()) {
-      console.error('[LegacyAliasReadModel] Failed to open episode files:', error)
-      legacyAliasStatus.value = '章节文件暂时无法读取，请重试。'
-    }
-    return
-  }
-  if (request !== pendingLegacyAliasNavigation || revision !== navigation.getRevision() || navigation.isDisposed()) return
-  captureDetailSource()
-  legacyFileReadModelDetail.value = detail
-  legacyAliasStatus.value = ''
-  currentGroup.value = detail.view.group
-  currentEpisodeId.value = String(ep.id)
-  filterQuery.value = ''
-  commitView('files')
-}
-
-function goBackFromGroups() {
-  if (currentCharacterId.value) {
-    if (currentCategoryId.value === 'idol') openIdolReadModel(currentCharacterId.value)
-    else if (['idol_chat', 'idol_phone'].includes(currentCategoryId.value)) returnToMobilePicker()
-    else {
-      currentCharacterId.value = ''
-      commitView('idols')
-    }
-  } else {
-    goHome()
-  }
-}
-
-function returnToMobilePicker() {
-  detailSourceRoute.value = ''
-  currentCharacterId.value = ''
-  currentCategoryId.value = ''
-  currentGroup.value = null
-  currentPickTarget.value = 'mobile'
-  commitView('idol_picker')
-}
-
-function goBackToFiles() {
-  if (currentUnit.value) {
-    currentGroup.value = null
-    currentEpisodeId.value = ''
-    commitView('episodes')
-  } else if (currentCategoryId.value === 'cards' && currentCardId.value) {
-    commitView('card_detail')
-  } else if (currentCategoryId.value === 'cards') {
-    commitView('cards')
-  } else if (currentCharacterId.value) {
-    currentGroup.value = null
-    commitView('groups')
-  } else {
-    currentGroup.value = null
-    commitView('groups')
-  }
 }
 
 async function restorePlaybackDestination(destination, route) {
@@ -3537,17 +2464,20 @@ async function restorePlaybackDestination(destination, route) {
 async function loadPlayerQueue(route, request) {
   return withLoadDeadline(async signal => {
     const options = { signal, priority: 'background' }
-    if (route.view === 'story_collection' && route.storyType && route.storySection) {
+    if (['story_collection', 'reader'].includes(route.view) && route.storyType && route.storySection) {
       const detail = await loadCollectionDetail(route.storyType, route.storySection, options)
-      return selectPlayerQueue(detail.view.collection.chapters, request.file, request)
+      return selectCollectionContinuation(detail.view.collection, request.file, { ...request, verifiedWholeFile:route.view === 'reader' })
     }
-    if (route.view === 'event_detail' && route.event) {
+    if (['event_detail', 'reader'].includes(route.view) && route.event) {
       const detail = await loadEventDetail(String(route.event), options)
       return (detail.view.episodes || []).filter(episode => episode.exists !== false && episode.file)
     }
     if (route.view === 'idol_story_archive' && route.idol) {
       const detail = await loadIdolStoryDetail(route.idol, options)
       return selectPlayerQueue(detail.view.page.sections, request.file, request)
+    }
+    if (route.view === 'reader' && route.reading) {
+      return loadReaderQueue(route)
     }
     return []
   }, { signal: request.signal, timeoutMs: 15000, label: 'episode-queue' })
@@ -3561,522 +2491,10 @@ async function loadScenario(name, returnView = 'files', options = {}) {
   return playbackController.load(name, returnView, options)
 }
 
-async function loadHomeIndex() {
-  if (homeReadModelIndex.value) return homeReadModelIndex.value
-  if (!homeIndexPromise) {
-    homeIndexPromise = readModelClient.load(archiveBootstrap.domains.home, { validate: data => {
-      const expected = archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id)
-      if (!Array.isArray(data.idols) || data.idols.length !== expected.length ||
-        data.idols.some((idol, index) => idol.id !== expected[index]) ||
-        !Array.isArray(data.stats) || !Array.isArray(data.highlights))
-        throw new Error('Home index does not match inline bootstrap')
-    } }).then(index => { homeReadModelIndex.value = index; return index })
-      .catch(error => { homeIndexPromise = null; throw error })
-  }
-  return homeIndexPromise
-}
-
-async function loadHomeIdol(idolId) {
-  if (homeReadModelProfiles.value[idolId]) {
-    const previous = recentHomeProfiles.indexOf(idolId)
-    if (previous >= 0) recentHomeProfiles.splice(previous, 1)
-    recentHomeProfiles.push(idolId)
-    return homeReadModelProfiles.value[idolId]
-  }
-  if (homeProfilePromises.has(idolId)) return homeProfilePromises.get(idolId)
-  const pending = (async () => {
-    const index = await loadHomeIndex()
-    const row = index.idols.find(idol => idol.id === idolId)
-    if (!row) throw new Error(`Unavailable Home idol: ${idolId}`)
-    const detail = await readModelClient.load(row.detail, { validate: data => {
-      if (data.id !== idolId || data.profile?.id !== idolId || !Array.isArray(data.cueIndex))
-        throw new Error('Home detail identity mismatch')
-    } })
-    const pageDescriptors = [...new Map(detail.cueIndex.map(cue => [cue.page.url, cue.page])).values()]
-    const pages = await Promise.all(pageDescriptors.map(descriptor => readModelClient.load(descriptor)))
-    const profile = hydrateHomeProfile(detail, pageDescriptors, pages)
-    recentHomeProfiles.push(idolId)
-    const profiles = { ...homeReadModelProfiles.value, [idolId]: profile }
-    while (recentHomeProfiles.length > 3) delete profiles[recentHomeProfiles.shift()]
-    homeReadModelProfiles.value = profiles
-    return profile
-  })().finally(() => homeProfilePromises.delete(idolId))
-  homeProfilePromises.set(idolId, pending)
-  return pending
-}
-
-async function loadIdolCatalog() {
-  if (idolReadModelCatalog.value) return idolReadModelCatalog.value
-  if (!idolCatalogPromise) {
-    idolCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.idols)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || rows.length !== archiveBootstrap.idols.length ||
-        rows.some((row, position) => row.id !== archiveBootstrap.idols[position].id ||
-          row.name !== archiveBootstrap.idols[position].name || !row.detail))
-        throw new Error('Idol catalog does not match inline bootstrap')
-      idolReadModelCatalog.value = Object.fromEntries(rows.map(row => [row.id, row]))
-      return idolReadModelCatalog.value
-    })().catch(error => { idolCatalogPromise = null; throw error })
-  }
-  return idolCatalogPromise
-}
-
-async function loadIdolDetail(idolCode) {
-  const row = (await loadIdolCatalog())[idolCode]
-  if (!row) throw new Error(`Unavailable idol: ${idolCode}`)
-  return readModelClient.load(row.detail, { expectedId: idolCode, validate: data => {
-    if (data.view?.profile?.idol_code !== idolCode || !data.view?.stats ||
-      !Array.isArray(data.view?.events) || !Array.isArray(data.view?.songs))
-      throw new Error('Idol detail identity or shape mismatch')
-  } })
-}
-
-async function loadUnitCatalog() {
-  if (unitReadModelCatalog.value) return unitReadModelCatalog.value
-  if (!unitCatalogPromise) {
-    unitCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.units)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      const expected = [...new Set(archiveBootstrap.idols.map(idol => idol.unitId))]
-      if (rows.length !== index.count || rows.length !== expected.length ||
-        rows.some((row, position) => row.id !== expected[position] ||
-          String(row.catalog?.unit?.unit_id) !== row.id || !row.catalog?.members ||
-          !row.catalog?.cardStats || !row.detail))
-        throw new Error('Unit catalog does not match inline bootstrap')
-      unitReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { unitCatalogPromise = null; throw error })
-  }
-  return unitCatalogPromise
-}
-
-async function loadUnitDetail(unitCode) {
-  const rows = await loadUnitCatalog()
-  const row = rows.find(entry => entry.id === unitCode || entry.catalog.unit.unit_code === unitCode)
-  if (!row) throw new Error(`Unavailable unit: ${unitCode}`)
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
-    if (String(data.view?.entry?.unit?.unit_id) !== row.id ||
-      !Array.isArray(data.view?.entry?.members) || !data.view?.entry?.cardStats ||
-      !Array.isArray(data.view?.stories) || !Array.isArray(data.view?.songs))
-      throw new Error('Unit detail identity or shape mismatch')
-  } })
-}
-
-async function loadGashaCatalog() {
-  if (gashaReadModelCatalog.value) return gashaReadModelCatalog.value
-  if (!gashaCatalogPromise) {
-    gashaCatalogPromise = (async () => {
-      const [functions, index] = await Promise.all([
-        import('./data/gashaCatalog.js'),
-        readModelClient.load(archiveBootstrap.domains.gashas),
-      ])
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.primary_gashas ||
-        new Set(rows.map(row => String(row.id))).size !== rows.length ||
-        rows.some(row => row.phase !== 'primary' || !row.detail))
-        throw new Error('Gasha catalog count or identity mismatch')
-      const catalog = { rows, summary: index.summary || {} }
-      gashaCatalogFunctions.value = functions
-      gashaReadModelCatalog.value = catalog
-      return catalog
-    })().catch(error => { gashaCatalogPromise = null; throw error })
-  }
-  return gashaCatalogPromise
-}
-
-async function loadGashaDetail(id) {
-  const row = (await loadGashaCatalog()).rows.find(entry => String(entry.id) === id)
-  if (!row) throw new Error(`Unavailable gasha: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
-    if (String(data.gasha?.id) !== id || !Array.isArray(data.gasha?.derived_pickup_cards))
-      throw new Error('Gasha detail identity or shape mismatch')
-  } })
-}
-
-async function loadCardCatalog() {
-  if (cardReadModelCatalog.value) return cardReadModelCatalog.value
-  if (!cardCatalogPromise) {
-    cardCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.cards)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.canonical_cards ||
-        new Set(rows.map(row => row.resource_id)).size !== rows.length ||
-        rows.some(row => row.id !== row.resource_id || !row.detail || !row.ownerReference ||
-          !Number.isInteger(row.home_voice_count) || !Number.isInteger(row.scenario_count)))
-        throw new Error('Card catalog count or identity mismatch')
-      cardReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { cardCatalogPromise = null; throw error })
-  }
-  return cardCatalogPromise
-}
-
-async function loadCardDetail(id) {
-  const row = (await loadCardCatalog()).find(card => card.resource_id === id)
-  if (!row) throw new Error(`Unavailable card: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
-    if (data.card?.resource_id !== id || !data.ownerReference ||
-      !Array.isArray(data.card?.home_voice_cues) || !Array.isArray(data.card?.scenario_entries))
-      throw new Error('Card detail identity or shape mismatch')
-  } })
-}
-
-async function loadEventCatalog() {
-  if (eventReadModelCatalog.value) return eventReadModelCatalog.value
-  if (!eventCatalogPromise) {
-    eventCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.events)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || new Set(rows.map(row => String(row.id))).size !== rows.length ||
-        rows.some(row => !row.detail || String(row.event_id) !== String(row.id)))
-        throw new Error('Event catalog count or identity mismatch')
-      eventReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { eventCatalogPromise = null; throw error })
-  }
-  return eventCatalogPromise
-}
-
-async function loadEventDetail(id, options = {}) {
-  const row = (await loadEventCatalog()).find(entry => String(entry.id) === id)
-  if (!row) throw new Error(`Unavailable event: ${id}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
-    if (String(data.view?.event?.event_id) !== id || !Array.isArray(data.view?.episodes) ||
-      !Array.isArray(data.view?.cards) || !Array.isArray(data.view?.idols) ||
-      !Array.isArray(data.view?.units) || !Array.isArray(data.view?.castReferences) ||
-      !Array.isArray(data.view?.readingEntries) ||
-      data.view.castReferences.length !== data.view.idols.length ||
-      data.view.castReferences.some((entry, index) => entry.idol_code !== data.view.idols[index].idol_code ||
-        entry.reference?.idolCode !== entry.idol_code))
-      throw new Error('Event detail identity or shape mismatch')
-  } })
-}
-
-async function loadSeasonalCatalog() {
-  if (seasonalReadModelCatalog.value) return seasonalReadModelCatalog.value
-  if (!seasonalCatalogPromise) {
-    seasonalCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.seasonal)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || new Set(rows.map(row => row.id)).size !== rows.length ||
-        rows.some(row => !row.detail || !row.name || !Number.isInteger(row.year) ||
-          !['valentine', 'white_day'].includes(row.season)))
-        throw new Error('Seasonal catalog count or switch fields mismatch')
-      seasonalReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { seasonalCatalogPromise = null; throw error })
-  }
-  return seasonalCatalogPromise
-}
-
-async function loadSeasonalDetail(requestedId = 'valentine_2023') {
-  const rows = await loadSeasonalCatalog()
-  const row = rows.find(entry => entry.id === requestedId) ||
-    rows.find(entry => entry.id === 'valentine_2023') || rows[0]
-  if (!row) throw new Error('No seasonal campaigns available')
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
-    if (data.view?.campaign?.id !== row.id || data.view.campaign.year !== row.year ||
-      data.view.campaign.season !== row.season || !Array.isArray(data.view.campaign.participants))
-      throw new Error('Seasonal campaign identity or shape mismatch')
-  } })
-}
-
-async function loadWorkCatalog() {
-  if (workReadModelCatalog.value) return workReadModelCatalog.value
-  if (!workCatalogPromise) {
-    workCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.work)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      const expected = archiveBootstrap.idols.map(idol => idol.id)
-      if (rows.length !== index.count || rows.length !== expected.length ||
-        rows.some((row, position) => row.id !== expected[position] || row.idol_code !== row.id ||
-          !row.display_name || !row.work_type_name || !row.detail))
-        throw new Error('Work catalog identity or switch fields mismatch')
-      workReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { workCatalogPromise = null; throw error })
-  }
-  return workCatalogPromise
-}
-
-async function loadWorkDetail(id) {
-  const row = (await loadWorkCatalog()).find(entry => entry.id === id)
-  if (!row) throw new Error(`Unavailable work idol: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
-    if (data.view?.idol?.idol_code !== id || !Array.isArray(data.view.idol.short_stories) ||
-      !Array.isArray(data.view.idol.scene_lines) || !Array.isArray(data.view?.sourceEvidence?.entries) ||
-      !Array.isArray(data.view?.readingEntries))
-      throw new Error('Work detail identity or shape mismatch')
-  } })
-}
-
-async function loadIdolStoryCatalog() {
-  if (idolStoryReadModelCatalog.value) return idolStoryReadModelCatalog.value
-  if (!idolStoryCatalogPromise) {
-    idolStoryCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains['idol-stories'])
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      const expected = archiveBootstrap.idols.map(idol => idol.id)
-      if (rows.length !== index.count || rows.length !== expected.length ||
-        rows.some((row, position) => row.id !== expected[position] || row.idolCode !== row.id ||
-          !row.idolName || !Number.isInteger(row.sectionCount) || !Number.isInteger(row.episodeCount) || !row.detail))
-        throw new Error('Idol story catalog identity or switch fields mismatch')
-      idolStoryReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { idolStoryCatalogPromise = null; throw error })
-  }
-  return idolStoryCatalogPromise
-}
-
-async function loadIdolStoryDetail(id, options = {}) {
-  const row = (await loadIdolStoryCatalog()).find(entry => entry.id === id)
-  if (!row) throw new Error(`Unavailable idol story: ${id}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: id, validate: data => {
-    if (data.view?.page?.idol_code !== id || !Array.isArray(data.view.page.sections) ||
-      !Array.isArray(data.view?.readingEntries))
-      throw new Error('Idol story detail identity or shape mismatch')
-  } })
-}
-
-async function loadMobileCatalog(domain) {
-  const idol = domain === 'mobile-idols'
-  const current = idol ? mobileIdolReadModelCatalog : mobileUnitReadModelCatalog
-  if (current.value) return current.value
-  const pending = idol ? mobileIdolCatalogPromise : mobileUnitCatalogPromise
-  if (pending) return pending
-  const promise = (async () => {
-    const index = await readModelClient.load(archiveBootstrap.domains[domain])
-    const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-    const rows = pages.flatMap(page => page.rows || [])
-    if (rows.length !== index.count || rows.some(row => !row.id || !row.detail ||
-      (idol ? !row.idolCode || !row.name : !row.unitCode || !row.name)))
-      throw new Error(`${domain} catalog identity or shape mismatch`)
-    if (idol && (rows.length !== archiveBootstrap.idols.length ||
-      rows.some(row => !archiveBootstrap.idols.some(entry => entry.id === row.id))))
-      throw new Error('Mobile idol catalog differs from bootstrap identity')
-    current.value = rows
-    return rows
-  })().catch(error => {
-    if (idol) mobileIdolCatalogPromise = null
-    else mobileUnitCatalogPromise = null
-    throw error
-  })
-  if (idol) mobileIdolCatalogPromise = promise
-  else mobileUnitCatalogPromise = promise
-  return promise
-}
-
-async function loadMobileDetail(domain, id) {
-  const row = (await loadMobileCatalog(domain)).find(entry => entry.id === id)
-  if (!row) throw new Error(`Unavailable ${domain} entry: ${id}`)
-  return readModelClient.load(row.detail, { expectedId: id, validate: data => {
-    if (domain === 'mobile-idols' ?
-      !Array.isArray(data.view?.personalBundles) || !Array.isArray(data.view?.phoneBundles) || !Array.isArray(data.view?.randomBundles) :
-      !Array.isArray(data.view?.unitBundles))
-      throw new Error(`${domain} detail identity or shape mismatch`)
-  } })
-}
-
-async function loadMobileRoute(idolCode, mode, requestedUnit = '') {
-  const [idol, units] = await Promise.all([
-    loadMobileDetail('mobile-idols', idolCode), loadMobileCatalog('mobile-units'),
-  ])
-  const unitCode = resolveMobileArchiveUnit({ idolCode, mode, requestedUnit,
-    manifest: bootstrapMembership, units: units.map(unit => ({ unit_code: unit.id })),
-    archive: { by_unit_code: Object.fromEntries(units.map(unit => [unit.id, true])) },
-  })
-  const unit = unitCode ? await loadMobileDetail('mobile-units', unitCode) : null
-  return { idol, unit, unitCode }
-}
-
-async function loadLegacyAliasDetail(domain, id) {
-  const descriptor = await entityDescriptor(archiveBootstrap, domain, id, `${domain}.detail`)
-  return readModelClient.load(descriptor, { expectedId: id, validate: data => {
-    const view = data.view
-    if (domain === 'legacy-groups' && (!view?.title || !Array.isArray(view.groups)) ||
-      domain === 'legacy-files' && (!view?.group || !Array.isArray(view.entries) || !view.sourceRoute) ||
-      domain === 'legacy-episodes' && (!view?.unit || !Array.isArray(view.unit.episodes)) ||
-      domain === 'legacy-zero' && !Array.isArray(view?.units))
-      throw new Error(`${domain} alias shape mismatch`)
-  } })
-}
-
-async function loadLegacyAliasRoute(route) {
-  const owner = route.view === 'player' ? route.returnView : route.view
-  if (owner === 'episode_zero_units') return { zero: await loadLegacyAliasDetail('legacy-zero', 'episode_zero') }
-  if (owner === 'episodes') return { episode: await loadLegacyAliasDetail('legacy-episodes', route.unit) }
-  if (owner === 'groups') {
-    const id = route.idol ? `${route.category}:${route.idol}` : route.category
-    return { groups: await loadLegacyAliasDetail('legacy-groups', id) }
-  }
-  if (owner !== 'files' || !route.group) return null
-  const id = route.idol ? `${route.category}:${route.idol}` : route.category
-  const [files, parent] = await Promise.all([
-    loadLegacyAliasDetail('legacy-files', route.group),
-    loadLegacyAliasDetail(route.category === 'episode_zero' ? 'legacy-episodes' : 'legacy-groups',
-      route.category === 'episode_zero' ? route.unit : id),
-  ])
-  if (files.view.sourceRoute.categoryId !== route.category ||
-    files.view.sourceRoute.ownerId !== (route.category === 'episode_zero' ? route.unit : route.idol || ''))
-    throw new Error('Legacy file alias route context mismatch')
-  return route.category === 'episode_zero' ? { files, episode: parent } : { files, groups: parent }
-}
-
-function publishLegacyAliasRoute(result) {
-  if (!result) return
-  if (result.groups) legacyGroupReadModelDetail.value = result.groups
-  if (result.files) legacyFileReadModelDetail.value = result.files
-  if (result.episode) legacyEpisodeReadModelDetail.value = result.episode
-  if (result.zero) legacyZeroReadModelDetail.value = result.zero
-}
-
-async function loadCollectionCatalog() {
-  if (collectionReadModelCatalog.value) return collectionReadModelCatalog.value
-  if (!collectionCatalogPromise) {
-    collectionCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.collections)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || new Set(rows.map(row => row.id)).size !== rows.length ||
-        rows.some(row => row.id !== `${row.domain}:${row.sectionId}` || !row.title || !row.detail))
-        throw new Error('Collection catalog identity or shape mismatch')
-      collectionReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { collectionCatalogPromise = null; throw error })
-  }
-  return collectionCatalogPromise
-}
-
-async function loadCollectionDetail(domain, section, options = {}) {
-  const row = (await loadCollectionCatalog()).find(entry => entry.domain === domain &&
-    (entry.sectionId === String(section) || entry.legacySectionIds?.includes(String(section))))
-  if (!row) throw new Error(`Unavailable story collection: ${domain}:${section}`)
-  return readModelClient.load(row.detail, { ...options, expectedId: row.id, validate: data => {
-    const collection = data.view?.collection
-    if (collection?.domain !== row.domain || collection.sectionId !== row.sectionId ||
-      !Array.isArray(collection.chapters) || !Array.isArray(data.view?.readingEntries))
-      throw new Error('Collection detail identity or shape mismatch')
-  } })
-}
-
-async function loadStoryReadModelCatalog() {
-  if (storyReadModelCatalog.value) return storyReadModelCatalog.value
-  if (!storyCatalogPromise) {
-    storyCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.stories)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || rows.length !== archiveBootstrap.counts.catalog_story_entries ||
-        new Set(rows.map(row => row.file)).size !== rows.length ||
-        rows.some(row => row.id !== row.file || !row.title || !row.detail))
-        throw new Error('Story directory identity or count mismatch')
-      storyCatalogIndex.value = index
-      storyReadModelCatalog.value = rows
-      return rows
-    })().catch(error => { storyCatalogPromise = null; throw error })
-  }
-  return storyCatalogPromise
-}
-
-async function loadStoryReadModelLanding() {
-  if (storyCatalogLanding.value) return storyCatalogLanding.value
-  await loadStoryReadModelCatalog()
-  if (!storyLandingPromise) {
-    storyLandingPromise = (async () => {
-      const descriptors = storyCatalogIndex.value?.landing
-      if (!descriptors?.main || !descriptors?.extra || !descriptors?.birthday)
-        throw new Error('Story catalog landing descriptors missing')
-      const [main, extra, birthday] = await Promise.all(['main', 'extra', 'birthday'].map(key =>
-        readModelClient.load(descriptors[key])))
-      if (!main?.value?.collections || !extra?.value?.collections || !birthday?.value?.collections)
-        throw new Error('Story catalog landing shape mismatch')
-      storyCatalogLanding.value = { main: main.value, extra: extra.value, birthday: birthday.value }
-      return storyCatalogLanding.value
-    })().catch(error => { storyLandingPromise = null; throw error })
-  }
-  return storyLandingPromise
-}
-
-async function loadStoryReadModelDetail(file) {
-  const row = (await loadStoryReadModelCatalog()).find(entry => entry.file === file)
-  if (!row) throw new Error(`Unavailable story: ${file}`)
-  return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
-    if (data.story?.file !== file || !Array.isArray(data.view?.related) ||
-      !Array.isArray(data.view?.castReferences) || typeof data.view.promotedVisualUrl !== 'string' ||
-      !Array.isArray(data.view?.readingEntries))
-      throw new Error('Story detail identity or shape mismatch')
-  } })
-}
-
-async function loadResourceStatus() {
-  if (!resourceDetailPromise) {
-    resourceDetailPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.resources)
-      if (index.count !== 1 || index.pages?.length !== 1) throw new Error('Resource status directory mismatch')
-      const page = await readModelClient.load(index.pages[0])
-      const row = page.rows?.[0]
-      if (row?.id !== 'archive-status' || !row.detail) throw new Error('Resource status identity mismatch')
-      return readModelClient.load(row.detail, { expectedId: row.id, validate: data => {
-        if (!data.view?.manifest?.coverage || !data.view?.verification?.scenarios ||
-          !data.view?.uiAssets?.meta) throw new Error('Resource status shape mismatch')
-      } })
-    })().catch(error => { resourceDetailPromise = null; throw error })
-  }
-  return resourceDetailPromise
-}
-
-async function loadSongCatalog() {
-  if (songReadModelCatalog.value) return songReadModelCatalog.value
-  if (!songCatalogPromise) {
-    songCatalogPromise = (async () => {
-      const index = await readModelClient.load(archiveBootstrap.domains.songs)
-      const pages = await Promise.all(index.pages.map(descriptor => readModelClient.load(descriptor)))
-      const rows = pages.flatMap(page => page.rows || [])
-      if (rows.length !== index.count || new Set(rows.map(row => row.song_code)).size !== rows.length)
-        throw new Error('Song catalog page count or identity mismatch')
-      const catalog = { songs: Object.fromEntries(rows.map(row => [row.song_code, row])), summary: index.summary }
-      songReadModelCatalog.value = catalog
-      return catalog
-    })().catch(error => { songCatalogPromise = null; throw error })
-  }
-  return songCatalogPromise
-}
-
-async function ensureSongCatalog() {
-  if (songReadModelCatalog.value) return true
-  songReadModelStatus.value = '正在读取歌曲目录…'
-  try {
-    await loadSongCatalog()
-    songReadModelStatus.value = ''
-    return true
-  } catch (error) {
-    console.error('[SongReadModel] Failed to load catalog:', error)
-    songReadModelStatus.value = '歌曲目录暂时无法读取，请重试。'
-    return false
-  }
-}
-
-async function loadSongDetail(songCode) {
-  const row = songReadModelCatalog.value?.songs?.[songCode]
-  const descriptor = row?.detail || await entityDescriptor(archiveBootstrap, 'songs', songCode, 'songs.detail')
-  return readModelClient.load(descriptor, { validate: data => {
-    if (data.song?.song_code !== songCode || data.view?.id !== songCode)
-      throw new Error('Song detail identity mismatch')
-  } })
-}
-
 function isBootstrapRoute(route) {
+  if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['live', 'studio', 'experiments', 'about', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
@@ -4086,249 +2504,58 @@ function isBootstrapRoute(route) {
     route.view === 'idols'
 }
 
+// Loads the read-model data a route's page needs; null when superseded. Shared by URL restore and Reader returns.
+async function prepareRouteData(route, isCurrent) {
+  route = await prepareHomeRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareLegacyAliasRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareMobileRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareIdolRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareUnitRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareGashaRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareCardRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareEventRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareStoryArchiveRoute(route, { isCurrent })
+  if (!route) return null
+  route = await prepareStoryRoute(route, { isCurrent })
+  if (!route) return null
+  if (!await prepareSongRoute(route, { isCurrent })) return null
+  return route
+}
+
 let startupRouteNormalized = false
 let restoreRequest = 0
 async function restoreRoute(route, { restoring = true } = {}) {
   return navigation.run(async intent => {
     const request = ++restoreRequest
     primeArchiveRouteComponent(route.view)
-    ++pendingSongNavigation
-    ++pendingHomeNavigation
-    ++pendingIdolNavigation
-    ++pendingUnitNavigation
-    ++pendingGashaNavigation
-    ++pendingCardNavigation
-    ++pendingEventNavigation
-    ++pendingSeasonalNavigation
-    ++pendingWorkNavigation
-    ++pendingIdolStoryNavigation
-    ++pendingMobileNavigation
-    ++pendingLegacyAliasNavigation
-    ++pendingCollectionNavigation
-    ++pendingStoryDetailNavigation
-    ++pendingResourceNavigation
+    invalidateSongNavigation()
+    invalidateHomeNavigation()
+    invalidateIdolNavigation()
+    invalidateUnitNavigation()
+    invalidateGashaNavigation()
+    invalidateCardNavigation()
+    invalidateEventNavigation()
+    invalidateStoryArchiveNavigation()
+    invalidateMobileNavigation()
+    invalidateLegacyAliasNavigation()
+    invalidateStoryNavigation()
+    invalidateResourceNavigation()
     loading.value = true
     loadingPurpose.value = route.view === 'player' ? 'story-playback' : 'archive-data'
     tracePlayer('route-restore', { view: route.view, directPlayer: isDirectScenarioEntry(route) })
     if (!isDirectScenarioEntry(route)) {
       legacyEntryStatus.value = ''
-      if (route.view === 'story_collection' && (!route.storyType || !route.storySection) ||
-        route.view === 'story_detail' && !route.story) route = { view: 'story_catalog' }
-      if (route.view === 'home' && route.homeIdol) {
-        try {
-          await loadHomeIdol(route.homeIdol)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[HomeReadModel] Failed to restore Home:', error)
-          userPreferenceNotice.value = '首页暂时无法读取，请重新选择偶像。'
-          route = { view: 'welcome' }
-        }
-      }
-      if (['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.view) ||
-        (route.view === 'player' && ['groups', 'files', 'episode_zero_units', 'episodes'].includes(route.returnView))) {
-        try {
-          const alias = await loadLegacyAliasRoute(route)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          if (intent.isCurrent() && request === restoreRequest) {
-            publishLegacyAliasRoute(alias)
-            legacyAliasStatus.value = ''
-          }
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[LegacyAliasReadModel] Failed to restore route:', error)
-          legacyAliasStatus.value = '旧剧情目录暂时无法读取，请重试。'
-          route = { view: route.category === 'episode_zero' ? 'episode_zero_units' : 'home' }
-        }
-      }
-      if (route.view === 'mobile_archive' || (route.view === 'player' && route.returnView === 'mobile_archive')) {
-        try {
-          if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) throw new Error('Unknown mobile idol')
-          const mobile = await loadMobileRoute(route.idol, route.mobileMode || 'personal', route.unit || '')
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          if (intent.isCurrent() && request === restoreRequest) {
-            mobileIdolReadModelDetail.value = mobile.idol
-            mobileUnitReadModelDetail.value = mobile.unit
-            mobileReadModelStatus.value = ''
-          }
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[MobileReadModel] Failed to restore mobile route:', error)
-          mobileReadModelStatus.value = 'Mobile 通信暂时无法读取，请重新选择。'
-          route = { view: 'idol_picker', pickTarget: 'mobile' }
-        }
-      }
-      if (route.view === 'idol_detail' && route.idol) {
-        if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
-          route = { view: 'idol_picker', pickTarget: 'profile' }
-        } else {
-          try {
-            const detail = await loadIdolDetail(route.idol)
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            idolReadModelDetail.value = detail
-            idolReadModelStatus.value = ''
-          } catch (error) {
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            console.error('[IdolReadModel] Failed to restore idol detail:', error)
-            idolReadModelStatus.value = '偶像档案暂时无法读取，请重新选择。'
-            route = { view: 'idols', category: 'idol' }
-          }
-        }
-      }
-      if (route.view === 'unit_catalog' || route.view === 'unit_detail' ||
-          (route.view === 'player' && route.returnView === 'unit_detail')) {
-        try {
-          if (route.view === 'unit_catalog') {
-            await loadUnitCatalog()
-            if (!intent.isCurrent() || request !== restoreRequest) return
-          } else {
-            const detail = await loadUnitDetail(route.unit)
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            unitReadModelDetail.value = detail
-          }
-          unitReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[UnitReadModel] Failed to restore unit route:', error)
-          unitReadModelStatus.value = '组合资料暂时无法读取，请稍后重试。'
-          route = { view: 'idols', category: 'idol' }
-        }
-      }
-      if (route.view === 'gashas' || route.view === 'gasha_detail') {
-        try {
-          if (route.view === 'gashas') {
-            await loadGashaCatalog()
-            if (!intent.isCurrent() || request !== restoreRequest) return
-          } else {
-            const detail = await loadGashaDetail(route.gasha)
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            gashaReadModelDetail.value = detail
-          }
-          gashaReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[GashaReadModel] Failed to restore gasha route:', error)
-          gashaReadModelStatus.value = '卡池资料暂时无法读取，请稍后重试。'
-          route = { view: 'gashas' }
-        }
-      }
-      if (route.view === 'cards' || route.view === 'card_detail' ||
-          (route.view === 'player' && route.returnView === 'card_detail')) {
-        try {
-          if (route.view === 'cards') {
-            await loadCardCatalog()
-            if (!intent.isCurrent() || request !== restoreRequest) return
-          } else {
-            const detail = await loadCardDetail(route.card)
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            cardReadModelDetail.value = detail
-          }
-          cardReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[CardReadModel] Failed to restore card route:', error)
-          cardReadModelStatus.value = '卡片资料暂时无法读取，请稍后重试。'
-          route = { view: 'cards' }
-        }
-      }
-      if ((route.view === 'event_detail' || (route.view === 'player' && route.returnView === 'event_detail')) && route.event) {
-        try {
-          const detail = await loadEventDetail(String(route.event))
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          eventReadModelDetail.value = detail
-          eventReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[EventReadModel] Failed to restore event route:', error)
-          eventReadModelStatus.value = '活动详情暂时无法读取，请稍后重试。'
-          route = { view: 'story_catalog' }
-        }
-      }
-      if (route.view === 'seasonal_campaign' || (route.view === 'player' && route.returnView === 'seasonal_campaign')) {
-        try {
-          const detail = await loadSeasonalDetail(route.storySection)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          seasonalReadModelDetail.value = detail
-          route = { ...route, storySection: detail.id }
-          seasonalReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[SeasonalReadModel] Failed to restore campaign:', error)
-          seasonalReadModelStatus.value = '季节企划暂时无法读取，请稍后重试。'
-          route = { view: 'portal' }
-        }
-      }
-      if ((route.view === 'work_archive' || (route.view === 'player' && route.returnView === 'work_archive')) && route.idol) {
-        try {
-          const detail = await loadWorkDetail(route.idol)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          workReadModelDetail.value = detail
-          workReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[WorkReadModel] Failed to restore idol:', error)
-          workReadModelStatus.value = '工作档案暂时无法读取，请稍后重试。'
-          route = { view: 'idol_picker', pickTarget: 'work' }
-        }
-      }
-      if ((route.view === 'idol_story_archive' || (route.view === 'player' && route.returnView === 'idol_story_archive')) && route.idol) {
-        try {
-          const detail = await loadIdolStoryDetail(route.idol)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          idolStoryReadModelDetail.value = detail
-          idolStoryReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[IdolStoryReadModel] Failed to restore idol:', error)
-          idolStoryReadModelStatus.value = '个人故事暂时无法读取，请稍后重试。'
-          route = { view: 'idol_picker', pickTarget: 'story' }
-        }
-      }
-      if ((route.view === 'story_collection' || (route.view === 'player' && route.returnView === 'story_collection')) && route.storyType && route.storySection) {
-        try {
-          const detail = await loadCollectionDetail(route.storyType, route.storySection)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          collectionReadModelDetail.value = detail
-          collectionReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[CollectionReadModel] Failed to restore collection:', error)
-          collectionReadModelStatus.value = '故事章节暂时无法读取，请稍后重试。'
-          route = { view: 'story_catalog' }
-        }
-      }
-      if ((route.view === 'story_detail' || (route.view === 'player' && route.returnView === 'story_detail')) && route.story) {
-        try {
-          const detail = await loadStoryReadModelDetail(route.story)
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          storyReadModelDetail.value = detail
-          storyReadModelStatus.value = ''
-          route = { ...route, storyType: detail.story.domain, storySection: detail.story.sectionId || '' }
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[StoryReadModel] Failed to restore detail:', error)
-          storyReadModelStatus.value = '故事详情暂时无法读取，请稍后重试。'
-          route = { view: 'story_catalog' }
-        }
-      }
-      if (route.view === 'song_catalog') await ensureSongCatalog()
-      if (!intent.isCurrent() || request !== restoreRequest) return
-      if (['song_detail', 'chibi_stage'].includes(route.view) && (route.song || route.view === 'chibi_stage')) {
-        try {
-          const detail = await loadSongDetail(route.song || 'drvalv')
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          songReadModelDetail.value = detail
-          songReadModelStatus.value = ''
-        } catch (error) {
-          if (!intent.isCurrent() || request !== restoreRequest) return
-          console.error('[SongReadModel] Failed to restore song detail:', error)
-          if (route.view === 'song_detail') {
-            await ensureSongCatalog()
-            if (!intent.isCurrent() || request !== restoreRequest) return
-            songReadModelStatus.value = '歌曲详情暂时无法读取，请重新选择。'
-          }
-        }
-      }
+      route = normalizeStoryRoute(route)
+      route = await prepareRouteData(route, () => intent.isCurrent() && request === restoreRequest)
+      if (!route) return
     }
     if (navigation.isDisposed() || !intent.isCurrent() || request !== restoreRequest) return
     const pending = applyArchiveRoute(route, { restoring, intent })
@@ -4369,75 +2596,61 @@ onMounted(async () => {
     userPreferenceNotice.value = '之前选择的首页偶像当前不可用，请重新选择。'
   }
   if (isBootstrapRoute(startup.route) && !['song_catalog', 'song_detail', 'idol_detail', 'unit_catalog', 'unit_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes'].includes(startup.route.view) && !(startup.route.view === 'home' && startup.route.homeIdol)) loading.value = false
-  await restoreRoute(startup.route)
+  try {
+    await restoreRoute(startup.route)
+  } catch (error) {
+    // A failed first read must not leave a blank page: the portal degrades gracefully offline.
+    console.error('[ArchiveRoute] Failed to open the initial route:', error)
+    if (view.value !== '__boot__') return
+    loading.value = false
+    userPreferenceNotice.value = '该页面暂时无法打开，已回到资料馆。'
+    commitView('portal')
+  }
 })
 
-watch([filterQuery, currentSongScope, currentCardRarity, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
+// App owns assembled catalogues only while their directory/detail is in use.
+// The shared client keeps its independently bounded immutable-byte LRU.
+watch(view,next=> {
+  if(['player','reader'].includes(next))return
+  for(const [catalog,detail,owners] of [
+    [cardReadModelCatalog,cardReadModelDetail,['cards','card_detail','idols']],
+    // The chart tool owns the song detail it shows and the catalogue its picker lists.
+    [songReadModelCatalog,songReadModelDetail,['song_catalog','song_detail','chibi_stage','chart_lab']],
+    [idolReadModelCatalog,idolReadModelDetail,['idol_detail','idols']],
+    [unitReadModelCatalog,unitReadModelDetail,['unit_catalog','unit_detail']],
+    [gashaReadModelCatalog,gashaReadModelDetail,['gashas','gasha_detail']],
+    [eventReadModelCatalog,eventReadModelDetail,['event_catalog','event_detail']],
+    [seasonalReadModelCatalog,seasonalReadModelDetail,['seasonal_campaign']],
+    [workReadModelCatalog,workReadModelDetail,['work_archive']],
+    [idolStoryReadModelCatalog,idolStoryReadModelDetail,['idol_story_archive']],
+    [collectionReadModelCatalog,collectionReadModelDetail,['collection_catalog','story_collection']],
+    [storyReadModelCatalog,storyReadModelDetail,['story_catalog','story_detail']],
+    [mobileIdolReadModelCatalog,mobileIdolReadModelDetail,['mobile_archive']],
+    [mobileUnitReadModelCatalog,mobileUnitReadModelDetail,['mobile_archive']],
+  ])if(!owners.includes(next)){catalog.value=null;detail.value=null}
+  for(const [detail,owners] of [
+    [legacyGroupReadModelDetail,['groups','files']],
+    [legacyFileReadModelDetail,['files']],
+    [legacyZeroReadModelDetail,['episode_zero_units','episodes']],
+    [legacyEpisodeReadModelDetail,['episodes']],
+  ])if(!owners.includes(next))detail.value=null
+},{flush:'post'})
+
+watch([filterQuery, currentSongScope, currentCardRarity, currentCardAttribute, currentCardAssetState, currentCardRelationState, currentGashaCategory, currentIdolUnitFilter, currentStoryDomain, currentStoryMode, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort, currentMobileMode, currentMobileScenarioId], () => {
   syncArchiveRoute({ replace: true, restoreView: false })
+})
+
+watch([portalScope, portalQuery], () => {
+  if (view.value === 'portal' && !navigation.isRestoring()) { captureActiveArchiveView(); syncArchiveRoute({replace:true,restoreView:false}) }
 })
 
 watch([homeSelectedId, homeSelectedCue, homeSelectedCostume], () => {
   if (view.value === 'home') syncArchiveRoute({ replace: true, restoreView: false })
 })
 
-watch(homeSelectedId, async (idolId, previousId) => {
-  if (view.value !== 'home' || !idolId || homeReadModelProfiles.value[idolId]) return
-  const request = ++pendingHomeNavigation
-  homeEntryStatus.value = '正在准备首页偶像…'
-  loading.value = true
-  try {
-    await loadHomeIdol(idolId)
-    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
-    homeEntryStatus.value = ''
-  } catch (error) {
-    if (request !== pendingHomeNavigation || navigation.isDisposed()) return
-    console.error('[HomeReadModel] Failed to switch idol:', error)
-    homeEntryStatus.value = '首页偶像暂时无法读取，请重试。'
-    if (previousId && homeReadModelProfiles.value[previousId]) homeSelectedId.value = previousId
-  } finally {
-    if (request === pendingHomeNavigation) loading.value = false
-  }
-})
+watch(homeSelectedId, handleHomeIdolChange)
 
-watch([filterQuery, currentStoryDomain, currentStorySection, currentEventScope, currentStoryAvailability, currentStorySort], () => {
-  storyVisibleLimit.value = 80
-})
-
-watch([view, currentSongId], ([nextView, songCode]) => {
-  if (nextView !== 'song_detail' || !songCode || songReadModelDetail.value?.id === songCode) return
-  const request = ++pendingSongNavigation
-  const revision = navigation.getRevision()
-  songReadModelStatus.value = '正在读取歌曲详情…'
-  loadSongDetail(songCode).then(detail => {
-    if (request !== pendingSongNavigation || revision !== navigation.getRevision() ||
-      navigation.isDisposed() || view.value !== 'song_detail' || currentSongId.value !== songCode) return
-    songReadModelDetail.value = detail
-    songReadModelStatus.value = ''
-  }).catch(error => {
-    if (request !== pendingSongNavigation || revision !== navigation.getRevision() ||
-      view.value !== 'song_detail' || currentSongId.value !== songCode) return
-    console.error('[SongReadModel] Failed to restore song detail:', error)
-    songReadModelStatus.value = '歌曲详情暂时无法读取，请返回后重试。'
-  })
-})
-
-watch([view, currentCharacterId], ([nextView, idolCode]) => {
-  if (nextView !== 'idol_detail' || !idolCode || idolReadModelDetail.value?.id === idolCode) return
-  const request = ++pendingIdolNavigation
-  const revision = navigation.getRevision()
-  idolReadModelStatus.value = '正在读取偶像档案…'
-  loadIdolDetail(idolCode).then(detail => {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
-      navigation.isDisposed() || view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
-    idolReadModelDetail.value = detail
-    idolReadModelStatus.value = ''
-  }).catch(error => {
-    if (request !== pendingIdolNavigation || revision !== navigation.getRevision() ||
-      view.value !== 'idol_detail' || currentCharacterId.value !== idolCode) return
-    console.error('[IdolReadModel] Failed to restore idol detail:', error)
-    idolReadModelStatus.value = '偶像档案暂时无法读取，请返回后重试。'
-  })
-})
+watch([view, currentCharacterId], handleIdolDetailChange)
 
 watch(cardLayout, layout => {
   setLocalStorageValue('sidem-archive-card-layout', layout)
@@ -4454,7 +2667,7 @@ watch(storyTranslationLocale, locale => {
 })
 
 onBeforeUnmount(() => {
-  ++pendingHomeNavigation
+  invalidateHomeNavigation()
   readModelClient.dispose()
   playbackController.dispose()
   navigation.dispose()
@@ -4465,16 +2678,12 @@ onBeforeUnmount(() => {
 
 <style scoped>
 #story-viewer {
-  width: 100%; height: 100vh; height: 100dvh; color: #222;
-  background: #f8f9fa; overflow: hidden;
+  width: 100%; height: 100vh; height: 100dvh; min-height: 100%; color: #222;
+  background: var(--gs-paper); overflow: hidden;
 }
 .player-trace-panel { position: fixed; z-index: 130; top: calc(72px + env(safe-area-inset-top, 0px)); right: 8px; max-width: calc(100vw - 16px); padding: 8px 12px; border: 1px solid #9abab7; border-radius: 8px; background: #f7faf9; color: #193c44; font: 13px/1.5 system-ui; }
 .player-trace-panel button { min-height: 44px; }
 .player-trace-panel pre { max-height: 45dvh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
-.song-read-model-status { margin: 12px 24px; padding: 12px 16px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.idol-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.unit-read-model-status { position: absolute; top: 80px; right: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
-.home-read-model-status { position: absolute; top: 80px; left: 16px; z-index: 20; padding: 10px 14px; background: #eef8f7; color: #246d67; font-size: .8rem; }
 .playback-failure { position: fixed; top: 64px; width: min(480px, calc(100vw - 24px)); left: 50%; transform: translateX(-50%); z-index: 120; max-width: calc(100vw - 32px); margin: 0; padding: 12px 18px; border: 1px solid #e4b7b7; border-radius: 8px; background: #fff4f4; color: #7f3434; font: 14px/1.6 system-ui, sans-serif; overflow-wrap: anywhere; max-height: 60vh; overflow: auto; box-sizing: border-box; }
 .playback-failure p { margin: 0 0 10px; }
 .playback-failure-actions { display: flex; gap: 12px; }
@@ -4488,6 +2697,9 @@ onBeforeUnmount(() => {
 <style>
 /* Global reset: no page-level scrollbar */
 html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; overflow-y: hidden; }
+/* iPad Safari can resolve 100dvh a few pixels short of the html box; the uncovered strip must be
+   the archive's paper, not the browser's white. */
+html, body { background: var(--gs-paper); }
 *, *::before, *::after { box-sizing: border-box; }
 #app { overflow-x: hidden; }
 /* Non-archive source pages keep the existing non-blocking feedback semantics. */

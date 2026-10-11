@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_032nao_1_7_032_01",
-  "logical_id": "story-collection:1_x_032nao_1_7_032_01",
+  "logical_id": "story:1_x_032nao_1_7_032_01",
   "scenario_id": "1_x_032nao_1_7_032_01",
   "text_catalog_id": "1_x_032nao_1_7_032_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_032nao_1_7_032_01.json",
-    "sha256": "sha256:a0c5ad9c00344ac1c8e4386ab7f101d7100146a51ccac83ccf84b69b423686d7",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:5a49b8fc3a77fb7417ccc8122cc330dbeecc4ec40c79037520fbe500b083d786",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:ee6c7b6aa14d4e901206b0ebba499373f105d5766c854e7312ecf80ca5d70571",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_032nao_1_7_032_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "直央くん、\nお誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_032nao_1_7_032_01:1_7_032_01:cmd-000017:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_032nao_1_7_032_01",
+          "part_id": "1_7_032_01",
+          "file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+          "command_index": 17,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d250611e147a78bd2dff174d4435631091474758bec7a82d5478d1f176f2d8ca"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_032nao_1_7_032_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_032_01",
+        "source_file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わわわっ、●●●●プロデューサーさん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_032nao_1_7_032_01:1_7_032_01:cmd-000020:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_032nao_1_7_032_01",
+          "part_id": "1_7_032_01",
+          "file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+          "command_index": 20,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:262a327d9cfc10a492987553f366a5066003e229204cf7ad50ae3753e750971f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -84,30 +109,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_032nao_1_7_032_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_032_01",
+        "source_file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あ、ごめんなさい……びっくりしちゃって。\nありがとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_032nao_1_7_032_01:1_7_032_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_032nao_1_7_032_01",
+          "part_id": "1_7_032_01",
+          "file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d2d3e2b5a5838da659209fc79492da54776ed0d628e3d253049e73e522459c4a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -124,7 +158,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -133,21 +166,32 @@
         "row_id": "1_x_032nao_1_7_032_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_032_01",
+        "source_file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ボクの誕生日を覚えててくれて、\nとってもうれしいです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_032nao_1_7_032_01:1_7_032_01:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_032nao_1_7_032_01",
+          "part_id": "1_7_032_01",
+          "file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a70e1f77329e500ffc3250f680bc89e0b3aff8bd9f5e340223a42f4b4f0c5a8f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -163,30 +207,39 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_032nao_1_7_032_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_032_01",
+        "source_file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ボク、お祝いしてもらった今日のこと、\nずっと忘れません！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_032nao_1_7_032_01:1_7_032_01:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_032nao_1_7_032_01",
+          "part_id": "1_7_032_01",
+          "file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:19e1a56e40ca5ca9cc2178893b370113866cf115e3310ef005858a4acb6420da"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "岡村 直央"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_032nao_1_7_032_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_032_01",
+        "source_file": "assets/resources/scenariodata/1_x_032nao/scenario_1_7_032_01.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "直央くん、",
     "episode_label": null

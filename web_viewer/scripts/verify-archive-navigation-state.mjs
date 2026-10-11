@@ -1,3 +1,4 @@
+import { bindGashaNavigation, createGashaFixtureTransport } from './lib/gasha-navigation-harness.mjs'
 import assert from 'node:assert/strict'
 import { isRef } from 'vue'
 import { readFileSync } from 'node:fs'
@@ -5,6 +6,7 @@ import vm from 'node:vm'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { legacyProjection } from '../fixtures/archive-navigation/legacy-route-projection.mjs'
 import { VALID_VIEWS, buildArchiveSourceQuery, buildArchiveUrl, readArchiveRoute, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const navigation = useArchiveNavigationState()
 const independent = useArchiveNavigationState()
@@ -23,12 +25,13 @@ navigation.currentUnit.value = { unit_code: 'legacy-unit', id: 'unit-fallback' }
 navigation.currentScenarioInitialStep.value = null
 navigation.playerEntryRoute.value = null // legacy oracle excludes explicit player entry descriptors
 navigation.stageTargetId.value = ''
+navigation.homeFrom.value = '' // Independent portal visit is tested by the portal navigation contract.
 navigation.currentScenarioStartStep.value = 7
 navigation.currentScenarioEndStep.value = 12
 const contexts = ['home', 'unit_detail', 'mobile_archive', 'event_detail', 'story_detail', 'story_collection', 'song_detail', 'files']
 let cases = 0
 for (const view of VALID_VIEWS) {
-  if (['portal', 'reader', 'welcome', 'idol_picker'].includes(view)) continue // Entry surfaces have their own provenance contract.
+  if (['portal', 'reader', 'welcome', 'idol_picker','collection_catalog','photo_catalog','event_catalog','picture_studio','chart_lab','live','studio','experiments'].includes(view)) continue // New domain surfaces have their own identity contract.
   for (const returnView of contexts) {
     for (const parent of contexts) {
       navigation.view.value = view
@@ -37,6 +40,9 @@ for (const view of VALID_VIEWS) {
       for (const key of ['songParentView', 'eventParentView', 'storyDetailParentView', 'storyCollectionParentView']) navigation[key].value = parent
       const actual = navigation.currentArchiveRoute()
       const expected = legacyProjection(navigation)
+      // The route-schema change intentionally stopped leaking a previous
+      // Player's return destination into non-Player pages.
+      if (view !== 'player') expected.returnView = ''
       if (view === 'chibi_stage') expected.stageId = actual.stageId
       if (view === 'work_archive' || (view === 'player' && returnView === 'work_archive')) {
         expected.story = actual.story
@@ -113,31 +119,28 @@ assert.equal(readArchiveSourceRoute(targetedStage.sourceRoute).view, 'archive_st
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 assert.match(app, /:back-label="labBackLabel"/, 'Lab back action exposes its actual archive destination')
 assert.match(app, /返回歌曲详情/, 'song-sourced Lab exit is named explicitly')
+const gashas = createGashaFixtureTransport()
 const context = {
+  archiveBootstrap: gashas.bootstrap, readModelClient: gashas.client,
   prepareArchivePage: (_view, data) => data,
   ...independent,
   pendingGashaNavigation: 0,
   gashaReadModelStatus: { value: '' }, gashaReadModelDetail: { value: null },
   loading: { value: false },
   navigation: { invalidate: () => {}, getRevision: () => 0, isDisposed: () => false },
-  loadGashaDetail: async id => ({ id, gasha: { id } }),
   captureDetailSource: () => { independent.detailSourceRoute.value = buildArchiveSourceQuery(independent.currentArchiveRoute()) },
   currentStoryCollection: { value: { sectionId: '604' } },
   commitView: value => { independent.view.value = value },
 }
-for (const name of ['openGasha', 'goBackFromGasha']) {
-  const source = app.match(new RegExp(`function ${name}\\([^]*?\\n\\}`))?.[0]
-  assert.ok(source, `${name} production handler exists`)
-  vm.runInNewContext(source, context)
-}
+bindGashaNavigation(app, context)
 independent.view.value = 'story_collection'
 independent.currentStoryDomain.value = 'extra'
 independent.currentStorySection.value = '604'
-await context.openGasha({ id: '1300011' })
+await context.openGasha({ id: gashas.ids[0] })
 const restored = readArchiveRoute(buildArchiveUrl('http://localhost/?noAudio=1', independent.currentArchiveRoute()).href)
 assert.equal(restored.parentView, 'story_collection')
 assert.equal(restored.storySection, '604')
-assert.equal(restored.gasha, '1300011')
+assert.equal(restored.gasha, gashas.ids[0])
 // Exercise the same parent restoration assignment as full App startup.
 const restoreSource = app.match(/    gashaParentView.value =[^]*?(?=\n    currentGashaCategory.value)/)?.[0]
 assert.ok(restoreSource)
@@ -152,7 +155,7 @@ context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 independent.filterQuery.value = 'FES'
 independent.currentGashaCategory.value = 'growing_fes'
-await context.openGasha({ id: '1300011' })
+await context.openGasha({ id: gashas.ids[0] })
 context.goBackFromGasha()
 assert.equal(independent.view.value, 'gashas')
 assert.equal(independent.filterQuery.value, 'FES')
@@ -166,9 +169,7 @@ const collectionContext = vm.createContext({
   currentStoryFile: independent.currentStoryFile,
   commitArchiveSelection: () => { collectionSelectionCommits++ },
 })
-const selectChapterSource = app.match(/function selectStoryCollectionChapter\([^]*?\n\}/)?.[0]
-assert.ok(selectChapterSource, 'story collection selection handler exists')
-vm.runInContext(selectChapterSource, collectionContext)
+bindStoryNavigation(app, collectionContext).stop()
 independent.currentStoryFile.value = ''
 collectionContext.selectStoryCollectionChapter({ story: { file: '1_4_001_01.json' } })
 assert.equal(independent.currentStoryFile.value, '1_4_001_01.json')

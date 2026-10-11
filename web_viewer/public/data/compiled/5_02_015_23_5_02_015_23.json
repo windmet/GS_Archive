@@ -1,0 +1,1752 @@
+{
+  "scenario_id": "5_02_015_23_5_02_015_23",
+  "text_catalog_id": "5_02_015_23_5_02_015_23",
+  "text_contract_version": 1,
+  "total_steps": 16,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0.0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 6,
+        "command_end": 6,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      }
+    },
+    {
+      "step_id": 2,
+      "type": "stage",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": {
+          "cue": "step_walk_come_conc_sneaker",
+          "delay": 0.0
+        },
+        "se_events": [
+          {
+            "cue": "step_walk_come_conc_boot",
+            "delay": 0.0
+          },
+          {
+            "cue": "step_walk_come_conc_sneaker",
+            "delay": 0.0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
+      "auto_advance": true,
+      "hide_dialogue": true
+    },
+    {
+      "step_id": 3,
+      "type": "stage",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0.0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
+      "auto_advance": true,
+      "hide_dialogue": true
+    },
+    {
+      "step_id": 4,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 18,
+        "command_end": 18,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_default",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.8,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "weight",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "そうだ、●●●●プロデューサーさん！\n渡したいものがあるんだ。",
+        "text_jp": "そうだ、●●●●プロデューサーさん！\n渡したいものがあるんだ。",
+        "text_cn": "",
+        "source_text": "そうだ、●●●●プロデューサーさん！\n渡したいものがあるんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000018:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 18,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:064a8656fb3a7342497913f41b0469eebc1f59e382c11a25eef4cb483f290fe1"
+        },
+        "voice": "5_02_015_23_a1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1000.json",
+          "frames": 231
+        }
+      }
+    },
+    {
+      "step_id": 5,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": {
+          "cue": "cloth_move_ss01",
+          "delay": 0.0
+        },
+        "se_events": [
+          {
+            "cue": "cloth_move_ss01",
+            "delay": 0.0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 23,
+        "command_end": 23,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.0,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "はい、これ。バレンタインのお礼！",
+        "text_jp": "はい、これ。バレンタインのお礼！",
+        "text_cn": "",
+        "source_text": "はい、これ。バレンタインのお礼！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000023:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 23,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:ab0ee740d670e3465a72ea12ac0e027b160a7575ba12827f92ec7e465de9213a"
+        },
+        "voice": "5_02_015_23_a1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1001.json",
+          "frames": 223
+        }
+      }
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 28,
+        "command_end": 28,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.0,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.8,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "angry"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "いつも幸運をもらってるから良いことがあるように、\nと思ってミサンガを編んだんだ。",
+        "text_jp": "いつも幸運をもらってるから良いことがあるように、\nと思ってミサンガを編んだんだ。",
+        "text_cn": "",
+        "source_text": "いつも幸運をもらってるから良いことがあるように、\nと思ってミサンガを編んだんだ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000028:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 28,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:ead3f1610655a396e58db8e2e2f05eb78393ac1b4988fa25762d58d4db2a4a3d"
+        },
+        "voice": "5_02_015_23_a1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1002.json",
+          "frames": 354
+        }
+      }
+    },
+    {
+      "step_id": 7,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_happy",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 31,
+        "command_end": 31,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.0,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "ありがとうございます、嬉しいです！\n大切にします！",
+        "text_jp": "ありがとうございます、嬉しいです！\n大切にします！",
+        "text_cn": "",
+        "source_text": "ありがとうございます、嬉しいです！\n大切にします！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000031:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 31,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:e3f3f85114a3f832b281e08eed69855254b922ccf1f1e50862a129bc959386f9"
+        }
+      }
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_joy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "neck_anim": "neck_question"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 41,
+        "command_end": 41,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.0,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "weight"
+        },
+        {
+          "time": 2.5,
+          "type": "spine_neck_anim",
+          "chara_id": "015ryu",
+          "value": "neck_question"
+        },
+        {
+          "time": 3.5,
+          "type": "spine_neck_stop",
+          "chara_id": "015ryu",
+          "value": ""
+        },
+        {
+          "time": 4.2,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "本当？\nへへ……そう言ってもらえると、俺も嬉しいよ。",
+        "text_jp": "本当？\nへへ……そう言ってもらえると、俺も嬉しいよ。",
+        "text_cn": "",
+        "source_text": "本当？\nへへ……そう言ってもらえると、俺も嬉しいよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000041:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 41,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:9ad524064b9555bff79006d3040ef840683351b5d35e574bf46502e4fc8b532e"
+        },
+        "voice": "5_02_015_23_a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1004.json",
+          "frames": 337
+        }
+      }
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 49,
+        "command_end": 49,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.1,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_think",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_sad",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "sad"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "……あっ！　でもミサンガって、切れないと\n願い事が叶わないんだよな。",
+        "text_jp": "……あっ！　でもミサンガって、切れないと\n願い事が叶わないんだよな。",
+        "text_cn": "",
+        "source_text": "……あっ！　でもミサンガって、切れないと\n願い事が叶わないんだよな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000049:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 49,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:8759a49987e20b235f33ae60dbbd10c54e49245c44322b856c1efa83461ff6b4"
+        },
+        "voice": "5_02_015_23_a1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1005.json",
+          "frames": 396
+        }
+      }
+    },
+    {
+      "step_id": 10,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_think",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 54,
+        "command_end": 54,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.2,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_think",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 6.2,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_serious",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "大切にしてほしいけど、プロデューサーさんの\n願い事が叶って欲しいし、……うーん。",
+        "text_jp": "大切にしてほしいけど、プロデューサーさんの\n願い事が叶って欲しいし、……うーん。",
+        "text_cn": "",
+        "source_text": "大切にしてほしいけど、プロデューサーさんの\n願い事が叶って欲しいし、……うーん。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000054:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 54,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:e6ae4013463216dda8507de17e663c04cf9b7b0e96bf019df6f3f9a5a6a55cb9"
+        },
+        "voice": "5_02_015_23_a1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a1006.json",
+          "frames": 518
+        }
+      }
+    },
+    {
+      "step_id": 11,
+      "type": "text_disable",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_serious",
+            "anim": "sad",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "out",
+              "delay": 0.0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 58,
+        "command_end": 58,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 0.6
+    },
+    {
+      "step_id": 12,
+      "type": "choice",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "options": [
+        {
+          "label": "1-sel1",
+          "text": "切れた後も大事にします！",
+          "detail": "",
+          "source_text": "切れた後も大事にします！",
+          "option_id": "choice-option:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000059:000",
+          "text_ref": {
+            "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000059:choice_short:000",
+            "source": {
+              "scenario_id": "5_02_015_23_5_02_015_23",
+              "part_id": "5_02_015_23",
+              "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+              "command_index": 59,
+              "field_kind": "choice_short",
+              "field_ordinal": 0
+            },
+            "source_hash": "sha256:06e64f1af3168ef8e969cc2fb4f48ee639c04a4acd1b66d46c6a88f939764acc"
+          },
+          "step_id": 13
+        }
+      ],
+      "choice_id": "choice:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000059",
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 59,
+        "command_end": 59,
+        "raw_type": "text_select",
+        "confidence": "exact"
+      }
+    },
+    {
+      "step_id": 13,
+      "type": "stage",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_serious",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0.0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 65,
+        "command_end": 65,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
+      "auto_advance": true,
+      "hide_dialogue": true
+    },
+    {
+      "step_id": 14,
+      "type": "stage",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 67,
+        "command_end": 67,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.0,
+      "auto_advance": true,
+      "hide_dialogue": true
+    },
+    {
+      "step_id": 15,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 71,
+        "command_end": 71,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "その手があったか！",
+        "text_jp": "その手があったか！",
+        "text_cn": "",
+        "source_text": "その手があったか！",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000071:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 71,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:95399e324466cfabd3d7fe323417705d39670ca4cb4da1ff852e3360ae1a45eb"
+        },
+        "voice": "5_02_015_23_a2000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a2000.json",
+          "frames": 98
+        }
+      }
+    },
+    {
+      "step_id": 16,
+      "type": "adv",
+      "state": {
+        "bg": "bg045_riverbed_out_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg045_riverbed_out_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "park_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_street_park_river"
+        },
+        "spines": [
+          {
+            "id": "015ryu",
+            "model": "015ryu_002_00",
+            "face": "face_happy",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "source_part_id": "5_02_015_23",
+        "command_start": 77,
+        "command_end": 77,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.0,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.0,
+          "type": "spine_anim",
+          "chara_id": "015ryu",
+          "value": "weight"
+        },
+        {
+          "time": 3.7,
+          "type": "spine_face",
+          "chara_id": "015ryu",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "015ryu",
+      "dialogue": {
+        "speaker": "木村 龍",
+        "text": "ミサンガが切れたら教えてよ。プロデューサーさんの\n願いが叶ったかだけは知りたいな。",
+        "text_jp": "ミサンガが切れたら教えてよ。プロデューサーさんの\n願いが叶ったかだけは知りたいな。",
+        "text_cn": "",
+        "source_text": "ミサンガが切れたら教えてよ。プロデューサーさんの\n願いが叶ったかだけは知りたいな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "015ryu",
+          "source_name": "木村 龍"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_02_015_23_5_02_015_23:5_02_015_23:cmd-000077:dialogue:000",
+          "source": {
+            "scenario_id": "5_02_015_23_5_02_015_23",
+            "part_id": "5_02_015_23",
+            "file": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+            "command_index": 77,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:7c5f7b2701f5582ef3f27f62236bca4426b4c5d53afcb911544c9c1b4414193d"
+        },
+        "voice": "5_02_015_23_a2001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_02_23/5_02_015_23/5_02_015_23_a2001.json",
+          "frames": 441
+        }
+      }
+    }
+  ],
+  "jump_points": {
+    "1-sel1": 13
+  },
+  "source": {
+    "raw_path": "scenariodata/5_02_015_23",
+    "raw_hash": "sha256:cd5eee61a9e0c5e2a6d543a4224b34bbc7a32d3bdb983ed7e00cb32f2fc61760",
+    "raw_hash_format": "sha256-raw-file-v1",
+    "raw_files": [
+      {
+        "path": "scenariodata/5_02_015_23/scenario_5_02_015_23.json",
+        "raw_hash": "sha256:cd5eee61a9e0c5e2a6d543a4224b34bbc7a32d3bdb983ed7e00cb32f2fc61760"
+      }
+    ]
+  }
+}

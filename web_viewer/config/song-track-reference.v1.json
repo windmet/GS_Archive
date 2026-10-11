@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "checkedOn": "2026-10-01",
+  "source": {
+    "package": "サイスタ 2.6.10.ipa",
+    "member": "Payload/BNEI0395.app/Data/data.unity3d",
+    "dataSha256": "fb28e28793e4f9d21e76dd96be2c776a71382cb607d98acd24f65f20bed8018a",
+    "metadataSha256": "658f966af11aef965b541e093889056cafa61a7f7fcd4bbf38e1ca2eab6d6e00"
+  },
+  "nativeClass": {
+    "name": "RhythmGameDef",
+    "typeDefinitionIndex": 8775
+  },
+  "constants": {
+    "LaneCount": {
+      "value": 5,
+      "fieldIndex": 32153,
+      "typeIndex": 30716,
+      "byteOffset": 7142189,
+      "relativeOffset": 143953,
+      "hex": "05000000"
+    },
+    "NotePosZBaxk": {
+      "value": 200.0,
+      "fieldIndex": 32154,
+      "typeIndex": 34934,
+      "byteOffset": 7142193,
+      "relativeOffset": 143957,
+      "hex": "00004843"
+    },
+    "NotePosZFront": {
+      "value": 100.0,
+      "fieldIndex": 32155,
+      "typeIndex": 34934,
+      "byteOffset": 7142197,
+      "relativeOffset": 143961,
+      "hex": "0000c842"
+    },
+    "TopLaneWidth": {
+      "value": 21.0,
+      "fieldIndex": 32156,
+      "typeIndex": 34934,
+      "byteOffset": 7142201,
+      "relativeOffset": 143965,
+      "hex": "0000a841"
+    },
+    "TargetLaneWidth": {
+      "value": 880.0,
+      "fieldIndex": 32157,
+      "typeIndex": 34934,
+      "byteOffset": 7142205,
+      "relativeOffset": 143969,
+      "hex": "00005c44"
+    },
+    "NoteSizeAdjust": {
+      "value": 312,
+      "fieldIndex": 32158,
+      "typeIndex": 30716,
+      "byteOffset": 7142209,
+      "relativeOffset": 143973,
+      "hex": "38010000"
+    }
+  },
+  "trackSprites": [
+    {
+      "name": "live_lane_gradation",
+      "spritePathId": 1557,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 1962803472,
+          "data[1]": 1323336265,
+          "data[2]": 1904042133,
+          "data[3]": 359258379
+        },
+        21300000
+      ],
+      "file": "live_lane_gradation.png",
+      "width": 8,
+      "height": 250,
+      "visibleAlphaBounds": [
+        0,
+        32,
+        8,
+        250
+      ],
+      "pngSha256": "7abf7416e293631028681fa8bf3345bbb180e2b2a48745fc1f18796fa28d1a1e",
+      "pixelSha256": "45b92760ce360454187d131127754c561e0d285d54af660ccc9f3127f9166ab2"
+    },
+    {
+      "name": "live_lane_gradation_left",
+      "spritePathId": 2222,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 1751529064,
+          "data[1]": 1151810812,
+          "data[2]": 1964411289,
+          "data[3]": 487924562
+        },
+        21300000
+      ],
+      "file": "live_lane_gradation_left.png",
+      "width": 40,
+      "height": 200,
+      "visibleAlphaBounds": [
+        0,
+        0,
+        40,
+        200
+      ],
+      "pngSha256": "2b2fecbfb96016f3b3fa0f7f667a172220ba211e59bb104443bd0f00508cbcc0",
+      "pixelSha256": "e5ea39b886200f5bdcb326b23d39dfe6d53cb8df59b9b7fdc24b3bb1b9dab95d"
+    },
+    {
+      "name": "live_target_line",
+      "spritePathId": 2164,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 2202833031,
+          "data[1]": 1198194028,
+          "data[2]": 4280657290,
+          "data[3]": 2205706572
+        },
+        21300000
+      ],
+      "file": "live_target_line.png",
+      "width": 320,
+      "height": 20,
+      "visibleAlphaBounds": [
+        0,
+        3,
+        320,
+        15
+      ],
+      "pngSha256": "6b85e234b39ba906f2070a8becf32235ca49dac5365658ec9f88e2f013f14647",
+      "pixelSha256": "a11df3e2e939258ed563ea3e17496cdb15d21194848947aa8c6493f71b2a3de5"
+    },
+    {
+      "name": "live_target_line_gradation",
+      "spritePathId": 2381,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 2006169978,
+          "data[1]": 1240173188,
+          "data[2]": 167386754,
+          "data[3]": 1938653065
+        },
+        21300000
+      ],
+      "file": "live_target_line_gradation.png",
+      "width": 320,
+      "height": 22,
+      "visibleAlphaBounds": [
+        0,
+        0,
+        320,
+        22
+      ],
+      "pngSha256": "bee0cbd4395df0a5acc20ae1b115b42ed2c675581531b4814a809c146afc45ed",
+      "pixelSha256": "35af0271e60a6395339beda76975d55bcda0c491da30ea23cf17bef6c83f30bb"
+    },
+    {
+      "name": "live_target_line_left",
+      "spritePathId": 1961,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 3472802276,
+          "data[1]": 1131730765,
+          "data[2]": 2301806721,
+          "data[3]": 738387969
+        },
+        21300000
+      ],
+      "file": "live_target_line_left.png",
+      "width": 40,
+      "height": 200,
+      "visibleAlphaBounds": [
+        0,
+        0,
+        40,
+        200
+      ],
+      "pngSha256": "be5aa4c81a89dd16cabb2fb8bab863e5d89246466fe122ee00dd886301829406",
+      "pixelSha256": "c4f7604d91ebb7ce39d4f0862288288436b8ab29baa4cfdc78e1b52f280dcc4c"
+    },
+    {
+      "name": "live_target_line_right",
+      "spritePathId": 2431,
+      "atlasPathId": 106487,
+      "renderDataKey": [
+        {
+          "data[0]": 1772642075,
+          "data[1]": 1264952727,
+          "data[2]": 68578190,
+          "data[3]": 3399683231
+        },
+        21300000
+      ],
+      "file": "live_target_line_right.png",
+      "width": 40,
+      "height": 200,
+      "visibleAlphaBounds": [
+        0,
+        0,
+        40,
+        200
+      ],
+      "pngSha256": "b4d9bbfe4cabf7811a5beef204e0c34871c5d00597c68ff6d042fa1e92cef337",
+      "pixelSha256": "f5f0fd5dc290824cb77e3b082eed5e6a26ff8c3dfd20e8802a5a672662024f3f"
+    }
+  ],
+  "skins": {
+    "Note1SpriteAtlas": {
+      "hold_line": {
+        "file": "Note1SpriteAtlas/live_notes_hold_line.png",
+        "width": 200,
+        "height": 200,
+        "visibleAlphaBounds": [
+          2,
+          0,
+          200,
+          200
+        ]
+      },
+      "normal": {
+        "file": "Note1SpriteAtlas/live_notes_normal.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          0,
+          68,
+          256,
+          201
+        ]
+      },
+      "swipe_left": {
+        "file": "Note1SpriteAtlas/live_notes_swipe_left.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          0,
+          0,
+          256,
+          256
+        ]
+      },
+      "swipe_right": {
+        "file": "Note1SpriteAtlas/live_notes_swipe_right.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          0,
+          0,
+          256,
+          256
+        ]
+      },
+      "swipe_up": {
+        "file": "Note1SpriteAtlas/live_notes_swipe_up.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          0,
+          39,
+          256,
+          201
+        ]
+      }
+    },
+    "Note2SpriteAtlas": {
+      "hold_line": {
+        "file": "Note2SpriteAtlas/live_notes_hold_line.png",
+        "width": 200,
+        "height": 200,
+        "visibleAlphaBounds": [
+          2,
+          0,
+          200,
+          200
+        ]
+      },
+      "normal": {
+        "file": "Note2SpriteAtlas/live_notes_normal.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          4,
+          0,
+          253,
+          256
+        ]
+      },
+      "swipe_left": {
+        "file": "Note2SpriteAtlas/live_notes_swipe_left.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          4,
+          0,
+          253,
+          256
+        ]
+      },
+      "swipe_right": {
+        "file": "Note2SpriteAtlas/live_notes_swipe_right.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          3,
+          0,
+          252,
+          256
+        ]
+      },
+      "swipe_up": {
+        "file": "Note2SpriteAtlas/live_notes_swipe_up.png",
+        "width": 256,
+        "height": 256,
+        "visibleAlphaBounds": [
+          3,
+          0,
+          252,
+          256
+        ]
+      }
+    },
+    "Note3SpriteAtlas": {
+      "hold_line": {
+        "file": "Note3SpriteAtlas/live_notes_hold_line.png",
+        "width": 200,
+        "height": 200,
+        "visibleAlphaBounds": [
+          2,
+          0,
+          200,
+          200
+        ]
+      },
+      "normal": {
+        "file": "Note3SpriteAtlas/live_notes_normal.png",
+        "width": 268,
+        "height": 96,
+        "visibleAlphaBounds": [
+          2,
+          2,
+          266,
+          94
+        ]
+      },
+      "swipe_left": {
+        "file": "Note3SpriteAtlas/live_notes_swipe_left.png",
+        "width": 269,
+        "height": 128,
+        "visibleAlphaBounds": [
+          2,
+          3,
+          267,
+          125
+        ]
+      },
+      "swipe_right": {
+        "file": "Note3SpriteAtlas/live_notes_swipe_right.png",
+        "width": 269,
+        "height": 128,
+        "visibleAlphaBounds": [
+          2,
+          3,
+          267,
+          125
+        ]
+      },
+      "swipe_up": {
+        "file": "Note3SpriteAtlas/live_notes_swipe_up.png",
+        "width": 268,
+        "height": 110,
+        "visibleAlphaBounds": [
+          2,
+          2,
+          266,
+          108
+        ]
+      }
+    }
+  },
+  "screenshotEstimates": {
+    "viewBox": [
+      1280,
+      720
+    ],
+    "centerX": 640,
+    "judgeY": 570,
+    "topY": 8,
+    "normalVisibleWidth": 148,
+    "holdWidthRatio": 0.72,
+    "depthRatio": 2,
+    "basis": "1920x864 reference: game area x=192..1728; estimated 1.2x UI scale"
+  },
+  "boundaries": {
+    "cameraProjection": "estimated",
+    "meshSize": "estimated",
+    "holdUv": "estimated",
+    "judgePointRings": "vector reconstruction",
+    "specialMapping": "unverified",
+    "runtimeDefaultSkin": "unverified",
+    "audioSync": "unverified"
+  }
+}

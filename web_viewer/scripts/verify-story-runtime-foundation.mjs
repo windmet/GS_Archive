@@ -607,7 +607,7 @@ function verifyPlayerStateRepositories() {
   assert.equal(saved.auto_enabled, true)
   assert.equal(saved.auto_delay_ms, 10000)
   assert.equal(saved.skip_mode, 'all')
-  assert.equal(saved.schema_version, 2)
+  assert.equal(saved.schema_version, 3)
   assert.equal(saved.ui_locale, 'ja-JP')
   assert.equal(saved.story_content_mode, 'bilingual')
   assert.equal(saved.bilingual_primary, 'translation')
@@ -630,6 +630,16 @@ function verifyPlayerStateRepositories() {
     'loading an old v2 payload must rewrite the retired preference out of storage',
   )
 
+  // v3: story text defaults to Chinese; a v2 'original' was the old default and moves to it.
+  assert.equal(new PlayerPreferencesRepository({ storage: memoryStorage({}) }).load().story_content_mode, 'translation')
+  for (const [stored, expected] of [['original', 'translation'], ['bilingual', 'bilingual'], ['translation', 'translation']]) {
+    const v2Storage = memoryStorage({ 'sidem-story-player-preferences': JSON.stringify({ schema_version: 2, story_content_mode: stored, producer_name: 'P' }) })
+    const upgraded = new PlayerPreferencesRepository({ storage: v2Storage }).load()
+    assert.equal(upgraded.story_content_mode, expected, `v2 ${stored}`)
+    assert.equal(upgraded.producer_name, 'P', 'other v2 settings survive the upgrade')
+    assert.equal(JSON.parse(v2Storage.getItem('sidem-story-player-preferences')).schema_version, 3, 'the upgrade is written back')
+  }
+
   const migrationStorage = memoryStorage({
     'sidem-story-player-preferences': JSON.stringify({
       schema_version: 1,
@@ -641,21 +651,21 @@ function verifyPlayerStateRepositories() {
     }),
   })
   const migrated = new PlayerPreferencesRepository({ storage: migrationStorage }).load()
-  assert.equal(migrated.schema_version, 2)
+  assert.equal(migrated.schema_version, 3)
   assert.equal(migrated.ui_locale, 'zh-CN')
   assert.equal(migrated.story_content_mode, 'translation')
   assert.equal(migrated.story_translation_locale, 'zh-CN')
   assert.equal(migrated.bilingual_primary, 'translation')
   assert.equal(migrated.auto_enabled, true)
   assert.equal(migrated.auto_delay_ms, 1200)
-  assert.equal(JSON.parse(migrationStorage.getItem('sidem-story-player-preferences')).schema_version, 2)
+  assert.equal(JSON.parse(migrationStorage.getItem('sidem-story-player-preferences')).schema_version, 3)
 
   const savedLegacy = preferences.save({
     schema_version: 1,
     language_mode: 'BILINGUAL',
     auto_delay_ms: 1400,
   })
-  assert.equal(savedLegacy.schema_version, 2)
+  assert.equal(savedLegacy.schema_version, 3)
   assert.equal(savedLegacy.story_content_mode, 'bilingual')
   assert.equal(savedLegacy.bilingual_primary, 'original')
   assert.equal(savedLegacy.auto_delay_ms, 1400)
@@ -717,6 +727,51 @@ function verifyPlaybackModeController() {
   runTimer()
   assert.equal(controller.inspect().skip_enabled, false)
   assert.ok(modeChanges.includes('choice'))
+  controller.dispose()
+  verifyUnvoicedReadingTime()
+}
+
+// An unvoiced line waits for its reading time counted from when it appeared, not from when an
+// idol's motion ends: a short motion does not cut it off, a long one does not double the wait.
+function verifyUnvoicedReadingTime() {
+  let now = 0, blocking = true
+  const line = { step_id: 3, type: 'adv', dialogue: { text: 'producer' } }
+  const advances = [], timers = []
+  const controller = new PlaybackModeController({
+    getStep: () => line,
+    hasBlockingAuto: () => blocking,
+    getReadingMs: () => 3000,
+    onAdvance: source => { advances.push(source); return 'advanced' },
+    autoDelayMs: 800,
+    now: () => now,
+    setTimer: callback => { timers.push(callback); return callback },
+    clearTimer: timer => { const index = timers.indexOf(timer); if (index >= 0) timers.splice(index, 1) },
+  })
+  const runTimer = () => timers.shift()?.()
+  controller.setAuto(true)
+  runTimer()
+  now = 500; blocking = false
+  runTimer()
+  now = 3799
+  runTimer()
+  assert.deepEqual(advances, [], 'a short motion must not cut an unvoiced line short of its reading time')
+  now = 3800
+  runTimer()
+  assert.deepEqual(advances, ['auto'])
+  line.step_id = 4
+  const next = { ...line }
+  controller.getStep = () => next
+  blocking = true
+  now = 4000
+  runTimer()
+  now = 9000; blocking = false
+  runTimer()
+  now = 9799
+  runTimer()
+  assert.deepEqual(advances, ['auto'], 'after a long motion only the configured delay remains')
+  now = 9800
+  runTimer()
+  assert.deepEqual(advances, ['auto', 'auto'])
   controller.dispose()
 }
 

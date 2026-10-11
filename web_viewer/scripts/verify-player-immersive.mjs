@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { createPlayerImmersiveMode, claimMobileViewingOffer } from '../src/composables/usePlayerImmersiveMode.js'
+import { createPlayerImmersiveMode, claimMobileViewingOffer, createMobileViewingOffer } from '../src/composables/usePlayerImmersiveMode.js'
 import { PlayerPreferencesRepository } from '../src/core/story-runtime/PlayerPreferencesRepository.js'
 const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b }); return { promise, resolve, reject } }
 function setup({ unsupported = false, rejectFullscreen = false, rejectLock = false, lockMissing = false, delayedFullscreen = null, delayedLock = null } = {}) {
@@ -28,7 +28,7 @@ function setup({ unsupported = false, rejectFullscreen = false, rejectLock = fal
 }
 for (const options of [{unsupported:true},{rejectFullscreen:true},{lockMissing:true},{rejectLock:true}]) {
  const t=setup(options); await t.mode.enter(t.root)
- assert.equal(t.mode.state.active,true,'API failure does not prevent manual landscape viewing')
+ assert.equal(t.mode.state.active, !(options.unsupported || options.rejectFullscreen), 'active reflects the actual fullscreen element')
  assert.ok(t.mode.state.notice); assert.equal(t.mode.state.pending,false)
  await t.mode.leave(); assert.equal(t.mode.state.active,false)
  if (options.unsupported || options.rejectFullscreen) assert.equal(t.counts().locks,0)
@@ -58,5 +58,21 @@ for (const options of [{unsupported:true},{rejectFullscreen:true},{lockMissing:t
  const denied=new PlayerPreferencesRepository({storage:{getItem(){throw Error()},setItem(){throw Error()}}})
  assert.equal(denied.update({story_mobile_view_mode:'portrait'}).story_mobile_view_mode,'portrait')
  assert.equal(claimMobileViewingOffer(),true); assert.equal(claimMobileViewingOffer(),false)
+}
+{
+ const gate=deferred(), t=setup({delayedLock:gate})
+ const old=t.mode.enter(t.root)
+ await Promise.resolve(); await Promise.resolve()
+ await t.mode.dispose()
+ const newer=createPlayerImmersiveMode({document:t.doc,orientation:{lock:async()=>{},unlock(){throw Error('wrong owner')}}})
+ assert.equal(await newer.enter(t.root),false,'pending native lock reserves the document')
+ gate.resolve(); await old
+ assert.equal(await newer.enter(t.root),true,'new session can claim after old cleanup')
+ assert.equal(t.mode.state.active,false)
+ await newer.dispose()
+}
+{
+ const first=createMobileViewingOffer(),second=createMobileViewingOffer()
+ assert.equal(first(),true); assert.equal(first(),false); assert.equal(second(),true)
 }
 console.log('Immersive viewing: synchronous gesture, denied/unsupported APIs, system exit, pending unmount/lock, foreign fullscreen, preferences and one-time offer passed')

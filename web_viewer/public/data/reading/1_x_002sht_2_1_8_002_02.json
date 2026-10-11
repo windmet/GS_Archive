@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_002sht_2_1_8_002_02",
-  "logical_id": "story-collection:1_x_002sht_2_1_8_002_02",
+  "logical_id": "story:1_x_002sht_2_1_8_002_02",
   "scenario_id": "1_x_002sht_2_1_8_002_02",
   "text_catalog_id": "1_x_002sht_2_1_8_002_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_002sht_2_1_8_002_02.json",
-    "sha256": "sha256:15aa36342fd779c2c3f5ea14f1e1ffb24ba54b80b6f6cf1231bccbe22f01a2ef",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f9499f7d0d062aaab267ba467f888b57bcde0e69fce1be0154be6b6d5c3abeaa",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_002sht_2_1_8_002_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、お疲れさま！\nねえねえ、今ってお昼休み？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_002sht_2_1_8_002_02",
+          "part_id": "1_8_002_02",
+          "file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a406f3cd9b3e664b6f64fc3c5ffce26ba421e759af11ba862aac9b10f1e668c5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_002sht_2_1_8_002_02:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_002_02",
+        "source_file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "休憩中なら、少しくらい独り占めしてもいいかなって\n思ってさー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_002sht_2_1_8_002_02",
+          "part_id": "1_8_002_02",
+          "file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b96202acea20eb2bbfccf4b2fbdf973abf45e74e8e228e673aaddc527d98915e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_002sht_2_1_8_002_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_002_02",
+        "source_file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーさん、お誕生日おめでとう！\nそれだけ先に言っておきたかったんだ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_002sht_2_1_8_002_02",
+          "part_id": "1_8_002_02",
+          "file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e6e183676c112c08e4ab21c419558cf33d834010b89347368b939a74217105a7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_002sht_2_1_8_002_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_002_02",
+        "source_file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -147,7 +177,18 @@
     {
       "kind": "choice",
       "source_text": "ありがとう\nございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "1_x_002sht_2_1_8_002_02",
+          "part_id": "1_8_002_02",
+          "file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42ccdb247ca887c1f4279c535933ad9b6b5a8b10a7a92d1c133ba0546c376d51"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -174,14 +215,14 @@
         "row_id": "1_x_002sht_2_1_8_002_02:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_002_02",
+        "source_file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000016",
+        "option_id": "choice-option:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000016:000",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "事務所に戻ったらまたお祝いするつもりだから、\n期待して待っててよ！　それじゃ、また後でね！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "1_x_002sht_2_1_8_002_02",
+          "part_id": "1_8_002_02",
+          "file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4997a497d7b5ec88c1dd50ee68cd927be44d9623255f9e9ea763c012dd04805b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "002sht",
         "sourceName": "御手洗 翔太"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_002sht_2_1_8_002_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_002_02",
+        "source_file": "assets/resources/scenariodata/1_x_002sht_2/scenario_1_8_002_02.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -237,8 +287,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000016",
+          "option_id": "choice-option:v1:1_x_002sht_2_1_8_002_02:1_8_002_02:cmd-000016:000",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
@@ -247,38 +297,7 @@
       ]
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーさん、お疲れさま！",
     "episode_label": null

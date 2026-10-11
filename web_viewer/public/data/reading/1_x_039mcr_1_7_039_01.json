@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_039mcr_1_7_039_01",
-  "logical_id": "story-collection:1_x_039mcr_1_7_039_01",
+  "logical_id": "story:1_x_039mcr_1_7_039_01",
   "scenario_id": "1_x_039mcr_1_7_039_01",
   "text_catalog_id": "1_x_039mcr_1_7_039_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_039mcr_1_7_039_01.json",
-    "sha256": "sha256:3dd79053ff8440b470e6b0290e9dcbe78645ef553446a2c0496d623b3c57beee",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:e2c16a0919deef458c3c6abd98b170d0b23f034dbac0fbe9207fbb3aeaab1b78",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:c98e7e1c819f10c69450e491000768ba9f3e6dfbe2c05476918c17563c14dadb",
     "aggregate_source": null,
     "step_count": 8,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_039mcr_1_7_039_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●●●●●●●師匠、\n自分を探しているって聞いて来ました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_039mcr_1_7_039_01:1_7_039_01:cmd-000012:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_039mcr_1_7_039_01",
+          "part_id": "1_7_039_01",
+          "file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+          "command_index": 12,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e08160d678d14682e6ec48e1a4a8be52a70f68eee9b8dd0585440b129fed8f58"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -47,26 +61,35 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_039mcr_1_7_039_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_039_01",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "道流さん、お誕生日おめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_039mcr_1_7_039_01:1_7_039_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_039mcr_1_7_039_01",
+          "part_id": "1_7_039_01",
+          "file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:43f22e1d85a3ee60d6d335168a751243b665418ec531d9e4e37f63d77d8d58af"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -93,21 +116,32 @@
         "row_id": "1_x_039mcr_1_7_039_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_039_01",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ありがとうございます、\n●●●●●●●●●●師匠！　",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_039mcr_1_7_039_01:1_7_039_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_039mcr_1_7_039_01",
+          "part_id": "1_7_039_01",
+          "file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3cfb4eca3aa5de02e2c7bfc54c00be2e9728a7e2cb9eb0f0b1c89b7615e50333"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -123,30 +157,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_039mcr_1_7_039_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_039_01",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "自分を探してまで祝ってくれるなんて、\n感激ッス！！　アイドルにリキが入ります！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_039mcr_1_7_039_01:1_7_039_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_039mcr_1_7_039_01",
+          "part_id": "1_7_039_01",
+          "file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:440fd6e42bc2f7cd2680db2b0ab501af2735bd360c1a5549a94d72a49f5d844c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -163,7 +206,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -172,21 +214,32 @@
         "row_id": "1_x_039mcr_1_7_039_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_039_01",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これからもアイドルの頂点に立つために頑張るんで、\nよろしくお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_039mcr_1_7_039_01:1_7_039_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_039mcr_1_7_039_01",
+          "part_id": "1_7_039_01",
+          "file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ec0d5d108a6ea0deb58aec2c0ead9969c9c0ab2ef2b0f582dc1e8a5840bd0df5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "039mcr",
         "sourceName": "円城寺 道流"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_039mcr_1_7_039_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_039_01",
+        "source_file": "assets/resources/scenariodata/1_x_039mcr/scenario_1_7_039_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●●●●●●●師匠、",
     "episode_label": null

@@ -2,9 +2,10 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { useVoicePlayer } from '../../src/core/useVoicePlayer.js'
 import { StoryAudioSession } from '../../src/core/story-runtime/StoryAudioSession.js'
+import { createCompressedVoiceCache } from '../../src/core/CompressedVoiceCache.js'
 import { FakeAudioContext, FakeAudioElement, fakeVoiceCache, emptyLipStore, deferred, tick, until } from './helpers.mjs'
-function setup({ decode, backendMode = 'auto', lipStore, createAudio } = {}) {
-  const context = new FakeAudioContext({ decode }), element = new FakeAudioElement(), cache = fakeVoiceCache()
+function setup({ decode, backendMode = 'auto', lipStore, createAudio, voiceCache } = {}) {
+  const context = new FakeAudioContext({ decode }), element = new FakeAudioElement(), cache = voiceCache || fakeVoiceCache()
   const session = new StoryAudioSession({ contextFactory: () => context })
   const step = { value: { chara_id: '047shu', dialogue: { voice: 'one.m4a' } } }, index = { value: 0 }, playing = { value: false }
   const player = useVoicePlayer({ spineStageRef: { value: null }, currentStep: step, currentStepIndex: index,
@@ -13,6 +14,24 @@ function setup({ decode, backendMode = 'auto', lipStore, createAudio } = {}) {
     decodeTimeoutMs: 20, voiceTimeoutMs: 100, lipTimeoutMs: 20 })
   return { player, context, element, session, step, index, playing, cache, cleanup: async () => { player.dispose(); await session.dispose() } }
 }
+test('HTTP 200 HTML shell falls through to the real story voice alias', async () => {
+  const urls = []
+  const voiceCache = createCompressedVoiceCache({ fetchImpl: async url => {
+    urls.push(url)
+    return url.includes('_t01_')
+      ? new Response('<html>' + 'x'.repeat(2000), { headers: { 'content-type': 'text/html' } })
+      : new Response(new Uint8Array(2000), { headers: { 'content-type': 'audio/mp4' } })
+  } })
+  const t = setup({ voiceCache })
+  try {
+    t.step.value.dialogue.voice = '1_4_002_07_t01_j1000.m4a'
+    assert.equal(await t.player.playVoice(), true)
+    assert.deepEqual(urls, ['/assets/voice/1_4_002_07_t01_j1000.m4a', '/assets/voice/1_4_002_07_j1000.m4a'])
+    assert.equal(t.player.getDiagnostics().attempt.transport.contentType, 'audio/mp4')
+    assert.equal(t.session.inspect().active_sources, 1)
+  } finally { await t.cleanup() }
+})
+
 test('normal buffer path remains fast and decoded replay reuses PCM', async () => {
   const t = setup()
   assert.equal(await t.player.playVoice(), true)
@@ -21,6 +40,25 @@ test('normal buffer path remains fast and decoded replay reuses PCM', async () =
   assert.equal(t.cache.calls, 1)
   assert.equal(t.session.inspect().active_sources, 1)
   await t.cleanup()
+})
+
+test('voice aliases do not hide server failures or accept an all-HTML response chain', async () => {
+  for (const status of [503, 200]) {
+    const urls = []
+    const voiceCache = createCompressedVoiceCache({ fetchImpl: async url => {
+      urls.push(url)
+      return new Response('<html>' + 'x'.repeat(2000), { status, headers: { 'content-type': 'text/html' } })
+    } })
+    const t = setup({ voiceCache })
+    try {
+      t.step.value.dialogue.voice = '1_4_002_07_t01_j1000.m4a'
+      assert.equal(await t.player.playVoice(), false)
+      assert.equal(urls.length, status === 503 ? 1 : 2)
+      assert.equal(t.session.inspect().active_sources, 0)
+      assert.equal(t.element.playCount, 0)
+      assert.equal(t.player.getDiagnostics().lastFailure.phase, 'fetch-or-prepare')
+    } finally { await t.cleanup() }
+  }
 })
 test('decoder error falls back to the same URL media backend', async () => {
   const t = setup({ decode: async () => { throw new DOMException('AAC decode failed', 'EncodingError') } })

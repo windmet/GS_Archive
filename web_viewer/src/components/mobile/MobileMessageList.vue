@@ -43,13 +43,13 @@ watch(() => props.showTyping, () => nextTick(scrollToBottom))
   padding: 20px 22px 28px;
 }
 
-@media (min-width: 700px) and (max-width: 1099px) {
+@media (min-width: 761px) and (max-width: 1100px) {
   .mobile-message-list {
     padding: 16px 18px 24px;
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .mobile-message-list {
     /* Clear the floating control dock (14px + 52px) above the safe area */
     padding: 14px 12px calc(86px + env(safe-area-inset-bottom));
@@ -60,7 +60,7 @@ watch(() => props.showTyping, () => nextTick(scrollToBottom))
   }
 }
 
-@media (max-height: 760px) and (min-width: 700px) {
+@media (max-height: 760px) and (min-width: 761px) {
   .mobile-message-list {
     padding-top: 12px;
     padding-bottom: 16px;

@@ -52,21 +52,21 @@ const emit = defineEmits(['back', 'select', 'update:modelValue'])
 .file-list { padding: 8px 16px 16px; }
 .file-btn {
   display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px;
-  width: 100%; text-align: left; background: #fff; border: 1px solid #eee;
+  width: 100%; text-align: left; background: var(--gs-surface); border: 1px solid var(--gs-line);
   border-radius: 6px; padding: 8px 12px; margin-bottom: 4px; cursor: pointer;
-  color: #444; font-size: 0.78rem; transition: background 0.15s;
+  color: var(--gs-ink-2); font-size: 0.78rem; transition: background 0.15s;
 }
-.file-btn:hover { background: #f0f4ff; color: #222; }
-.file-btn:disabled { cursor: not-allowed; color: #999; opacity: 0.75; }
-.file-btn-missing { border-style: dashed; background: #f8f8f8; }
-.file-status-icon { display: grid; place-items: center; color: #15978e; }
-.file-btn-missing .file-status-icon { color: #9aa2a9; }
+.file-btn:hover { background: var(--gs-paper); color: var(--gs-ink); }
+.file-btn:disabled { cursor: not-allowed; color: var(--gs-ink-3); opacity: 0.75; }
+.file-btn-missing { border-style: dashed; background: var(--gs-paper); }
+.file-status-icon { display: grid; place-items: center; color: var(--gs-mint-ink); }
+.file-btn-missing .file-status-icon { color: var(--gs-ink-3); }
 .file-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.file-title { font-size: 0.86rem; color: #333; line-height: 1.35; }
-.file-subtitle { font-family: monospace; font-size: 0.7rem; color: #888; line-height: 1.25; overflow-wrap: anywhere; }
-.file-availability { padding: 3px 7px; border-radius: 4px; background: #eaf8f6; color: #13877f; font-size: 0.65rem; white-space: nowrap; }
-.file-btn-missing .file-availability { background: #eceff1; color: #707a82; }
-.empty-state { margin: 28px 0; color: #7a858e; font-size: 0.78rem; text-align: center; }
+.file-title { font-size: 0.86rem; color: var(--gs-ink); line-height: 1.35; }
+.file-subtitle { font-family: monospace; font-size: 0.7rem; color: var(--gs-ink-3); line-height: 1.25; overflow-wrap: anywhere; }
+.file-availability { padding: 3px 7px; border-radius: 4px; background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: 0.65rem; white-space: nowrap; }
+.file-btn-missing .file-availability { background: var(--gs-line); color: var(--gs-ink-3); }
+.empty-state { margin: 28px 0; color: var(--gs-ink-3); font-size: 0.78rem; text-align: center; }
 
 @media (max-width: 560px) {
   .file-list { padding: 8px 10px 16px; }

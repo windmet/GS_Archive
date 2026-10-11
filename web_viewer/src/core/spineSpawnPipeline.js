@@ -1,5 +1,25 @@
 import { createStoryAssetTransport, storyAssetTransport } from './StoryAssetTransport.js'
-import { readSpineAtlasPages } from '../../shared/story/SpineAtlasPages.js'
+import { readSpineAtlasPages, readSpineAtlasPageSizes } from '../../shared/story/SpineAtlasPages.js'
+
+// Some game atlases declare a larger page than the shipped texture (003hok_103_*: 2412 vs 2048).
+// Unity samples with normalized UVs so it renders; Pixi uses pixel frames and rejects the
+// overflowing regions, so stretch the texture to the declared page size to match.
+function fitTextureToAtlasPage(texture, declared) {
+  const base = texture.baseTexture
+  const width = base.realWidth || base.width
+  const height = base.realHeight || base.height
+  if (!declared || (declared.width <= width && declared.height <= height)) return texture
+  const source = base.resource?.source
+  if (!source || typeof document === 'undefined') return texture
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(width, declared.width)
+  canvas.height = Math.max(height, declared.height)
+  canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height)
+  const fitted = texture.constructor.from(canvas)
+  if (base.alphaMode !== undefined) fitted.baseTexture.alphaMode = base.alphaMode
+  fitted.baseTexture.scaleMode = base.scaleMode
+  return fitted
+}
 
 export async function loadAndCreateSpine({
   modelId,
@@ -24,13 +44,14 @@ export async function loadAndCreateSpine({
 
   const atlasText = decodeAtlasText(atlasBuf)
   const textureFiles = readSpineAtlasPages(atlasText)
+  const pageSizes = readSpineAtlasPageSizes(atlasText)
   const textureMap = new Map(await Promise.all(textureFiles.map(async file => {
     const url = await resolveTextureUrl(modelId, file, { allowFallback: textureFiles.length === 1, signal })
     signal?.throwIfAborted()
     const texture = await loadTextureFromUrl(url, { signal })
     signal?.throwIfAborted()
     if (!texture?.baseTexture) throw new Error(`Spine texture unavailable: ${modelId}/${file}`)
-    return [file, texture]
+    return [file, fitTextureToAtlasPage(texture, pageSizes.get(file))]
   })))
 
   const atlas = await new Promise((resolve, reject) => {

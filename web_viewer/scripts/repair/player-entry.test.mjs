@@ -1,7 +1,17 @@
+import { bindResourceNavigation } from '../lib/resource-navigation-harness.mjs'
+import { bindGashaNavigation } from '../lib/gasha-navigation-harness.mjs'
+import { bindCardNavigation } from '../lib/card-navigation-harness.mjs'
+import { bindUnitNavigation } from '../lib/unit-navigation-harness.mjs'
+import { bindIdolFixtureNavigation } from '../lib/idol-navigation-harness.mjs'
+import { bindHomeNavigation } from '../lib/home-navigation-harness.mjs'
+import { bindEventNavigation } from '../lib/event-navigation-harness.mjs'
+import { bindLegacyAliasNavigation } from '../lib/legacy-alias-navigation-harness.mjs'
+import { bindMobileNavigation } from '../lib/mobile-navigation-harness.mjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import vm from 'node:vm'
+import { createHash } from 'node:crypto'
 import { ref } from 'vue'
 import { useArchiveNavigationState } from '../../src/core/useArchiveNavigationState.js'
 import { useStoryPlaybackController } from '../../src/core/useStoryPlaybackController.js'
@@ -11,6 +21,10 @@ import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../
 import { prepareScenario } from '../../src/data/prepareScenario.js'
 import { Preloader } from '../../src/utils/Preloader.js'
 import { deferred, tick, until } from './helpers.mjs'
+import { bindSongNavigation } from '../lib/song-navigation-harness.mjs'
+import { bindStoryNavigation } from '../lib/story-navigation-harness.mjs'
+import { bindStoryArchiveNavigation } from '../lib/story-archive-navigation-harness.mjs'
+import { bindReaderNavigation, createReaderFixtureTransport } from '../lib/reader-navigation-harness.mjs'
 const scenario = { scenario_id: 'test', steps: Array.from({ length: 6 }, (_, i) => ({ step_id: i+1, type: 'adv', state: { bg: `bg${i}` } })) }
 const href = 'https://archive.invalid/?view=player&story_type=main&story_section=101&story=1_4_001_00.json&scenario=episodes%2F1_4_001_00_a.json&start_step=2&end_step=27&return=story_collection&from=%3Fview%3Dstory_catalog'
 function setup(options = {}) {
@@ -144,11 +158,20 @@ function appHarness(t, overrides = {}) {
     loadingPurpose: ref('archive-data'), playbackError: t.controller.error,
     isDirectScenarioEntry, playerReturnRoute, tracePlayer() {}, primeArchiveRouteComponent() {}, captureActiveArchiveView() {}, adoptArchiveViewContext() {},
     writeArchiveRoute: (...args) => writes.push(args), legacyEntryStatus: ref(''), collectionReadModelDetail: ref(null), collectionReadModelStatus: ref('untouched'),
-    loadCollectionDetail: () => { throw Error('parent hydration must not occur before direct player') }, console,
+    collectionReadModelCatalog: ref([{ id: 'main:101', domain: 'main', sectionId: '101', title: 'Main', detail: { url: 'collection:main:101' } }]),
+    readModelClient: { load: () => { throw Error('parent hydration must not occur before direct player') } }, console,
     ...overrides }
   for (const name of [...restoreCode.matchAll(/\+\+(pending\w+)/g)].map(match => match[1])) context[name] = 0
+  // Exercise the real route invalidation/preparation methods; this fixture owns
+  // player restoration rather than the song-view watcher lifecycle.
+  bindStoryArchiveNavigation(appSource, context).stop()
+  bindStoryNavigation(appSource, context).stop(); bindEventNavigation(appSource, context).stop(); bindHomeNavigation(appSource, context).stop(); bindUnitNavigation(appSource, context); bindCardNavigation(appSource, context); bindGashaNavigation(appSource, context); bindResourceNavigation(appSource, context); bindIdolFixtureNavigation(appSource, context)
+  bindSongNavigation(appSource, context).stop()
+  bindMobileNavigation(appSource, context).stop()
+  bindLegacyAliasNavigation(appSource, context).stop()
   vm.createContext(context)
   vm.runInContext(`${applyCode}\n${restoreCode}\nthis.restoreEntry = restoreRoute; this.applyEntry = applyArchiveRoute`, context)
+  bindReaderNavigation(appSource, context).stop()
   return { context, writes }
 }
 
@@ -169,11 +192,14 @@ test('actual App.vue raw deep-link path executes without catalog/collection hydr
 
 test('actual App.vue establishes intent BEFORE awaited parent hydrate; stale success publishes nothing', async () => {
   const gate = deferred(), t = setup(); let seenPending = false
-  const h = appHarness(t, { loadCollectionDetail: () => { seenPending = t.navigation.isPending(); return gate.promise } })
+  const h = appHarness(t, { readModelClient: { load: (_descriptor, options) => {
+    seenPending = t.navigation.isPending()
+    return gate.promise.then(detail => { options.validate(detail); return detail })
+  } } })
   const old = h.context.restoreEntry(playerReturnRoute(readArchiveRoute(href)))
   await tick(); assert.equal(seenPending, true)
   await t.controller.load('new.json')
-  gate.resolve({ id: 'old', view: { collection: { chapters: [] } } })
+  gate.resolve({ id: 'main:101', view: { collection: { domain: 'main', sectionId: '101', chapters: [] }, readingEntries: [] } })
   await old
   assert.equal(t.state.currentScenarioFile.value, 'new.json')
   assert.equal(h.context.collectionReadModelDetail.value, null)
@@ -182,11 +208,32 @@ test('actual App.vue establishes intent BEFORE awaited parent hydrate; stale suc
   t.controller.dispose()
 })
 
-test('Reader and synthetic preview are excluded from raw shortcut; existing revision proof is kept', () => {
+test('Reader and synthetic preview are excluded from raw shortcut; actual Reader rejects forged source and position', async () => {
   const route = readArchiveRoute(href)
   assert.equal(isDirectScenarioEntry({ ...route, returnView: 'reader' }), false)
   assert.equal(isDirectScenarioEntry({ view: 'player', card: '001tom_sr07', voice: 'touch01' }), false)
-  assert.match(appSource, /route\.scenario !== target\.file/)
-  assert.match(appSource, /route\.initialStep !== target\.initialStep/)
-  assert.match(appSource, /readingPlaybackTarget\(readingState\.value\.document/)
+  const transport = createReaderFixtureTransport()
+  const document = JSON.parse(await readFile(new URL('../../public/data/reading/1_4_001_01_d.json', import.meta.url), 'utf8'))
+  document.source = { file:'reader-proof.json', sha256:`sha256:${createHash('sha256').update(JSON.stringify(scenario)).digest('hex')}`, step_count:scenario.steps.length }
+  document.playback = { file:document.source.file,start_step_index:0,end_step_index:scenario.steps.length-1 }
+  document.rows = document.rows.slice(0,1)
+  document.rows[0].anchor.step_id=1;document.rows[0].anchor.step_index=0;document.rows[0].visual.stepId=1
+  document.controls=[]
+  const entry=transport.register(document)
+  const restoreFetch=transport.install(), t=setup()
+  try {
+    const h=appHarness(t,{readModelClient:transport.readModelClient})
+    const pinned={view:'player',returnView:'reader',reading:document.document_id,readingRow:document.rows[0].anchor.row_id,
+      readingRev:entry.sha256,scenario:document.source.file,startStep:1,endStep:document.source.step_count,initialStep:1}
+    for(const forged of [{scenario:'wrong-source.json'}, {initialStep:2}, {readingRev:`sha256:${'0'.repeat(64)}`}]) {
+      await h.context.applyEntry({...pinned,...forged})
+      assert.equal(t.state.view.value,'reader')
+      assert.equal(t.controller.currentScenario.value,null)
+      assert.equal(t.prepared.length,0,'invalid Reader proof is rejected before scenario preparation')
+      assert.match(h.context.readingPlaybackNotice.value,/范围与正文定位不一致|版本已变化/)
+    }
+    await h.context.applyEntry(pinned)
+    assert.equal(t.state.view.value,'player','same actual App path accepts a valid Reader proof')
+    assert.equal(t.prepared.length,1)
+  } finally { t.controller.dispose();restoreFetch() }
 })

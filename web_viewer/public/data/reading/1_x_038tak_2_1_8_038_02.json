@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_038tak_2_1_8_038_02",
-  "logical_id": "story-collection:1_x_038tak_2_1_8_038_02",
+  "logical_id": "story:1_x_038tak_2_1_8_038_02",
   "scenario_id": "1_x_038tak_2_1_8_038_02",
   "text_catalog_id": "1_x_038tak_2_1_8_038_02",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_038tak_2_1_8_038_02.json",
-    "sha256": "sha256:05d58bf0d3920d247bfe292ca1b27fef3d49aa2cb5505bb4f3a15034c932da6f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:3fd83b8e54b51baac98e82cff16c93813e722b165722615ddd28d5ec6ea30baa",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_038tak_2_1_8_038_02.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー。収録が始まる前に、\nちょっといいか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_038tak_2_1_8_038_02:1_8_038_02:cmd-000013:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_038tak_2_1_8_038_02",
+          "part_id": "1_8_038_02",
+          "file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+          "command_index": 13,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c3e21c89c8d1d1b4cd7a6b0774171117128df13f978f3114ec2b4fdaaaf456f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -48,7 +62,6 @@
         "stepId": 3
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -57,21 +70,32 @@
         "row_id": "1_x_038tak_2_1_8_038_02:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_038_02",
+        "source_file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日おめでとう。\n合流した時に言いそびれて悪い。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_038tak_2_1_8_038_02:1_8_038_02:cmd-000022:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_038tak_2_1_8_038_02",
+          "part_id": "1_8_038_02",
+          "file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+          "command_index": 22,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d9e6571186264e7583d9e02f14347f6ada23848f5f71f0db8149d4b9473894aa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -88,7 +112,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -97,17 +120,28 @@
         "row_id": "1_x_038tak_2_1_8_038_02:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_038_02",
+        "source_file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "いえ、お祝いしていただけるだけでとても\n嬉しいです！　ありがとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_038tak_2_1_8_038_02:1_8_038_02:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_038tak_2_1_8_038_02",
+          "part_id": "1_8_038_02",
+          "file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:db48bf1adb4cef807ea327f69205bb7b13d054499390895f9ae39f20dcf56445"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_038tak_2_1_8_038_02:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_038_02",
+        "source_file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "アンタの誕生日をいい日にするためにも、\nこの後の収録で、しっかり成果を上げてくる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_038tak_2_1_8_038_02:1_8_038_02:cmd-000029:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_038tak_2_1_8_038_02",
+          "part_id": "1_8_038_02",
+          "file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+          "command_index": 29,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c59723cff12a836fdeaa0bf67709538f2b076b5c529ec84d2de0f27431d4194"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -165,7 +210,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -174,21 +218,32 @@
         "row_id": "1_x_038tak_2_1_8_038_02:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_038_02",
+        "source_file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それじゃ、俺たちは収録に行ってくる。\nいい1日にしてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_038tak_2_1_8_038_02:1_8_038_02:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_038tak_2_1_8_038_02",
+          "part_id": "1_8_038_02",
+          "file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6e0451a301d573767014682a8c77d14ce03cbfac970f76bc607ad1a2b7857f15"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "大河 タケル"
       },
       "performance": {
@@ -205,7 +260,6 @@
         "stepId": 8
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -214,47 +268,16 @@
         "row_id": "1_x_038tak_2_1_8_038_02:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_038_02",
+        "source_file": "assets/resources/scenariodata/1_x_038tak_2/scenario_1_8_038_02.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー。収録が始まる前に、",
     "episode_label": null

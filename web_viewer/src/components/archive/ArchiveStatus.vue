@@ -1,18 +1,11 @@
 <template>
   <main v-if="manifest" class="status-screen">
-    <section class="status-summary">
-      <div>
-        <span>ARCHIVE HEALTH</span>
-        <h2>数据与资源状态</h2>
-        <p>Schema {{ manifest.schema_version }} · 数据更新 {{ formatDate(manifest.data_updated_at) }}</p>
-      </div>
-      <button @click="emit('open-spine-lab')">
-        <ScanSearch :size="19" />
-        <span>Spine 实验室</span>
-        <ChevronRight :size="17" />
-      </button>
-    </section>
+    <ArchiveResourceAudit />
 
+    <ArchiveTranslationAudit />
+
+    <details class="historical-status"><summary>历史覆盖率与可播放性快照 · {{ formatDateTime(manifest.generated_at) }}（不代表当前）</summary>
+    <p class="scope-note">旧资料与验证记录保留用于对照，未重新运行全量旧验证；以下“通过”仅属于该历史快照。</p>
     <section v-if="verification" class="verification-section" aria-labelledby="verification-title">
       <div class="section-heading">
         <div>
@@ -106,11 +99,14 @@
         </code>
       </div>
     </section>
+    </details>
   </main>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import ArchiveResourceAudit from './ArchiveResourceAudit.vue'
+import ArchiveTranslationAudit from './ArchiveTranslationAudit.vue'
 import { ChevronRight, ScanSearch } from '@lucide/vue'
 
 const props = defineProps({
@@ -149,7 +145,7 @@ const verificationItems = computed(() => {
       tone: Number(homeVoices.ratio || 0) === 1 ? 'ok' : 'warn',
     },
     {
-      label: '卡片剧情',
+      label: '卡片电话',
       value: `${(Number(cardScenarios.ratio || 0) * 100).toFixed(1)}%`,
       detail: `${formatCount(cardScenarios.available)} / ${formatCount(cardScenarios.references)} links`,
       tone: Number(cardScenarios.ratio || 0) === 1 ? 'ok' : 'warn',
@@ -189,7 +185,7 @@ const coverageItems = computed(() => {
     ['卡片详情资料', { available: coverage.card_details?.cards, total: props.manifest?.counts?.cards, ratio: coverage.card_details?.cards / (props.manifest?.counts?.cards || 1) }],
     ['卡池 Banner', { available: coverage.gashas?.banner_assets, total: coverage.gashas?.total, ratio: coverage.gashas?.banner_assets / (coverage.gashas?.total || 1) }],
     ['首页语音关联', coverage.card_home_voices],
-    ['卡片剧情关联', coverage.card_scenarios],
+    ['卡片电话关联', coverage.card_scenarios],
     ['双态卡普通语音', { available: coverage.card_text_voices?.normal_available, total: coverage.card_text_voices?.normal_expected, ratio: coverage.card_text_voices?.normal_ratio }],
     ['特训卡面语音', { available: coverage.card_text_voices?.awakened_available, total: coverage.card_text_voices?.total_cards, ratio: coverage.card_text_voices?.awakened_ratio }],
     ['双态卡普通图', { available: coverage.card_icons?.normal_available, total: coverage.card_icons?.normal_expected, ratio: coverage.card_icons?.normal_ratio }],
@@ -315,7 +311,7 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
   .verification-grid > div:nth-child(odd) { border-left: 0; }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 760px) {
   .status-screen { padding: 12px; }
   .status-summary { align-items: stretch; flex-direction: column; padding: 20px; }
   .status-summary button { width: 100%; }
@@ -326,4 +322,9 @@ const formatDateTime = value => value ? new Intl.DateTimeFormat('zh-CN', { dateS
   .inventory-grid div:nth-child(odd) { padding-left: 0; border-left: 0; }
   .voice-missing-list { grid-template-columns: 1fr; }
 }
+</style>
+
+<style scoped>
+.historical-status { margin-top:24px; color:#6d7f89; }
+.historical-status>summary { padding:14px; border:1px solid #dde7eb; border-radius:8px; cursor:pointer; background:#f0f5f7; font-size:13px; }
 </style>

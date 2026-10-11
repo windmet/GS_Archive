@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "023har_402_2_4_023_02_09_b",
-  "logical_id": "story-collection:023har_402_2_4_023_02_09_b",
+  "logical_id": "story:023har_402_2_4_023_02_09_b",
   "scenario_id": "023har_402_2_4_023_02_09_b",
   "text_catalog_id": "023har_402_2_4_023_02_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "023har_402_2_4_023_02_09_b.json",
-    "sha256": "sha256:21de800c2c2a01f7b3698f406a9207dbf7690439c6f821b6b5465c026af9400b",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:75e7ac6a8779091d629a96b07a0353c949a3586db6b50566e83a76bbece9f2e3",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:aadfaa899c13bb29865a3736416f6f01951263e0699d65ce69c5b19da383a116",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "023har_402_2_4_023_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー？\nお疲れさま！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:26279a9eef0238496b15fef0f5772a1ca94fcc4efdb4feea1c31c7c533185108"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "今日は途中で現場を\n離れてすみません",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:10b2d82d3c9624e8e0cb4faeaf02c7ec3d22b503d5a9e79ea8558b10d1ab402f"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "023har_402_2_4_023_02_09_b:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000008",
+        "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000008:000",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "大丈夫、大丈夫。\n忙しいのにありがとな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb4b53b698f7961b71d822a837c723fb48922fffa45f0d64b3330ab0d6ea0b51"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -152,7 +184,18 @@
     {
       "kind": "choice",
       "source_text": "あの後、撮影は\nどうなりましたか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000013:choice_short:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 13,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:40093304be662e10c8883e52ae2fbb79e52bbbb4225861553f3a0387d2f4721c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -179,14 +222,14 @@
         "row_id": "023har_402_2_4_023_02_09_b:step-5:option-0",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000013",
+        "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000013:000",
         "source_label": "phone_select2",
         "target_step_id": 6,
         "target_step_index": 5,
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "ばっちり！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c00058f0c888e4b4ef5ce5469b5917f5035d93e2aa820d52c5edf392b42454e1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "雨彦さんと漣もスムーズに終わったぜ。\n3人でミーティングしたりしたかいがあったな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ac0f71777ef68e9162149b7b1b5d630866f28053d2b51f318ed204c3f5098227"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -277,7 +338,18 @@
     {
       "kind": "choice",
       "source_text": "それはよかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6f7b9ae5e64e059bacc7111e8cf872b54f53667af053ac22a9b412040c991e9e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -304,14 +376,14 @@
         "row_id": "023har_402_2_4_023_02_09_b:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 19,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019",
+        "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019:000",
         "source_label": "phone_select3",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -322,7 +394,18 @@
     {
       "kind": "choice",
       "source_text": "さすがです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f00b0fd80a90eb7457c3c3bf067ee09e777bf08f5c3fadced0b88675d136247e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -349,14 +432,14 @@
         "row_id": "023har_402_2_4_023_02_09_b:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 19,
+        "command_end": 20
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019",
+        "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000020:001",
         "source_label": "phone_select3",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -367,11 +450,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとな。オレはもう帰るんだけど、\n●●●●プロデューサーはまだ仕事だっけ？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0dea04cb382769533a071971bb991749d57281ed4fe0e78dd569b0b42e40297c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -387,19 +481,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -407,11 +499,22 @@
     {
       "kind": "dialogue",
       "source_text": "あんまり、無理すんなよ。疲れたらラッキー\nアイテムのドーナツを食べるといいぜ！　それじゃ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "023har_402_2_4_023_02_09_b",
+          "part_id": "2_4_023_02_09_b",
+          "file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fadcccba15b28592f8a3ae1b17b634e0282139bb659f78989bd16511217e5db0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "023har",
         "sourceName": "若里 春名"
       },
       "performance": {
@@ -427,19 +530,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "023har_402_2_4_023_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_023_02_09_b",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -452,8 +553,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000008",
+          "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000008:000",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
@@ -467,8 +568,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000013",
+          "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000013:000",
           "source_label": "phone_select2",
           "target_step_id": 6,
           "target_step_index": 5,
@@ -482,86 +583,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019",
+          "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019:000",
           "source_label": "phone_select3",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000019",
+          "option_id": "choice-option:v1:023har_402_2_4_023_02_09_b:2_4_023_02_09_b:cmd-000020:001",
           "source_label": "phone_select3",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/023har_402/scenario_2_4_023_02_09_b.json",
+        "raw_sha256": "sha256:fda5092ab68687d4e478b86a0a91b74bf9d9e440544d270b083910f7c3d9072b",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          19,
+          20
+        ],
+        "join_command": 21,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー？",
     "episode_label": null

@@ -1,6 +1,14 @@
 // Product-facing song data is projected from evidence plus the canonical identity dictionary.
 // Resource existence is not a playback guarantee. Keep collected media and playable media distinct.
 import { buildIdolReference } from './IdolReferencePresentation.js'
+import { attributeLabel } from './AttributeLabel.js'
+
+// Who sings a song that belongs to no single unit: [label, explanation]. Shared with the chart tool.
+export const SONG_PERFORMER_SCOPES = Object.freeze({
+  configurable_formation: ['自由编成', '演唱成员随编成而变化，不表示全员同时合唱。'],
+  fixed_special_lineup: ['特别编成', '由以下成员共同演唱，不归属于单一组合。'],
+  unspecified_special: ['特别演出', '演唱成员尚未明确收录。'],
+})
 
 export function buildSongPresentation(song, identity, { playbackTrack = null, audioExperiment = null, manifest = null } = {}) {
   if (!song) return null
@@ -15,12 +23,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     return { id, displayName: units.get(id)?.unit_name || '组合待确认', actionable: Boolean(units.get(id)?.unit_name) }
   }
   const mapping = song.performance_mapping || {}
-  const scopes = {
-    configurable_formation: ['自由编成', '演唱成员随编成而变化，不表示全员同时合唱。'],
-    fixed_special_lineup: ['特别编成', '由以下成员共同演唱，不归属于单一组合。'],
-    unspecified_special: ['特别演出', '演唱成员尚未明确收录。'],
-  }
-  const scope = scopes[mapping.performer_scope] || ['演唱信息', '演唱范围尚待确认。']
+  const scope = SONG_PERFORMER_SCOPES[mapping.performer_scope] || ['演唱信息', '演唱范围尚待确认。']
   const experiment = audioExperiment ? {
     ...audioExperiment,
     solo_tracks: Object.fromEntries(Object.entries(audioExperiment.solo_tracks || {}).map(([key, track]) => [key, {
@@ -31,6 +34,8 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
   const openAt = Number(song.open_at)
   return {
     id: song.song_code, title: song.title || '曲名待确认', kana: song.kana || '', jacketUrl: song.jacket_url,
+    attributeLabel: attributeLabel(song.attribute?.key) || '待确认',
+    gameplay: song.gameplay || null,
     parentId: song.parent_song_code,
     special: song.archive_status === 'special',
     openDate: song.archive_status === 'special' ? '特殊版本' : song.archive_status === 'initial' ? '初始收录'

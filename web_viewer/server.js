@@ -86,6 +86,11 @@ export function createArchiveServer({ distDir = DIST_DIR, assetResolver = create
     return file ? serveFile(res, file, 86400) : false
   }
 
+  function handleDomainImage(urlPath, res) {
+    const file=assetResolver.domainImagePath(decodeURIComponent(urlPath.split('?')[0]))
+    return file ? serveFile(res,file,86400) : false
+  }
+
   // ── Static file serving from dist/ ──
   function handleStatic(urlPath, res) {
     // Normalise: strip query strings, decode, remove leading /
@@ -106,6 +111,11 @@ export function createArchiveServer({ distDir = DIST_DIR, assetResolver = create
 
   return http.createServer((req, res) => {
     const urlPath = req.url || '/'
+    if (urlPath.startsWith('/assets/domain-images/')) {
+      if (handleDomainImage(urlPath.slice('/assets/domain-images'.length),res)) return
+      // A missing PNG must not be answered with the SPA HTML document.
+      res.statusCode=404; res.end('Image not found'); return
+    }
 
     // Route: lipsync
     if (urlPath.startsWith('/assets/lipsync/adxlip/')) {

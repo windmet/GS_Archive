@@ -13,7 +13,7 @@
  *      when the history path is empty;
  *   5. future explicit presentation_context fields win over inference.
  */
-import { getUnitCodeByCharaId, normalizeUnitCode } from '../../utils/UnitNameMap.js'
+import { getUnitCodeByCharaId, normalizeUnitCode, UNIT_CODE_TO_NAME } from '../../utils/UnitNameMap.js'
 import { IDOL_ID_TO_NAME } from '../../utils/IdolNameMap.js'
 
 const COMMUNICATION_TYPES = new Set(['talk', 'talk_stamp', 'call'])
@@ -53,6 +53,31 @@ function charaIdFromScenario(scenarioId) {
     .find(candidate => IDOL_ID_TO_NAME[candidate] && getUnitCodeByCharaId(candidate)) || ''
 }
 
+/** Idols who post in the chat around `stepIndex`: the run of chat steps up to a scene boundary. */
+function talkParticipants(steps, stepIndex) {
+  if (!Array.isArray(steps) || stepIndex == null) return []
+  const inChat = s => s && !MODE_BOUNDARIES.has(s.type) && (modeFromStep(s) === 'talk' || s.type === 'choice')
+  let start = stepIndex, end = stepIndex
+  while (start > 0 && inChat(steps[start - 1])) start--
+  while (end < steps.length - 1 && inChat(steps[end + 1])) end++
+  const members = []
+  for (let i = start; i <= end; i++) {
+    // Stamps can carry a costume-coded id (`047shu_001`); the idol is its first six characters.
+    const code = String(steps[i]?.chara_id || steps[i]?.stamp?.chara_id || '').slice(0, 6)
+    if (IDOL_ID_TO_NAME[code] && !members.includes(code)) members.push(code)
+  }
+  return members
+}
+
+/**
+ * The idol whose room a one-to-one call or chat belongs to, read from the scenario id
+ * (`040ren_403_…`, `1_x_029ass_…`). Others can speak in it (Haruna and Amehiko in one of
+ * Ren's card calls), but the room — background, theme, caller card — stays its owner's.
+ */
+export function communicationOwnerId(scenarioId) {
+  return charaIdFromScenario(String(scenarioId || '').replace(/\.json$/, ''))
+}
+
 /**
  * @param {object} input
  * @param {object} input.step current step
@@ -63,7 +88,9 @@ function charaIdFromScenario(scenarioId) {
  * @returns {{mode: 'talk'|'call'|null, phase: 'dialogue'|'choice'|'reply', unitCode: string|null, primaryCharaId: string, isGroup: boolean}}
  */
 export function resolveCommunicationContext({ step, stepIndex, historyStack, steps, scenarioId }) {
-  const isGroup = String(scenarioId || '').startsWith('8_2_')
+  // A unit chat is compiled both as `8_2_…` and under a member as `1_x_<idol>_8_2_…`; both are
+  // group threads and keep the unit's theme.
+  let isGroup = /(?:^|_)8_2_/.test(String(scenarioId || ''))
   const explicitMode = modeFromStep(step)
   const phase = step?.type === 'choice' ? 'choice' : 'dialogue'
 
@@ -109,5 +136,27 @@ export function resolveCommunicationContext({ step, stepIndex, historyStack, ste
     unitCode = getUnitCodeByCharaId(primaryCharaId) || null
   }
 
-  return { mode, phase, unitCode, primaryCharaId, isGroup }
+  const thread = step?.presentation_context?.thread || source?.presentation_context?.thread || null
+  const proven = thread && thread.provenance?.kind === 'raw-talk-start'
+    && /^sha256:[a-f0-9]{64}$/.test(thread.provenance.raw_sha256 || '')
+  if (proven) {
+    isGroup = thread.kind === 'group'
+    // Thread identity owns chat title/theme; the current speaker never changes it.
+    unitCode = isGroup && UNIT_CODE_TO_NAME[thread.unit_code] ? thread.unit_code : null
+  } else if (mode === 'talk' && !isGroup) {
+    // As in the game, every chat sits on a unit's background and the speaker never changes it.
+    // A chat inside a story with two or more idols of one unit is that unit's group chat;
+    // otherwise the chat is one-to-one and takes its owner's unit.
+    const members = talkParticipants(steps, stepIndex)
+    const units = new Set(members.map(code => getUnitCodeByCharaId(code)).filter(Boolean))
+    if (!scenarioCharaId && members.length > 1 && units.size === 1) {
+      isGroup = true
+      unitCode = [...units][0]
+    } else {
+      unitCode = getUnitCodeByCharaId(scenarioCharaId || members[0] || primaryCharaId) || null
+    }
+  }
+  return { mode, phase, unitCode, primaryCharaId, isGroup, ownerCharaId: scenarioCharaId,
+    threadId: proven ? thread.id : null, threadTitle: proven && isGroup ? (thread.title || UNIT_CODE_TO_NAME[unitCode] || '') : '',
+    threadProvenance: proven ? thread.provenance : null }
 }

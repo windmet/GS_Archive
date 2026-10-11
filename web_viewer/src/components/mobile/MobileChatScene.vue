@@ -77,7 +77,7 @@ function stepToMessage(step) {
   const stamp = step.stamp || null
   const rawSpeaker = d.speaker || ''
   const display = localization?.resolveDialogue(d) || { text: resolveTextContent(d), view: null }
-  let speaker = cleanSpeaker(stamp?.speaker || display?.speaker || rawSpeaker)
+  let speaker = cleanSpeaker(display?.speaker || stamp?.speaker || rawSpeaker)
   const sourceSpeaker = cleanSpeaker(stamp?.speaker || rawSpeaker)
   const sourceCharaId = step.presentation_context?.primary_chara_id
     || step.presentation_context?.primaryCharaId
@@ -135,6 +135,8 @@ const historyMessages = computed(() => {
   const talkMap = talkByIndex.value
 
   for (const idx of path) {
+    const thread = props.steps?.[idx]?.presentation_context?.thread
+    if (context.value.threadId && thread?.id !== context.value.threadId) continue
     const chosenText = props.choiceTexts[idx]
     if (chosenText) {
       const fallbackText = (typeof chosenText === 'string' ? chosenText : chosenText.source_text) || ''
@@ -151,9 +153,6 @@ const historyMessages = computed(() => {
 
 // ── Unit / theme / title ──
 const unitCode = computed(() => {
-  const sid = props.scenarioId || ''
-  const m = sid.match(/8_2_x_(\d{3}[a-z0-9]{3})/)
-  if (m) return normalizeUnitCode(m[1])
   return context.value.unitCode || null
 })
 
@@ -172,22 +171,16 @@ const deviceSurfaceStyle = computed(() => {
 })
 
 const chatTitle = computed(() => {
-  const sid = props.scenarioId || ''
-  if (sid.startsWith('8_2_')) {
-    const uc = unitCode.value
-    if (uc && UNIT_CODE_TO_NAME[uc]) return UNIT_CODE_TO_NAME[uc]
-  }
-  const names = new Set()
-  for (const msg of historyMessages.value) {
-    if (!msg.isProducer && msg.speaker) names.add(cleanSpeaker(msg.speaker))
-  }
-  const arr = Array.from(names)
-  if (arr.length === 0) {
-    const inheritedName = IDOL_ID_TO_NAME[context.value.primaryCharaId]
-    return inheritedName || 'トーク'
-  }
-  if (arr.length === 1) return arr[0]
-  if (arr.length === 2) return arr.join('、')
-  return arr[0] + ' 他'
+  // The room names the chat, as in the game: a unit chat by its unit, a one-to-one chat by its
+  // owner. Never a list of whoever has spoken so far.
+  if (context.value.threadTitle) return context.value.threadTitle
+  if (context.value.isGroup && UNIT_CODE_TO_NAME[unitCode.value]) return UNIT_CODE_TO_NAME[unitCode.value]
+  const owner = context.value.ownerCharaId || context.value.primaryCharaId
+  // The owner's name as the chat itself shows it (translated when available).
+  const ownLine = historyMessages.value.find(msg => msg.charaId === owner && msg.speaker)
+  if (ownLine) return cleanSpeaker(ownLine.speaker)
+  if (IDOL_ID_TO_NAME[owner]) return IDOL_ID_TO_NAME[owner]
+  const firstSpeaker = historyMessages.value.find(msg => !msg.isProducer && msg.speaker)
+  return firstSpeaker ? cleanSpeaker(firstSpeaker.speaker) : 'トーク'
 })
 </script>

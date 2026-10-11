@@ -1,11 +1,14 @@
 <template>
   <div class="chibi-lab">
     <header class="lab-header">
-      <ArchiveBackAction class="back-button" :label="backLabel" @back="emit('back')" />
-      <div class="header-divider" aria-hidden="true"></div>
-      <h1>舞台小人实验室</h1>
-      <button class="stage-link" type="button" @click="emit('open-stage')">多人舞台</button>
-      <div class="header-meta">Spine 3.8 · 实验预览</div>
+      <ArchiveBackAction class="back-button" :label="backLabel" icon-only @back="emit('back')" />
+      <div class="lab-title">
+        <h1>小人动作</h1>
+        <p>{{ [selectedCharacter ? spineIdolName(selectedCharacter) : '', selectedCostume ? spineCostumeLabel(selectedCostume) : '', selectedMotion?.label || ''].filter(Boolean).join(' · ') }}</p>
+      </div>
+      <div v-if="maintainer" class="header-meta">Spine 3.8 · 实验预览</div>
+      <button class="stage-link" type="button" aria-label="多人舞台" title="多人舞台" @click="emit('open-stage')"><UsersRound :size="20" aria-hidden="true" /></button>
+      <ArchiveLanguageSwitch on-dark />
     </header>
 
     <main class="lab-workspace">
@@ -14,7 +17,7 @@
         <div ref="canvasRef" class="stage-canvas"></div>
 
         <div v-if="loading" class="stage-state stage-state--loading">
-          <GsLoadingIndicator :message="statusText" tone="dark" />
+          <GsLoadingIndicator :message="statusText" tone="light" />
         </div>
         <div v-else-if="errorText" class="stage-state error-state">
           <CircleAlert :size="26" />
@@ -55,7 +58,7 @@
               <span>角色</span>
               <select v-model="selectedCharacterId" @change="loadSelectedCharacter">
                 <option v-for="character in characters" :key="character.id" :value="character.id">
-                  {{ character.name }} · {{ character.id }}
+                  {{ spineIdolName(character) }}
                 </option>
               </select>
             </label>
@@ -63,7 +66,7 @@
               <span>服装</span>
               <select v-model="selectedCostumeId" @change="loadSelectedCharacter">
                 <option v-for="costume in costumes" :key="costume.id" :value="costume.id">
-                  {{ costume.label }}
+                  {{ spineCostumeLabel(costume) }}
                 </option>
               </select>
             </label>
@@ -127,7 +130,7 @@
               <strong>{{ selectedSongAudio ? (audioReady ? '已加载 · 音频主时钟' : '正在加载') : '无对应音频' }}</strong>
               <small v-if="selectedSongAudio">{{ formatTime(selectedSongAudio.duration) }}</small>
             </div>
-            <small v-if="audioError" class="audio-error">{{ audioError }}</small>
+            <ArchiveErrorNote v-if="audioError" tag="small" class="audio-error">{{ audioError }}</ArchiveErrorNote>
             <label class="song-position">
               <span>站位</span>
               <select v-model.number="selectedPosition" @change="seekChoreography">
@@ -176,7 +179,7 @@
             </label>
           </section>
 
-          <section class="resource-section">
+          <section v-if="maintainer" class="resource-section">
             <h2>当前资源</h2>
             <dl>
               <div><dt>角色</dt><dd>{{ selectedCharacter?.id || '—' }}</dd></div>
@@ -193,6 +196,9 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
+import ArchiveErrorNote from './archive/ArchiveErrorNote.vue'
+import { isMaintainerMode } from '../core/maintainerMode.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import * as PIXI from 'pixi.js'
@@ -205,6 +211,7 @@ import {
   RotateCcw,
   SkipBack,
   SkipForward,
+  UsersRound,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
 import {
@@ -219,14 +226,25 @@ import {
   playLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
+import { stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
+import { archiveText } from './archive/useArchiveCostumeText.js'
 
-defineProps({ backLabel: { type: String, default: '返回资料馆' } })
+const props = defineProps({
+  backLabel: { type: String, default: '返回资料馆' },
+  idolName: { type: Function, default: (_id, fallback) => fallback || '' },
+})
 const emit = defineEmits(['back', 'open-stage'])
+function spineIdolName(character) {
+  return character ? props.idolName(character.id, character.name) || character.name || '姓名待确认' : ''
+}
+function spineCostumeLabel(costume) { return archiveText('costume', sourceStageCostumeLabel(costume)) }
 const canvasRef = ref(null)
 const manifest = ref(null)
 const choreography = ref(null)
 const musicIndex = ref(null)
 const selectedCharacterId = ref('')
+// Engine version and resource paths are maintainer notes, not reader copy.
+const maintainer = isMaintainerMode()
 const selectedCostumeId = ref('')
 const selectedPackId = ref('common')
 const selectedMotionId = ref(12)
@@ -392,7 +410,7 @@ async function loadSelectedCharacter() {
   songMotionsReady.value = false
   runtimeDiagnostics.value = null
   errorText.value = ''
-  statusText.value = `正在组合 ${character.name} 的骨架与服装…`
+  statusText.value = `正在组合 ${spineIdolName(character)} 的骨架与服装…`
   destroyLiveChibi(runtime)
   runtime = null
 
@@ -725,129 +743,136 @@ function stopChoreography(reset = false) {
 
 <style scoped>
 .chibi-lab {
-  --ink: #08111f;
-  --panel: #132235;
-  --panel-deep: #0e1a2a;
-  --line: rgba(172, 197, 224, 0.18);
-  --text: #f2f6fb;
-  --muted: #91a4ba;
-  --accent: #3c9cff;
+  /* Tool shell: dark stage ground, chrome top bar, white panel (see GS_UI_CONSTITUTION). */
+  --ink: #0b1424;
+  --panel: var(--gs-surface);
+  --panel-deep: var(--gs-surface);
+  --line: var(--gs-line);
+  --text: var(--gs-ink);
+  --muted: var(--gs-ink-3);
+  --accent: var(--gs-mint);
   position: fixed;
   inset: 0;
   z-index: 100;
   color: var(--text);
   background: var(--ink);
-  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--gs-font-body);
 }
 
 .lab-header {
   position: absolute;
   inset: 0 0 auto 0;
   z-index: 4;
-  height: 62px;
+  height: 56px;
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 0 22px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(7, 17, 31, 0.96);
+  gap: 8px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  color: var(--gs-chrome-ink);
+  background: var(--gs-chrome);
 }
 
-.lab-header h1 { margin: 0; font-size: 20px; font-weight: 680; letter-spacing: 0.02em; }
-.stage-link { min-height: 44px; padding: 0 13px; color: #dcecff; background: rgba(31, 112, 190, 0.25); border: 1px solid rgba(73, 161, 244, 0.46); border-radius: 7px; font: 650 12px/1 inherit; cursor: pointer; }
-.stage-link:hover { background: rgba(38, 130, 218, 0.36); }
-.header-meta { margin-left: auto; color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
-.header-divider { width: 1px; height: 26px; background: var(--line); }
-.back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
+.lab-title { flex: 1; min-width: 0; }
+.lab-header h1 { margin: 0; color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.lab-title p { margin: 2px 0 0; overflow: hidden; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); text-overflow: ellipsis; white-space: nowrap; }
+.stage-link { display: inline-grid; flex: 0 0 44px; place-items: center; width: 44px; height: 44px; padding: 0; color: var(--gs-chrome-ink); background: transparent; border: 0; border-radius: var(--gs-radius-control); cursor: pointer; }
+.header-meta { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); white-space: nowrap; }
+.back-button { --archive-back-ink: var(--gs-chrome-ink); --archive-back-hover: var(--gs-chrome-hover); border-radius: var(--gs-radius-control); }
 
-.lab-workspace { position: absolute; inset: 62px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 0; }
-.stage-shell { position: relative; min-width: 0; overflow: hidden; background: #101a26; }
+.lab-workspace { position: absolute; inset: 56px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: 0; }
+.stage-shell { position: relative; min-width: 0; overflow: hidden; background: var(--ink); }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4, 9, 17, 0.25), rgba(4, 9, 17, 0.08) 56%, rgba(4, 9, 17, 0.48)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.72) brightness(0.62); transform: scale(1.015); }
 .stage-shell::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 52%, transparent 22%, rgba(3, 8, 15, 0.34) 92%); }
 .stage-canvas { position: absolute; inset: 0; z-index: 1; }
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
 
-.stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: #c8d6e6; font-size: 13px; background: rgba(7, 14, 24, 0.46); backdrop-filter: blur(4px); }
+.stage-state { position: absolute; z-index: 3; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 11px; color: var(--gs-chrome-ink); font-size: var(--gs-text-ui); background: rgb(11 20 36 / 88%); backdrop-filter: blur(4px); }
 .loading-icon { animation: spin 1s linear infinite; }
-.error-state { text-align: center; color: #ffc9c9; }
-.error-state span { max-width: 420px; color: #aebbc9; line-height: 1.6; }
+.error-state { text-align: center; color: var(--gs-surface); }
+.error-state span { max-width: 420px; color: var(--gs-chrome-ink); line-height: 1.6; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 82px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 18px; padding: 0 28px; border: 1px solid rgba(170, 199, 231, 0.28); border-radius: 15px; background: rgba(8, 18, 32, 0.9); box-shadow: 0 18px 55px rgba(0, 0, 0, 0.38); backdrop-filter: blur(16px); }
+.transport { position: absolute; z-index: 3; left: 50%; bottom: 30px; width: min(620px, calc(100% - 48px)); min-height: 68px; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 8px 16px; box-sizing: border-box; border: 0; border-radius: var(--gs-radius-panel); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .transport.disabled { pointer-events: none; opacity: 0.55; }
-.transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 58px; color: #dce8f4; background: #142438; border: 1px solid rgba(173, 202, 232, 0.28); border-radius: 8px; cursor: pointer; }
-.transport button:hover, .playback-buttons button:hover { border-color: rgba(79, 164, 255, 0.75); background: #192e47; }
-.transport .primary-transport { width: 58px; height: 58px; border-radius: 50%; color: white; border-color: var(--accent); background: rgba(34, 107, 181, 0.52); }
+.transport button, .playback-buttons button { display: inline-flex; align-items: center; justify-content: center; height: 44px; min-width: 44px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); cursor: pointer; }
+.transport button { border-color: transparent; }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; color: var(--gs-play-ink); border-color: var(--gs-play-bg); background: var(--gs-play-bg); }
 .transport-divider { width: 1px; height: 38px; background: var(--line); }
 .transport-motion { min-width: 150px; display: flex; flex-direction: column; gap: 4px; }
-.transport-motion span { font-size: 15px; font-weight: 650; }
-.transport-motion small { color: var(--muted); font-size: 11px; }
+.transport-motion span { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.transport-motion small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 
-.inspector { min-width: 0; background: linear-gradient(180deg, #17283c, #101e2f); border-left: 1px solid var(--line); overflow: hidden; }
-.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-color: rgba(134, 162, 192, 0.38) transparent; }
-.control-section, .resource-section { padding: 22px 22px 20px; border-bottom: 1px solid var(--line); }
-.selection-section { display: grid; gap: 15px; }
-.selection-section label { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 12px; align-items: center; }
-.selection-section label > span, .range-control > span { color: #d8e3ef; font-size: 13px; }
-select { width: 100%; color: #edf4fb; background: #122033; border: 1px solid rgba(170, 199, 229, 0.3); border-radius: 7px; font: 500 13px/1.2 inherit; outline: none; }
-.selection-section select { height: 42px; padding: 0 12px; }
-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(60, 156, 255, 0.12); }
-h2 { margin: 0; color: #d4dfeb; font-size: 12px; font-weight: 650; letter-spacing: 0.05em; }
+.inspector { min-width: 0; background: var(--gs-surface); overflow: hidden; }
+.inspector-scroll { height: 100%; overflow-y: auto; scrollbar-width: thin; }
+.control-section, .resource-section { padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.selection-section { display: grid; gap: 0; padding-top: 4px; padding-bottom: 4px; }
+.selection-section label { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: center; min-height: 56px; border-bottom: 1px solid var(--line); }
+.selection-section label:last-child { border-bottom: 0; }
+.selection-section label > span, .range-control > span { color: var(--gs-ink-3); font-size: var(--gs-text-ui); }
+select { width: 100%; color: var(--text); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-field); font: inherit; font-size: var(--gs-text-ui); outline: none; }
+.selection-section select { height: 40px; padding: 0 12px; }
+select:focus { border-color: var(--gs-mint); }
+h2 { margin: 0; color: var(--text); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
 .section-heading > div { display: flex; flex-direction: column; gap: 5px; }
-.section-heading span { color: var(--muted); font-size: 11px; }
-.text-button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 9px; color: #bcd0e4; background: transparent; border: 0; border-radius: 6px; font: 600 11px/1 inherit; cursor: pointer; }
-.text-button:hover { background: rgba(255, 255, 255, 0.06); }
+.section-heading span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.text-button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 8px; color: var(--gs-mint-ink); background: transparent; border: 0; border-radius: var(--gs-radius-control); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .motion-select { height: 208px; padding: 5px; overflow-y: auto; }
-.motion-select option { padding: 10px 9px; border-radius: 5px; color: #bdcddd; }
-.motion-select option:checked { color: #fff; background: linear-gradient(#174b78, #174b78); }
-.choreography-section { display: grid; gap: 15px; background: rgba(30, 74, 116, 0.14); }
-.singer-status { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 48px; padding: 9px 11px; color: #9db0c4; background: rgba(7, 17, 31, 0.42); border: 1px solid rgba(157, 176, 196, 0.16); border-radius: 8px; }
+.motion-select option { padding: 10px 9px; border-bottom: 1px solid var(--line); color: var(--text); }
+.motion-select option:checked { color: var(--gs-ink); background: linear-gradient(var(--gs-mint-wash), var(--gs-mint-wash)); font-weight: var(--gs-weight-semibold); }
+.choreography-section { display: grid; gap: 15px; }
+.singer-status { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 48px; padding: 9px 11px; color: var(--muted); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); }
 .singer-status > div { display: grid; gap: 4px; }
-.singer-status span { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; }
-.singer-status strong { color: #dce8f4; font-size: 12px; }
-.singer-status small { color: #8296aa; font-size: 10px; }
-.singer-status.singing { color: #7fc0ff; background: rgba(38, 116, 190, 0.18); border-color: rgba(74, 160, 242, 0.42); }
-.singer-status.singing strong, .singer-status.singing small { color: #dff1ff; }
-.lip-sync-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; color: var(--muted); font-size: 11px; }
+.singer-status span { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.singer-status strong { color: var(--text); font-size: var(--gs-text-ui); }
+.singer-status small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
+.singer-status.singing { color: var(--gs-ink); background: var(--gs-mint-wash); border-color: var(--gs-mint); }
+.singer-status.singing strong, .singer-status.singing small { color: var(--gs-ink); }
+.lip-sync-status { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .lip-sync-status strong { color: var(--text); font-weight: 600; }
 .lip-sync-status small { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.audio-error { color: #ff9b9b; font-size: 11px; }
-.song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: #d8e3ef; font-size: 13px; }
+.audio-error { color: var(--gs-critical); font-size: var(--gs-text-meta); }
+.song-position { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 10px; align-items: center; color: var(--text); font-size: 13px; }
 .song-position select { height: 38px; padding: 0 10px; }
 .timeline-control { display: grid; gap: 7px; }
 .timeline-control input { width: 100%; margin: 0; accent-color: var(--accent); }
-.timeline-control span { color: var(--muted); font: 600 11px/1 monospace; text-align: right; }
-.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; color: white; background: rgba(34, 107, 181, 0.52); border: 1px solid var(--accent); border-radius: 8px; font: 650 12px/1 inherit; cursor: pointer; }
-.choreography-play:hover { background: rgba(40, 127, 213, 0.62); }
+.timeline-control span { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; text-align: right; }
+.choreography-play { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; color: var(--gs-play-ink); background: var(--gs-play-bg); border: 1px solid var(--gs-play-bg); border-radius: var(--gs-radius-control); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .playback-section { display: grid; gap: 17px; }
 .playback-buttons { display: flex; gap: 10px; }
-.playback-buttons .wide-play { flex: 1; gap: 8px; font: 600 12px/1 inherit; }
+.playback-buttons .wide-play { flex: 1; gap: 8px; font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .range-control { display: grid; grid-template-columns: 42px minmax(0, 1fr) 48px; gap: 10px; align-items: center; }
 .range-control input { width: 100%; accent-color: var(--accent); }
-.range-control output { color: #e9f2fb; font: 600 12px/1 inherit; text-align: right; font-variant-numeric: tabular-nums; }
+.range-control output { color: var(--text); font-family: var(--gs-font-stage); font-size: var(--gs-text-ui); text-align: right; font-variant-numeric: tabular-nums; }
 .resource-section { border-bottom: 0; }
 .resource-section h2 { margin-bottom: 14px; }
 .resource-section dl { margin: 0; display: grid; gap: 10px; }
-.resource-section dl div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; font-size: 11px; }
+.resource-section dl div { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; font-size: var(--gs-text-meta); }
 .resource-section dt { color: var(--muted); }
-.resource-section dd { margin: 0; color: #d3dfeb; overflow-wrap: anywhere; }
+.resource-section dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
+.chibi-lab button:focus-visible, .chibi-lab input:focus-visible, .chibi-lab select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .stage-link:hover { background: var(--gs-chrome-hover); color: var(--gs-surface); }
+  .text-button:hover, .transport button:hover, .playback-buttons button:hover { background: var(--gs-paper); }
+  .transport .primary-transport:hover, .choreography-play:hover { box-shadow: 0 0 0 4px var(--gs-mint-wash); }
+}
 
 @media (max-width: 860px) {
-  .lab-header { height: 54px; padding: 0 12px; gap: 11px; }
-  .lab-header h1 { font-size: 16px; }
-  .header-divider { display: none; }
   .header-meta { display: none; }
-  .lab-workspace { inset-top: 54px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
+  .lab-workspace { top: 56px; grid-template-columns: 1fr; grid-template-rows: minmax(390px, 58vh) minmax(0, 1fr); overflow-y: auto; }
   .stage-shell { min-height: 390px; }
-  .inspector { border-left: 0; border-top: 1px solid var(--line); overflow: visible; }
+  .inspector { overflow: visible; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
   .inspector-scroll { height: auto; overflow: visible; }
-  .transport { bottom: 16px; min-height: 66px; gap: 10px; padding: 0 14px; }
+  .transport { bottom: 12px; width: calc(100% - 24px); min-height: 64px; gap: 8px; padding: 8px 12px; }
   .transport button { min-width: 44px; height: 40px; }
   .transport .primary-transport { width: 48px; height: 48px; }
   .transport-motion { min-width: 0; flex: 1; }
 }
 
+@media (max-width: 620px) {
+  .lab-header { gap: 4px; padding: 0 6px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .loading-icon { animation: none; }
 }

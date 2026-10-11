@@ -1,0 +1,266 @@
+{
+  "schema": 1,
+  "sharedBundle": {
+    "name": "shaders_and_materials.unity3d",
+    "sha256": "c7f9c35ab744d08a932602c96efeb1261242c6b9a8d82a6589ec5db038f64623"
+  },
+  "sources": [
+    {
+      "costume": "035mco_005_00",
+      "bundle": "costume_035mco_005_00.unity3d",
+      "sha256": "b665abf10b5a77a7273e533c258e86df60a46c285a649f93d6f268bf0dfcae52"
+    },
+    {
+      "costume": "036rui_005_00",
+      "bundle": "costume_036rui_005_00.unity3d",
+      "sha256": "a4b2e14a86eb736338be9ef43d1391137598303c4a911150f6572fc40855bec4"
+    },
+    {
+      "costume": "037jir_005_00",
+      "bundle": "costume_037jir_005_00.unity3d",
+      "sha256": "a046c204598cdda0d0e7d5d95887b8bab6b34badc84b2248da44df1c04d48347"
+    },
+    {
+      "costume": "035mco_004_00",
+      "bundle": "costume_035mco_004_00.unity3d",
+      "sha256": "92a4dd598520958f78f19fcdd3e5e9e3c5e66369195282d9b08457c90200017a"
+    },
+    {
+      "costume": "035mco_005_01",
+      "bundle": "costume_035mco_005_01.unity3d",
+      "sha256": "9efbcd1c55e6b4d4e4de063444b87dbeca866d79769f0b5217bbdcf91e6e4f71"
+    }
+  ],
+  "shader": {
+    "serializedFile": "CAB-47338db636fbf628b5ec28a3f5a34103",
+    "pathId": "-677326362337354521",
+    "sha256": "31b0f000c2a80d9b60dc62bbc44491f2ea7f47c22a08042b166a16e7c2859d47",
+    "name": "Growing/Skeleton-Gradient",
+    "pass": "Normal",
+    "variant": "gles3 hw_tier00 _BLEND_ALPHA",
+    "vertex": "#ifdef VERTEX\n#version 300 es\n\n#define HLSLCC_ENABLE_UNIFORM_BUFFERS 1\n#if HLSLCC_ENABLE_UNIFORM_BUFFERS\n#define UNITY_UNIFORM\n#else\n#define UNITY_UNIFORM uniform\n#endif\n#define UNITY_SUPPORTS_UNIFORM_LOCATION 1\n#if UNITY_SUPPORTS_UNIFORM_LOCATION\n#define UNITY_LOCATION(x) layout(location = x)\n#define UNITY_BINDING(x) layout(binding = x, std140)\n#else\n#define UNITY_LOCATION(x)\n#define UNITY_BINDING(x) layout(std140)\n#endif\nuniform \tvec4 hlslcc_mtx4x4unity_ObjectToWorld[4];\nuniform \tvec4 hlslcc_mtx4x4unity_MatrixVP[4];\nin highp vec4 in_POSITION0;\nin highp vec2 in_TEXCOORD0;\nin highp vec4 in_COLOR0;\nout highp vec2 vs_TEXCOORD0;\nout highp vec2 vs_COLOR1;\nout highp vec4 vs_COLOR0;\nvec4 u_xlat0;\nvec4 u_xlat1;\nvoid main()\n{\n    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];\n    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;\n    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;\n    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];\n    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];\n    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;\n    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;\n    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;\n    vs_TEXCOORD0.xy = in_TEXCOORD0.xy;\n    vs_COLOR1.xy = in_POSITION0.xy;\n    vs_COLOR0 = in_COLOR0;\n    return;\n}\n\n#endif\n",
+    "fragment": "#ifdef FRAGMENT\n#version 300 es\n\nprecision highp float;\nprecision highp int;\n#define HLSLCC_ENABLE_UNIFORM_BUFFERS 1\n#if HLSLCC_ENABLE_UNIFORM_BUFFERS\n#define UNITY_UNIFORM\n#else\n#define UNITY_UNIFORM uniform\n#endif\n#define UNITY_SUPPORTS_UNIFORM_LOCATION 1\n#if UNITY_SUPPORTS_UNIFORM_LOCATION\n#define UNITY_LOCATION(x) layout(location = x)\n#define UNITY_BINDING(x) layout(binding = x, std140)\n#else\n#define UNITY_LOCATION(x)\n#define UNITY_BINDING(x) layout(std140)\n#endif\nuniform \tvec4 _SrcColor;\nuniform \tvec4 _DstColor;\nuniform \tvec4 _BodyColor;\nuniform \tfloat _RcpHeightCutOff;\nUNITY_LOCATION(0) uniform mediump sampler2D _MainTex;\nin highp vec2 vs_TEXCOORD0;\nin highp vec2 vs_COLOR1;\nin highp vec4 vs_COLOR0;\nlayout(location = 0) out highp vec4 SV_Target0;\nvec4 u_xlat0;\nvec4 u_xlat1;\nvec3 u_xlat2;\nvoid main()\n{\n    u_xlat0.x = vs_COLOR1.y * _RcpHeightCutOff;\n#ifdef UNITY_ADRENO_ES3\n    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);\n#else\n    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);\n#endif\n    u_xlat1 = (-_SrcColor) + _DstColor;\n    u_xlat0 = u_xlat0.xxxx * u_xlat1 + _SrcColor;\n    u_xlat1 = texture(_MainTex, vs_TEXCOORD0.xy);\n    u_xlat2.xyz = _BodyColor.xyz * u_xlat1.www + (-u_xlat1.xyz);\n    u_xlat2.xyz = _BodyColor.www * u_xlat2.xyz + u_xlat1.xyz;\n    u_xlat0.xyz = u_xlat0.xyz * u_xlat1.www + (-u_xlat2.xyz);\n    u_xlat1.xyz = u_xlat0.www * u_xlat0.xyz + u_xlat2.xyz;\n    SV_Target0 = u_xlat1 * vs_COLOR0;\n    return;\n}\n\n#endif\n",
+    "defaultColors": {
+      "_SrcColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "_DstColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "_BodyColor": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    "blend": {
+      "src": 1.0,
+      "dst": 10.0,
+      "srcAlpha": 1.0,
+      "dstAlpha": 10.0,
+      "op": 0.0,
+      "opAlpha": 0.0,
+      "mask": 15.0
+    }
+  },
+  "materials": [
+    {
+      "serializedFile": "CAB-260b7fe29bea2006dc0f3bbab38f73aa",
+      "pathId": "1190678379141219478",
+      "sha256": "636cd71e5b5bfe260220ae71f56eff85beb37a9a5d71ea10c82c875de7abf1d3",
+      "costume": "035mco_005_00",
+      "name": "cos_Material",
+      "keywords": "_BLEND_ALPHA _USE8NEIGHBOURHOOD_ON",
+      "externals": [
+        "archive:/CAB-47338db636fbf628b5ec28a3f5a34103/CAB-47338db636fbf628b5ec28a3f5a34103"
+      ],
+      "shaderPointer": {
+        "m_FileID": 1,
+        "m_PathID": -677326362337354521
+      },
+      "texturePointer": {
+        "m_FileID": 0,
+        "m_PathID": -1222209539628201573
+      },
+      "texture": {
+        "serializedFile": "CAB-260b7fe29bea2006dc0f3bbab38f73aa",
+        "pathId": "-1222209539628201573",
+        "sha256": "066fd17a2832ac2a0b454927cea8b2049681434251f6d32635c9d6a9d3345aeb",
+        "name": "cos"
+      },
+      "textureScale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "textureOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "blendMode": 0.0,
+      "straightAlphaInput": 0.0,
+      "rcpHeightCutOff": 0.5,
+      "serializedColors": {
+        "_BodyColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "_SrcColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "_DstColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "serializedFile": "CAB-b2756c86f300b9fd488e2a23c2bb2994",
+      "pathId": "-270366116319323576",
+      "sha256": "e3a12b94c430cbb47f80fb5cf9eb5c3fa1a9efb9b323a90df7992f3cabd7b4be",
+      "costume": "036rui_005_00",
+      "name": "cos_Material",
+      "keywords": "_BLEND_ALPHA _USE8NEIGHBOURHOOD_ON",
+      "externals": [
+        "archive:/CAB-47338db636fbf628b5ec28a3f5a34103/CAB-47338db636fbf628b5ec28a3f5a34103"
+      ],
+      "shaderPointer": {
+        "m_FileID": 1,
+        "m_PathID": -677326362337354521
+      },
+      "texturePointer": {
+        "m_FileID": 0,
+        "m_PathID": 2051033175207653190
+      },
+      "texture": {
+        "serializedFile": "CAB-b2756c86f300b9fd488e2a23c2bb2994",
+        "pathId": "2051033175207653190",
+        "sha256": "c72bae0d869cb1578d3c898257ad68795d1f7defbc0ce216c1893975e9c1db89",
+        "name": "cos"
+      },
+      "textureScale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "textureOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "blendMode": 0.0,
+      "straightAlphaInput": 0.0,
+      "rcpHeightCutOff": 0.5,
+      "serializedColors": {
+        "_SrcColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "_DstColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "serializedFile": "CAB-db084f2104d3fc6968b42b8d2eda08f2",
+      "pathId": "-1260453920339482096",
+      "sha256": "58f4631fcf8b378d3006869ed5e2345b3ab2696eceb71665a2c3f81379af62f9",
+      "costume": "037jir_005_00",
+      "name": "cos_Material",
+      "keywords": "_BLEND_ALPHA _USE8NEIGHBOURHOOD_ON",
+      "externals": [
+        "archive:/CAB-47338db636fbf628b5ec28a3f5a34103/CAB-47338db636fbf628b5ec28a3f5a34103"
+      ],
+      "shaderPointer": {
+        "m_FileID": 1,
+        "m_PathID": -677326362337354521
+      },
+      "texturePointer": {
+        "m_FileID": 0,
+        "m_PathID": 6800571314043424020
+      },
+      "texture": {
+        "serializedFile": "CAB-db084f2104d3fc6968b42b8d2eda08f2",
+        "pathId": "6800571314043424020",
+        "sha256": "26488bd263c040f630d50d2fb998b0213734f4efc69d876e718b1797b2b2a60c",
+        "name": "cos"
+      },
+      "textureScale": {
+        "x": 1.0,
+        "y": 1.0
+      },
+      "textureOffset": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "blendMode": 0.0,
+      "straightAlphaInput": 0.0,
+      "rcpHeightCutOff": 0.5,
+      "serializedColors": {
+        "_BodyColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "_SrcColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "_DstColor": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  ],
+  "unavailable": [
+    {
+      "costume": "035mco_004_00",
+      "status": "no_live_cos_material",
+      "hasCosTexture": false,
+      "hasCosAtlas": false,
+      "hasComuTexture": true
+    },
+    {
+      "costume": "035mco_005_01",
+      "status": "no_live_cos_material",
+      "hasCosTexture": false,
+      "hasCosAtlas": false,
+      "hasComuTexture": true
+    }
+  ],
+  "contract": {
+    "status": "native_shader_binding_formula_not_runtime_uniforms_or_video_acceptance",
+    "shader": {
+      "serializedFile": "CAB-47338db636fbf628b5ec28a3f5a34103",
+      "pathId": "-677326362337354521",
+      "sha256": "31b0f000c2a80d9b60dc62bbc44491f2ea7f47c22a08042b166a16e7c2859d47",
+      "name": "Growing/Skeleton-Gradient"
+    },
+    "materials": 3,
+    "positionBasis": "native_local_mesh_y",
+    "mixing": "premultiplied_color_replacement",
+    "textureAlphaPreserved": true
+  }
+}

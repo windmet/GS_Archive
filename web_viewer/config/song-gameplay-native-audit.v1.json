@@ -1,0 +1,831 @@
+{
+  "decodedPbSha256": "25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1",
+  "metadataSha256": "658f966af11aef965b541e093889056cafa61a7f7fcd4bbf38e1ca2eab6d6e00",
+  "schemaSha256": "a909b151e80c74493da5790da5d964fb3f795c79a0d1feed1f86bb8369932399",
+  "schemaVersion": 1,
+  "checkedOn": "2026-10-01",
+  "enums": [
+    {
+      "fullName": "Growing.Live.EventNoteEndType",
+      "typeDefinitionIndex": 10529,
+      "members": [
+        {
+          "name": "NONE",
+          "value": -1,
+          "rawEvidence": {
+            "fieldIndex": 39969,
+            "fieldToken": 67118584,
+            "fieldTypeIndex": 27802,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147746,
+            "int32Hex": "ffffffff"
+          }
+        },
+        {
+          "name": "END_NORMAL",
+          "value": 0,
+          "rawEvidence": {
+            "fieldIndex": 39970,
+            "fieldToken": 67118585,
+            "fieldTypeIndex": 27802,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147750,
+            "int32Hex": "00000000"
+          }
+        },
+        {
+          "name": "END_FLICK_LEFT",
+          "value": 1,
+          "rawEvidence": {
+            "fieldIndex": 39971,
+            "fieldToken": 67118586,
+            "fieldTypeIndex": 27802,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147754,
+            "int32Hex": "01000000"
+          }
+        },
+        {
+          "name": "END_FLICK_UP",
+          "value": 2,
+          "rawEvidence": {
+            "fieldIndex": 39972,
+            "fieldToken": 67118587,
+            "fieldTypeIndex": 27802,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147758,
+            "int32Hex": "02000000"
+          }
+        },
+        {
+          "name": "END_FLICK_RIGHT",
+          "value": 3,
+          "rawEvidence": {
+            "fieldIndex": 39973,
+            "fieldToken": 67118588,
+            "fieldTypeIndex": 27802,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147762,
+            "int32Hex": "03000000"
+          }
+        }
+      ]
+    },
+    {
+      "fullName": "Growing.Live.EventNoteType",
+      "typeDefinitionIndex": 10531,
+      "members": [
+        {
+          "name": "NONE",
+          "value": -10,
+          "rawEvidence": {
+            "fieldIndex": 39975,
+            "fieldToken": 67118590,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147766,
+            "int32Hex": "f6ffffff"
+          }
+        },
+        {
+          "name": "MEASURE_GRID",
+          "value": -1,
+          "rawEvidence": {
+            "fieldIndex": 39976,
+            "fieldToken": 67118591,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147770,
+            "int32Hex": "ffffffff"
+          }
+        },
+        {
+          "name": "BEAT_GRID",
+          "value": -2,
+          "rawEvidence": {
+            "fieldIndex": 39977,
+            "fieldToken": 67118592,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147774,
+            "int32Hex": "feffffff"
+          }
+        },
+        {
+          "name": "SMALL",
+          "value": 0,
+          "rawEvidence": {
+            "fieldIndex": 39978,
+            "fieldToken": 67118593,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147778,
+            "int32Hex": "00000000"
+          }
+        },
+        {
+          "name": "LARGE",
+          "value": 1,
+          "rawEvidence": {
+            "fieldIndex": 39979,
+            "fieldToken": 67118594,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147782,
+            "int32Hex": "01000000"
+          }
+        },
+        {
+          "name": "FLICK_LEFT",
+          "value": 2,
+          "rawEvidence": {
+            "fieldIndex": 39980,
+            "fieldToken": 67118595,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147786,
+            "int32Hex": "02000000"
+          }
+        },
+        {
+          "name": "FLICK_UP",
+          "value": 3,
+          "rawEvidence": {
+            "fieldIndex": 39981,
+            "fieldToken": 67118596,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147790,
+            "int32Hex": "03000000"
+          }
+        },
+        {
+          "name": "FLICK_RIGHT",
+          "value": 4,
+          "rawEvidence": {
+            "fieldIndex": 39982,
+            "fieldToken": 67118597,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147794,
+            "int32Hex": "04000000"
+          }
+        },
+        {
+          "name": "HOLD",
+          "value": 5,
+          "rawEvidence": {
+            "fieldIndex": 39983,
+            "fieldToken": 67118598,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147798,
+            "int32Hex": "05000000"
+          }
+        },
+        {
+          "name": "VARIABLE_HOLD",
+          "value": 6,
+          "rawEvidence": {
+            "fieldIndex": 39984,
+            "fieldToken": 67118599,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147802,
+            "int32Hex": "06000000"
+          }
+        },
+        {
+          "name": "LARGE_HOLD",
+          "value": 7,
+          "rawEvidence": {
+            "fieldIndex": 39985,
+            "fieldToken": 67118600,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147806,
+            "int32Hex": "07000000"
+          }
+        },
+        {
+          "name": "LARGE_VARIABLE_HOLD",
+          "value": 8,
+          "rawEvidence": {
+            "fieldIndex": 39986,
+            "fieldToken": 67118601,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147810,
+            "int32Hex": "08000000"
+          }
+        },
+        {
+          "name": "SPECIAL",
+          "value": 9,
+          "rawEvidence": {
+            "fieldIndex": 39987,
+            "fieldToken": 67118602,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147814,
+            "int32Hex": "09000000"
+          }
+        },
+        {
+          "name": "HOLD_MIDDLE",
+          "value": 10,
+          "rawEvidence": {
+            "fieldIndex": 39988,
+            "fieldToken": 67118603,
+            "fieldTypeIndex": 27806,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7147818,
+            "int32Hex": "0a000000"
+          }
+        }
+      ]
+    },
+    {
+      "fullName": "Growing.Models.Data.ReleaseConditionData.Types.Type",
+      "typeDefinitionIndex": 15425,
+      "members": [
+        {
+          "name": "None",
+          "value": 0,
+          "rawEvidence": {
+            "fieldIndex": 62905,
+            "fieldToken": 67141520,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158793,
+            "int32Hex": "00000000"
+          }
+        },
+        {
+          "name": "AlwaysReleased",
+          "value": 1,
+          "rawEvidence": {
+            "fieldIndex": 62906,
+            "fieldToken": 67141521,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158797,
+            "int32Hex": "01000000"
+          }
+        },
+        {
+          "name": "ReleasedByMission",
+          "value": 2,
+          "rawEvidence": {
+            "fieldIndex": 62907,
+            "fieldToken": 67141522,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158801,
+            "int32Hex": "02000000"
+          }
+        },
+        {
+          "name": "ReadMainStoryChapter",
+          "value": 101,
+          "rawEvidence": {
+            "fieldIndex": 62908,
+            "fieldToken": 67141523,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158805,
+            "int32Hex": "65000000"
+          }
+        },
+        {
+          "name": "ReadMainStorySection",
+          "value": 102,
+          "rawEvidence": {
+            "fieldIndex": 62909,
+            "fieldToken": 67141524,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158809,
+            "int32Hex": "66000000"
+          }
+        },
+        {
+          "name": "ReadMainStoryEpisode",
+          "value": 103,
+          "rawEvidence": {
+            "fieldIndex": 62910,
+            "fieldToken": 67141525,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158813,
+            "int32Hex": "67000000"
+          }
+        },
+        {
+          "name": "RightAnsweredMainStoryEpisode",
+          "value": 104,
+          "rawEvidence": {
+            "fieldIndex": 62911,
+            "fieldToken": 67141526,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158817,
+            "int32Hex": "68000000"
+          }
+        },
+        {
+          "name": "ReadIdolStoryChapter",
+          "value": 201,
+          "rawEvidence": {
+            "fieldIndex": 62912,
+            "fieldToken": 67141527,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158821,
+            "int32Hex": "c9000000"
+          }
+        },
+        {
+          "name": "ReadIdolStorySection",
+          "value": 202,
+          "rawEvidence": {
+            "fieldIndex": 62913,
+            "fieldToken": 67141528,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158825,
+            "int32Hex": "ca000000"
+          }
+        },
+        {
+          "name": "ReadIdolStoryEpisode",
+          "value": 203,
+          "rawEvidence": {
+            "fieldIndex": 62914,
+            "fieldToken": 67141529,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158829,
+            "int32Hex": "cb000000"
+          }
+        },
+        {
+          "name": "RightAnsweredIdolStoryEpisode",
+          "value": 204,
+          "rawEvidence": {
+            "fieldIndex": 62915,
+            "fieldToken": 67141530,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158833,
+            "int32Hex": "cc000000"
+          }
+        },
+        {
+          "name": "ReadEventStoryChapter",
+          "value": 301,
+          "rawEvidence": {
+            "fieldIndex": 62916,
+            "fieldToken": 67141531,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158837,
+            "int32Hex": "2d010000"
+          }
+        },
+        {
+          "name": "ReadEventStorySection",
+          "value": 302,
+          "rawEvidence": {
+            "fieldIndex": 62917,
+            "fieldToken": 67141532,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158841,
+            "int32Hex": "2e010000"
+          }
+        },
+        {
+          "name": "ReadEventStoryEpisode",
+          "value": 303,
+          "rawEvidence": {
+            "fieldIndex": 62918,
+            "fieldToken": 67141533,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158845,
+            "int32Hex": "2f010000"
+          }
+        },
+        {
+          "name": "RightAnsweredEventStoryEpisode",
+          "value": 304,
+          "rawEvidence": {
+            "fieldIndex": 62919,
+            "fieldToken": 67141534,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158849,
+            "int32Hex": "30010000"
+          }
+        },
+        {
+          "name": "ReadEpisodeZeroStoryChapter",
+          "value": 401,
+          "rawEvidence": {
+            "fieldIndex": 62920,
+            "fieldToken": 67141535,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158853,
+            "int32Hex": "91010000"
+          }
+        },
+        {
+          "name": "ReadEpisodeZeroStorySection",
+          "value": 402,
+          "rawEvidence": {
+            "fieldIndex": 62921,
+            "fieldToken": 67141536,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158857,
+            "int32Hex": "92010000"
+          }
+        },
+        {
+          "name": "ReadEpisodeZeroStoryEpisode",
+          "value": 403,
+          "rawEvidence": {
+            "fieldIndex": 62922,
+            "fieldToken": 67141537,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158861,
+            "int32Hex": "93010000"
+          }
+        },
+        {
+          "name": "RightAnsweredEpisodeZeroStoryEpisode",
+          "value": 404,
+          "rawEvidence": {
+            "fieldIndex": 62923,
+            "fieldToken": 67141538,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158865,
+            "int32Hex": "94010000"
+          }
+        },
+        {
+          "name": "AchieveIdolUnitFanAmount",
+          "value": 502,
+          "rawEvidence": {
+            "fieldIndex": 62924,
+            "fieldToken": 67141539,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158869,
+            "int32Hex": "f6010000"
+          }
+        },
+        {
+          "name": "AchieveIdolUnitEachReliabilityRank",
+          "value": 503,
+          "rawEvidence": {
+            "fieldIndex": 62925,
+            "fieldToken": 67141540,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158873,
+            "int32Hex": "f7010000"
+          }
+        },
+        {
+          "name": "ReadIdolTalkScenario",
+          "value": 1101,
+          "rawEvidence": {
+            "fieldIndex": 62926,
+            "fieldToken": 67141541,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158877,
+            "int32Hex": "4d040000"
+          }
+        },
+        {
+          "name": "ReadIdolUnitTalkScenario",
+          "value": 1201,
+          "rawEvidence": {
+            "fieldIndex": 62927,
+            "fieldToken": 67141542,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158881,
+            "int32Hex": "b1040000"
+          }
+        },
+        {
+          "name": "ReadIdolGroupTalkScenario",
+          "value": 1301,
+          "rawEvidence": {
+            "fieldIndex": 62928,
+            "fieldToken": 67141543,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158885,
+            "int32Hex": "15050000"
+          }
+        },
+        {
+          "name": "AchieveProducerLevel",
+          "value": 1401,
+          "rawEvidence": {
+            "fieldIndex": 62929,
+            "fieldToken": 67141544,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158889,
+            "int32Hex": "79050000"
+          }
+        },
+        {
+          "name": "AchieveProducerRankId",
+          "value": 1402,
+          "rawEvidence": {
+            "fieldIndex": 62930,
+            "fieldToken": 67141545,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158893,
+            "int32Hex": "7a050000"
+          }
+        },
+        {
+          "name": "AchieveIdolLevel",
+          "value": 1403,
+          "rawEvidence": {
+            "fieldIndex": 62931,
+            "fieldToken": 67141546,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158897,
+            "int32Hex": "7b050000"
+          }
+        },
+        {
+          "name": "ReadIdolPhoneScenario",
+          "value": 1501,
+          "rawEvidence": {
+            "fieldIndex": 62932,
+            "fieldToken": 67141547,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158901,
+            "int32Hex": "dd050000"
+          }
+        },
+        {
+          "name": "GainCard",
+          "value": 1602,
+          "rawEvidence": {
+            "fieldIndex": 62933,
+            "fieldToken": 67141548,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158905,
+            "int32Hex": "42060000"
+          }
+        },
+        {
+          "name": "AwakenCard",
+          "value": 1603,
+          "rawEvidence": {
+            "fieldIndex": 62934,
+            "fieldToken": 67141549,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158909,
+            "int32Hex": "43060000"
+          }
+        },
+        {
+          "name": "LimitbreakCard",
+          "value": 1604,
+          "rawEvidence": {
+            "fieldIndex": 62935,
+            "fieldToken": 67141550,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158913,
+            "int32Hex": "44060000"
+          }
+        },
+        {
+          "name": "ClearSongId",
+          "value": 1701,
+          "rawEvidence": {
+            "fieldIndex": 62936,
+            "fieldToken": 67141551,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158917,
+            "int32Hex": "a5060000"
+          }
+        },
+        {
+          "name": "ClearSongDifficultyId",
+          "value": 1702,
+          "rawEvidence": {
+            "fieldIndex": 62937,
+            "fieldToken": 67141552,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158921,
+            "int32Hex": "a6060000"
+          }
+        },
+        {
+          "name": "Mobile",
+          "value": 1801,
+          "rawEvidence": {
+            "fieldIndex": 62938,
+            "fieldToken": 67141553,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158925,
+            "int32Hex": "09070000"
+          }
+        },
+        {
+          "name": "UseSongReleaseItem",
+          "value": 1901,
+          "rawEvidence": {
+            "fieldIndex": 62939,
+            "fieldToken": 67141554,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158929,
+            "int32Hex": "6d070000"
+          }
+        },
+        {
+          "name": "ReadHomeStoryEpisode",
+          "value": 2003,
+          "rawEvidence": {
+            "fieldIndex": 62940,
+            "fieldToken": 67141555,
+            "fieldTypeIndex": 48930,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7158933,
+            "int32Hex": "d3070000"
+          }
+        }
+      ]
+    },
+    {
+      "fullName": "Growing.Models.Data.SongDifficultyType",
+      "typeDefinitionIndex": 15444,
+      "members": [
+        {
+          "name": "None",
+          "value": 0,
+          "rawEvidence": {
+            "fieldIndex": 63049,
+            "fieldToken": 67141664,
+            "fieldTypeIndex": 35153,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7159289,
+            "int32Hex": "00000000"
+          }
+        },
+        {
+          "name": "Easy",
+          "value": 1,
+          "rawEvidence": {
+            "fieldIndex": 63050,
+            "fieldToken": 67141665,
+            "fieldTypeIndex": 35153,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7159293,
+            "int32Hex": "01000000"
+          }
+        },
+        {
+          "name": "Normal",
+          "value": 2,
+          "rawEvidence": {
+            "fieldIndex": 63051,
+            "fieldToken": 67141666,
+            "fieldTypeIndex": 35153,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7159297,
+            "int32Hex": "02000000"
+          }
+        },
+        {
+          "name": "Hard",
+          "value": 3,
+          "rawEvidence": {
+            "fieldIndex": 63052,
+            "fieldToken": 67141667,
+            "fieldTypeIndex": 35153,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7159301,
+            "int32Hex": "03000000"
+          }
+        },
+        {
+          "name": "Expret",
+          "value": 4,
+          "rawEvidence": {
+            "fieldIndex": 63053,
+            "fieldToken": 67141668,
+            "fieldTypeIndex": 35153,
+            "defaultTypeIndex": 30716,
+            "defaultClrType": "System.Int32",
+            "defaultValueFileOffset": 7159305,
+            "int32Hex": "04000000"
+          }
+        }
+      ]
+    }
+  ],
+  "modelFields": {
+    "Growing.Models.Data.SongDifficultyData": {
+      "2": "GroupId",
+      "3": "DifficultyType",
+      "4": "Level",
+      "5": "ReleaseConditions",
+      "8": "MaxCombo"
+    },
+    "Growing.Models.Data.SongData": {
+      "2": "SongDifficultyGroupId",
+      "14": "ReleaseConditions"
+    },
+    "Growing.Models.Data.ReleaseConditionData": {
+      "1": "Type",
+      "2": "ParamA",
+      "3": "ParamB"
+    }
+  }
+}

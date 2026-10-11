@@ -18,7 +18,7 @@ def digest(value):
 
 
 def corpus(data, api=domain):
-    tables = extract_table_rows(list(iter_top_records(data)), {1, 2, 16, 20, 21, 23, 27, 28, 40, 75, 130})
+    tables = extract_table_rows(list(iter_top_records(data)), {1, 2, 16, 20, 21, 23, 27, 28, 74, 75, 130})
     references = api.build_card_reference_maps(tables)
     return [{'card_id': card.get('1'), 'gameplay': api.build_card_gameplay(card, references),
              'costumes': api.build_card_costume_relations(card, references)} for card in tables[1]]
@@ -37,10 +37,12 @@ def verify():
             '10': {'1': 50}, '11': None, '45': 7, '48': 7, '49': 99, '50': 'invalid', '_offset': 100}
     tables = {
         2: [{'1': 1, '7': 2, '_offset': 200}],
-        20: [{'1': 10, '2': 'Skill', '3': '<interval>/<calc_rate>/<period>/<d01>/<unknown>', '8': 3}],
-        21: [{'1': 2, '2': 10, '3': 2, '8': 4, '10': 0, '11': 9, '12': 6, '_offset': 21},
-             {'1': 1, '2': 10, '3': 1, '8': 4}, {'1': 3, '2': 'invalid'}],
+        20: [{'1': 10, '2': 'Skill', '3': '<interval>/<calc_rate>/<period>/<d01>/<d10>/<unknown>', '5': 99, '8': 3}],
+        21: [{'1': 2, '2': 99, '3': 2, '8': 4, '10': 0, '11': 9, '12': 6, '_offset': 21},
+             {'1': 1, '2': 99, '3': 1, '8': 4}, {'1': 3, '2': 10, '3': 99}, {'1': 4, '2': 'invalid'}],
         40: [{'1': 2, '2': 4, '4': 20, '9': 2}, {'1': 1, '2': 4, '4': 10, '9': 1}],
+        74: [{'1': 2, '2': 4, '3': 4, '4': 900, '5': 12, '8': 2},
+             {'1': 1, '2': 4, '3': 3, '4': 800, '5': 6, '6': 30, '8': 1, '_offset': 74}],
         75: [{'1': 3, '2': 'Category'}],
         23: [{'1': 20, '2': 'Center', '9': 5}], 130: [{'1': 5, '2': 'Center category'}],
         27: [{'1': 7, '5': 'live-model', '_offset': 27}],
@@ -57,10 +59,18 @@ def verify():
     assert result['parameters']['visual']['idol_limitbreak_step'] == 99
     levels = result['skill']['levels']
     assert [level['level'] for level in levels] == [1, 2]
-    assert levels[1]['description'] == '9/0/6/10/<unknown>'
-    assert levels[0]['description'] == '<interval>/<calc_rate>/<period>/10/<unknown>'
+    assert levels[1]['description'] == '9/0/6/30/12/<unknown>'
+    assert levels[0]['description'] == '<interval>/<calc_rate>/<period>/30/12/<unknown>'
     assert [effect['id'] for effect in levels[0]['effects']] == [1, 2]
     assert levels[1]['_source']['offset'] == 21
+    assert result['skill']['detail_group_id'] == 99
+    assert levels[0]['effects'][0]['effect_group_id'] == 800
+    assert levels[0]['effects'][0]['_source']['table'] == 74
+    assert 'value' not in levels[0]['effects'][0]
+    assert levels[0]['description_status'] == 'unresolved-template'
+    assert domain.render_skill_description('<d01>/<d00>/<d99>', {}, []) == '<d01>/<d00>/<d99>'
+    assert domain.render_skill_description('<d01>', {}, [{'3': 999, '6': 999}]) == '<d01>'
+    assert domain.render_skill_description('<d01>', {}, [{'3': 2}]) == '0'
     assert result['center_skill']['category']['name'] == 'Center category'
     assert [(item['slot'], item['model_resource_id']) for item in costumes] == [
         ('live_initial', 'live-model'), ('story_initial', 'story-model'), ('story_awakened', None)]
@@ -81,9 +91,22 @@ def main():
         data = args.decoded_masterdata.read_bytes()
         result = corpus(data)
         expected = json.loads((ROOT / 'fixtures/masterdata-wire/card-gameplay-baseline.json').read_text())
-        actual = {'input_sha256': hashlib.sha256(data).hexdigest(), 'output_sha256': digest(result)}
-        assert actual == expected['summary']
-        print(json.dumps({'card_rows': len(result), 'costume_relations': sum(len(row['costumes']) for row in result)}))
+        # Preserve the historical hash as evidence of the old defect. Verify the
+        # corrected real-corpus relations instead of accepting a new snapshot.
+        assert hashlib.sha256(data).hexdigest() == expected['summary']['input_sha256']
+        assert digest(result) != expected['summary']['output_sha256']
+        tables = extract_table_rows(list(iter_top_records(data)), {20, 21, 74})
+        skills = {r['1']: r for r in tables[20]}
+        for row in result:
+            skill = row['gameplay']['skill']
+            if skill['id'] in skills:
+                assert skill['detail_group_id'] == skills[skill['id']].get('5')
+            for level in skill['levels']:
+                assert level['_source']['fields']['skill_detail_group_id'] == 2
+                assert all(e['_source']['table'] == 74 for e in level['effects'])
+        print(json.dumps({'card_rows': len(result), 'corrected_output_sha256': digest(result),
+            'historical_baseline_preserved': True,
+            'costume_relations': sum(len(row['costumes']) for row in result)}))
     print('Masterdata card gameplay: parameters, ordered effects, unresolved placeholders, costume domains and provenance passed')
 
 

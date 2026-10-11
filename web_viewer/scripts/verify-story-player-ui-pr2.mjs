@@ -3,6 +3,8 @@ import { access, readFile } from 'node:fs/promises'
 import { MOBILE_UNIT_THEMES } from '../src/data/mobileVisualThemes.js'
 import { resolveCommunicationContext } from '../src/core/story-runtime/CommunicationPresentationContext.js'
 import { resolveMobileHeroMedia, MOBILE_HERO_FOCAL_POINT } from '../src/presentation/mobileHeroMedia.js'
+import { ref } from 'vue'
+import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harness.mjs'
 
 const read = path => readFile(new URL(`../${path}`, import.meta.url), 'utf8')
 const readJson = async path => JSON.parse(await read(path))
@@ -141,11 +143,18 @@ assert.equal(takeruBirthdayCall?.release_condition?.param_a, 2380208, 'Takeru bi
 assert.deepEqual(unresolvedStoryEpisodeIds, [], 'every mobile idol-story condition must resolve to a named story episode')
 
 assert.match(chat, /MobileDeviceFrame :surface-style="deviceSurfaceStyle"/, 'Talk background must be consumed inside the phone')
-assert.match(chat, /IDOL_ID_TO_NAME\[context\.value\.primaryCharaId\]/, 'direct Talk choice deep links must retain their participant title')
+assert.match(chat, /const owner = context\.value\.ownerCharaId \|\| context\.value\.primaryCharaId/, 'direct Talk choice deep links must retain their participant title')
+assert.match(chat, /if \(IDOL_ID_TO_NAME\[owner\]\) return IDOL_ID_TO_NAME\[owner\]/, 'a chat with no posted line yet is named by its owner')
+// A unit chat is named by its unit, never by a list of speakers.
+assert.match(chat, /if \(context\.value\.isGroup && UNIT_CODE_TO_NAME\[unitCode\.value\]\) return UNIT_CODE_TO_NAME\[unitCode\.value\]/, 'unit chats are titled by the unit')
+assert.doesNotMatch(chat, /' 他'/, 'chat titles never fall back to "A 他"')
 assert.match(chat, /isProducer\(rawSpeaker, charaId\)/, 'speakerless authored character messages must not be projected as producer replies')
 assert.match(chat, /speaker_identity\?\.entity_id/, 'Talk messages must consume explicit speaker identity before name inference')
 assert.doesNotMatch(call, /MobileSceneLayout :bg-url=/, 'Call personal art must not be duplicated across the viewport')
-assert.match(call, /backgroundSize:\s*'100% 100%'/, 'Call must preserve the complete baked personal phone canvas')
+// The call picture keeps its own proportion from the top (keepsake, arc, pale band); the frame's
+// remaining height takes the band's colour instead of stretching the picture (6f67d211).
+assert.match(call, /backgroundSize:\s*'100% auto'/, 'Call must keep the personal phone picture in proportion')
+assert.match(call, /backgroundPosition:\s*'center top'/, 'Call must read the personal phone picture from its top')
 assert.match(call, /context\.value\.primaryCharaId/, 'direct Call choice deep links must inherit their caller identity')
 assert.match(call, /latestChoiceSelection/, 'Call must project the latest selected reply after a choice')
 assert.match(viewer, /:choiceTexts="choiceTexts"[\s\S]*<MobileCallScene|<MobileCallScene[\s\S]*:choiceTexts="choiceTexts"/, 'StoryViewer must pass selected choice records into Call scenes')
@@ -153,15 +162,17 @@ assert.match(viewer, /:sceneBackgroundUrl="mobileBackdropUrl"/, 'mobile scenes m
 assert.match(viewer, /--player-content-top:/, 'mobile scenes must reserve the global top bar safe region')
 assert.match(viewer, /--player-content-bottom:/, 'mobile scenes must reserve the global control dock safe region')
 assert.match(viewer, /communicationCompleted/, 'communication stories need a non-blocking completion state')
-assert.match(viewer, /episodeFinished && !communicationCompleted/, 'blocking completion must remain limited to non-communication stories')
-assert.match(viewer, /:next-disabled="episodeFinished"/, 'completed communication stories must keep the dock while disabling forward advance')
+// 58751c0f: finished chats and calls use the shared completion panel, which names them as communication.
+assert.match(viewer, /communicationCompleted \? uiText\('player\.complete\.communication'\) : uiText\('player\.complete\.episode'\)/, 'completion must name a finished chat or call as communication')
+assert.match(viewer, /:next-disabled="episodeFinished \|\| currentStep\.type === 'choice'"/, 'completion and waiting for a reply must disable forward advance')
 assert.match(dock, /:disabled="nextDisabled"/, 'the shared player dock must expose a disabled completed-state advance control')
 assert.match(zhLocale, /player\.complete\.communication/, 'Chinese UI locale must name non-blocking communication completion')
 assert.match(jaLocale, /player\.complete\.communication/, 'Japanese UI locale must name non-blocking communication completion')
-assert.match(archiveMobile, /class="hero-media"/, 'mobile archive hero must own a fixed media shell')
-assert.match(archiveMobile, /class="hero-media-blur"/, 'mobile archive hero must own a softened fill layer')
-assert.match(archiveMobile, /mode !== 'unit'" class="hero-media-main"/, 'unit archive mode must not apply personal portrait cropping')
-assert.match(archiveMobile, /object-position: var\(--hero-focal-x\) var\(--hero-focal-y\)/, 'both image layers must share one focal point')
+// The room is a call card: the whole room picture (keepsake or unit pattern) from the top,
+// the owner at its centre; wide screens keep the picture's own proportion beside the rows.
+assert.match(archiveMobile, /class="call-card-art" :src="heroMedia\.src"/, 'mobile archive room card must show the room picture')
+assert.match(archiveMobile, /\.call-card-art \{[^}]*object-position: center top;/, 'the room picture is read from its top, where the keepsake is')
+assert.match(archiveMobile, /aspect-ratio: 688 \/ 1000;/, 'wide screens keep the call picture in its own proportion')
 assert.doesNotMatch(archiveMobile, /background-position:/, 'breakpoints must not define independent image coordinates')
 assert.deepEqual(resolveMobileHeroMedia({ mode: 'personal', idolCode: '038tak', unitCode: '01jup' }), {
   src: '/assets/idols/mobile_bg/image_chara_mobile_background_038tak.png',
@@ -171,14 +182,38 @@ assert.deepEqual(resolveMobileHeroMedia({ mode: 'personal', idolCode: '038tak', 
 assert.equal(resolveMobileHeroMedia({ mode: 'unit', idolCode: '038tak', unitCode: '13the' }).src,
   '/assets/units/mobile_bg/image_unit_mobile_background_13the.png')
 assert.match(archiveMobile, /cardById/, 'mobile archive unlock chips must resolve card masterdata')
-assert.match(archiveMobile, /card\.title_full/, 'mobile archive unlock chips must display authoritative card names')
+assert.match(archiveMobile, /archiveCardFullTitle\(card\)/, 'mobile archive unlock chips must display authoritative card names')
+assert.match(await read('src/components/archive/useArchiveCardTitle.js'), /card\?\.title_full/, 'card names come from the authoritative full title')
 assert.match(archiveMobile, /emit\('open-card'/, 'named card unlock chips must retain the existing card-detail route entry')
 assert.match(archiveMobile, /storyByEpisodeId/, 'mobile archive unlock chips must resolve idol-story masterdata')
-assert.match(archiveMobile, /section\.scenario_title/, 'mobile archive story unlocks must display formal story titles')
+assert.match(archiveMobile, /story\.scenarioTitle/, 'mobile archive story unlocks must display formal story titles')
 assert.match(archiveMobile, /emit\('open-idol-story'/, 'named story unlock chips must expose a related-story route entry')
-assert.match(app, /function openMobileIdolStory/, 'App must route related mobile unlocks into the idol-story archive')
-assert.match(app, /currentStorySection\.value = String\(relation\.section_id\)/, 'related-story routes must retain the exact section identity')
-assert.match(app, /currentEpisodeId\.value = String\(episodeId\)/, 'related-story routes must retain the exact episode identity')
+for (const mode of ['personal', 'unit']) {
+  const episodeId = 2380208, sectionId = 23802
+  const source = { view: { episodeRefs: [{ id: episodeId, idolCode: '038tak', sectionId }] } }
+  const context = {
+    currentMobileMode: ref(mode),
+    mobileIdolReadModelDetail: ref(mode === 'personal' ? source : null),
+    mobileUnitReadModelDetail: ref(mode === 'unit' ? source : null),
+    idolStoryReadModelCatalog: ref([{ id: '038tak', detail: { url: 'idol:038tak' } }]),
+    readModelClient: { load: async (descriptor, options) => {
+      assert.equal(descriptor.url, 'idol:038tak')
+      const detail = { id: '038tak', view: { page: { idol_code: '038tak', sections: [] }, readingEntries: [] } }
+      options.validate(detail)
+      return detail
+    } },
+    captureDetailSource: () => {},
+    commitView: view => { context.navigation.invalidate(); context.view.value = view },
+  }
+  const bound = bindStoryArchiveNavigation(app, context)
+  try {
+    await bound.openMobileIdolStory(String(episodeId))
+    assert.equal(context.view.value, 'idol_story_archive', `${mode} unlock enters the idol-story archive`)
+    assert.equal(context.currentStorySection.value, String(sectionId), 'related-story routes retain the exact section identity')
+    assert.equal(context.currentEpisodeId.value, String(episodeId), 'related-story routes retain the exact episode identity')
+    assert.equal(bound.currentIdolStoryPage.value.idol_code, '038tak')
+  } finally { bound.stop() }
+}
 assert.match(archiveIdolStory, /data-section-id="section\.id"/, 'idol-story archive must expose focused section identity')
 assert.match(archiveIdolStory, /data-episode-id="episode\.id"/, 'idol-story archive must expose focused episode identity')
 assert.match(backdrop, /filter:\s*blur\(/, 'outer story background must be softened behind the phone surface')

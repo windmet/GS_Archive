@@ -112,11 +112,11 @@ function release(worker) {
   idle.push(worker)
 }
 
-export async function encodeLosslessWebp({ source, target }) {
+export async function encodeLosslessWebp({ source, target, lossy = false }) {
   const worker = await acquire()
   const id = nextJobId++
   try {
-    const result = await worker.encode({ id, source, target })
+    const result = await worker.encode({ id, source, target, lossy })
     return { width: result.width, height: result.height, alphaClearedPixels: result.alphaClearedPixels }
   } finally {
     release(worker)

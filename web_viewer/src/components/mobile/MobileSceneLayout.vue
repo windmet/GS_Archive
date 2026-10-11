@@ -66,7 +66,7 @@ defineProps({
 }
 
 /* ── Responsive composition (handoff §5.5/§5.8) ── */
-@media (min-width: 1100px) {
+@media (min-width: 1101px) {
   .is-choice .scene-content {
     grid-template-columns: minmax(430px, 0.95fr) minmax(320px, 0.65fr);
     gap: clamp(28px, 4vw, 72px);
@@ -77,14 +77,14 @@ defineProps({
   }
 }
 
-@media (min-width: 700px) and (max-width: 1099px) {
+@media (min-width: 761px) and (max-width: 1100px) {
   .is-choice .scene-content {
     grid-template-columns: minmax(0, 1fr) minmax(230px, 34%);
     gap: 18px;
   }
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .scene-content {
     top: var(--player-content-top);
     bottom: var(--player-content-bottom);

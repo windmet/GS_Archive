@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_06_008_22_5_06_008_22",
-  "logical_id": "story-collection:5_06_008_22_5_06_008_22",
+  "logical_id": "story:5_06_008_22_5_06_008_22",
   "scenario_id": "5_06_008_22_5_06_008_22",
   "text_catalog_id": "5_06_008_22_5_06_008_22",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_06_008_22_5_06_008_22.json",
-    "sha256": "sha256:b50e995896748e7d333bd051fdba917c1118901cf6c814da453f21f5197f3064",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:110de36b2bd25888f895fb0543af846ad305656affdb732e333dfd0f430d3e06",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:93bb6bbe9882918eaba29150ba7269424629d4f7fdee36b93a40d6ad5c660b4c",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_06_008_22_5_06_008_22.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "みんなで作った曲だから",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5ff2182af8d473f98cc53787616a77ea31b25f21f65609ba725e15c37a44d3d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,17 +68,28 @@
         "row_id": "5_06_008_22_5_06_008_22:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "synopsis",
       "source_text": "315プロダクションの記念日を祝う、\nスペシャルライブの開催が決定。\nパッションあふれる最高の舞台にすべく、\nアイドルたちは一丸となって新曲や衣装、\nステージ演出を作り上げていく。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000000:synopsis:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 0,
+          "field_kind": "synopsis",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:128b3bb9304447098f1b4bbc1bb56cf707060803dc9a098e2b19247715e7282b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -91,21 +116,32 @@
         "row_id": "5_06_008_22_5_06_008_22:step-1:text",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "うーん……全体曲に沿った演出かー。\nどういうのがいいかなー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fb5cc1e4195e623aa30de3a1e4739dc472d15eb3850233107b01bade1a4f3d89"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -122,7 +158,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -131,21 +166,32 @@
         "row_id": "5_06_008_22_5_06_008_22:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "的が絞られてるからな。やりやすいかと思ったん\nだが、テーマから受けるイメージはそれぞれ違う。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000034:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 34,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1d67152b03e4a489bfe1c91e3e6c6526eb0cee768be5c69569623d4a4c8c2cd3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -161,30 +207,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "まずはそれを纏めた方が良さそうだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000037:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 37,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:49b789d40f9f2e5fa276de0b8da7734e20ec66216bd1f8b1162f7c6073e008b1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -200,30 +255,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "では照明を使って、海を表現するのはどうでしょう？\n海でしたら、様々な感情の表現が可能です。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb0cf3eaad9723902cd26a001356249a1f4c97df75be957d094790a56838d638"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -240,7 +304,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -249,21 +312,32 @@
         "row_id": "5_06_008_22_5_06_008_22:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 44,
+        "command_end": 44
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それもいいが、他のユニットの要素も感じられる\n演出を考えたほうがいいんじゃないか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000050:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 50,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:20e9c4823dbccf4a5a9ebb3f557944af55b6fb8f4e59f31a4a395ce18c326d9b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -279,30 +353,39 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 50,
+        "command_end": 50
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "そうだよねー。でも、こんなにたくさんユニットが\nいると、まとめるのは大変そうだなー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000057:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 57,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:82747c7ff45830e033ab7432c57e488e0ebce062645bb873ef2a91f7d9fe9bf1"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -319,7 +402,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -328,21 +410,32 @@
         "row_id": "5_06_008_22_5_06_008_22:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "新曲の歌詞を改めて読み直すのはどうでしょう。\n各ユニットの特色が見事に表現されていますから。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000062:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 62,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c35b4b93a8cc4b97ac84af6c501805dad1289d9337ecd0df91bf71a2d74e0df2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -358,30 +451,39 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 62,
+        "command_end": 62
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "確かに……あの歌詞は参考になるよねー。\nみんなで意見を出し合って作った曲だしー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000068:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 68,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bd7a053e4c7a54437f9416918d741c2e974ca0a3a6375b4ee0772ccd2e3ebbb7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -398,7 +500,6 @@
         "stepId": 11
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -407,21 +508,32 @@
         "row_id": "5_06_008_22_5_06_008_22:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 68,
+        "command_end": 68
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それぞれが気になったポイントを書き出してみるか。\n何かヒントが見つかるかもな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000072:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 72,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8e76592c3085ce60fd735e17fc504e8411d0d3f3b83def223c71c87c0f6ea537"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -437,30 +549,39 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 72,
+        "command_end": 72
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "あとは、他の誰かにも相談してみるとかー？\n明日はDRAMATIC STARSと同じ現場だったよねー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000075:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 75,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:568482170adc8b3eaa75c4d2c1ecdaa37f4495a9f703b39b7c8191713f8364ef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "045sor",
         "sourceName": "北村 想楽"
       },
       "performance": {
@@ -476,30 +597,39 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "5_06_008_22_5_06_008_22:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 75,
+        "command_end": 75
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "それはいいですね！\nでは、今から相談内容を纏めましょうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_06_008_22_5_06_008_22:5_06_008_22:cmd-000085:dialogue:000",
+        "source": {
+          "scenario_id": "5_06_008_22_5_06_008_22",
+          "part_id": "5_06_008_22",
+          "file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+          "command_index": 85,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:36e35e10031a8014d17b26fa5bc15016263c35d7bee88e42f718fce51cd124d8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "046chr",
         "sourceName": "古論 クリス"
       },
       "performance": {
@@ -516,7 +646,6 @@
         "stepId": 14
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -525,87 +654,16 @@
         "row_id": "5_06_008_22_5_06_008_22:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_06_008_22",
+        "source_file": "assets/resources/scenariodata/5_06_008_22/scenario_5_06_008_22.json",
+        "command_start": 85,
+        "command_end": 85
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "315プロダクションの記念日を祝う、",
     "episode_label": null

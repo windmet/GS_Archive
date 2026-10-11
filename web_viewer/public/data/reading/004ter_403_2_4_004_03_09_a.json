@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "004ter_403_2_4_004_03_09_a",
-  "logical_id": "story-collection:004ter_403_2_4_004_03_09_a",
+  "logical_id": "story:004ter_403_2_4_004_03_09_a",
   "scenario_id": "004ter_403_2_4_004_03_09_a",
   "text_catalog_id": "004ter_403_2_4_004_03_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "004ter_403_2_4_004_03_09_a.json",
-    "sha256": "sha256:e0fa9809710ee33591447cc8a8903178f067cfa2a13994e719e042db299f2bf0",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:304b1f759f7f79c87587651aaea01e72a283bc2df30418d3227d2462a6e38576",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:c696388fcba68defa85c27aa951d8c6bc93538c37320713952d979fcd187bb6c",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "004ter_403_2_4_004_03_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "お疲れ、●●●●プロデューサー。\n遅い時間に、急にかけて悪いな。今時間あるか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:050227b8ef62fd477c57379504686e1d4dc4803a39bdc7a9d379a7e32b7d2f39"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "大丈夫ですよ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d343ca896cf656862d861688fd5198331ffd14c267246db044a087c376951e73"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "004ter_403_2_4_004_03_09_a:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000008",
+        "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000008:000",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -112,11 +135,22 @@
     {
       "kind": "dialogue",
       "source_text": "桜庭と翼と3人で飲みながら、仕事の話をしてたらさ。\nどうしてもあんたとも話したくなっちまった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a81c2c46068da59077b0a61e95c2af87180e343dc0e32dae4e0d5331f36df011"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -132,19 +166,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "現場であったことを聞いてたら、315プロには\nすげーやつらがいっぱいいるなって、改めて思った。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e2ea7548778305fe9243ee01e669e975d6f4cd531f57a65515c405be38e8c9f6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺たち……翼たちじゃなくて、北斗や類となんだけど、\n事務所の代表として、ライブに参加しただろ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ab7294d368e3824327b954ac5c1a44c7a93d1050d20a5a49d86093875d27af26"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "あのメンバーの一人に、俺を選んでくれて\nありがとうな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9362662f022ef41ffe410803676e1d40b25e847ea9e4dda8304c47729ef0472b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -272,11 +331,22 @@
     {
       "kind": "dialogue",
       "source_text": "こんなにすげーやつらの代表になれてよかった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be8c022d97842e814e4468d75d57f004c02e2b611a0a1afcf2bb11bf104c227b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -292,19 +362,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "お願いして\nよかったです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8a072c91ccbf8152bb916fbf7a9db08e91d839f0c4fe5695148d00bf49c9c4fe"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,14 +418,14 @@
         "row_id": "004ter_403_2_4_004_03_09_a:step-9:option-0",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020",
+        "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020:000",
         "source_label": "phone_select2",
         "target_step_id": 10,
         "target_step_index": 9,
@@ -357,7 +436,18 @@
     {
       "kind": "choice",
       "source_text": "代表にふさわしい\nパフォーマンスでした",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000021:choice_short:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 21,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5df1588710f5f7dc97572358d4049872908b19686bf2c41c1be1e5dd167b15fc"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -384,14 +474,14 @@
         "row_id": "004ter_403_2_4_004_03_09_a:step-9:option-1",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 20,
+        "command_end": 21
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020",
+        "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000021:001",
         "source_label": "phone_select3",
         "target_step_id": 10,
         "target_step_index": 9,
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "本当か！ 俺たちのパフォーマンスを見て、\n315プロに興味を持ってくれる人が増えるといいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d4327318ca3754847861cdb6a322d47456c0e2b4430451f59ca910abeafcef42"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "……話、聞いてくれてありがとな、プロデューサー。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:62a828548a953ea3117faa47708edf3feda8bae855aeeace48455e657cad774f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "今度は、315プロダクションのみんなとあそこに\n立てるように頑張るぜ！ それじゃ、おやすみ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "004ter_403_2_4_004_03_09_a",
+          "part_id": "2_4_004_03_09_a",
+          "file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:196c92de5db33c3f1c4e71ce6ba4ff4d7adb31e12fbdaa6e4a5ab5d714487d1e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "天道 輝"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "004ter_403_2_4_004_03_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_004_03_09_a",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -527,8 +644,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000008",
+          "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000008:000",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
@@ -542,96 +659,62 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020",
+          "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020:000",
           "source_label": "phone_select2",
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000020",
+          "option_id": "choice-option:v1:004ter_403_2_4_004_03_09_a:2_4_004_03_09_a:cmd-000021:001",
           "source_label": "phone_select3",
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 8,
+        "choice_step_id": 9,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/004ter_403/scenario_2_4_004_03_09_a.json",
+        "raw_sha256": "sha256:dc0e591a30825064feb04e9891541042bf8981357e3631c916adc4909403f9d7",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          20,
+          21
+        ],
+        "join_command": 23,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              22
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 8,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "お疲れ、●●●●プロデューサー。",
     "episode_label": null

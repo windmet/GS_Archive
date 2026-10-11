@@ -1,0 +1,2098 @@
+{
+  "scenario_id": "5_01_018_23",
+  "text_catalog_id": "5_01_018_23",
+  "text_contract_version": 1,
+  "total_steps": 18,
+  "steps": [
+    {
+      "step_id": 1,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0.0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 7,
+        "command_end": 7,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 2,
+      "type": "stage",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": {
+          "cue": "step_walk_come_lino_zouri",
+          "delay": 0.0
+        },
+        "se_events": [
+          {
+            "cue": "step_walk_come_lino_zouri",
+            "delay": 0.0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 10,
+        "command_end": 10,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 1.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 3,
+      "type": "stage",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off",
+            "fade": {
+              "type": "in",
+              "delay": 0.0,
+              "duration": 0.2
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "wait",
+        "confidence": "exact"
+      },
+      "duration": 0.5,
+      "auto_advance": true,
+      "hide_dialogue": true,
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 4,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "hello",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 16,
+        "command_end": 16,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.8,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "angry"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "お待たせ、プロデューサーちゃん。\nちょっと手のひらを見せてくれるかい？",
+        "text_jp": "お待たせ、プロデューサーちゃん。\nちょっと手のひらを見せてくれるかい？",
+        "text_cn": "",
+        "source_text": "お待たせ、プロデューサーちゃん。\nちょっと手のひらを見せてくれるかい？",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000016:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 16,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:10fc9473bde73eef9d5c5d21044ce71670da325b99197b643029b8f712be7bae"
+        },
+        "voice": "5_01_018_23_a1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1000.json",
+          "frames": 328
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 5,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": {
+          "cue": "cloth_move_ss01",
+          "delay": 0.0
+        },
+        "se_events": [
+          {
+            "cue": "cloth_move_ss01",
+            "delay": 0.0
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 19,
+        "command_end": 19,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "……？　こうでしょうか？",
+        "text_jp": "……？　こうでしょうか？",
+        "text_cn": "",
+        "source_text": "……？　こうでしょうか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000019:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 19,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:f9b6acbed3b203be60ea33f89bbb513789b5135e3fa5043b2acdf0444776e04b"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 6,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": {
+          "cue": "plasticbag_open",
+          "delay": 4.2
+        },
+        "se_events": [
+          {
+            "cue": "plasticbag_open",
+            "delay": 4.2
+          }
+        ],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 23,
+        "command_end": 23,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 3.5,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "weight"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "アタシからバレンタインデーの贈り物だよ。\nはい、どうぞ。",
+        "text_jp": "アタシからバレンタインデーの贈り物だよ。\nはい、どうぞ。",
+        "text_cn": "",
+        "source_text": "アタシからバレンタインデーの贈り物だよ。\nはい、どうぞ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000023:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 23,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:3f3fa07538c3313148135ce86bc6911df581bd3b2f24a13d40948bcd9005993e"
+        },
+        "voice": "5_01_018_23_a1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1002.json",
+          "frames": 316
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 7,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "weight",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 27,
+        "command_end": 27,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.0,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "wait_loop"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "これは……テレビで話題になっていた空港限定商品！\nいただいて良いんですか？",
+        "text_jp": "これは……テレビで話題になっていた空港限定商品！\nいただいて良いんですか？",
+        "text_cn": "",
+        "source_text": "これは……テレビで話題になっていた空港限定商品！\nいただいて良いんですか？",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000027:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 27,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:fbbb9d76cb8cc8ad3c359bc45a930b6735d7a9e95ff19b1286866f743cdfcd97"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 8,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 33,
+        "command_end": 33,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.8,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "もちろんさ。そのためにあげたんだよ。\n遠慮せず受け取ってちょうだいな。",
+        "text_jp": "もちろんさ。そのためにあげたんだよ。\n遠慮せず受け取ってちょうだいな。",
+        "text_cn": "",
+        "source_text": "もちろんさ。そのためにあげたんだよ。\n遠慮せず受け取ってちょうだいな。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000033:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 33,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:b1f685e17bd723eede7e6fa358b0cf2f6cb20a1b6c21cea09e807f2b3d8617d2"
+        },
+        "voice": "5_01_018_23_a1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1004.json",
+          "frames": 402
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 9,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.2,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "アンタに渡せてよかったよ。",
+        "text_jp": "アンタに渡せてよかったよ。",
+        "text_cn": "",
+        "source_text": "アンタに渡せてよかったよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000037:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 37,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:c40d33895f63e240a33caf79f2610544d5a81bc3c4b787f707839e1eaf67b900"
+        },
+        "voice": "5_01_018_23_a1005.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1005.json",
+          "frames": 144
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 10,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 42,
+        "command_end": 42,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 4.0,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_joy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4.0,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "surprise"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "ちょうど仕事で空港へ来れるって聞いた時から、\nアンタにそれって決めてたのよ。",
+        "text_jp": "ちょうど仕事で空港へ来れるって聞いた時から、\nアンタにそれって決めてたのよ。",
+        "text_cn": "",
+        "source_text": "ちょうど仕事で空港へ来れるって聞いた時から、\nアンタにそれって決めてたのよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000042:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 42,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:948d0e2d88863b017991e247698ae0ee4d3653061de7e24b212294576121e0b4"
+        },
+        "voice": "5_01_018_23_a1006.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1006.json",
+          "frames": 367
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 11,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_joy",
+            "anim": "surprise",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 47,
+        "command_end": 47,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.0,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_default",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 1.0,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "wait_loop",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "dialogue": {
+        "speaker": "<P>",
+        "text": "ありがとうございます、大切にしますね！",
+        "text_jp": "ありがとうございます、大切にしますね！",
+        "text_cn": "",
+        "source_text": "ありがとうございます、大切にしますね！",
+        "speaker_identity": {
+          "kind": "producer",
+          "entity_type": null,
+          "entity_id": null,
+          "source_name": "<P>"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000047:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 47,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:b6f4e0aa7c2a4f175aa6a2aa4495d7ba78f833b8c6d9c88162aa6b054047e542"
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 12,
+      "type": "adv",
+      "state": {
+        "bg": "bg105_tsuairport_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg105_tsuairport_in_01",
+          "lightPosition": 0,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "shop_general",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_airport_lobby"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "source_part_id": "5_01_018_23_a",
+        "command_start": 53,
+        "command_end": 53,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "ああ。アンタに大切にしてもらえたら、\nアタシだけじゃなくて、それも嬉しいと思うよ。",
+        "text_jp": "ああ。アンタに大切にしてもらえたら、\nアタシだけじゃなくて、それも嬉しいと思うよ。",
+        "text_cn": "",
+        "source_text": "ああ。アンタに大切にしてもらえたら、\nアタシだけじゃなくて、それも嬉しいと思うよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_a:cmd-000053:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_a",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+            "command_index": 53,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:8495ef5ac86c782b26d1a81f9307ad54740ec040ce06b00f6b079b9aee921873"
+        },
+        "voice": "5_01_018_23_a1009.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_018_23/5_01_018_23_a1009.json",
+          "frames": 470
+        }
+      },
+      "episode_index": 0,
+      "episode_part": "a"
+    },
+    {
+      "step_id": 13,
+      "type": "fadeout",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "fade": {
+              "type": "in",
+              "delay": 0.0,
+              "duration": 0.0
+            }
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": {
+          "type": "in",
+          "duration": 0.5,
+          "delay": 0.0,
+          "color": "#000000"
+        },
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 4,
+        "command_end": 4,
+        "raw_type": "screen_fadeout",
+        "confidence": "exact"
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 14,
+      "type": "adv",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 12,
+        "command_end": 12,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 2.8,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 2.8,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "sad",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "アンタが選んでくれたチョコレート、\n食べるのが楽しみだよ。",
+        "text_jp": "アンタが選んでくれたチョコレート、\n食べるのが楽しみだよ。",
+        "text_cn": "",
+        "source_text": "アンタが選んでくれたチョコレート、\n食べるのが楽しみだよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_b:cmd-000012:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_b",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+            "command_index": 12,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:633aec75b1eece0cc570e5f5cb84e4b0b201d7a0fe948f2adf07320bc166e4f4"
+        },
+        "voice": "5_01_018_23_b1000.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_999_23/5_01_018_23_b1000.json",
+          "frames": 297
+        }
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 15,
+      "type": "adv",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_surprise",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 22,
+        "command_end": 22,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 0.2,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_surprise",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.0,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "off",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.0,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "sad",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "アタシのために用意してくれたのかい？\nありがとね、●●●●プロデューサーちゃん。",
+        "text_jp": "アタシのために用意してくれたのかい？\nありがとね、●●●●プロデューサーちゃん。",
+        "text_cn": "",
+        "source_text": "アタシのために用意してくれたのかい？\nありがとね、●●●●プロデューサーちゃん。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_b:cmd-000022:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_b",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+            "command_index": 22,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:648825a5936642db175978cb68ef4f3a040e2eaae5393e2215e1b884517d3597"
+        },
+        "voice": "5_01_018_23_b1001.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_999_23/5_01_018_23_b1001.json",
+          "frames": 361
+        }
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 16,
+      "type": "adv",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 30,
+        "command_end": 30,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 3.0,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_happy",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 3.0,
+          "type": "spine_neck_anim",
+          "chara_id": "018shm",
+          "value": "neck_question"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "こうして感謝を伝え合うってのは、\n良いもんだね。",
+        "text_jp": "こうして感謝を伝え合うってのは、\n良いもんだね。",
+        "text_cn": "",
+        "source_text": "こうして感謝を伝え合うってのは、\n良いもんだね。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_b:cmd-000030:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_b",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+            "command_index": 30,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:6f53a96e7e059d97e4370ee8ea4e566d3f11575e6183b4de848101b7f2ff2f2d"
+        },
+        "voice": "5_01_018_23_b1002.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_999_23/5_01_018_23_b1002.json",
+          "frames": 272
+        }
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 17,
+      "type": "adv",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_default",
+            "anim": "angry",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "目",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 37,
+        "command_end": 37,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 3.2,
+          "type": "spine_neck_anim",
+          "chara_id": "018shm",
+          "value": "neck_question"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "ホワイトデーには、アタシからも\nとっておきのお返しをさせてもらうよ。",
+        "text_jp": "ホワイトデーには、アタシからも\nとっておきのお返しをさせてもらうよ。",
+        "text_cn": "",
+        "source_text": "ホワイトデーには、アタシからも\nとっておきのお返しをさせてもらうよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_b:cmd-000037:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_b",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+            "command_index": 37,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:d26acfdd5840b9b93e48ae5e69682c79027926cdc87fdd27e78cb66ee4ce2917"
+        },
+        "voice": "5_01_018_23_b1003.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_999_23/5_01_018_23_b1003.json",
+          "frames": 299
+        }
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    },
+    {
+      "step_id": 18,
+      "type": "adv",
+      "state": {
+        "bg": "bg091_315prolounge_in_01",
+        "bg_effect": null,
+        "bg_transition": null,
+        "bg_effects": [],
+        "bg_profile": {
+          "imageId": "bg091_315prolounge_in_01",
+          "lightPosition": 1,
+          "lightCoordinate": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "lightAlpha": 1.0,
+          "colorOffSet": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "colorScale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "colorSaturation": 1.0
+        },
+        "bgm": "usual_day",
+        "bgm_volume": 100,
+        "se": null,
+        "se_events": [],
+        "environmental": {
+          "cue": "ambi_library_shop_cafe"
+        },
+        "spines": [
+          {
+            "id": "018shm",
+            "model": "018shm_001_00",
+            "face": "face_happy",
+            "anim": "wait_loop",
+            "position": 0,
+            "visible": true,
+            "pos_x": 0.0,
+            "pos_y": 0.0,
+            "anim_flag": "off",
+            "blush_flag": "off",
+            "sweat_flag": "off"
+          }
+        ],
+        "talk_mode": false,
+        "phone_mode": false,
+        "camera_zoom": null,
+        "screen_fade": null,
+        "screen_slide": null,
+        "screen_effects": [],
+        "bgm_stop_fade": null,
+        "environmental_volume": null,
+        "environmental_duck_target": null,
+        "camera_filter": null,
+        "bg_color": null,
+        "bg_dof": null,
+        "bg_color_transition": null,
+        "bg_dof_transition": null,
+        "text_disabled": false,
+        "image_icon": null
+      },
+      "evidence": {
+        "source_file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "source_part_id": "5_01_018_23_b",
+        "command_start": 45,
+        "command_end": 45,
+        "raw_type": "text",
+        "confidence": "exact"
+      },
+      "timeline": [
+        {
+          "time": 1.2,
+          "type": "spine_face",
+          "chara_id": "018shm",
+          "value": "face_default",
+          "anim_flag": "目",
+          "sweat_flag": "off",
+          "blush_flag": "off"
+        },
+        {
+          "time": 4.0,
+          "type": "spine_anim",
+          "chara_id": "018shm",
+          "value": "sad"
+        }
+      ],
+      "chara_id": "018shm",
+      "dialogue": {
+        "speaker": "華村 翔真",
+        "text": "ふふ、渡す側のアンタがそんなに嬉しそうだと\nアタシも嬉しくなるよ。",
+        "text_jp": "ふふ、渡す側のアンタがそんなに嬉しそうだと\nアタシも嬉しくなるよ。",
+        "text_cn": "",
+        "source_text": "ふふ、渡す側のアンタがそんなに嬉しそうだと\nアタシも嬉しくなるよ。",
+        "speaker_identity": {
+          "kind": "idol",
+          "entity_type": "idol",
+          "entity_id": "018shm",
+          "source_name": "華村 翔真"
+        },
+        "text_ref": {
+          "unit_id": "story-text:v1:5_01_018_23:5_01_018_23_b:cmd-000045:dialogue:000",
+          "source": {
+            "scenario_id": "5_01_018_23",
+            "part_id": "5_01_018_23_b",
+            "file": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+            "command_index": 45,
+            "field_kind": "dialogue",
+            "field_ordinal": 0
+          },
+          "source_hash": "sha256:9ac1fd3883ce07b9ada9753353f99619346994d640da470bb264135742a999c1"
+        },
+        "voice": "5_01_018_23_b1004.m4a",
+        "lip": {
+          "source": "adxlip",
+          "path": "adxlip/season/5_01_23/5_01_999_23/5_01_018_23_b1004.json",
+          "frames": 380
+        }
+      },
+      "episode_index": 1,
+      "episode_part": "b"
+    }
+  ],
+  "jump_points": {
+    "5_01_018_23_b": 14,
+    "5_01_018_23_c": 15,
+    "5_01_018_23_d": 16,
+    "5_01_018_23_e": 17,
+    "5_01_018_23_f": 18
+  },
+  "episodes": [
+    {
+      "episode_index": 0,
+      "episode_no": 1,
+      "part": "a",
+      "source_scenario_id": "5_01_018_23_a",
+      "start_step_index": 0,
+      "start_step_id": 1,
+      "end_step_index": 11,
+      "end_step_id": 12,
+      "step_count": 12
+    },
+    {
+      "episode_index": 1,
+      "episode_no": 2,
+      "part": "b",
+      "source_scenario_id": "5_01_018_23_b",
+      "start_step_index": 12,
+      "start_step_id": 13,
+      "end_step_index": 17,
+      "end_step_id": 18,
+      "step_count": 6
+    }
+  ],
+  "source": {
+    "raw_path": "scenariodata/5_01_018_23",
+    "raw_hash": "sha256:6b8360e6bbee0bcc83b099cfca1f94e7bfb5a4e771418a4260608ec744135ff1",
+    "raw_hash_format": "sha256-group-manifest-v1",
+    "raw_files": [
+      {
+        "path": "scenariodata/5_01_018_23/scenario_5_01_018_23_a.json",
+        "raw_hash": "sha256:9ee46b7203de39f0f54238a0df388d7386837b06a7f16f85d94824bfc2f21405"
+      },
+      {
+        "path": "scenariodata/5_01_018_23/scenario_5_01_018_23_b.json",
+        "raw_hash": "sha256:ac02ea853105538f165b3fcc974f1f0bc1ee7464f5fda7c02ed5f935318c324d"
+      }
+    ]
+  }
+}

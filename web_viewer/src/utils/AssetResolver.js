@@ -238,6 +238,11 @@ export function getCharaIconUrl(charaId) {
   return `${ASSET_BASE}/idols/icons/image_chara_icon_${charaId}.png`
 }
 
+// The game's autograph (image_chara_signs): white strokes with a grey outline, used as a mask.
+export function getCharaSignUrl(charaId) {
+  return `${ASSET_BASE}/idols/signs/image_chara_sign_${charaId}.png`
+}
+
 export function getUnitLogoUrl(unitId) {
   return `${ASSET_BASE}/units/logos/image_unit_logo_${unitId}.png`
 }

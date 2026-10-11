@@ -13,6 +13,8 @@ const STORY_CANDIDATE_ROOT = path.resolve(
 const CARD_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_CARD_CANDIDATE_ROOT || '.analysis/raw-migration/card',
 )
+// public/ folders that src/ imports as modules; see server.watch below.
+const WATCHED_PUBLIC_DIRS = ['translations/', 'data/editorial/']
 const BACKGROUND_CANDIDATE_ROOT = path.resolve(
   process.env.SIDEM_BACKGROUND_CANDIDATE_ROOT || '.analysis/raw-migration/background',
 )
@@ -114,6 +116,25 @@ function cardArtPlugin() {
         res.setHeader('Content-Type', 'image/png')
         res.setHeader('Cache-Control', 'public, max-age=86400')
         fs.createReadStream(filePath).pipe(res)
+      })
+    },
+  }
+}
+
+function domainImagePlugin() {
+  return {
+    name:'sidem-domain-images',
+    configureServer(server) {
+      server.middlewares.use('/assets/domain-images',(req,res,next)=>{
+        let clean
+        try { clean=decodeURIComponent((req.url || '').split('?')[0]) } catch { next(); return }
+        const file=assetResolver.domainImagePath(clean)
+        if (!file || !fs.existsSync(file)) { next(); return }
+        res.setHeader('Content-Type','image/png')
+        res.setHeader('Cache-Control','public, max-age=86400')
+        const stream=fs.createReadStream(file)
+        stream.on('error',()=>{res.statusCode=500;res.end()})
+        stream.pipe(res)
       })
     },
   }
@@ -402,6 +423,7 @@ export default defineConfig({
     lipsyncStaticPlugin(),
     audioPlugin(),
     cardArtPlugin(),
+    domainImagePlugin(),
     rawStoryCandidatePlugin(),
     rawCardCandidatePlugin(),
     rawBackgroundCandidatePlugin(),
@@ -414,17 +436,21 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Ignore massive asset directories from file watcher.
-    // The 32K+ voice files and 700+ spine models cause chokidar
-    // to hang the dev server on Windows.
+    // Keep the file watcher off the archive corpus and build output. Windows
+    // creates one native fs.watch handle per entry; ~74K public files plus the
+    // 285K-file .deploy tree made dev requests take 10-40s. Files fetched from
+    // public/ are read from disk on every request, but the translation and
+    // editorial JSON that src/ imports as modules is transformed and cached,
+    // so those two small folders stay watched.
     watch: {
-      ignored: [
-        '**/public/assets/voice/**',
-        '**/public/assets/spines/**',
-        '**/public/assets/bg/**',
-        '**/public/assets/lipsync/**',
-        '**/.analysis/**',
-      ],
+      ignored: file => {
+        const path = file.replace(/\\/g, '/')
+        if (/\/(\.deploy|\.analysis|dist)(\/|$)/.test(path)) return true
+        const inPublic = path.split('/public/')[1]
+        if (inPublic === undefined) return false
+        // Watched folders and their parents (so the watcher can reach them) stay in.
+        return !WATCHED_PUBLIC_DIRS.some(dir => `${inPublic}/`.startsWith(dir) || dir.startsWith(`${inPublic}/`))
+      },
     },
   },
 })

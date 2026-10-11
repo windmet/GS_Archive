@@ -9,6 +9,8 @@ const indexes = {
   imageLayers: json('image-layers/index.json'),
   objectLayers: json('object-layers/index.json'),
   stageEffects: json('stage-effects/index.json'),
+  stageBackgrounds: json('stage-backgrounds/index.json'),
+  imageObjects: json('image-objects/index.json'),
 }
 const coverages = songs.map(song => buildStageVfxCoverage(song, indexes))
 assert.equal(coverages.length, 118)
@@ -28,4 +30,14 @@ assert.deepEqual(synthetic.objectMissing, ['missing_object'])
 assert.deepEqual(synthetic.objectOther, ['unknown_kind'])
 assert.deepEqual(synthetic.missingMedia, ['missing_movie', 'missing_image'])
 assert.equal(synthetic.status, 'partial')
+const unresolved = buildStageVfxCoverage({ id:'unaddressed',
+  wholeScreenColorLayerEvents:[{time:16200,id:null,hide:true,unresolvedReason:'missing_layer_identity'}] })
+assert.equal(unresolved.sourceEvents.wholeScreenColorLayer, 1)
+assert.equal(unresolved.unresolvedColorPlanes.length, 1)
+assert.equal(unresolved.status, 'partial')
+const unsupportedLamp=buildStageVfxCoverage({id:'missing-lamp',songCode:'synthetic'},
+ {stageEffects:{stagelightSongs:{synthetic:{events:[{asset:'unknown',previewSupported:false}]}},stagelights:{}}})
+assert.deepEqual(unsupportedLamp.stagelightUnimplemented,['unknown'])
+assert.equal(unsupportedLamp.stagelightUnimplementedCommands,1)
+assert.equal(unsupportedLamp.status,'partial')
 console.log(`Stage VFX coverage: ${coverages.length} arrangements, ${coverages.filter(entry => entry.status === 'partial').length} with unsupported or missing layers; raw source status only`)

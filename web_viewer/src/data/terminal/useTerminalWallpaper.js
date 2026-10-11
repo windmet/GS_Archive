@@ -33,5 +33,6 @@ export function useTerminalWallpaper() {
   }
   const selected = computed(() => catalogue.value?.entries.find(entry => entry.id === preferences.value.wallpaperKey) || null)
   const unavailable = computed(() => Boolean(catalogue.value && preferences.value.wallpaperKey && !selected.value))
-  return { preferences, catalogue, selected, unavailable, loading, error, notice, revision, load, choose }
+  function refreshPreferences() { preferences.value = readTerminalPreferences(); revision.value++ }
+  return { preferences, catalogue, selected, unavailable, loading, error, notice, revision, load, choose, refreshPreferences }
 }

@@ -10,6 +10,7 @@ on:
     branches:
       - master
       - codex/gs-architecture-rebuild
+      - codex/event-resource-navigation-20261002
     paths:
       - ".github/workflows/web-viewer-source-gate.yml"
       - "data_pipeline/**"
@@ -55,6 +56,10 @@ jobs:
 
       - name: Verify read-model tools and assembler rejection contracts
         run: npm run test:source --prefix readmodels
+      - name: Verify engineering lifecycle, stage intent and collection route regressions
+        run: npm run verify:engineering
+      - name: Verify expanded editorial and translation contracts (source only)
+        run: npm run verify:editorial-source
 
       - name: Validate route progress ledger against public routes
         run: npm run verify:cutover-routes
@@ -101,11 +106,69 @@ jobs:
       - name: Verify displayed stage pixel budget
         run: npm run verify:stage-render-budget
 
+      - name: Verify bounded particle timeline and source identity
+        run: npm run verify:chibi-particles
+
+      - name: Verify chibi color plane timelines
+        run: npm run verify:chibi-color-layers
+
+      - name: Verify independently addressed chibi performer colors
+        run: npm run verify:chibi-body-colors
+      - name: Verify authored chibi image color timelines
+        run: npm run verify:chibi-image-colors
+
+      - name: Verify chibi ground registration across viewport sizes
+        run: npm run verify:chibi-stage-coordinates
+
+      - name: Verify backmonitor aperture coverage and raw controls
+        run: npm run verify:chibi-backmonitor-registration && python scripts/verify-chibi-backmonitor-parser.py && node scripts/verify-chibi-backmonitor-controls.mjs && python scripts/verify-chibi-backmonitor-logo.py && node scripts/verify-chibi-backmonitor-logo.mjs
+
+      - name: Verify authored chibi Camera erase controls and reset sampling
+        run: python scripts/verify-live-chibi-camera-controls.py && node scripts/verify-chibi-camera-reset.mjs
+
+      - name: Verify native chibi streamed animation decoding
+        run: python scripts/verify-chibi-streamed-animation.py
+
+      - name: Verify native chibi Penlight object and controller bindings
+        run: python scripts/verify-chibi-penlight-bindings.py
+
+      - name: Verify Take stage lamp bindings and timeline sampling
+        run: python scripts/verify-chibi-stagelight-prefabs.py && node scripts/verify-chibi-stagelights.mjs && python scripts/verify-chibi-suspensionlight-parser.py && node scripts/verify-chibi-suspensionlights.mjs && python scripts/verify-chibi-old-suspension.py && node scripts/verify-chibi-old-suspension.mjs && python scripts/verify-chibi-laser-parser.py && node scripts/verify-chibi-laser-particles.mjs
+      - name: Verify independent formations and native shadow followers
+        run: python scripts/verify-chibi-character-shadow-parser.py && node scripts/verify-chibi-placement-shadows.mjs
+
+      - name: Verify native Not Alone beam and pool atlas particles
+        run: python scripts/verify-chibi-spotbeam-parser.py && node scripts/verify-chibi-spotbeam-particles.mjs
+
+      - name: Verify native turning laser Animator particle bindings
+        run: python scripts/verify-chibi-turnlaser-parser.py && node scripts/verify-chibi-turnlaser-particles.mjs
+
+      - name: Verify native Take floor particles and masked timeline
+        run: python scripts/verify-chibi-floor.py && node scripts/verify-chibi-floor.mjs
+
+      - name: Verify native Penlight hierarchy, tight mesh and render inputs
+        run: python scripts/verify-chibi-penlight-render-inputs.py
+
+      - name: Verify native costume shader bindings and premultiplied color formula
+        run: python scripts/verify-chibi-costume-shader.py && node scripts/verify-chibi-foot-lighting.mjs
+
+      - name: Verify native object light quaternion projection and signed sprite scales
+        run: python scripts/verify-chibi-object-transforms.py && node scripts/verify-chibi-object-light-runtime.mjs
+
+      - name: Verify native Spotlight sprite bindings and async disposal
+        run: python scripts/verify-chibi-spotlight-prefab.py && node scripts/verify-chibi-spotlight-sprites.mjs && node scripts/verify-chibi-spotlight-targets.mjs && python scripts/verify-chibi-spotlight-background.py && node scripts/verify-chibi-spotlight-background.mjs && python scripts/verify-chibi-pinspotlight-prefab.py && node scripts/verify-chibi-pinspotlight-sprites.mjs
+
+      - name: Verify bounded chibi ImageObject source timelines
+        run: npm run verify:chibi-image-objects
+
       - name: Verify song lyrics and media clock
         run: npm run verify:song-lyrics && npm run verify:media-element-clock
 
       - name: Verify playback feature ownership
         run: npm run verify:playback-controller
+
+      - name: Verify player and story interaction recovery contracts
+        run: npm run verify:player-qa
 
       - name: Verify translation contracts
         run: npm run verify:story-translations
@@ -333,6 +396,9 @@ jobs:
 
       - name: Verify compiled migration
         run: npm run verify:compiled-migration
+
+      - name: Verify the source-only verifier batch and coverage ledger
+        run: npm run verify:source-batch
 
       - name: Compile source and generate startup/cutover audits
         run: npm run build:check

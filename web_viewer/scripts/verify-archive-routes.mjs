@@ -7,6 +7,7 @@ import {
   normalizeArchiveRoute,
   readArchiveRoute,
   readArchiveSourceRoute,
+  writeArchiveRoute,
 } from '../src/core/archiveRoute.js'
 
 const legacyScenario = readArchiveRoute('http://localhost/?file=1_4_001_01')
@@ -51,6 +52,7 @@ assert.equal(readArchiveRoute('http://localhost/?view=chibi_stage&song=brndnf&st
 assert.equal(buildArchiveUrl('http://localhost/?stage=stale', { view: 'song_detail', song: 'brndnf' }).searchParams.has('stage'), false)
 
 const invalidFilters = readArchiveRoute('http://localhost/?view=story_catalog&availability=nope&sort=nope&event_scope=mixed_unit_event')
+assert.equal(readArchiveRoute(buildArchiveUrl('http://localhost/', {view:'story_catalog',storyMode:'search',sort:'latest'})).sort,'latest')
 const episodePlayer = readArchiveRoute('http://localhost/?view=player&scenario=episodes%2F1_4_001_00_b.json&start_step=1&end_step=33&return=story_collection')
 assert.equal(episodePlayer.scenario, 'episodes/1_4_001_00_b.json')
 assert.equal(episodePlayer.startStep, 1)
@@ -75,7 +77,7 @@ assert.equal(normalizeArchiveRoute({ view: 'cards' }).view, 'cards')
 assert.equal(normalizeArchiveRoute({ view: 'cards' }).idol, '')
 assert.equal(normalizeArchiveRoute({ view: 'unit_detail' }).view, 'unit_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'gasha_detail' }).view, 'gashas')
-assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'story_catalog')
+assert.equal(normalizeArchiveRoute({ view: 'event_detail' }).view, 'event_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_detail' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'story_collection' }).view, 'story_catalog')
 assert.equal(normalizeArchiveRoute({ view: 'external_story_resources' }).view, 'external_story_resources')
@@ -91,7 +93,7 @@ assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'i
 assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')
 assert.equal(archiveSectionForRoute({ view: 'card_detail', card: '001tom_n01' }), 'cards')
 assert.equal(archiveSectionForRoute({ view: 'archive_status' }), 'resources')
-assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'stories')
+assert.equal(archiveSectionForRoute({ view: 'event_detail', event: '410018' }), 'events')
 assert.equal(archiveSectionForRoute({ view: 'story_detail', story: '1_4_001_01.json' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'story_collection', storyType: 'main', storySection: '101' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'external_story_resources' }), 'stories')
@@ -99,6 +101,26 @@ assert.equal(archiveSectionForRoute({ view: 'seasonal_campaign', storyType: 'sea
 assert.equal(archiveSectionForRoute({ view: 'work_archive', storyType: 'work', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'idol_story_archive', idol: '001tom' }), 'stories')
 assert.equal(archiveSectionForRoute({ view: 'mobile_archive', idol: '001tom', mobileMode: 'phone' }), 'interactions')
+
+// Hierarchy links go to the archive portal; original-source Back remains a
+// separate context, even when the current detail was opened from another domain.
+for (const route of [
+  filteredCards,
+  sourcedCard,
+  { view: 'event_catalog', query: 'Cafe', eventScope: 'fixed_unit_event' },
+  { view: 'event_detail', event: '410018', parentView: 'card_detail', sourceRoute: cardsSource },
+  { view: 'song_catalog', query: 'Jupiter' },
+  { view: 'song_detail', song: 'brndnf', parentView: 'unit_detail', unit: '01jup', sourceRoute: cardsSource },
+]) {
+  const before = structuredClone(route)
+  const currentUrl = buildArchiveUrl('http://localhost/', route)
+  const root = buildArchiveBreadcrumbs(route)[0]
+  assert.equal(root.label, '资料馆')
+  const rootUrl = buildArchiveUrl(currentUrl, root.route)
+  assert.equal(rootUrl.search, '?view=portal', `${route.view}: archive root must not open game home or carry detail state`)
+  assert.deepEqual(route, before, `${route.view}: building the hierarchy must not change original-source Back`)
+  assert.deepEqual(readArchiveRoute(currentUrl), normalizeArchiveRoute(before), `${route.view}: original URL retains its source and filters`)
+}
 
 const idolBreadcrumbs = buildArchiveBreadcrumbs(
   { view: 'idol_detail', idol: '001tom', parentView: 'home' },
@@ -121,7 +143,7 @@ const cardBreadcrumbs = buildArchiveBreadcrumbs(
   },
   { title: '', id: '001tom_ssr01' },
 )
-assert.deepEqual(cardBreadcrumbs.map(item => item.label), ['资料馆', '卡牌', '001tom_ssr01'])
+assert.deepEqual(cardBreadcrumbs.map(item => item.label), ['资料馆', '卡片', '001tom_ssr01'])
 assert.equal(cardBreadcrumbs[1].route.query, 'Jupiter')
 assert.equal(cardBreadcrumbs[1].route.unitFilter, '1')
 assert.equal(cardBreadcrumbs[1].route.rarity, 'SSR')
@@ -138,8 +160,8 @@ const eventBreadcrumbs = buildArchiveBreadcrumbs(
   { title: '活动标题' },
 )
 assert.deepEqual(eventBreadcrumbs.map(item => item.label), ['资料馆', '活动', '活动标题'])
-assert.equal(eventBreadcrumbs[1].route.view, 'story_catalog')
-assert.equal(eventBreadcrumbs[1].route.storyType, 'event')
+assert.equal(eventBreadcrumbs[1].route.view, 'event_catalog')
+assert.equal(eventBreadcrumbs[1].route.storyType, '')
 assert.equal(eventBreadcrumbs[1].route.eventScope, 'fixed_unit_event')
 
 const collectionBreadcrumbs = buildArchiveBreadcrumbs(
@@ -379,5 +401,51 @@ assert.equal(songBreadcrumbs[1].route.song, '')
 const songCatalogBreadcrumbs = buildArchiveBreadcrumbs({ view: 'song_catalog', song: '' })
 assert.deepEqual(songCatalogBreadcrumbs.map(item => item.label), ['资料馆', '歌曲'])
 assert.equal(songCatalogBreadcrumbs.length, 2)
+
+// Return source is navigation context: the address bar stays canonical, history state carries the source.
+{
+  const entries = [{ state: null, href: 'http://localhost/?view=home' }]; let index = 0
+  globalThis.window = { get location() { return new URL(entries[index].href) },
+    get history() { return { get state() { return entries[index].state },
+      pushState(state, _t, url) { entries.splice(index + 1); entries.push({ state, href: new URL(url, entries[index].href).href }); index++ },
+      replaceState(state, _t, url) { entries[index] = { state, href: new URL(url, entries[index].href).href } } } } }
+  try {
+    const source = buildArchiveSourceQuery({ view: 'event_detail', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup' })
+    assert.ok(source)
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source })
+    assert.ok(!new URL(window.location).searchParams.has('from'), 'source is not written into the address bar')
+    assert.equal(readArchiveRoute().sourceRoute, source, 'same history entry restores the source (refresh, back)')
+    assert.equal(readArchiveRoute(window.location.href).sourceRoute, undefined, 'a copied URL carries no source')
+    assert.equal(readArchiveRoute(window.location.href, { history: true }).sourceRoute, source, 'startup of the current page merges its history source')
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source }, { replace: true })
+    assert.equal(readArchiveRoute().sourceRoute, source)
+    writeArchiveRoute({ view: 'event_detail', event: '10001' })
+    assert.ok(!readArchiveRoute().sourceRoute, 'a later entry without a source does not inherit the earlier one')
+    index--; assert.equal(readArchiveRoute().sourceRoute, source, 'back restores the earlier entry source')
+    entries[index] = { state: null, href: 'http://localhost/' + buildArchiveUrl('http://localhost/', { view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup', sourceRoute: source }).search }
+    assert.equal(readArchiveRoute().sourceRoute, source, 'legacy from= URL is still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('from'), 'legacy URL is shortened on the next write')
+    assert.equal(readArchiveRoute().sourceRoute, source, 'and its source moved into history state')
+    // Portal / Home launcher returns ride the same versioned context.
+    const portalReturn = '?view=idols&category=idol', homeReturn = '?view=portal'
+    writeArchiveRoute({ view: 'portal', portalFrom: portalReturn })
+    assert.ok(!new URL(window.location).searchParams.has('portal_from'), 'portal_from is not in the address bar')
+    assert.equal(window.history.state.sidemArchiveNav.v, 1, 'context is versioned')
+    assert.equal(readArchiveRoute().portalFrom, portalReturn, 'portal return restores from history state')
+    assert.ok(!readArchiveRoute(window.location.href).portalFrom, 'a copied portal URL carries no return')
+    writeArchiveRoute({ view: 'home', homeFrom: homeReturn })
+    assert.ok(!new URL(window.location).searchParams.has('home_from'))
+    assert.equal(readArchiveRoute().homeFrom, homeReturn, 'home return restores from history state')
+    writeArchiveRoute({ view: 'portal' }, { replace: true })
+    assert.ok(!readArchiveRoute().portalFrom && !window.history.state.sidemArchiveNav, 'empty context leaves no state')
+    entries[index] = { state: { sidemArchiveSource: source }, href: 'http://localhost/?view=reader&reading=doc1' }
+    assert.equal(readArchiveRoute().sourceRoute, source, 'pre-versioned history entries still restore their source')
+    entries[index] = { state: null, href: 'http://localhost/?view=portal&portal_from=' + encodeURIComponent(portalReturn) }
+    assert.equal(readArchiveRoute().portalFrom, portalReturn, 'legacy portal_from URL is still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('portal_from') && readArchiveRoute().portalFrom === portalReturn, 'legacy portal_from moves into state')
+  } finally { delete globalThis.window }
+}
 
 console.log('Archive route contract: story portal and detail routes verified')

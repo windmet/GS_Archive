@@ -9,6 +9,8 @@ import {
   externalResourcesForIdolStory,
   externalResourcesForStory,
 } from '../src/data/externalStoryResources.js'
+import { storyGateways } from '../src/presentation/StoryGateways.js'
+import { bindStoryNavigation } from './lib/story-navigation-harness.mjs'
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
@@ -247,7 +249,12 @@ for (const [name, source] of [
 
 assert.match(navigationComponent, /emit\('open-internal', entry\)/, 'navigation must retain an internal archive action')
 assert.match(navigationComponent, /不镜像视频、字幕、封面或头像/, 'navigation must state the mirror boundary')
-assert.match(storyCatalogComponent, /社区中文剧情/, 'story portal must expose the dedicated navigation')
+assert.deepEqual(
+  storyGateways.filter(gateway => gateway.action === 'external-resources').map(gateway => gateway.label),
+  ['社区中文剧情'],
+  'story portal must expose the dedicated navigation',
+)
+assert.match(storyCatalogComponent, /import \{storyGateways,storyGatewayCount\} from '\.\.\/\.\.\/presentation\/StoryGateways\.js'/, 'story portal renders the shared gateway list')
 assert.match(storyCatalogComponent, /open-external-resources/, 'story portal gateway must emit a navigation action')
 assert.match(
   appComponent,
@@ -275,11 +282,11 @@ assert.doesNotMatch(appComponent, /buildExternalStoryNavigationEntries\(/,
   'the withdrawn external registry must not join story sources in the live app')
 assert.doesNotMatch(appComponent, /ensureIdolCommunicationData|loadIdolCommunicationData|ArchiveDataRepository/,
   'withdrawn external-resource routes must not retain the legacy archive repository')
-assert.match(
-  appComponent,
-  /target\?\.kind === 'idol-story'/,
-  'dedicated navigation must retain an internal personal-story action',
-)
+const internalCalls = []
+const internalNavigation = bindStoryNavigation(appComponent, { openIdolStoryArchive: id => internalCalls.push(id) })
+internalNavigation.stop()
+internalNavigation.openExternalStoryInternal({ target: { kind: 'idol-story', idolCode: '001tom' } })
+assert.deepEqual(internalCalls, ['001tom'], 'dedicated navigation must retain an internal personal-story action')
 
 console.log('External Story resource UI verified: exact mappings and safe links')
 

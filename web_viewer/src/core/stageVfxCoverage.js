@@ -8,15 +8,39 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const objectIndex = indexes.objectLayers?.assets || {}
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
   const objectParticles = objectAssets.filter(asset => objectIndex[asset]?.kind === 'particle')
+  const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation || objectIndex[asset]?.floorAnimation)
+  const objectParticlePartial = objectParticles.filter(asset => objectIndex[asset]?.floorAnimation?.deferredSystems?.length)
+  const objectParticleUnimplemented = objectParticles.filter(asset => objectParticlePartial.includes(asset)
+    || !objectIndex[asset]?.particleAnimation && !objectIndex[asset]?.floorAnimation)
   const objectMissing = objectAssets.filter(asset => !objectIndex[asset])
   const objectOther = objectAssets.filter(asset => objectIndex[asset] &&
     !['sprite', 'mixed', 'particle'].includes(objectIndex[asset].kind))
   const backmonitorAssets = uniqueAssets(song.backmonitorEvents, 'movie')
   const imageAssets = uniqueAssets(song.imageLayerEvents, 'asset')
+  const imageObjectEvents = indexes.imageObjects?.songs?.[song.id]?.events || []
+  const imageObjectAssets = uniqueAssets(imageObjectEvents, 'asset')
   const pinspotlightAssets = uniqueAssets(song.pinspotlightEvents, 'asset')
+  const stagelightEvents = indexes.stageEffects?.stagelightSongs?.[song.songCode]?.events || []
+  const stagelightAssets = uniqueAssets(stagelightEvents, 'asset')
+  const stagelightUnimplemented = stagelightAssets.filter(asset=>!indexes.stageEffects?.stagelights?.[asset])
+  const stagelightUnimplementedCommands = stagelightEvents.filter(event=>event.previewSupported===false)
+  const suspensionTrack = indexes.stageEffects?.newSuspensionlightSongs?.[song.id]
+  const suspensionEvents = suspensionTrack?.events || []
+  const suspensionCount = suspensionTrack?.eventCount ?? suspensionEvents.length
+  const suspensionUnimplemented = suspensionEvents.filter(event =>
+    !['NewSuspensionlight_create', 'NewSuspensionlight_normal_show'].includes(event.command))
+  const backmonitorLogoRequests = (song.backmonitorEvents || []).filter(event =>
+    Number(event.rawValue6 ?? event.rotation) === 1).length
+  const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
+  const unresolvedImageColors = (song.imageColorEvents || []).filter(event => event.unresolvedReason)
+  const imageColorAssets = uniqueAssets((song.imageColorEvents || []).filter(event => !event.unresolvedReason), 'asset')
+  const staticAssets = indexes.stageBackgrounds?.songs?.[song.songCode]?.layers || []
+  const imageColorMissing = imageColorAssets.filter(asset => !staticAssets.includes(asset)
+    && !indexes.imageLayers?.assets?.[asset] && !indexes.imageObjects?.assets?.[asset])
   const missingMedia = [
     ...backmonitorAssets.filter(asset => !indexes.backmonitor?.assets?.[asset]),
     ...imageAssets.filter(asset => !indexes.imageLayers?.assets?.[asset]),
+    ...imageObjectAssets.filter(asset => !indexes.imageObjects?.assets?.[asset]),
     ...pinspotlightAssets.filter(asset => !indexes.stageEffects?.assets?.[asset]),
   ]
   return {
@@ -25,19 +49,42 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       camera: song.cameraEvents?.length || 0,
       backmonitor: song.backmonitorEvents?.length || 0,
       imageLayer: song.imageLayerEvents?.length || 0,
+      imageObject: imageObjectEvents.length,
       objectLayer: song.objectLayerEvents?.length || 0,
       characterLight: song.characterLightEvents?.length || 0,
+      bodyColor: song.bodyColorEvents?.length || 0,
+      imageColor: song.imageColorEvents?.length || 0,
+      wholeScreenColorLayer: song.wholeScreenColorLayerEvents?.length || 0,
       spotlight: song.spotlightEvents?.length || 0,
       pinspotlight: song.pinspotlightEvents?.length || 0,
       laserlight: song.laserlightEvents?.length || 0,
+      stagelight: stagelightEvents.length,
+      newSuspensionlight: suspensionCount,
     },
-    resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length },
+    resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length, imageObject: imageObjectAssets.length },
     objectSprites,
     objectParticles,
+    objectParticlePilots,
+    objectParticleUnimplemented,
+    objectParticlePartial,
+    floorParticleStatus: objectAssets.some(asset => objectIndex[asset]?.floorAnimation)
+      ? 'native_inputs_reference_projection_rng_noise_not_unity_equivalent' : 'not_loaded',
     objectMissing,
     objectOther,
+    stagelightAssets,
+    stagelightUnimplemented,
+    stagelightUnimplementedCommands:stagelightUnimplementedCommands.length,
+    newSuspensionlightUnimplementedCommands: suspensionTrack?.unimplementedCommands ?? suspensionUnimplemented.length,
+    newSuspensionlightStatus: suspensionCount ? 'partial_reference_normal_show' : 'not_loaded',
+    backmonitorLogoRequests,
+    backmonitorLogoStatus: backmonitorLogoRequests ? 'unimplemented_runtime_sprite_selection_pending' : 'not_requested',
+    // Resource binding / color assignment are separate from native tween parity.
+    stagelightAnimationStatus: stagelightEvents.length ? 'reference_preview_unverified_native_tweens' : 'not_loaded',
     missingMedia,
-    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length
+    unresolvedColorPlanes,
+    unresolvedImageColors,
+    imageColorMissing,
+    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length || suspensionCount || backmonitorLogoRequests
       ? 'partial'
       : 'source_mapped_unverified',
   }

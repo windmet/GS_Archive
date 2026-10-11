@@ -1,10 +1,18 @@
+import { normalizeCollectionRoute } from './CollectionRouteState.js'
+import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
+import { pruneToRouteSchema } from './routeSchema.js'
 const ROUTE_QUERY_KEYS = [
+  'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
+  'event_kind','event_sort','event_page',
   'portal_from',
+  'portal_scope', 'home_from',
   'from',
   'reading',
   'reading_row',
   'reading_mode',
   'reading_rev',
+  'reading_scope',
+  'play_mode',
   'at_step',
   'view',
   'pick',
@@ -32,9 +40,13 @@ const ROUTE_QUERY_KEYS = [
   'stage',
   'song_scope',
   'event',
+  'entity',
+  'photo_idol',
+  'photo',
   'gasha',
   'gasha_type',
   'rarity',
+  'card_attribute',
   'asset_state',
   'relation_state',
   'q',
@@ -61,10 +73,19 @@ const VALID_VIEWS = new Set([
   'cards',
   'card_detail',
   'event_detail',
+  'event_catalog',
+  'collection_catalog',
+  'photo_catalog',
+  'picture_studio',
   'gashas',
   'gasha_detail',
   'song_catalog',
   'song_detail',
+  'chart_lab',
+  'live',
+  'studio',
+  'experiments',
+  'about',
   'archive_status',
   'story_catalog',
   'external_story_resources',
@@ -86,9 +107,9 @@ const VALID_CARD_ASSET_STATES = new Set(['all', 'visible_icon', 'complete_icons'
 const VALID_CARD_RARITIES = new Set(['all', 'N', 'R', 'SR', 'SSR'])
 const VALID_CATEGORIES = new Set(['main_story', 'event', 'idol', 'idol_chat', 'idol_phone', 'cards', 'episode_zero', 'extra'])
 const VALID_EVENT_SCOPES = new Set(['all', 'fixed_unit_event', 'attribute_event', 'mixed_unit_event'])
-const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series'])
+const VALID_GASHA_TYPES = new Set(['all', 'standard_pickup', 'growing_fes', 'stage_step_up', 'full_roster_series', 'ticket_named'])
 const VALID_STORY_AVAILABILITY = new Set(['all', 'playable', 'missing'])
-const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc'])
+const VALID_STORY_SORTS = new Set(['domain', 'title', 'resource', 'steps_desc', 'latest'])
 const VALID_STORY_MODES = new Set(['portal', 'search'])
 const VALID_WORK_MODES = new Set(['stories', 'lines'])
 const VALID_PICK_TARGETS = new Set(['home', 'profile', 'work', 'story', 'mobile'])
@@ -121,29 +142,46 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   files: { section: 'category', required: ['group'], fallback: 'home' },
   cards: { section: 'cards', required: [], fallback: 'home' },
   card_detail: { section: 'cards', required: ['card'], fallback: 'cards' },
-  event_detail: { section: 'stories', required: ['event'], fallback: 'story_catalog' },
+  event_detail: { section: 'events', required: ['event'], fallback: 'event_catalog' },
+  event_catalog: { section: 'events', required: [] },
+  collection_catalog: { section: 'collections', required: [] },
+  photo_catalog: { section: 'photos', required: [] },
+  picture_studio: { section: 'studio', required: [], fallback:'studio' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
   song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
+  // Without a song the chart tool opens on its own song picker, like the Chibi stage.
+  chart_lab: { section: 'live', required: [] },
+  live: { section: 'live', required: [] },
+  studio: { section: 'studio', required: [] },
+  // Legacy `?view=experiments` links resolve to the LIVE landing page (see normalizeArchiveRoute).
+  experiments: { section: 'live', required: [] },
+  about: { section: 'about', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
-  chibi_stage: { section: 'resources', required: [] },
+  chibi_stage: { section: 'live', required: [] },
 })
 
 const ARCHIVE_NAVIGATION = Object.freeze([
-  { id: 'home', label: '首页' },
+  { id: 'home', label: '偶像主页' },
   { id: 'stories', label: '故事' },
   { id: 'songs', label: '歌曲' },
   { id: 'idols', label: '偶像' },
   { id: 'cards', label: '卡片' },
   { id: 'gashas', label: '卡池' },
-  { id: 'interactions', label: '互动' },
+  { id: 'interactions', label: '通信' },
+  { id: 'events', label: '活动' },
+  { id: 'collections', label: '道具' },
+  { id: 'honors', label: '称号' },
+  { id: 'photos', label: '摄影资源' },
+  { id: 'live', label: 'LIVE' },
+  { id: 'studio', label: '摄影工作台' },
   { id: 'resources', label: '资源' },
 ])
 
 const BREADCRUMB_HIDDEN_VIEWS = new Set(['home', 'portal', 'reader', 'player', 'spine_lab', 'chibi_stage'])
-const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage'])
+const SOURCE_ROUTE_FORBIDDEN_VIEWS = new Set(['reader', 'player', 'spine_lab', 'chibi_stage', 'chart_lab'])
 const MAX_SOURCE_DEPTH = 16
 const MAX_SOURCE_LENGTH = 8192
 
@@ -158,6 +196,7 @@ export function readPortalReturnRoute(query) {
   if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return normalizeArchiveRoute({ view: 'home' })
   const url = new URL(query, 'http://localhost/')
   url.searchParams.delete('portal_from')
+  url.searchParams.delete('home_from')
   if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(url.searchParams.get('view')) || url.searchParams.has('scenario') || url.searchParams.has('file')) return normalizeArchiveRoute({ view: 'home' })
   const route = readArchiveRoute(url)
   return route.view === 'player' ? normalizeArchiveRoute({ view: 'home' }) : route
@@ -165,7 +204,16 @@ export function readPortalReturnRoute(query) {
 
 export function buildPortalReturnQuery(route) {
   if (['portal', 'player', 'spine_lab', 'chibi_stage'].includes(route.view)) return ''
-  return buildArchiveUrl('http://localhost/', route).search
+  return buildArchiveUrl('http://localhost/', { ...route, homeFrom: '' }).search
+}
+
+// A Home visit can return only to a bounded portal context, never to another Home visit.
+export function readHomeReturnRoute(query) {
+  if (typeof query !== 'string' || !query.startsWith('?') || query.length > 8192) return null
+  const url = new URL(query, 'http://localhost/')
+  if (url.searchParams.get('view') !== 'portal') return null
+  url.searchParams.delete('home_from')
+  return readArchiveRoute(url)
 }
 
 // Keep the immediate source plus a flat tail of canonical queries. Flat encoding
@@ -248,6 +296,7 @@ export function normalizeArchiveRoute(input = {}) {
   const voice = clean(input.voice)
   const card = clean(input.card)
   let view = scenario ? 'player' : allowed(clean(input.view), VALID_VIEWS, 'home')
+  if (view === 'experiments') view = 'live'
   let category = allowed(clean(input.category), VALID_CATEGORIES, '')
   let idol = clean(input.idol)
   let pickTarget = allowed(clean(input.pickTarget), VALID_PICK_TARGETS, '')
@@ -311,9 +360,15 @@ export function normalizeArchiveRoute(input = {}) {
     song: clean(input.song),
     songScope: allowed(clean(input.songScope), VALID_SONG_SCOPES, 'all'),
     event: clean(input.event),
+    ...(view==='event_catalog' ? {eventBrowse:normalizeEventBrowseState(input.eventBrowse)} : {}),
+    ...(view==='collection_catalog' ? normalizeCollectionRoute(input) : {}),
+    ...(['photo_catalog','picture_studio'].includes(view) ? {
+      photoIdol:/^\d{1,4}$/.test(input.photoIdol || '') ? String(input.photoIdol) : '',
+      photoEntity:/^(spots|scenes|faces|poses|stickers|frames|filters):\d+$/.test(input.photoEntity || '') ? input.photoEntity : ''} : {}),
     gasha: clean(input.gasha),
     gashaType: allowed(clean(input.gashaType), VALID_GASHA_TYPES, 'all'),
     rarity: allowed(clean(input.rarity), VALID_CARD_RARITIES, 'all'),
+    ...(['Physical','Intelligence','Mental'].includes(clean(input.cardAttribute)) ? {cardAttribute:clean(input.cardAttribute)} : {}),
     assetState: allowed(clean(input.assetState), VALID_CARD_ASSET_STATES, 'all'),
     relationState: allowed(clean(input.relationState), VALID_CARD_RELATION_STATES, 'all'),
     query: clean(input.query),
@@ -336,14 +391,23 @@ export function normalizeArchiveRoute(input = {}) {
   if (route.view === 'reader' || (route.view === 'player' && route.returnView === 'reader')) {
     route.reading = /^[A-Za-z0-9_-]+$/.test(input.reading || '') ? input.reading : ''
     route.readingRow = typeof input.readingRow === 'string' && input.readingRow.length <= 240 ? input.readingRow : ''
-    route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : 'original'
+    // Empty: follow the visitor's saved story-text choice. Only a mode that differs from it is in the URL.
+    route.readingMode = ['original', 'translation', 'bilingual'].includes(input.readingMode) ? input.readingMode : ''
+    route.readingScope = input.readingScope === 'chapter' ? 'chapter' : ''
     route.readingRev = /^sha256:[a-f0-9]{64}$/.test(input.readingRev || '') ? input.readingRev : ''
     if (!route.reading) route.view = 'story_catalog'
   }
+  if (route.view === 'player') route.playMode = ['chapter','segment'].includes(input.playMode) ? input.playMode : ''
   if (route.view === 'player' && positiveInteger(input.initialStep)) route.initialStep = positiveInteger(input.initialStep)
   if (route.view === 'portal') {
     const portalFrom = clean(input.portalFrom)
     route.portalFrom = portalFrom ? buildPortalReturnQuery(readPortalReturnRoute(portalFrom)) : ''
+    if (input.portalScope === 'all' || /^\d{3}[a-z0-9]{3}$/.test(input.portalScope || '')) route.portalScope = input.portalScope
+    if (clean(input.portalQuery)) route.portalQuery = clean(input.portalQuery).slice(0, 120)
+  }
+  if (route.view === 'home' && clean(input.homeFrom)) {
+    const source = readHomeReturnRoute(input.homeFrom)
+    if (source) route.homeFrom = buildArchiveUrl('http://localhost/', source).search
   }
   if (ownsArchiveSource(route.view, route.returnView) && clean(input.sourceRoute)) {
     const frames = sourceFrames(input.sourceRoute)
@@ -356,6 +420,8 @@ export function normalizeArchiveRoute(input = {}) {
 export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
+  // Items and honors share one catalogue page but are separate destinations in the navigation.
+  if (section === 'collections') return normalized.collection?.kind === 'honors' ? 'honors' : 'collections'
   if (section !== 'category') return section
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
@@ -373,6 +439,7 @@ function breadcrumbFilters(route) {
     unitFilter: route.unitFilter,
     eventScope: route.eventScope,
     rarity: route.rarity,
+    cardAttribute: route.cardAttribute,
     assetState: route.assetState,
     relationState: route.relationState,
     gashaType: route.gashaType,
@@ -401,7 +468,9 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   const route = normalizeArchiveRoute(inputRoute)
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
-  const home = { label: '资料馆', route: { view: 'home' } }
+  const home = { label: '资料馆', route: { view: 'portal' } }
+  if(route.view==='picture_studio')return [home,{label:'摄影资源',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
@@ -429,7 +498,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (['cards', 'card_detail'].includes(route.view)) {
     const cards = {
-      label: '卡牌',
+      label: '卡片',
       route: breadcrumbRoute(route, 'cards', {
         idol: route.idol,
         card: '',
@@ -439,7 +508,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
     return route.view === 'cards' ? [home, { label: cards.label }] : [
       home,
       cards,
-      current('卡牌详情', route.card),
+      current('卡片详情', route.card),
     ]
   }
 
@@ -466,8 +535,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
       home,
       {
         label: '活动',
-        route: breadcrumbRoute(route, 'story_catalog', {
-          storyType: 'event',
+        route: breadcrumbRoute(route, 'event_catalog', {
+          storyType: '',
           storySection: '',
           story: '',
           event: '',
@@ -520,10 +589,11 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   }
 
   if (route.view === 'archive_status') return [home, { label: '资源' }]
+  if (route.view === 'about') return [home, { label: '关于本站' }]
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
-  if (route.view === 'mobile_archive') return [home, current('Mobile 通信', route.idol)]
+  if (route.view === 'mobile_archive') return [home, current('通信', route.idol)]
 
   const fallbackDomains = {
     groups: '剧情',
@@ -534,7 +604,10 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   return [home, current(fallbackDomains[route.view] || '资料')]
 }
 
-export function readArchiveRoute(input = null) {
+// `history` merges the current history entry's source: implied for the live location, opt-in for an
+// explicitly passed current URL; independent links never inherit one.
+export function readArchiveRoute(input = null, { history = !input } = {}) {
+  const context = history ? historyNavigationContext() : {}
   const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
@@ -542,12 +615,17 @@ export function readArchiveRoute(input = null) {
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
-    portalFrom: params.get('portal_from'),
-    sourceRoute: params.get('from'),
+    portalFrom: params.get('portal_from') ?? context.portalFrom ?? null,
+    portalScope: params.get('portal_scope'),
+    portalQuery: params.get('q'),
+    homeFrom: params.get('home_from') ?? context.homeFrom ?? null,
+    sourceRoute: params.get('from') ?? context.source ?? null,
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
     readingRev: params.get('reading_rev'),
+    readingScope: params.get('reading_scope'),
+    playMode: params.get('play_mode'),
     initialStep: params.get('at_step'),
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
@@ -573,9 +651,15 @@ export function readArchiveRoute(input = null) {
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
     event: clean(params.get('event')),
+    eventBrowse: { kind:params.get('event_kind'), sort:params.get('event_sort'), page:params.get('event_page') },
+    entity: params.get('entity'),
+    collection: { kind:params.get('collection_kind'), category:params.get('collection_category'), idol:params.get('collection_idol'), unit:params.get('collection_unit'), attribute:params.get('collection_attribute'), page:params.get('collection_page') },
+    photoIdol: params.get('photo_idol'),
+    photoEntity: params.get('photo'),
     gasha: clean(params.get('gasha')),
     gashaType: params.get('gasha_type'),
     rarity: params.get('rarity'),
+    cardAttribute: params.get('card_attribute'),
     assetState: params.get('asset_state'),
     relationState: params.get('relation_state'),
     query: clean(params.get('q')),
@@ -595,11 +679,26 @@ export function buildArchiveUrl(input, route) {
   url.searchParams.delete('file')
 
   url.searchParams.set('view', normalized.view)
+  if (normalized.view === 'event_catalog') {
+    const browse = normalizeEventBrowseState(normalized.eventBrowse)
+    if (browse.kind) url.searchParams.set('event_kind', browse.kind)
+    if (browse.sort !== 'newest') url.searchParams.set('event_sort', browse.sort)
+    if (browse.page) url.searchParams.set('event_page', String(browse.page))
+  }
+  if (normalized.view === 'collection_catalog' && normalized.entity) url.searchParams.set('entity', normalized.entity)
+  if (normalized.view === 'collection_catalog') {
+    const c = normalized.collection
+    url.searchParams.set('collection_kind', c.kind)
+    for (const key of ['category','idol','unit','attribute','page']) if(c[key]) url.searchParams.set(`collection_${key}`, String(c[key]))
+  }
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoIdol) url.searchParams.set('photo_idol', normalized.photoIdol)
+  if (['photo_catalog','picture_studio'].includes(normalized.view) && normalized.photoEntity) url.searchParams.set('photo', normalized.photoEntity)
   if (normalized.pickTarget) url.searchParams.set('pick', normalized.pickTarget)
   if (normalized.view === 'reader' || (normalized.view === 'player' && normalized.returnView === 'reader')) {
     url.searchParams.set('reading', normalized.reading)
     if (normalized.readingRow) url.searchParams.set('reading_row', normalized.readingRow)
-    if (normalized.readingMode !== 'original') url.searchParams.set('reading_mode', normalized.readingMode)
+    if (normalized.readingMode) url.searchParams.set('reading_mode', normalized.readingMode)
+    if (normalized.readingScope) url.searchParams.set('reading_scope', normalized.readingScope)
     if (normalized.readingRev) url.searchParams.set('reading_rev', normalized.readingRev)
     if (normalized.view === 'reader') {
       if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
@@ -616,14 +715,18 @@ export function buildArchiveUrl(input, route) {
       return url
     }
   }
+  if (normalized.view === 'player' && normalized.playMode) url.searchParams.set('play_mode', normalized.playMode)
   if (normalized.view === 'player' && normalized.initialStep) url.searchParams.set('at_step', String(normalized.initialStep))
   if (normalized.view === 'portal') {
     if (normalized.portalFrom) url.searchParams.set('portal_from', normalized.portalFrom)
+    if (normalized.portalScope) url.searchParams.set('portal_scope', normalized.portalScope)
+    if (normalized.portalQuery) url.searchParams.set('q', normalized.portalQuery)
     return url
   }
   if (normalized.view === 'home' && normalized.homeIdol) url.searchParams.set('home_idol', normalized.homeIdol)
   if (normalized.view === 'home' && normalized.homeCue) url.searchParams.set('home_cue', normalized.homeCue)
   if (normalized.view === 'home' && normalized.homeCostume) url.searchParams.set('home_costume', normalized.homeCostume)
+  if (normalized.view === 'home' && normalized.homeFrom) url.searchParams.set('home_from', normalized.homeFrom)
   if (normalized.category) url.searchParams.set('category', normalized.category)
   if (normalized.idol) url.searchParams.set('idol', normalized.idol)
   if (normalized.group) url.searchParams.set('group', normalized.group)
@@ -647,6 +750,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.event) url.searchParams.set('event', normalized.event)
   if (normalized.gasha) url.searchParams.set('gasha', normalized.gasha)
   if (normalized.gashaType !== 'all') url.searchParams.set('gasha_type', normalized.gashaType)
+  if (normalized.cardAttribute && normalized.cardAttribute !== 'all') url.searchParams.set('card_attribute', normalized.cardAttribute)
   if (normalized.rarity !== 'all') url.searchParams.set('rarity', normalized.rarity)
   if (normalized.assetState !== 'all') url.searchParams.set('asset_state', normalized.assetState)
   if (normalized.relationState !== 'all') url.searchParams.set('relation_state', normalized.relationState)
@@ -658,16 +762,50 @@ export function buildArchiveUrl(input, route) {
   if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
   if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
   if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
-  return url
+  return pruneToRouteSchema(url, normalized.view, normalized.returnView, ROUTE_QUERY_KEYS)
+}
+
+// How the user arrived (the Reader/Player return source, and the Portal/Home launcher returns) is
+// navigation context, not page identity: the address bar keeps only the canonical page and this
+// versioned record rides the history entry, so back, forward and refresh restore it. A copied URL
+// carries none and falls back to its canonical parent. Older `from=`, `portal_from=` and `home_from=`
+// URLs are still read; the next write moves them into history state.
+const NAVIGATION_CONTEXT_KEY = 'sidemArchiveNav'
+const NAVIGATION_CONTEXT_VERSION = 1
+const LEGACY_SOURCE_KEY = 'sidemArchiveSource'
+// Context field -> the legacy query parameter it replaced.
+const NAVIGATION_CONTEXT_PARAMS = { source: 'from', portalFrom: 'portal_from', homeFrom: 'home_from' }
+
+function localQuery(value) {
+  return typeof value === 'string' && value.startsWith('?') ? value : null
+}
+
+function historyNavigationContext() {
+  if (typeof window === 'undefined') return {}
+  const state = window.history.state
+  const stored = state?.[NAVIGATION_CONTEXT_KEY]
+  if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
+    return Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])]))
+  }
+  return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
 
 export function writeArchiveRoute(route, { replace = false } = {}) {
   const url = buildArchiveUrl(window.location.href, route)
+  const context = { v: NAVIGATION_CONTEXT_VERSION }
+  for (const [key, param] of Object.entries(NAVIGATION_CONTEXT_PARAMS)) {
+    const value = url.searchParams.get(param)
+    if (value) context[key] = value
+    url.searchParams.delete(param)
+  }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
     ? existingEntryId
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
   const state = { ...window.history.state, archiveRoute: true, sidemArchiveEntryId: entryId }
+  delete state[LEGACY_SOURCE_KEY]
+  if (Object.keys(context).length > 1) state[NAVIGATION_CONTEXT_KEY] = context
+  else delete state[NAVIGATION_CONTEXT_KEY]
   window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
 }
 

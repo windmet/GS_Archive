@@ -1,8 +1,9 @@
 <template>
   <Teleport to="body">
+    <Transition name="gs-overlay">
     <div
       v-if="open && currentItem"
-      class="lightbox-backdrop"
+      class="lightbox-backdrop gs-enter-backdrop"
       role="dialog"
       aria-modal="true"
       :aria-label="currentItem.label || '卡面原图'"
@@ -42,6 +43,7 @@
         <ChevronRight :size="30" />
       </button>
     </div>
+    </Transition>
   </Teleport>
 </template>
 

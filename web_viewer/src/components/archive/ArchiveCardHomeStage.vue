@@ -21,7 +21,7 @@ function retry() { failed.value = false; emit('retry') }
 <style scoped>
 .card-home-stage { position: absolute; inset: 0; z-index: 1; }
 .card-home-stage img { width: 100%; height: 100%; object-fit: cover; object-position: var(--landscape-position); }
-.card-home-status { position: absolute; z-index: 6; top: 35%; left: 10%; right: 10%; padding: 16px; background: #fffffff0; color: #19354c; border-radius: 6px; text-align: center; }
+.card-home-status { position: absolute; z-index: 6; top: 35%; left: 10%; right: 10%; padding: 16px; background: var(--gs-surface); color: var(--gs-ink); border-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); text-align: center; }
 .card-home-status button { margin-left: 12px; min-height: 44px; }
 @media (orientation: portrait) { .card-home-stage img { object-position: var(--portrait-position); } }
 </style>

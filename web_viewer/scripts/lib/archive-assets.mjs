@@ -12,6 +12,7 @@ export function loadArchiveAssetRoots({ environment = process.env, sources } = {
     audio: path.resolve(environment.SIDEM_AUDIO_ROOT || sources.legacyPath('GS_Res', 'Audio')),
     legacyAudio: path.resolve(environment.SIDEM_LEGACY_AUDIO_ROOT || sources.legacyPath('story_viewer', 'voice_ogg')),
     cardArt: path.resolve(environment.SIDEM_CARD_ART_ROOT || sources.legacyPath('GS_Res', 'ALL_PHOTOS', 'assets', 'resources', 'image', 'image_card')),
+    domainImages: path.resolve(environment.SIDEM_DOMAIN_IMAGE_ROOT || sources.legacyPath('GS_Res', 'ALL_PHOTOS', 'assets', 'resources')),
   }
 }
 
@@ -70,6 +71,13 @@ export function createArchiveAssetResolver(roots = loadArchiveAssetRoots()) {
       if (!directory || !/^image_card_(portrait|landscape)_[a-z0-9_]+\.png$/i.test(fileName)) return null
       const file = path.resolve(roots.cardArt, directory, fileName)
       return isWithinRoot(roots.cardArt, file) ? file : null
+    },
+    domainImagePath(urlPath) {
+      const clean=urlPath.replace(/^\/+/, '')
+      const allowed=/^image\/(image_item|image_honor|image_picturestudio|image_home_announce)\/[a-z0-9_/-]+\.png$/i.test(clean) || /^event\/(theater|tour|collection|valentine|whiteday)\/[0-9]+\/(permanent|temporary)\/image_event_[a-z0-9_]+\.png$/i.test(clean)
+      if (!roots.domainImages || !allowed || clean.split('/').some(part=>part==='..' || part==='')) return null
+      const file=path.resolve(roots.domainImages,clean)
+      return isWithinRoot(roots.domainImages,file) ? file : null
     },
   }
 }

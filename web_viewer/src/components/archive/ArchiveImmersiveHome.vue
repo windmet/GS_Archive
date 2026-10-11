@@ -38,13 +38,19 @@
       @click="handleStageTap"
     ></button>
     <div class="scene-shade" aria-hidden="true"></div>
-
+    <!-- The idol's name is the way into the archive: it opens the archive scoped to this idol.
+         Returning sits above it as a back link, only when a page sent the reader here. Producer
+         settings live in the scene settings sheet, not on the stage. -->
     <header class="home-masthead">
-      <div class="idol-heading">
+      <button v-if="canReturnToArchive && !focusMode" type="button" class="home-return" @click="emit('return-to-archive')">
+        <ArrowLeft :size="15" aria-hidden="true" />返回资料馆
+      </button>
+      <button type="button" class="idol-heading" :aria-label="`查看${activeIdolName}的资料`" @click="emit('open-archive')">
         <span>{{ activeIdol.unitName || '315 STARS' }}</span>
-        <h2>{{ activeIdol.name }}</h2>
+        <h2>{{ activeIdolName }}</h2>
         <small>{{ activeIdol.kana }}</small>
-      </div>
+        <em v-if="!focusMode" class="idol-heading-cta">查看资料<ChevronRight :size="14" aria-hidden="true" /></em>
+      </button>
     </header>
 
     <div class="home-context" aria-label="首页偶像与服装">
@@ -53,7 +59,7 @@
         <span>首页偶像</span>
         <select v-model="selectedId" aria-label="首页偶像">
           <option v-for="idol in idols" :key="idol.id" :value="idol.id">
-            {{ idol.name }}
+            {{ displayName(idol) }}
           </option>
         </select>
       </label>
@@ -66,7 +72,7 @@
           @change="emit('update:selectedCostume', $event.target.value)"
         >
           <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-            {{ costume.name }}
+            {{ archiveText('costume',costume.name) }}
           </option>
         </select>
       </label>
@@ -87,7 +93,7 @@
       <span>选择首页偶像</span>
       <ArchiveIdolAvatar :idol-code="activeIdol.id" :accent-color="activeIdol.color" :size="34" decorative />
       <select v-model="selectedId" aria-label="选择首页偶像">
-        <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
+        <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
       </select>
     </label>
 
@@ -133,7 +139,7 @@
       <header>
         <div>
           <span>首页服装</span>
-          <strong id="costume-picker-title">{{ activeIdol.name }}</strong>
+          <strong id="costume-picker-title">{{ activeIdolName }}</strong>
         </div>
         <button type="button" aria-label="关闭服装选择" @click="costumePickerOpen = false">
           <X :size="18" />
@@ -149,7 +155,7 @@
           @click="selectCostume(costume.modelId)"
         >
           <span><Shirt :size="18" /></span>
-          <small>{{ costume.name }}</small>
+          <small>{{ archiveText('costume',costume.name) }}</small>
         </button>
       </div>
     </aside>
@@ -157,21 +163,75 @@
     <button v-if="focusMode" class="exit-focus" type="button" @click="focusMode = false">退出专注</button>
 
     <section class="home-dialogue" aria-label="首页台词" aria-live="polite">
-      <div class="dialogue-name">{{ activeCue.speaker || activeIdol.name }}</div>
-      <p>{{ presentProducerAddressingText(activeCue.text) }}</p>
-      <div class="dialogue-meta">
-        <span>{{ activeCue.rarity }} · {{ activeCue.cardTitle }}</span>
-
-      </div>
-      <div class="dialogue-actions">
-        <button type="button" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
-          <Square v-if="playing" :size="16" fill="currentColor" />
-          <Volume2 v-else :size="18" />
+      <!-- Three rows, as a game dialogue box: who and from which card / the line / the player bar. -->
+      <header class="dialogue-head">
+        <!-- A touch voice is always the home idol speaking; the cue's own speaker field is the source-language name. -->
+        <div class="dialogue-name">{{ activeIdolName }}</div>
+        <!-- The line's card: opens its detail page at this touch voice. -->
+        <button v-if="activeCue.cardId" type="button" class="dialogue-card" :title="`查看卡面：${cueCardLabel}`" :aria-label="`查看卡面：${cueCardLabel}`" @click="openCueCard">
+          <span>{{ cueCardLabel }}</span><ChevronRight :size="14" aria-hidden="true" />
         </button>
-        <span>{{ cueIndex + 1 }} / {{ activeIdol.cues.length }}</span>
+        <span v-else class="dialogue-card">{{ cueCardLabel }}</span>
+        <ArchiveLanguageSwitch class="home-language-switch" inline />
+      </header>
+      <div class="dialogue-text"><Transition name="dialogue-fade" mode="out-in"><p :key="cueLine.text" class="dialogue-line gs-flow" :lang="cueLine.lang" :class="{ 'is-pending': cueLine.pending }">{{ cueLine.text }}</p></Transition></div>
+      <div class="dialogue-actions">
+        <button type="button" aria-label="上一句台词" title="上一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(-1)">
+          <ChevronLeft :size="20" />
+        </button>
+        <button type="button" class="dialogue-play" :aria-label="playing ? '停止语音' : '播放语音'" :title="playing ? '停止语音' : '播放语音'" @click="toggleVoice">
+          <Square v-if="playing" :size="14" fill="currentColor" />
+          <Play v-else :size="16" fill="currentColor" />
+        </button>
+        <button type="button" aria-label="下一句台词" title="下一句台词" :disabled="activeIdol.cues.length < 2" @click="stepCue(1)">
+          <ChevronRight :size="20" />
+        </button>
+        <!-- The counter opens the line directory: every touch line of this idol, by card. -->
+        <button type="button" class="cue-index-trigger" aria-haspopup="dialog" :aria-expanded="cueIndexOpen" title="台词目录" :aria-label="`台词目录，当前第 ${cueIndex + 1} 句，共 ${activeIdol.cues.length} 句`" @click="openCueIndex">
+          <span>{{ cueIndex + 1 }}<small> / {{ activeIdol.cues.length }}</small></span><List :size="17" aria-hidden="true" />
+        </button>
       </div>
       <button v-if="voiceError" type="button" class="voice-error" @click="replayCompatibilityVoice">语音资源暂时不可用 · 兼容播放</button>
     </section>
+
+    <!-- A side drawer (bottom sheet on phones) over the stage's side, so the idol stays in view while
+         lines are auditioned; it stays open on a pick. A backdrop click closes it. -->
+    <dialog v-if="cueIndexOpen" ref="cueIndexRef" class="scene-settings cue-index" aria-labelledby="cue-index-title" @cancel.prevent="closeCueIndex" @close="closeCueIndex" @click="$event.target === cueIndexRef && closeCueIndex()">
+      <header>
+        <div>
+          <h3 id="cue-index-title">台词目录</h3>
+          <p>{{ activeIdolName }} · {{ activeIdol.cues.length }} 句触摸语音 · 点选即播放</p>
+        </div>
+        <button type="button" aria-label="关闭台词目录" title="关闭" @click="closeCueIndex">
+          <X :size="21" />
+        </button>
+      </header>
+      <div class="cue-index-filters">
+        <label class="cue-index-search">
+          <Search :size="15" aria-hidden="true" />
+          <input v-model="cueQuery" type="search" placeholder="按台词或卡名查找" aria-label="查找台词" />
+        </label>
+        <div v-if="cueRarities.length > 1" class="background-variants" role="group" aria-label="按稀有度筛选">
+          <button type="button" :aria-pressed="!cueRarity" @click="cueRarity = ''">全部</button>
+          <button v-for="rarity in cueRarities" :key="rarity" type="button" :aria-pressed="cueRarity === rarity" @click="cueRarity = rarity">{{ rarity }}</button>
+        </div>
+      </div>
+      <div ref="cueIndexBody" class="settings-body cue-index-body">
+        <section v-for="group in cueGroups" :key="group.cardId" class="cue-index-card">
+          <h4><span>{{ group.rarity }}</span>{{ group.title }}</h4>
+          <ol>
+            <li v-for="row in group.rows" :key="row.cue.cue">
+              <button type="button" :data-cue-index="row.index" :aria-current="row.cue.cue === activeCue.cue ? 'true' : undefined" @click="chooseCue(row.cue)">
+                <span class="cue-index-number">{{ row.index + 1 }}</span>
+                <span class="cue-index-line gs-flow" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
+                <span v-if="row.cue.cue === activeCue.cue" class="cue-index-now" :class="{ 'is-playing': playing }" aria-hidden="true"><i></i><i></i><i></i></span>
+              </button>
+            </li>
+          </ol>
+        </section>
+        <p v-if="!cueGroups.length" class="cue-index-empty" role="status">没有符合条件的台词。</p>
+      </div>
+    </dialog>
 
     <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
@@ -185,7 +245,9 @@
       </header>
 
       <div class="settings-body">
-        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡牌首页</option><option value="spine">人物互动首页</option></select></label>
+        <!-- First in the sheet: the stage has no producer button of its own. -->
+        <button type="button" class="home-producer-settings" @click="emit('settings')"><span>制作人设置</span><small>{{ producerName ? `${producerName} P · 称呼与担当` : '设置称呼与担当' }}</small><ChevronRight :size="16" aria-hidden="true" /></button>
+        <label class="settings-field"><span>首页样式</span><select aria-label="首页样式" :value="homeMode" @change="emit('update:homeMode', $event.target.value)"><option value="card">卡面主页</option><option value="spine">立绘主页</option></select></label>
         <label v-if="homeMode === 'card'" class="settings-field"><span>首页卡面</span>
           <select v-model="preferences.cardKey" aria-label="首页卡面"><option value="">使用当前偶像的默认卡面</option><option v-for="card in idolCards" :key="card.id" :value="card.id">{{ card.label }} · {{ card.variantLabel }}</option></select>
           <small>此选择独立于资料馆壁纸，切换偶像时优先使用该偶像的卡面。</small>
@@ -198,10 +260,14 @@
           <p v-if="backgroundError" role="status">{{ backgroundError }} <button type="button" @click="loadBackgroundCatalogue(true)">重试</button></p>
           <p v-if="backgroundUnavailable" role="status">之前选择的背景当前不可用，暂用台词背景；请重新选择。</p>
           <label class="settings-field"><span>查找场景</span><input v-model="backgroundQuery" type="search" placeholder="按场景名称查找" /></label>
+          <div v-if="backgroundVariants.length" class="background-variants" role="group" aria-label="按时段与天气筛选">
+            <button type="button" :aria-pressed="!backgroundVariant" @click="backgroundVariant = ''">全部</button>
+            <button v-for="entry in backgroundVariants" :key="entry.id" type="button" :aria-pressed="backgroundVariant === entry.id" @click="backgroundVariant = entry.id">{{ entry.label }} <small>{{ entry.count }}</small></button>
+          </div>
           <div class="background-grid">
             <button v-for="background in visibleBackgrounds" :key="background.id" type="button" :aria-pressed="preferences.background === background.id" @click="preferences.background = background.id">
-              <img v-if="background.thumbnail" :src="background.thumbnail" alt="" loading="lazy" decoding="async" />
-              <strong>{{ background.label }}</strong>
+              <img v-if="background.url || background.thumbnail" :src="photoBackgroundThumbnailUrl(background.url) || background.thumbnail" alt="" loading="lazy" decoding="async" @error="backgroundThumbnailFailed($event, background)" />
+              <strong>{{ archiveNamedBackground(background.label) }}</strong>
             </button>
           </div>
           <button v-if="filteredBackgrounds.length > backgroundLimit" type="button" class="background-more" @click="backgroundLimit += 12">显示更多场景</button>
@@ -209,9 +275,9 @@
         </fieldset>
 
         <label class="settings-field">
-          <span>首页偶像</span>
+          <span>首页偶像 · 选择后记住，下次首页沿用</span>
           <select v-model="selectedId">
-            <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ idol.name }}</option>
+            <option v-for="idol in idols" :key="idol.id" :value="idol.id">{{ displayName(idol) }}</option>
           </select>
         </label>
 
@@ -219,15 +285,17 @@
           <span>服装</span>
           <select :value="activeCostume?.modelId || ''" @change="emit('update:selectedCostume', $event.target.value)">
             <option v-for="costume in activeIdol.costumes" :key="costume.modelId" :value="costume.modelId">
-              {{ costume.name }}
+              {{ archiveText('costume',costume.name) }}
             </option>
           </select>
         </label>
 
         <fieldset class="settings-segment">
           <legend>台词切换</legend>
-          <button type="button" :class="{ active: preferences.dialogueOrder === 'sequential' }" @click="preferences.dialogueOrder = 'sequential'">顺序</button>
-          <button type="button" :class="{ active: preferences.dialogueOrder === 'random' }" @click="preferences.dialogueOrder = 'random'">随机</button>
+          <div class="settings-segment-options">
+            <button type="button" :class="{ active: preferences.dialogueOrder === 'sequential' }" :aria-pressed="preferences.dialogueOrder === 'sequential'" @click="preferences.dialogueOrder = 'sequential'">顺序</button>
+            <button type="button" :class="{ active: preferences.dialogueOrder === 'random' }" :aria-pressed="preferences.dialogueOrder === 'random'" @click="preferences.dialogueOrder = 'random'">随机</button>
+          </div>
         </fieldset>
 
         <label class="settings-toggle">
@@ -266,10 +334,17 @@
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
+  ArrowLeft,
   Check,
+  ChevronLeft,
+  ChevronRight,
+  List,
+  Play,
   RotateCcw,
+  Search,
   SlidersHorizontal,
   Square,
   Shirt,
@@ -280,10 +355,16 @@ import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
+import { archiveLineText, archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
 import { useStoryRuntimeCues } from '../../core/story-runtime/useStoryRuntimeCues.js'
 import { StoryAudioSession } from '../../core/story-runtime/StoryAudioSession.js'
-import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
+import { producerName } from '../../utils/LanguageStore.js'
+import { PlayerPreferencesRepository } from '../../core/story-runtime/PlayerPreferencesRepository.js'
+import {archiveText} from './useArchiveCostumeText.js'
+import {archiveText as cardText} from './useArchiveCardTitle.js'
+import { photoBackgroundThumbnailUrl, photoVariantKeys, rankPhotoVariants } from '../../presentation/photoSpotScenes.js'
+import { archiveText as photoText } from './useArchivePhotoText.js'
 import {
   loadArchiveHomePreferences,
   resetArchiveHomePreferences,
@@ -295,13 +376,15 @@ const SpineStage = defineAsyncComponent(() => import('../SpineStage.vue'))
 const props = defineProps({
   idols: { type: Array, default: () => [] },
   homeMode: { type: String, default: 'spine' },
+  canReturnToArchive: Boolean,
   stats: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   selectedCue: { type: String, default: '' },
   selectedCostume: { type: String, default: '' },
   noAudio: { type: Boolean, default: false },
+  idolName: { type: Function, default: null },
 })
-const emit = defineEmits(['open-story', 'open-cards', 'open-idol', 'open-chat', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'open-card', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -313,7 +396,7 @@ const lastStartedVoice = ref('')
 const stageReady = ref(false)
 const stageError = ref(false)
 const focusMode = ref(false)
-watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings() } })
+watch(focusMode, value => { emit('focus-change', value); if (value) { costumePickerOpen.value = false; closeSettings(); closeCueIndex() } })
 const spineStageRef = ref(null)
 const currentStepIndex = ref(0)
 const performanceRevision = ref(0)
@@ -330,6 +413,17 @@ function closeSettings() {
   settingsOpen.value = false
   restoreSettingsFocus()
 }
+// Line directory: grouped in source order (rarity, then card), filtered by rarity and by the shown
+// or source text / card title. Choosing a line jumps there and plays it.
+const cueIndexOpen = ref(false), cueIndexRef = ref(null), cueIndexBody = ref(null)
+const cueQuery = ref(''), cueRarity = ref('')
+let cueIndexReturnFocus = null
+function closeCueIndex() {
+  cueIndexRef.value?.close()
+  cueIndexOpen.value = false
+  if (cueIndexReturnFocus?.isConnected) cueIndexReturnFocus.focus({ preventScroll: true })
+  cueIndexReturnFocus = null
+}
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
 const stageTapCommitPending = ref(false)
@@ -344,24 +438,62 @@ const preferences = reactive(loadArchiveHomePreferences())
 
 const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedId.value) || props.idols[0] || null)
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
+const displayName = idol => props.idolName?.(idol.id, idol.name) || idol.name
+const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.value) : '')
+// A home cue is a card's touch voice: the same translated line as on the card page.
+void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], activeCue.value?.text))
+const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({
+  cue, index,
+  line: archiveLineText('card-lines', [['card-touch', 'text']], cue.text),
+  title: cardText('card', cue.cardTitle, 'title'),
+})))
+const cueCardLabel = computed(() => [activeCue.value?.rarity, cardText('card', activeCue.value?.cardTitle, 'title')].filter(Boolean).join(' · '))
+const cueRarities = computed(() => [...new Set(cueRows.value.map(row => row.cue.rarity).filter(Boolean))])
+const compactText = text => String(text || '').replace(/\s+/g, '').toLocaleLowerCase()
+const cueGroups = computed(() => {
+  const query = compactText(cueQuery.value)
+  const groups = []
+  for (const row of cueRows.value) {
+    if (cueRarity.value && row.cue.rarity !== cueRarity.value) continue
+    if (query && ![row.line.text, row.cue.text, row.title, row.cue.cardTitle].some(text => compactText(text).includes(query))) continue
+    let group = groups.at(-1)
+    if (group?.cardId !== row.cue.cardId) groups.push(group = { cardId: row.cue.cardId, rarity: row.cue.rarity, title: row.title, rows: [] })
+    group.rows.push(row)
+  }
+  return groups
+})
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
   activeIdol.value?.costumes?.[0] || null)
 const backgroundEntries = ref([])
+// The picker shows the game's own background thumbnail; the archive's derivative is the fallback.
+function backgroundThumbnailFailed(event, background) {
+  if (background.thumbnail && !event.target.src.endsWith(background.thumbnail)) event.target.src = background.thumbnail
+}
 const backgroundReady = ref(false), backgroundLoading = ref(false), backgroundError = ref('')
 const backgroundQuery = ref(''), backgroundLimit = ref(12)
-const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => entry.label.toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
+// Time-of-day chips: the photo catalogue's variant rule over each background's photo-studio scenes.
+const backgroundVariantIndex = ref({}), backgroundVariant = ref('')
+const backgroundKeys = entry => photoVariantKeys(backgroundVariantIndex.value[entry.id])
+const backgroundVariants = computed(() => rankPhotoVariants(backgroundEntries.value.map(backgroundKeys), id => photoText('photo-scenes', id)))
+const filteredBackgrounds = computed(() => backgroundEntries.value.filter(entry => (!backgroundVariant.value || backgroundKeys(entry).includes(backgroundVariant.value)) &&
+  archiveNamedBackgroundSearch(entry.label).toLocaleLowerCase().includes(backgroundQuery.value.trim().toLocaleLowerCase())))
 const visibleBackgrounds = computed(() => filteredBackgrounds.value.slice(0, backgroundLimit.value))
-watch(backgroundQuery, () => { backgroundLimit.value = 12 })
+watch([backgroundQuery, backgroundVariant], () => { backgroundLimit.value = 12 })
 const backgroundUnavailable = computed(() => backgroundReady.value && preferences.background !== 'cue' && !backgroundEntries.value.some(entry => entry.id === preferences.background))
 const selectedBackground = computed(() => resolveHomeBackground(preferences.background, backgroundEntries.value,
   activeCue.value?.background || activeIdol.value?.representativeBg || '', backgroundReady.value))
 async function loadBackgroundCatalogue(retry = false) {
   if (backgroundLoading.value || (backgroundReady.value && !retry)) return
   backgroundLoading.value = true; backgroundError.value = ''
+  void loadArchiveNames('photos').catch(error => console.warn('Background names unavailable', error))
   try {
-    const catalogue = await loadTerminalManifest('backgrounds', { retry })
+    const [catalogue, variants] = await Promise.all([loadTerminalManifest('backgrounds', { retry }),
+      fetch('/data/masterdata/background_variants.json').then(response => response.ok ? response.json() : null).catch(() => null)])
     if (homeDisposed) return
+    // Without the index the picker still works, just without chips.
+    backgroundVariantIndex.value = variants?.kind === 'background-variants' ? variants.variants || {} : {}
     backgroundEntries.value = catalogue.entries; backgroundReady.value = true
   } catch {
     if (!homeDisposed) backgroundError.value = '场景目录暂时不可用。现有首页仍可继续使用。'
@@ -399,9 +531,10 @@ async function loadCards(retry = false) {
 const cueIndex = computed(() => Math.max(0, activeIdol.value?.cues?.findIndex(cue => cue.cue === activeCue.value?.cue) || 0))
 const currentStep = computed(() => activeCue.value?.previewStep || {})
 const compiledData = computed(() => ({ scenario_id: activeCue.value?.scenarioId || '', steps: [renderStep.value] }))
-const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio })
+const homeAudioPreferences = new PlayerPreferencesRepository().load().volumes
+const homeAudioSession = new StoryAudioSession({ disabled: props.noAudio, masterVolume: homeAudioPreferences.master, busVolumes: homeAudioPreferences })
 const homeStyle = computed(() => ({
-  '--idol-color': activeIdol.value?.color || '#21b7c5',
+  '--idol-color': activeIdol.value?.color || 'var(--gs-mint)',
   '--interface-alpha': (preferences.interfaceOpacity / 100).toFixed(2),
 }))
 const voicePlayer = useVoicePlayer({
@@ -516,9 +649,47 @@ function resolveNextCue() {
   return cues[nextIndex]
 }
 
-function nextCue() {
-  const next = resolveNextCue()
-  if (next) emit('update:selectedCue', next.cue)
+// Explicit stepping is always in source order, whatever the stage tap's order setting.
+function stepCue(offset) {
+  const cues = activeIdol.value?.cues || []
+  if (cues.length < 2) return
+  stageTapAbort?.abort()
+  emit('update:selectedCue', cues[(cueIndex.value + offset + cues.length) % cues.length].cue)
+}
+
+async function openCueIndex() {
+  if (cueIndexOpen.value) return
+  cueIndexReturnFocus = document.activeElement
+  costumePickerOpen.value = false
+  closeSettings()
+  cueQuery.value = ''; cueRarity.value = ''
+  cueIndexOpen.value = true
+  await nextTick()
+  if (homeDisposed || !cueIndexOpen.value) return
+  cueIndexRef.value?.showModal()
+  const current = cueIndexBody.value?.querySelector('[aria-current="true"]')
+  current?.scrollIntoView({ block: 'center' })
+  current?.focus({ preventScroll: true })
+}
+
+async function chooseCue(cue) {
+  stageTapAbort?.abort()
+  if (cue.cue !== activeCue.value?.cue) {
+    emit('update:selectedCue', cue.cue)
+    await nextTick()
+    if (homeDisposed || activeCue.value?.cue !== cue.cue) return
+  }
+  // The pick is the play request, whatever the auto-voice setting; replace its pending timer.
+  clearTimeout(autoVoiceTimer); autoVoiceTimer = null
+  if (playing.value) stopVoice()
+  toggleVoice()
+}
+
+function openCueCard() {
+  const cue = activeCue.value
+  if (!cue?.cardId) return
+  stopVoice()
+  emit('open-card', { idolId: activeIdol.value.id, cardId: cue.cardId, voice: cue.cue })
 }
 
 async function handleStageTap() {
@@ -631,7 +802,8 @@ function resetPreferences() {
 
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
-  if (settingsOpen.value) closeSettings()
+  if (cueIndexOpen.value) closeCueIndex()
+  else if (settingsOpen.value) closeSettings()
   else if (focusMode.value) focusMode.value = false
   if (costumePickerOpen.value) costumePickerOpen.value = false
 }
@@ -658,6 +830,7 @@ onBeforeUnmount(() => {
   emit('focus-change', false)
   clearTimeout(autoVoiceTimer)
   sceneSettingsRef.value?.close()
+  cueIndexRef.value?.close()
   restoreSettingsFocus()
   delete document.documentElement.dataset.archiveHomeTheme
   queuedVoiceAbort?.abort()
@@ -672,3 +845,67 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped src="../../styles/archive-home-day.css"></style>
+
+<style scoped>
+/* Dialogue box: plain white (the opacity setting sets its alpha), the idol's
+   colour as a top edge like the masthead stripe, the in-game nameplate kept green. */
+.home-dialogue { padding:12px 16px 8px;border-top:3px solid var(--idol-color);background:rgb(255 255 255 / var(--interface-alpha)); }
+.dialogue-head { display:flex;align-items:center;gap:10px;min-width:0;margin-bottom:8px; }
+.home-dialogue .dialogue-name { flex:none;min-width:0;margin:0; }
+.dialogue-card { display:inline-flex;align-items:center;gap:2px;min-width:0;min-height:32px;padding:0;border:0;background:none;font:inherit;font-size:var(--gs-text-meta);color:var(--gs-ink-3);text-align:left;pointer-events:auto; }
+.dialogue-card span { min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.dialogue-card svg { flex:none; }
+button.dialogue-card { cursor:pointer; }
+button.dialogue-card:hover { color:var(--gs-selected-ink); }
+/* The box keeps the height of three lines and the text starts at the top, so stepping between lines never moves the frame or the controls. A fourth line grows it instead of clipping. */
+.home-dialogue .dialogue-text { min-height:calc(3 * 1.7em);font-size:var(--gs-text-subtitle);display:flex;align-items:flex-start; }
+.home-dialogue .dialogue-line { flex:1;min-width:0;margin:0;padding:2px 2px 4px;font-size:inherit;line-height:1.7; }
+.dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:opacity .12s ease; }
+.dialogue-fade-enter-from,.dialogue-fade-leave-to { opacity:0; }
+@media (prefers-reduced-motion:reduce) { .dialogue-fade-enter-active,.dialogue-fade-leave-active { transition:none; } }
+.home-dialogue .is-pending { visibility:hidden; }
+.home-dialogue .dialogue-actions { display:flex;align-items:center;gap:2px;margin:4px -6px 0;padding-top:4px;border-top:1px solid var(--gs-line); }
+.home-dialogue .dialogue-actions button { display:inline-grid;place-items:center;width:40px;height:40px;border:0;border-radius:var(--gs-radius-control);background:transparent;color:var(--gs-ink-2); }
+.home-dialogue .dialogue-actions button:hover:not(:disabled) { background:var(--gs-selected-bg);color:var(--gs-selected-ink); }
+.home-dialogue .dialogue-actions button:disabled { opacity:.35; }
+.home-dialogue .dialogue-actions .dialogue-play { color:var(--gs-mint-ink); }
+.home-dialogue .dialogue-actions .cue-index-trigger { display:inline-flex;gap:6px;width:auto;margin-left:auto;padding:0 8px;font-size:var(--gs-text-ui);font-variant-numeric:tabular-nums; }
+.cue-index-trigger small { font-size:var(--gs-text-meta);color:var(--gs-ink-3); }
+@media (pointer:coarse) { .home-dialogue .dialogue-actions button { width:44px;height:44px; } }
+@media (max-width:760px) { .home-dialogue { padding:10px 12px 6px; } .home-dialogue .dialogue-text { font-size:var(--gs-text-body); } }
+@media (max-height:540px) and (orientation:landscape) { .home-dialogue .dialogue-text { font-size:var(--gs-text-ui);min-height:calc(2 * 1.7em); } .home-dialogue .dialogue-line { line-height:1.6; } .dialogue-head { margin-bottom:4px; } }
+.scene-settings.cue-index { position:fixed;inset:0 0 0 auto;width:min(var(--gs-surface-settings-width), 100%);height:100%;max-width:none;max-height:none;margin:0;border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-bottom-left-radius:var(--gs-radius-panel);background:var(--gs-surface);animation:cue-drawer-in .22s ease-out; }
+.scene-settings.cue-index::backdrop { background:rgb(11 20 36 / 12%); }
+.scene-settings.cue-index > header { background:transparent; }
+@keyframes cue-drawer-in { from { transform:translateX(24px);opacity:0; } }
+@keyframes cue-sheet-in { from { transform:translateY(24px);opacity:0; } }
+@media (max-width:760px) {
+  .scene-settings.cue-index { inset:auto 0 0 0;width:100%;height:min(62%, 560px);border-radius:0;border-top-left-radius:var(--gs-radius-panel);border-top-right-radius:var(--gs-radius-panel);animation-name:cue-sheet-in; }
+}
+.cue-index-filters { flex:none;display:flex;flex-direction:column;gap:10px;padding:12px 18px;border-bottom:1px solid var(--gs-line); }
+.cue-index-search { display:flex;align-items:center;gap:8px;min-height:44px;padding:0 12px;border:1px solid var(--gs-line);border-radius:var(--gs-radius-field);color:var(--gs-ink-3); }
+.cue-index-search input { flex:1;min-width:0;border:0;outline:0;background:none;color:var(--gs-ink);font:inherit;font-size:var(--gs-text-ui); }
+.cue-index-search:focus-within { border-color:var(--gs-mint); }
+.cue-index-filters .background-variants { margin:0; }
+.cue-index-body { gap:16px; }
+.cue-index-card h4 { display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:var(--gs-text-ui);font-weight:var(--gs-weight-semibold);color:var(--gs-ink); }
+.cue-index-card h4 span { flex:none;min-width:34px;font-size:var(--gs-text-meta);color:var(--gs-mint-ink); }
+.cue-index-card ol { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px; }
+.cue-index-card li button { display:flex;align-items:flex-start;gap:10px;width:100%;min-height:44px;padding:8px 10px;border:0;border-radius:var(--gs-radius-control);background:none;color:var(--gs-ink);font:inherit;text-align:left;cursor:pointer; }
+.cue-index-card li button:hover { background:var(--gs-paper); }
+.cue-index-card li button[aria-current="true"] { background:var(--gs-selected-bg);box-shadow:inset 3px 0 0 var(--gs-selected-line); }
+.cue-index-now { flex:none;display:inline-flex;align-items:flex-end;gap:2px;width:14px;height:14px;margin-top:5px; }
+.cue-index-now i { flex:1;height:40%;background:var(--gs-mint); }
+.cue-index-now.is-playing i { animation:cue-now 0.9s ease-in-out infinite; }
+.cue-index-now.is-playing i:nth-child(2) { animation-delay:-.3s; }
+.cue-index-now.is-playing i:nth-child(3) { animation-delay:-.6s; }
+@keyframes cue-now { 0%, 100% { height:30%; } 50% { height:100%; } }
+@media (prefers-reduced-motion: reduce) { .scene-settings.cue-index, .cue-index-now.is-playing i { animation:none; } }
+.cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
+.cue-index-line { flex:1;min-width:0;font-size:var(--gs-text-ui);line-height:1.65;white-space:pre-line; }
+.cue-index-line.is-pending { visibility:hidden; }
+.cue-index-empty { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
+.home-language-switch { pointer-events:auto;margin-left:auto; }
+.home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
+@media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
+</style>

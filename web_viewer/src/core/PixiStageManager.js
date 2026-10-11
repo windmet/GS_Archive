@@ -1,6 +1,7 @@
 import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { stageRenderResolution } from './StageRenderBudget.js'
 import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
+import { decodeUnitySpineSkeleton } from '../../shared/story/SpineBinary.js'
 /**
  * PixiStageManager manages the PixiJS canvas/renderer and stage graph.
  *
@@ -1522,25 +1523,9 @@ export class PixiStageManager {
   }
 
   _decodeSkelBuffer(buf) {
-    const view = new DataView(buf)
-    const nameLen = view.getUint32(0, true)
-    // Unity binary header: uint32 filenameLength + filename + padding + uint32 metadata
-    if (nameLen > 0 && nameLen < 100) {
-      let printable = true
-      for (let i = 0; i < nameLen; i++) {
-        const b = view.getUint8(4 + i)
-        if (b < 0x20 || b > 0x7e) { printable = false; break }
-      }
-      if (printable) {
-        // Name section: 4 (length) + nameLen + padding to uint32 boundary
-        const nameSection = 4 + nameLen + ((4 - (4 + nameLen) % 4) % 4)
-        // Unity metadata uint32 follows name section (file size or block type)
-        const headerSize = nameSection + 4
-        console.log(`[PixiStageManager] Stripped ${headerSize}-byte Unity header from .skel`)
-        return buf.slice(headerSize)
-      }
-    }
-    return buf
+    const decoded=decodeUnitySpineSkeleton(buf)
+    if(decoded!==buf)console.log(`[PixiStageManager] Stripped ${buf.byteLength-decoded.byteLength}-byte Unity header from .skel`)
+    return decoded
   }
   // Atlas / texture helpers
 

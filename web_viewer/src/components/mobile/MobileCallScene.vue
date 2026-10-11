@@ -3,10 +3,11 @@
     <MobileDeviceFrame variant="call" :surface-style="callSurfaceStyle">
       <div class="call-screen" :class="{ 'is-neutral': !bgUrl }">
         <div class="call-profile-layer">
-          <MobileCallProfile :chara-id="charaId" :name="speakerName" :theme="theme" />
+          <MobileCallProfile :chara-id="roomCharaId" :name="roomName" :theme="theme" />
         </div>
         <div class="call-content-panel">
           <div v-if="dialogueText" class="dialogue-card">
+            <span v-if="guestSpeaker" class="dialogue-speaker">{{ speakerName }}</span>
             <LocalizedTextBlock class="dialogue-text" :display="display" />
           </div>
           <div v-if="externalReplyDisplay" class="external-reply">
@@ -19,6 +20,8 @@
     <template #rail>
       <MobileChoiceRail
         v-if="context.phase === 'choice'"
+        class="call-choice-rail"
+        reverse-three
         :options="currentChoices"
         @select="$emit('select', $event)"
       />
@@ -96,11 +99,22 @@ const charaId = computed(() => {
   return IDOL_NAME_TO_ID[raw] || context.value.primaryCharaId || ''
 })
 
+// ── Room: the call belongs to its owner; others may speak in it, the room stays put ──
+const roomCharaId = computed(() => context.value.ownerCharaId || charaId.value)
+const guestSpeaker = computed(() => Boolean(charaId.value && roomCharaId.value && charaId.value !== roomCharaId.value))
+// The owner's name as the call itself renders it: from one of the owner's own lines.
+const roomName = computed(() => {
+  if (!guestSpeaker.value) return speakerName.value
+  const ownLine = (props.steps || []).find(step => step?.chara_id === roomCharaId.value && step.dialogue)
+  const resolved = ownLine && (localization?.resolveDialogue(ownLine.dialogue) ?? resolveText(ownLine.dialogue))
+  return resolved?.speaker || IDOL_ID_TO_NAME[roomCharaId.value] || ''
+})
+
 // ── Theme / visual (resource fallback: chara mobile bg → neutral placeholder) ──
-const unitCode = computed(() => getUnitCodeByCharaId(charaId.value) || context.value.unitCode || null)
+const unitCode = computed(() => getUnitCodeByCharaId(roomCharaId.value) || context.value.unitCode || null)
 const theme = computed(() => getMobileUnitTheme(unitCode.value))
 
-const bgUrl = computed(() => (charaId.value ? getMobileBgUrl(charaId.value) : null))
+const bgUrl = computed(() => (roomCharaId.value ? getMobileBgUrl(roomCharaId.value) : null))
 
 const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundImage: `url(${bgUrl.value})`,
@@ -110,7 +124,8 @@ const callSurfaceStyle = computed(() => bgUrl.value ? {
   backgroundColor: '#c4babd',
 } : null)
 
-const replyLabel = 'プロデューサー：'
+const replyLabel = computed(() => `${localization.resolveUnit({ source: '',
+  speaker: { kind: 'producer', source: '<P>' } }).speaker.display}：`)
 </script>
 
 <style scoped>
@@ -156,6 +171,14 @@ const replyLabel = 'プロデューサー：'
   flex-shrink: 0;
 }
 
+.dialogue-speaker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--gs-ink-3);
+  font-size: var(--gs-text-meta);
+  font-weight: var(--gs-weight-semibold);
+}
+
 .dialogue-text {
   width: 100%;
   font-size: 0.95rem;
@@ -192,7 +215,7 @@ const replyLabel = 'プロデューサー：'
   --localized-secondary-gap: 0.18em;
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .call-profile-layer {
     top: 12%;
   }
@@ -207,7 +230,7 @@ const replyLabel = 'プロデューサー：'
   }
 }
 
-@media (max-height: 760px) and (min-width: 700px) {
+@media (max-height: 760px) and (min-width: 761px) {
   .call-content-panel {
     padding-top: 9%;
   }

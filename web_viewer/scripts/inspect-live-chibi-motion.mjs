@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 import { BinaryInput, MixBlend, MixDirection } from '@pixi-spine/base'
@@ -12,6 +13,7 @@ import {
   RegionAttachment,
   Skeleton,
   SkeletonBinary,
+  Skin,
 } from '@pixi-spine/runtime-3.8'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -74,9 +76,9 @@ function inspectMotion(bodyType, motionId) {
   return { bodyType, motionId, animationCount, animations }
 }
 
-function parseAnimations(skeletonBinary, skeletonData, setupBytes, bodyType, motionId) {
+function parseAnimations(skeletonBinary, skeletonData, setupBytes, bodyType, motionId, motionBytes) {
   const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.motion`)
-  const input = new BinaryInput(fs.readFileSync(motionPath), readSetupStringTable(setupBytes))
+  const input = new BinaryInput(motionBytes ?? fs.readFileSync(motionPath), readSetupStringTable(setupBytes))
   const animationCount = input.readInt(true)
   return Array.from({ length: animationCount }, () => {
     const name = input.readString()
@@ -131,15 +133,62 @@ function inspectTransition(bodyType, fromMotionId, fromTime, toMotionId, fromAni
   }
 }
 
+function inspectPoseSamples(bodyType, motionId, animationIndex, times) {
+  if (!Number.isInteger(bodyType) || bodyType < 1 || !Number.isInteger(motionId) || motionId < 0) {
+    throw new RangeError('Specify integer body and motion identities')
+  }
+  if (!Number.isInteger(animationIndex) || animationIndex < 0 || !times.length || times.length > 100) {
+    throw new RangeError('Specify one animation index and 1–100 sample times')
+  }
+  const setupPath = path.join(assetRoot, 'setup', `body-${bodyType}.skel`)
+  const motionPath = path.join(assetRoot, 'motions', 'choreography', String(bodyType), `${motionId}.motion`)
+  const setupBytes = fs.readFileSync(setupPath)
+  const motionBytes = fs.readFileSync(motionPath)
+  const binary = new SkeletonBinary(new DiagnosticAttachmentLoader())
+  const data = binary.readSkeletonData(setupBytes)
+  const animation = parseAnimations(binary, data, setupBytes, bodyType, motionId, motionBytes)[animationIndex]
+  if (!animation || times.some(t => !Number.isFinite(t) || t < 0 || t > animation.duration)) {
+    throw new RangeError('Sample outside the selected native animation')
+  }
+  const skin = new Skin('diagnostic-base')
+  for (const name of ['body', 'head', 'cos_defo']) {
+    const source = data.findSkin(name)
+    if (source) skin.addSkin(source)
+  }
+  const identity = (file, bytes) => ({ path: path.relative(repoRoot, file).replaceAll('\\', '/'),
+    sha256: createHash('sha256').update(bytes).digest('hex') })
+  return { schemaVersion: 1, status: 'native_pose_samples_not_player_or_render_acceptance', bodyType, motionId,
+    source: { setup: identity(setupPath, setupBytes), motion: identity(motionPath, motionBytes), animationIndex,
+      skins: ['body', 'head', 'cos_defo'].filter(name => data.findSkin(name)),
+      coordinates: 'Spine world coordinates before player scale, camera, costume and rendering' },
+    animation: summarizeAnimation(animation),
+    samples: times.map(time => {
+      // Native constraints can retain applied transforms even after setup reset.
+      // Each diagnostic sample must be independent of the previous sample order.
+      const skeleton = new Skeleton(data)
+      skeleton.setSkin(skin)
+      skeleton.setToSetupPose()
+      animation.apply(skeleton, -1, time, false, [], 1, MixBlend.replace, MixDirection.mixIn)
+      skeleton.updateWorldTransform()
+      return { time, bones: skeleton.bones.map(b => ({ name: b.data.name,
+        x: b.worldX, y: b.worldY, rotation: b.rotation, scaleX: b.scaleX, scaleY: b.scaleY })),
+        attachments: skeleton.slots.filter(s => s.getAttachment()).map(s => ({
+          slot: s.data.name, bone: s.bone.data.name, attachment: s.getAttachment().name })) }
+    }) }
+}
+
 const args = process.argv.slice(2)
 const bodyType = Number(args[0] || 1)
-if (args[1] === '--transition' && args.length >= 5) {
+if (args[1] === '--pose') {
+  console.log(JSON.stringify(inspectPoseSamples(bodyType, Number(args[2]), Number(args[3]), args.slice(4).map(Number)), null, 2))
+} else if (args[1] === '--transition' && args.length >= 5) {
   console.log(JSON.stringify(inspectTransition(bodyType, Number(args[2]), Number(args[3]), Number(args[4]), Number(args[5] || 0)), null, 2))
 } else {
   const motionIds = args.slice(1).map(Number).filter(Number.isFinite)
   if (!motionIds.length) {
   console.error('Usage: node scripts/inspect-live-chibi-motion.mjs <bodyType> <motionId...>')
   console.error('   or: node scripts/inspect-live-chibi-motion.mjs <bodyType> --transition <fromId> <fromTimeSeconds> <toId> [fromAnimationIndex]')
+  console.error('   or: node scripts/inspect-live-chibi-motion.mjs <bodyType> --pose <motionId> <animationIndex> <seconds...>')
   process.exitCode = 1
   } else {
     console.log(JSON.stringify(motionIds.map(id => inspectMotion(bodyType, id)), null, 2))

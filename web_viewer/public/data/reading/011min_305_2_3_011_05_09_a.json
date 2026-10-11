@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "011min_305_2_3_011_05_09_a",
-  "logical_id": "story-collection:011min_305_2_3_011_05_09_a",
+  "logical_id": "story:011min_305_2_3_011_05_09_a",
   "scenario_id": "011min_305_2_3_011_05_09_a",
   "text_catalog_id": "011min_305_2_3_011_05_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "011min_305_2_3_011_05_09_a.json",
-    "sha256": "sha256:a06712dcfe29792282d1bd96f8f35e8134c0e6139f65a1aa0bd567148041a6f8",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:cd3eedcafe40ba31a7890689c70de1956b87cfd8ed072c982a616881da8d5cba",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:111e4570369a715c11a1b38c69c11731cd22401df33cc4303f17fcd0c5d89f19",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "011min_305_2_3_011_05_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー。\n今日は、お疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cb257ee79a77ffeeef927d5227485dafbfb6cb8a9ab634abdeadd53dca59cd48"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "あのメンバーとの仕事は、\n初めてとは思えないくらい楽しかったよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4056b8e9817c155bf3a89e32351c8bc664bbc5b58fbeb43ea3398611edf72513"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "ずっとやってみたかった演出を、\nみんなに協力してもらって出来たしね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7d0595511898acc29586cd8929d3d9e4f2013a6b0213f1e1ff8c0ca66be7f98d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "テレビでアイドルがやってるのを見て、\nいつかやってみたいなと思ってたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:058a4cab16beb17e832bda0c67226b1e9bab393c0745004c57ce0e5d09591b4a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "プロデューサーも改めてありがとう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:614a4f99fed050bf12c9ce4b8d65148efb2d0e246f83a173ec5e0bcbd53d3397"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "定番だからこそ、ファンや見ている人たちが喜んで\nくれるって言ってくれたよね。嬉しかったよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:58ee2a34f5fb0929317325565902675d4a358b64a8d217de563caf51198ed205"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -267,7 +324,18 @@
     {
       "kind": "choice",
       "source_text": "絶対喜んで\nくれると思います！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dd44a04881d25c48efdb183ae80cb8ad653acd12c9a1e98025dfd6b9529170d1"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -294,14 +362,14 @@
         "row_id": "011min_305_2_3_011_05_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018",
+        "option_id": "choice-option:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018:000",
         "source_label": "2_3_011_05_09_a-sel1",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -312,7 +380,18 @@
     {
       "kind": "choice",
       "source_text": "今でも\nそう思っています！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4584443ba2d333940b074d8f45645a304d70461943ffd1bbde16d29341092734"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -339,14 +418,14 @@
         "row_id": "011min_305_2_3_011_05_09_a:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018",
+        "option_id": "choice-option:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000019:001",
         "source_label": "2_3_011_05_09_a-sel2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "うん、俺もそう思うよ。\nだから、配信日がとても待ち遠しいんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ffae36f3fca5052e1283fa1227afb7f6e3492fb05c0b6884e2711308962cd53b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "これから編集の依頼とかいろいろ大変だろうけど、\nよろしく。それじゃ、完成の連絡楽しみにしてる。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "011min_305_2_3_011_05_09_a",
+          "part_id": "2_3_011_05_09_a",
+          "file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:038f9b6e72753ee55fd23c476f5a2133e8e6eff2e2a8155d45eea1caa11a7f6a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "011min",
         "sourceName": "渡辺 みのり"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "011min_305_2_3_011_05_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_011_05_09_a",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -442,86 +539,62 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018",
+          "option_id": "choice-option:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018:000",
           "source_label": "2_3_011_05_09_a-sel1",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000018",
+          "option_id": "choice-option:v1:011min_305_2_3_011_05_09_a:2_3_011_05_09_a:cmd-000019:001",
           "source_label": "2_3_011_05_09_a-sel2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 8,
+        "join_step_id": 9,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/011min_305/scenario_2_3_011_05_09_a.json",
+        "raw_sha256": "sha256:68bb65fd39842ba8bc915e528e673336787a7f64ebd655ab6c24757c865701b4",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          18,
+          19
+        ],
+        "join_command": 21,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "2_3_011_05_09_a-sel1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              20
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "2_3_011_05_09_a-sel2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー。",
     "episode_label": null

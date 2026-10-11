@@ -25,6 +25,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--spines-index", type=Path)
     parser.add_argument("--prefab-meta", type=Path)
     parser.add_argument("--bg-dir", type=Path)
+    parser.add_argument("--archive-domains-only", action="store_true",
+        help="Generate item/honor/event/photo catalogs and lazy shards with the reviewed schema/hash gate.")
     parser.add_argument(
         "--seasonal-campaign-only",
         action="store_true",

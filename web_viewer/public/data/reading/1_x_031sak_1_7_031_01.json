@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_031sak_1_7_031_01",
-  "logical_id": "story-collection:1_x_031sak_1_7_031_01",
+  "logical_id": "story:1_x_031sak_1_7_031_01",
   "scenario_id": "1_x_031sak_1_7_031_01",
   "text_catalog_id": "1_x_031sak_1_7_031_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_031sak_1_7_031_01.json",
-    "sha256": "sha256:94b46bc083482c6fa12f9b206ac0b5eeb9736c230036ab172d0e5061bd66635a",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:7b61164c4ae1fb98f1d4b02d75b6532cc3ecdfaa490d713706187630bebf2fcd",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:54e4a7086133b28a6823546c49b45e3a847e7c28667d35091aa1b9bc5356c5df",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_031sak_1_7_031_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "dialogue",
       "source_text": "咲さんのお誕生日って今日ですよね。\nおめでとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_031sak_1_7_031_01:1_7_031_01:cmd-000011:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_031sak_1_7_031_01",
+          "part_id": "1_7_031_01",
+          "file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+          "command_index": 11,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c99ea3531479420a3daf25ebbdba37686b2dea5e1640a454d6d6ebc505184ccf"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "1_x_031sak_1_7_031_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_031_01",
+        "source_file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "わーん！　ありがっとー☆",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_031sak_1_7_031_01:1_7_031_01:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_031sak_1_7_031_01",
+          "part_id": "1_7_031_01",
+          "file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:41775b3eb2f562d4957d2580bcbed8fc4f785e0ff681187b375acf942d2a4fc6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -84,30 +109,39 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_031sak_1_7_031_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_031_01",
+        "source_file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーに\nお祝いしてもらえて、すっごく嬉しい！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_031sak_1_7_031_01:1_7_031_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_031sak_1_7_031_01",
+          "part_id": "1_7_031_01",
+          "file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:34a0f74e03ab8fa4f96e51f7cf1631902129122a4c4c82503900adc7f066c99a"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -124,7 +158,6 @@
         "stepId": 5
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -133,21 +166,32 @@
         "row_id": "1_x_031sak_1_7_031_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_031_01",
+        "source_file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "特別な日が、もっともーっと特別になっちゃった。\nえへへ♪",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_031sak_1_7_031_01:1_7_031_01:cmd-000025:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_031sak_1_7_031_01",
+          "part_id": "1_7_031_01",
+          "file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+          "command_index": 25,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:747d3409f8b0dcef4f42d483d5ac029b9520d7a4a0347efe7357a53f3eb1a6bc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -164,7 +208,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -173,21 +216,32 @@
         "row_id": "1_x_031sak_1_7_031_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_031_01",
+        "source_file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "今日はパピッとハッピーな1日になる予感☆\n誕生日、思いっきり楽しむぞー！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_031sak_1_7_031_01:1_7_031_01:cmd-000035:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_031sak_1_7_031_01",
+          "part_id": "1_7_031_01",
+          "file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+          "command_index": 35,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f32c66b5d699413e6772975c56c766786e26044fd5d3f0e2a386bb303e8844bd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "031sak",
         "sourceName": "水嶋 咲"
       },
       "performance": {
@@ -204,7 +258,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -213,47 +266,16 @@
         "row_id": "1_x_031sak_1_7_031_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_7_031_01",
+        "source_file": "assets/resources/scenariodata/1_x_031sak/scenario_1_7_031_01.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "咲さんのお誕生日って今日ですよね。",
     "episode_label": null

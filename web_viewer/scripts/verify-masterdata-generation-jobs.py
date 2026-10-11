@@ -21,7 +21,7 @@ def digest(value):
 
 def corpus(data):
     records = list(iter_top_records(data))
-    return {name: job(GenerationInputs(records)) for name, job in SELECTED_JOBS.items()}
+    return {name: job(GenerationInputs(records, decoded_sha256=hashlib.sha256(data).hexdigest())) for name, job in SELECTED_JOBS.items()}
 
 
 def verify():
@@ -51,7 +51,8 @@ def verify():
             result = job(inputs)
         assert isinstance(result, dict) and result
         assert inputs.records == saved
-    assert len(SELECTED_JOBS) == 8
+    assert set(SELECTED_JOBS) == {'birthday_semantic', 'movie_announce', 'card_skill_movie',
+        'song_movie', 'music_catalog', 'idol_communication', 'seasonal_campaign', 'work_story', 'archive_domains'}
 
 
 def main():
@@ -65,8 +66,11 @@ def main():
         actual = {'input_sha256': hashlib.sha256(data).hexdigest(),
                   'hashes': {key: digest(value) for key, value in result.items()}}
         expected = json.loads((ROOT / 'fixtures/masterdata-wire/generation-jobs-baseline.json').read_text())
-        assert actual == expected['summary']
-        print(json.dumps({name: list(outputs) for name, outputs in result.items()}))
+        # Keep all existing mounted job hashes unchanged; archive-domain behavior
+        # has its own semantic/full-corpus verifier rather than a snapshot accept.
+        assert actual['input_sha256'] == expected['summary']['input_sha256']
+        assert {key: actual['hashes'][key] for key in expected['summary']['hashes']} == expected['summary']['hashes']
+        print(json.dumps({name: len(outputs) for name, outputs in result.items()}))
     print('Masterdata jobs: standalone outputs, no writes, lazy reads, cache isolation and mode coverage passed')
 
 

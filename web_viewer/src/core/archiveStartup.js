@@ -16,16 +16,16 @@ export function isBareArchiveEntry(input) {
 }
 
 export function canResolveArchiveStartupBeforeData(input, preferences) {
-  return !(isBareArchiveEntry(input) && ['card', 'spine'].includes(preferences?.homeMode))
+  return !(isBareArchiveEntry(input) && preferences?.startupPage === 'home')
 }
 
 function validIdol(idolCode, validHomeIdols) {
   return typeof idolCode === 'string' && validHomeIdols.includes(idolCode)
 }
 
-export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
+export function resolveArchiveStartup(input, preferences, validHomeIdols = [], { history = false } = {}) {
   if (!isBareArchiveEntry(input)) {
-    const route = readArchiveRoute(input)
+    const route = readArchiveRoute(input, { history })
     return {
       route,
       lightweight: route.view === 'welcome' || route.view === 'portal' ||
@@ -33,11 +33,15 @@ export function resolveArchiveStartup(input, preferences, validHomeIdols = []) {
       source: 'explicit',
     }
   }
-  if (['card', 'spine'].includes(preferences?.homeMode)) {
+  if (preferences?.startupPage === 'home') {
     const idol = [preferences.startupIdol, preferences.preferredIdol].find(id => validIdol(id, validHomeIdols))
     return { route: idol ? { view: 'home', homeIdol: idol } : { view: 'home' }, lightweight: !idol, source: idol ? 'preference' : 'invalid-home-idol' }
   }
-  return { route: { view: 'welcome' }, lightweight: true, source: 'new-user' }
+  if (preferences?.startupPage === 'portal' || preferences?.onboardingComplete) {
+    return { route: { view: 'portal', ...(preferences?.portalDefaultScope === 'all' ? {portalScope:'all'} : {}) }, lightweight: true, source: 'preference' }
+  }
+  // A new visitor starts in the archive; App shows the onboarding sheet over it.
+  return { route: { view: 'portal' }, lightweight: true, source: 'new-user' }
 }
 
 export function resolveArchiveHomeAction(preferences, validHomeIdols = []) {

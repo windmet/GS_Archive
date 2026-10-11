@@ -40,7 +40,7 @@ const imageStyle = computed(() => ({
   background: linear-gradient(90deg, rgba(12, 18, 22, 0.18), rgba(12, 18, 22, 0.28));
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .backdrop-image {
     inset: -20px;
     filter: blur(12px) brightness(0.74) saturate(0.8);

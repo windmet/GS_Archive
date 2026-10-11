@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "016sei_401_2_4_016_01_09_a",
-  "logical_id": "story-collection:016sei_401_2_4_016_01_09_a",
+  "logical_id": "story:016sei_401_2_4_016_01_09_a",
   "scenario_id": "016sei_401_2_4_016_01_09_a",
   "text_catalog_id": "016sei_401_2_4_016_01_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "016sei_401_2_4_016_01_09_a.json",
-    "sha256": "sha256:4e0196908afd59c688218dbdb3ce0ba713ec06fa53927fc3bc3b7342768d88e0",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:4a998117741b85f8e5e47590a6dc296b0f73a81724c58115d269ca44e282980f",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:fe2e8bf5a8ffdad488316dc3ba47536251e4d3bf10adbe614f202550568224e0",
     "aggregate_source": null,
     "step_count": 15,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "016sei_401_2_4_016_01_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "もしもし、●●●●プロデューサーさん。\n新春ライブはお疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:48499bb77706d0a7959cfffed7828005a2c262da6b39f3324aa5a7f511193bd7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "新年を飾るにふさわしいライブになったと自負\nしている。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:55e52884eb0152eb6427fd129757874c89c15ff599174ed9fe97251df55c9d79"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "ところで、昨日あまねと初詣に行ったんだ。\n家から少し離れているんだが、ライブをした神社に。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e1529bf024de4da2682b493476ad6a4d2b2a72b0af338079be66be0eb4af3a5"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "あまねがどうしても行きたいと聞かなくてな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9cbf1ec81e74be3dac8470181afd5eea95f31e8c46327422f71c733086e7f29f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -187,11 +226,22 @@
     {
       "kind": "dialogue",
       "source_text": "それで、ずいぶん熱心だったから\n何をお願いしたか聞いてみたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc0fed08b12879498ffd32108b196cfbeb521133166b716ec3d387647d8c854f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -207,19 +257,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -227,11 +275,22 @@
     {
       "kind": "dialogue",
       "source_text": "そしたらなんて言ったと思う？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:060b70c19ecb36ff29cdc7913c756742aeb6f88ddd9d3d10b3b168116ab1f121"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -247,19 +306,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -267,7 +324,18 @@
     {
       "kind": "choice",
       "source_text": "誠司さんのこと\nでしょうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:90a761cf0c1459b1e01fab2cd48264d3d1deb2c64706b964941d057ffa8b05b7"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -294,14 +362,14 @@
         "row_id": "016sei_401_2_4_016_01_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000017",
+        "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000017:000",
         "source_label": "phone_select1",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -312,11 +380,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうだ！\n自分のアイドルの仕事のことをお願いしてたんだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c589ee3d25cd535664ff91fdf038d6752d43f173b5afbafcac2c10a2601dce00"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -332,19 +411,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -352,11 +429,22 @@
     {
       "kind": "dialogue",
       "source_text": "改めて、この一年アイドルの仕事を\n頑張らないとと気合いが入ったよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:14c9c3b370f6a18629c6da821d350ae77e3616684007f635515e72ea8ad14a4c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -372,19 +460,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -392,11 +478,22 @@
     {
       "kind": "dialogue",
       "source_text": "そういうことで、早速レッスンがしたい。明日、\nレッスンスタジオの予約を入れてもらってもいいか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:007eb2968c3caa8a54bd563c92e41e5e2a033a95131ec8290cfc15b384b91657"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -412,19 +509,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -432,7 +527,18 @@
     {
       "kind": "choice",
       "source_text": "もちろんです！\n手配しますね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026:choice_short:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 26,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f849bd4b259b0a77a76987307a4502b6410c80d87cabf16a09de7629f6a81656"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -459,14 +565,14 @@
         "row_id": "016sei_401_2_4_016_01_09_a:step-12:option-0",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 26,
+        "command_end": 27
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026",
+        "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026:000",
         "source_label": "phone_select2",
         "target_step_id": 13,
         "target_step_index": 12,
@@ -477,7 +583,18 @@
     {
       "kind": "choice",
       "source_text": "わかりました！\n何時にしますか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000027:choice_short:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 27,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:45266c1085436ef44d1ccad9ae6b2bec4dc20788bf0640c3eb4603e2a129438b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -504,14 +621,14 @@
         "row_id": "016sei_401_2_4_016_01_09_a:step-12:option-1",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 26,
+        "command_end": 27
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026",
+        "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000027:001",
         "source_label": "phone_select3",
         "target_step_id": 14,
         "target_step_index": 13,
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "ありがとう。\nあとで希望の時間帯を送るよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7c118c5565c5cf4095b48afa4ac5851ff4e70601ea1dfc151e8049b4d19273fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -562,11 +688,22 @@
     {
       "kind": "dialogue",
       "source_text": "感謝する。\n昼過ぎから予約できるとありがたい。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000034:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 34,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fc873e05f564ab52a4254edc8138d80ce4411f1302530d63d63f4fda6fa13ffb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -582,19 +719,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 34,
+        "command_end": 34
       },
       "option": null,
       "presentation": "call"
@@ -602,11 +737,22 @@
     {
       "kind": "dialogue",
       "source_text": "では、よろしく頼んだ。\n●●●●プロデューサーさん。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000038:phone_message:000",
+        "source": {
+          "scenario_id": "016sei_401_2_4_016_01_09_a",
+          "part_id": "2_4_016_01_09_a",
+          "file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+          "command_index": 38,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ce7e25621bf2b1b6df93a57f7cbc62a65d1790cdde6fb94e83cf2fa72e40ec16"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "016sei",
         "sourceName": "信玄 誠司"
       },
       "performance": {
@@ -622,19 +768,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "016sei_401_2_4_016_01_09_a:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_016_01_09_a",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "command_start": 38,
+        "command_end": 38
       },
       "option": null,
       "presentation": "call"
@@ -647,8 +791,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000017",
+          "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000017:000",
           "source_label": "phone_select1",
           "target_step_id": 9,
           "target_step_index": 8,
@@ -662,116 +806,82 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026",
+          "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026:000",
           "source_label": "phone_select2",
           "target_step_id": 13,
           "target_step_index": 12,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000026",
+          "option_id": "choice-option:v1:016sei_401_2_4_016_01_09_a:2_4_016_01_09_a:cmd-000027:001",
           "source_label": "phone_select3",
           "target_step_id": 14,
           "target_step_index": 13,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 11,
+        "choice_step_id": 12,
+        "join_index": 14,
+        "join_step_id": 15,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/016sei_401/scenario_2_4_016_01_09_a.json",
+        "raw_sha256": "sha256:f811306a0241831f62ffd3c274ea9fcc7d04af3cac523aab3d5405de2e648744",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          26,
+          27
+        ],
+        "join_command": 36,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              12
+            ],
+            "exit_index": 12,
+            "command_indices": [
+              28,
+              29,
+              30,
+              31
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              13
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              13
+            ],
+            "exit_index": 13,
+            "command_indices": [
+              32,
+              33,
+              34,
+              35
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              14
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 11,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "もしもし、●●●●プロデューサーさん。",
     "episode_label": null

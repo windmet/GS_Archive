@@ -1,0 +1,709 @@
+{
+  "schema_version": 2,
+  "document_id": "5_01_000_23_5_01_000_23",
+  "logical_id": "story-collection:5_01_000_23_5_01_000_23",
+  "scenario_id": "5_01_000_23_5_01_000_23",
+  "text_catalog_id": "5_01_000_23_5_01_000_23",
+  "playback": {
+    "file": "5_01_000_23_5_01_000_23.json",
+    "start_step_index": 0,
+    "end_step_index": 23
+  },
+  "source": {
+    "file": "5_01_000_23_5_01_000_23.json",
+    "sha256": "sha256:72e517b1981e438f1c143b820422b5f60d2cf9a4dd2a2bba398b204adab99077",
+    "schema_version": 1,
+    "runtime_contract": null,
+    "raw_hash": "sha256:b5ecdc90de3713fdc8245ca063fab4ab7521246f1b243e5870fc47088b1e9bea",
+    "aggregate_source": null,
+    "step_count": 24,
+    "publication": {
+      "kind": "catalog-compatibility",
+      "aggregate_file": "5_01_000_23_5_01_000_23.json"
+    }
+  },
+  "status": "ready",
+  "rows": [
+    {
+      "kind": "dialogue",
+      "source_text": "諸君！　今年もあの日が近づいてきたな！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000013:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 13,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:5d8cf749ff2a5ca0bfdfbac5bc9372338dd819a3c3b473e7a99d0e3abc2aa710"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 3
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-3:text",
+        "step_id": 3,
+        "step_index": 2,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 13,
+        "command_end": 13
+      },
+      "option": null
+    },
+    {
+      "kind": "choice",
+      "source_text": "バレンタインデーですね！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:50d37415cb3621bbede2dd62758ce90c4cd72e4c610b6a8051f214056143a30b"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 5
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-5:option-0",
+        "step_id": 5,
+        "step_index": 4,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 19,
+        "command_end": 20
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019",
+        "option_id": "choice-option:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019:000",
+        "source_label": "a1001",
+        "target_step_id": 6,
+        "target_step_index": 5,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "choice",
+      "source_text": "パッションが溢れるあの日ですね！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000020:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 20,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bb18a47ac20a1219619bd898caa270746854406572168559985e88d5c3995307"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 5
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-5:option-1",
+        "step_id": 5,
+        "step_index": 4,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 19,
+        "command_end": 20
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019",
+        "option_id": "choice-option:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000020:001",
+        "source_label": "a1002",
+        "target_step_id": 6,
+        "target_step_index": 5,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "その通り！　己のパッションを伝え合う、\nバレンタインデーが再びやって来たのだ！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:abfabd89e33d2cfb901fca68f2ac844d2e12d858869819bbf3b7a3161b7496d6"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 7
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-7:text",
+        "step_id": 7,
+        "step_index": 6,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 26,
+        "command_end": 26
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "昨年はプロデューサー君の働きにより、\nアイドルたち全員が様々な仕事で成果を出してくれた。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000028:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 28,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ab9c140e554a2b31d627c36347afa26e606bdda92208a28b2840b580315a7703"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-8:text",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 28,
+        "command_end": 28
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "はい。それにプロデューサーさんからチョコを\nもらったアイドルの皆さん、とても嬉しそうでした。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dfefd4e525e8088cad2615d0ca5fdcf3583d72ef7907134ad1e4127baa061b07"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
+        "sourceName": "山村 賢"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 11
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-11:text",
+        "step_id": 11,
+        "step_index": 10,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 38,
+        "command_end": 38
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "うむ。去年のバレンタインは、\n大成功だったと言ってもいいだろう。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4cc1926b36aac937f3326d9badc9fc58493c89cfb0ba4abbfbe54db54c11ca5a"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 14
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-14:text",
+        "step_id": 14,
+        "step_index": 13,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 47,
+        "command_end": 47
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "そこでだ。気づいているだろうが、\n●●●●プロデューサー君に頼みがある。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000049:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 49,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6933ca6b2d91595aa30111987016ac141d7aa4c2ed53736ba6bbda11fa242494"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 15
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-15:text",
+        "step_id": 15,
+        "step_index": 14,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 49,
+        "command_end": 49
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "今年も彼らにチョコレートを渡してもらいたい！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7a4a314b1d348084c545cf2652356fa5bb234e00ba20628703425d69b00dc4fd"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 16
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-16:text",
+        "step_id": 16,
+        "step_index": 15,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 53,
+        "command_end": 53
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "プロデューサーさんからチョコをもらえたら、\n皆さん、きっと喜んでくれますね！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000064:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 64,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aad81729a27f1e0a3bda901eaf39c719b34ed51487f415a89dd35acccf610a26"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "101ken",
+        "sourceName": "山村 賢"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 20
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-20:text",
+        "step_id": 20,
+        "step_index": 19,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 64,
+        "command_end": 64
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "わかりました！　今年も\nパッションを込めたチョコレートを準備します！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000070:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 70,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9e717907930d38a0d48490ed7ff5c5da04c17bf578a54d9b9e5929f054c59f93"
+      },
+      "speaker": {
+        "kind": "producer",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": "<P>"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 21
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-21:text",
+        "step_id": 21,
+        "step_index": 20,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 70,
+        "command_end": 70
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "うむ、それではよろしく頼む！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000077:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_000_23_5_01_000_23",
+          "part_id": "5_01_000_23",
+          "file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+          "command_index": 77,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:453bc90498d9363d7938a1e0e4df6f4b92c130054cd10b9ddb3402f0ff26b82f"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "102sha",
+        "sourceName": "齋藤社長"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 24
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_000_23_5_01_000_23:step-24:text",
+        "step_id": 24,
+        "step_index": 23,
+        "source_part_id": "5_01_000_23",
+        "source_file": "scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "command_start": 77,
+        "command_end": 77
+      },
+      "option": null
+    }
+  ],
+  "controls": [
+    {
+      "step_id": 5,
+      "step_index": 4,
+      "kind": "choice",
+      "options": [
+        {
+          "choice_id": "choice:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019",
+          "option_id": "choice-option:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019:000",
+          "source_label": "a1001",
+          "target_step_id": 6,
+          "target_step_index": 5,
+          "resolution": "resolved"
+        },
+        {
+          "choice_id": "choice:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000019",
+          "option_id": "choice-option:v1:5_01_000_23_5_01_000_23:5_01_000_23:cmd-000020:001",
+          "source_label": "a1002",
+          "target_step_id": 6,
+          "target_step_index": 5,
+          "resolution": "resolved"
+        }
+      ],
+      "fork": {
+        "choice_index": 4,
+        "choice_step_id": 5,
+        "join_index": 5,
+        "join_step_id": 6,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_01_000_23/scenario_5_01_000_23.json",
+        "raw_sha256": "sha256:b5ecdc90de3713fdc8245ca063fab4ab7521246f1b243e5870fc47088b1e9bea",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          19,
+          20
+        ],
+        "join_command": 22,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1001",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              21
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1002",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "compatibility-source-fields-may-be-missing",
+      "step_index": null,
+      "severity": "warning"
+    }
+  ],
+  "presentation": {
+    "title": "より熱く、強い思いを！",
+    "episode_label": null
+  }
+}

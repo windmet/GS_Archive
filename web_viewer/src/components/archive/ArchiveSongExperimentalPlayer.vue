@@ -1,24 +1,15 @@
 <template>
   <section v-if="audioExperiment" class="song-block experimental-player" aria-labelledby="song-experimental-player-title">
-    <div class="song-block-heading">
-      <span>SONG PLAYER</span>
-      <h3 id="song-experimental-player-title">演唱试听（实验）</h3>
-    </div>
-    <p class="song-block-note">
-      选择组合、中心偶像或自由编成试听。分轨试听与原游戏混音可能不同。
-    </p>
-
+    <div class="song-block-heading"><h3 id="song-experimental-player-title">演唱试听</h3><small v-if="maintainer">分轨混音 · 实验</small></div>
+    <p class="song-block-note">分轨试听与原游戏混音可能不同。</p>
+    <label class="song-mode-selector" data-vocal-setting-selector>
+      <span>试听模式</span>
+      <select :value="mode" @change="changeListeningMode">
+        <option v-for="item in listeningModes" :key="item.id" :value="item.id">{{ item.label }}</option>
+      </select>
+    </label>
+    <button v-if="mode === 'solo' && hasVocalSetting('center') && soloEntries.length" class="solo-open" type="button" @click="soloOpen = true">{{ mode === 'solo' ? `当前 Solo · ${soloDisplayName(currentSoloTrack) || '选择偶像'}` : `查看 / 试听 ${soloEntries.length} 位偶像 Solo` }} →</button>
     <div class="experimental-controls">
-      <label>
-        演唱指定
-        <select v-model="mode" data-vocal-setting-selector>
-          <option v-if="hasVocalSetting('formation')" value="lineup">编成偶像（五槽合唱）</option>
-          <option v-if="hasVocalSetting('unit')" value="unit">组合（单轨）</option>
-          <option v-if="hasVocalSetting('all_stars')" value="all_stars">315 ALL STARS（完整混音试听）</option>
-          <option v-if="hasVocalSetting('center')" value="solo">中心偶像＋伴奏</option>
-          <option v-if="auditedOptions.length" value="single">其他收录音轨</option>
-        </select>
-      </label>
       <label v-if="mode === 'unit'">
         组合
         <select v-model="selectedUnitKey">
@@ -35,19 +26,14 @@
           </option>
         </select>
       </label>
-      <label v-else-if="mode === 'solo'">
-        中心偶像
-        <select v-model="selectedIdolCode">
-          <option v-for="entry in soloEntries" :key="entry.idol_code" :value="entry.idol_code">
-            {{ entry.displayName }}
-          </option>
-        </select>
-      </label>
     </div>
 
     <ArchiveSongLineupPlayer
       v-if="mode === 'lineup'"
+      ref="lineupPlayer"
       :audio-experiment="audioExperiment"
+      :idol-name="idolName"
+      @request-play="emit('request-play')"
       @open-stage="emit('open-stage', $event)"
     />
 
@@ -57,6 +43,7 @@
       :class="{ 'is-solo': mode === 'solo' }"
       :data-vocal-setting="mode"
       :data-solo-ready="mode === 'solo' ? soloSession.ready.value : undefined"
+      :data-output-peak="mode === 'solo' ? soloSession.outputPeak.value : undefined"
       :data-solo-clock="mode === 'solo' ? 'audio-context-scheduled' : undefined"
     >
       <audio
@@ -71,9 +58,9 @@
         @error="onAudioError"
       />
 
-      <ArchiveMediaTransport :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
+      <ArchiveMediaTransport music :ready="transportReady" :playing="transportPlaying" :duration="transportDuration" :current-time="transportCurrentTime" @toggle="togglePlayback" @restart="resetPlayback" @seek="seekPlayback({ target: { value: $event } })" />
 
-      <div v-if="mode === 'solo'" class="experimental-mix-controls">
+      <details v-if="mode === 'solo'"><summary>音轨平衡</summary><div class="experimental-mix-controls">
         <label>
           Solo 音量
           <input v-model.number="vocalVolume" type="range" min="0" max="1" step="0.01" aria-label="Solo 音量" />
@@ -82,37 +69,98 @@
           伴奏音量
           <input v-model.number="backingVolume" type="range" min="0" max="1" step="0.01" aria-label="伴奏音量" />
         </label>
-      </div>
+      </div></details>
     </div>
 
     <ArchiveSongLyrics v-if="mode !== 'lineup'" :song-code="song.id"
       :audio-url="isSingleTrackMode ? currentSingleTrack?.url || '' : ''"
       :stage-clock="['solo', 'unit'].includes(mode)" :current-time="transportCurrentTime" :ready="transportReady && transportDuration > 0 && !audioError"
       @seek="seekPlayback({ target: { value: $event } })" />
-    <ArchiveTechnicalDetails v-if="mode !== 'lineup'" label="试听技术信息">
+    <ArchiveTechnicalDetails v-if="maintainer && mode !== 'lineup'" label="试听说明">
       <p class="experimental-evidence">
-        对齐证据：{{ syncLabel }}。{{ playbackEvidence }}
+        音画对齐：{{ syncLabel }}。{{ playbackEvidence }}
       </p>
     </ArchiveTechnicalDetails>
-    <p v-if="audioError" class="experimental-error" role="alert">{{ audioError }}</p>
+    <ArchiveErrorNote v-if="audioError" class="experimental-error">{{ audioError }}</ArchiveErrorNote>
+    <ArchiveTerminalDialog class="solo-drawer" :open="soloOpen" title="Solo 声部试听" :title-id="soloTitleId" @close="soloOpen = false">
+      <div class="solo-filters">
+        <label>查找偶像<input v-model="soloQuery" type="search" placeholder="输入姓名或组合" /></label>
+        <label>组合<select v-model="soloUnit"><option value="">全部组合</option><option v-for="unit in soloUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
+      </div>
+      <p role="status">{{ filteredSoloEntries.length }} 位偶像 · 选择后回到播放条</p>
+      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="mode === 'solo' && selectedIdolCode === entry.idol_code" @click="selectSolo(entry.idol_code)"><strong>{{ soloDisplayName(entry) }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}</small></button></div>
+      <p v-if="!filteredSoloEntries.length">没有匹配的偶像，请调整搜索或组合。</p>
+    </ArchiveTerminalDialog>
   </section>
 </template>
 
 <script setup>
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import ArchiveErrorNote from './ArchiveErrorNote.vue'
+import ArchiveTerminalDialog from './terminal/ArchiveTerminalDialog.vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { useSongPerformanceSession } from '../../composables/useSongPerformanceSession.js'
 import ArchiveSongLyrics from './ArchiveSongLyrics.vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSongLineupPlayer from './ArchiveSongLineupPlayer.vue'
+import { isMaintainerMode } from '../../core/maintainerMode.js'
 
 const props = defineProps({
   song: { type: Object, required: true },
   audioExperiment: { type: Object, default: null },
+  idolDirectory: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' },
+  idolSearch: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['open-stage'])
+const emit = defineEmits(['open-stage', 'request-play'])
+const lineupPlayer = ref(null)
+// How the audition is decoded and clocked is a maintainer note, not reader copy.
+const maintainer = isMaintainerMode()
+defineExpose({ pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() } })
 
 const mode = ref('single')
+const soloOpen = ref(false), soloQuery = ref(''), soloUnit = ref('')
+const soloTitleId = useId()
+const soloDirectory = computed(() => new Map(props.idolDirectory.map(idol => [idol.id, idol])))
+function soloDisplayName(entry) { return (entry?.idol_code && props.idolName(entry.idol_code, entry.displayName)) || entry?.displayName || '' }
+const soloUnits = computed(() => [...new Map(soloEntries.value.map(entry => {
+  const idol = soloDirectory.value.get(entry.idol_code)
+  return [idol?.unitCode, { id: idol?.unitCode, name: idol?.unitName }]
+}).filter(([id]) => id)).values()])
+const filteredSoloEntries = computed(() => soloEntries.value.filter(entry => {
+  const idol = soloDirectory.value.get(entry.idol_code)
+  return (!soloUnit.value || idol?.unitCode === soloUnit.value) &&
+    (!soloQuery.value.trim() || [props.idolSearch(entry.idol_code, entry.displayName), soloDisplayName(entry), entry.displayName, idol?.kana || '', idol?.unitName || ''].join(' ').toLowerCase().includes(soloQuery.value.trim().toLowerCase()))
+}))
+const listeningModes = computed(() => [
+  ...(hasVocalSetting('all_stars') ? [{ id: 'all_stars', label: '全员合唱' }] : []),
+  ...(hasVocalSetting('unit') ? [{ id: 'unit', label: '组合预设' }] : []),
+  ...(hasVocalSetting('formation') ? [{ id: 'lineup', label: '自由编成 · 5 槽' }] : []),
+  ...(hasVocalSetting('center') && soloEntries.value.length ? [{ id: 'solo', label: 'Solo 试听' }] : []),
+  ...(auditedOptions.value.length ? [{ id: 'single', label: '收录音轨' }] : []),
+])
+function changeListeningMode(event) {
+  const selector = event.target
+  const requestedMode = selector.value
+  if (!listeningModes.value.some(item => item.id === requestedMode)) {
+    selector.value = mode.value
+    return
+  }
+  if (requestedMode === 'solo') {
+    // A Solo request opens the picker; the active mode changes only on selection.
+    selector.value = mode.value
+    selector.focus({ preventScroll: true })
+    soloOpen.value = true
+    return
+  }
+  mode.value = requestedMode
+}
+function selectSolo(id) {
+  if (!hasVocalSetting('center') || !props.audioExperiment?.solo_tracks?.[id]) return
+  selectedIdolCode.value = id
+  mode.value = 'solo'
+  soloOpen.value = false
+}
 const selectedSingleKey = ref('full_mix')
 const selectedIdolCode = ref('')
 const singleAudio = ref(null)
@@ -169,7 +217,7 @@ const syncLabel = computed(() => {
 })
 const transportCurrentTime = computed(() => mode.value === 'solo' ? soloSession.currentTime.value : currentTime.value)
 const transportDuration = computed(() => mode.value === 'solo' ? soloSession.duration.value : duration.value)
-const transportPlaying = computed(() => mode.value === 'solo' ? soloSession.playing.value : isPlaying.value)
+const transportPlaying = computed(() => mode.value === 'solo' ? soloSession.playing.value || soloSession.starting.value : isPlaying.value)
 const transportReady = computed(() => mode.value === 'solo'
   ? soloSession.ready.value
   : Boolean(currentSingleTrack.value?.url))
@@ -191,15 +239,16 @@ function onTimeUpdate() {
 }
 
 async function togglePlayback() {
+  if (!transportPlaying.value) emit('request-play')
   audioError.value = ''
   if (mode.value === 'solo') {
-    if (soloSession.playing.value) soloSession.pause()
+    if (soloSession.playing.value || soloSession.starting.value) soloSession.pause()
     else if (!await soloSession.play()) audioError.value = soloSession.error.value
     return
   }
   const elements = audioElements()
   if (!elements.length || elements.some(audio => !audio.src)) {
-    audioError.value = '实验音频尚未准备，无法播放。'
+    audioError.value = '当前试听资源暂时不可用，请稍后重试。'
     return
   }
   if (isPlaying.value) {
@@ -213,7 +262,8 @@ async function togglePlayback() {
     await Promise.all(elements.map(audio => audio.play()))
     isPlaying.value = true
   } catch (error) {
-    audioError.value = `浏览器拒绝播放：${error.message || error}`
+    console.warn('[song-audition] play rejected', error)
+    audioError.value = '浏览器没有允许播放，请再点一次播放。'
     isPlaying.value = false
   }
 }
@@ -243,7 +293,7 @@ function onEnded() {
 }
 
 function onAudioError() {
-  audioError.value = '实验音频资源不可用；请先运行实验音频准备脚本。'
+  audioError.value = '音轨暂时无法读取，请重新选择或稍后重试。'
 }
 
 
@@ -284,26 +334,54 @@ onBeforeUnmount(() => resetPlayback())
 </script>
 
 <style scoped>
-.experimental-player { border-color: #92d8d2; background: #fbfffe; }
-.experimental-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
-.experimental-controls label, .experimental-mix-controls label { display: grid; gap: 5px; color: #5c6771; font-size: 0.72rem; font-weight: 700; }
-.experimental-controls select { min-width: 190px; padding: 7px 9px; border: 1px solid #c9d8d8; border-radius: 5px; background: #fff; color: #26313a; font: inherit; }
-.experimental-player-panel { margin-top: 14px; padding: 12px; border: 1px solid #d7e9e7; border-radius: 6px; background: #f3fbfa; }
+/* Audition: sits on the paper like every other section; controls are plain archive controls. */
+.experimental-controls { display: flex; flex-wrap: wrap; gap: var(--gs-space-4); margin-top: var(--gs-space-4); }
+.experimental-controls label, .experimental-mix-controls label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.experimental-controls select { min-width: 190px; min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.experimental-player-panel { margin-top: var(--gs-space-4); }
 .experimental-player-panel audio { display: none; }
-.experimental-transport { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.experimental-play, .experimental-reset { padding: 7px 12px; border: 0; border-radius: 5px; cursor: pointer; font: inherit; font-size: 0.72rem; }
-.experimental-play { background: #158f87; color: #fff; }
-.experimental-reset { background: #dceeed; color: #316a67; }
-.experimental-seek { flex: 1 1 180px; min-width: 120px; accent-color: #158f87; }
-.experimental-time { min-width: 92px; color: #5c6771; font-variant-numeric: tabular-nums; font-size: 0.7rem; text-align: right; }
-.experimental-mix-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
-.experimental-mix-controls input { accent-color: #158f87; }
-.experimental-evidence { margin: 10px 0 0; color: #63736f; font-size: 0.7rem; line-height: 1.6; }
-.experimental-error { margin: 8px 0 0; color: #a04747; font-size: 0.72rem; }
-@media (max-width: 560px) {
+.experimental-mix-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-5); margin-top: var(--gs-space-3); }
+.experimental-mix-controls input { accent-color: var(--gs-mint-ink); }
+.experimental-evidence { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.experimental-error { margin: var(--gs-space-3) 0 0; color: var(--gs-critical); font-size: var(--gs-text-ui); }
+.song-block-heading { display: flex; gap: var(--gs-space-3); align-items: baseline; }
+.song-block-heading small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-mode-selector { display: grid; gap: var(--gs-space-2); min-width: 0; margin-top: var(--gs-space-4); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.song-mode-selector select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); }
+.solo-open { width: 100%; min-height: var(--gs-control-touch); margin-top: var(--gs-space-3); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); text-align: left; cursor: pointer; }
+summary { display: flex; align-items: center; min-height: var(--gs-control-touch); color: var(--gs-ink-2); font-size: var(--gs-text-ui); cursor: pointer; }
+.experimental-player :is(button, select, input, summary):focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+/* Solo picker: a side drawer on wide screens, an 85dvh bottom sheet on phones. */
+.solo-drawer {
+  --solo-safe-top: var(--gs-safe-top);
+  --solo-safe-right: var(--gs-safe-right);
+  --solo-safe-bottom: var(--gs-safe-bottom);
+  --solo-safe-left: var(--gs-safe-left);
+  --solo-header-safe-top: var(--solo-safe-top);
+  --solo-inline-left: max(var(--gs-space-5), var(--solo-safe-left));
+  --solo-inline-right: max(var(--gs-space-5), var(--solo-safe-right));
+  position: fixed; inset: 0 0 0 auto; margin: 0; box-sizing: border-box;
+  width: min(var(--gs-surface-drawer-width), 100vw); max-width: 100vw; height: 100dvh; max-height: 100dvh;
+  padding: 0; border: 0; border-radius: 0;
+  background: var(--gs-surface); color: var(--gs-ink); font-family: var(--gs-font-body); font-size: var(--gs-text-body);
+}
+.solo-drawer :deep(.terminal-dialog-header) { min-width: 0; padding: calc(var(--gs-space-4) + var(--solo-header-safe-top)) var(--solo-inline-right) var(--gs-space-4) var(--solo-inline-left); }
+.solo-drawer :deep(.terminal-dialog-header h2) { min-width: 0; font-size: var(--gs-text-section); overflow-wrap: anywhere; }
+.solo-drawer :deep(.terminal-dialog-body) { min-width: 0; padding: var(--gs-space-5) var(--solo-inline-right) calc(var(--gs-space-5) + var(--solo-safe-bottom)) var(--solo-inline-left); }
+.solo-filters { display: grid; gap: var(--gs-space-4); }
+.solo-filters label { display: grid; gap: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.solo-filters input, .solo-filters select { width: 100%; min-width: 0; min-height: var(--gs-control-touch); box-sizing: border-box; padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-subtitle); }
+.solo-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--gs-space-5); }
+.solo-list button { display: grid; gap: var(--gs-space-1); min-width: 0; min-height: 56px; padding: var(--gs-space-3) var(--gs-space-2); border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.solo-list strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.solo-list small { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
+.solo-list button[aria-pressed=true] { background: var(--gs-mint-wash); box-shadow: inset 2px 0 var(--gs-mint); }
+@media (max-width: 760px) {
+  /* Only protect the top inset left uncovered by this 85dvh sheet's 15dvh gap. */
+  .solo-drawer { --solo-header-safe-top: max(0px, calc(var(--solo-safe-top) - 15dvh)); inset: auto 0 0; width: 100vw; height: 85dvh; border-radius: 0; border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); }
   .experimental-controls { display: grid; grid-template-columns: 1fr; }
-  .experimental-controls select { width: 100%; }
+  .experimental-controls select { width: 100%; min-height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .experimental-mix-controls { grid-template-columns: 1fr; }
-  .experimental-time { width: 100%; text-align: left; }
+  .song-mode-selector select { font-size: var(--gs-text-subtitle); }
 }
 </style>

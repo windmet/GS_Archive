@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "029ass_302_2_3_029_02_09_a",
-  "logical_id": "story-collection:029ass_302_2_3_029_02_09_a",
+  "logical_id": "story:029ass_302_2_3_029_02_09_a",
   "scenario_id": "029ass_302_2_3_029_02_09_a",
   "text_catalog_id": "029ass_302_2_3_029_02_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "029ass_302_2_3_029_02_09_a.json",
-    "sha256": "sha256:5821f131049278c26c3432e257bde1d7998df6731b820e18fe6547950b86c0b4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:1e6e3fec34f8af6994e885ef22175ef5ac174059d8c0595eddaaf9cc0d71bc0c",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:98eb4a58d9930df916b7703d1ba0bfc3ddf5d3243e3ebdb94f127f6696ec0d6e",
     "aggregate_source": null,
     "step_count": 11,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "029ass_302_2_3_029_02_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "おお、主か？\n少し刻をもらってもいいだろうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:37817964023468d6298e0292c22158926086ed2e0aee58df27e2fba564cfa6ec"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,7 +79,18 @@
     {
       "kind": "choice",
       "source_text": "はい、大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008:choice_short:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 8,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6675d6089c919cb09cc4d8d696a0193186f7cc82b9b1af0f491acfdc10f69909"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -94,14 +117,14 @@
         "row_id": "029ass_302_2_3_029_02_09_a:step-3:option-0",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 8,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008",
+        "option_id": "choice-option:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008:000",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -112,7 +135,18 @@
     {
       "kind": "choice",
       "source_text": "もちろんです！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000009:choice_short:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 9,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c3e0eab7135bbf0124c363d162784a0708abfe045d94917138ffb36a58b21a3"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -139,14 +173,14 @@
         "row_id": "029ass_302_2_3_029_02_09_a:step-3:option-1",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 8,
+        "command_end": 9
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008",
+        "option_id": "choice-option:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000009:001",
         "source_label": "phone_select1",
         "target_step_id": 4,
         "target_step_index": 3,
@@ -157,11 +191,22 @@
     {
       "kind": "dialogue",
       "source_text": "うむ。\n此度の試練、大義であった！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:df89107ec74d24ff09fedf029800743d30986f332079cc5e22da4b7cbf48afbd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -177,19 +222,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -197,11 +240,22 @@
     {
       "kind": "dialogue",
       "source_text": "我らが無事に試練を乗り越えられたのも、\n主の尽力……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f49b537abc4289628e14447595dc812318cd3d64c6175d47e4ca1df271ff9c13"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -217,19 +271,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -237,11 +289,22 @@
     {
       "kind": "dialogue",
       "source_text": "そして、ホクトとケイ、カズキの協力あってこそ。\n我一人では成し遂げられなかった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000016:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 16,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:41143b868ad8c6a6ad182b12b1510bb7f6ca12beee2ddd3e4fc6492c14c31856"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -257,19 +320,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null,
       "presentation": "call"
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "サタンも彼の者たちの協力に深く\n感激しているぞ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000018:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 18,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a7669bc8be9a7677d6f19ad79b859661bce208b3151832f087de41ef6dd971d2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "流石、主の見出した者たちだ。\n彼の者たちには改めて礼を言わねばな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:59fcebbac5e59f84a88ef9d5067669109b27ce28ddf31b6f581d4d5f9584a7d0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "無論、主にも感謝している。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a299cf5743523c2f6a1372d0511b587b92cd1c2807e5f7988331501465404b1f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "主たちに報いるためにも、\n我も邁進すると誓おう！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a1f1b61ad6ba1558aa0dcec62bcdf09553573187a5a9c5a9f09f667c6d41ac76"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "では失礼する。\n主よ、安らかなる眠りを享受せん！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "029ass_302_2_3_029_02_09_a",
+          "part_id": "2_3_029_02_09_a",
+          "file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7714eae9b287acce3dc1a5f99342d16aadf35353fe262f49495b2d9c6ce2a3bf"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "029ass",
         "sourceName": "アスラン=BBⅡ世"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "029ass_302_2_3_029_02_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_029_02_09_a",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -482,91 +588,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008",
+          "option_id": "choice-option:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008:000",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000008",
+          "option_id": "choice-option:v1:029ass_302_2_3_029_02_09_a:2_3_029_02_09_a:cmd-000009:001",
           "source_label": "phone_select1",
           "target_step_id": 4,
           "target_step_index": 3,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 2,
+        "choice_step_id": 3,
+        "join_index": 3,
+        "join_step_id": 4,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/029ass_302/scenario_2_3_029_02_09_a.json",
+        "raw_sha256": "sha256:5bce0612123432d2a05555cf6ffe0ef4a6fab31cb8dc30df720a66b040c0b3c2",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          8,
+          9
+        ],
+        "join_command": 10,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 2,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おお、主か？",
     "episode_label": null

@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "048mom_402_2_4_048_02_09_b",
-  "logical_id": "story-collection:048mom_402_2_4_048_02_09_b",
+  "logical_id": "story:048mom_402_2_4_048_02_09_b",
   "scenario_id": "048mom_402_2_4_048_02_09_b",
   "text_catalog_id": "048mom_402_2_4_048_02_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "048mom_402_2_4_048_02_09_b.json",
-    "sha256": "sha256:5ba3efcdf38afaccf4782105c885923f252f11bae3583853a7594714334f7fc4",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:e656959b45b33e6b35ce40ca7a1cb8f9aa897aea99c71bb69c9fe5bfdce879d9",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:a76e6d0114d60b0261c5c1787045c74ee40bacdf7eb63aca16b2ec63302416e4",
     "aggregate_source": null,
     "step_count": 10,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "048mom_402_2_4_048_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "あ、●●●●●●●●●●ぴぃちゃん、\nライブお疲れ様。そっちのお仕事、まだかかりそう？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4f777487faeef021cd4cc9a8cbce51721f19ed4453f7d33fa02e37404e09d395"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "みんなで今日の映像を確認しようって\n話してたでしょ。もう少し待ってた方がいいかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b85ef6c810ab5dd5d500601978380b0c298afb790b061c36b213c628ca293afa"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "もうすぐ楽屋に\n着きます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3be0855b355cf44c0d5989845de1121599f5975f150a8b6b5d1c99a1d81de369"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "048mom_402_2_4_048_02_09_b:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000010",
+        "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000010:000",
         "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "あ、お仕事は終わってたんだ。良かった。\nぴぃちゃんの意見、二人とも聞きたがってるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0eb0c568b15bd69ab2d5786b9cf03274637e767969b9a3e472752789053c6be0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,7 +233,18 @@
     {
       "kind": "choice",
       "source_text": "手応えは\nどうですか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9ec66de57613b2835708960bc52e707d6c4d69d326d162ff0e00928b967f832c"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -219,14 +271,14 @@
         "row_id": "048mom_402_2_4_048_02_09_b:step-6:option-0",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015",
+        "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015:000",
         "source_label": "phone_select2",
         "target_step_id": 7,
         "target_step_index": 6,
@@ -237,7 +289,18 @@
     {
       "kind": "choice",
       "source_text": "私も百々人さんの\n感想がききたいです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:69e33ccfe14499775c310786db93c797548733007ca4d7d4a1c932389f704571"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -264,14 +327,14 @@
         "row_id": "048mom_402_2_4_048_02_09_b:step-6:option-1",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015",
+        "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000016:001",
         "source_label": "phone_select3",
         "target_step_id": 7,
         "target_step_index": 6,
@@ -282,11 +345,22 @@
     {
       "kind": "dialogue",
       "source_text": "うーん……そうだな、本番は演出もあったおかげで、\n作品の世界観をレッスン以上に表現できた気がする。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:07eebec172605749f317782fdb6421e1098963b8c2804ca6c7f7237c6770157f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -302,19 +376,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -322,11 +394,22 @@
     {
       "kind": "dialogue",
       "source_text": "それにアマミネくんが、\nずーっと楽屋でにこにこしてるから……。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0cc2ef2d45a6dcb5fc47d787caee88f7a07d455ec74b7a66e605c011b83cbc5c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -342,19 +425,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "ゲームのファンから見ても、\nいいパフォーマンスができてたってことだよね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e76ec82d022621e456922e31262ba358e2d2a30ab01ba196553f463ed6d408e2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "キミの感想も気になるなあ。\n僕たち待ってるから、早く戻ってきてね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "048mom_402_2_4_048_02_09_b",
+          "part_id": "2_4_048_02_09_b",
+          "file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b904f86b7b54877254542cbcef3656582eec9b5d3e2221f8f52973c0fde98501"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "048mom",
         "sourceName": "花園 百々人"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "048mom_402_2_4_048_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_048_02_09_b",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -447,8 +546,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000010",
+          "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000010:000",
           "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
@@ -462,86 +561,62 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015",
+          "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015:000",
           "source_label": "phone_select2",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000015",
+          "option_id": "choice-option:v1:048mom_402_2_4_048_02_09_b:2_4_048_02_09_b:cmd-000016:001",
           "source_label": "phone_select3",
           "target_step_id": 7,
           "target_step_index": 6,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 6,
+        "join_step_id": 7,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/048mom_402/scenario_2_4_048_02_09_b.json",
+        "raw_sha256": "sha256:fc752f19faa4c6fee7bbcea0a85b069eee178cb934682f875480fc82cf0ed4af",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          15,
+          16
+        ],
+        "join_command": 18,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              17
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 5,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "あ、●●●●●●●●●●ぴぃちゃん、",
     "episode_label": null

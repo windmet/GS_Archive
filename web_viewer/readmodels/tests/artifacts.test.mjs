@@ -84,6 +84,29 @@ test('Oversized and duplicate output is rejected instead of silently increasing 
     await assert.rejects(w.emit('../bad.json','test',1),/Unsafe/);
   } finally { await fs.rm(dir,{recursive:true,force:true}); }
 });
+
+test('Packed collection details close every entity across bounded shared pages', async () => {
+  const dir=await temp();
+  try {
+    const product=fixture();
+    product.extraDomains={items:{packed:true,searchable:true,records:Array.from({length:130},(_,i)=>({
+      id:String(i),summary:{nameJa:`Item ${i}`},view:{entry:{id:i,description:'x'.repeat(5000)}}
+    }))}};
+    const {bootstrap,report}=await writeReadModels(dir,release,product);
+    const read=async descriptor=>JSON.parse(await fs.readFile(path.join(dir,'pages',descriptor.url.slice(1)),'utf8')).data;
+    const index=await read(bootstrap.domains.items);
+    const rows=(await Promise.all(index.pages.map(read))).flatMap(page=>page.rows);
+    assert.equal(rows.length,130);
+    assert(report.artifacts.filter(a=>a.kind === 'items.details').length<10);
+    for (const row of rows) {
+      assert(row.detail.bytes<=192*1024);
+      const selected=(await read(row.detail)).rows.find(record=>record.id === row.id);
+      assert.equal(String(selected.view.entry.id),row.id);
+    }
+    await fs.writeFile(path.join(dir,'BUILD_COMPLETE.json'),jsonBytes({release}));
+    await verifyArtifacts(dir);
+  } finally { await fs.rm(dir,{recursive:true,force:true}); }
+});
 test('Output safety refuses source tree and pre-existing directories', async () => {
   const dir=await temp(); try {
     await fs.mkdir(path.join(dir,'repo')); await fs.mkdir(path.join(dir,'existing'));

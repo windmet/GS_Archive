@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "040ren_303_2_3_040_03_09_a",
-  "logical_id": "story-collection:040ren_303_2_3_040_03_09_a",
+  "logical_id": "story:040ren_303_2_3_040_03_09_a",
   "scenario_id": "040ren_303_2_3_040_03_09_a",
   "text_catalog_id": "040ren_303_2_3_040_03_09_a",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "040ren_303_2_3_040_03_09_a.json",
-    "sha256": "sha256:b08a61ff2babec5ab6f4c1e7574f34858b7ef4bb61135393a5fc93fc298ab24e",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:eb94f6e89de923118ea9f8f2ce63e85637e08fab3c3664f0b99969bc8e54ed3d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:62621b9d145ab65869f23e9bb57f550462086ae761445d226460d2e57dfd87fe",
     "aggregate_source": null,
     "step_count": 13,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "040ren_303_2_3_040_03_09_a.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "おい。前撮影したスチームなんちゃらのポスターが\n貼ってあるぞ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000006:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 6,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d61e8c887bdf48fab03a73c1f7e313ef34961c0a3c3a31a7299c4729bdd71db8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 2
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-2:text",
         "step_id": 2,
         "step_index": 1,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 6,
+        "command_end": 6
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "オレ様の最強大天才っぷりを写真でわからせるとは、\nなかなか悪くねェ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d9e63ab541c26fb31d67eac86f531e5c54be58648a4398cdc336c979a0c29454"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -107,7 +128,18 @@
     {
       "kind": "choice",
       "source_text": "かっこいいポスター\nですよね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000010:choice_short:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 10,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:214d301f303e88f4af6da6e317065b9cdad9db0f3d487f204696288bea8217fa"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -134,14 +166,14 @@
         "row_id": "040ren_303_2_3_040_03_09_a:step-4:option-0",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000010",
+        "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000010:000",
         "source_label": "phone_select1",
         "target_step_id": 5,
         "target_step_index": 4,
@@ -152,11 +184,22 @@
     {
       "kind": "dialogue",
       "source_text": "あァ……？　ンだよ、よく見たら\n隣の壁に貼ってあるの、オレ様じゃねェぞ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e9a8c461e3ceab83736c36c60662f1b10304aec471373c6f92d4ec97540adc03"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -172,19 +215,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -192,11 +233,22 @@
     {
       "kind": "dialogue",
       "source_text": "チッ、つまんねー。たしかこの乗り物、\n銃を撃ちまくるヤツだったよなァ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000015:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 15,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1919819ab2f3ca596e4ed1a01a5044b7fdbdcc1bb1275d6f2c08b7f61d49a6e9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -212,19 +264,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "call"
@@ -232,11 +282,22 @@
     {
       "kind": "dialogue",
       "source_text": "銃さばきはオレ様が最強だったっつーの。\n宣伝してェならオレ様一人で十分だろーが。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000017:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 17,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:35bae0f3a6434eb163b895bf3d43b893087c4fcc2698d15033f737d3da8cbea2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -252,19 +313,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "call"
@@ -272,7 +331,18 @@
     {
       "kind": "choice",
       "source_text": "漣さんにぴったりの\n設定でしたよね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018:choice_short:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 18,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bcb24dee34ccb442b746feb6a05575a09af3a657598ecafefba390a058f01b27"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -299,14 +369,14 @@
         "row_id": "040ren_303_2_3_040_03_09_a:step-8:option-0",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018",
+        "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018:000",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -317,7 +387,18 @@
     {
       "kind": "choice",
       "source_text": "銃の扱いが\n様になっていました",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000019:choice_short:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 19,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c6de366159ed979ce43da7ec0d02c1f4724da1d3ba67ae219500e9f1ae63246e"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -344,14 +425,14 @@
         "row_id": "040ren_303_2_3_040_03_09_a:step-8:option-1",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 18,
+        "command_end": 19
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018",
+        "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000019:001",
         "source_label": "phone_select3",
         "target_step_id": 10,
         "target_step_index": 9,
@@ -362,11 +443,22 @@
     {
       "kind": "dialogue",
       "source_text": "ハッ、あれはオレ様にしかできねー役だったな。\n強さを見せつけてやったぜェ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000022:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 22,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:42944c551ce44c1c6d7989b49e34678300db61a8c279398f5e0757e9685dc74f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -382,19 +474,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 22,
+        "command_end": 22
       },
       "option": null,
       "presentation": "call"
@@ -402,11 +492,22 @@
     {
       "kind": "dialogue",
       "source_text": "オレ様くらい強けりゃ武器なんて必要ねーけどな！\nド派手に銃で戦うのも、悪くはなかった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000026:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 26,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be25dd62e9c519a19291924aa4c7e53df2cf490a8c2f6792112afb67fa06e687"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -422,19 +523,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null,
       "presentation": "call"
@@ -442,11 +541,22 @@
     {
       "kind": "dialogue",
       "source_text": "他のは、\nネジ巻いたり、時計見たり、地味すぎんだろ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000031:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 31,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:efff4e88b021c62ddb6aa94e167780b04cfbfc07e5e5442c5b73f161ae6150ef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -462,19 +572,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "call"
@@ -482,11 +590,22 @@
     {
       "kind": "dialogue",
       "source_text": "ま、そいつらがチマチマやってる間に、オレ様は\n銃をぶっ放して、目立ってやったけどな！　くはは！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000033:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 33,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:38a5e961b42d01c3b8a2b6e64bbcbb76218c20ae249a382dd2c7b5f7d600c141"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -502,19 +621,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "call"
@@ -522,11 +639,22 @@
     {
       "kind": "dialogue",
       "source_text": "やっぱりオレ様は最強だな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000035:phone_message:000",
+        "source": {
+          "scenario_id": "040ren_303_2_3_040_03_09_a",
+          "part_id": "2_3_040_03_09_a",
+          "file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+          "command_index": 35,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b5c019f33c32f63c8f660a3fa790d490f13d9b01ce89dbe0a85ba0cf71c7aca8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "040ren",
         "sourceName": "牙崎 漣"
       },
       "performance": {
@@ -542,19 +670,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "040ren_303_2_3_040_03_09_a:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_3_040_03_09_a",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "call"
@@ -567,8 +693,8 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000010",
+          "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000010:000",
           "source_label": "phone_select1",
           "target_step_id": 5,
           "target_step_index": 4,
@@ -582,106 +708,83 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018",
+          "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018:000",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000018",
+          "option_id": "choice-option:v1:040ren_303_2_3_040_03_09_a:2_3_040_03_09_a:cmd-000019:001",
           "source_label": "phone_select3",
           "target_step_id": 10,
           "target_step_index": 9,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 7,
+        "choice_step_id": 8,
+        "join_index": 10,
+        "join_step_id": 11,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/040ren_303/scenario_2_3_040_03_09_a.json",
+        "raw_sha256": "sha256:778aa4432fd4521f1637d577cf7fb2c5c55754971122c17aaee1f6f35e088482",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          18,
+          19
+        ],
+        "join_command": 29,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select2",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              20,
+              21,
+              22,
+              23,
+              28
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select3",
+            "step_indices": [
+              9
+            ],
+            "exit_index": 9,
+            "command_indices": [
+              24,
+              25,
+              26,
+              27
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              10
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 1,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 7,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "おい。前撮影したスチームなんちゃらのポスターが",
     "episode_label": null

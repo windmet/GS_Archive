@@ -1,11 +1,14 @@
-export const ARCHIVE_USER_PREFERENCES_VERSION = 2
+export const ARCHIVE_USER_PREFERENCES_VERSION = 3
 export const ARCHIVE_USER_PREFERENCES_KEY = 'sidem:archive-user-preferences'
 
 export const DEFAULT_ARCHIVE_USER_PREFERENCES = Object.freeze({
   version: ARCHIVE_USER_PREFERENCES_VERSION,
-  homeMode: 'unset',
+  startupPage: 'unset',
+  homeMode: 'spine',
   startupIdol: null,
   preferredIdol: null,
+  portalDefaultScope: 'favorite',
+  stageLight: 'mint',
   onboardingComplete: false,
 })
 
@@ -14,12 +17,18 @@ function idolCode(value) {
 }
 
 export function normalizeArchiveUserPreferences(value = {}) {
-  if (![1, ARCHIVE_USER_PREFERENCES_VERSION].includes(value?.version)) return { ...DEFAULT_ARCHIVE_USER_PREFERENCES }
+  if (![1, 2, ARCHIVE_USER_PREFERENCES_VERSION].includes(value?.version)) return { ...DEFAULT_ARCHIVE_USER_PREFERENCES }
+  const legacyMode = value.version === 1 ? ({ light: 'card', immersive: 'spine' }[value.startupMode] || 'unset') : value.homeMode
+  const legacy = value.version < ARCHIVE_USER_PREFERENCES_VERSION
   return {
     version: ARCHIVE_USER_PREFERENCES_VERSION,
-    homeMode: value.version === 1 ? ({ light: 'card', immersive: 'spine' }[value.startupMode] || 'unset') : (['card', 'spine'].includes(value.homeMode) ? value.homeMode : 'unset'),
+    startupPage: legacy ? (['card', 'spine'].includes(legacyMode) ? 'home' : legacyMode === 'portal' ? 'portal' : 'unset') : (['home', 'portal'].includes(value.startupPage) ? value.startupPage : 'unset'),
+    homeMode: ['card', 'spine'].includes(legacyMode) ? legacyMode : 'spine',
     startupIdol: idolCode(value.startupIdol),
     preferredIdol: idolCode(value.preferredIdol),
+    portalDefaultScope: value.portalDefaultScope === 'all' ? 'all' : 'favorite',
+    // 'idol': the 担当 colour takes over the stage light; 'mint' keeps the archive default.
+    stageLight: value.stageLight === 'idol' ? 'idol' : 'mint',
     onboardingComplete: value.onboardingComplete === true,
   }
 }
@@ -32,7 +41,7 @@ export function loadArchiveUserPreferences(storage) {
     if (!raw) return { preferences: { ...DEFAULT_ARCHIVE_USER_PREFERENCES }, issue: '' }
     const parsed = JSON.parse(raw)
     const preferences = normalizeArchiveUserPreferences(parsed)
-    const issue = [1, ARCHIVE_USER_PREFERENCES_VERSION].includes(parsed?.version) ? '' : '启动设置版本已更新，请重新选择。'
+    const issue = [1, 2, ARCHIVE_USER_PREFERENCES_VERSION].includes(parsed?.version) ? '' : '启动设置版本已更新，请重新选择。'
     return { preferences, issue }
   } catch {
     return { preferences: { ...DEFAULT_ARCHIVE_USER_PREFERENCES }, issue: '无法读取本地设置，本次选择仍可使用。' }

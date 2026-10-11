@@ -1078,7 +1078,7 @@ assert.equal(
   'edf893abdb34971e847da9c78032593618ddb932ad75a117334987c27500db67',
 )
 const committedShared = sourceRegistry.entries.filter(entry =>
-  ['012yus', '013kys'].includes(entry.idol_code),
+  entry.kind === 'birthday_visual' && ['012yus', '013kys'].includes(entry.idol_code),
 )
 assert.equal(committedShared.length, 2)
 assert.equal(new Set(committedShared.map(entry => entry.asset_url)).size, 1)

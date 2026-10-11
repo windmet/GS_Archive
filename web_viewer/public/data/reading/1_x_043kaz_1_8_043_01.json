@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_043kaz_1_8_043_01",
-  "logical_id": "story-collection:1_x_043kaz_1_8_043_01",
+  "logical_id": "story:1_x_043kaz_1_8_043_01",
   "scenario_id": "1_x_043kaz_1_8_043_01",
   "text_catalog_id": "1_x_043kaz_1_8_043_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_043kaz_1_8_043_01.json",
-    "sha256": "sha256:4f72c79e39889c80fa3da4f2db134a53b0127162fee50876f81b63c9a194119c",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:e6e5741b24a180d316973f280810dc7da24c9bce7367a99f59f8178fec631ab2",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 7,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_043kaz_1_8_043_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "…●●●●プロデューサー。\nお疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_043kaz_1_8_043_01:1_8_043_01:cmd-000012:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_043kaz_1_8_043_01",
+          "part_id": "1_8_043_01",
+          "file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+          "command_index": 12,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:abd1bea8554541e1b9d844a790627c3d2913ddb5c9660f4e4fab4cae07f4175c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -48,7 +62,6 @@
         "stepId": 3
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -57,21 +70,32 @@
         "row_id": "1_x_043kaz_1_8_043_01:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_043_01",
+        "source_file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "…今、話しても大丈夫だろうか？\n誕生日おめでとうございます。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_043kaz_1_8_043_01:1_8_043_01:cmd-000016:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_043kaz_1_8_043_01",
+          "part_id": "1_8_043_01",
+          "file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+          "command_index": 16,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b54887d99bbcc0126e766e1decc612cbced5bb5a34445a8716911f8d93c4452e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -88,7 +112,6 @@
         "stepId": 4
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -97,17 +120,28 @@
         "row_id": "1_x_043kaz_1_8_043_01:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_043_01",
+        "source_file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+        "command_start": 16,
+        "command_end": 16
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "一希さん、ありがとうございます！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_043kaz_1_8_043_01:1_8_043_01:cmd-000018:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_043kaz_1_8_043_01",
+          "part_id": "1_8_043_01",
+          "file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+          "command_index": 18,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:263e133b0a58d42dbd65710a5af88277174f51dde97ed8dfb00ae10a7a152e4b"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -134,21 +168,32 @@
         "row_id": "1_x_043kaz_1_8_043_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_043_01",
+        "source_file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+        "command_start": 18,
+        "command_end": 18
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "…どういたしまして。●●●●プロデューサーには\nこれからたくさん世話になるだろう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_043kaz_1_8_043_01:1_8_043_01:cmd-000024:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_043kaz_1_8_043_01",
+          "part_id": "1_8_043_01",
+          "file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+          "command_index": 24,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:dc095d2f5d623c6f74132c8b6201b33d687d642f18f100839345f50849dc08c7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -165,7 +210,6 @@
         "stepId": 6
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -174,21 +218,32 @@
         "row_id": "1_x_043kaz_1_8_043_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_043_01",
+        "source_file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "…毎年、祝わせてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_043kaz_1_8_043_01:1_8_043_01:cmd-000027:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_043kaz_1_8_043_01",
+          "part_id": "1_8_043_01",
+          "file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+          "command_index": 27,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0eecaca179bec5a7492b138eeef4cba723c2d1e572bffd0aa7b115fb33b222c4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "043kaz",
         "sourceName": "九十九 一希"
       },
       "performance": {
@@ -204,56 +259,23 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_043kaz_1_8_043_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_043_01",
+        "source_file": "assets/resources/scenariodata/1_x_043kaz/scenario_1_8_043_01.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "…●●●●プロデューサー。",
     "episode_label": null

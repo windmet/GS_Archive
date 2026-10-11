@@ -64,7 +64,7 @@ const component = fs.readFileSync(path.join(root, 'src/components/archive/Archiv
 const selector = fs.readFileSync(path.join(root, 'src/data/archiveSelectors.js'), 'utf8')
 check(component.includes('card.limitbreak_item.name'), 'card detail must render the limitbreak item name')
 check(component.includes('card.gameplay.skill.category'), 'card detail must render normal skill category semantics')
-check(component.includes('card.gameplay.center_skill.category'), 'card detail must render center skill category semantics')
+check(component.includes('props.card?.gameplay?.center_skill?.category?.name') && component.includes('{{ centerSkillCategory }}'), 'card detail must render center skill category semantics')
 check(selector.includes('cardDetailIndex.items_by_id?.[card.limitbreak_item_id]'), 'selector must join item dictionary by id')
 
 if (failures.length) {

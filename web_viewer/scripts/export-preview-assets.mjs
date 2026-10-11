@@ -5,7 +5,7 @@ import path from 'node:path'
 import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { createStoryAssetPlan } from '../shared/story/StoryAssetPlan.js'
-import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
+import { resolvePreviewObjectKey, previewTransformKind, COPY_TRANSFORM, LOSSY_WEBP_TRANSFORM } from '../shared/deploy/PreviewAssetTransform.js'
 import { encodeLosslessWebp, runPool, shutdownEncoderPool } from './lib/lossless-webp.mjs'
 import { createArchiveAssetResolver } from './lib/archive-assets.mjs'
 import { getBgmUrl, getSeUrl, getAmbientUrl, getLipSyncUrl } from '../src/utils/AssetResolver.js'
@@ -18,8 +18,9 @@ const outputRoot = path.join(root, '.deploy')
 const stageRoot = path.join(outputRoot, 'r2')
 const manifestPath = path.join(outputRoot, 'r2-manifest.json')
 const mode = process.argv[2]
-if (!['--audit', '--export', '--baseline'].includes(mode)) throw new Error('Use --audit, --export or --baseline')
+if (!['--audit', '--export', '--baseline', '--inventory'].includes(mode)) throw new Error('Use --audit, --export, --baseline or --inventory')
 const allowMissing = process.argv.includes('--allow-missing')
+const argument = name => process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : ''
 
 function safeKey(url) {
   const key = url.replace(/^\//, '')
@@ -40,6 +41,20 @@ async function isFile(file) {
 }
 const files = new Map()
 const missing = new Map()
+const terminalAssetKeys = new Set()
+function collectTerminalReferences(value) {
+  if (typeof value === 'string' && value.startsWith('/assets/terminal/')) terminalAssetKeys.add(safeKey(value))
+  else if (Array.isArray(value)) value.forEach(collectTerminalReferences)
+  else if (value && typeof value === 'object') Object.values(value).forEach(collectTerminalReferences)
+}
+let terminalMenusPresent = false
+for (const name of ['wallpapers','backgrounds']) {
+  const file = path.join(publicRoot,'data/terminal',`${name}.json`)
+  if (await isFile(file)) {
+    terminalMenusPresent = true
+    collectTerminalReferences(JSON.parse(await fs.readFile(file,'utf8')))
+  }
+}
 async function add(url, source, provenance) {
   const key = safeKey(url)
   if (files.has(key)) return
@@ -52,11 +67,17 @@ async function walk(dir, prefix) {
     const absolute = path.join(dir, entry.name)
     const key = `${prefix}/${entry.name}`
     if (entry.isDirectory()) await walk(absolute, key)
-    else if (entry.isFile()) await add(`/${key.replaceAll('\\', '/')}`, absolute, 'public')
+    else if (entry.isFile()) {
+      // Content-addressed prior derivatives stay on disk for recovery, but only
+      // current menu references belong to the deployable dependency closure.
+      if (terminalMenusPresent && key.startsWith('assets/terminal/') && !terminalAssetKeys.has(key)) continue
+      await add(`/${key.replaceAll('\\', '/')}`, absolute, 'public')
+    }
     else throw new Error(`Unexpected link or special file in public corpus: ${absolute}`)
   }
 }
 for (const prefix of ['assets', 'data']) await walk(path.join(publicRoot, prefix), prefix)
+for (const key of terminalAssetKeys) await add(`/${key}`,path.join(publicRoot,key),'terminal-menu-reference')
 
 const resolver = createArchiveAssetResolver()
 async function addExternal(url, candidatePaths, provenance) {
@@ -110,6 +131,31 @@ for (const [id, flags] of Object.entries(archiveManifest.card_assets_by_id)) {
   }
 }
 
+// Read-model media bindings are deployment dependencies too. This closes the
+// event/item/honor/photo families served locally from the external image root.
+if (argument('--models')) {
+  async function scanBindings(value) {
+    if (typeof value === 'string' && value.startsWith('/assets/')) {
+      const candidates = [path.join(publicRoot, value.slice(1))]
+      if (value.startsWith('/assets/domain-images/')) candidates.push(resolver.domainImagePath(value.slice('/assets/domain-images/'.length)))
+      if (value.startsWith('/assets/card-art/')) candidates.push(resolver.cardArtPath(value.slice('/assets/card-art/'.length)))
+      if (value.startsWith('/assets/audio/')) candidates.push(...resolver.audioCandidates(value.slice('/assets/audio/'.length)))
+      if (value.startsWith('/assets/lipsync/adxlip/')) candidates.push(resolver.lipsyncPath(value.slice('/assets/lipsync/adxlip/'.length)))
+      await addExternal(value, candidates, 'readmodel-media-binding')
+    } else if (Array.isArray(value)) { for (const child of value) await scanBindings(child) }
+    else if (value && typeof value === 'object') { for (const child of Object.values(value)) await scanBindings(child) }
+  }
+  async function scanModels(directory) {
+    for (const entry of await fs.readdir(directory, {withFileTypes:true})) {
+      const file = path.join(directory, entry.name)
+      if (entry.isDirectory()) await scanModels(file)
+      else if (entry.isFile() && entry.name.endsWith('.json')) await scanBindings(JSON.parse(await fs.readFile(file,'utf8')))
+      else if (!entry.isFile()) throw new Error(`Unexpected linked read-model file: ${file}`)
+    }
+  }
+  await scanModels(path.join(path.resolve(argument('--models')), 'pages'))
+}
+
 const entries = [...files.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))
 for (const item of entries) {
   item.object_key = resolvePreviewObjectKey(item.request_key)
@@ -130,6 +176,16 @@ const sourceBytes = entries.reduce((sum, item) => sum + item.source_size, 0)
 const convertedPngs = entries.filter(item => item.transform !== COPY_TRANSFORM).length
 const totals = { source_files: entries.length, source_bytes: sourceBytes, plans, missing: missing.size, converted_pngs: convertedPngs }
 const missingEntries = [...missing.values()].sort((a, b) => a.request_key.localeCompare(b.request_key))
+if (mode === '--inventory') {
+  const destination = path.resolve(argument('--out') || '.analysis/preview-source-inventory.json')
+  const relative = path.relative(path.join(root,'.analysis'),destination)
+  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) throw new Error('Inventory output must stay inside this checkout .analysis')
+  await fs.mkdir(path.dirname(destination),{recursive:true})
+  await fs.writeFile(destination,JSON.stringify({schema_version:3,kind:'current-source-inventory',
+    created_at:new Date().toISOString(),totals,missing:missingEntries,entries},null,2)+'\n')
+  console.log(JSON.stringify({inventory:destination,totals}))
+  process.exit(0)
+}
 if (mode === '--baseline') {
   // Enumerate current sources with the SAME closure as export, without changing
   // the old manifest or copying any media. Missing dependencies remain explicit.
@@ -150,7 +206,7 @@ async function stage(item) {
   const target = path.join(stageRoot, ...item.object_key.split('/'))
   await fs.mkdir(path.dirname(target), { recursive: true })
   if (item.transform === COPY_TRANSFORM) await fs.copyFile(item.source, target)
-  else await encodeLosslessWebp({ source: item.source, target })
+  else await encodeLosslessWebp({ source: item.source, target, lossy: item.transform === LOSSY_WEBP_TRANSFORM })
   const content = await fs.readFile(target)
   item.deployed_size = content.length
   item.sha256 = createHash('sha256').update(content).digest('hex')
@@ -209,7 +265,7 @@ totals.deployed_bytes = deployedBytes
 totals.saved_bytes = sourceBytes - deployedBytes
 totals.ratio = sourceBytes ? Number((deployedBytes / sourceBytes).toFixed(4)) : 0
 await fs.writeFile(manifestPath, JSON.stringify({ schema_version: 2, totals, missing: missingEntries, entries }, null, 2) + '\n')
-console.log(`Exported ${entries.length} objects (${convertedPngs} lossless WebP) to ${stageRoot}; manifest ${manifestPath}`)
+console.log(`Exported ${entries.length} objects (${convertedPngs} WebP, ${entries.filter(item => item.transform === LOSSY_WEBP_TRANSFORM).length} of them lossy q90) to ${stageRoot}; manifest ${manifestPath}`)
 
 // The encoder pool holds live child processes, and a live child keeps Node's
 // event loop non-empty. Without this the export finishes all its work, writes

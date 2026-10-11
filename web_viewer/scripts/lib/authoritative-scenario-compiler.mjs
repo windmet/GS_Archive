@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+const ordered = value => Array.isArray(value) ? value.map(ordered) : value && typeof value==='object' ? Object.fromEntries(Object.keys(value).sort().map(key=>[key,ordered(value[key])])) : value
 import { normalizeScenario } from '../../shared/story/ScenarioNormalizer.js'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -55,13 +57,16 @@ function projectOption(option) {
     text_ref: clone(requireValue(option.text_ref, 'choice option.text_ref')),
     target_step_id: Number(requireValue(option.target_step_id ?? option.step_id, 'choice option.target_step_id')),
   }
-  if (!Number.isInteger(output.target_step_id) || output.target_step_id < 1) {
+  if (!Number.isInteger(output.target_step_id) || (output.target_step_id < 1 && !(output.target_step_id === 0 && option.target_kind === 'end'))) {
     throw new TypeError('choice option.target_step_id is invalid')
   }
   if (option.detail_source_text != null || option.detail_text_ref) {
     output.detail_source_text = String(option.detail_source_text ?? '')
     output.detail_text_ref = clone(requireValue(option.detail_text_ref, 'choice option.detail_text_ref'))
   }
+  if (typeof option.label === 'string') output.label = option.label
+  if (option.detail_kind === 'presentation-marker') output.detail_kind = option.detail_kind
+  if (option.target_kind === 'end') output.target_kind = 'end'
   return output
 }
 
@@ -162,6 +167,7 @@ export function compileAuthoritativeScenario(input, { compilerVersion = 'scenari
   if (normalized.resource_manifest) output.resource_manifest = clone(normalized.resource_manifest)
   if (Array.isArray(normalized.episodes) && normalized.episodes.length) output.episodes = projectEpisodes(normalized.episodes)
   if (normalized.jump_points && Object.keys(normalized.jump_points).length) output.jump_points = projectJumpPoints(normalized.jump_points)
+  if (normalized.reading_control_flow) output.reading_control_flow = { ...clone(normalized.reading_control_flow), base_compiled_sha256:`sha256:${createHash('sha256').update(JSON.stringify(ordered(output))).digest('hex')}` }
   return output
 }
 

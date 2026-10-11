@@ -1,6 +1,8 @@
 <template>
   <div
+    ref="stageRoot"
     class="chibi-stage"
+    :class="{ 'is-pure': pureMode }"
     :data-stage-ready="stageReady"
     :data-song-id="selectedSong?.id || ''"
     :data-stage-kind="isSpecialSingle ? 'special_single' : 'choreography_candidate'"
@@ -19,6 +21,7 @@
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
+    :data-ground-registration="chibiGroundRegistration(selectedSong?.songCode).id"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -32,9 +35,12 @@
     :data-image-layers-enabled="imageLayersEnabled"
     :data-object-layers-enabled="objectLayersEnabled"
     :data-lighting-enabled="lightingEnabled"
+    :data-spotlight-background-alpha="spotlightBackgroundAlpha.toFixed(3)"
+    :data-pinspotlight-mask-count="pinspotlightMaskCount"
     :data-beam-effects-enabled="beamEffectsEnabled"
     :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
+    :data-character-shadow-source="stageEffectIndex?.characterShadow?.status || 'native-resource-unavailable'"
     :data-lyrics-enabled="lyricsEnabled"
     :data-backmonitor-movie="currentBackmonitorState.movie || ''"
     :data-backmonitor-event-time="currentBackmonitorState.eventTime"
@@ -42,16 +48,39 @@
     :data-backmonitor-transition-active="backmonitorTransitionActive"
     data-backmonitor-transition-mode="alpha-overlay"
     :data-backmonitor-ready="backmonitorReady"
+    :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
+    :data-backmonitor-raw-value7="currentBackmonitorState.rawValue7"
+    data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
+    data-backmonitor-logo-status="take-ending-native-mesh-reference-projection"
+    :data-backmonitor-logo-angle="backmonitorLogoAngle"
+    :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
+    :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
+    :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
+    data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
+    data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
+    :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
     :data-image-layer-depths="visibleImageLayerDepths.join(',')"
+    :data-image-object-count="visibleImageObjectCount"
+    :data-image-object-assets="visibleImageObjectAssets.join(',')"
     :data-object-layer-count="visibleObjectLayerCount"
     :data-object-layer-assets="visibleObjectLayerAssets.join(',')"
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
+    :data-particle-layer-frames="particleLayerFrames"
+    :data-floor-particle-state="floorParticleState"
     :data-spotlight-count="visibleSpotlightCount"
+    :data-stagelight-count="visibleStagelightCount"
+    :data-stagelight-colors="appliedStagelightColors"
+    data-stagelight-animation="reference-preview-not-native-tween-equivalence"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
+    :data-spotlight-unresolved-ids="unresolvedSpotlightIds.join(',')"
+    :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
+    :data-laser-particle-count="visibleLaserParticleCount"
+    :data-laser-particle-origins="laserParticleOrigins"
+    data-laser-particle-status="native-texture-burst-curves-reference-director-projection"
     :data-pinspotlight-count="visiblePinspotlightCount"
     :data-pinspotlight-ids="visiblePinspotlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
@@ -62,54 +91,53 @@
     :data-lip-sync-frames="lipSyncFrameCount"
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
-    :data-character-light="currentCharacterLight.color"
+    :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
+    data-foot-light-status="command-uniform-mapping-unresolved"
+    :data-foot-light-height="currentFootLighting.height"
+    :data-foot-light-rate="currentFootLighting.rate"
+    :data-body-colors="appliedBodyColors"
+    :data-image-colors="appliedImageColors"
+    :data-background-component-count="backgroundComponentCount"
+    :data-background-tint-conflict="backgroundTintConflict"
   >
     <header class="stage-header">
       <ArchiveBackAction class="stage-back-button" :label="backLabel" icon-only @back="emit('back')" />
       <div class="header-divider" aria-hidden="true"></div>
-      <div>
-        <h1>{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '舞台小人 · 多人舞台' }}</h1>
+      <div class="stage-header-title">
+        <h1><span class="stage-title-full">{{ isSpecialSingle ? '社长特别演出 · 单人 2D' : '2D舞台 · 多人舞台' }}</span><span class="stage-title-compact">{{ isSpecialSingle ? '特别演出' : '2D舞台' }}</span></h1>
         <p>{{ isSpecialSingle ? '社长剪影与舞台对象按原脚本切换' : '选择歌曲与编队，观看舞台演出' }}</p>
       </div>
-      <button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button>
-      <div class="header-meta">{{ isSpecialSingle ? '社长剪影 · 单人演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</div>
+      <ArchiveLanguageSwitch on-dark />
+      <button class="stage-icon-action" type="button" aria-label="快捷键与操作帮助" @click="helpOpen = true"><CircleHelp :size="19" /></button>
+      <button class="stage-icon-action" type="button" aria-label="打开高级设置" @click="inspectorOpen = true"><Settings2 :size="19" /></button>
     </header>
 
     <main class="stage-workspace">
       <section class="performance-shell" :aria-label="isSpecialSingle ? '社长特别演出预览' : '多人舞台预览'">
-        <div class="stage-backdrop" aria-hidden="true"></div>
-        <div class="stage-floor" aria-hidden="true"></div>
-        <div ref="canvasRef" class="stage-canvas"></div>
-
+        <div class="performance-viewport">
         <div class="performance-hud">
-          <span>NOW PLAYING</span>
-          <strong>{{ selectedSong?.title || '—' }}</strong>
-          <small>{{ isSpecialSingle ? '社长单人剪影 · 特别版音源' : `${activePositions.length} 人${handoffLineup ? '出场' : '编排'} · 当前演唱 ${currentSingerLabel}` }}</small>
+          <div class="performance-identity"><strong :title="selectedSong ? songOptionLabel(selectedSong) : ''">{{ selectedSong ? songOptionLabel(selectedSong) : '—' }}</strong><small>{{ isSpecialSingle ? '社长特别演出' : `${loadedPositions.length}/${activePositions.length} 人就绪` }}</small></div>
+          <div class="performance-actions">
+            <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
+            <button class="stage-icon-action" type="button" aria-label="沉浸观看" :title="touchUi ? '沉浸观看 · 隐藏界面并全屏' : '沉浸观看 · 隐藏界面并全屏 · F'" :disabled="fullscreenPending" @click="toggleImmersive"><Maximize :size="19" /></button>
+          </div>
         </div>
+
+        <div class="screen-fit-region">
+        <div class="stage-ambient" aria-hidden="true" :style="stageAmbientImage ? { backgroundImage: `url(${JSON.stringify(stageAmbientImage)})` } : {}"></div>
+        <div class="performance-screen">
+        <div v-if="!hasAuthoredStage" class="stage-backdrop" aria-hidden="true"></div>
+        <div v-if="!hasAuthoredStage" class="stage-floor" aria-hidden="true"></div>
+        <div ref="canvasRef" class="stage-canvas"></div>
 
         <div v-if="currentLyric && lyricsEnabled" class="stage-lyric" aria-live="polite">
           {{ currentLyric.text }}
         </div>
 
-        <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
-          <div
-            v-for="position in allPositions"
-            :key="position"
-            class="position-marker"
-            :class="{
-              active: activePositions.includes(position),
-              loaded: loadedPositions.includes(position),
-              singing: currentSingerPositions.includes(position),
-            }"
-            :data-position="position"
-            :data-motion="slotByPosition(position)?.currentMotion || ''"
-            :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
-            :data-position-scale="positionDebugState(position).scale"
-            :data-position-tween-progress="positionDebugState(position).progress"
-          >
-            <span>{{ position }}</span>
-            <small>{{ characterForSlot(slotByPosition(position))?.name || '空位' }}</small>
-          </div>
+        <div v-if="immersiveHintVisible" class="immersive-hint" role="status">
+          <span>沉浸观看会隐藏界面，播放更流畅</span>
+          <button type="button" @click="toggleImmersive"><Maximize :size="15" />沉浸观看</button>
+          <button type="button" class="immersive-hint-close" aria-label="不再提示" @click="dismissImmersiveHint"><X :size="15" /></button>
         </div>
 
         <div v-if="booting" class="stage-state stage-state--loading">
@@ -120,6 +148,47 @@
           <strong>{{ isSpecialSingle ? '社长特别演出暂时无法加载' : '多人舞台暂时无法加载' }}</strong>
           <span>{{ errorText }}</span>
         </div>
+        </div>
+        </div>
+        </div>
+
+        <p v-if="!isSpecialSingle" class="rail-summary">当前编排 {{ activePositions.length }} 人 · {{ activePositions.join('、') }} 号位</p>
+        <div v-if="!isSpecialSingle" class="position-rail" aria-label="舞台站位状态">
+          <button
+            v-for="position in allPositions"
+            :key="position"
+            class="position-marker"
+            type="button"
+            :disabled="!activePositions.includes(position)"
+            :aria-label="activePositions.includes(position) ? `编辑 ${position} 号位 · ${stageIdolName(characterForSlot(slotByPosition(position))) || '空位'}` : `${position} 号位休息`"
+            :aria-pressed="editingSlot?.position === position"
+            :style="stageIdolStyle(characterForSlot(slotByPosition(position)))"
+            @click="selectedPosition = position; panelTab = 'lineup'; costumeNotice = ''"
+            :class="{
+              active: activePositions.includes(position),
+              loaded: loadedPositions.includes(position),
+              singing: currentSingerPositions.includes(position),
+              selected: editingSlot?.position === position,
+            }"
+            :data-position="position"
+            :data-lineup-position="position"
+            :data-runtime-ready="Boolean(runtimeForPosition(position))"
+            :data-motion="slotByPosition(position)?.currentMotion || ''"
+            :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
+            :data-position-scale="positionDebugState(position).scale"
+            :data-position-tween-progress="positionDebugState(position).progress"
+            :data-position-x="positionDebugState(position).x"
+            :data-position-y="positionDebugState(position).y"
+            :data-shadow-x="runtimes.get(position)?.groundShadow?.x?.toFixed(2) || ''"
+            :data-shadow-y="runtimes.get(position)?.groundShadow?.y?.toFixed(2) || ''"
+            :data-shadow-width="runtimes.get(position)?.groundShadow?.width?.toFixed(2) || ''"
+          >
+            <ArchiveIdolAvatar :idol-code="activePositions.includes(position) ? slotByPosition(position)?.characterId || '' : ''" :accent-color="activePositions.includes(position) ? stageIdolColor(characterForSlot(slotByPosition(position))) : ''" :size="40" decorative :fallback-text="String(position)" />
+            <span v-if="!activePositions.includes(position)" class="rest-position" aria-hidden="true">{{ position }} 号位<small>休息</small></span>
+            <span v-if="activePositions.includes(position)" class="position-caption">{{ position }} <span v-if="currentSingerPositions.includes(position)" class="singing-status" role="img" aria-label="当前段演唱"><Mic2 :size="12" aria-hidden="true" /><span class="singing-label">演唱</span></span></span>
+            <small v-if="activePositions.includes(position)">{{ stageIdolName(characterForSlot(slotByPosition(position))) || '空位' }}</small>
+          </button>
+        </div>
 
         <div class="transport" :class="{ disabled: !stageTransportReady || preloading }">
           <button type="button" aria-label="回到开头" @click="resetStage">
@@ -128,15 +197,16 @@
           <button
             class="primary-transport"
             type="button"
-            :aria-label="isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
-            :disabled="!stageTransportReady || preloading"
+            :aria-label="stageStarting ? '取消舞台准备' : isSpecialSingle ? (playing ? '暂停社长特别演出' : '播放社长特别演出') : (playing ? '暂停多人编排' : '播放多人编排')"
+            :title="stageStarting ? '取消舞台准备' : null"
+            :disabled="!stageStarting && (!stageTransportReady || preloading)"
             @click="toggleStage"
           >
-            <Pause v-if="playing" :size="22" fill="currentColor" />
+            <Pause v-if="playing || stageStarting" :size="22" fill="currentColor" />
             <Play v-else :size="22" fill="currentColor" />
           </button>
           <div class="transport-copy">
-            <strong>{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
+            <strong aria-live="polite" aria-atomic="true">{{ preloading ? `正在预载动作 ${preloadProgress}%` : (isSpecialSingle ? (playing ? '社长特别演出播放中' : '社长特别演出已暂停') : (playing ? '多人编排播放中' : '多人编排已暂停')) }}</strong>
             <small>{{ formatTime(stageTime) }} / {{ formatTime(stageDuration) }}</small>
           </div>
           <input
@@ -152,140 +222,75 @@
       </section>
 
       <aside class="stage-inspector" :aria-label="isSpecialSingle ? '社长特别演出控制台' : '多人舞台控制台'">
-        <div class="inspector-scroll">
-          <section class="control-section song-section">
-            <div class="section-heading">
-              <div>
-                <h2>{{ isSpecialSingle ? '特别演出脚本' : '歌曲编排' }}</h2>
-                <span>{{ songs.length }} 首可选演出</span>
-              </div>
-              <Music2 :size="18" />
-            </div>
-            <select v-model="selectedSongId" :aria-label="isSpecialSingle ? '特别演出与舞台歌曲' : '多人舞台歌曲'" @change="handleSongChange">
-              <option v-for="song in songs" :key="song.id" :value="song.id">
-                {{ songOptionLabel(song) }} · {{ song.songCode === 'drv999' ? '社长单人 2D' : `${song.positions.join('/')} 号位` }}
-              </option>
-            </select>
-            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
-              <legend>{{ stageVocalLegend }}</legend>
-              <label class="camera-toggle">
-                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
-                <span>{{ stageVocalToggleLabel }}</span>
-              </label>
-              <template v-if="stageVocalEnabled">
-                <label class="range-control">
-                  <span>声部</span>
-                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
-                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
-                </label>
-                <label class="range-control">
-                  <span>伴奏</span>
-                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
-                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
-                </label>
-                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
-              </template>
-              <small>均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</small>
-              <small v-if="handoffLineup">已接入歌曲页编成；空位不出场，舞台从 00:00 暂停开始。刷新后使用舞台默认编队。</small>
-            </fieldset>
+        <nav class="mobile-panel-tabs" aria-label="舞台控制分类">
+          <button type="button" :disabled="isSpecialSingle" :aria-pressed="panelTab === 'lineup' && !isSpecialSingle" :aria-controls="`${inspectorTitleId}-lineup`" @click="panelTab = 'lineup'">编队</button>
+          <button type="button" :aria-pressed="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :aria-controls="`${inspectorTitleId}-song`" @click="panelTab = 'song'">曲目</button>
+          <button type="button" :aria-pressed="panelTab === 'viewing'" :aria-controls="`${inspectorTitleId}-viewing`" @click="panelTab = 'viewing'">画面</button>
+        </nav>
+        <div class="inspector-scroll" :class="{ 'is-song-panel': panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup') }">
+          <section v-show="panelTab === 'song' || (isSpecialSingle && panelTab === 'lineup')" :id="`${inspectorTitleId}-song`" class="control-section panel-section song-section">
+            <ChibiSongPicker :songs="songs" :song-directory="songDirectory" :selected-song-id="selectedSongId" :disabled="booting" @select-song="selectStageScript">
+              <template #current-actions><button v-if="stageVocalAvailable" class="stage-audio-action" type="button" :class="{ enabled: stageVocalEnabled }" aria-label="演唱音源设置" :title="stageVocalEnabled ? stageVocalToggleLabel : '原曲音源 · 可切换编成声部'" @click="vocalSettingsOpen = true"><Music2 :size="18" /></button></template>
+            </ChibiSongPicker>
           </section>
 
-          <section v-if="!isSpecialSingle" class="control-section lineup-section">
+          <section v-if="!isSpecialSingle" v-show="panelTab === 'lineup'" :id="`${inspectorTitleId}-lineup`" class="control-section panel-section lineup-section">
             <div class="section-heading">
               <div>
                 <h2>演出编队</h2>
-                <span>站位按舞台从左到右编号</span>
               </div>
               <UsersRound :size="18" />
             </div>
 
-            <article
-              v-for="slot in lineup"
-              :key="slot.position"
-              class="lineup-card"
-              :class="{ inactive: !activePositions.includes(slot.position), singing: currentSingerPositions.includes(slot.position) }"
-              :data-lineup-position="slot.position"
-              :data-runtime-ready="Boolean(runtimeForPosition(slot.position))"
-            >
-              <div class="slot-number">
-                <span>{{ slot.position }}</span>
-                <small>{{ activePositions.includes(slot.position) ? (slot.loading ? '加载中' : '出演') : '休息' }}</small>
-              </div>
-              <div class="slot-controls">
-                <select
-                  v-model="slot.characterId"
-                  :aria-label="`${slot.position}号位角色`"
-                  :disabled="!activePositions.includes(slot.position)"
-                  @change="handleCharacterChange(slot)"
-                >
-                  <option value="" disabled>空位</option>
-                  <option v-for="character in characters" :key="character.id" :value="character.id">
-                    {{ character.name }}
-                  </option>
-                </select>
-                <select
-                  v-model="slot.costumeId"
-                  :aria-label="`${slot.position}号位服装`"
-                  :disabled="!activePositions.includes(slot.position)"
-                  @change="loadSlot(slot)"
-                >
-                  <option v-for="costume in costumesForSlot(slot)" :key="costume.id" :value="costume.id">
-                    {{ costume.label }}
-                  </option>
-                </select>
-              </div>
-              <Mic2 v-if="currentSingerPositions.includes(slot.position)" class="singing-icon" :size="17" />
-            </article>
-
-            <button class="rebuild-button" type="button" :disabled="booting" @click="rebuildStage">
-              <RefreshCw :size="16" />重新构建当前编队
-            </button>
+            <div class="lineup-actions"><button type="button" :disabled="!originalStageLineup || booting" @click="applyOriginalLineup">原曲成员</button><button type="button" :disabled="booting" @click="randomizeLineup"><Shuffle :size="15" />随机编队</button></div>
+            <small class="lineup-note">{{ !originalStageLineup ? '点击舞台下方头像选择出演成员' : originalSlotOrdered ? '原曲成员按原曲站位排列，可调整' : '原曲站位未收录，暂按偶像编号排列，可调整' }}</small>
+            <!-- Who is heard: the official mix, or each formation idol's own part following SwitchSinger. -->
+            <div v-if="stageVocalAvailable" class="lineup-vocal">
+              <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>
+              <button type="button" class="lineup-vocal-mix" aria-label="声部与伴奏音量" title="声部与伴奏音量" @click="vocalSettingsOpen = true"><Music2 :size="17" /></button>
+            </div>
+            <div v-if="editingSlot" class="slot-editor">
+              <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
+                <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
+                <span class="slot-editor-copy"><small>{{ editingSlot.position }} 号位 · {{ editingSlot.loading ? '加载中' : currentSingerPositions.includes(editingSlot.position) ? '正在演唱' : '出演' }}</small><strong>{{ stageIdolName(characterForSlot(editingSlot)) || '空位' }}</strong></span><ChevronDown :size="17" />
+              </button>
+              <label class="costume-control"><span>衣装</span><select v-model="editingSlot.costumeId" :aria-label="`${editingSlot.position}号位服装`" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" @change="costumeNotice = ''; loadSlot(editingSlot)"><option v-for="costume in costumesForSlot(editingSlot)" :key="costume.id" :value="costume.id">{{ stageCostumeLabel(costume) }}</option></select></label>
+            </div>
+            <button v-if="editingSlot" class="costume-sync-action" type="button" :disabled="booting || editingSlot.loading || !costumeSyncPlan" :aria-label="`将${stageCostumeLabel(costumeForSlot(editingSlot))}应用到出演成员`" @click="syncEditingCostume">应用到出演成员</button>
+            <div v-if="sharedQuickCostumes.length" class="common-costume-actions"><h3>共通套服</h3><div class="uniform-quick-actions"><button v-for="costume in sharedQuickCostumes" :key="costume.id" type="button" :disabled="booting" @click="applySharedCostume(costume.id)">{{ stageCostumeLabel(costume) }}</button></div></div>
+            <p v-if="costumeNotice" class="costume-notice" role="status">{{ costumeNotice }}</p>
           </section>
 
-          <details class="advanced-controls">
-            <summary>高级控制与演出信息</summary>
-          <section class="control-section playback-section">
-            <div class="song-facts">
-              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
-              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
-              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
-              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
-              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
-              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
-              <span>{{ selectedVocalSettingFact }}</span>
+          <section v-show="panelTab === 'viewing'" :id="`${inspectorTitleId}-viewing`" class="control-section panel-section viewing-section" aria-label="观看设置">
+            <div class="viewing-toggles">
+            <label class="camera-toggle"><input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" /><span>演出镜头</span></label>
+            <label class="camera-toggle"><input v-model="lyricsEnabled" type="checkbox" /><span>显示歌词</span></label>
             </div>
-              <small v-if="isSoloChoreography">
-                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
-              </small>
-            <div v-if="stageVfxCoverage" class="vfx-coverage">
-              <h3>效果覆盖 · 来源统计</h3>
-              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
-              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
-              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子对象 {{ stageVfxCoverage.objectParticles.length }} 种未复刻。</p>
-              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
-              <details v-if="stageVfxCoverage.objectParticles.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
-                <summary>查看未支持的对象素材</summary>
-                <code>{{ [...stageVfxCoverage.objectParticles, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
-              </details>
-            </div>
+            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台与人物</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
+            <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
+            <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
+            <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
+            <div class="viewing-actions"><button type="button" @click="toggleImmersive"><Maximize :size="16" />沉浸观看</button><button type="button" @click="inspectorOpen = true"><Settings2 :size="16" />高级设置</button></div>
+          </section>
+          <ArchiveErrorNote v-if="audioError" class="audio-error">{{ audioError }}</ArchiveErrorNote>
+          <p v-if="panelNotice || fullscreenNoticeText" class="panel-notice" role="status">{{ panelNotice || fullscreenNoticeText }} <a v-if="snapshotUrl" :href="snapshotUrl" :download="snapshotFilename">保存 PNG</a></p>
+        </div>
+      </aside>
+    </main>
 
+    <ChibiIdolPicker :open="pickerPosition !== null" :position="pickerPosition || 0" :characters="characters" :idol-directory="idolDirectory" :selected-idol-code="slotByPosition(pickerPosition)?.characterId || ''" :idol-name="idolName" :idol-search="idolSearch" @close="pickerPosition = null" @select="selectStageIdol" />
+    <ArchiveTerminalDialog class="stage-dev-dialog" :open="inspectorOpen" title="高级设置" :title-id="inspectorTitleId" @close="inspectorOpen = false">
+          <div class="inspector-tools"><button class="lab-link" type="button" @click="emit('open-lab')">单人实验室</button><button class="rebuild-button" type="button" :disabled="booting" @click="rebuildStage"><RefreshCw :size="16" />重新加载编队</button></div>
+
+          <section class="control-section playback-section">
             <div class="section-heading">
               <div>
                 <h2>播放参数</h2>
                 <span>{{ isSpecialSingle ? '歌曲与 2D 舞台对象共用同一时钟' : '歌曲、动作、口型共用同一时钟' }}</span>
               </div>
             </div>
-            <label class="range-control">
-              <span>速度</span>
-              <input v-model.number="playbackSpeed" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" />
-              <output>{{ playbackSpeed.toFixed(2) }}×</output>
-            </label>
-            <label class="camera-toggle">
-              <input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" />
-              <span>启用 CSV 角色镜头</span>
-            </label>
             <fieldset class="layer-debug-controls">
-              <legend>图层调试</legend>
+              <legend>显示图层</legend>
               <label>
                 <input v-model="staticStageEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>静态舞台</span>
@@ -318,24 +323,7 @@
                 <input v-model="characterShadowsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>人物阴影</span>
               </label>
-              <label>
-                <input v-model="lyricsEnabled" type="checkbox" />
-                <span>歌词</span>
-              </label>
             </fieldset>
-            <label class="range-control view-scale-control">
-              <span>总览</span>
-              <input
-                v-model.number="stageViewScale"
-                aria-label="整体视图缩放"
-                type="range"
-                min="0.5"
-                max="1.5"
-                step="0.01"
-                @input="applyCameraTransform"
-              />
-              <output>{{ stageViewScale.toFixed(2) }}×</output>
-            </label>
             <label class="range-control environment-scale-control">
               <span>环境</span>
               <input
@@ -349,9 +337,12 @@
               />
               <output>{{ environmentScale.toFixed(3) }}×</output>
             </label>
+          </section>
+          <details v-if="MAINTAINER" class="control-section runtime-details">
+            <summary>引擎运行时数据</summary>
             <dl class="runtime-summary">
               <div><dt>演出主体</dt><dd>{{ isSpecialSingle ? '社长单人剪影' : (activePositions.join(' / ') || '—') }}</dd></div>
-              <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '齋藤孝司' : currentSingerLabel }}</dd></div>
+              <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '社长' : currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ isSpecialSingle ? '2D 对象按需载入' : (preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入')) }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
               <div v-if="!isSpecialSingle"><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
@@ -360,24 +351,129 @@
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
               <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
+              <div v-if="stageVfxCoverage?.floorParticleStatus !== 'not_loaded' && stageVfxCoverage?.floorParticleStatus"><dt>地面动态</dt><dd>原生渐变与遮罩 · 投影及随机种子仍在核对</dd></div>
+              <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位与配色，闪烁曲线仍在核对</dd></div>
+              <div v-if="stageVfxCoverage?.stagelightUnimplementedCommands"><dt>待补灯效</dt><dd>{{ stageVfxCoverage.stagelightUnimplementedCommands }} 条原始指令 · 含未解析颜色模式或指令版本</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
             </dl>
-          </section>
+            <p class="technical-note">均衡归一化与居中声像是浏览器近似，不代表游戏官方混音参数。</p>
           </details>
-          <p v-if="audioError" class="audio-error" role="alert">{{ audioError }}</p>
-        </div>
-      </aside>
-    </main>
+          <section v-if="MAINTAINER" class="control-section statistics-section">
+            <div class="song-facts">
+              <span>{{ selectedSong?.events.length || 0 }} 条动作</span>
+              <span>{{ selectedSong?.singerEvents.length || 0 }} 次演唱切换</span>
+              <span>{{ selectedSong?.cameraEvents?.length || 0 }} 条镜头</span>
+              <span>{{ selectedSong?.backmonitorEvents?.length || 0 }} 条屏幕</span>
+              <span>{{ selectedSong?.imageLayerEvents?.length || 0 }} 条布景</span>
+              <span>{{ selectedSong?.lyricEvents?.length || 0 }} 条歌词</span>
+              <span>{{ selectedVocalSettingFact }}</span>
+            </div>
+              <small v-if="isSoloChoreography">
+                RAW 三个 Solo 候选均为中心一人演出；solo 与 solo_single 脚本相同，solo_multi 仅确认存在舞台效果差异，名称不作为声轨机制结论。
+              </small>
+            <div v-if="stageVfxCoverage" class="vfx-coverage">
+              <h3>效果覆盖 · 来源统计</h3>
+              <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
+              <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
+              <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
+              <p v-if="stageVfxCoverage.unresolvedImageColors.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedImageColors.length }} 条布景染色指令的原始参数异常，暂未应用。</p>
+              <p v-if="backgroundTintConflict" class="vfx-coverage-gap">当前资源包缺少独立背景组件，无法应用各层不同的染色。</p>
+              <p>静态对象素材 {{ stageVfxCoverage.objectSprites.length }} 种已接线；粒子试点 {{ stageVfxCoverage.objectParticlePilots.length }} 种已接线，{{ stageVfxCoverage.objectParticleUnimplemented.length }} 种尚未完整实现。</p>
+              <p v-if="stageVfxCoverage.objectParticlePartial.length">其中 {{ stageVfxCoverage.objectParticlePartial.length }} 种只接入了部分粒子，剩余子效果仍待复刻。</p>
+              <p v-if="stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length || stageVfxCoverage.missingMedia.length" class="vfx-coverage-gap">另有 {{ stageVfxCoverage.objectMissing.length + stageVfxCoverage.objectOther.length + stageVfxCoverage.missingMedia.length }} 种对象或媒体缺少本地可用实现。</p>
+              <details v-if="stageVfxCoverage.objectParticleUnimplemented.length || stageVfxCoverage.objectMissing.length || stageVfxCoverage.objectOther.length">
+                <summary>查看未支持的对象素材</summary>
+                <code>{{ [...stageVfxCoverage.objectParticleUnimplemented, ...stageVfxCoverage.objectMissing, ...stageVfxCoverage.objectOther].join('、') }}</code>
+              </details>
+            </div>
+
+          </section>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-audio-dialog" :open="vocalSettingsOpen" title="演唱音源" :title-id="vocalTitleId" @close="vocalSettingsOpen = false">
+            <fieldset v-if="stageVocalAvailable" class="stage-vocal-controls">
+              <legend>{{ stageVocalLegend }}</legend>
+              <label class="camera-toggle">
+                <input v-model="stageVocalEnabled" type="checkbox" @change="handleStageVocalToggle" />
+                <span>{{ stageVocalToggleLabel }}</span>
+              </label>
+              <details v-if="stageVocalEnabled" class="mix-details"><summary>声部与伴奏音量</summary>
+                <label class="range-control">
+                  <span>声部</span>
+                  <input v-model.number="stageVocalBusGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBusGain.toFixed(2) }}</output>
+                </label>
+                <label class="range-control">
+                  <span>伴奏</span>
+                  <input v-model.number="stageVocalBackingGain" type="range" min="0" max="1" step="0.05" @input="syncStageVocalMix" />
+                  <output>{{ stageVocalBackingGain.toFixed(2) }}</output>
+                </label>
+                <small>{{ stageVocalReady ? stageVocalReadyLabel : stageVocalLoadingLabel }}</small>
+              </details>
+              <small v-if="handoffLineup">歌曲页编成 · 刷新后恢复默认编队</small>
+            </fieldset>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-help-dialog" :open="helpOpen" title="观看与操作" :title-id="helpTitleId" @close="helpOpen = false">
+      <p>选择演出曲目，点击头像槽位编辑偶像与衣装。原曲成员使用已收录名单，按当前脚本槽位排列。</p>
+      <template v-if="touchUi">
+        <dl class="shortcut-list touch-help"><div><dt><Maximize :size="18" aria-label="沉浸观看" /></dt><dd>沉浸观看：隐藏界面并全屏，播放最流畅；右上角的按钮可截图或退出。</dd></div><div><dt>画面</dt><dd>切换轻量 / 完整加载、帧率、镜头与歌词。</dd></div></dl>
+        <p>截图保存当前舞台画面，不包含操作界面与歌词。</p>
+      </template>
+      <template v-else>
+      <dl class="shortcut-list"><div><dt><kbd>Space</kbd></dt><dd>播放 / 暂停</dd></div><div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>前后跳转 5 秒</dd></div><div><dt><kbd>F</kbd> <kbd>H</kbd></dt><dd>沉浸观看：隐藏界面并全屏；把鼠标移到画面顶端可截图或退出，<kbd>Esc</kbd> 也可退出</dd></div></dl>
+      <p>截图保存当前舞台画面，不包含操作界面与歌词。快捷键在编辑输入框或打开弹窗时停用。</p>
+      </template>
+    </ArchiveTerminalDialog>
+    <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(stageQuality)">
+      <div class="quality-options">
+        <button type="button" :aria-pressed="stageQuality === 'lite'" @click="chooseStageQuality('lite')"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、演出镜头与歌词。不开启灯光和动态物件，手机与平板更流畅。</span></button>
+        <button type="button" :aria-pressed="stageQuality === 'full'" @click="chooseStageQuality('full')"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
+      </div>
+      <p class="quality-tip"><Maximize :size="15" aria-hidden="true" />播放时选「沉浸观看」隐藏界面并全屏，画面最流畅。</p>
+      <label class="camera-toggle"><input v-model="rememberViewing" type="checkbox" @change="saveStageViewing" /><span>记住选择，下次不再询问</span></label>
+      <small class="quality-note">之后可在「画面」里随时切换。</small>
+    </ArchiveTerminalDialog>
+    <!-- Pure mode keeps its controls in a strip along the top edge: hidden while the pointer is on the
+         stage, shown when it reaches the top or a key moves focus there. -->
+    <div v-if="pureMode" class="pure-peek">
+      <button class="stage-icon-action" type="button" aria-label="导出舞台截图" title="PNG · 不含界面与歌词" :disabled="!stageReady || snapshotBusy" @click="exportStageSnapshot"><Camera :size="19" /></button>
+      <button ref="pureExitButton" class="pure-exit" type="button" @click="toggleImmersive"><Minimize :size="16" />退出沉浸<kbd v-if="!touchUi">F</kbd></button>
+    </div>
   </div>
 </template>
 
 <script setup>
+import ArchiveLanguageSwitch from './archive/ArchiveLanguageSwitch.vue'
+import ArchiveIdolAvatar from './archive/ArchiveIdolAvatar.vue'
+import ArchiveErrorNote from './archive/ArchiveErrorNote.vue'
+import ArchiveTerminalDialog from './archive/terminal/ArchiveTerminalDialog.vue'
+import { isMaintainerMode } from '../core/maintainerMode.js'
+import ChibiIdolPicker from './ChibiIdolPicker.vue'
+import ChibiSongPicker from './ChibiSongPicker.vue'
+import { normalizeIdolAccentColor } from '../presentation/idolAccentColor.js'
+import { buildOriginalStageLineup, planStageCostumeSync, universalStageCostumes, stageCostumeLabel as sourceStageCostumeLabel } from '../presentation/ChibiPanelPresentation.js'
+import { archiveText } from './archive/useArchiveCostumeText.js'
+import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
+import { createPlaybackIntent } from '../core/PlaybackIntent.js'
+import { colorLayersAt } from '../core/chibiColorLayers.js'
+import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
+import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
-import { computed, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowReactive } from 'vue'
+import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
 import * as PIXI from 'pixi.js'
 import {
   CircleAlert,
+  CircleHelp,
+  Camera,
+  ChevronDown,
+  Maximize,
+  Minimize,
+  Settings2,
+  Shuffle,
   LoaderCircle,
   Mic2,
   Music2,
@@ -386,8 +482,10 @@ import {
   RefreshCw,
   RotateCcw,
   UsersRound,
+  X,
 } from '@lucide/vue'
 import ArchiveBackAction from './archive/ArchiveBackAction.vue'
+import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import {
   LIVE_CHIBI_BASE,
   applyLiveChibiLipSync,
@@ -396,6 +494,7 @@ import {
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
   fetchLiveChibiImageLayerIndex,
+  fetchLiveChibiImageObjectIndex,
   fetchLiveChibiObjectLayerIndex,
   fetchLiveChibiLipSync,
   fetchLiveChibiManifest,
@@ -404,11 +503,28 @@ import {
   fetchLiveChibiStageEffectIndex,
   injectLiveChibiMotion,
   playLiveChibiMotion,
+  seekLiveChibiMotion,
 } from '../utils/liveChibiSpine.js'
 import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
+import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
+import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
+import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
+import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
+import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
+import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
+import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
+import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
+import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
+import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
+import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
+import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
+import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
+import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
@@ -421,18 +537,37 @@ const props = defineProps({
   stageSongCode: { type: String, default: '' },
   stageHandoff: { type: Object, default: null },
   backLabel: { type: String, default: '返回资料馆' },
+  idolDirectory: { type: Array, default: () => [] },
+  songDirectory: { type: Array, default: () => [] },
+  idolName: { type: Function, default: () => '' },
+  idolSearch: { type: Function, default: () => '' },
+  originalPerformers: { type: Array, default: () => [] },
+  originalSlotOrdered: { type: Boolean, default: false },
 })
+const stageRoot = ref(null), selectedPosition = ref(3), pickerPosition = ref(null)
+const panelTab = ref('lineup')
+const MAINTAINER = isMaintainerMode()
+const inspectorOpen = ref(false), helpOpen = ref(false), vocalSettingsOpen = ref(false), pureMode = ref(false), pureExitButton = ref(null)
+const inspectorTitleId = useId(), helpTitleId = useId(), vocalTitleId = useId(), qualityTitleId = useId()
+const costumeNotice = ref(''), panelNotice = ref(''), snapshotBusy = ref(false)
+const { active: fullscreenActive, pending: fullscreenPending, notice: fullscreenNotice, enter: enterFullscreen, leave: leaveFullscreen } = usePlayerImmersiveMode()
+const fullscreenNoticeText = computed(() => fullscreenNotice.value === 'rotate' ? '可横置设备观看舞台。' : fullscreenNotice.value ? '当前浏览器未能进入全屏，沉浸观看只隐藏了界面。' : '')
+const snapshotUrl = ref(''), snapshotFilename = ref('')
+let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
-const manifest = ref(null)
-const choreography = ref(null)
+const manifest = shallowRef(null)
+const choreography = shallowRef(null)
 const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
-const musicIndex = ref(null)
-const backmonitorIndex = ref(null)
-const imageLayerIndex = ref(null)
-const objectLayerIndex = ref(null)
-const stageBackgroundIndex = ref(null)
-const stageEffectIndex = ref(null)
+const musicIndex = shallowRef(null)
+const backmonitorIndex = shallowRef(null)
+const imageLayerIndex = shallowRef(null)
+const imageObjectIndex = shallowRef(null)
+const visibleImageObjectCount = ref(0)
+const visibleImageObjectAssets = ref([])
+const objectLayerIndex = shallowRef(null)
+const stageBackgroundIndex = shallowRef(null)
+const stageEffectIndex = shallowRef(null)
 const selectedSongId = ref('')
 const lineup = ref([])
 const booting = ref(true)
@@ -450,16 +585,38 @@ const stageVocalReady = stageVocalSession.ready
 const stageVocalBusGain = stageVocalSession.vocalGain
 const stageVocalBackingGain = stageVocalSession.backingGain
 const stageVocalLoadedIdolCodes = stageVocalSession.loadedIdolCodes
-const stageTime = ref(0)
+// Renderer reads the exact frame clock; Vue publishes at 10 Hz while playing.
+const stageTime = customRef((track,trigger)=> {
+  let time=0,lastPublished=0
+  return {get(){track();return time},set(value){
+    time=value; const now=performance.now()
+    if (!playing.value || now-lastPublished >= 100) {lastPublished=now;trigger()}
+  }}
+})
+const frameValue = read => customRef(() => ({get:read,set(){}}))
 const playbackSpeed = ref(1)
 const playing = ref(false)
 const cameraEnabled = ref(true)
 const staticStageEnabled = ref(true)
 const backmonitorEnabled = ref(true)
 const imageLayersEnabled = ref(true)
-const objectLayersEnabled = ref(true)
-const lightingEnabled = ref(true)
-const beamEffectsEnabled = ref(true)
+// 轻量 / 完整. The static stage, back screen, performers, camera and lyrics are full
+// reconstructions; the lights and moving stage objects are partial approximations and the most
+// expensive to draw. 轻量 leaves those off and paints at a lower pixel density. The choice is
+// offered on entry, can be changed under 画面, and is kept for this browser when asked.
+const STAGE_VIEWING_KEY = 'gs-stage-viewing'
+const touchUi = typeof window !== 'undefined' && Boolean(window.matchMedia?.('(hover: none)').matches)
+const recommendedQuality = touchUi || (navigator.deviceMemory || 8) <= 4 || (navigator.hardwareConcurrency || 8) <= 4 ? 'lite' : 'full'
+const savedViewing = (() => { try { return JSON.parse(localStorage.getItem(STAGE_VIEWING_KEY) || 'null') } catch { return null } })()
+const stageQuality = ref(['lite', 'full'].includes(savedViewing?.quality) ? savedViewing.quality : recommendedQuality)
+const frameRateSetting = ref(['auto', '30', '60', 'max'].includes(savedViewing?.frameRate) ? savedViewing.frameRate : 'auto')
+const rememberViewing = ref(savedViewing?.remember === true)
+const qualityPromptOpen = ref(!rememberViewing.value)
+const IMMERSIVE_HINT_KEY = 'gs-stage-immersive-hint'
+const immersiveHintSeen = ref((() => { try { return localStorage.getItem(IMMERSIVE_HINT_KEY) === 'seen' } catch { return false } })())
+const objectLayersEnabled = ref(stageQuality.value === 'full')
+const lightingEnabled = ref(stageQuality.value === 'full')
+const beamEffectsEnabled = ref(stageQuality.value === 'full')
 const charactersEnabled = ref(true)
 const characterShadowsEnabled = ref(true)
 const lyricsEnabled = ref(true)
@@ -471,31 +628,31 @@ const visibleImageLayerDepths = ref([])
 const visibleObjectLayerCount = ref(0)
 const visibleObjectLayerAssets = ref([])
 const unsupportedObjectLayerAssets = ref([])
+const particleLayerFrames = ref('')
+const floorParticleState = ref('')
 const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
+const unresolvedSpotlightIds = ref([])
 const visibleLaserlightCount = ref(0)
 const visibleLaserlightIds = ref([])
+const visibleLaserParticleCount = ref(0)
+const laserParticleOrigins = ref('')
 const visiblePinspotlightCount = ref(0)
 const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
 const POSITION_TWEEN_MS = 350
-const STAGE_BASE_ZOOM = 1.1
+// Authored Camera zoom is the baseline; do not add a presentation magnification.
+const STAGE_BASE_ZOOM = 1
 // Debug multiplier for the complete camera container. Unlike environmentScale,
 // this keeps stage art, characters, monitor, shadows and effects registered.
 const stageViewScale = ref(1)
-// Enlarge the authored environment as one registered plane while retaining
-// the official full-body character framing. Stage art, monitor movies and
-// fixed image/object layers all use this same factor.
-const environmentScale = ref(1.073)
+// Stage art, monitor movies and fixed effects share an unexpanded environment
+// plane. Keep the optional inspection control separate from source camera zoom.
+const environmentScale = ref(1)
 const CHARACTER_DEPTH_BASE = 2000
 const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
-const CHARACTER_STAGE_BASELINE_RATIO = 0.82
-// Backmonitor uses the live-stage content plane rather than the 720 px camera
-// midpoint. Fitting all 54 stages with interior alpha cut-outs peaks at 250;
-// using 360 leaves every movie visibly below its screen opening.
-const BACKMONITOR_Y_ORIGIN = 250
 
 let app = null
 let cameraContainer = null
@@ -521,20 +678,142 @@ let objectLayerSongId = ''
 let objectLayerSequence = 0
 const objectLayerRuntimes = new Map()
 const objectLayerLoads = new Map()
-const spotlightRuntimes = new Map()
-let spotlightConeTexture = null
+const spotlightSprites = createSpotlightSpriteStore({
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: createSpotlightRuntime,
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent()
+    runtime.container.destroy({ children: true })
+  },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSpotlights(),
+  onError: error => console.warn('Native Spotlight textures could not be loaded', error),
+})
+const spotlightRuntimes = spotlightSprites.runtimes
+const visibleStagelightCount = ref(0)
+const appliedStagelightColors = ref('')
+const stagelightSprites = createSpotlightSpriteStore({
+  layerCount: null,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createStagelightRuntime(PIXI, cameraContainer, layers, textures)),
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent(); runtime.container.destroy({ children: true })
+    for (const texture of runtime.frameTextures) texture.destroy(false)
+  },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncStagelights(),
+  onError: error => console.warn('Native stage lamp textures could not be loaded', error),
+})
+let stagelightSongId = ''
+const visibleSuspensionlightIds = ref([])
+let suspensionTrackKey = ''
+let suspensionTrack = null
+let suspensionAbort = null
+const suspensionSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layers[0].anchorX, layers[0].anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSuspensionlights(),
+  onError: error => console.warn('[ChibiStage] suspension texture load failed', error),
+})
+const spotlightBackgroundAlpha = ref(0)
+const visibleOldSuspensionlightIds = ref([])
+const backmonitorLogoAngle = ref('')
+const backmonitorLogoAlpha = ref(0)
+const backmonitorLogoSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createBackmonitorLogoMesh(PIXI,backmonitorContainer,textures[0])),
+  destroyRuntime: destroyBackmonitorLogoMesh,
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncBackmonitor(true),
+  onError: error => console.warn('[ChibiStage] backmonitor logo texture load failed',error),
+})
+let oldSuspensionTrackKey = ''
+let oldSuspensionTrack = null
+let oldSuspensionAbort = null
+const oldSuspensionSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layers[0].anchorX, layers[0].anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncOldSuspensionlights(),
+  onError: error => console.warn('[ChibiStage] old sidelight texture load failed', error),
+})
+const pinspotlightMaskCount = ref(0)
+const spotlightBackgroundSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const layer = layers[0]
+    const sprite = markRaw(new PIXI.Sprite(textures[0]))
+    sprite.anchor.set(layer.anchorX, layer.anchorY)
+    sprite.blendMode = PIXI.BLEND_MODES.NORMAL
+    sprite.zIndex = layer.sortingOrder
+    sprite.visible = false
+    cameraContainer.addChild(sprite)
+    return markRaw({ sprite, layer })
+  },
+  destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncSpotlightBackground(),
+  onError: error => console.warn('Native Spotlight background could not be loaded', error),
+})
 const laserlightRuntimes = new Map()
-const pinspotlightRuntimes = new Map()
-const pinspotlightRuntimeLoads = new Map()
-const pinspotlightTextures = new Map()
-const pinspotlightLoads = new Map()
-let pinspotlightEnvironmentOverlay = null
-let pinspotlightLoadSequence = 0
+let laserParticleSongId = ''
+const laserParticleSprites = createSpotlightSpriteStore({
+  layerCount: 1,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => {
+    const container = markRaw(new PIXI.Container())
+    cameraContainer.addChild(container)
+    const texture = textures[0]
+    const frames = layers[0].frames === 2 ? [0,1].map(frame => markRaw(new PIXI.Texture(
+      texture.baseTexture, new PIXI.Rectangle(frame * 512,0,512,512)))) : null
+    return markRaw({ container, sprites: [], texture, frames })
+  },
+  destroyRuntime: runtime => {
+    runtime.container.removeFromParent(); runtime.container.destroy({ children: true })
+    for (const texture of runtime.frames || []) texture.destroy(false)
+  },
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncLaserlights(),
+  onError: error => console.warn('[ChibiStage] native laser texture load failed', error),
+})
+const pinspotlightSprites = createSpotlightSpriteStore({
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createPinspotlightSprites(PIXI, cameraContainer, id, layers, textures)),
+  destroyRuntime: destroyPinspotlightSprites,
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => syncPinspotlights().catch(error => console.warn('[ChibiStage] pinspotlight ready sync failed', error)),
+  onError: error => console.warn('Native Pinspotlight textures could not be loaded', error),
+})
+const pinspotlightRuntimes = pinspotlightSprites.runtimes
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
+const stageBackgroundParts = new Map()
+const appliedImageColors = ref('')
+const backgroundComponentCount = ref(0)
+const backgroundTintConflict = ref(false)
 let wholeScreenColorOverlay = null
+const colorPlaneOverlays = new Map()
 let characterShadowTexture = null
 let characterShadowLoad = null
 let resizeObserver = null
@@ -555,12 +834,14 @@ const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999'
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
+  imageObjects: imageObjectIndex.value,
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
+  stageBackgrounds: stageBackgroundIndex.value,
 }))
 const stageVfxApproximateCount = computed(() => {
   const events = stageVfxCoverage.value?.sourceEvents
-  return events ? events.characterLight + events.spotlight + events.pinspotlight + events.laserlight : 0
+  return events ? events.characterLight + events.bodyColor + events.spotlight + events.pinspotlight + events.laserlight : 0
 })
 const activePositions = computed(() => {
   if (isSpecialSingle.value) return []
@@ -571,6 +852,16 @@ const activePositions = computed(() => {
 })
 const activeSlots = computed(() => lineup.value.filter(slot => activePositions.value.includes(slot.position)))
 const loadedPositions = computed(() => activePositions.value.filter(position => runtimes.has(position)))
+const editingSlot = computed(() => activeSlots.value.find(slot => slot.position === selectedPosition.value) || activeSlots.value[0] || null)
+const originalStageLineup = computed(() => buildOriginalStageLineup(selectedSong.value, props.originalPerformers, characters.value, props.idolDirectory, { slotOrdered: props.originalSlotOrdered }))
+const sharedQuickCostumes = computed(() => universalStageCostumes(characters.value, props.idolDirectory))
+const costumeSyncPlan = computed(() => editingSlot.value ? planStageCostumeSync(
+  lineup.value, characters.value, activePositions.value, editingSlot.value.characterId, editingSlot.value.costumeId,
+) : null)
+const stageAmbientImage = computed(() => {
+  const file = stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]?.file
+  return file && staticStageEnabled.value ? `${LIVE_CHIBI_BASE}/${file}` : ''
+})
 const stageReady = computed(() => Boolean(selectedSong.value)
   && !errorText.value
   && (isSpecialSingle.value || (activePositions.value.length > 0
@@ -630,15 +921,15 @@ const stageDuration = computed(() => Math.max(
 const motionCatalog = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
 ))
-const currentSingerEvent = computed(() => [...(selectedSong.value?.singerEvents || [])]
+const currentSingerEvent = frameValue(() => [...(selectedSong.value?.singerEvents || [])]
   .reverse()
   .find(event => event.time <= stageTime.value))
-const currentSingerPositions = computed(() => (
+const currentSingerPositions = frameValue(() => (
   currentSingerEvent.value?.stagePositions
   || currentSingerEvent.value?.singers
   || []
 ).filter(position => activePositions.value.includes(position)))
-const currentSingerPerformerSlots = computed(() => (
+const currentSingerPerformerSlots = frameValue(() => (
   currentSingerEvent.value?.performerSlots
   || currentSingerEvent.value?.singers
   || []
@@ -684,14 +975,21 @@ const performanceEventsByPosition = computed(() => {
 const derivedGroupEventCount = computed(() => [...performanceEventsByPosition.value.values()]
   .flat()
   .filter(event => event.source === 'group').length)
-const currentCameraState = computed(() => cameraStateAt(stageTime.value))
-const currentBackmonitorState = computed(() => backmonitorStateAt(stageTime.value))
+const currentCameraState = frameValue(() => cameraStateAt(stageTime.value))
+const currentBackmonitorState = frameValue(() => backmonitorStateAt(stageTime.value))
+const hasAuthoredStage = computed(() => Boolean(stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]))
 const currentBackmonitorLabel = computed(() => currentBackmonitorState.value.movie
   ? currentBackmonitorState.value.movie.replace('live_backmonitor_movie_', '')
   : '无')
 const currentLyric = computed(() => lyricAt(stageTime.value))
-const currentWholeScreenColor = computed(() => wholeScreenColorAt(stageTime.value))
-const currentCharacterLight = computed(() => characterLightAt(stageTime.value))
+const currentWholeScreenColor = frameValue(() => wholeScreenColorAt(stageTime.value))
+const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
+const visibleColorPlanes = computed(() => lightingEnabled.value
+  ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
+const currentFootLighting = frameValue(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
+const currentBodyColors = frameValue(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
+const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
   if (!cameraEnabled.value) return `${stageViewScale.value.toFixed(2)}× · 总览 · 0.0°`
   const camera = currentCameraState.value
@@ -701,7 +999,13 @@ const currentCameraLabel = computed(() => {
 })
 
 let stageDisposed = false
+const lifetime = new AbortController()
+const slotOwners = new Map()
+const stageStarting = ref(false)
+const stageIntent = createPlaybackIntent(() => `${selectedSong.value?.id || ''}:${stageBuildSequence}`)
+const stageAudioOwners = new Map()
 onMounted(async () => {
+  window.addEventListener('keydown', handleStageShortcut)
   await nextTick()
   if (stageDisposed) return
   try {
@@ -716,25 +1020,11 @@ onMounted(async () => {
       }
     }
     createPixiApp()
-    manifest.value = await fetchLiveChibiManifest()
+    manifest.value = await fetchLiveChibiManifest({signal:lifetime.signal})
     if (stageDisposed) return
-    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index)
+    choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal})
     if (stageDisposed) return
-    ;[
-      musicIndex.value,
-      backmonitorIndex.value,
-      imageLayerIndex.value,
-      objectLayerIndex.value,
-      stageBackgroundIndex.value,
-      stageEffectIndex.value,
-    ] = await Promise.all([
-      fetchLiveChibiMusicIndex(),
-      fetchLiveChibiBackmonitorIndex(),
-      fetchLiveChibiImageLayerIndex(),
-      fetchLiveChibiObjectLayerIndex(),
-      fetchLiveChibiStageBackgroundIndex(),
-      fetchLiveChibiStageEffectIndex(),
-    ])
+    musicIndex.value = await fetchLiveChibiMusicIndex({signal:lifetime.signal})
     if (stageDisposed) return
     initializeLineup()
     selectedSongId.value = props.stageTargetId
@@ -763,6 +1053,25 @@ onMounted(async () => {
       stageVocalBackingGain.value = resolvedHandoff.backingGain
       stageVocalEnabled.value = stageVocalAvailable.value
     }
+    const optionalOptions={signal:lifetime.signal}
+    const install=(target,value,sync)=> {
+      if(stageDisposed || !value)return
+      target.value=value
+      if(sync)void sync().then(()=> {if(!stageDisposed && !playing.value)app?.render()}).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] optional visual unavailable',error)})
+    }
+    const visualJobs=[
+      [backmonitorIndex,fetchLiveChibiBackmonitorIndex,async()=>syncBackmonitor(true)],
+      [imageLayerIndex,fetchLiveChibiImageLayerIndex,syncImageLayers],
+      [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
+      [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
+      [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
+      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting()}],
+    ].map(async ([target,load,sync])=> {
+      try {install(target,await load(optionalOptions),sync)}
+      catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
+    })
+    // The president's silhouette is an authored object, required for that stage.
+    if(isSpecialSingle.value)await visualJobs[3]
     await Promise.all([loadSongLipSync(), loadSongAudio(), stageVocalEnabled.value ? loadStageVocalAudio() : Promise.resolve()])
     if (stageDisposed) return
     await rebuildStage()
@@ -775,7 +1084,13 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleStageShortcut)
+  if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value)
   stageDisposed = true
+  lifetime.abort()
+  for(const owner of slotOwners.values())owner.abort()
+  slotOwners.clear()
+  stageIntent.dispose()
   stageBuildSequence += 1
   lipSyncSequence += 1
   stopStage()
@@ -786,9 +1101,16 @@ onBeforeUnmount(() => {
   releaseImageLayers()
   releaseObjectLayers()
   releaseSpotlights()
+  stagelightSprites.release()
+  suspensionSprites.release()
+  suspensionAbort?.abort()
+  oldSuspensionSprites.release()
+  oldSuspensionAbort?.abort()
   releaseLaserlights()
   releasePinspotlights()
   releaseStageBackground()
+  for (const plane of colorPlaneOverlays.values()) plane.destroy()
+  colorPlaneOverlays.clear()
   for (const runtime of runtimes.values()) destroyStageRuntime(runtime)
   runtimes.clear()
   characterShadowTexture?.destroy(true)
@@ -825,12 +1147,14 @@ function createPixiApp() {
     backgroundAlpha: 0,
     antialias: true,
     autoDensity: true,
-    resolution: Math.min(window.devicePixelRatio || 1, 2),
+    resolution: stageResolution(),
   }))
+  app.stop() // One owned RAF drives rendering; paused stages have no Pixi ticker.
   app.stage.sortableChildren = true
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
   backmonitorContainer = markRaw(new PIXI.Container())
+  backmonitorContainer.sortableChildren = true
   // Backmonitor movies are projected through transparent cut-outs in the
   // authored stage art.  Keep the video below the static stage composite so
   // the opaque clockwork/floor pixels act as the original Unity mask.
@@ -840,6 +1164,85 @@ function createPixiApp() {
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
   resizeObserver.observe(host)
+}
+
+function stageResolution() {
+  return Math.min(window.devicePixelRatio || 1, stageQuality.value === 'full' ? 2 : 1.5)
+}
+
+function saveStageViewing() {
+  try { localStorage.setItem(STAGE_VIEWING_KEY, JSON.stringify({ quality: stageQuality.value, frameRate: frameRateSetting.value, remember: rememberViewing.value })) } catch { /* convenience only */ }
+}
+
+function applyStageQuality() {
+  const full = stageQuality.value === 'full'
+  lightingEnabled.value = full
+  beamEffectsEnabled.value = full
+  // The president's silhouette is an object layer; that stage needs it in either mode.
+  objectLayersEnabled.value = full || isSpecialSingle.value
+  if (app && app.renderer.resolution !== stageResolution()) {
+    app.renderer.resolution = stageResolution()
+    resizeStage()
+  }
+  resetAutoFrameRate()
+  applyLayerDebugVisibility()
+  saveStageViewing()
+}
+
+function chooseStageQuality(quality) {
+  stageQuality.value = quality
+  qualityPromptOpen.value = false
+  applyStageQuality()
+}
+
+function setFrameRate() {
+  resetAutoFrameRate()
+  saveStageViewing()
+}
+
+// 帧率. 自动 starts at 30 and steps up to 60, then to the display's own rate, while frames keep
+// arriving on time and the stage's own work per frame stays small; it steps back down when they
+// do not, and waits before trying a higher rate again.
+const AUTO_FRAME_TIERS = [30, 60, 0]
+const autoFrameTier = ref(0)
+let lastStageFrame = 0, frameWindow = null, frameStepUpAfter = 0
+const frameRateLabel = computed(() => {
+  const cap = frameRateSetting.value === 'auto' ? AUTO_FRAME_TIERS[autoFrameTier.value] : frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
+  return cap ? `${cap} 帧` : '跟随屏幕'
+})
+function frameCap() {
+  if (frameRateSetting.value === 'auto') return AUTO_FRAME_TIERS[autoFrameTier.value]
+  return frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
+}
+function resetAutoFrameRate() {
+  autoFrameTier.value = 0
+  frameWindow = null
+  frameStepUpAfter = 0
+  lastStageFrame = 0
+}
+function measureStageFrame(gap, work, cap, now) {
+  if (frameRateSetting.value !== 'auto' || !gap) return
+  const budget = 1000 / (cap || 60)
+  const sample = frameWindow || (frameWindow = { frames: 0, late: 0, work: 0 })
+  sample.frames += 1
+  sample.work += work
+  if (gap > budget * 1.5) sample.late += 1
+  if (sample.frames < 90) return
+  frameWindow = null
+  const late = sample.late / sample.frames, meanWork = sample.work / sample.frames
+  if ((late > 0.15 || meanWork > budget * 0.6) && autoFrameTier.value > 0) {
+    autoFrameTier.value -= 1
+    frameStepUpAfter = now + 20000
+  } else if (late < 0.03 && now >= frameStepUpAfter && autoFrameTier.value < AUTO_FRAME_TIERS.length - 1
+    && meanWork < (autoFrameTier.value === 0 ? 6 : 4)) {
+    autoFrameTier.value += 1
+  }
+}
+
+const immersiveHintVisible = computed(() => !immersiveHintSeen.value && playing.value && !pureMode.value)
+function dismissImmersiveHint() {
+  immersiveHintSeen.value = true
+  try { localStorage.setItem(IMMERSIVE_HINT_KEY, 'seen') } catch { /* convenience only */ }
 }
 
 function slotByPosition(position) {
@@ -855,6 +1258,158 @@ function characterForSlot(slot) {
   return characters.value.find(character => character.id === slot.characterId) || null
 }
 
+function stageIdolName(character) {
+  return character ? props.idolName(character.id, character.name) || character.name || '' : ''
+}
+function stageIdolColor(character) {
+  return normalizeIdolAccentColor(props.idolDirectory.find(idol => idol.id === character?.id)?.color) || '#82969e'
+}
+function stageIdolStyle(character) {
+  return { '--idol-accent': stageIdolColor(character) }
+}
+function stageCostumeLabel(costume) { return archiveText('costume', sourceStageCostumeLabel(costume)) }
+async function selectStageIdol(id) {
+  const slot = slotByPosition(pickerPosition.value)
+  pickerPosition.value = null
+  if (!slot || booting.value || !activePositions.value.includes(slot.position) || !characters.value.some(character => character.id === id) || slot.characterId === id) return
+  slot.characterId = id
+  await handleCharacterChange(slot)
+}
+async function applyStageLineup(nextLineup) {
+  if (booting.value || isSpecialSingle.value || !selectedSong.value || !nextLineup) return
+  costumeNotice.value = ''
+  const songId = selectedSong.value.id
+  const reloadVocals = stageVocalEnabled.value
+  stopStage(true)
+  if (reloadVocals) releaseStageVocalAudio()
+  handoffLineup.value = null
+  for (const slot of lineup.value) {
+    const id = nextLineup[slot.position - 1]
+    if (!id) continue
+    const character = characters.value.find(item => item.id === id)
+    if (!character) return
+    slot.characterId = id
+    slot.costumeId = character.defaultCostume || character.costumes?.[0]?.id || ''
+  }
+  await rebuildStage()
+  if (!stageDisposed && selectedSong.value?.id === songId && reloadVocals) await loadStageVocalAudio()
+}
+async function applyOriginalLineup() {
+  await applyStageLineup(originalStageLineup.value)
+}
+async function randomizeLineup() {
+  const candidates = [...characters.value]
+  for (let index = candidates.length - 1; index > 0; index--) {
+    const other = Math.floor(Math.random() * (index + 1))
+    ;[candidates[index], candidates[other]] = [candidates[other], candidates[index]]
+  }
+  const nextLineup = Array(5).fill('')
+  ;(selectedSong.value?.positions || []).forEach((position, index) => { nextLineup[position - 1] = candidates[index]?.id || '' })
+  await applyStageLineup(nextLineup)
+}
+async function syncEditingCostume() {
+  if (booting.value || editingSlot.value?.loading || !costumeSyncPlan.value) return
+  const plan = costumeSyncPlan.value
+  const songId = selectedSong.value?.id
+  for (const assignment of plan.matched) {
+    const slot = slotByPosition(assignment.position)
+    if (slot?.characterId !== assignment.idolCode) return
+  }
+  for (const assignment of plan.matched) slotByPosition(assignment.position).costumeId = assignment.costumeId
+  await rebuildStage()
+  if (stageDisposed || selectedSong.value?.id !== songId) return
+  const names = plan.unmatched.map(item => stageIdolName(characters.value.find(character => character.id === item.idolCode)) || item.idolCode)
+  costumeNotice.value = `已为 ${plan.matched.length} 位出演成员应用衣装` + (names.length ? `；${names.join('、')}无此衣装，保留原样。` : '。')
+}
+async function applySharedCostume(id) {
+  const costume = sharedQuickCostumes.value.find(item => item.id === id)
+  if (booting.value || !costume || activeSlots.value.some(slot => !costume.costumeIdsByIdol?.[slot.characterId])) return
+  const songId = selectedSong.value?.id
+  for (const slot of activeSlots.value) slot.costumeId = costume.costumeIdsByIdol[slot.characterId]
+  await rebuildStage()
+  if (!stageDisposed && selectedSong.value?.id === songId) costumeNotice.value = `已为 ${activeSlots.value.length} 位出演成员换为${stageCostumeLabel(costume)}。`
+}
+// 沉浸观看 is one feature: hide the controls and go fullscreen together, and leave both together.
+// Fullscreen is requested first, inside the user gesture; where the browser refuses it (iOS
+// Safari), the controls are still hidden. Leaving fullscreen through the browser ends it too.
+let immersiveFullscreen = false
+async function toggleImmersive() {
+  if (pureMode.value) {
+    immersiveFullscreen = false
+    if (fullscreenActive.value) void leaveFullscreen()
+    await togglePureMode()
+    return
+  }
+  const fullscreen = enterFullscreen(stageRoot.value)
+  if (!immersiveHintSeen.value) dismissImmersiveHint()
+  await togglePureMode()
+  immersiveFullscreen = await fullscreen
+}
+watch(isSpecialSingle, special => {
+  if (stageQuality.value === 'full' || objectLayersEnabled.value === special) return
+  objectLayersEnabled.value = special
+  applyLayerDebugVisibility()
+})
+watch(fullscreenActive, (active, was) => {
+  if (was && !active && pureMode.value && immersiveFullscreen) { immersiveFullscreen = false; void togglePureMode() }
+})
+async function togglePureMode() {
+  if (!pureMode.value) {
+    pureReturnFocus = document.activeElement
+    inspectorOpen.value = false
+    helpOpen.value = false
+    vocalSettingsOpen.value = false
+    pickerPosition.value = null
+  }
+  pureMode.value = !pureMode.value
+  await nextTick()
+  if (pureMode.value) pureExitButton.value?.focus({ preventScroll: true })
+  else if (pureReturnFocus?.isConnected) { pureReturnFocus.focus({ preventScroll: true }); pureReturnFocus = null }
+}
+async function exportStageSnapshot() {
+  if (!app || !stageReady.value || snapshotBusy.value) return
+  snapshotBusy.value = true
+  panelNotice.value = ''
+  const filename = `smgs-${selectedSong.value.songCode}-${Math.round(stageTime.value)}.png`
+  try {
+    // Repaint and read the same renderer viewport; extracting app.stage would
+    // instead include off-screen object bounds and change the exported frame.
+    app.renderer.render(app.stage)
+    const canvas = app.renderer.extract.canvas()
+    const blob = await new Promise((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('empty-snapshot')), 'image/png'))
+    if (stageDisposed) return
+    if (snapshotUrl.value) URL.revokeObjectURL(snapshotUrl.value)
+    const url = URL.createObjectURL(blob)
+    snapshotUrl.value = url
+    snapshotFilename.value = filename
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    link.click()
+    panelNotice.value = `舞台截图已准备 · ${canvas.width} × ${canvas.height}`
+  } catch {
+    if (!stageDisposed) panelNotice.value = '当前画面暂时无法导出，请等待舞台加载完成后重试。'
+  } finally {
+    snapshotBusy.value = false
+  }
+}
+function handleStageShortcut(event) {
+  if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || document.querySelector('dialog[open]')) return
+  const target = event.target
+  if (target?.closest?.('input, select, textarea, [contenteditable="true"]')) return
+  const key = event.key.toLowerCase()
+  // Preserve native Space activation on focused controls in the regular UI.
+  if (key === ' ' && target?.closest?.('button') && !pureMode.value) return
+  if (key === 'h' || key === 'f' || (key === 'escape' && pureMode.value)) { event.preventDefault(); void toggleImmersive() }
+  else if (key === ' ' && (stageStarting.value || (stageTransportReady.value && !preloading.value))) { event.preventDefault(); void toggleStage() }
+  else if (['arrowleft', 'arrowright'].includes(key) && stageTransportReady.value && !preloading.value && !shortcutSeeking) {
+    event.preventDefault()
+    stageTime.value = Math.max(0, Math.min(stageDuration.value, stageTime.value + (key === 'arrowleft' ? -5000 : 5000)))
+    shortcutSeeking = true
+    seekStage().catch(() => { panelNotice.value = '舞台跳转未完成，请重试。' }).finally(() => { shortcutSeeking = false })
+  }
+}
+
 function costumesForSlot(slot) {
   return characterForSlot(slot)?.costumes || []
 }
@@ -866,9 +1421,10 @@ function costumeForSlot(slot) {
 function songOptionLabel(song) {
   const fallback = song?.title || song?.id || ''
   const setting = song?.vocalSetting
+  const soloVersion = { solo: 'Solo', solo_multi: 'Solo Multi', solo_single: 'Solo Single' }[song?.variant] || song?.variant
   if (!setting) {
     if (!/^solo(?:_|$)/.test(song?.variant || '')) return fallback
-    return `${song.title} · 中心一人演出（raw: ${song.variant}）`
+    return `${song.title} · 中心一人（${soloVersion}）`
   }
   const suffix = song.variant ? ` · ${song.variant}` : ''
   const baseTitle = suffix && fallback.endsWith(suffix)
@@ -877,24 +1433,40 @@ function songOptionLabel(song) {
   if (setting.mode === 'formation-or-all-stars') {
     return `${baseTitle} · 编成偶像 / 315 ALL STARS`
   }
-  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}（raw: ${song.variant}）`
-  if (setting.mode === 'center') return `${baseTitle} · Center（中心一人 / raw: ${song.variant}）`
+  if (setting.mode === 'unit') return `${baseTitle} · ${setting.label}`
+  if (setting.mode === 'center') return `${baseTitle} · 中心一人（${soloVersion}）`
   return fallback
 }
 
 function ensureCharacterShadowTexture() {
   if (characterShadowTexture) return Promise.resolve(characterShadowTexture)
   if (!characterShadowLoad) {
-    const relativePath = manifest.value?.shared?.characterShadow || 'shared/character-shadow.png'
-    characterShadowLoad = loadImageLayerTexture(relativePath).then(texture => {
+    const profile = stageEffectIndex.value?.characterShadow
+    const relativePath = stageEffectIndex.value?.assets?.[profile?.asset]?.file
+    if (!relativePath) return Promise.resolve(null)
+    const pending = loadImageLayerTexture(relativePath).then(texture => {
+      if(stageDisposed || !app) {texture.destroy(true);return null}
       characterShadowTexture = texture
       return texture
-    })
+    }).catch(error=> {if(characterShadowLoad===pending)characterShadowLoad=null; throw error})
+    characterShadowLoad=pending
   }
   return characterShadowLoad
 }
 
+async function attachStageShadow(runtime) {
+  if(runtime.groundShadow)return
+  const texture=await ensureCharacterShadowTexture()
+  if(!texture || stageDisposed || runtimes.get(runtime.stagePosition)!==runtime || !cameraContainer || runtime.groundShadow)return
+  const shadow=runtime.groundShadow=markRaw(new PIXI.Sprite(texture));shadow.anchor.set(0.5);shadow.alpha=1
+  cameraContainer.addChild(shadow)
+  runtime.releaseShadowFollower=installCharacterShadowFollower(runtime.spine,()=>syncCharacterShadow(runtime))
+  syncCharacterShadow(runtime);if(!playing.value)app?.render()
+}
+
 function destroyStageRuntime(runtime) {
+  releaseFootLighting(runtime)
+  runtime?.releaseShadowFollower?.()
   runtime?.groundShadow?.removeFromParent()
   runtime?.groundShadow?.destroy()
   destroyLiveChibi(runtime)
@@ -911,11 +1483,14 @@ async function handleCharacterChange(slot) {
 }
 
 async function loadSlot(slot) {
+  if (playing.value || stageStarting.value) stopStage()
   if (!app || !activePositions.value.includes(slot.position)) return
   const character = characterForSlot(slot)
   const costume = costumeForSlot(slot)
   if (!character || !costume) return
 
+  slotOwners.get(slot.position)?.abort()
+  const owner=new AbortController();slotOwners.set(slot.position,owner)
   const sequence = ++slot.loadSequence
   slot.motionSequence += 1
   slot.loading = true
@@ -927,22 +1502,14 @@ async function loadSlot(slot) {
   }
 
   try {
-    const [runtime, shadowTexture] = await Promise.all([
-      createLiveChibi(character, costume),
-      ensureCharacterShadowTexture(),
-    ])
+    const runtime = await createLiveChibi(character,costume,{signal:owner.signal,isCurrent:()=>!stageDisposed && sequence===slot.loadSequence && Boolean(app)})
     if (sequence !== slot.loadSequence || !app) {
       destroyLiveChibi(runtime)
       return
     }
-    const groundShadow = markRaw(new PIXI.Sprite(shadowTexture))
-    groundShadow.anchor.set(0.5)
-    // The source PNG already tops out at 50% alpha; avoid attenuating it a
-    // second time or it disappears against the illuminated stage floor.
-    groundShadow.alpha = 1
     const stageRuntime = markRaw({
       ...runtime,
-      groundShadow,
+      groundShadow:null,
       loadedMotions: new Map(),
       preloadedSongs: new Set(),
       characterId: character.id,
@@ -950,7 +1517,7 @@ async function loadSlot(slot) {
       stagePosition: slot.position,
     })
     runtimes.set(slot.position, stageRuntime)
-    cameraContainer.addChild(stageRuntime.groundShadow)
+    void attachStageShadow(stageRuntime).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] optional shadow unavailable',error)})
     cameraContainer.addChild(stageRuntime.spine)
     slot.loading = false
     resizeStage()
@@ -958,7 +1525,7 @@ async function loadSlot(slot) {
     applyCurrentLipSync()
     applyStageLighting()
   } catch (error) {
-    if (sequence !== slot.loadSequence) return
+    if (stageDisposed || owner.signal.aborted || sequence !== slot.loadSequence) return
     slot.loading = false
     errorText.value = `${slot.position}号位加载失败：${error.message}`
     console.error('[ChibiStage] slot load failed', slot.position, error)
@@ -1061,7 +1628,10 @@ function positionStateForStage(position, milliseconds) {
 
 function positionDebugState(position) {
   const state = positionStateForStage(position, stageTime.value)
+  const coordinates = layoutCoordinatesForStage(position, stageTime.value)
   return {
+    x: coordinates.x,
+    y: coordinates.y,
     scale: state ? Number(state.scale).toFixed(2) : '',
     progress: state ? Number(state.tweenProgress ?? 1).toFixed(3) : '',
   }
@@ -1073,14 +1643,7 @@ function layoutCoordinatesForStage(position, milliseconds, motionEvent = null) {
     .reverse()
     .find(item => Number(item.time) <= milliseconds)
   const fallbackX = [-460, -230, 0, 230, 460][position - 1]
-  const positionIsNewer = positionState
-    && (!event || Number(positionState.time) > Number(event.time))
-  return {
-    x: Number(positionIsNewer ? positionState.x : (event?.x ?? positionState?.x ?? fallbackX)),
-    y: Number(positionIsNewer ? positionState.y : (event?.y ?? positionState?.y ?? 180)),
-    scale: Number(positionState?.scale ?? 1700),
-    positionState,
-  }
+  return resolveChibiPlacement(positionState, event, fallbackX)
 }
 
 function sampleCameraTween(tween, milliseconds) {
@@ -1113,6 +1676,20 @@ function cameraStateAt(milliseconds) {
     state.x = xTween ? sampleCameraTween(xTween, eventTime) : state.x
     state.y = yTween ? sampleCameraTween(yTween, eventTime) : state.y
     state.rotation = rotationTween ? sampleCameraTween(rotationTween, eventTime) : state.rotation
+
+    if (event.reset) {
+      // Camera's authored erase command restores the wide shot. Cancel the
+      // previous focus/tweens so later shots start from this reset, even on seek.
+      const duration = Math.max(0, Number(event.resetDuration) || 0)
+      zoomTween = { from: state.zoom, to: 1, start: eventTime, duration }
+      xTween = { from: state.x, to: 0, start: eventTime, duration }
+      yTween = { from: state.y, to: 360, start: eventTime, duration }
+      rotationTween = { from: state.rotation, to: 0, start: eventTime, duration }
+      state.focusSlot = null
+      state.stagePosition = null
+      state.eventTime = eventTime
+      continue
+    }
 
     if (event.focusSlot !== null && event.focusSlot !== undefined) {
       state.focusSlot = Number(event.focusSlot) > 0 ? Number(event.focusSlot) : null
@@ -1162,33 +1739,7 @@ function cameraStateAt(milliseconds) {
 }
 
 function backmonitorStateAt(milliseconds) {
-  const state = {
-    movie: null,
-    movieTime: 0,
-    transition: null,
-    transitionTime: 0,
-    x: 0,
-    y: 360,
-    scale: 1000,
-    rotation: 0,
-    opacity: 1000,
-    eventTime: '',
-  }
-  for (const event of (selectedSong.value?.backmonitorEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    if (event.movie) {
-      state.movie = event.movie
-      state.movieTime = eventTime
-    }
-    for (const key of ['x', 'y', 'scale', 'rotation', 'opacity']) {
-      if (event[key] !== null && event[key] !== undefined) state[key] = Number(event[key])
-    }
-    state.transition = event.transition || null
-    if (state.transition) state.transitionTime = eventTime
-    state.eventTime = eventTime
-  }
-  return state
+  return chibiBackmonitorStateAt(selectedSong.value?.backmonitorEvents, milliseconds)
 }
 
 function parseHexColor(value, fallback = 0xffffff) {
@@ -1249,23 +1800,6 @@ function wholeScreenColorAt(milliseconds) {
   )
 }
 
-function characterLightAt(milliseconds) {
-  return colorTrackAt(
-    selectedSong.value?.characterLightEvents,
-    milliseconds,
-    { color: 0xffffff, alpha: 1, depth: 1250, eventTime: '' },
-    event => ({
-      color: mixRgb(
-        0xffffff,
-        parseHexColor(event.color),
-        Math.max(0, Math.min(1, Number(event.opacity) / 1000)),
-      ),
-      alpha: 1,
-      depth: Number(event.depth ?? 1250),
-    }),
-  )
-}
-
 function lyricAt(milliseconds) {
   const events = selectedSong.value?.lyricEvents || []
   const event = [...events].reverse().find(item => Number(item.time) <= milliseconds)
@@ -1278,21 +1812,33 @@ function layoutStageBackground() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
-  for (const sprite of [stageBackgroundSprite, wholeScreenColorOverlay]) {
+  for (const sprite of [stageBackgroundSprite, ...[...stageBackgroundParts.values()].map(part => part.sprite), wholeScreenColorOverlay, ...colorPlaneOverlays.values()]) {
     if (!sprite) continue
     sprite.position.set(width * 0.5, height * 0.5)
     sprite.scale.set(viewportScale * environmentScale.value)
   }
   if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
+  for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
 }
 
 function releaseStageBackground() {
+  spotlightBackgroundSprites.release()
+  spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
   stageBackgroundSequence += 1
   stageBackgroundSprite?.removeFromParent()
   stageBackgroundSprite?.destroy()
   stageBackgroundTexture?.destroy(true)
   stageBackgroundSprite = null
   stageBackgroundTexture = null
+  for (const part of stageBackgroundParts.values()) {
+    part.sprite.removeFromParent()
+    part.sprite.destroy()
+    part.texture.destroy(true)
+  }
+  stageBackgroundParts.clear()
+  backgroundComponentCount.value = 0
+  backgroundTintConflict.value = false
   stageBackgroundSongId.value = ''
   stageBackgroundReady.value = false
 }
@@ -1300,7 +1846,7 @@ function releaseStageBackground() {
 async function syncStageBackground() {
   if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
   const songCode = selectedSong.value.songCode
-  if (stageBackgroundSongId.value === songCode && stageBackgroundSprite) {
+  if (stageBackgroundSongId.value === songCode && (stageBackgroundSprite || stageBackgroundParts.size)) {
     layoutStageBackground()
     return
   }
@@ -1309,6 +1855,36 @@ async function syncStageBackground() {
   const entry = stageBackgroundIndex.value.songs?.[songCode]
   if (!entry) return
   const sequence = stageBackgroundSequence
+  const components = stageBackgroundIndex.value.components
+  const componentLayers = components?.songs?.[songCode]?.layers
+  if (componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
+      && componentLayers.every(asset => components.assets?.[asset])) {
+    const results = await Promise.allSettled(componentLayers.map(async asset => ({
+      asset, texture: await loadImageLayerTexture(components.assets[asset].file),
+    })))
+    const loaded = results.filter(result => result.status === 'fulfilled').map(result => result.value)
+    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+      for (const part of loaded) part.texture.destroy(true)
+      return
+    }
+    if (loaded.length === componentLayers.length) {
+      for (const [index, part] of loaded.entries()) {
+        const sprite = markRaw(new PIXI.Sprite(part.texture))
+        sprite.anchor.set(0.5)
+        sprite.zIndex = -20000 + index
+        sprite.visible = staticStageEnabled.value
+        cameraContainer.addChild(sprite)
+        stageBackgroundParts.set(part.asset, { texture: part.texture, sprite })
+      }
+      backgroundComponentCount.value = loaded.length
+      stageBackgroundReady.value = true
+      layoutStageBackground()
+      applyImageColors()
+      return
+    }
+    for (const part of loaded) part.texture.destroy(true)
+    console.warn('[ChibiStage] background component load failed; using original composite')
+  }
   const texture = await loadImageLayerTexture(entry.file)
   if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
     texture.destroy(true)
@@ -1322,6 +1898,30 @@ async function syncStageBackground() {
   cameraContainer.addChild(stageBackgroundSprite)
   stageBackgroundReady.value = true
   layoutStageBackground()
+  applyImageColors()
+}
+
+function applyImageColors() {
+  const colors = lightingEnabled.value ? currentImageColors.value : new Map()
+  const applied = new Map()
+  backgroundTintConflict.value = false
+  if (stageBackgroundSprite) {
+    const entry = stageBackgroundIndex.value?.songs?.[selectedSong.value?.songCode]
+    const tint = compositeImageTint(entry?.layers, colors)
+    stageBackgroundSprite.tint = tint.color
+    backgroundTintConflict.value = !tint.uniform
+    if (tint.uniform) for (const layer of tint.layers) applied.set(layer.asset, tint.color)
+  }
+  for (const [asset, part] of stageBackgroundParts) {
+    part.sprite.tint = colors.get(asset) ?? 0xffffff
+    applied.set(asset, part.sprite.tint)
+  }
+  for (const runtime of imageLayerRuntimes.values()) {
+    runtime.sprite.tint = colors.get(runtime.state.asset) ?? 0xffffff
+    if (runtime.sprite.visible) applied.set(runtime.state.asset, runtime.sprite.tint)
+  }
+  appliedImageColors.value = [...applied].sort(([a], [b]) => a.localeCompare(b))
+    .map(([asset, tint]) => `${asset}:#${tint.toString(16).padStart(6, '0')}`).join(',')
 }
 
 function ensureWholeScreenColorOverlay() {
@@ -1336,10 +1936,42 @@ function ensureWholeScreenColorOverlay() {
 }
 
 function applyStageLighting() {
+  syncStagelights()
+  syncSuspensionlights()
+  syncOldSuspensionlights()
+  syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
+  applyImageColors()
+  // Independent color planes share the authored camera/depth space.
+  // Sampling rebuilds state on seek; no second clock or previous-song state.
+  const planes = currentColorPlanes.value
+  for (const [id, overlay] of colorPlaneOverlays) {
+    if (planes.has(id)) continue
+    overlay.removeFromParent()
+    overlay.destroy()
+    colorPlaneOverlays.delete(id)
+  }
+  if (cameraContainer) for (const [id, state] of planes) {
+    let overlay = colorPlaneOverlays.get(id)
+    if (!overlay) {
+      overlay = markRaw(new PIXI.Graphics())
+      overlay.beginFill(0xffffff).drawRect(-950, -530, 1900, 1060).endFill()
+      cameraContainer.addChild(overlay)
+      colorPlaneOverlays.set(id, overlay)
+      layoutStageBackground()
+    }
+    overlay.tint = state.color
+    overlay.alpha = state.alpha
+    overlay.zIndex = state.depth
+    overlay.visible = lightingEnabled.value && state.alpha > 0.001
+  }
   if (!lightingEnabled.value) {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
-    for (const runtime of runtimes.values()) runtime.spine.tint = 0xffffff
+    for (const runtime of runtimes.values()) {
+      runtime.spine.tint = 0xffffff
+      syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
+    }
+    if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
     return
   }
   const screen = currentWholeScreenColor.value
@@ -1349,7 +1981,10 @@ function applyStageLighting() {
     wholeScreenColorOverlay.zIndex = screen.depth
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
-  const character = currentCharacterLight.value
+  // Foot_Color is a local height replacement gradient. It must never dim
+  // the entire face/body; body tint remains a separate addressed command.
+  const character = { color: 0xffffff }
+  const foot = currentFootLighting.value
   const spotlightStates = [...spotlightStatesAt(stageTime.value).values()]
     .filter(state => state.alpha > 0.001 && state.beamColor)
   const spotlightPositions = new Set(
@@ -1381,18 +2016,61 @@ function applyStageLighting() {
     // A targeted performer is lit independently from the environment wash.
     // Mixing back toward white reproduces that separation without making the
     // Spine itself translucent beneath the foreground beam sprite.
-    if (pinspotlightStates.length > 0) {
+    if (pinspotlightPositions.size > 0) {
       runtime.spine.tint = pinspotlightPositions.has(position)
         ? mixRgb(character.color, 0xffffff, 0.5)
         : mixRgb(character.color, pinspotlightDimColor, pinspotlightDim)
     } else {
       runtime.spine.tint = spotlightPositions.has(position)
         ? mixRgb(character.color, 0xffffff, 0.5)
-        : spotlightStates.length > 0
+        : spotlightPositions.size > 0
           ? mixRgb(character.color, spotlightDimColor, spotlightDim)
           : character.color
     }
+    runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
+    syncFootLighting(PIXI,runtime,foot,true)
   }
+  if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
+    .map(([position, runtime]) =>
+    `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
+}
+
+function syncSpotlightBackground() {
+  spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
+  const existing = spotlightBackgroundSprites.runtimes.get('background')
+  if (existing) existing.sprite.visible = false
+  if (!app || !cameraContainer) return
+  const pins = pinspotlightStatesAt(stageTime.value)
+  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value), pins, lightingEnabled.value)
+  if (!state || state.alpha <= 0.001) return
+  const activePins = [...pins.values()].filter(pin => pin.alpha > 0.001 && pin.asset)
+  const filters = []
+  const model = stageEffectIndex.value?.pinspotlight
+  // Never publish a solid background while the required native masks load.
+  for (const pin of activePins) {
+    const desired = pinspotlightModelForAsset(model, stageEffectIndex.value?.assets, pin.asset)
+    if (!desired) return
+    const mask = pinspotlightRuntimes.get(`${pin.id}:${desired.layers[0].asset}`)
+    if (!mask?.maskSprite.visible) return
+    const order = stageEffectIndex.value?.spotlightBackground?.layers[0]?.sortingOrder ?? 1900
+    if (order >= model.sortingInterval[0] && order <= model.sortingInterval[1]) filters.push(mask.filter)
+  }
+  const runtime = spotlightBackgroundSprites.ensure('background',
+    stageEffectIndex.value?.spotlightBackground, stageEffectIndex.value?.assets)
+  if (!runtime) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const fit = Math.min(width / 1280, height / 720) * environmentScale.value
+  runtime.sprite.position.set(width * 0.5, height * 0.5)
+  runtime.sprite.scale.set(runtime.layer.scaleX * fit, runtime.layer.scaleY * fit)
+  runtime.sprite.tint = parseHexColor(state.color, 0x221d23)
+  runtime.sprite.alpha = state.alpha
+  runtime.sprite.filters = filters.length ? filters : null
+  runtime.sprite.filterArea = new PIXI.Rectangle(0, 0, width, height)
+  runtime.sprite.visible = true
+  spotlightBackgroundAlpha.value = state.alpha
+  pinspotlightMaskCount.value = filters.length
 }
 
 function spotlightStatesAt(milliseconds) {
@@ -1426,48 +2104,30 @@ function spotlightStatesAt(milliseconds) {
   return states
 }
 
-function ensureSpotlightConeTexture() {
-  if (spotlightConeTexture) return spotlightConeTexture
-  const canvas = document.createElement('canvas')
-  canvas.width = 256
-  canvas.height = 1024
-  const context = canvas.getContext('2d')
-  const image = context.createImageData(canvas.width, canvas.height)
-  for (let y = 0; y < canvas.height; y += 1) {
-    const vertical = y / (canvas.height - 1)
-    const halfWidth = 0.035 + vertical * 0.465
-    const verticalAlpha = Math.min(1, vertical * 5) * (0.42 + vertical * 0.58)
-    for (let x = 0; x < canvas.width; x += 1) {
-      const distance = Math.abs(x / (canvas.width - 1) - 0.5)
-      const edge = Math.max(0, Math.min(1, (halfWidth - distance) / 0.09))
-      const alpha = Math.round(255 * verticalAlpha * edge * edge * (3 - 2 * edge))
-      const offset = (y * canvas.width + x) * 4
-      image.data[offset] = 255
-      image.data[offset + 1] = 255
-      image.data[offset + 2] = 255
-      image.data[offset + 3] = alpha
-    }
-  }
-  context.putImageData(image, 0, 0)
-  spotlightConeTexture = markRaw(PIXI.Texture.from(canvas))
-  return spotlightConeTexture
+function createSpotlightRuntime(id, layers, textures) {
+  const container = markRaw(new PIXI.Container())
+  const sprites = layers.map((layer, index) => {
+    const sprite = markRaw(new PIXI.Sprite(textures[index]))
+    sprite.anchor.set(layer.anchorX, layer.anchorY)
+    sprite.position.set(layer.x, layer.y)
+    sprite.scale.set(layer.scaleX, layer.scaleY)
+    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    container.addChild(sprite)
+    return sprite
+  })
+  cameraContainer.addChild(container)
+  return markRaw({ id, container, sprites })
 }
 
-function createSpotlightRuntime(id) {
-  const container = markRaw(new PIXI.Container())
-  const cone = markRaw(new PIXI.Sprite(ensureSpotlightConeTexture()))
-  cone.anchor.set(0.5, 1)
-  cone.blendMode = PIXI.BLEND_MODES.ADD
-  const pool = markRaw(new PIXI.Graphics())
-  pool.beginFill(0xffffff)
-  pool.drawEllipse(0, 0, 135, 28)
-  pool.endFill()
-  pool.blendMode = PIXI.BLEND_MODES.ADD
-  container.addChild(cone, pool)
-  cameraContainer.addChild(container)
-  const runtime = markRaw({ id, container, cone, pool })
-  spotlightRuntimes.set(id, runtime)
-  return runtime
+function spotlightTargetAt(state, milliseconds) {
+  const position = Number(state.stagePosition)
+  // A zero/unbound target has no resolved performer position. The CSV does
+  // not provide the free Y coordinate previously invented here as 180.
+  // Keep its environment state, but do not draw a phantom pool at centre stage.
+  if (!Number.isInteger(position) || position <= 0) return null
+  const target = layoutCoordinatesForStage(position, milliseconds)
+  if (!target || !Number.isFinite(target.x) || !Number.isFinite(target.y)) return null
+  return target
 }
 
 function syncSpotlights() {
@@ -1476,46 +2136,176 @@ function syncSpotlights() {
   const active = beamEffectsEnabled.value
     ? [...states.values()].filter(state => state.alpha > 0.001 && state.beamColor)
     : []
-  visibleSpotlightCount.value = active.length
-  visibleSpotlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
-  for (const [id, runtime] of spotlightRuntimes) {
-    runtime.container.visible = Boolean(states.get(id)?.alpha > 0.001)
-  }
+  unresolvedSpotlightIds.value = []
+  visibleSpotlightIds.value = []
+  for (const runtime of spotlightRuntimes.values()) runtime.container.visible = false
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
-    const runtime = spotlightRuntimes.get(state.id) || createSpotlightRuntime(state.id)
-    const target = state.stagePosition
-      ? layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
-      : { x: Number(state.x) || 0, y: 180 }
-    const targetX = width * 0.5 + target.x * viewportScale
-    const targetY = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale
-    const topY = height * 0.5 - 500 * viewportScale
+    const target = spotlightTargetAt(state, stageTime.value)
+    if (!target) {
+      unresolvedSpotlightIds.value.push(state.id)
+      continue
+    }
+    const runtime = spotlightSprites.ensure(state.id, stageEffectIndex.value?.spotlight, stageEffectIndex.value?.assets)
+    if (!runtime) continue
+    const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
     runtime.container.position.set(targetX, targetY)
+    runtime.container.scale.set(viewportScale)
     runtime.container.zIndex = Number(state.depth) || 1800
     runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
     runtime.container.visible = true
-    runtime.cone.tint = parseHexColor(state.beamColor, 0xffffff)
-    runtime.cone.width = 310 * viewportScale
-    runtime.cone.height = Math.max(1, targetY - topY)
-    runtime.cone.alpha = 0.16
-    runtime.pool.tint = runtime.cone.tint
-    runtime.pool.scale.set(viewportScale)
-    runtime.pool.alpha = 0.16
+    visibleSpotlightIds.value.push(state.id)
+    for (const sprite of runtime.sprites) sprite.tint = parseHexColor(state.beamColor, 0xffffff)
+  }
+  visibleSpotlightIds.value.sort((a, b) => a - b)
+  unresolvedSpotlightIds.value.sort((a, b) => a - b)
+  visibleSpotlightCount.value = visibleSpotlightIds.value.length
+}
+
+function syncStagelights() {
+  if (!app || !cameraContainer) return
+  const code = selectedSong.value?.songCode || ''
+  if (stagelightSongId !== code) {
+    stagelightSprites.release()
+    stagelightSongId = code
+  }
+  visibleStagelightCount.value = 0
+  appliedStagelightColors.value = ''
+  for (const runtime of stagelightSprites.runtimes.values()) runtime.container.visible = false
+  if (!lightingEnabled.value) return
+  const track = stageEffectIndex.value?.stagelightSongs?.[code]
+  if (!track) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  const fit = Math.min(width / 1280, height / 720) * environmentScale.value
+  const colors = []
+  for (const state of stagelightStatesAt(track.events, stageTime.value).values()) {
+    const model = stageEffectIndex.value.stagelights?.[state.asset]
+    if (!model || state.previewSupported === false || (state.hideTime !== undefined && stageTime.value >= state.hideTime + (state.fadeDuration || 1))) continue
+    // Asset belongs in the runtime key: reused lamp IDs must not reuse another prefab.
+    const runtime = stagelightSprites.ensure(`${code}:${state.id}:${state.asset}`, model, stageEffectIndex.value.assets)
+    if (!runtime) continue
+    runtime.container.position.set(width * .5, height * .5)
+    runtime.container.scale.set(fit)
+    runtime.container.zIndex = state.depth ?? 1600
+    runtime.container.visible = true
+    for (const [index, sprite] of runtime.sprites.entries()) {
+      const lamp = applyNativeLampColor(sampleStagelight(state, stageTime.value, index, runtime.sprites.length),model.layers[index])
+      sprite.tint = lamp.color
+      sprite.alpha = lamp.alpha
+    }
+    visibleStagelightCount.value += 1
+    colors.push(`${state.id}:#${runtime.sprites[0].tint.toString(16).padStart(6, '0')}`)
+  }
+  appliedStagelightColors.value = colors.join(',')
+}
+
+function syncSuspensionlights() {
+  if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  const descriptor = stageEffectIndex.value?.newSuspensionlightSongs?.[songId]
+  const key = `${songId}:${descriptor?.file || ''}`
+  if (suspensionTrackKey !== key) {
+    suspensionSprites.release()
+    suspensionAbort?.abort()
+    suspensionTrack = null
+    suspensionTrackKey = key
+    if (descriptor?.file) {
+      const abort = new AbortController()
+      suspensionAbort = abort
+      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Suspension track HTTP ${response.status}`)
+          return response.json()
+        }).then(track => {
+          if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
+          suspensionTrack = track
+          syncSuspensionlights()
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
+        })
+    }
+  }
+  visibleSuspensionlightIds.value = []
+  for (const runtime of suspensionSprites.runtimes.values()) runtime.sprite.visible = false
+  if (!beamEffectsEnabled.value) return
+  const track = suspensionTrack
+  const model = stageEffectIndex.value?.newSuspensionlight
+  if (!track || !model) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  for (const state of newSuspensionlightsAt(track.events, stageTime.value)) {
+    if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
+    const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
+    if (!runtime) continue
+    const layout = suspensionlightLayout(state, width, height, environmentScale.value)
+    runtime.sprite.position.set(layout.x, layout.y)
+    runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
+    runtime.sprite.rotation = layout.rotation
+    runtime.sprite.alpha = state.alpha
+    runtime.sprite.tint = parseHexColor(state.color)
+    runtime.sprite.zIndex = state.depth
+    runtime.sprite.visible = true
+    visibleSuspensionlightIds.value.push(state.id)
+  }
+  visibleSuspensionlightIds.value.sort((a, b) => a - b)
+}
+
+function syncOldSuspensionlights() {
+  if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  const descriptor = stageEffectIndex.value?.oldSuspensionlightSongs?.[songId]
+  const key = `${songId}:${descriptor?.previewEnabled ? descriptor.file : ''}`
+  if (oldSuspensionTrackKey !== key) {
+    oldSuspensionSprites.release()
+    oldSuspensionAbort?.abort()
+    oldSuspensionTrack = null
+    oldSuspensionTrackKey = key
+    if (descriptor?.previewEnabled && descriptor.file) {
+      const abort = new AbortController()
+      oldSuspensionAbort = abort
+      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Old sidelight track HTTP ${response.status}`)
+          return response.json()
+        }).then(track => {
+          if (stageDisposed || abort.signal.aborted || oldSuspensionTrackKey !== key) return
+          oldSuspensionTrack = track
+          syncOldSuspensionlights()
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight track load failed', error)
+        })
+    }
+  }
+  visibleOldSuspensionlightIds.value = []
+  for (const runtime of oldSuspensionSprites.runtimes.values()) runtime.sprite.visible = false
+  if (!beamEffectsEnabled.value || !oldSuspensionTrack) return
+  const width = app.renderer.width / app.renderer.resolution
+  const height = app.renderer.height / app.renderer.resolution
+  for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
+    stageEffectIndex.value?.oldSuspensionlight,descriptor)) {
+    if (state.alpha <= .001) continue
+    const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
+    if (!runtime) continue
+    const layout = oldSuspensionlightLayout(state,width,height,environmentScale.value)
+    runtime.sprite.position.set(layout.x,layout.y)
+    runtime.sprite.scale.set(layout.scaleX,layout.scaleY)
+    runtime.sprite.rotation = layout.rotation
+    runtime.sprite.alpha = state.alpha
+    runtime.sprite.tint = parseHexColor(state.color)
+    runtime.sprite.zIndex = state.depth
+    runtime.sprite.visible = true
+    visibleOldSuspensionlightIds.value.push(state.key)
   }
 }
 
 function releaseSpotlights() {
-  for (const runtime of spotlightRuntimes.values()) {
-    runtime.container.removeFromParent()
-    runtime.container.destroy({ children: true })
-  }
-  spotlightRuntimes.clear()
-  spotlightConeTexture?.destroy(true)
-  spotlightConeTexture = null
+  spotlightSprites.release()
   visibleSpotlightCount.value = 0
   visibleSpotlightIds.value = []
+  unresolvedSpotlightIds.value = []
 }
 
 function laserlightStatesAt(milliseconds) {
@@ -1619,6 +2409,11 @@ function drawLaserlight(runtime, state, viewportScale) {
 
 function syncLaserlights() {
   if (!app || !cameraContainer) return
+  const songId = selectedSong.value?.id || ''
+  if (laserParticleSongId !== songId) {
+    laserParticleSprites.release()
+    laserParticleSongId = songId
+  }
   const states = laserlightStatesAt(stageTime.value)
   const active = beamEffectsEnabled.value
     ? [...states.values()].filter(state => (
@@ -1628,12 +2423,56 @@ function syncLaserlights() {
   visibleLaserlightCount.value = active.length
   visibleLaserlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
   for (const [id, runtime] of laserlightRuntimes) {
-    runtime.graphics.visible = Boolean(states.get(id)?.alpha > 0.001)
+    runtime.graphics.visible = false
   }
+  for (const runtime of laserParticleSprites.runtimes.values()) runtime.container.visible = false
+  visibleLaserParticleCount.value = 0
+  const origins = []
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
+    const native = stageEffectIndex.value?.laserlight?.styles?.[state.style]
+      || stageEffectIndex.value?.spotbeam?.styles?.[state.style]
+      || stageEffectIndex.value?.turnlaser?.styles?.[state.style]
+    if (native) {
+      const spotbeam = native.kind === 'spotbeam'
+      const runtime = laserParticleSprites.ensure(`${songId}:${state.id}:${state.style}`,
+        { layers: [{ asset: native.systems[0].asset, frames: spotbeam ? 2 : 1 }] }, stageEffectIndex.value.assets)
+      if (!runtime) continue
+      const layout = laserParticleLayout(state,width,height,environmentScale.value)
+      const particles = (spotbeam ? sampleSpotbeamParticles : sampleLaserParticles)(native,state,stageTime.value)
+      runtime.container.position.set(layout.x,layout.y)
+      const scale = spotbeam ? spotbeamParticleScale(state) : { x: 1, y: 1 }
+      runtime.container.scale.set(scale.x,scale.y)
+      runtime.container.rotation = spotbeam ? -Number(state.angle)*Math.PI/180 : 0
+      runtime.container.zIndex = Number(state.depth) || 1650
+      runtime.container.visible = true
+      for (let i = 0; i < Math.max(particles.length,runtime.sprites.length); i++) {
+        const sample = particles[i]
+        let sprite = runtime.sprites[i]
+        if (!sprite && sample) {
+          sprite = markRaw(new PIXI.Sprite(runtime.texture))
+          sprite.blendMode = PIXI.BLEND_MODES.ADD
+          runtime.container.addChild(sprite)
+          runtime.sprites.push(sprite)
+        }
+        if (!sprite) continue
+        sprite.visible = Boolean(sample && sample.alpha > .001)
+        if (!sample) continue
+        if (spotbeam) sprite.texture = runtime.frames[sample.frame]
+        sprite.position.set((sample.x || 0) * layout.fit,(sample.y || 0) * layout.fit)
+        sprite.anchor.set(sample.anchorX,sample.anchorY)
+        sprite.width = sample.width * layout.fit
+        sprite.height = sample.length * layout.fit
+        sprite.rotation = sample.rotation
+        sprite.alpha = sample.alpha
+        sprite.tint = sample.color
+        if (sprite.visible) visibleLaserParticleCount.value++
+      }
+      origins.push(`${state.id}:${layout.x.toFixed(1)},${layout.y.toFixed(1)}`)
+      continue
+    }
     const runtime = laserlightRuntimes.get(state.id) || createLaserlightRuntime(state.id)
     drawLaserlight(runtime, state, viewportScale)
     runtime.graphics.position.set(
@@ -1649,9 +2488,13 @@ function syncLaserlights() {
     runtime.graphics.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.graphics.visible = true
   }
+  laserParticleOrigins.value = origins.join(';')
 }
 
 function releaseLaserlights() {
+  laserParticleSprites.release()
+  visibleLaserParticleCount.value = 0
+  laserParticleOrigins.value = ''
   for (const runtime of laserlightRuntimes.values()) {
     runtime.graphics.removeFromParent()
     runtime.graphics.destroy()
@@ -1720,154 +2563,59 @@ function pinspotlightStatesAt(milliseconds) {
   return states
 }
 
-function ensurePinspotlightEnvironmentOverlay() {
-  if (pinspotlightEnvironmentOverlay || !cameraContainer) return
-  pinspotlightEnvironmentOverlay = markRaw(new PIXI.Graphics())
-  pinspotlightEnvironmentOverlay.beginFill(0xffffff)
-  pinspotlightEnvironmentOverlay.drawRect(-950, -530, 1900, 1060)
-  pinspotlightEnvironmentOverlay.endFill()
-  pinspotlightEnvironmentOverlay.visible = false
-  cameraContainer.addChild(pinspotlightEnvironmentOverlay)
-}
-
-function loadPinspotlightTexture(asset) {
-  const fallbackAsset = stageEffectIndex.value?.assets?.pinspotlight
-  const entry = stageEffectIndex.value?.assets?.[asset] || fallbackAsset
-  if (!entry) return Promise.resolve(null)
-  const cacheKey = stageEffectIndex.value?.assets?.[asset] ? asset : 'pinspotlight'
-  if (pinspotlightTextures.has(cacheKey)) {
-    return Promise.resolve({ texture: pinspotlightTextures.get(cacheKey), cacheKey })
-  }
-  if (!pinspotlightLoads.has(cacheKey)) {
-    pinspotlightLoads.set(cacheKey, loadImageLayerTexture(entry.file).then(texture => {
-      pinspotlightTextures.set(cacheKey, texture)
-      pinspotlightLoads.delete(cacheKey)
-      return { texture, cacheKey }
-    }))
-  }
-  return pinspotlightLoads.get(cacheKey)
-}
-
-function loadPinspotlightRuntime(state, sequence) {
-  const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
-    ? state.asset
-    : 'pinspotlight'
-  const existing = pinspotlightRuntimes.get(state.id)
-  if (existing?.asset === desiredAsset) return Promise.resolve(existing)
-  const pending = pinspotlightRuntimeLoads.get(state.id)
-  if (pending?.asset === desiredAsset) return pending.promise
-
-  const promise = loadPinspotlightTexture(state.asset).then(loaded => {
-    const currentPending = pinspotlightRuntimeLoads.get(state.id)
-    // A later event may reuse the same lamp ID with another texture while
-    // this request is in flight. Only the latest per-ID request may install
-    // a Sprite; otherwise the old mask can reappear after it was hidden.
-    if (currentPending?.promise !== promise) return pinspotlightRuntimes.get(state.id) || null
-    pinspotlightRuntimeLoads.delete(state.id)
-    if (!loaded || sequence !== pinspotlightLoadSequence || !cameraContainer) return null
-    const current = pinspotlightRuntimes.get(state.id)
-    if (current?.asset === loaded.cacheKey) return current
-    current?.sprite.removeFromParent()
-    current?.sprite.destroy()
-    const sprite = markRaw(new PIXI.Sprite(loaded.texture))
-    sprite.anchor.set(0.5)
-    sprite.blendMode = PIXI.BLEND_MODES.ADD
-    cameraContainer.addChild(sprite)
-    const runtime = markRaw({ id: state.id, asset: loaded.cacheKey, sprite })
-    pinspotlightRuntimes.set(state.id, runtime)
-    return runtime
-  })
-  pinspotlightRuntimeLoads.set(state.id, { asset: desiredAsset, promise })
-  return promise
-}
-
 async function syncPinspotlights() {
   if (!app || !cameraContainer) return
-  ensurePinspotlightEnvironmentOverlay()
   const states = pinspotlightStatesAt(stageTime.value)
-  const activeStates = [...states.values()].filter(state => state.alpha > 0.001 && state.asset)
-  const visibleStates = beamEffectsEnabled.value ? activeStates : []
-  visiblePinspotlightCount.value = visibleStates.length
-  visiblePinspotlightIds.value = visibleStates.map(state => state.id).sort((a, b) => a - b)
-
-  const environmentState = lightingEnabled.value
-    ? activeStates.findLast?.(state => state.environmentColor)
-      || [...activeStates].reverse().find(state => state.environmentColor)
-    : null
-  if (pinspotlightEnvironmentOverlay) {
-    pinspotlightEnvironmentOverlay.visible = Boolean(environmentState)
-    if (environmentState) {
-      pinspotlightEnvironmentOverlay.tint = parseHexColor(environmentState.environmentColor, 0x221d23)
-      pinspotlightEnvironmentOverlay.alpha = Math.max(
-        0,
-        Math.min(1, Number(environmentState.environmentOpacity || 0) / 1000),
-      )
-      pinspotlightEnvironmentOverlay.zIndex = Number(environmentState.depth) || 1850
-    }
+  visiblePinspotlightCount.value = 0
+  visiblePinspotlightIds.value = []
+  for (const runtime of pinspotlightRuntimes.values()) {
+    runtime.sprite.visible = false
+    runtime.maskSprite.visible = false
   }
-
-  for (const [id, runtime] of pinspotlightRuntimes) {
-    const state = states.get(id)
-    runtime.sprite.visible = beamEffectsEnabled.value && Boolean(state?.alpha > 0.001)
-  }
-
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
-  const sequence = pinspotlightLoadSequence
-  await Promise.all(visibleStates.map(async state => {
-    let runtime = pinspotlightRuntimes.get(state.id)
-    const desiredAsset = stageEffectIndex.value?.assets?.[state.asset]
-      ? state.asset
-      : 'pinspotlight'
-    if (runtime && runtime.asset !== desiredAsset) {
-      runtime.sprite.removeFromParent()
-      runtime.sprite.destroy()
-      pinspotlightRuntimes.delete(state.id)
-      runtime = null
-    }
-    if (!runtime) runtime = await loadPinspotlightRuntime(state, sequence)
-    if (!runtime) return
-    const current = pinspotlightStatesAt(stageTime.value).get(state.id)
-    if (!current || current.alpha <= 0.001) {
-      runtime.sprite.visible = false
-      return
-    }
-    if (current.stagePosition) {
-      const target = layoutCoordinatesForStage(Number(current.stagePosition), stageTime.value)
-      runtime.sprite.position.set(
-        width * 0.5 + target.x * viewportScale,
-        height * CHARACTER_STAGE_BASELINE_RATIO + (180 - target.y) * viewportScale - 135 * viewportScale,
-      )
-      runtime.sprite.scale.set(viewportScale * 0.62)
+  for (const state of states.values()) {
+    if (state.alpha <= 0.001 || !state.asset || (!lightingEnabled.value && !beamEffectsEnabled.value)) continue
+    const model = pinspotlightModelForAsset(stageEffectIndex.value?.pinspotlight, stageEffectIndex.value?.assets, state.asset)
+    if (!model) continue
+    const key = `${state.id}:${model.layers[0].asset}`
+    const runtime = pinspotlightSprites.ensure(key, model, stageEffectIndex.value?.assets)
+    if (!runtime) continue
+    let x, y, scale
+    if (state.stagePosition) {
+      const target = layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
+      const ground = projectChibiGround(selectedSong.value?.songCode, target, width, height)
+      x = ground.x
+      y = ground.y - 135 * viewportScale
+      scale = viewportScale * 0.62
     } else {
-      runtime.sprite.position.set(
-        width * 0.5 + Number(current.x || 0) * viewportScale * environmentScale.value,
-        height * 0.5 + (360 - Number(current.y || 0)) * viewportScale * environmentScale.value,
-      )
-      runtime.sprite.scale.set(viewportScale * environmentScale.value * 0.7)
+      x = width * 0.5 + Number(state.x || 0) * viewportScale * environmentScale.value
+      y = height * 0.5 + (360 - Number(state.y || 0)) * viewportScale * environmentScale.value
+      scale = viewportScale * environmentScale.value * 0.7
     }
-    runtime.sprite.tint = parseHexColor(current.beamColor, 0xffffff)
-    runtime.sprite.alpha = Math.max(0, Math.min(1, Number(current.alpha) || 0)) * 0.34
-    runtime.sprite.zIndex = (Number(current.depth) || 1850) + 1
+    for (const sprite of [runtime.maskSprite, runtime.sprite]) {
+      sprite.position.set(x, y)
+      sprite.scale.set(scale)
+      sprite.alpha = Math.max(0, Math.min(1, state.alpha))
+      sprite.zIndex = (Number(state.depth) || 1850) + 1
+    }
+    // Missing colour keeps the serialized flash default; masks stay black.
+    runtime.sprite.tint = parseHexColor(state.beamColor, model.layers[1].initialColor)
+    runtime.maskSprite.visible = lightingEnabled.value
     runtime.sprite.visible = beamEffectsEnabled.value
-  }))
+    if (runtime.sprite.visible) visiblePinspotlightIds.value.push(state.id)
+  }
+  visiblePinspotlightIds.value.sort((a, b) => a - b)
+  visiblePinspotlightCount.value = visiblePinspotlightIds.value.length
+  syncSpotlightBackground()
 }
 
 function releasePinspotlights() {
-  pinspotlightLoadSequence += 1
-  for (const runtime of pinspotlightRuntimes.values()) {
-    runtime.sprite.removeFromParent()
-    runtime.sprite.destroy()
-  }
-  pinspotlightRuntimes.clear()
-  pinspotlightRuntimeLoads.clear()
-  pinspotlightLoads.clear()
-  for (const texture of pinspotlightTextures.values()) texture.destroy(true)
-  pinspotlightTextures.clear()
-  pinspotlightEnvironmentOverlay?.removeFromParent()
-  pinspotlightEnvironmentOverlay?.destroy()
-  pinspotlightEnvironmentOverlay = null
+  const background = spotlightBackgroundSprites.runtimes.get('background')
+  if (background) background.sprite.filters = null
+  pinspotlightSprites.release()
+  pinspotlightMaskCount.value = 0
   visiblePinspotlightCount.value = 0
   visiblePinspotlightIds.value = []
 }
@@ -1890,14 +2638,30 @@ function imageLayerStatesAt(milliseconds) {
       eventTime: Number(event.time),
     })
   }
+  for (const [id, state] of imageObjectsAt(imageObjectIndex.value?.songs?.[selectedSong.value?.id]?.events, milliseconds)) {
+    states.set(`imageObject:${id}:${state.asset}`, {
+      ...state, imageObject: true, visible: state.alpha > 0,
+    })
+  }
   return states
 }
 
-function loadImageLayerTexture(relativePath) {
+function loadImageLayerTexture(relativePath, timeoutMs = 0) {
   return new Promise((resolve, reject) => {
     const image = new Image()
-    image.onload = () => resolve(new PIXI.Texture(new PIXI.BaseTexture(image)))
-    image.onerror = () => reject(new Error(`舞台图片加载失败：${relativePath}`))
+    let timer
+    const fail = () => {
+      clearTimeout(timer)
+      image.onload = image.onerror = null
+      image.src = ''
+      reject(new Error(`舞台图片加载失败：${relativePath}`))
+    }
+    image.onload = () => {
+      clearTimeout(timer)
+      resolve(new PIXI.Texture(new PIXI.BaseTexture(image)))
+    }
+    image.onerror = fail
+    if (timeoutMs) timer = setTimeout(fail, timeoutMs)
     image.src = `${LIVE_CHIBI_BASE}/${relativePath}`
   })
 }
@@ -1908,6 +2672,13 @@ function layoutImageLayers() {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const runtime of imageLayerRuntimes.values()) {
+    if (runtime.state?.imageObject) {
+      const layout = imageObjectLayout(runtime.state, width, height, environmentScale.value)
+      runtime.sprite.position.set(layout.x, layout.y)
+      runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
+      runtime.sprite.rotation = layout.rotation
+      continue
+    }
     runtime.sprite.position.set(width * 0.5, height * 0.5)
     runtime.sprite.scale.set(viewportScale * environmentScale.value)
   }
@@ -1929,65 +2700,108 @@ function releaseImageLayers() {
   visibleImageLayerCount.value = 0
   visibleImageLayerAssets.value = []
   visibleImageLayerDepths.value = []
+  visibleImageObjectCount.value = 0
+  visibleImageObjectAssets.value = []
+}
+
+// Image layers and objects are created when they first become visible. Over the network that is
+// too late for timed art such as Take a StuMp's unit logos (3.6 s each, back to back), so every
+// image the song names is fetched and decoded as soon as its index is known; the later load of the
+// same URL is then served from the browser's memory cache.
+let warmedImageKey = ''
+let warmedImages = []
+function warmSongImages() {
+  const song = selectedSong.value
+  const key = `${song?.id || ''}|${Boolean(imageLayerIndex.value)}|${Boolean(imageObjectIndex.value)}`
+  if (!song || key === warmedImageKey) return
+  warmedImageKey = key
+  const files = new Set()
+  for (const event of song.imageLayerEvents || []) {
+    const file = imageLayerIndex.value?.assets?.[event.asset]?.file
+    if (file) files.add(file)
+  }
+  for (const event of imageObjectIndex.value?.songs?.[song.id]?.events || []) {
+    const file = event.asset && imageObjectIndex.value?.assets?.[event.asset]?.file
+    if (file) files.add(file)
+  }
+  warmedImages = [...files].map(file => {
+    const image = new Image()
+    image.decoding = 'async'
+    image.src = `${LIVE_CHIBI_BASE}/${file}`
+    image.decode?.().catch(() => {})
+    return image
+  })
 }
 
 async function syncImageLayers() {
-  if (!cameraContainer || !selectedSong.value || !imageLayerIndex.value) return
+  if (!cameraContainer || !selectedSong.value || (!imageLayerIndex.value && !imageObjectIndex.value)) return
   if (imageLayerSongId !== selectedSong.value.id) {
     releaseImageLayers()
     imageLayerSongId = selectedSong.value.id
   }
+  warmSongImages()
   const sequence = imageLayerSequence
   const states = imageLayerStatesAt(stageTime.value)
   const visibleStates = imageLayersEnabled.value
-    ? [...states.values()].filter(state => state.visible)
+    ? [...states].filter(([, state]) => state.visible)
     : []
-  visibleImageLayerCount.value = visibleStates.length
-  visibleImageLayerAssets.value = visibleStates.map(state => state.asset).sort()
-  visibleImageLayerDepths.value = visibleStates
+  const layers = visibleStates.map(([, state]) => state).filter(state => !state.imageObject)
+  visibleImageLayerCount.value = layers.length
+  visibleImageLayerAssets.value = layers.map(state => state.asset).sort()
+  visibleImageLayerDepths.value = layers
     .map(state => `${state.asset}:${state.depth}`)
     .sort()
 
-  for (const [asset, runtime] of imageLayerRuntimes) {
-    const state = states.get(asset)
+  for (const [key, runtime] of imageLayerRuntimes) {
+    const state = states.get(key)
     runtime.sprite.visible = imageLayersEnabled.value && Boolean(state?.visible)
-    if (state) runtime.sprite.zIndex = Number(state.depth) || 0
+    if (state) {
+      runtime.state = state
+      runtime.sprite.zIndex = Number(state.depth) || 0
+      runtime.sprite.alpha = state.imageObject ? state.alpha : 1
+    }
   }
 
-  await Promise.all(visibleStates.map(async state => {
-    let runtime = imageLayerRuntimes.get(state.asset)
+  await Promise.all(visibleStates.map(async ([key, state]) => {
+    let runtime = imageLayerRuntimes.get(key)
     if (!runtime) {
-      const entry = imageLayerIndex.value.assets?.[state.asset]
+      const entry = (state.imageObject ? imageObjectIndex.value : imageLayerIndex.value)?.assets?.[state.asset]
       if (!entry) {
         console.warn('[ChibiStage] missing image-layer asset', state.asset)
         return
       }
-      let load = imageLayerLoads.get(state.asset)
+      let load = imageLayerLoads.get(key)
       if (!load) {
-        load = loadImageLayerTexture(entry.file)
-        imageLayerLoads.set(state.asset, load)
+        load = loadImageLayerTexture(entry.file, 15000)
+        imageLayerLoads.set(key, load)
       }
       const texture = await load
-      const ownsLoad = imageLayerLoads.get(state.asset) === load
-      if (ownsLoad) imageLayerLoads.delete(state.asset)
+      const ownsLoad = imageLayerLoads.get(key) === load
+      if (ownsLoad) imageLayerLoads.delete(key)
       if (sequence !== imageLayerSequence || imageLayerSongId !== selectedSong.value?.id) {
         if (ownsLoad) texture.destroy(true)
         return
       }
-      runtime = imageLayerRuntimes.get(state.asset)
+      runtime = imageLayerRuntimes.get(key)
       if (!runtime) {
         const sprite = markRaw(new PIXI.Sprite(texture))
-        sprite.anchor.set(0.5)
+        sprite.anchor.set(entry.pivot?.x ?? 0.5, 1 - (entry.pivot?.y ?? 0.5))
         cameraContainer.addChild(sprite)
-        runtime = { texture, sprite }
-        imageLayerRuntimes.set(state.asset, runtime)
+        runtime = { texture, sprite, state }
+        imageLayerRuntimes.set(key, runtime)
       }
     }
-    const current = imageLayerStatesAt(stageTime.value).get(state.asset)
+    const current = imageLayerStatesAt(stageTime.value).get(key)
     runtime.sprite.visible = imageLayersEnabled.value && Boolean(current?.visible)
     runtime.sprite.zIndex = Number(current?.depth) || 0
+    runtime.sprite.alpha = current?.imageObject ? current.alpha : 1
+    if (current) runtime.state = current
   }))
+  const painted = [...imageLayerRuntimes.values()].filter(runtime => runtime.state?.imageObject && runtime.sprite.visible)
+  visibleImageObjectCount.value = painted.length
+  visibleImageObjectAssets.value = painted.map(runtime => runtime.state.asset).sort()
   layoutImageLayers()
+  applyImageColors()
 }
 
 function sampleObjectLayerAlpha(state, milliseconds) {
@@ -2025,6 +2839,7 @@ function objectLayerStatesAt(milliseconds) {
       tweenFrom: alphaAtEvent,
       tweenTo: event.hide ? 0 : 1,
       eventTime,
+      activatedAt: event.hide ? (previous.activatedAt ?? eventTime) : eventTime,
     })
   }
   for (const state of states.values()) state.alpha = sampleObjectLayerAlpha(state, milliseconds)
@@ -2032,6 +2847,14 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if (entry.floorAnimation) {
+    return { ...await loadChibiFloor(PIXI, entry.floorAnimation,
+      path => loadImageLayerTexture(path, 10000)), entry }
+  }
+  if (entry.particleAnimation) {
+    return { ...await loadChibiParticleLayer(entry.particleAnimation,
+      path => loadImageLayerTexture(path, 10000)), entry }
+  }
   const textures = await Promise.all(entry.textures.map(async metadata => ({
     metadata,
     texture: await loadImageLayerTexture(metadata.file),
@@ -2052,6 +2875,7 @@ async function loadObjectLayerRuntime(entry) {
       (Number(instance.scaleY) || 1) * pixelsToStage,
     )
     sprite.rotation = (Number(instance.rotation) || 0) * Math.PI / 180
+    sprite.skew.set((Number(instance.skewX) || 0) * Math.PI / 180, 0)
     sprite.tint = Number(instance.tint) || 0xffffff
     sprite.alpha = Number.isFinite(Number(instance.alpha)) ? Number(instance.alpha) : 1
     sprite.blendMode = instance.blendMode === 'add' ? PIXI.BLEND_MODES.ADD : PIXI.BLEND_MODES.NORMAL
@@ -2062,8 +2886,11 @@ async function loadObjectLayerRuntime(entry) {
 }
 
 function destroyObjectLayerRuntime(runtime) {
+  if (!runtime || runtime.destroyed) return
+  runtime.destroyed = true
   runtime?.container?.removeFromParent()
   runtime?.container?.destroy({ children: true })
+  for (const texture of (runtime?.frameTextures || [])) texture.destroy(false)
   for (const texture of (runtime?.textures || [])) texture.destroy(true)
 }
 
@@ -2085,7 +2912,14 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.zIndex = Number(state.depth) || 0
     runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
+    if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
+    if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
   }
+  if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
+    .map(r => r.floorSignature).join(',')
+  if (!playing.value || inspectorOpen.value) particleLayerFrames.value = [...objectLayerRuntimes.entries()]
+    .filter(([, runtime]) => runtime.particles && runtime.container.visible)
+    .map(([asset, runtime]) => `${asset}:${runtime.particleFrames.join('/')}`).sort().join(',')
 }
 
 function releaseObjectLayers() {
@@ -2100,6 +2934,8 @@ function releaseObjectLayers() {
   visibleObjectLayerCount.value = 0
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
+  if (!playing.value || inspectorOpen.value) particleLayerFrames.value = ''
+  if (!playing.value || inspectorOpen.value) floorParticleState.value = ''
 }
 
 async function syncObjectLayers() {
@@ -2117,7 +2953,7 @@ async function syncObjectLayers() {
   const unsupportedStates = []
   for (const state of activeStates) {
     const entry = objectLayerIndex.value.assets?.[state.asset]
-    if (entry?.kind === 'sprite' || entry?.kind === 'mixed') supportedStates.push(state)
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation) supportedStates.push(state)
     else unsupportedStates.push(state)
   }
   visibleObjectLayerCount.value = supportedStates.length
@@ -2138,7 +2974,12 @@ async function syncObjectLayers() {
         load = loadObjectLayerRuntime(entry)
         objectLayerLoads.set(state.asset, load)
       }
-      runtime = await load
+      try {
+        runtime = await load
+      } catch (error) {
+        if (objectLayerLoads.get(state.asset) === load) objectLayerLoads.delete(state.asset)
+        throw error
+      }
       const ownsLoad = objectLayerLoads.get(state.asset) === load
       if (ownsLoad) objectLayerLoads.delete(state.asset)
       if (sequence !== objectLayerSequence || objectLayerSongId !== selectedSong.value?.id) {
@@ -2245,16 +3086,11 @@ function layoutBackmonitor(state) {
   if (!backmonitorSprite || !app) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const viewportScale = Math.min(width / 1280, height / 720)
-  backmonitorSprite.position.set(
-    width * 0.5 + state.x * viewportScale * environmentScale.value,
-    height * 0.5 + (BACKMONITOR_Y_ORIGIN - state.y) * viewportScale * environmentScale.value,
-  )
-  backmonitorSprite.scale.set(
-    viewportScale * environmentScale.value * state.scale / 1000 * 2,
-  )
-  backmonitorSprite.rotation = -state.rotation * Math.PI / 180
-  backmonitorSprite.alpha = Math.max(0, Math.min(1, state.opacity / 1000))
+  const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
+  backmonitorSprite.position.set(projected.x, projected.y)
+  backmonitorSprite.scale.set(projected.scale)
+  backmonitorSprite.rotation = 0
+  backmonitorSprite.alpha = 1
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
@@ -2262,6 +3098,22 @@ function layoutBackmonitor(state) {
     backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
     backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
   }
+  syncBackmonitorLogo(state,projected)
+}
+
+function syncBackmonitorLogo(state,projected) {
+  backmonitorLogoAngle.value = ''
+  for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
+  const model = stageEffectIndex.value?.backmonitorLogo
+  // Load the rotating logo with the song, not on its first frame (see warmSongImages).
+  if (model?.previewSongs?.includes(selectedSong.value?.songCode) && backmonitorContainer) backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
+  const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model,selectedSong.value?.backmonitorEvents)
+  backmonitorLogoAlpha.value = sample?.alpha || 0
+  if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
+  const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
+  if (!runtime) return
+  updateBackmonitorLogoMesh(runtime,model,sample,projected)
+  backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }
 
 function pauseBackmonitorTransition() {
@@ -2312,6 +3164,8 @@ function syncBackmonitorTransition(state, forceSeek = false) {
 function syncBackmonitor(forceSeek = false) {
   const state = currentBackmonitorState.value
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
+    backmonitorLogoAngle.value = ''
+    for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
     if (backmonitorSprite) backmonitorSprite.visible = false
     pauseBackmonitorTransition()
     return
@@ -2338,6 +3192,8 @@ function syncBackmonitor(forceSeek = false) {
 }
 
 function releaseBackmonitor() {
+  backmonitorLogoSprites.release()
+  backmonitorLogoAngle.value = ''
   backmonitorVideo?.pause()
   pauseBackmonitorTransition()
   backmonitorMovie = ''
@@ -2392,7 +3248,8 @@ function applyCameraTransform() {
   cameraContainer.position.set(width * 0.5, height * 0.5)
   cameraContainer.pivot.set(
     width * 0.5 + camera.x * viewportScale,
-    height * 0.5 + (camera.y - 360) * viewportScale,
+    // Authored Camera y is up-positive; Pixi's screen-space y is down-positive.
+    height * 0.5 - (camera.y - 360) * viewportScale,
   )
   cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value)
   cameraContainer.rotation = -camera.rotation * Math.PI / 180
@@ -2400,6 +3257,7 @@ function applyCameraTransform() {
 
 function applyLayerDebugVisibility() {
   if (stageBackgroundSprite) stageBackgroundSprite.visible = staticStageEnabled.value
+  for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
   if (backmonitorContainer) backmonitorContainer.visible = backmonitorEnabled.value
   for (const [position, runtime] of runtimes) {
     runtime.spine.visible = charactersEnabled.value
@@ -2418,6 +3276,21 @@ function applyLayerDebugVisibility() {
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer debug sync failed', error))
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer debug sync failed', error))
+  if (app && !playing.value && !stageDisposed) app.render()
+}
+
+function syncCharacterShadow(runtime) {
+  const shadow = runtime.groundShadow
+  if (!shadow) return
+  const layout = characterShadowLayout(runtime.spine, stageEffectIndex.value?.characterShadow)
+  shadow.visible = Boolean(layout) && charactersEnabled.value && characterShadowsEnabled.value && runtime.spine.visible
+  if (!layout) return
+  shadow.position.set(layout.x, layout.y)
+  shadow.scale.set(layout.scaleX, layout.scaleY)
+  shadow.zIndex = runtime.spine.zIndex - 1
+  // Spine evaluates its pose during Pixi's transform pass, after the earlier
+  // shadow sibling. Refresh that sibling before rendering to avoid frame lag.
+  if (shadow.parent) shadow.updateTransform()
 }
 
 function layoutRuntime(position, motionEvent = null) {
@@ -2431,11 +3304,12 @@ function layoutRuntime(position, motionEvent = null) {
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
   const viewportFit = Math.min(1, height / 620)
-  runtime.spine.x = width * 0.5 + x * viewportScale
+  const ground = projectChibiGround(selectedSong.value?.songCode, coordinates, width, height)
+  runtime.spine.x = ground.x
   // Live CSV Y is a depth coordinate: smaller values stand closer to the
   // camera (and therefore lower on screen). Legacy starts the centre member
   // at Y=170 and the side members at Y=190, matching the official stagger.
-  runtime.spine.y = height * CHARACTER_STAGE_BASELINE_RATIO + (180 - y) * viewportScale
+  runtime.spine.y = ground.y
   // Unity keeps the chibi prefab scale stable across solo, duo and ensemble
   // lives. Formation coordinates and the authored camera provide the framing;
   // scaling characters by active member count made three-person stages about
@@ -2450,14 +3324,7 @@ function layoutRuntime(position, motionEvent = null) {
   runtime.spine.zIndex = CHARACTER_DEPTH_BASE
     + Math.round((360 - y) * CHARACTER_DEPTH_Y_FACTOR)
     + position
-  if (runtime.groundShadow) {
-    runtime.groundShadow.position.set(runtime.spine.x, runtime.spine.y + 3 * viewportScale)
-    runtime.groundShadow.scale.set(runtime.spine.scale.x * 2.1, runtime.spine.scale.y * 0.42)
-    runtime.groundShadow.visible = charactersEnabled.value
-      && characterShadowsEnabled.value
-      && runtime.spine.visible
-    runtime.groundShadow.zIndex = runtime.spine.zIndex - 1
-  }
+  syncCharacterShadow(runtime)
   runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
 }
 
@@ -2481,6 +3348,15 @@ function resizeStage() {
   syncBackmonitor(true)
   syncImageLayers().catch(error => console.warn('[ChibiStage] image-layer sync failed', error))
   syncObjectLayers().catch(error => console.warn('[ChibiStage] object-layer sync failed', error))
+  // Resizing clears the WebGL canvas; draw now so the cleared buffer is never shown, playing or not.
+  app?.render()
+}
+
+async function selectStageScript(id) {
+  if (booting.value || id === selectedSongId.value || !songs.value.some(song => song.id === id)) return
+  costumeNotice.value = ''
+  selectedSongId.value = id
+  await handleSongChange()
 }
 
 async function handleSongChange() {
@@ -2668,7 +3544,8 @@ function applyCurrentLipSync() {
   }
 }
 
-async function preloadSongMotions() {
+async function preloadSongMotions(intent) {
+  if (!intent.current()) return false
   if (!selectedSong.value || !stageReady.value) return false
   const songId = selectedSong.value.id
   const targets = activeSlots.value
@@ -2685,23 +3562,34 @@ async function preloadSongMotions() {
   preloading.value = true
   preloadProgress.value = 0
   audioError.value = ''
+  const owner = new AbortController()
+  const cancel = () => owner.abort()
+  intent.signal?.addEventListener('abort',cancel,{once:true})
+  if (intent.signal?.aborted) cancel()
   try {
-    await Promise.all(targets.map(async ({ runtime }) => {
-      await Promise.all(motions.map(async motion => {
-        await injectLiveChibiMotion(runtime, motion)
-        completed += 1
-        preloadProgress.value = Math.round(completed / total * 100)
-      }))
-      runtime.preloadedSongs.add(songId)
-    }))
+    const jobs=motions.flatMap(motion=>targets.map(({runtime})=>({runtime,motion})))
+    const worker=async()=> {
+      while(intent.current() && !owner.signal.aborted && jobs.length) {
+        const {runtime,motion}=jobs.shift()
+        await injectLiveChibiMotion(runtime,motion,{signal:owner.signal,isCurrent:()=>intent.current() && !owner.signal.aborted && runtimes.get(runtime.stagePosition)===runtime})
+        if(!intent.current())return
+        completed++;preloadProgress.value=Math.round(completed/total*100)
+      }
+    }
+    await Promise.all(Array.from({length:Math.min(3,jobs.length)},worker))
+    if(intent.current())for(const {runtime} of targets)if(runtimes.get(runtime.stagePosition)===runtime)runtime.preloadedSongs.add(songId)
+    if (!intent.current()) return false
     songMotionsReady.value = true
     return true
   } catch (error) {
+    owner.abort()
+    if (!intent.current()) return false
     audioError.value = `舞台动作预载失败：${error.message}`
     console.error('[ChibiStage] motion preload failed', error)
     return false
   } finally {
-    preloading.value = false
+    intent.signal?.removeEventListener('abort',cancel)
+    if (intent.current()) preloading.value = false
   }
 }
 
@@ -2710,8 +3598,10 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const motion = motionCatalog.value.get(event.motion)
   if (!runtime || !motion) return
   const sequence = ++slot.motionSequence
-  const animationNames = await injectLiveChibiMotion(runtime, motion)
-  if (sequence !== slot.motionSequence || runtimes.get(slot.position) !== runtime) return
+  const revision = stageIntent.revision()
+  const current = () => !stageDisposed && revision === stageIntent.revision() && sequence === slot.motionSequence && runtimes.get(slot.position) === runtime
+  const animationNames = await injectLiveChibiMotion(runtime, motion, { isCurrent: current, signal:lifetime.signal })
+  if (!current()) return
   slot.currentMotion = motion.id
   slot.currentMotionSource = event.source || 'script'
   const speedScale = (Number(event.speed) || 1000) / 1000
@@ -2719,18 +3609,38 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   runtime.motionSpeedScale = speedScale
   playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset })
   if (seekTime !== null && seekTime > event.time) {
-    runtime.spine.update((seekTime - event.time) / 1000 * speedScale)
+    seekLiveChibiMotion(runtime, (seekTime - event.time) / 1000 * speedScale)
   }
-  runtime.spine.state.timeScale = playbackSpeed.value * speedScale
+  runtime.spine.state.timeScale = playing.value ? playbackSpeed.value * speedScale : 0
   layoutRuntime(slot.position, event)
 }
 
 async function syncSlotAtTime(slot, milliseconds, reset = true) {
-  const event = [...eventsForPosition(slot.position)]
-    .reverse()
-    .find(item => item.time <= milliseconds)
-  if (event) await playSlotEvent(slot, event, { reset, seekTime: milliseconds })
-  else layoutRuntime(slot.position)
+  const events = eventsForPosition(slot.position)
+  const index = events.findLastIndex(item => item.time <= milliseconds)
+  if (index < 0) {
+    layoutRuntime(slot.position)
+    return
+  }
+  const runtime = runtimes.get(slot.position)
+  const revision = stageIntent.revision()
+  const loadSequence = slot.loadSequence
+  // A paused seek inside a cross-fade needs the outgoing pose too. Rebuild
+  // only the recent mixing chain and its predecessor, not the whole song.
+  const mixMilliseconds = Math.max(0, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
+  let start = index
+  if (reset) {
+    while (start > 0 && events[start].mode !== 3
+      && events[start].time > milliseconds - mixMilliseconds) start -= 1
+  }
+  for (let cursor = start; cursor <= index; cursor += 1) {
+    if (stageIntent.revision() !== revision || slot.loadSequence !== loadSequence
+      || runtimes.get(slot.position) !== runtime) return
+    await playSlotEvent(slot, events[cursor], {
+      reset: cursor === start ? reset : false,
+      seekTime: cursor === index ? milliseconds : events[cursor + 1].time,
+    })
+  }
 }
 
 async function seekStage() {
@@ -2749,6 +3659,7 @@ async function seekStage() {
   syncBackmonitor(true)
   await syncImageLayers()
   await syncObjectLayers()
+  app?.render()
 }
 
 function resetEventIndices() {
@@ -2761,22 +3672,36 @@ function resetEventIndices() {
 }
 
 async function toggleStage() {
-  if (playing.value) {
+  if (playing.value || stageStarting.value) {
     stopStage()
     return
   }
-  if (!await preloadSongMotions()) return
+  const intent = stageIntent.begin()
+  const runtimeSnapshot = [...runtimes.entries()]
+  const current = () => intent.current() && !stageDisposed && runtimeSnapshot.every(([position,runtime]) => runtimes.get(position) === runtime)
+  stageStarting.value = true
+  try {
+  // Keep resume inside the original tap, before motion/resource awaits.
+  if (stageVocalEnabled.value && stageVocalReady.value && !await stageVocalSession.unlock()) {
+    if (current()) audioError.value = stageVocalSession.error.value
+    return
+  }
+  if (!current()) return
+  if (!await preloadSongMotions(intent)) { if (current()) stageVocalSession.pause(); return }
+  if (!current()) return
   if (stageTime.value >= stageDuration.value) stageTime.value = 0
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
+  if (!current()) return
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
   if (stageVocalEnabled.value && stageVocalReady.value) {
     stageVocalSession.seek(stageTime.value / 1000)
     if (!await stageVocalSession.play()) {
-      audioError.value = stageVocalSession.error.value
+      if (current()) audioError.value = stageVocalSession.error.value
       return
     }
+    if (!current()) return
     audioError.value = ''
   } else {
     const playbackAudios = stagePlaybackAudios()
@@ -2784,22 +3709,43 @@ async function toggleStage() {
       syncStagePlaybackTime(stageTime.value / 1000)
       playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
       try {
-        await Promise.all(playbackAudios.map(audio => audio.play()))
+        await withLoadDeadline(() => Promise.all(playbackAudios.map(audio => {
+          stageAudioOwners.set(audio,intent)
+          return Promise.resolve(audio.play()).then(() => {
+            if (!current() && stageAudioOwners.get(audio) === intent) { audio.pause(); stageAudioOwners.delete(audio) }
+          })
+        })), { signal:intent.signal, timeoutMs:8000, label:'stage-audio-play' })
+        if (!current()) return
         audioError.value = ''
       } catch (error) {
-        playbackAudios.forEach(audio => audio.pause())
+        if (!current()) return
+        stopStage()
         audioError.value = `歌曲音频无法播放：${error.message}`
         return
       }
     }
   }
   playing.value = true
+  syncMotionPlaybackSpeed()
   syncBackmonitor(true)
+  if(app)app.ticker.lastTime=performance.now()
+  lastStageFrame = 0
   animationFrame = requestAnimationFrame(updateStage)
+  } catch (error) {
+    if (current()) { stopStage(); audioError.value = `舞台无法开始：${error.message || error}` }
+  } finally { if (intent.current()) stageStarting.value = false }
 }
 
 function updateStage(now) {
   if (!playing.value || !selectedSong.value) return
+  const cap = frameCap()
+  if (cap && lastStageFrame && now - lastStageFrame < 1000 / cap - 3) {
+    animationFrame = requestAnimationFrame(updateStage)
+    return
+  }
+  const gap = lastStageFrame ? now - lastStageFrame : 0
+  lastStageFrame = now
+  const workStart = performance.now()
   const clockAudio = stageClockAudio()
   stageTime.value = Math.min(
     stageDuration.value,
@@ -2814,7 +3760,7 @@ function updateStage(now) {
     const events = eventsForPosition(slot.position)
     let index = eventIndices.get(slot.position) || 0
     while (index < events.length && events[index].time <= stageTime.value) {
-      playSlotEvent(slot, events[index])
+      void playSlotEvent(slot, events[index]).catch(error=> {if(!stageDisposed)console.warn('[ChibiStage] motion event failed',error)})
       index += 1
     }
     eventIndices.set(slot.position, index)
@@ -2833,14 +3779,20 @@ function updateStage(now) {
     stopStage()
     return
   }
+  app?.ticker.update(now)
+  measureStageFrame(gap, performance.now() - workStart, cap, now)
   animationFrame = requestAnimationFrame(updateStage)
 }
 
 function stopStage(reset = false) {
+  stageIntent.cancel()
+  stageStarting.value = false
+  preloading.value = false
   const wasPlaying = playing.value
   if (animationFrame) cancelAnimationFrame(animationFrame)
   animationFrame = 0
   playing.value = false
+  syncMotionPlaybackSpeed()
   stageVocalSession.pause()
   if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value) {
     stageTime.value = stageVocalSession.currentTime.value * 1000
@@ -2861,15 +3813,22 @@ async function resetStage() {
 }
 
 function applyPlaybackSpeed() {
+  if (stageStarting.value) stopStage()
   stageVocalSession.setPlaybackRate(playbackSpeed.value)
   stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
+  syncMotionPlaybackSpeed()
+}
+
+function syncMotionPlaybackSpeed() {
   for (const position of activePositions.value) {
     const runtime = runtimes.get(position)
     if (runtime) {
-      runtime.spine.state.timeScale = playbackSpeed.value * (runtime.motionSpeedScale || 1)
+      runtime.spine.state.timeScale = playing.value
+        ? playbackSpeed.value * (runtime.motionSpeedScale || 1)
+        : 0
     }
   }
 }
@@ -2881,87 +3840,115 @@ function formatTime(milliseconds) {
 </script>
 
 <style scoped>
-.advanced-controls > summary { min-height: 44px; padding: 14px 18px; box-sizing: border-box; cursor: pointer; font-weight: 600; }
-.advanced-controls > summary:focus-visible { outline: 2px solid #168f87; outline-offset: -2px; }
 .chibi-stage {
-  --ink: #07111f;
-  --panel: #102238;
-  --line: rgba(167, 197, 228, 0.18);
-  --text: #edf5fc;
-  --muted: #8ca2b8;
-  --accent: #41a5ff;
+  /* Tool shell: dark stage ground, chrome top bar, white panel (see GS_UI_CONSTITUTION). */
+  --ink: #0b1424;
+  --panel: var(--gs-surface);
+  --line: var(--gs-line);
+  --text: var(--gs-ink);
+  --muted: var(--gs-ink-3);
+  --accent: var(--gs-mint);
+  --stage-safe-top: var(--gs-safe-top, env(safe-area-inset-top, 0px));
+  --stage-safe-right: var(--gs-safe-right, env(safe-area-inset-right, 0px));
+  --stage-safe-bottom: var(--gs-safe-bottom, env(safe-area-inset-bottom, 0px));
+  --stage-safe-left: var(--gs-safe-left, env(safe-area-inset-left, 0px));
+  --stage-header-height: calc(60px + var(--stage-safe-top));
   position: fixed;
   inset: 0;
   z-index: 100;
-  overflow-x: hidden;
-  overflow-y: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   color: var(--text);
   background: var(--ink);
-  font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--gs-font-body);
 }
 
 .stage-header {
-  position: sticky;
+  position: relative;
   z-index: 5;
   top: 0;
-  height: 66px;
+  height: var(--stage-header-height);
+  min-height: var(--stage-header-height);
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0 22px;
-  border-bottom: 1px solid var(--line);
-  background: rgba(5, 15, 28, 0.96);
+  padding: var(--stage-safe-top) max(12px, var(--stage-safe-right)) 0 max(12px, var(--stage-safe-left));
+  box-sizing: border-box;
+  color: var(--gs-chrome-ink);
+  background: var(--gs-chrome);
 }
-.stage-header h1 { margin: 0; font-size: 18px; letter-spacing: 0.02em; }
-.stage-header p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
-.stage-back-button { --archive-back-ink: var(--text); --archive-back-hover: rgba(255, 255, 255, 0.07); border-radius: 8px; }
-.header-divider { width: 1px; height: 28px; background: var(--line); }
-.header-meta { margin-left: auto; color: var(--muted); font-size: 11px; }
-.lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #dbeeff; background: rgba(30, 109, 184, 0.22); border: 1px solid rgba(65, 165, 255, 0.42); border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
+.stage-header h1 { margin: 0; color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.stage-title-compact { display: none; }
+.stage-header p { margin: 2px 0 0; color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
+.stage-back-button { --archive-back-ink: var(--gs-chrome-ink); --archive-back-hover: var(--gs-chrome-hover); border-radius: var(--gs-radius-control); }
+.header-divider { width: 1px; height: 28px; background: var(--gs-chrome-hover); }
+.lab-link { min-height: 44px; margin-left: 8px; padding: 0 13px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 7px; font: 650 11px/1 inherit; cursor: pointer; }
 
-.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 0; }
-.performance-shell { position: relative; width: 100%; min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1726; }
+.stage-workspace { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 0; align-items: stretch; width: 100%; min-width: 0; min-height: 0; margin: 0; padding: 0 var(--stage-safe-right) var(--stage-safe-bottom) var(--stage-safe-left); box-sizing: border-box; overflow: hidden; }
+.performance-shell { display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; min-width: 0; min-height: 0; overflow: hidden; border: 0; border-radius: 0; background: var(--ink); box-sizing: border-box; }
+.performance-viewport { position: relative; display: flex; flex: 1 1 0; flex-direction: column; width: 100%; min-width: 0; min-height: 0; container-type: size; }
+.screen-fit-region { position: relative; isolation: isolate; display: grid; flex: 1 1 0; place-items: center; width: 100%; min-width: 0; min-height: 0; overflow: hidden; container-type: size; background: var(--ink); }
+.stage-ambient { display: none; position: absolute; z-index: -1; inset: -28px; background-size: cover; background-position: center; filter: blur(28px) saturate(.65); opacity: .55; pointer-events: none; }
+/* The existing canvas host stays mounted; its observer sees the fitted 16:9 screen. */
+.performance-screen { position: relative; width: min(100cqw, calc(100cqh * 16 / 9)); min-width: 0; aspect-ratio: 16 / 9; overflow: hidden; flex: none; container-type: inline-size; }
 .stage-backdrop { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 12, 23, 0.16), rgba(5, 12, 23, 0.04) 55%, rgba(2, 8, 16, 0.62)), url('/assets/bg/bg086_dancestudio_in_01.png') center / cover no-repeat; filter: saturate(0.82) brightness(0.7); transform: scale(1.015); }
 .stage-floor { position: absolute; z-index: 1; left: 6%; right: 6%; bottom: 7%; height: 30%; border: 1px solid rgba(104, 180, 245, 0.2); border-radius: 50%; background: radial-gradient(ellipse at center, rgba(67, 163, 241, 0.16), rgba(20, 70, 115, 0.05) 52%, transparent 72%); transform: perspective(500px) rotateX(62deg); transform-origin: center bottom; }
 .chibi-stage[data-static-stage-enabled="false"] .stage-backdrop,
 .chibi-stage[data-static-stage-enabled="false"] .stage-floor { visibility: hidden; }
 .stage-canvas { position: absolute; z-index: 2; inset: 0; }
 .stage-canvas :deep(canvas) { display: block; width: 100%; height: 100%; }
-.performance-shell::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
+.performance-screen::after { content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 47%, transparent 28%, rgba(2, 7, 14, 0.34) 100%); }
 
-.performance-hud { position: absolute; z-index: 4; top: 24px; left: 28px; display: grid; gap: 5px; padding: 13px 16px; border-left: 2px solid var(--accent); background: rgba(4, 13, 24, 0.64); backdrop-filter: blur(12px); }
-.performance-hud span { color: #73bfff; font-size: 9px; font-weight: 750; letter-spacing: 0.16em; }
-.performance-hud strong { font-size: 16px; }
-.performance-hud small { color: var(--muted); font-size: 10px; }
+.performance-hud { display: flex; flex: none; align-items: center; gap: 12px; padding: 6px 12px; width: 100%; min-height: 56px; box-sizing: border-box; color: var(--gs-chrome-ink); background: var(--ink); }
+.performance-identity { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.performance-hud strong { overflow-wrap: anywhere; }
+.performance-actions { display: flex; flex: 0 0 auto; gap: 4px; }
+.performance-hud strong { color: var(--gs-surface); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.performance-hud small { color: var(--gs-chrome-ink); font-size: var(--gs-text-meta); }
 
 .stage-lyric {
   position: absolute;
   z-index: 4;
   left: 50%;
-  bottom: 180px;
-  max-width: min(820px, calc(100% - 80px));
-  padding: 2px 10px 4px;
+  bottom: 3%;
+  width: 94%;
+  padding: 0;
   color: #fff;
-  font-size: clamp(15px, 1.7vw, 24px);
+  /* cqw follows the actual letterboxed canvas, including short landscape screens. */
+  font-size: clamp(8px, 2cqw, 24px);
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   text-align: center;
   -webkit-font-smoothing: antialiased;
-  -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.96);
+  -webkit-text-stroke: 0.07em rgba(0, 0, 0, 0.96);
   paint-order: stroke fill;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 0.06em 0.12em rgba(0, 0, 0, 0.9);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
-.position-rail { position: absolute; z-index: 4; left: 50%; bottom: 128px; width: min(720px, calc(100% - 48px)); display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; transform: translateX(-50%); pointer-events: none; }
-.position-marker { min-width: 0; display: grid; justify-items: center; gap: 4px; color: rgba(163, 184, 204, 0.3); }
-.position-marker span { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid currentColor; border-radius: 50%; font: 700 10px/1 monospace; background: rgba(5, 14, 25, 0.66); }
-.position-marker small { max-width: 110px; overflow: hidden; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
-.position-marker.active { color: #9eb7ce; }
-.position-marker.loaded span { color: #ddecf9; border-color: rgba(103, 179, 241, 0.64); }
-.position-marker.singing { color: #83c8ff; }
-.position-marker.singing span { color: white; border-color: #61b7ff; background: rgba(28, 112, 187, 0.7); box-shadow: 0 0 20px rgba(65, 165, 255, 0.48); }
+.rail-summary { flex: none; width: 100%; margin: 0; padding: 4px 12px 0; box-sizing: border-box; color: var(--gs-chrome-ink); font-size: 12px; line-height: 1.4; overflow-wrap: anywhere; }
+.position-rail { flex: none; width: 100%; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 6px 8px; box-sizing: border-box; }
+.position-marker { min-width: 0; min-height: 44px; display: grid; align-content: start; justify-items: center; gap: 3px; padding: 4px; border: 1px solid transparent; border-radius: var(--gs-radius-control); background: transparent; color: var(--gs-chrome-ink); cursor: pointer; }
+.position-marker .position-caption { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px 4px; max-width: 100%; min-height: 16px; font-size: 11px; line-height: 1.4; }
+.position-marker small { max-width: 100%; color: var(--gs-surface); font-size: var(--gs-text-meta); line-height: 1.4; overflow-wrap: anywhere; }
+.position-marker.selected { border-color: var(--gs-mint); background: var(--gs-chrome-hover); }
+.position-marker.singing { background: var(--gs-chrome-hover); }
+.position-marker { transition: background-color 240ms ease-out, color 240ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .position-marker { transition: none; } }
+.position-marker.singing .position-caption { color: var(--gs-surface); }
+.position-marker:disabled { align-content: center; color: var(--muted); background: transparent; cursor: default; }
+.position-marker:disabled small { color: var(--gs-chrome-ink); }
+.rest-position { display: none; }
+.singing-status { display: inline-flex; align-items: center; gap: 3px; color: var(--gs-mint); }
+.singing-label { display: none; font-size: var(--gs-text-caption); }
 
 .stage-state { position: absolute; z-index: 6; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #cbd9e7; background: rgba(5, 13, 23, 0.58); backdrop-filter: blur(5px); }
 .loading-icon { animation: spin 1s linear infinite; }
@@ -2969,93 +3956,252 @@ function formatTime(milliseconds) {
 .error-state span { max-width: 420px; color: #b3c1cf; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.transport { position: absolute; z-index: 5; left: 50%; bottom: 28px; width: min(760px, calc(100% - 50px)); min-height: 80px; display: grid; grid-template-columns: 44px 56px minmax(140px, auto) minmax(160px, 1fr); gap: 13px; align-items: center; padding: 0 20px; border: 1px solid rgba(150, 194, 231, 0.3); border-radius: 15px; background: rgba(5, 16, 29, 0.9); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4); transform: translateX(-50%); backdrop-filter: blur(16px); }
+.transport { flex: none; width: calc(100% - 24px); min-height: 68px; display: grid; grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); gap: 12px; align-items: center; margin: 0 12px 12px; padding: 8px 16px; box-sizing: border-box; border-radius: var(--gs-radius-panel); color: var(--gs-ink); background: var(--gs-surface); box-shadow: var(--gs-shadow-float); }
 .transport.disabled { opacity: 0.62; }
-.transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: #dceaf7; background: #142941; border: 1px solid rgba(151, 192, 227, 0.27); border-radius: 9px; cursor: pointer; }
-.transport .primary-transport { width: 56px; height: 56px; border-radius: 50%; border-color: var(--accent); background: rgba(36, 119, 195, 0.56); }
+.transport button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); cursor: pointer; }
+.transport .primary-transport { width: 48px; height: 48px; border-radius: 50%; border-color: var(--gs-play-bg); background: var(--gs-play-bg); color: var(--gs-play-ink); }
 .transport button:disabled { cursor: wait; }
 .transport-copy { display: grid; gap: 5px; }
-.transport-copy strong { font-size: 12px; }
-.transport-copy small { color: var(--muted); font: 600 10px/1 monospace; }
-.transport input { width: 100%; accent-color: var(--accent); }
+.transport-copy strong { font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.transport-copy small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.transport input { width: 100%; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--accent); }
 
-.stage-inspector { min-width: 0; overflow: visible; border-top: 1px solid var(--line); background: linear-gradient(180deg, #142940, #0c1b2d); }
-.inspector-scroll { display: grid; grid-template-columns: minmax(300px, 0.8fr) minmax(460px, 1.25fr) minmax(340px, 0.95fr); align-items: start; height: auto; overflow: visible; }
-.control-section { min-width: 0; height: 100%; padding: 20px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stage-inspector { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; overflow: hidden; border: 0; border-radius: 0; background: var(--gs-surface); }
+.inspector-scroll { flex: 1 1 0; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; }
+.mobile-panel-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: none; gap: 0; padding: 0 12px; border-bottom: 1px solid var(--line); background: var(--gs-surface); }
+.mobile-panel-tabs button { min-width: 0; min-height: 48px; padding: 0 8px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--gs-ink-3); background: transparent; font-size: var(--gs-text-body); cursor: pointer; }
+.mobile-panel-tabs button[aria-pressed="true"] { color: var(--gs-ink); border-bottom-color: var(--gs-selected-line); font-weight: var(--gs-weight-semibold); }
+.inspector-scroll.is-song-panel { display: flex; flex-direction: column; overflow: hidden; }
+.song-section { flex: 1; height: 100%; min-height: 0; }
+.control-section { min-width: 0; padding: 12px 20px; box-sizing: border-box; border-bottom: 1px solid var(--line); }
 .control-section:last-child { border-right: 0; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; color: #a9c4dd; }
+.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 24px; margin-bottom: 8px; color: var(--gs-ink-3); }
 .section-heading > div { display: grid; gap: 4px; }
-.section-heading h2 { margin: 0; color: #d9e7f3; font-size: 12px; letter-spacing: 0.06em; }
-.section-heading span { color: var(--muted); font-size: 10px; }
-select { width: 100%; height: 39px; padding: 0 10px; color: #edf5fc; background: #0e2034; border: 1px solid rgba(158, 192, 222, 0.28); border-radius: 7px; outline: none; font: 500 12px/1 inherit; }
-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(65, 165, 255, 0.12); }
+.section-heading h2 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
+.section-heading h2 small { margin-left: 4px; color: var(--muted); font-size: 12px; font-weight: 400; }
+.section-heading span { color: var(--muted); font-size: 12px; }
+select { width: 100%; min-width: 0; height: 44px; padding: 0 12px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-field); font-family: inherit; font-size: var(--gs-text-ui); }
+select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .song-facts { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
-.song-facts span { padding: 5px 7px; color: #9eb4c8; background: rgba(4, 14, 25, 0.42); border-radius: 5px; font-size: 9px; }
-.stage-vocal-controls { display: grid; gap: 10px; margin: 13px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(65, 165, 255, 0.3); border-radius: 9px; background: rgba(18, 67, 108, 0.16); }
-.stage-vocal-controls legend { padding: 0 5px; color: #8ecbff; font-size: 10px; letter-spacing: 0.06em; }
-.stage-vocal-controls small { color: var(--muted); font-size: 9px; line-height: 1.5; }
+.song-facts span { padding: 5px 7px; color: #587678; background: #edf5f2; border-radius: 5px; font-size: 12px; }
+.stage-audio-action { display: inline-grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: var(--gs-radius-control); color: var(--gs-ink-2); background: var(--gs-surface); cursor: pointer; }
+.stage-audio-action.enabled { border-color: var(--gs-mint); color: var(--gs-ink); background: var(--gs-mint-wash); }
+.stage-audio-dialog { max-width: 400px; }
+.stage-vocal-controls { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; border: 0; }
+.stage-vocal-controls legend { padding: 0; color: var(--muted); font-size: 12px; }
+.stage-vocal-controls small { color: var(--muted); font-size: 12px; line-height: 1.5; }
 .vfx-coverage { display: grid; gap: 6px; margin-top: 14px; padding: 10px 12px; border: 1px solid rgba(232, 179, 99, .32); border-radius: 9px; background: rgba(100, 68, 33, .14); }
 .vfx-coverage h3, .vfx-coverage p { margin: 0; }
-.vfx-coverage h3 { color: #f1d0a1; font-size: 12px; }
-.vfx-coverage p, .vfx-coverage summary, .vfx-coverage code { color: #c8d5df; font-size: 12px; line-height: 1.55; }
-.vfx-coverage .vfx-coverage-gap { color: #ffbd9d; }
+.vfx-coverage h3 { color: #79562b; font-size: 12px; }
+.vfx-coverage p, .vfx-coverage summary, .vfx-coverage code { color: #586a71; font-size: 12px; line-height: 1.55; }
+.vfx-coverage .vfx-coverage-gap { color: #994a20; }
 .vfx-coverage summary { cursor: pointer; }
 .vfx-coverage code { display: block; overflow-wrap: anywhere; margin-top: 5px; }
 
-.lineup-section { display: grid; gap: 9px; }
-.lineup-card { position: relative; display: grid; grid-template-columns: 46px minmax(0, 1fr) 18px; gap: 9px; align-items: center; padding: 9px; border: 1px solid rgba(151, 185, 215, 0.17); border-radius: 9px; background: rgba(5, 16, 29, 0.34); transition: opacity 160ms ease, border-color 160ms ease; }
-.lineup-card.inactive { opacity: 0.38; }
-.lineup-card.singing { border-color: rgba(73, 171, 255, 0.52); background: rgba(27, 101, 166, 0.18); }
-.slot-number { display: grid; justify-items: center; gap: 4px; }
-.slot-number span { display: grid; place-items: center; width: 30px; height: 30px; color: #e3effa; border: 1px solid rgba(119, 180, 230, 0.5); border-radius: 50%; font: 700 11px/1 monospace; }
-.slot-number small { color: var(--muted); font-size: 8px; }
-.slot-controls { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 7px; }
-.slot-controls select { height: 35px; min-width: 0; }
-.singing-icon { color: #6ebcff; }
-.rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #e6f3ff; background: rgba(30, 112, 185, 0.38); border: 1px solid rgba(66, 163, 246, 0.52); border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
+.lineup-section { display: grid; gap: 8px; }
+.lineup-section .section-heading { margin-bottom: 0; }
+.singing-icon { color: var(--idol-accent, #258e81); }
+.rebuild-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; margin-top: 3px; color: #236d67; background: #edf8f4; border: 1px solid #c6ddda; border-radius: 8px; font: 650 11px/1 inherit; cursor: pointer; }
 
 .playback-section { display: grid; gap: 13px; }
-.range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: #c9d9e8; font-size: 11px; }
+.range-control { display: grid; grid-template-columns: 36px minmax(0, 1fr) 48px; gap: 9px; align-items: center; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .range-control input { width: 100%; accent-color: var(--accent); }
-.range-control output { text-align: right; font: 650 11px/1 monospace; }
-.camera-toggle { display: flex; gap: 8px; align-items: center; color: #c9d9e8; font-size: 11px; }
+.range-control output { color: var(--gs-ink); text-align: right; font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); font-variant-numeric: tabular-nums; }
+.camera-toggle { display: flex; min-height: 44px; gap: 8px; align-items: center; color: var(--gs-ink); font-size: var(--gs-text-ui); }
 .camera-toggle input { margin: 0; accent-color: var(--accent); }
 .layer-debug-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 12px 0 0; padding: 11px 12px 12px; border: 1px solid rgba(111, 174, 229, 0.22); border-radius: 10px; }
-.layer-debug-controls legend { padding: 0 5px; color: #8ebfe9; font-size: 10px; letter-spacing: 0.08em; }
-.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; color: #c9d9e8; font-size: 11px; }
+.layer-debug-controls legend { padding: 0 5px; color: #38796f; font-size: 10px; letter-spacing: 0.08em; }
+.layer-debug-controls label { display: flex; gap: 7px; align-items: center; min-width: 0; min-height: 44px; color: #45616a; font-size: 11px; }
 .layer-debug-controls input { margin: 0; accent-color: var(--accent); }
 .runtime-summary { display: grid; gap: 8px; margin: 0; }
+.runtime-details > summary { min-height: 44px; display: list-item; align-content: center; color: #365860; font-size: 13px; line-height: 1.6; cursor: pointer; }
+.runtime-details .runtime-summary { margin-top: 8px; }
 .runtime-summary div { display: grid; grid-template-columns: 70px 1fr; gap: 10px; font-size: 10px; }
 .runtime-summary dt { color: var(--muted); }
-.runtime-summary dd { margin: 0; color: #d8e6f2; }
-.audio-error { color: #ff9d9d; font-size: 10px; }
+.runtime-summary dd { margin: 0; color: #365860; }
+.audio-error { font-size: var(--gs-text-meta); }
 
+.stage-header-title { flex: 1; min-width: 0; }
+.stage-icon-action { display: inline-grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; color: var(--gs-chrome-ink); border: 0; border-radius: var(--gs-radius-control); background: transparent; cursor: pointer; }
+.stage-icon-action:disabled { opacity: .4; cursor: default; }
+.chibi-stage button:focus-visible, .chibi-stage summary:focus-visible, .chibi-stage input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.chibi-stage button { font-family: inherit; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.chibi-stage button:not(:disabled):active { background-color: var(--gs-mint-wash); }
+.chibi-stage .stage-icon-action:not(:disabled):active, .chibi-stage .position-marker:not(:disabled):active { background-color: var(--gs-chrome-hover); }
+.mix-details > summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; color: #3f7772; font-size: 12px; }
+.mix-details .range-control { min-height: 44px; }
+.lineup-actions { display: flex; gap: 8px; }
+.lineup-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font-size: var(--gs-text-ui); cursor: pointer; }
+.lineup-actions button:disabled { opacity: .4; cursor: default; }
+.lineup-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.viewing-select { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.viewing-select select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
+.immersive-hint { position: absolute; z-index: 5; top: 10px; left: 50%; display: flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); padding: 4px 4px 4px 12px; border-radius: var(--gs-radius-pill); background: color-mix(in srgb, var(--gs-chrome) 88%, transparent); color: var(--gs-surface); font-size: var(--gs-text-meta); translate: -50% 0; box-shadow: var(--gs-shadow-float); }
+.immersive-hint span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.immersive-hint button { display: inline-flex; flex: none; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border: 0; border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; cursor: pointer; }
+.immersive-hint .immersive-hint-close { width: 36px; padding: 0; justify-content: center; background: none; color: var(--gs-surface); }
+.quality-options { display: grid; gap: 8px; }
+.quality-options button { display: grid; gap: 4px; padding: 12px 14px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
+.quality-options button[aria-pressed="true"] { border-color: var(--gs-selected-line); background: var(--gs-selected-bg); color: var(--gs-selected-ink); }
+.quality-options strong { display: flex; align-items: center; gap: 8px; font-size: var(--gs-text-body); }
+.quality-options strong small { padding: 1px 8px; border-radius: var(--gs-radius-pill); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-size: var(--gs-text-caption); font-weight: var(--gs-weight-semibold); }
+.quality-options span { color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
+.quality-options button[aria-pressed="true"] span { color: inherit; }
+.quality-tip { display: flex; align-items: center; gap: 6px; margin: 12px 0 4px; color: var(--gs-ink-2); font-size: var(--gs-text-meta); line-height: 1.6; }
+.quality-note { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.touch-help dt { display: flex; align-items: center; color: var(--gs-ink-2); }
+.lineup-vocal { display: flex; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
+.lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
+.lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
+.lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
+.slot-editor { display: grid; gap: 8px; min-width: 0; }
+.idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }
+.slot-editor-copy { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.idol-change-action strong { font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
+.idol-change-action small { font-size: 12px; color: var(--muted); }
+.costume-control { display: grid; grid-template-columns: 32px minmax(0, 1fr); align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.costume-sync-action { justify-self: start; min-height: 44px; padding: 0 8px; border: 0; border-radius: var(--gs-radius-control); color: var(--gs-mint-ink); background: transparent; cursor: pointer; font-size: var(--gs-text-ui); text-decoration: none; }
+.costume-sync-action:disabled { opacity: .4; cursor: default; }
+.common-costume-actions { padding-top: 8px; border-top: 1px solid var(--line); }
+.common-costume-actions h3 { margin: 0 0 8px; color: var(--gs-ink); font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.uniform-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.uniform-quick-actions button { min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--gs-radius-pill); color: var(--gs-ink-2); background: var(--gs-surface); cursor: pointer; font-size: var(--gs-text-ui); }
+.uniform-quick-actions button:disabled { opacity: .4; cursor: default; }
+.costume-notice { margin: 0; color: var(--gs-ink-2); font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.viewing-section { display: grid; gap: 4px; }
+.viewing-toggles, .viewing-actions { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.viewing-range { min-height: 44px; font-size: 12px; }
+.viewing-range input { min-height: 44px; margin: 0; }
+.viewing-actions { gap: 8px; }
+.viewing-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 0 12px; color: var(--gs-ink); background: var(--gs-surface); border: 1px solid var(--line); border-radius: var(--gs-radius-control); cursor: pointer; font-size: var(--gs-text-ui); }
+.panel-notice, .audio-error { padding: 0 12px; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.panel-notice a { display: inline-flex; align-items: center; min-height: 44px; color: var(--gs-mint-ink); text-underline-offset: 3px; }
+.stage-dev-dialog { width: min(600px, calc(100vw - 24px)); color: #243c45; color-scheme: light; background: #ffffff; border-color: #315253; font-family: inherit; }
+.stage-dev-dialog :deep(.terminal-dialog-header) { color: #243c45; background: #f4faf8; border-color: #315253; }
+.stage-dev-dialog :deep(.terminal-dialog-header h2) { font-size: 18px; }
+.stage-dev-dialog :deep(.terminal-icon-button) { color: #365860; background: #e7f3f0; }
+.stage-dev-dialog :deep(.terminal-dialog-body) { padding: 12px; scrollbar-width: thin; }
+.stage-dev-dialog .range-control { min-height: 44px; }
+.stage-dev-dialog .range-control input { min-height: 44px; margin: 0; }
+.inspector-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.inspector-tools .lab-link { margin: 0; }
+.inspector-tools .rebuild-button { min-height: 44px; margin: 0; }
+.technical-note, .stage-help-dialog p { color: #526e73; font-size: 13px; line-height: 1.7; }
+.shortcut-list { display: grid; gap: 12px; font-size: 13px; }
+.shortcut-list > div { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 12px; align-items: center; }
+.shortcut-list dd { margin: 0; }
+kbd { padding: 2px 6px; border: 1px solid #577a7a; border-radius: 4px; font: inherit; }
+.pure-peek { position: fixed; z-index: 8; inset: 0 0 auto; display: flex; justify-content: flex-end; align-items: center; gap: var(--gs-space-2); padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) var(--gs-space-6) var(--gs-space-3); background: linear-gradient(color-mix(in srgb, var(--gs-chrome) 72%, transparent), transparent); opacity: 0; transition: opacity 160ms ease-out; }
+.pure-peek:hover, .pure-peek:has(:focus-visible) { opacity: 1; }
+.pure-exit { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid #c6ddda; border-radius: 8px; color: #243c45; background: #f1f7f7ed; cursor: pointer; }
+/* Touch has no pointer to reach the edge: the screenshot and the way back stay in the corner, faint. */
+@media (hover: none) {
+  .pure-peek { opacity: 1; background: none; pointer-events: none; }
+  .pure-peek .stage-icon-action, .pure-exit { pointer-events: auto; opacity: .45; }
+  .pure-peek .stage-icon-action { background: color-mix(in srgb, var(--gs-chrome) 60%, transparent); }
+  .pure-peek .stage-icon-action:active, .pure-exit:active, .pure-exit:focus-visible { opacity: 1; }
+}
+.pure-exit kbd { margin-left: 4px; }
+@media (prefers-reduced-motion: reduce) { .pure-peek { transition: none; } }
+.is-pure .stage-header, .is-pure .stage-inspector, .is-pure .performance-hud, .is-pure .rail-summary, .is-pure .position-rail, .is-pure .transport { display: none; }
+.is-pure { grid-template-rows: minmax(0, 1fr); }
+.is-pure .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); max-width: none; min-height: 0; height: 100%; padding: 0; }
+.is-pure .performance-shell { height: 100%; min-height: 0; border: 0; border-radius: 0; background: transparent; }
+.is-pure .performance-viewport { flex: 1 1 0; }
+@media (hover: hover) and (pointer: fine) {
+  .stage-icon-action:hover { background: var(--gs-chrome-hover); color: var(--gs-surface); }
+  .lineup-actions button:not(:disabled):hover, .idol-change-action:not(:disabled):hover { background: var(--gs-paper); }
+  .position-marker:not(:disabled):hover { border-color: var(--gs-ink-3); }
+}
+
+/* Tabs keep one control task visible while the stage remains in place. */
+@media (min-width: 981px) {
+  .stage-ambient { display: block; }
+  .position-marker.selected { outline: 2px solid var(--gs-mint); outline-offset: -2px; }
+  .position-marker:disabled { min-height: 76px; border-color: transparent; background: var(--gs-chrome-hover); }
+  .position-marker:disabled :deep(.idol-avatar-shell) { display: none; }
+  .rest-position { display: grid; gap: 6px; font-size: 12px; line-height: 1.4; }
+  .rest-position small { color: var(--muted); }
+  .singing-label { display: inline; }
+}
 @media (max-width: 980px) {
-  .stage-header { height: 58px; padding: 0 13px; }
+  .stage-header { padding-right: max(12px, var(--stage-safe-right)); padding-left: max(12px, var(--stage-safe-left)); gap: 8px; }
   .stage-header h1 { font-size: 15px; }
-  .stage-header p, .header-meta { display: none; }
-  .stage-workspace { grid-template-columns: 1fr; overflow: visible; }
-  .performance-shell { min-height: 0; }
-  .stage-inspector { overflow: visible; border-top: 1px solid var(--line); border-left: 0; }
-  .inspector-scroll { grid-template-columns: 1fr; height: auto; overflow: visible; }
-  .control-section { height: auto; border-right: 0; }
-  .position-rail { bottom: 112px; }
-  .stage-lyric { bottom: 160px; }
-  .transport { bottom: 16px; min-height: 72px; grid-template-columns: 40px 50px minmax(110px, auto) 1fr; padding: 0 12px; }
-  .transport button { width: 40px; height: 40px; }
-  .transport .primary-transport { width: 50px; height: 50px; }
+  .stage-header p { display: none; }
+  .stage-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 0; padding: 0 var(--stage-safe-right) var(--stage-safe-bottom) var(--stage-safe-left); }
+  .stage-inspector { border-top-left-radius: var(--gs-radius-panel); border-top-right-radius: var(--gs-radius-panel); box-shadow: var(--gs-shadow-float); }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 240px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  .mobile-panel-tabs button:disabled { color: var(--gs-line); cursor: default; }
+  .control-section { padding: 10px 12px; }
+  .transport { grid-template-columns: 44px 48px minmax(110px, auto) minmax(0, 1fr); padding: 6px 8px; }
+  select { font-size: 16px; }
+  .is-pure .stage-workspace { grid-template-rows: minmax(0, 1fr); padding: 0; }
+  .is-pure .performance-shell { height: 100%; }
 }
 
 @media (max-width: 620px) {
-  .lab-link { margin-left: auto; }
-  .performance-shell { min-height: 390px; aspect-ratio: auto; }
-  .performance-hud { top: 14px; left: 14px; }
-  .position-rail { bottom: 105px; width: calc(100% - 24px); gap: 2px; }
-  .stage-lyric { bottom: 150px; }
-  .position-marker small { max-width: 58px; }
-  .transport { width: calc(100% - 20px); grid-template-columns: 38px 48px 1fr; gap: 8px; }
-  .transport input { grid-column: 1 / -1; margin-bottom: 8px; }
-  .slot-controls { grid-template-columns: 1fr; }
+  .stage-header { padding-right: max(8px, var(--stage-safe-right)); padding-left: max(8px, var(--stage-safe-left)); gap: 4px; }
+  .stage-header-title { flex: 1; min-width: 0; }
+  .stage-header h1 { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .stage-title-full { display: none; }
+  .stage-title-compact { display: inline; }
+  .stage-header .header-divider { display: none; }
+  .stage-header :deep(.archive-language-switch) { margin-left: auto; }
+  .lab-link { width: 44px; padding: 0; margin: 0; font-size: 0; flex-shrink: 0; }
+  .lab-link::after { content: '1人'; font-size: 12px; }
+  .performance-shell { height: min(calc((100vw - 16px) * 9 / 16 + 180px), calc(100svh - var(--stage-header-height) - var(--stage-safe-bottom) - 160px)); }
+  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; gap: 4px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
+  .performance-identity { display: grid; gap: 2px; padding: 4px 8px; border-radius: var(--gs-radius-control); background: rgb(11 20 36 / 72%); }
+  .performance-actions .stage-icon-action { background: rgb(11 20 36 / 55%); }
+  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .performance-actions { pointer-events: auto; }
+  .position-rail { gap: 2px; padding: 6px 4px; }
+  .position-marker { gap: 1px; padding: 3px 1px; }
+  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 36px; }
+  .position-marker .position-caption { gap: 0 2px; min-height: 14px; font-size: var(--gs-text-caption); }
+  .position-marker small { font-size: var(--gs-text-caption); line-height: 1.25; }
+  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 8px; margin: 0 8px 8px; width: calc(100% - 16px); padding: 6px 10px; }
+  .transport button, .transport .primary-transport { width: 44px; height: 44px; }
+  .transport-copy { position: relative; gap: 0; }
+  .transport-copy strong { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .transport-copy small { white-space: nowrap; }
+  .transport input { grid-column: auto; margin: 0; }
+}
+
+@media (max-width: 980px) and (max-height: 500px) and (orientation: landscape) {
+  .chibi-stage { --stage-header-height: calc(52px + var(--stage-safe-top)); }
+  .stage-title-full { display: none; }
+  .stage-title-compact { display: inline; }
+  .stage-workspace { grid-template-columns: minmax(0, 1fr) minmax(240px, 32%); grid-template-rows: minmax(0, 1fr); gap: 6px; }
+  .performance-shell { height: 100%; }
+  .performance-hud { position: absolute; z-index: 7; inset: 0 0 auto; align-items: flex-start; justify-content: space-between; gap: 8px; min-height: 0; padding: 6px; border: 0; background: transparent; pointer-events: none; }
+  .performance-identity { display: grid; gap: 2px; flex: 1; min-width: 0; padding: 4px 8px; border-radius: var(--gs-radius-control); background: rgb(11 20 36 / 72%); font-size: var(--gs-text-meta); }
+  .performance-hud strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+  .performance-actions { pointer-events: auto; }
+  .position-rail { padding: 4px; gap: 4px; }
+  .position-marker { grid-template-columns: 32px minmax(0, 1fr); grid-template-rows: auto auto; align-items: center; justify-items: start; gap: 0 4px; min-height: 48px; padding: 3px; }
+  .position-marker :deep(.idol-avatar-shell) { --idol-avatar-override-size: 32px; grid-row: 1 / 3; }
+  .position-marker .position-caption { justify-content: flex-start; font-size: 10px; }
+  .position-marker small { font-size: 11px; }
+  .transport { min-height: 58px; grid-template-columns: 44px 44px auto minmax(0, 1fr); gap: 6px; padding: 5px 8px; }
+  .transport button, .transport .primary-transport { width: 44px; height: 44px; }
+  .transport-copy { position: relative; gap: 0; }
+  .transport-copy strong { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+  .transport-copy small { white-space: nowrap; }
+  .transport input { grid-column: auto; }
+  .is-pure .performance-shell { height: 100%; }
+}
+/* On very short phones, one lower-panel scroller keeps every control reachable. */
+@media (max-width: 620px) and (max-height: 650px) and (orientation: portrait) {
+  .inspector-scroll.is-song-panel { overflow-y: auto; }
+  .song-section { flex: none; height: auto; }
+  .song-section :deep(.chibi-song-picker) { flex: none; height: auto; }
+  .song-section :deep(.song-library), .song-section :deep(.song-list) { flex: none; }
+  .song-section :deep(.song-list) { overflow-y: visible; }
+}
+@media (pointer: coarse) {
+  select { font-size: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

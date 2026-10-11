@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "027yuk_403_2_4_027_03_09_b",
-  "logical_id": "story-collection:027yuk_403_2_4_027_03_09_b",
+  "logical_id": "story:027yuk_403_2_4_027_03_09_b",
   "scenario_id": "027yuk_403_2_4_027_03_09_b",
   "text_catalog_id": "027yuk_403_2_4_027_03_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "027yuk_403_2_4_027_03_09_b.json",
-    "sha256": "sha256:8966a2b2d48c39fe2be8ef0634b02346262a107dc5fb7514db0be7046e03a93f",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:5e7f4b6b8fd3e8ea7153a8d24fbaf594fbb9840e7b9e56403f92b22b8188e326",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:3f018918441a9c1974ce03471827f597e40b2ef302168c87d7bb27c39378a3e4",
     "aggregate_source": null,
     "step_count": 14,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "027yuk_403_2_4_027_03_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサーさん、お疲れさま。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000007:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 7,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:646f1b991276553482d6df4b3668484e549173691fd260961bffd0baa9ffd3ef"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 7,
+        "command_end": 7
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "ステージのほうのリハーサルが終わったから、\n今から忘年会のスタジオに移動するよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000009:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 9,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d667de65043678d0031529a12b583a2c0e485fecbc4759b265b9abe6d8b45609"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 9,
+        "command_end": 9
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "忘年会のスタジオもレトロで素敵な雰囲気だけど、\nライブ用のステージはすごく華やかだね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000011:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 11,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6ae665caac638fa507c958b07955a0d2b82ff4795d00abb9d43d5a051d6a126e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 11,
+        "command_end": 11
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "忘年会のリハーサルが始まるまで、まだ少し時間が\nあるみたいだけど、一旦待機でよかったかな？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000013:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 13,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f6b1f1a7f40a06127bb45ea8671ad57db8e83a6493ab93498e6e6ebfd8b14218"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 13,
+        "command_end": 13
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "大丈夫です",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015:choice_short:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 15,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2e4511c79dd301bd751212ca916d4ecb6803d0f2fe2fe7f710a166e18d934922"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,14 +264,14 @@
         "row_id": "027yuk_403_2_4_027_03_09_b:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015",
+        "option_id": "choice-option:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015:000",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "時間になったら\nお呼びします",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f4a40c036a20c60ff3dfded7b0133a719fdacc545325c6be24b848cd39b8110d"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "027yuk_403_2_4_027_03_09_b:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 15,
+        "command_end": 16
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015",
+        "option_id": "choice-option:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000016:001",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "わかった。みんなにもそう伝えておくよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000019:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 19,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d5f4d2ba09088d600c02652cda3b15ac6362e8f5ccb38b562eaf1bf75685e429"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "……それにしても、このセットを見ていると\nもう今年も終わるんだなってしみじみ思うよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000021:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 21,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b0c045d8235caf6161c66946852cc3b1938d26883227f86a1dbd01041dd00560"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "この1年間に経験したこと、初めて見る景色。\n色々思い出すなぁ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000023:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 23,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e99f22387778fbb4e933de046ed154dda5807edf67ec9e88d6b953286875b1d4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "って、これから年越し配信があるっていうのに、\n感傷に浸るのはまだ早かったな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000025:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 25,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e7c73dbe8f1053baf82431fb0553e8387bd14374bb175254d0a8811ed7a8e9e0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "call"
@@ -437,11 +534,22 @@
     {
       "kind": "dialogue",
       "source_text": "最後の最後まで気を抜かずに、\n俺もしっかり盛り上げるよ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000027:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 27,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b9a64bbe8ac048512379d6897a8af107ebae5df32c95766570d1e0f14368f1fc"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -457,19 +565,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "call"
@@ -477,11 +583,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃあ、俺たちは一旦控え室で待機してるよ。\nまた後でね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000029:phone_message:000",
+        "source": {
+          "scenario_id": "027yuk_403_2_4_027_03_09_b",
+          "part_id": "2_4_027_03_09_b",
+          "file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+          "command_index": 29,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3a200ce7ca3078a7358278e3767199385362a324ed8df60802012383e3c75c39"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "神谷 幸広"
       },
       "performance": {
@@ -497,19 +614,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "027yuk_403_2_4_027_03_09_b:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_027_03_09_b",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "call"
@@ -522,96 +637,60 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015",
+          "option_id": "choice-option:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015:000",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000015",
+          "option_id": "choice-option:v1:027yuk_403_2_4_027_03_09_b:2_4_027_03_09_b:cmd-000016:001",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 7,
+        "join_step_id": 8,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/027yuk_403/scenario_2_4_027_03_09_b.json",
+        "raw_sha256": "sha256:1f2335cf4d07697fb97d9fd060ff9aee8c20ca1b217d3fcf70bee5f693e573c5",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          15,
+          16
+        ],
+        "join_command": 17,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select1",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサーさん、お疲れさま。",
     "episode_label": null

@@ -33,6 +33,14 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             previous["performer_idol_ids"] = sorted(set(
                 previous["performer_idol_ids"] + performer_ids
             ))
+            # Fields 30-34 are performer slots 1-5. Rows that disagree leave the order unknown
+            # (the member union above still holds); in the shipped data every song's rows agree.
+            if performer_ids:
+                if previous.get("_slot_order_conflict") or (previous["performer_slot_order"] and previous["performer_slot_order"] != performer_ids):
+                    previous["_slot_order_conflict"] = True
+                    previous["performer_slot_order"] = []
+                else:
+                    previous["performer_slot_order"] = previous["performer_slot_order"] or performer_ids
             previous["table_46_row_count"] += 1
             previous["_source"] = source(
                 46,
@@ -68,6 +76,8 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
                 ),
             },
             "performer_idol_ids": sorted(set(performer_ids)),
+            # The same ids in slot order (field 30 = performer slot 1): who stands where in the original.
+            "performer_slot_order": performer_ids,
             "table_46_row_count": 1,
             "_source": source(
                 46,
@@ -142,6 +152,8 @@ def build_music_catalog(tables: dict[int, list[dict[str, Any]]]) -> dict[str, An
             roles = bgm[resource].setdefault("table_133_roles", [])
             if role not in roles:
                 roles.append(role)
+    for song in songs.values():
+        song.pop("_slot_order_conflict", None)
     return {
         "schema_version": 2,
         "songs": songs,

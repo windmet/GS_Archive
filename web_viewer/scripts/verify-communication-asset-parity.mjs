@@ -153,6 +153,8 @@ const unitScenario = { schema_version: 2, runtime_contract: 'story-runtime-v2', 
   { step_id: 3, type: 'adv', entry_snapshot: { spines: [] }, settled_snapshot: { spines: [] },
     dialogue: { speaker_identity: { entity_id: '001tom' } }, normalization: { unmapped_legacy_fields: [] } },
 ] }
+unitScenario.steps[0].presentation_context = { thread: { id: 'fixture:group', kind: 'group', unit_code: '01jup',
+  provenance: { kind: 'raw-talk-start', raw_sha256: `sha256:${'a'.repeat(64)}` } } }
 const unitPlan = createStoryAssetPlan(unitScenario, source)
 const kinds = unitPlan.assets.map(asset => `${asset.kind}:${asset.id}`)
 const unitCode = getUnitCodeByCharaId(selfChara)
@@ -267,6 +269,7 @@ for (const [optionIndex, option] of choiceScenario.steps[2].options.entries()) {
   const projected = runInNewContext(`(() => {${historyProjection[1]}\n})()`, {
     props: { historyStack: [], stepIndex: 2, choiceTexts: { 2: selection } },
     talkByIndex: { value: {} },
+    context: { value: { threadId: null } },
     localization: { resolveChoiceSelection: record => ({ text: record.source_text }) },
   })
   assert.equal(projected[0].isProducer, true)
@@ -316,12 +319,17 @@ for (const asset of branchPlan.assets) {
   for (const use of asset.uses) if (use.path === 'communication') plannedKeys.add(`${asset.kind}|${asset.id}`)
 }
 for (const item of branchPlan.unresolved) {
-  assert.equal(item.reason, 'communication-history-dependent', 'unverified history must remain explicit')
+  assert.ok(['communication-history-dependent', 'communication-without-unit'].includes(item.reason),
+    'unverified history and unproven private-chat themes must remain explicit')
 }
 assert.equal(branchPlan.dependenciesComplete, false, 'named branch fixtures do not close arbitrary-history requirements')
 assert.ok(branchPlan.unresolved.some(item => item.reason === 'communication-history-dependent'))
 for (const [context, index] of [[viaLinear, 2], [viaHistory, 2]]) {
   for (const requirement of branchRequirements(context, index)) {
+    if (requirement.reason) {
+      assert.ok(branchPlan.unresolved.some(item => item.reason === requirement.reason))
+      continue
+    }
     assert.ok(plannedKeys.has(`${requirement.kind}|${requirement.id}`),
       `the plan must enumerate ${requirement.kind}:${requirement.id} from the ${context.mode} branch`)
   }

@@ -32,8 +32,9 @@
   --player-control-border: rgba(24, 36, 43, 0.18);
   --player-control-ink: #18242b;
   --player-control-muted: #526174;
-  --player-accent: #38b8a7;
-  --player-accent-strong: #147f77;
+  /* Interface accent is the archive stage light; the nameplate below keeps the in-game green. */
+  --player-accent: var(--gs-mint);
+  --player-accent-strong: var(--gs-mint-ink);
   --player-accent-soft: #bff8ef;
   --player-accent-line: rgba(56, 184, 167, 0.48);
   /* Sampled from the in-game ADV nameplate reference supplied for P1. */
@@ -48,12 +49,12 @@
   --player-log-border: rgba(16, 213, 131, 0.24);
   --player-log-accent: #087a57;
   --player-active-surface: rgba(223, 245, 241, 0.98);
-  --player-active-border: #38b8a7;
-  --player-active-text: #0f6f68;
+  --player-active-border: var(--gs-mint);
+  --player-active-text: var(--gs-mint-ink);
   --player-border-light: rgba(255, 255, 255, 0.62);
   --player-border-dark: rgba(255, 255, 255, 0.28);
   --player-focus-inner: #ffffff;
-  --player-focus-outer: #38b8a7;
+  --player-focus-outer: var(--gs-mint);
   --mobile-choice-teal: #007a72;
   --mobile-choice-teal-text: #ffffff;
   --mobile-choice-lime: #b7db3b;

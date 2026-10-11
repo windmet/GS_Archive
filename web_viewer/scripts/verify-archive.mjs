@@ -589,7 +589,10 @@ const report = {
   },
 }
 
-const outputPath = path.join(publicRoot, 'data', 'archive_verification.json')
+const outputOption = process.argv.indexOf('--output')
+if (outputOption >= 0 && !process.argv[outputOption + 1]) throw new Error('--output requires a report path')
+const outputPath = outputOption >= 0 ? path.resolve(process.argv[outputOption + 1])
+  : path.join(publicRoot, 'data', 'archive_verification.json')
 await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, 'utf8')
 console.log(`Wrote ${path.relative(projectRoot, outputPath)}`)
 console.log(JSON.stringify({

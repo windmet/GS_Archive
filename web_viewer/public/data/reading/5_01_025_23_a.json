@@ -1,0 +1,671 @@
+{
+  "schema_version": 2,
+  "document_id": "5_01_025_23_a",
+  "logical_id": "story-collection:5_01_025_23",
+  "scenario_id": "5_01_025_23_a",
+  "text_catalog_id": "5_01_025_23",
+  "playback": {
+    "file": "episodes/5_01_025_23_a.json",
+    "start_step_index": 0,
+    "end_step_index": 14
+  },
+  "source": {
+    "file": "episodes/5_01_025_23_a.json",
+    "sha256": "sha256:296946b38f6257acfd9a2f3a5bae2ad7b2696acb1540aeb7349116154a4608a3",
+    "schema_version": 1,
+    "runtime_contract": null,
+    "raw_hash": "sha256:124c97d2ce70307b7fdd6171721448a31cf2bf7995750af1f49c0e36a5b15923",
+    "aggregate_source": {
+      "file": "5_01_025_23.json",
+      "scenario_id": "5_01_025_23",
+      "start_step_index": 0,
+      "end_step_index": 14
+    },
+    "step_count": 15,
+    "publication": {
+      "kind": "catalog-compatibility",
+      "aggregate_file": "5_01_025_23.json"
+    }
+  },
+  "status": "ready",
+  "rows": [
+    {
+      "kind": "dialogue",
+      "source_text": "今年もチョコをもらえるなんて、嬉しいぜ。\nありがとな、●●●●プロデューサーさん！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000013:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 13,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:87d3406cc737059bac85617db4d73481af319908de4deaec31343404673d127a"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 3
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-3:text",
+        "step_id": 3,
+        "step_index": 2,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 13,
+        "command_end": 13
+      },
+      "option": null
+    },
+    {
+      "kind": "choice",
+      "source_text": "今回もたくさんパッションを込めました！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000021:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 21,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1ef0ccdc9caa0db906d0d8bb36a66ced571ca19de27216473530e08ac8e9ef47"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 6
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-6:option-0",
+        "step_id": 6,
+        "step_index": 5,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 21,
+        "command_end": 22
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_025_23:5_01_025_23_a:cmd-000021",
+        "option_id": "choice-option:v1:5_01_025_23:5_01_025_23_a:cmd-000021:000",
+        "source_label": "a1001",
+        "target_step_id": 7,
+        "target_step_index": 6,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "choice",
+      "source_text": "去年以上のパッションが詰まってます！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000022:choice_short:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 22,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a4738472158b0945ee7e20252f50d390f57ccc8b510dd094fd3b9627378e0232"
+      },
+      "speaker": {
+        "kind": "none",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": ""
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 6
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-6:option-1",
+        "step_id": 6,
+        "step_index": 5,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 21,
+        "command_end": 22
+      },
+      "option": {
+        "choice_id": "choice:v1:5_01_025_23:5_01_025_23_a:cmd-000021",
+        "option_id": "choice-option:v1:5_01_025_23:5_01_025_23_a:cmd-000022:001",
+        "source_label": "a1002",
+        "target_step_id": 7,
+        "target_step_index": 6,
+        "resolution": "resolved"
+      }
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "そうなのか！？\nどうりでハートが燃えるはずだ！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0744d5d87338b1dc50e40f68b4732e4001fbb236ab41742331d760f3d9365ca0"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 8
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-8:text",
+        "step_id": 8,
+        "step_index": 7,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 31,
+        "command_end": 31
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "よっしゃあ！　このチョコに込められた心意気、\nしっかり受け止めたぜ！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000038:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 38,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b99eaf8981fad4fae8d35466e4d921da926dd516e7d83f7db8e6cd085ac569dd"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 9
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-9:text",
+        "step_id": 9,
+        "step_index": 8,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 38,
+        "command_end": 38
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "これでどんな仕事も全力でできそうだ！\nうおおおおっ！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000044:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 44,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8d9ab47bff6385f39f4e12801e7a0ec7e2124f87ed50d5a0d2d1182b2dd9cbd7"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 10
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-10:text",
+        "step_id": 10,
+        "step_index": 9,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 44,
+        "command_end": 44
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "にゃにゃっ！　にゃー！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000047:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 47,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:be74d09a73ec8d66d8d3a0579995074b0b445e7ea0961a7254f94397c7cb57ab"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "241sub",
+        "sourceName": "にゃん喜威"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "unknown",
+        "reason": "unresolved-performance-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 11
+      },
+      "diagnostics": [
+        "unresolved-performance-actor"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-11:text",
+        "step_id": 11,
+        "step_index": 10,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 47,
+        "command_end": 47
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "っと、そんなに怒るなって！",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000053:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 53,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b559ed4974b60f079683755de0570e5092cec269d1703590edec48f7ecae6dd0"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 12
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-12:text",
+        "step_id": 12,
+        "step_index": 11,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 53,
+        "command_end": 53
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "……へへっ。はしゃぎ過ぎて、\nにゃこに怒られちまったぜ。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000058:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 58,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c8ff8d98ffe05b33f8f386974e22cebbbd521d42d9c99c2dfe1e6a56bb4f1849"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 13
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-13:text",
+        "step_id": 13,
+        "step_index": 12,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 58,
+        "command_end": 58
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "こんなに喜んでいただけるなんて、\n嬉しいです。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000060:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 60,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:3fbd364a493bffb84841aa5b160462502f4e2a113a7a5ca9f84860086dbbe7aa"
+      },
+      "speaker": {
+        "kind": "producer",
+        "entityType": null,
+        "entityId": null,
+        "sourceName": "<P>"
+      },
+      "performance": {
+        "entityType": null,
+        "entityId": null
+      },
+      "visual": {
+        "entityType": null,
+        "entityId": null,
+        "presence": "not-applicable",
+        "reason": "non-idol-dialogue",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 14
+      },
+      "diagnostics": [],
+      "inline_translation": null,
+      "has_voice": false,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-14:text",
+        "step_id": 14,
+        "step_index": 13,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 60,
+        "command_end": 60
+      },
+      "option": null
+    },
+    {
+      "kind": "dialogue",
+      "source_text": "そりゃ、喜ぶに決まってるぜ！　来年も、\nプロデューサーさんからもらえるのが楽しみだ。",
+      "text_ref": {
+        "unit_id": "story-text:v1:5_01_025_23:5_01_025_23_a:cmd-000066:dialogue:000",
+        "source": {
+          "scenario_id": "5_01_025_23",
+          "part_id": "5_01_025_23_a",
+          "file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+          "command_index": 66,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aa20b9f36f75c5fff6635595304e64f269af9b12f4220dd085bd28dd7ab2685b"
+      },
+      "speaker": {
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
+        "sourceName": "紅井 朱雀"
+      },
+      "performance": {
+        "entityType": "idol",
+        "entityId": "025suz"
+      },
+      "visual": {
+        "entityType": "idol",
+        "entityId": "025suz",
+        "presence": "visible",
+        "reason": "matching-visible-stage-actor",
+        "source": "stage-snapshot",
+        "snapshot": "entry",
+        "stepId": 15
+      },
+      "diagnostics": [
+        "compatibility-stage-evidence",
+        "entry-settled-actor-difference"
+      ],
+      "inline_translation": null,
+      "has_voice": true,
+      "anchor": {
+        "row_id": "5_01_025_23_a:step-15:text",
+        "step_id": 15,
+        "step_index": 14,
+        "source_part_id": "5_01_025_23_a",
+        "source_file": "scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "command_start": 66,
+        "command_end": 66
+      },
+      "option": null
+    }
+  ],
+  "controls": [
+    {
+      "step_id": 6,
+      "step_index": 5,
+      "kind": "choice",
+      "options": [
+        {
+          "choice_id": "choice:v1:5_01_025_23:5_01_025_23_a:cmd-000021",
+          "option_id": "choice-option:v1:5_01_025_23:5_01_025_23_a:cmd-000021:000",
+          "source_label": "a1001",
+          "target_step_id": 7,
+          "target_step_index": 6,
+          "resolution": "resolved"
+        },
+        {
+          "choice_id": "choice:v1:5_01_025_23:5_01_025_23_a:cmd-000021",
+          "option_id": "choice-option:v1:5_01_025_23:5_01_025_23_a:cmd-000022:001",
+          "source_label": "a1002",
+          "target_step_id": 7,
+          "target_step_index": 6,
+          "resolution": "resolved"
+        }
+      ],
+      "fork": {
+        "choice_index": 5,
+        "choice_step_id": 6,
+        "join_index": 6,
+        "join_step_id": 7,
+        "join_step_type": "stage",
+        "source_file": "assets/resources/scenariodata/5_01_025_23/scenario_5_01_025_23_a.json",
+        "raw_sha256": "sha256:5211101cd8b4c402faea1a98eb21f77da628037e051c52e3004ede4beb72b49d",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          21,
+          22
+        ],
+        "join_command": 24,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "a1001",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [
+              23
+            ],
+            "step_types": [],
+            "step_ids": []
+          },
+          {
+            "option_index": 1,
+            "label": "a1002",
+            "step_indices": [],
+            "exit_index": null,
+            "command_indices": [],
+            "step_types": [],
+            "step_ids": []
+          }
+        ]
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "compatibility-source-fields-may-be-missing",
+      "step_index": null,
+      "severity": "warning"
+    }
+  ],
+  "presentation": {
+    "title": "燃えて燃えて燃えまくる！\r",
+    "episode_label": null
+  }
+}

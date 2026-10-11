@@ -46,3 +46,7 @@ python scripts/verify-local-story-text-ledger.py --output .analysis/local-story-
 Work 域作为隔离 backfill 试点：637 份现有 Reader 文档与重编候选的行种类、原文及顺序 **637/637 一致**；旧非空行 4,103，新候选非空行 4,103，且 **4,103/4,103** 都带 `text_ref`。运行时比较排除旧文件本来没有的 RAW provenance 与新增文本身份后，非文本差异 0/637。机器结果为 `.analysis/translation-preflight/work-pilot.json`，可由 `node scripts/check-work-text-backfill-pilot.mjs` 重现。这证明 Work 候选具备文本回填的局部 parity，不等于已发布 Work：`public/data/compiled`、Reader、translation overlay 和 publication ledger 本批仍未改动。
 
 正式 Work publication 需将候选作为完整批次审计并生成可回滚的发布账本，再重生 Reader、校验远端/设备。当前 [PROJECT_MAP.md](PROJECT_MAP.md) 的 P2-B 长稳仍是选择下一 strict-v2 collection 的项目门槛；本续批未把候选写进公开 corpus，也不把 Work 试点结果写成正式翻译可用状态。
+
+## 2026-09-29 编译作用域更正
+
+上述独立 part 结果保留为历史取证。当前重编命令默认改为完整 mounted group 编译再切 episode；旧 part 模式须显式传入 --scope raw-parts。已核实 1,320 份额外简介行来自作用域差异，完整复审见 [编译逻辑修复报告](GS_GROUP_COMPILATION_REPAIR_20260929.md)。候选修复不等于正式身份回填。

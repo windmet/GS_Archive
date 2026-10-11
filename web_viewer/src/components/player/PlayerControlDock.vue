@@ -79,7 +79,7 @@ defineEmits(['previous', 'auto', 'backlog', 'skip', 'next'])
   letter-spacing: 0.08em;
 }
 
-@media (max-width: 699px) {
+@media (max-width: 760px) {
   .player-control-dock {
     bottom: calc(var(--player-dock-bottom) + env(safe-area-inset-bottom));
     height: 48px;

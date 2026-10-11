@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "5_04_000_22_5_04_000_22",
-  "logical_id": "story-collection:5_04_000_22_5_04_000_22",
+  "logical_id": "story:5_04_000_22_5_04_000_22",
   "scenario_id": "5_04_000_22_5_04_000_22",
   "text_catalog_id": "5_04_000_22_5_04_000_22",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "5_04_000_22_5_04_000_22.json",
-    "sha256": "sha256:244bf0e50f91e5a93a12ea91650326f35a68280bf511cbcbafc7bba3ab1f0889",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:a9505187f894b74746f83532d4ae017d1ee38c0b7531f8aec9ba2ee6ed547aa6",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:2350cb91ce77ab770b5acdfaf00a338856373f1138728f830e3907cc30a7394c",
     "aggregate_source": null,
     "step_count": 36,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "5_04_000_22_5_04_000_22.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,7 +30,18 @@
     {
       "kind": "title",
       "source_text": "運動会が終わって",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000000:title:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 0,
+          "field_kind": "title",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c302954346e9a3d12a38675be4c01f09dbf39204cb2a978385ecd39f180b13f7"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -54,21 +68,32 @@
         "row_id": "5_04_000_22_5_04_000_22:step-1:heading",
         "step_id": 1,
         "step_index": 0,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 0,
+        "command_end": 0
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "改めて、運動会お疲れさま！\nいやー、どの競技も\nめちゃくちゃ熱かったぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000015:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 15,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:c4cff96fce593bb2c5bd1d3a96918a7fe30c349f35c40cf8eb006226775250d6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "輝"
       },
       "performance": {
@@ -84,19 +109,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null,
       "presentation": "talk"
@@ -104,11 +127,22 @@
     {
       "kind": "dialogue",
       "source_text": "みんなきあいが\n入りまくってたよな",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000017:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 17,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a9195f5d851b68fb0de082eb7912b9bc1411beb1bb49a57aedc5d95b113ce78c"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "朱雀"
       },
       "performance": {
@@ -124,19 +158,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 17,
+        "command_end": 17
       },
       "option": null,
       "presentation": "talk"
@@ -144,11 +176,22 @@
     {
       "kind": "dialogue",
       "source_text": "315プロダクションでの\n運動会というのも\nよいものだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000019:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 19,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4e0e85de300b2a8a63d396930ebf0541325dc8ad49ea788f00f1a1237790adcd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "麗"
       },
       "performance": {
@@ -164,19 +207,17 @@
         "snapshot": "entry",
         "stepId": 7
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null,
       "presentation": "talk"
@@ -184,11 +225,22 @@
     {
       "kind": "dialogue",
       "source_text": "みんなが集まれる機会は\nそうないですからね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000021:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 21,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cccfdc3708bbfdc27d48473d4109659733671306081122a458cf9e537989064e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "秀"
       },
       "performance": {
@@ -204,19 +256,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 21,
+        "command_end": 21
       },
       "option": null,
       "presentation": "talk"
@@ -224,11 +274,22 @@
     {
       "kind": "dialogue",
       "source_text": "本番だけじゃなくて、\n練習をしたり作戦会議をしたり\nすごく楽しかったです<emoji>image_talk_emoji_05</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000023:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 23,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0f9378f66ccd56220a034fc0f0fb0a1a6d683993bfd5a4b7ea2d7a20d9a29f27"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "涼"
       },
       "performance": {
@@ -244,19 +305,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null,
       "presentation": "talk"
@@ -264,11 +323,22 @@
     {
       "kind": "dialogue",
       "source_text": "そういえば、\nみのりさんがオフショットを\n撮ってたな",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000025:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 25,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a8fcecfd9c3e10f3cd6ab23cabfeb41ee66efb05cd18d433ebe0c74372821339"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "009kyj",
         "sourceName": "恭二"
       },
       "performance": {
@@ -284,19 +354,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 25,
+        "command_end": 25
       },
       "option": null,
       "presentation": "talk"
@@ -304,11 +372,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺も見たよ！\nいろんな写真があったね",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000027:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 27,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2a168ba3e93ab26d6f4ad9b838a5932b2dac9b5c15731aa26b39d1548c83cf77"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "享介"
       },
       "performance": {
@@ -324,19 +403,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 27,
+        "command_end": 27
       },
       "option": null,
       "presentation": "talk"
@@ -344,11 +421,22 @@
     {
       "kind": "dialogue",
       "source_text": "応援団の写真とか\nすごくカッコよかったよ<emoji>image_talk_emoji_16</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000029:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 29,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8b72f6361a78147cac3c1c03c8807dd7b9c389c88db3929ce897259614dfac36"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "013kys",
         "sourceName": "享介"
       },
       "performance": {
@@ -364,19 +452,17 @@
         "snapshot": "entry",
         "stepId": 12
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-12:text",
         "step_id": 12,
         "step_index": 11,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 29,
+        "command_end": 29
       },
       "option": null,
       "presentation": "talk"
@@ -384,11 +470,22 @@
     {
       "kind": "dialogue",
       "source_text": "ファンのみんなも、\n盛り上がってたよな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000031:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 31,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:aa5dd4b2f6e5e318fab42e06026606ead479f915138dfaa593accac1878f98c7"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "冬馬"
       },
       "performance": {
@@ -404,19 +501,17 @@
         "snapshot": "entry",
         "stepId": 13
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-13:text",
         "step_id": 13,
         "step_index": 12,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null,
       "presentation": "talk"
@@ -424,11 +519,22 @@
     {
       "kind": "dialogue",
       "source_text": "ああ、みんなすげぇいい笑顔\nだったぜ。またみんなで\n運動会がやりたいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000033:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 33,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:922e5ea37e7518d32b8ddb5e43631e506826b0798e5cfd0d6ecb7e01056c1743"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "英雄"
       },
       "performance": {
@@ -444,19 +550,17 @@
         "snapshot": "entry",
         "stepId": 14
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-14:text",
         "step_id": 14,
         "step_index": 13,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 33,
+        "command_end": 33
       },
       "option": null,
       "presentation": "talk"
@@ -464,11 +568,22 @@
     {
       "kind": "dialogue",
       "source_text": "あら、いいわね。\nもしまた運動会をするなら、\nどんな競技に出たい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000035:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 35,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:93822660e32a2aef70c6155475b0e972b2aef06cb40a6478ed4d7b4a0e72b3e9"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "翔真"
       },
       "performance": {
@@ -484,19 +599,17 @@
         "snapshot": "entry",
         "stepId": 15
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-15:text",
         "step_id": 15,
         "step_index": 14,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 35,
+        "command_end": 35
       },
       "option": null,
       "presentation": "talk"
@@ -504,11 +617,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回参加しなかった競技とか\nやりたいよな！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000037:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 37,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f1694d574b9c75b94d9c3341519b89a6a3197bb9b3c33ca0b232801730123a68"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "004ter",
         "sourceName": "輝"
       },
       "performance": {
@@ -524,19 +648,17 @@
         "snapshot": "entry",
         "stepId": 16
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-16:text",
         "step_id": 16,
         "step_index": 15,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 37,
+        "command_end": 37
       },
       "option": null,
       "presentation": "talk"
@@ -544,11 +666,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺はそうだな、仮装リレーや\nジャンボビーチボールに\n参加してみたいな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000039:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 39,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:6553849c45fdcfbc0b3cd78b07e48d4cfd055344cd8bed71cfc68dac6cf98a6d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "幸広"
       },
       "performance": {
@@ -564,19 +697,17 @@
         "snapshot": "entry",
         "stepId": 17
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-17:text",
         "step_id": 17,
         "step_index": 16,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 39,
+        "command_end": 39
       },
       "option": null,
       "presentation": "talk"
@@ -584,11 +715,22 @@
     {
       "kind": "dialogue",
       "source_text": "俺はリレーがやりたい！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000041:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 41,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:026fbc8ada58b4561f49dc4aa105f4c019ad63626928c305a72a6369fa146f06"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "隼人"
       },
       "performance": {
@@ -604,19 +746,17 @@
         "snapshot": "entry",
         "stepId": 18
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-18:text",
         "step_id": 18,
         "step_index": 17,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 41,
+        "command_end": 41
       },
       "option": null,
       "presentation": "talk"
@@ -624,11 +764,22 @@
     {
       "kind": "dialogue",
       "source_text": "運動会の花形だし、\n何よりカッコいいから\nモテそう<emoji>image_talk_emoji_12</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000043:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 43,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:fdf6a663c8621d42260a5b4447cff23d489700de401203e7c6e415e998289c2e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "020hay",
         "sourceName": "隼人"
       },
       "performance": {
@@ -644,19 +795,17 @@
         "snapshot": "entry",
         "stepId": 19
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-19:text",
         "step_id": 19,
         "step_index": 18,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 43,
+        "command_end": 43
       },
       "option": null,
       "presentation": "talk"
@@ -664,11 +813,22 @@
     {
       "kind": "dialogue",
       "source_text": "秋山らしい理由だな。\n他には、今回なかった競技も\n面白そうだ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000045:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 45,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:8eade45e9a4b8ab5d5bee14f3d3119419110b0960ed43eda4c7bc8158ae51e51"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "雨彦"
       },
       "performance": {
@@ -684,19 +844,17 @@
         "snapshot": "entry",
         "stepId": 20
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-20:text",
         "step_id": 20,
         "step_index": 19,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 45,
+        "command_end": 45
       },
       "option": null,
       "presentation": "talk"
@@ -704,11 +862,22 @@
     {
       "kind": "dialogue",
       "source_text": "二人三脚とか、\n大玉転がしでしょうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000047:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 47,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a04eb709137be4d155e6f54880c41b4ad48463798c92167a276caa0acd3193e3"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "直央"
       },
       "performance": {
@@ -724,19 +893,17 @@
         "snapshot": "entry",
         "stepId": 21
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-21:text",
         "step_id": 21,
         "step_index": 20,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 47,
+        "command_end": 47
       },
       "option": null,
       "presentation": "talk"
@@ -744,11 +911,22 @@
     {
       "kind": "dialogue",
       "source_text": "あとは棒倒しとか、\n騎馬戦もあるよな",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000049:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 49,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:1eae4d2f5ee412a2c0252deb2054aca529d98b08a99fccf388d8317527db27e4"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "タケル"
       },
       "performance": {
@@ -764,19 +942,17 @@
         "snapshot": "entry",
         "stepId": 22
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-22:text",
         "step_id": 22,
         "step_index": 21,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 49,
+        "command_end": 49
       },
       "option": null,
       "presentation": "talk"
@@ -784,11 +960,22 @@
     {
       "kind": "dialogue",
       "source_text": "くう～どのきょうぎも\nめちゃくちゃ燃えるぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000051:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 51,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9c41cf67cef3cf2d3c8cce891db4efc7974c7eab3f0a9a007ae18b7d7154790b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "025suz",
         "sourceName": "朱雀"
       },
       "performance": {
@@ -804,19 +991,17 @@
         "snapshot": "entry",
         "stepId": 23
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-23:text",
         "step_id": 23,
         "step_index": 22,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 51,
+        "command_end": 51
       },
       "option": null,
       "presentation": "talk"
@@ -824,11 +1009,22 @@
     {
       "kind": "dialogue",
       "source_text": "すまない、出遅れてしまった。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000053:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 53,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:eb0a08a7aa1356d5e498c282117a9f2b0e0541df55bc450d868d377ea93d19de"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "道夫"
       },
       "performance": {
@@ -844,19 +1040,17 @@
         "snapshot": "entry",
         "stepId": 24
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-24:text",
         "step_id": 24,
         "step_index": 23,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 53,
+        "command_end": 53
       },
       "option": null,
       "presentation": "talk"
@@ -864,11 +1058,22 @@
     {
       "kind": "dialogue",
       "source_text": "おや、何かあったのかい？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000055:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 55,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0f5dc54e122cdc590fbea1ded949b9a77c2c862f19ce0803133f8777f3637b57"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "018shm",
         "sourceName": "翔真"
       },
       "performance": {
@@ -884,19 +1089,17 @@
         "snapshot": "entry",
         "stepId": 25
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-25:text",
         "step_id": 25,
         "step_index": 24,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 55,
+        "command_end": 55
       },
       "option": null,
       "presentation": "talk"
@@ -904,11 +1107,22 @@
     {
       "kind": "dialogue",
       "source_text": "山下くんも筋肉痛になり、\n湿布を届けに行っていた。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000057:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 57,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:23fe2884ff2810b635bc410529874a5302dbd917f6921e4ca53a4e80684696f8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "035mco",
         "sourceName": "道夫"
       },
       "performance": {
@@ -924,19 +1138,17 @@
         "snapshot": "entry",
         "stepId": 26
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-26:text",
         "step_id": 26,
         "step_index": 25,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 57,
+        "command_end": 57
       },
       "option": null,
       "presentation": "talk"
@@ -944,11 +1156,22 @@
     {
       "kind": "dialogue",
       "source_text": "じろうせんせい、\n大丈夫でしょうか。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000059:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 59,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b3fd33dce26ea0f1206885df47ad6fe0742e71b1369dc0605e692b8accfac238"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "032nao",
         "sourceName": "直央"
       },
       "performance": {
@@ -964,19 +1187,17 @@
         "snapshot": "entry",
         "stepId": 27
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-27:text",
         "step_id": 27,
         "step_index": 26,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 59,
+        "command_end": 59
       },
       "option": null,
       "presentation": "talk"
@@ -984,11 +1205,22 @@
     {
       "kind": "dialogue",
       "source_text": "筋肉痛の時は、\n適度なストレッチを\nするといいぜ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000061:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 61,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:a3a336b9f40790be3e8134b3e8654e05ca2439b4f9b6efecba54cf75dbf36a19"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "014hid",
         "sourceName": "英雄"
       },
       "performance": {
@@ -1004,19 +1236,17 @@
         "snapshot": "entry",
         "stepId": 28
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-28:text",
         "step_id": 28,
         "step_index": 27,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 61,
+        "command_end": 61
       },
       "option": null,
       "presentation": "talk"
@@ -1024,11 +1254,22 @@
     {
       "kind": "dialogue",
       "source_text": "風呂に入って揉むのもいい",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000063:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 63,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:4925944a9f698e396a91674cc635ffade63ff3fdea8f1ff3bf887143c66c9d2f"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "038tak",
         "sourceName": "タケル"
       },
       "performance": {
@@ -1044,19 +1285,17 @@
         "snapshot": "entry",
         "stepId": 29
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-29:text",
         "step_id": 29,
         "step_index": 28,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 63,
+        "command_end": 63
       },
       "option": null,
       "presentation": "talk"
@@ -1064,11 +1303,22 @@
     {
       "kind": "dialogue",
       "source_text": "都築さんも普段運動を\nしないからな。念のため、\n伝えておこう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000065:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 65,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:f7d6e5d0015b85c4d27ba509113c7fc0c30f8aff3f329b9f9864d02b764e1828"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "008rei",
         "sourceName": "麗"
       },
       "performance": {
@@ -1084,19 +1334,17 @@
         "snapshot": "entry",
         "stepId": 30
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-30:text",
         "step_id": 30,
         "step_index": 29,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 65,
+        "command_end": 65
       },
       "option": null,
       "presentation": "talk"
@@ -1104,11 +1352,22 @@
     {
       "kind": "dialogue",
       "source_text": "筋肉痛はともかく、\n全員怪我無く終わって\nよかったな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000067:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 67,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:506870c5d8bc69e77d5d174dc9b40db126bb2c77a54cb7cb16cd73be300228bb"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "雨彦"
       },
       "performance": {
@@ -1124,19 +1383,17 @@
         "snapshot": "entry",
         "stepId": 31
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-31:text",
         "step_id": 31,
         "step_index": 30,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 67,
+        "command_end": 67
       },
       "option": null,
       "presentation": "talk"
@@ -1144,11 +1401,22 @@
     {
       "kind": "dialogue",
       "source_text": "はい！それに今回の\n運動会を通して、みんなと\nより絆が深まった気がします<emoji>image_talk_emoji_35</emoji>",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000069:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 69,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:728875fe370372e4caa415c37f52961ff20e2bb398dafc03a49a56d41b358e3b"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "041ryo",
         "sourceName": "涼"
       },
       "performance": {
@@ -1164,19 +1432,17 @@
         "snapshot": "entry",
         "stepId": 32
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-32:text",
         "step_id": 32,
         "step_index": 31,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 69,
+        "command_end": 69
       },
       "option": null,
       "presentation": "talk"
@@ -1184,11 +1450,22 @@
     {
       "kind": "dialogue",
       "source_text": "機会を作ってくれた\nプロデューサーさんには\n感謝だね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000071:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 71,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:df45a505c45d45278291052b5bfec08bd7e1f2ccbdd2b818370b453324bdeba2"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "027yuk",
         "sourceName": "幸広"
       },
       "performance": {
@@ -1204,19 +1481,17 @@
         "snapshot": "entry",
         "stepId": 33
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-33:text",
         "step_id": 33,
         "step_index": 32,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 71,
+        "command_end": 71
       },
       "option": null,
       "presentation": "talk"
@@ -1224,11 +1499,22 @@
     {
       "kind": "dialogue",
       "source_text": "あと、運動会を提案した\n社長にもっすね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000073:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 73,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:cc09110574ff4761436443558b6b662025811bcffea2b6bc49ecb9d27a2973dd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "009kyj",
         "sourceName": "恭二"
       },
       "performance": {
@@ -1244,19 +1530,17 @@
         "snapshot": "entry",
         "stepId": 34
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-34:text",
         "step_id": 34,
         "step_index": 33,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 73,
+        "command_end": 73
       },
       "option": null,
       "presentation": "talk"
@@ -1264,11 +1548,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうですね。\nまたみんなで何かするのも\nファンが喜びそうです。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000075:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 75,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b96e54387011e39459284dfa3cff28b70fdad5ca08fa46937db22f89286688c8"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "047shu",
         "sourceName": "秀"
       },
       "performance": {
@@ -1284,19 +1579,17 @@
         "snapshot": "entry",
         "stepId": 35
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-35:text",
         "step_id": 35,
         "step_index": 34,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 75,
+        "command_end": 75
       },
       "option": null,
       "presentation": "talk"
@@ -1304,11 +1597,22 @@
     {
       "kind": "dialogue",
       "source_text": "お、それいいな。\nもちろん勝負なら\n負けないぜ！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:5_04_000_22_5_04_000_22:5_04_000_22:cmd-000077:mobile_message:000",
+        "source": {
+          "scenario_id": "5_04_000_22_5_04_000_22",
+          "part_id": "5_04_000_22",
+          "file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+          "command_index": 77,
+          "field_kind": "mobile_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:ca527412f2c1eb5c19aa614b7fa8a51af1c84bc9e7226ea231d7f3ac4b178e43"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "001tom",
         "sourceName": "冬馬"
       },
       "performance": {
@@ -1324,197 +1628,24 @@
         "snapshot": "entry",
         "stepId": 36
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": false,
       "anchor": {
         "row_id": "5_04_000_22_5_04_000_22:step-36:text",
         "step_id": 36,
         "step_index": 35,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "5_04_000_22",
+        "source_file": "assets/resources/scenariodata/5_04_000_22/scenario_5_04_000_22.json",
+        "command_start": 77,
+        "command_end": 77
       },
       "option": null,
       "presentation": "talk"
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 0,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 11,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 12,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 13,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 14,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 15,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 16,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 17,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 18,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 19,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 20,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 21,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 22,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 23,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 24,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 25,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 26,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 27,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 28,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 29,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 30,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 31,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 32,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 33,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 34,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 35,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "改めて、運動会お疲れさま！",
     "episode_label": null

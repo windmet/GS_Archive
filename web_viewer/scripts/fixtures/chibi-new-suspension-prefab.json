@@ -1,0 +1,160 @@
+{
+  "name": "LiveObjectNewSuspensionLight",
+  "serializedFile": "resources.assets",
+  "pathId": "31745",
+  "components": [
+    {
+      "type": "RectTransform",
+      "serializedFile": "resources.assets",
+      "pathId": "81139",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "rotation": {
+        "x": -0.0,
+        "y": -0.0,
+        "z": -0.0,
+        "w": 1.0
+      }
+    },
+    {
+      "type": "MonoBehaviour",
+      "serializedFile": "resources.assets",
+      "pathId": "126439",
+      "bytes": 84,
+      "sha256": "bd1049a8c3e67c0e9e0f5509bd918d2085ab6cbf23b7598b8cf69a9d075df6ee",
+      "typetreeStatus": "partial_unknown_custom_fields",
+      "strictReadError": "Expected to read 84 bytes, but only read 32 bytes",
+      "rawHex": "00000000017c0000000000000100000001000000b70300000000000000000000000000007dd800000000000000000000275b000000000000000000000000000000000000000000000000803f0000000000000000",
+      "scriptClass": "LiveObjectNewSuspensionLight",
+      "commonFields": {
+        "m_GameObject": {
+          "m_FileID": 0,
+          "m_PathID": 31745
+        },
+        "m_Enabled": 1,
+        "m_Script": {
+          "m_FileID": 1,
+          "m_PathID": 951
+        },
+        "m_Name": ""
+      }
+    }
+  ],
+  "children": [
+    {
+      "name": "RotateBase",
+      "serializedFile": "resources.assets",
+      "pathId": "23335",
+      "components": [
+        {
+          "type": "RectTransform",
+          "serializedFile": "resources.assets",
+          "pathId": "90085",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          }
+        }
+      ],
+      "children": [
+        {
+          "name": "LightSprite",
+          "serializedFile": "resources.assets",
+          "pathId": "18137",
+          "components": [
+            {
+              "type": "RectTransform",
+              "serializedFile": "resources.assets",
+              "pathId": "90573",
+              "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "scale": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              },
+              "rotation": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0,
+                "w": 1.0
+              }
+            },
+            {
+              "type": "SpriteRenderer",
+              "serializedFile": "resources.assets",
+              "pathId": "55421",
+              "enabled": true,
+              "flipX": false,
+              "flipY": false,
+              "drawMode": 0,
+              "color": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              },
+              "sortingOrder": 0,
+              "sprite": {
+                "name": "new_suspension_light_sample",
+                "serializedFile": "resources.assets",
+                "pathId": "2580",
+                "rect": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "width": 1024.0,
+                  "height": 1024.0
+                },
+                "pivot": {
+                  "x": 0.5,
+                  "y": 1.0
+                },
+                "pixelsToUnits": 100.0,
+                "packingFlags": 64,
+                "texture": {
+                  "name": "new_suspension_light_sample",
+                  "serializedFile": "resources.assets",
+                  "pathId": "834",
+                  "width": 1024,
+                  "height": 1024
+                }
+              },
+              "materials": [
+                {
+                  "name": "TransparentAdd",
+                  "serializedFile": "resources.assets",
+                  "pathId": "120",
+                  "shader": "ohashi/SimpleAdd"
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ]
+}

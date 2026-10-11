@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "006tsu_402_2_4_006_02_09_b",
-  "logical_id": "story-collection:006tsu_402_2_4_006_02_09_b",
+  "logical_id": "story:006tsu_402_2_4_006_02_09_b",
   "scenario_id": "006tsu_402_2_4_006_02_09_b",
   "text_catalog_id": "006tsu_402_2_4_006_02_09_b",
   "playback": {
@@ -11,27 +11,41 @@
   },
   "source": {
     "file": "006tsu_402_2_4_006_02_09_b.json",
-    "sha256": "sha256:b8b565dbf260d7c0b2241e92a572fd5a985bf237da219fa3573b5233f7602a46",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:f9f1eee7672ae458f98b120182a0049de70a494ff4d3fa8f1c79b9315636b03d",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:65fd006234c4ab293008cc1b2311ff4bfdea5aeca6307a8358c4e1b277fd54de",
     "aggregate_source": null,
     "step_count": 12,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "006tsu_402_2_4_006_02_09_b.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-002"
+      }
     }
   },
-  "status": "unsupported",
+  "status": "ready",
   "rows": [
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、お疲れ様です。\n今、家を出ました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000008:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 8,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:59d152d891361690e965afc7e134989318d75a23a2146daac0046e844548e1bd"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -47,19 +61,17 @@
         "snapshot": "entry",
         "stepId": 3
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-3:text",
         "step_id": 3,
         "step_index": 2,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 8,
+        "command_end": 8
       },
       "option": null,
       "presentation": "call"
@@ -67,11 +79,22 @@
     {
       "kind": "dialogue",
       "source_text": "今日はすごくよく晴れてますね。\n暦では秋なのに、まだまだ暑くて……",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000010:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 10,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2a325ff67e471c462294a162230983f581d7f56ee605d5981f4c565ebef08c21"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -87,19 +110,17 @@
         "snapshot": "entry",
         "stepId": 4
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-4:text",
         "step_id": 4,
         "step_index": 3,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 10,
+        "command_end": 10
       },
       "option": null,
       "presentation": "call"
@@ -107,11 +128,22 @@
     {
       "kind": "dialogue",
       "source_text": "いい機会なので、買ったまま放ってあった\nキャップを被ってみました。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000012:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 12,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:af77e3adce9f0d746717813f8bfb129160fd9d1c540e7d0d4eca7c66a648d1ab"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -127,19 +159,17 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 12,
+        "command_end": 12
       },
       "option": null,
       "presentation": "call"
@@ -147,11 +177,22 @@
     {
       "kind": "dialogue",
       "source_text": "今回の仕事を受けてから、いつもとは違う\nコーディネートに挑戦してみたくなって。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000014:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 14,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:b2b180da1d991121125753a0596e4a16525df965ab02c987bdf9e694f1a9efc0"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -167,19 +208,17 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 14,
+        "command_end": 14
       },
       "option": null,
       "presentation": "call"
@@ -187,7 +226,18 @@
     {
       "kind": "choice",
       "source_text": "見てみたいです",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016:choice_short:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 16,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:bd28edcec080a38fcfbb93a21979ab9806f4d565106865202f00a70a0113f51b"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -214,14 +264,14 @@
         "row_id": "006tsu_402_2_4_006_02_09_b:step-7:option-0",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 16,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016",
+        "option_id": "choice-option:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016:000",
         "source_label": "phone_select1",
         "target_step_id": 8,
         "target_step_index": 7,
@@ -232,7 +282,18 @@
     {
       "kind": "choice",
       "source_text": "ファッションショーの\n影響でしょうか？",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000017:choice_short:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 17,
+          "field_kind": "choice_short",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2195d347aa50acaa2bc60a557ea5c0449d8f5fc85ce2d66220a0612b8bd2ac12"
+      },
       "speaker": {
         "kind": "none",
         "entityType": null,
@@ -259,14 +320,14 @@
         "row_id": "006tsu_402_2_4_006_02_09_b:step-7:option-1",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 16,
+        "command_end": 17
       },
       "option": {
-        "choice_id": null,
-        "option_id": null,
+        "choice_id": "choice:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016",
+        "option_id": "choice-option:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000017:001",
         "source_label": "phone_select2",
         "target_step_id": 9,
         "target_step_index": 8,
@@ -277,11 +338,22 @@
     {
       "kind": "dialogue",
       "source_text": "ふふ。着いたら感想を聞かせてください。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000020:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 20,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:2badd041a28d34bc78d88c6c086239fd86c3e344e21cf823cf0bdc1ee1dbba7d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -297,19 +369,17 @@
         "snapshot": "entry",
         "stepId": 8
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 20,
+        "command_end": 20
       },
       "option": null,
       "presentation": "call"
@@ -317,11 +387,22 @@
     {
       "kind": "dialogue",
       "source_text": "そうなんです。\nたまには違うファッションも楽しいですね。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000024:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 24,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:e6b52df6afbc70f07e4512b68f299b3a743ac90db0a13c3a7a165a3e7451ef5e"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -337,19 +418,17 @@
         "snapshot": "entry",
         "stepId": 9
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 24,
+        "command_end": 24
       },
       "option": null,
       "presentation": "call"
@@ -357,11 +436,22 @@
     {
       "kind": "dialogue",
       "source_text": "ファッションショーで服を着こなすために、\n今日もウォーキングのレッスン頑張らないと。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000028:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 28,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:176dc71dee68b3f7f82389ebc87d99dab565b7bbd3782934c03bd6ccee6d46ca"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -377,19 +467,17 @@
         "snapshot": "entry",
         "stepId": 10
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-10:text",
         "step_id": 10,
         "step_index": 9,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 28,
+        "command_end": 28
       },
       "option": null,
       "presentation": "call"
@@ -397,11 +485,22 @@
     {
       "kind": "dialogue",
       "source_text": "それじゃあ、またあとで！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000030:phone_message:000",
+        "source": {
+          "scenario_id": "006tsu_402_2_4_006_02_09_b",
+          "part_id": "2_4_006_02_09_b",
+          "file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+          "command_index": 30,
+          "field_kind": "phone_message",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:7d1e859e65ac8b31c031922833a01e9268bc2d58a2d1f9719a444956ce151333"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "006tsu",
         "sourceName": "柏木 翼"
       },
       "performance": {
@@ -417,19 +516,17 @@
         "snapshot": "entry",
         "stepId": 11
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "006tsu_402_2_4_006_02_09_b:step-11:text",
         "step_id": 11,
         "step_index": 10,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "2_4_006_02_09_b",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "command_start": 30,
+        "command_end": 30
       },
       "option": null,
       "presentation": "call"
@@ -442,91 +539,82 @@
       "kind": "choice",
       "options": [
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016",
+          "option_id": "choice-option:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016:000",
           "source_label": "phone_select1",
           "target_step_id": 8,
           "target_step_index": 7,
           "resolution": "resolved"
         },
         {
-          "choice_id": null,
-          "option_id": null,
+          "choice_id": "choice:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000016",
+          "option_id": "choice-option:v1:006tsu_402_2_4_006_02_09_b:2_4_006_02_09_b:cmd-000017:001",
           "source_label": "phone_select2",
           "target_step_id": 9,
           "target_step_index": 8,
           "resolution": "resolved"
         }
-      ]
+      ],
+      "fork": {
+        "choice_index": 6,
+        "choice_step_id": 7,
+        "join_index": 9,
+        "join_step_id": 10,
+        "join_step_type": "call",
+        "source_file": "assets/resources/scenariodata/006tsu_402/scenario_2_4_006_02_09_b.json",
+        "raw_sha256": "sha256:2b8eec23b897bf40e8b8b2122ede7c64651286652444147e893b8158215062c2",
+        "raw_hash_format": "sha256-raw-file-v1",
+        "choice_commands": [
+          16,
+          17
+        ],
+        "join_command": 26,
+        "branches": [
+          {
+            "option_index": 0,
+            "label": "phone_select1",
+            "step_indices": [
+              7
+            ],
+            "exit_index": 7,
+            "command_indices": [
+              18,
+              19,
+              20,
+              21
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              8
+            ]
+          },
+          {
+            "option_index": 1,
+            "label": "phone_select2",
+            "step_indices": [
+              8
+            ],
+            "exit_index": 8,
+            "command_indices": [
+              22,
+              23,
+              24,
+              25
+            ],
+            "step_types": [
+              "call"
+            ],
+            "step_ids": [
+              9
+            ]
+          }
+        ]
+      }
     }
   ],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 2,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 3,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "branch-exits-unavailable",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "nonsequential-choice-path",
-      "step_index": 6,
-      "severity": "unsupported"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 9,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 10,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、お疲れ様です。",
     "episode_label": null

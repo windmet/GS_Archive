@@ -1,13 +1,15 @@
-"""Recompile local RAW story TextAssets into isolated strict-v2 candidates.
+"""Recompile local RAW stories with mounted group scope by default.
 
 The output is an audit workspace, never a public corpus or publication release.
-Every source part receives a ledger entry, including extraction/compile failures.
+--scope raw-parts is a forensic inventory, not an episode replacement: it lacks
+the preceding parts' synopsis deduplication and scene state.
 """
 from __future__ import annotations
 
 import argparse
 from collections import Counter
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import sys
@@ -45,11 +47,13 @@ def run(raw_root: Path, output: Path) -> dict:
     output = output.resolve()
     if output == ROOT or output.is_relative_to(ROOT / "public"):
         raise ValueError("Candidate output must stay outside public")
+    if output.exists() and any(output.iterdir()):
+        raise ValueError("Use an empty output; do not overwrite audited RAW candidates")
     candidates = output / "candidates"
     candidates.mkdir(parents=True, exist_ok=True)
     bundles = sorted(asset_root.glob("scenario_*.unity3d"))
     ledger = {"schema_version": 1, "purpose": "local-raw-strict-v2-text-audit",
-              "publication_status": "candidate-only", "raw_root": str(raw_root.resolve()),
+              "publication_status": "candidate-only", "compilation_scope": "independent-raw-part", "raw_root": str(raw_root.resolve()),
               "bundles": len(bundles), "entries": []}
     seen_units: dict[str, str] = {}
     for bundle_no, bundle in enumerate(bundles, 1):
@@ -156,10 +160,22 @@ def export_ledger(output: Path, target: Path) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--raw-root", type=Path, default=ROOT.parent / "RAW")
-    parser.add_argument("--output", type=Path, default=ROOT / ".analysis/local-story-strict-v2-r2")
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--scope", choices=("mounted-groups", "raw-parts"), default="mounted-groups")
+    parser.add_argument("--part-ledger", type=Path, default=ROOT / ".analysis/local-story-strict-v2-r2/ledger.json")
     parser.add_argument("--export-ledger", type=Path)
     parser.add_argument("--export-only", action="store_true")
     args = parser.parse_args()
+    if args.scope == "mounted-groups":
+        if args.export_only or args.export_ledger:
+            parser.error("Raw-part exports require --scope raw-parts; group evidence is in its own ledger")
+        spec = importlib.util.spec_from_file_location("mounted_groups", ROOT / "scripts/recompile-mounted-story-groups.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        summary = module.run(args.raw_root.resolve(), args.output or ROOT / ".analysis/local-story-group-v2-r1", args.part_ledger)
+        print(json.dumps(summary, indent=2))
+        raise SystemExit(1 if summary['statuses'].get('blocked') else 0)
+    args.output = args.output or ROOT / ".analysis/local-story-strict-v2-r2"
     summary = json.loads((args.output / "ledger.json").read_text("utf-8"))["summary"] if args.export_only else run(args.raw_root, args.output)
     if args.export_ledger:
         export_ledger(args.output, args.export_ledger)

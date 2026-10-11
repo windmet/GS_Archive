@@ -202,11 +202,11 @@ function semanticJson(bytes) {
   return stableJson(JSON.parse(bytes.toString('utf8')))
 }
 
-export function verifyPublishedArtifact(artifact) {
+export function verifyPublishedArtifact(artifact, snapshot) {
   const filename = resolvePublishedPath(artifact.path)
   if (!existsSync(filename)) return `published file does not exist: ${artifact.path}`
 
-  const indexBytes = readIndexBlob(artifact.path)
+  const indexBytes = snapshot ? snapshot.indexBytes : readIndexBlob(artifact.path)
   if (!indexBytes) return `published file is not present in the Git index: ${artifact.path}`
   if (indexBytes.length !== artifact.bytes) {
     return `published staged canonical size drifted: ${artifact.path}`
@@ -215,7 +215,7 @@ export function verifyPublishedArtifact(artifact) {
     return `published staged canonical hash drifted: ${artifact.path}`
   }
 
-  const headBytes = readHeadBlob(artifact.path)
+  const headBytes = snapshot ? snapshot.headBytes : readHeadBlob(artifact.path)
   if (headBytes) {
     if (headBytes.length !== artifact.bytes) {
       return `published committed canonical size drifted: ${artifact.path}`
@@ -227,7 +227,7 @@ export function verifyPublishedArtifact(artifact) {
 
   const runtimeBytes = readFileSync(filename)
   if (artifact.path.endsWith('.json')) {
-    if (configuredEol(artifact.path) !== 'lf') {
+    if ((snapshot ? snapshot.eol : configuredEol(artifact.path)) !== 'lf') {
       return `published JSON must declare eol=lf: ${artifact.path}`
     }
     try {

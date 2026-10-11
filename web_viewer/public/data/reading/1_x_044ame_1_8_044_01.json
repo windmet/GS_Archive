@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "document_id": "1_x_044ame_1_8_044_01",
-  "logical_id": "story-collection:1_x_044ame_1_8_044_01",
+  "logical_id": "story:1_x_044ame_1_8_044_01",
   "scenario_id": "1_x_044ame_1_8_044_01",
   "text_catalog_id": "1_x_044ame_1_8_044_01",
   "playback": {
@@ -11,15 +11,18 @@
   },
   "source": {
     "file": "1_x_044ame_1_8_044_01.json",
-    "sha256": "sha256:a3cb17b843e60d5cfa2e404e52b128c1f00a13ce62cb3f04ff345b0d1370a1f9",
-    "schema_version": 1,
-    "runtime_contract": null,
-    "raw_hash": null,
+    "sha256": "sha256:d66602502e8eec4ee04482647c7fc0f12d206a5f2bbc72087693b03cb1080b2b",
+    "schema_version": 2,
+    "runtime_contract": "story-runtime-v2",
+    "raw_hash": "sha256:932cc9780790b1beca93977fb1add93b1bf97a72fc2b326e2280526e1387e97b",
     "aggregate_source": null,
     "step_count": 9,
     "publication": {
-      "kind": "catalog-compatibility",
-      "aggregate_file": "1_x_044ame_1_8_044_01.json"
+      "kind": "authoritative-registry",
+      "ownership": {
+        "state": "ledger-governed",
+        "release_id": "2026-09-29-story-translation-strict-v2-001"
+      }
     }
   },
   "status": "ready",
@@ -27,11 +30,22 @@
     {
       "kind": "dialogue",
       "source_text": "●●●●プロデューサー、ちょいといいか？\nなあに、時間は取らないさ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_1_8_044_01:1_8_044_01:cmd-000015:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_044ame_1_8_044_01",
+          "part_id": "1_8_044_01",
+          "file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+          "command_index": 15,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:9be1edd9d74b794723b1bc24a8241e4e3c8f02fc33807bee39bfe73ab07513c6"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -47,30 +61,39 @@
         "snapshot": "entry",
         "stepId": 5
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_1_8_044_01:step-5:text",
         "step_id": 5,
         "step_index": 4,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_044_01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+        "command_start": 15,
+        "command_end": 15
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "誕生日おめでとう。●●●●プロデューサーとは\n長い付き合いになるだろう。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_1_8_044_01:1_8_044_01:cmd-000019:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_044ame_1_8_044_01",
+          "part_id": "1_8_044_01",
+          "file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+          "command_index": 19,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:71e49d968c49974d12068902185f3e5de503a008f50ee7a04dbc2f0cfec8289d"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -86,30 +109,39 @@
         "snapshot": "entry",
         "stepId": 6
       },
-      "diagnostics": [
-        "compatibility-stage-evidence"
-      ],
+      "diagnostics": [],
       "inline_translation": null,
       "has_voice": true,
       "anchor": {
         "row_id": "1_x_044ame_1_8_044_01:step-6:text",
         "step_id": 6,
         "step_index": 5,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_044_01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+        "command_start": 19,
+        "command_end": 19
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "これから先、いい関係を築いていきたいもんだな。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_1_8_044_01:1_8_044_01:cmd-000023:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_044ame_1_8_044_01",
+          "part_id": "1_8_044_01",
+          "file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+          "command_index": 23,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:30d1e71c6b0832258e0f4fae0ab52f994c37e7362049bcedccb2eb49ba3b0780"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -126,7 +158,6 @@
         "stepId": 7
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -135,17 +166,28 @@
         "row_id": "1_x_044ame_1_8_044_01:step-7:text",
         "step_id": 7,
         "step_index": 6,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_044_01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+        "command_start": 23,
+        "command_end": 23
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ふふ、ありがとうございます！\nこちらこそよろしくお願いします！",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_1_8_044_01:1_8_044_01:cmd-000026:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_044ame_1_8_044_01",
+          "part_id": "1_8_044_01",
+          "file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+          "command_index": 26,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:0e6c5a7554c8f15ebbf4197913fd1c9bcbea8a83d7b8e75d3dad9779a8b71cae"
+      },
       "speaker": {
         "kind": "producer",
         "entityType": null,
@@ -172,21 +214,32 @@
         "row_id": "1_x_044ame_1_8_044_01:step-8:text",
         "step_id": 8,
         "step_index": 7,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_044_01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+        "command_start": 26,
+        "command_end": 26
       },
       "option": null
     },
     {
       "kind": "dialogue",
       "source_text": "ああ。邪魔して悪かったな。\nいい誕生日を過ごしてくれ。",
-      "text_ref": null,
+      "text_ref": {
+        "unit_id": "story-text:v1:1_x_044ame_1_8_044_01:1_8_044_01:cmd-000031:dialogue:000",
+        "source": {
+          "scenario_id": "1_x_044ame_1_8_044_01",
+          "part_id": "1_8_044_01",
+          "file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+          "command_index": 31,
+          "field_kind": "dialogue",
+          "field_ordinal": 0
+        },
+        "source_hash": "sha256:d33ba0546e9e785a0485ca1775c5792ab90e47f56a5741da9b0422fd8cfe0114"
+      },
       "speaker": {
-        "kind": "named",
-        "entityType": null,
-        "entityId": null,
+        "kind": "idol",
+        "entityType": "idol",
+        "entityId": "044ame",
         "sourceName": "葛之葉 雨彦"
       },
       "performance": {
@@ -203,7 +256,6 @@
         "stepId": 9
       },
       "diagnostics": [
-        "compatibility-stage-evidence",
         "entry-settled-actor-difference"
       ],
       "inline_translation": null,
@@ -212,47 +264,16 @@
         "row_id": "1_x_044ame_1_8_044_01:step-9:text",
         "step_id": 9,
         "step_index": 8,
-        "source_part_id": null,
-        "source_file": null,
-        "command_start": null,
-        "command_end": null
+        "source_part_id": "1_8_044_01",
+        "source_file": "assets/resources/scenariodata/1_x_044ame/scenario_1_8_044_01.json",
+        "command_start": 31,
+        "command_end": 31
       },
       "option": null
     }
   ],
   "controls": [],
-  "diagnostics": [
-    {
-      "code": "compatibility-source-fields-may-be-missing",
-      "step_index": null,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 4,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 5,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 6,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 7,
-      "severity": "warning"
-    },
-    {
-      "code": "missing-text-ref",
-      "step_index": 8,
-      "severity": "warning"
-    }
-  ],
+  "diagnostics": [],
   "presentation": {
     "title": "●●●●プロデューサー、ちょいといいか？",
     "episode_label": null
