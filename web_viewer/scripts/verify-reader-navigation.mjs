@@ -394,13 +394,18 @@ try {
     await t.closeStoryReader(); assert.equal(t.destinations.length, m, 'superseded preparation applies nothing'); t.stop()
   }
   // The locator's canonical parent is the return target of a Reader opened cold (no source, no parent identity in the URL).
-  {
+  for (const readingScope of ['', 'chapter']) {
     const parent = { route: { view: 'event_detail', event: '410001' }, source: 'event' }
     const t = await fixture(); t.parents.set(entries[0].document_id, parent); await t.updateLocators()
-    await t.apply(single(0)); await until(() => t.readingState.value.status === 'ready', 'cold Reader is ready')
+    await t.apply(single(0, { readingScope })); await until(() => t.readingState.value.status === 'ready', 'cold Reader is ready')
     assert.deepEqual(t.readingState.value.parent, parent, 'the locator parent reaches the reading state')
+    if (readingScope === 'chapter') {
+      await until(() => t.chapterReadingState.value.segments[1].status === 'ready', 'the next segment is ready')
+      t.selectReaderDocument(entries[1].document_id)
+      assert.deepEqual(t.readingState.value.parent, parent, 'selecting a chapter segment preserves the parent')
+    }
     await t.closeStoryReader(); assert.equal(t.destinations.at(-1).view, 'event_detail'); assert.equal(t.destinations.at(-1).event, '410001'); t.stop()
-    const none = await fixture(); await none.apply(single(0)); await until(() => none.readingState.value.status === 'ready', 'Reader without parent data is ready')
+    const none = await fixture(); await none.apply(single(0, { readingScope })); await until(() => none.readingState.value.status === 'ready', 'Reader without parent data is ready')
     assert.equal(none.readingState.value.parent, null, 'older locators carry no parent')
     await none.closeStoryReader(); assert.notEqual(none.destinations.at(-1)?.view, 'event_detail', 'without parent data the old fallback applies'); none.stop()
   }

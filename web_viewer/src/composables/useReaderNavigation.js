@@ -84,7 +84,7 @@ export function useReaderNavigation({
     chapterReadingState.value = state
     const segment = state.segments.find(item => item.documentId === readingDocumentId.value)
     readingState.value = { status: segment?.status || 'not-generated', document: segment?.document || null,
-      entries: state.segments.map(item => item.entry).filter(Boolean), error: segment?.error || '' }
+      entries: state.segments.map(item => item.entry).filter(Boolean), error: segment?.error || '', parent: state.parent || null }
   } })
 
   const readingSession = createReadingSession({ repository: readingRepository, publish: state => { readingState.value = state } })
@@ -129,7 +129,7 @@ export function useReaderNavigation({
     const segment = readingScope.value === 'chapter' && chapterReadingState.value?.segments.find(item => item.documentId === documentId)
     if (!segment) return openStoryReader(documentId)
     readingDocumentId.value = documentId; readingRowId.value = ''; readingRevision.value = segment.entry?.sha256 || ''
-    readingState.value = { status:segment.status, document:segment.document, entries:chapterReadingState.value.segments.map(item=>item.entry).filter(Boolean), error:segment.error }
+    readingState.value = { status:segment.status, document:segment.document, entries:chapterReadingState.value.segments.map(item=>item.entry).filter(Boolean), error:segment.error, parent:chapterReadingState.value.parent || null }
     syncArchiveRoute({ replace:true })
   }
 
