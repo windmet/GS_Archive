@@ -12,7 +12,7 @@
           <Home :size="18" :stroke-width="1.8" aria-hidden="true" /><span>偶像主页</span>
         </button>
         <template v-for="group in navigationGroups" :key="group.id">
-          <hr v-if="group.id === 'tools'" class="archive-nav-divider" />
+          <hr v-if="group.id === 'live'" class="archive-nav-divider" />
           <div class="archive-nav-group" :class="{ 'is-active': activeNavigationGroup === group.id }">
             <button type="button" class="archive-nav-link" :class="{ active: activeNavigationGroup === group.id }"
               :aria-current="activeNavigationGroup === group.id && group.items.length === 1 ? 'page' : undefined"
@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { BookOpen, Box, CalendarDays, Home, LayoutGrid, Music, Search, Users, Wrench } from '@lucide/vue'
+import { BookOpen, Box, CalendarDays, Clapperboard, FolderOpen, Home, Layers, LayoutGrid, Music, Search, Users } from '@lucide/vue'
 import ArchiveBreadcrumb from './ArchiveBreadcrumb.vue'
 import ArchivePageChrome from './ArchivePageChrome.vue'
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
@@ -112,7 +112,7 @@ watch(() => props.modelValue, value => { if (value) mobileSearchOpen.value = tru
 const emit = defineEmits(['navigate', 'back', 'update:modelValue'])
 
 // Same destinations and labels as the portal; only the glyphs are shell-specific.
-const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, tools: Wrench }
+const groupIcons = { stories: BookOpen, people: Users, songs: Music, history: CalendarDays, collection: Box, live: Clapperboard, studio: Layers, resources: FolderOpen }
 const navigationGroups = ARCHIVE_NAVIGATION_GROUPS.map(group => ({ ...group, icon: groupIcons[group.id] }))
 const navigationSection = computed(() => props.activeSection === 'reader' ? 'stories' : props.activeSection)
 const activeNavigationGroup = computed(() => navigationGroups.find(group => group.ids.includes(navigationSection.value))?.id || '')
@@ -131,7 +131,7 @@ const mobileNavigation = computed(() => {
     { id: 'stories', label: '故事', icon: BookOpen, active: current === 'stories' },
     { id: 'idols', label: '偶像', icon: Users, active: current === 'people' },
     { id: 'songs', label: '歌曲', icon: Music, active: current === 'songs' },
-    { id: 'portal', label: '资料馆', icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'tools'].includes(current) },
+    { id: 'portal', label: '资料馆', icon: LayoutGrid, active: props.activeSection === 'portal' || ['history', 'collection', 'live', 'studio', 'resources'].includes(current) },
   ]
 })
 </script>

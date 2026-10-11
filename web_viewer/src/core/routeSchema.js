@@ -13,7 +13,7 @@ export const ROUTE_SCHEMA = Object.freeze({
   collection_catalog: ['entity', 'collection_kind', 'collection_category', 'collection_idol', 'collection_unit', 'collection_attribute', 'collection_page'],
   photo_catalog: ['photo_idol', 'photo'], picture_studio: ['photo_idol', 'photo'], gashas: ['gasha_type'], gasha_detail: ['gasha', 'parent'],
   song_catalog: ['song_scope'], song_detail: ['song', 'song_scope', 'parent', 'unit'], chart_lab: ['song', 'song_scope'], chibi_stage: ['song', 'song_scope', 'stage'],
-  experiments: [], about: [], archive_status: [], spine_lab: [],
+  experiments: [], live: [], studio: [], about: [], archive_status: [], spine_lab: [],
   story_catalog: ['story_mode', 'story_type', 'event_scope', 'availability', 'sort', 'idol', 'q'],
   external_story_resources: [], story_collection: ['story_type', 'story_section', 'story', 'parent', 'idol'], story_detail: ['story', 'story_type', 'story_section', 'parent'],
   seasonal_campaign: ['story_type', 'story_section', 'idol'], work_archive: ['idol', 'story', 'work_mode', 'story_type'],
@@ -40,7 +40,7 @@ export function ownedRouteParams(view, returnView = '') {
 // unchanged: older URLs with extra parameters still parse, and the next write drops them. Grow this set one
 // confirmed group at a time.
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
-  'about', 'archive_status', 'experiments', 'spine_lab', 'welcome', 'unit_catalog', 'episode_zero_units',
+  'about', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog', 'episode_zero_units',
 ]))
 
 // Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.

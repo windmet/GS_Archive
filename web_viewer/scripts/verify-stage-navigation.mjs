@@ -70,25 +70,25 @@ function fixture(initialView = 'song_detail') {
 try {
   // Default entry waits for its module and default song before publishing the stage.
   {
-    const t = fixture('experiments'), module = deferred(), data = deferred()
+    const t = fixture('live'), module = deferred(), data = deferred()
     t.controls.stage = () => module.promise
     t.controls.detail = () => data.promise
     const pending = t.openChibiStage()
     assert.equal(t.state.loading.value, true)
     assert.equal(t.state.loadingPurpose.value, 'stage')
     assert.equal(t.state.preloadProgress.value, 100)
-    assert.equal(t.state.view.value, 'experiments')
+    assert.equal(t.state.view.value, 'live')
     assert.deepEqual(t.requests, [])
     module.resolve(); await flush()
     assert.deepEqual(t.requests, ['drvalv'])
-    assert.equal(t.state.view.value, 'experiments')
+    assert.equal(t.state.view.value, 'live')
     data.resolve({ id: 'drvalv' }); await pending
     assert.equal(t.state.view.value, 'chibi_stage')
     assert.equal(t.state.songReadModelDetail.value?.id, 'drvalv')
     assert.equal(t.state.currentSongId.value, '')
     assert.equal(t.state.stageTargetId.value, '')
     assert.equal(t.state.stageHandoff.value, null)
-    assert.equal(t.state.detailSourceRoute.value, '?view=experiments')
+    assert.equal(t.state.detailSourceRoute.value, '?view=live')
     assert.equal(t.state.loading.value, false)
     assert.equal(t.calls.filter(call => call[0] === 'catalog').length, 1)
   }

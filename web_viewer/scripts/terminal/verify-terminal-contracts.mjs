@@ -49,7 +49,7 @@ test('saved Home preference and explicit Home route remain available',()=>{
  assert.equal(explicit.route.view,'home');assert.equal(explicit.route.homeIdol,'040ren');assert.equal(explicit.source,'explicit')
 })
 test('current published portal navigation retained',()=>assert.deepEqual(ARCHIVE_NAVIGATION.map(section=>section.id),
- ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','photos','experiments','resources']))
+ ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','photos','live','studio','resources']))
 let calls=0
 const fetcher=async()=>{calls++;return{ok:true,text:async()=>JSON.stringify(menu([record]))}}
 await Promise.all([loadTerminalManifest('wallpapers',{retry:true,fetcher}),loadTerminalManifest('wallpapers',{fetcher})]);assert.equal(calls,1);checks++;console.log('PASS catalogue single flight')

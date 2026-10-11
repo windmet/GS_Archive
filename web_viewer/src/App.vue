@@ -104,7 +104,7 @@
       />
 
       <ArchiveAbout v-if="view === 'about'" />
-      <ArchiveExperiments v-if="view === 'experiments'" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" />
+      <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
         embedded
@@ -559,7 +559,7 @@
     <LoadingScreen :can-cancel="Boolean(playbackController.pendingEntry.value) || playbackBuffering" @cancel="playbackController.close()" :visible="!pickerPreparing && (hardLoading || playbackBuffering) && !(view === 'player' && !loading && playbackReadiness?.status === 'waiting' && playbackReadiness?.hasFrame)" :status="preloadStatus" :readiness="playbackReadiness" :message="loadingMessage" surface="player" />
     </PlayerSessionShell>
 
-    <ArchiveExperimentFrame v-if="view === 'chart_lab'" title="谱面预览" :back-label="detailSourceRoute ? '返回来源页' : currentSongId ? '返回歌曲' : '返回工具'" @back="closeFullScreenExperiment">
+    <ArchiveExperimentFrame v-if="view === 'chart_lab'" title="谱面预览" :back-label="detailSourceRoute ? '返回来源页' : currentSongId ? '返回歌曲' : '返回 LIVE'" @back="closeFullScreenExperiment">
       <ArchiveChartLab v-if="!currentSongId || currentSongPresentation?.gameplay" :song="currentSongPresentation?.gameplay ? currentSongPresentation : null"
         :songs="chartSongs" :status="songReadModelStatus" @select-song="selectChartSong" />
       <p v-else role="status">{{ songReadModelStatus || '正在读取谱面资料…' }}</p>
@@ -735,7 +735,8 @@ const archiveRouteLoaders = {
   event_catalog: () => import('./components/archive/ArchiveEventCatalog.vue'),
   collection_catalog: () => import('./components/archive/ArchiveCollectionCatalog.vue'),
   photo_catalog: () => import('./components/archive/ArchivePhotoCatalog.vue'),
-  experiments: () => import('./components/archive/ArchiveExperiments.vue'),
+  live: () => import('./components/archive/ArchiveToolLanding.vue'),
+  studio: () => import('./components/archive/ArchiveToolLanding.vue'),
   about: () => import('./components/archive/ArchiveAbout.vue'),
   chart_lab: () => import('./components/archive/ArchiveChartLab.vue'),
   picture_studio: () => import('./components/archive/PictureStudio.vue'),
@@ -771,7 +772,7 @@ const ArchiveEventDetail = defineArchivePage(archiveRouteLoaders.event_detail)
 const ArchiveEventCatalog = defineArchivePage(archiveRouteLoaders.event_catalog)
 const ArchiveCollectionCatalog = defineArchivePage(archiveRouteLoaders.collection_catalog)
 const ArchivePhotoCatalog = defineArchivePage(archiveRouteLoaders.photo_catalog)
-const ArchiveExperiments = defineArchivePage(archiveRouteLoaders.experiments)
+const ArchiveToolLanding = defineArchivePage(archiveRouteLoaders.live)
 const ArchiveAbout = defineArchivePage(archiveRouteLoaders.about)
 const ArchiveChartLab = defineArchivePage(archiveRouteLoaders.chart_lab)
 const PictureStudio = defineArchivePage(archiveRouteLoaders.picture_studio)
@@ -814,7 +815,7 @@ function primeArchiveRouteComponent(routeView) {
   const revision = ++componentLoadRevision
   const labels = {reader:'阅读器',cards:'卡片目录',card_detail:'卡片详情',idol_picker:'偶像选择',
     portal:'资料馆',event_catalog:'活动目录',event_detail:'活动详情',collection_catalog:'收藏',
-    picture_studio:'摄影工作台',photo_catalog:'摄影资料',story_catalog:'故事目录'}
+    picture_studio:'摄影工作台',photo_catalog:'摄影资源',story_catalog:'故事目录'}
   routePendingMessage.value = `正在打开${labels[routeView] || '下一页'}…`
   const load = archiveRouteLoaders[routeView]
   archiveComponentPending.value = Boolean(load)
@@ -1458,11 +1459,12 @@ const archiveTitle = computed(() => {
   if (view.value === 'reader') return '剧情阅读'
   if (view.value === 'portal') return '我的资料馆'
   if (view.value === 'home') return 'SideM Archive'
-  if (view.value === 'experiments') return '工具'
+  if (view.value === 'live') return 'LIVE'
+  if (view.value === 'studio') return '摄影工作台'
   if (view.value === 'about') return '关于本站'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
-  if (view.value === 'photo_catalog') return '摄影资料'
+  if (view.value === 'photo_catalog') return '摄影资源'
   if (view.value === 'picture_studio') return '摄影工作台'
   if (view.value === 'event_catalog') return '活动一览'
   if (view.value === 'story_catalog') {
@@ -2006,7 +2008,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','experiments','about'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2020,7 +2022,7 @@ function navigateArchiveSection(section) {
     else openIdolPicker('mobile')
   }
   else if (section === 'gashas') openGashaCatalog()
-  else if (section === 'experiments') { filterQuery.value = ''; commitView('experiments') }
+  else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'resources') openArchiveStatus()
   else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
@@ -2224,7 +2226,7 @@ function goArchiveBack() {
     event_catalog:goHome,
     collection_catalog:goHome,
     photo_catalog:goHome,
-    picture_studio:()=>commitView('photo_catalog'),
+    picture_studio:()=>commitView('studio'),
     idols: goHome,
     idol_detail: goHome,
     groups: goBackFromGroups,
@@ -2260,7 +2262,7 @@ function goArchiveBack() {
 function closeFullScreenExperiment() {
   if (view.value === 'chart_lab') return closeChartTool()
   if (detailSourceRoute.value) return restoreDetailSource(goHome)
-  commitView('photo_catalog')
+  commitView('studio')
 }
 
 const { openSongStage, openSpineLab, openChibiStage, closeArchiveExperiment, updateStageTarget } = useStageNavigation({
@@ -2492,7 +2494,7 @@ async function loadScenario(name, returnView = 'files', options = {}) {
 function isBootstrapRoute(route) {
   if (['event_catalog','collection_catalog','photo_catalog','picture_studio'].includes(route.view)) return true
   return (!EXTERNAL_STORY_RESOURCES_ENABLED && route.view === 'external_story_resources') ||
-    ['experiments', 'about', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
+    ['live', 'studio', 'experiments', 'about', 'chart_lab', 'portal', 'welcome', 'idol_picker', 'home', 'reader', 'idol_detail', 'unit_catalog', 'unit_detail', 'song_catalog', 'song_detail', 'gashas', 'gasha_detail', 'cards', 'card_detail', 'event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive', 'mobile_archive', 'story_collection', 'story_detail', 'story_catalog', 'archive_status', 'groups', 'files', 'episode_zero_units', 'episodes', 'spine_lab', 'chibi_stage'].includes(route.view) ||
     (route.view === 'player' && route.returnView === 'reader') ||
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||

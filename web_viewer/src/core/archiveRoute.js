@@ -82,6 +82,8 @@ const VALID_VIEWS = new Set([
   'song_catalog',
   'song_detail',
   'chart_lab',
+  'live',
+  'studio',
   'experiments',
   'about',
   'archive_status',
@@ -144,18 +146,21 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   event_catalog: { section: 'events', required: [] },
   collection_catalog: { section: 'collections', required: [] },
   photo_catalog: { section: 'photos', required: [] },
-  picture_studio: { section: 'photos', required: [], fallback:'photo_catalog' },
+  picture_studio: { section: 'studio', required: [], fallback:'studio' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
   song_catalog: { section: 'songs', required: [] },
   song_detail: { section: 'songs', required: ['song'], fallback: 'song_catalog' },
   // Without a song the chart tool opens on its own song picker, like the Chibi stage.
-  chart_lab: { section: 'experiments', required: [] },
-  experiments: { section: 'experiments', required: [] },
+  chart_lab: { section: 'live', required: [] },
+  live: { section: 'live', required: [] },
+  studio: { section: 'studio', required: [] },
+  // Legacy `?view=experiments` links resolve to the LIVE landing page (see normalizeArchiveRoute).
+  experiments: { section: 'live', required: [] },
   about: { section: 'about', required: [] },
   player: { section: 'player', required: [], fallback: 'home' },
   spine_lab: { section: 'resources', required: [] },
-  chibi_stage: { section: 'resources', required: [] },
+  chibi_stage: { section: 'live', required: [] },
 })
 
 const ARCHIVE_NAVIGATION = Object.freeze([
@@ -169,8 +174,9 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'events', label: '活动' },
   { id: 'collections', label: '道具' },
   { id: 'honors', label: '称号' },
-  { id: 'photos', label: '摄影' },
-  { id: 'experiments', label: '工具' },
+  { id: 'photos', label: '摄影资源' },
+  { id: 'live', label: 'LIVE' },
+  { id: 'studio', label: '摄影工作台' },
   { id: 'resources', label: '资源' },
 ])
 
@@ -290,6 +296,7 @@ export function normalizeArchiveRoute(input = {}) {
   const voice = clean(input.voice)
   const card = clean(input.card)
   let view = scenario ? 'player' : allowed(clean(input.view), VALID_VIEWS, 'home')
+  if (view === 'experiments') view = 'live'
   let category = allowed(clean(input.category), VALID_CATEGORIES, '')
   let idol = clean(input.idol)
   let pickTarget = allowed(clean(input.pickTarget), VALID_PICK_TARGETS, '')
@@ -462,8 +469,8 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   if (BREADCRUMB_HIDDEN_VIEWS.has(route.view)) return []
 
   const home = { label: '资料馆', route: { view: 'portal' } }
-  if(route.view==='picture_studio')return [home,{label:'摄影资料',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资料'})[route.view]}]
+  if(route.view==='picture_studio')return [home,{label:'摄影资源',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })

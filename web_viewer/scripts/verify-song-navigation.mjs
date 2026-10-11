@@ -36,7 +36,7 @@ globalThis.fetch = async url => {
 }
 console.error = () => {}
 
-function fixture(initialView = 'experiments') {
+function fixture(initialView = 'live') {
   const scope = effectScope(); scopes.push(scope)
   const calls = [], loads = [], requests = new Map()
   const state = {
@@ -80,7 +80,7 @@ try {
       [['drv999', 'Special', 2], ['brndnf', 'BRAND NEW FIELD', 1]])
     assert.equal(t.chartSongs.value[1].unitName, 'Jupiter')
     assert.equal(fetchCalls, 1)
-    t.closeChartTool(); assert.deepEqual(t.calls.at(-1), ['restore', '?view=experiments'])
+    t.closeChartTool(); assert.deepEqual(t.calls.at(-1), ['restore', '?view=live'])
     t.scope.stop()
   }
   // A chart selection supersedes an openSong request before either commits a new revision.
@@ -135,7 +135,7 @@ try {
     assert.equal(await t.prepareSongRoute({ view: 'home' }, { isCurrent: () => false }), false)
     assert.equal(await t.prepareSongRoute({ view: 'chibi_stage' }, { isCurrent: () => true }), true)
     assert.equal(t.state.songReadModelDetail.value.id, 'drvalv')
-    assert.equal(t.state.view.value, 'experiments')
+    assert.equal(t.state.view.value, 'live')
     assert.deepEqual(t.calls, [])
     t.scope.stop()
   }
@@ -181,7 +181,7 @@ try {
     }
     t.state.detailSourceRoute.value = ''; t.state.currentSongId.value = 'brndnf'
     t.closeChartTool(); assert.equal(t.state.view.value, 'song_detail')
-    t.state.currentSongId.value = ''; t.closeChartTool(); assert.equal(t.state.view.value, 'experiments')
+    t.state.currentSongId.value = ''; t.closeChartTool(); assert.equal(t.state.view.value, 'live')
     t.scope.stop()
   }
   console.log('Song navigation: real App wiring, shared request ownership, chart variants, route preparation, loaders and return behavior passed')

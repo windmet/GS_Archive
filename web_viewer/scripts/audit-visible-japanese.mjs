@@ -35,7 +35,8 @@ const PAGES = [
   ['mobile phone', '?view=mobile_archive&idol=001tom&mobile_mode=phone'],
   ['mobile unit', '?view=mobile_archive&idol=001tom&mobile_mode=unit'],
   ['mobile random', '?view=mobile_archive&idol=001tom&mobile_mode=random'],
-  ['tools', '?view=experiments'],
+  ['live', '?view=live'],
+  ['studio', '?view=studio'],
   ['about', '?view=about'],
 ]
 // Text that is source on purpose: story dialogue and synopses, song lyrics, proper nouns the

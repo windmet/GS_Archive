@@ -1,6 +1,6 @@
 <template>
   <section class="experiment-frame" :aria-label="title">
-    <header><button type="button" @click="$emit('back')"><ArrowLeft :size="18" />{{ backLabel }}</button><h1>{{ title }}</h1><span>工具</span><ArchiveLanguageSwitch /></header>
+    <header><button type="button" @click="$emit('back')"><ArrowLeft :size="18" />{{ backLabel }}</button><h1>{{ title }}</h1><span>LIVE</span><ArchiveLanguageSwitch /></header>
     <main><slot /></main>
   </section>
 </template>

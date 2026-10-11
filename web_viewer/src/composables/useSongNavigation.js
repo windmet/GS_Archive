@@ -178,7 +178,7 @@ export function useSongNavigation({ view, currentSongId, currentSongScope, songP
 
   function closeChartTool() {
     if (detailSourceRoute.value) return restoreDetailSource(goHome)
-    return commitView(currentSongId.value ? 'song_detail' : 'experiments')
+    return commitView(currentSongId.value ? 'song_detail' : 'live')
   }
 
   function invalidateSongNavigation() {
