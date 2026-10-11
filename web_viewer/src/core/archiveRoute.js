@@ -599,6 +599,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 // `history` merges the current history entry's source: implied for the live location, opt-in for an
 // explicitly passed current URL; independent links never inherit one.
 export function readArchiveRoute(input = null, { history = !input } = {}) {
+  const context = history ? historyNavigationContext() : {}
   const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
@@ -606,11 +607,11 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
-    portalFrom: params.get('portal_from'),
+    portalFrom: params.get('portal_from') ?? context.portalFrom ?? null,
     portalScope: params.get('portal_scope'),
     portalQuery: params.get('q'),
-    homeFrom: params.get('home_from'),
-    sourceRoute: params.get('from') ?? (history ? historySourceRoute() : null),
+    homeFrom: params.get('home_from') ?? context.homeFrom ?? null,
+    sourceRoute: params.get('from') ?? context.source ?? null,
     reading: params.get('reading'),
     readingRow: params.get('reading_row'),
     readingMode: params.get('reading_mode'),
@@ -756,29 +757,47 @@ export function buildArchiveUrl(input, route) {
   return url
 }
 
-// How the user arrived (the Reader/Player return source) is navigation context, not page identity:
-// the address bar keeps only the canonical page, and the source rides this history entry so back,
-// forward and refresh restore it. A copied URL carries no source and falls back to its canonical
-// parent. Older `from=` URLs are still read; the next write moves their source into history state.
-const HISTORY_SOURCE_KEY = 'sidemArchiveSource'
+// How the user arrived (the Reader/Player return source, and the Portal/Home launcher returns) is
+// navigation context, not page identity: the address bar keeps only the canonical page and this
+// versioned record rides the history entry, so back, forward and refresh restore it. A copied URL
+// carries none and falls back to its canonical parent. Older `from=`, `portal_from=` and `home_from=`
+// URLs are still read; the next write moves them into history state.
+const NAVIGATION_CONTEXT_KEY = 'sidemArchiveNav'
+const NAVIGATION_CONTEXT_VERSION = 1
+const LEGACY_SOURCE_KEY = 'sidemArchiveSource'
+// Context field -> the legacy query parameter it replaced.
+const NAVIGATION_CONTEXT_PARAMS = { source: 'from', portalFrom: 'portal_from', homeFrom: 'home_from' }
 
-function historySourceRoute() {
-  if (typeof window === 'undefined') return null
-  const source = window.history.state?.[HISTORY_SOURCE_KEY]
-  return typeof source === 'string' && source.startsWith('?') ? source : null
+function localQuery(value) {
+  return typeof value === 'string' && value.startsWith('?') ? value : null
+}
+
+function historyNavigationContext() {
+  if (typeof window === 'undefined') return {}
+  const state = window.history.state
+  const stored = state?.[NAVIGATION_CONTEXT_KEY]
+  if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
+    return Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])]))
+  }
+  return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
 
 export function writeArchiveRoute(route, { replace = false } = {}) {
   const url = buildArchiveUrl(window.location.href, route)
-  const source = url.searchParams.get('from') || ''
-  url.searchParams.delete('from')
+  const context = { v: NAVIGATION_CONTEXT_VERSION }
+  for (const [key, param] of Object.entries(NAVIGATION_CONTEXT_PARAMS)) {
+    const value = url.searchParams.get(param)
+    if (value) context[key] = value
+    url.searchParams.delete(param)
+  }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
     ? existingEntryId
     : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
   const state = { ...window.history.state, archiveRoute: true, sidemArchiveEntryId: entryId }
-  if (source) state[HISTORY_SOURCE_KEY] = source
-  else delete state[HISTORY_SOURCE_KEY]
+  delete state[LEGACY_SOURCE_KEY]
+  if (Object.keys(context).length > 1) state[NAVIGATION_CONTEXT_KEY] = context
+  else delete state[NAVIGATION_CONTEXT_KEY]
   window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
 }
 

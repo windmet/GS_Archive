@@ -427,6 +427,24 @@ assert.equal(songCatalogBreadcrumbs.length, 2)
     writeArchiveRoute(readArchiveRoute(), { replace: true })
     assert.ok(!new URL(window.location).searchParams.has('from'), 'legacy URL is shortened on the next write')
     assert.equal(readArchiveRoute().sourceRoute, source, 'and its source moved into history state')
+    // Portal / Home launcher returns ride the same versioned context.
+    const portalReturn = '?view=idols&category=idol', homeReturn = '?view=portal'
+    writeArchiveRoute({ view: 'portal', portalFrom: portalReturn })
+    assert.ok(!new URL(window.location).searchParams.has('portal_from'), 'portal_from is not in the address bar')
+    assert.equal(window.history.state.sidemArchiveNav.v, 1, 'context is versioned')
+    assert.equal(readArchiveRoute().portalFrom, portalReturn, 'portal return restores from history state')
+    assert.ok(!readArchiveRoute(window.location.href).portalFrom, 'a copied portal URL carries no return')
+    writeArchiveRoute({ view: 'home', homeFrom: homeReturn })
+    assert.ok(!new URL(window.location).searchParams.has('home_from'))
+    assert.equal(readArchiveRoute().homeFrom, homeReturn, 'home return restores from history state')
+    writeArchiveRoute({ view: 'portal' }, { replace: true })
+    assert.ok(!readArchiveRoute().portalFrom && !window.history.state.sidemArchiveNav, 'empty context leaves no state')
+    entries[index] = { state: { sidemArchiveSource: source }, href: 'http://localhost/?view=reader&reading=doc1' }
+    assert.equal(readArchiveRoute().sourceRoute, source, 'pre-versioned history entries still restore their source')
+    entries[index] = { state: null, href: 'http://localhost/?view=portal&portal_from=' + encodeURIComponent(portalReturn) }
+    assert.equal(readArchiveRoute().portalFrom, portalReturn, 'legacy portal_from URL is still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('portal_from') && readArchiveRoute().portalFrom === portalReturn, 'legacy portal_from moves into state')
   } finally { delete globalThis.window }
 }
 
