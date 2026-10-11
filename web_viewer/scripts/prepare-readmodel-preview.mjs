@@ -53,6 +53,7 @@ assert(workEntries.length === 637, 'Work backfill preview requires 637 published
 const workFiles = new Set([
   'data/reading/manifest.json', 'data/authoritative_story_publications.json',
   'data/publication/manifest.json', `data/publication/releases/${workRelease}.json`,
+  'data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json',
 ])
 for (const entry of workEntries) {
   workFiles.add(`data/compiled/${entry.source_file}`)

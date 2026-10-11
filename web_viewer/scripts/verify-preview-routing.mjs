@@ -45,7 +45,8 @@ assert.equal((await call(assets, '/assets/test.ogg', 'POST')).status, 405)
 assert.equal((await call(assets, '/assets/%2e%2e/test.ogg')).status, 404)
 assert.equal((await call(data, '/data/test.json')).headers.get('Content-Type'), 'application/json; charset=utf-8')
 for (const key of ['/data/compiled/1_5_001tom_1_5_001_00_0.json',
-  '/data/reading/1_5_001tom_1_5_001_00_0.json', '/data/reading/manifest.json']) {
+  '/data/reading/1_5_001tom_1_5_001_00_0.json', '/data/reading/manifest.json',
+  '/data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json']) {
   const redirected = await data({ request: new Request(`https://preview.pages.dev${key}`),
     env: { ARCHIVE_WORK_BACKFILL_RELEASE: '2026-09-28-story-work-text-backfill-001' } })
   assert.equal(redirected.status, 302)

@@ -9,6 +9,7 @@ const WORK_INDEX = new Set([
   '/data/authoritative_story_publications.json',
   '/data/publication/manifest.json',
   `/data/publication/releases/${WORK_RELEASE}.json`,
+  '/data/publication/releases/2026-10-12-birthday-small-talk-retirement-001.json',
 ])
 
 export const onRequest = context => {
