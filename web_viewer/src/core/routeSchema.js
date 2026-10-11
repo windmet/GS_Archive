@@ -1,5 +1,6 @@
-// DRAFT per-view route ownership: which URL query parameters each view is expected to serialize.
-// Report-only: nothing enforces this yet (see docs/GS_ARCHIVE_ROUTE_SCHEMA_AUDIT_20261011.md). Each entry was
+// Per-view route ownership: which URL query parameters each view is expected to serialize. Entries are a DRAFT
+// except for the views in ENFORCED_ROUTE_VIEWS, which buildArchiveUrl prunes to this table (see
+// docs/GS_ARCHIVE_ROUTE_SCHEMA_AUDIT_20261011.md). Each entry was
 // derived from the page contracts and the generic builder and still needs its owning page confirmed before
 // buildArchiveUrl may prune against it. Context parameters (from, portal_from, home_from) are not listed: they
 // live in the history NavigationContext. Player entries are keyed by `player:<returnView>`.
@@ -33,4 +34,21 @@ export function routeSchemaKey(view, returnView = '') {
 
 export function ownedRouteParams(view, returnView = '') {
   return ROUTE_SCHEMA[routeSchemaKey(view, returnView)] || (view === 'player' ? PLAYER_FALLBACK : null)
+}
+
+// Views whose entry has been confirmed against their page and whose writes are pruned to it. Reading is
+// unchanged: older URLs with extra parameters still parse, and the next write drops them. Grow this set one
+// confirmed group at a time.
+export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
+  'about', 'archive_status', 'experiments', 'spine_lab', 'welcome', 'unit_catalog', 'episode_zero_units',
+]))
+
+// Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.
+const CONTEXT_PARAMS = new Set(['view', 'from', 'portal_from', 'home_from'])
+
+export function pruneToRouteSchema(url, view, returnView = '', routeKeys = []) {
+  if (!ENFORCED_ROUTE_VIEWS.has(view)) return url
+  const owned = new Set(ownedRouteParams(view, returnView) || [])
+  for (const key of routeKeys) if (!owned.has(key) && !CONTEXT_PARAMS.has(key)) url.searchParams.delete(key)
+  return url
 }

@@ -1,7 +1,7 @@
 // Route schema consistency (report-only: nothing prunes URLs against ROUTE_SCHEMA yet) and the stale player-return guard.
 import assert from 'node:assert/strict'
-import { ROUTE_SCHEMA, ownedRouteParams } from '../src/core/routeSchema.js'
-import { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS, buildArchiveUrl } from '../src/core/archiveRoute.js'
+import { ENFORCED_ROUTE_VIEWS, ROUTE_SCHEMA, ownedRouteParams } from '../src/core/routeSchema.js'
+import { ARCHIVE_ROUTE_CONTRACTS, ROUTE_QUERY_KEYS, VALID_VIEWS, buildArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 
 // Every view is covered; player is covered per audited return view.
@@ -43,4 +43,30 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
   state.view.value = 'player'; state.currentScenarioFile.value = 'a.json'
   assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).searchParams.get('return'), 'event_detail', 'the player still records its return view')
 }
-console.log(`Route schema: ${Object.keys(ROUTE_SCHEMA).length} view entries cover all ${VALID_VIEWS.size} views; parameters are route keys; contract requirements are owned; stale player return stays out of other URLs (report-only, no pruning)`)
+// Enforced views serialize only their own parameters (plus context); older URLs with extras still read and are shortened on write.
+{
+  assert.ok([...ENFORCED_ROUTE_VIEWS].every(view => VALID_VIEWS.has(view)))
+  const stale = (view, extra = {}) => {
+    const url = new URL('http://localhost/'); for (const key of ROUTE_QUERY_KEYS.filter(key => key !== 'scenario')) url.searchParams.set(key, extra[key] ?? `${key}-x`)
+    url.searchParams.set('view', view); return url
+  }
+  for (const view of ENFORCED_ROUTE_VIEWS) {
+    const owned = new Set(ownedRouteParams(view))
+    const read = readArchiveRoute(stale(view, { category: 'idol', story_type: 'main', pick: 'profile', collection_kind: 'items', from: '?view=story_catalog' }))
+    assert.equal(read.view, view, `${view}: an old URL with extras still opens the page`)
+    const written = buildArchiveUrl('http://localhost/', read)
+    const keys = [...new Set([...written.searchParams.keys()])].filter(key => key !== 'view' && key !== 'from')
+    assert.deepEqual(keys.filter(key => !owned.has(key)), [], `${view}: no non-owned parameter is written`)
+    const state = useArchiveNavigationState(); state.view.value = view; state.currentCardId.value = 'card1'; state.currentEventId.value = '10001'
+    state.currentStoryDomain.value = 'main'; state.filterQuery.value = 'q'; state.currentCharacterId.value = '001tom'
+    const emitted = buildArchiveUrl('http://localhost/', state.currentArchiveRoute())
+    assert.deepEqual([...emitted.searchParams.keys()], ['view'], `${view}: dirty state writes only the view`)
+  }
+  // The source context a page returns through is not pruned (it moves to history state on write).
+  assert.equal(buildArchiveUrl('http://localhost/', { view: 'about', sourceRoute: '?view=cards' }).searchParams.get('from')?.startsWith('?view=cards'), true)
+  // A view outside the enforced set is unchanged by pruning.
+  assert.ok(buildArchiveUrl('http://localhost/', { view: 'story_catalog', storyType: 'main', query: 'x' }).searchParams.has('story_type'))
+  // An event_detail without an event falls back to the catalog without throwing.
+  assert.doesNotThrow(() => buildArchiveUrl('http://localhost/', { view: 'event_detail' }))
+}
+console.log(`Route schema: ${Object.keys(ROUTE_SCHEMA).length} view entries cover all ${VALID_VIEWS.size} views; parameters are route keys; contract requirements are owned; stale player return stays out of other URLs ; enforced views are pruned`)

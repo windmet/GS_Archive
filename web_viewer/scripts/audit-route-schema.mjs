@@ -41,7 +41,7 @@ function emitted(viewName, returnView) {
 }
 function survives(viewName, returnView) {
   const url = new URL('http://localhost/')
-  for (const key of ROUTE_QUERY_KEYS) url.searchParams.set(key, QUERY_VALUES[key] ?? `${key}-x`)
+  for (const key of ROUTE_QUERY_KEYS) if (viewName === 'player' || key !== 'scenario') url.searchParams.set(key, QUERY_VALUES[key] ?? `${key}-x`)
   url.searchParams.set('view', viewName)
   if (returnView) url.searchParams.set('return', returnView)
   return params(buildArchiveUrl('http://localhost/', readArchiveRoute(url)))

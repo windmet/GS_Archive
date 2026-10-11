@@ -1,5 +1,6 @@
 import { normalizeCollectionRoute } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
+import { pruneToRouteSchema } from './routeSchema.js'
 const ROUTE_QUERY_KEYS = [
   'collection_kind','collection_category','collection_idol','collection_unit','collection_attribute','collection_page',
   'event_kind','event_sort','event_page',
@@ -672,7 +673,7 @@ export function buildArchiveUrl(input, route) {
 
   url.searchParams.set('view', normalized.view)
   if (normalized.view === 'event_catalog') {
-    const browse = normalized.eventBrowse
+    const browse = normalizeEventBrowseState(normalized.eventBrowse)
     if (browse.kind) url.searchParams.set('event_kind', browse.kind)
     if (browse.sort !== 'newest') url.searchParams.set('event_sort', browse.sort)
     if (browse.page) url.searchParams.set('event_page', String(browse.page))
@@ -754,7 +755,7 @@ export function buildArchiveUrl(input, route) {
   if (normalized.returnView && normalized.returnView !== 'files') url.searchParams.set('return', normalized.returnView)
   if (normalized.parentView) url.searchParams.set('parent', normalized.parentView)
   if (normalized.sourceRoute) url.searchParams.set('from', normalized.sourceRoute)
-  return url
+  return pruneToRouteSchema(url, normalized.view, normalized.returnView, ROUTE_QUERY_KEYS)
 }
 
 // How the user arrived (the Reader/Player return source, and the Portal/Home launcher returns) is
