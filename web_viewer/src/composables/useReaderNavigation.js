@@ -171,6 +171,7 @@ export function useReaderNavigation({
       detailSourceRoute: detailSourceRoute.value, storyDomain: currentStoryDomain.value, characterId: currentCharacterId.value,
       storyFile: currentStoryFile.value, workMode: currentWorkMode.value, storySection: currentStorySection.value,
       eventId: currentEventId.value, eventParentView: eventParentView.value, categoryId: currentCategoryId.value, unitCode: currentArchiveUnitCode.value,
+      parent: readingState.value.parent?.route || null,
     })
     if (decision.action === 'restore-source') return restoreDetailSource(openStoryCatalog)
     if (decision.action === 'catalog') return openStoryCatalog()

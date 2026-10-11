@@ -16,6 +16,7 @@ import { withLoadDeadline } from '../src/core/AsyncLoadBoundary.js'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue, selectCollectionContinuation } from '../src/core/PlayerEntryRequest.js'
 import { buildArchiveSourceQuery, readArchiveSourceRoute } from '../src/core/archiveRoute.js'
 import { readerReturnDecision } from '../src/core/ReaderReturnPolicy.js'
+import { readingParent } from '../src/data/ReadingRepository.js'
 import { storyContentMode } from '../src/utils/LanguageStore.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
@@ -96,7 +97,7 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     const url = `/_catalog/v/${release}/fixture/${name}.json`, bytes = JSON.stringify({ schema_version: 1, release, kind, data })
     artifacts.set(url, bytes); return { url, kind, sha256: digest(bytes) }
   }
-  const locatorUrls = []
+  const locatorUrls = [], parents = new Map()
   const updateLocators = async () => {
     // Locators are published in hash shards; each shard lists every selected entry it owns.
     const shards = new Map()
@@ -104,7 +105,8 @@ async function fixture({ badContinuationEvidence = false } = {}) {
       const descriptor = await entityShardDescriptor({ release }, 'reading-docs', entry.document_id, 'reading-docs.shard')
       locatorUrls.push(descriptor.url)
       const shard = shards.get(descriptor.url) || { descriptor, rows: [] }
-      shard.rows.push({ id: entry.document_id, view: { entry, entries: selected.filter(item => item.logical_id === entry.logical_id) } })
+      shard.rows.push({ id: entry.document_id, view: { entry, entries: selected.filter(item => item.logical_id === entry.logical_id),
+        ...(parents.has(entry.document_id) ? { parent: parents.get(entry.document_id) } : {}) } })
       shards.set(descriptor.url, shard)
     }
     for (const [url, { descriptor, rows }] of shards) artifacts.set(url, JSON.stringify({ schema_version: 1, release, kind: descriptor.kind,
@@ -210,7 +212,7 @@ async function fixture({ badContinuationEvidence = false } = {}) {
     return sample
   }
   return { ...api, prepared, setPrepareHook: hook => { prepareHook = hook }, context, state, controller, navigation, requests, syncs, destinations, media, artifacts, statuses, jobs,
-    selected, collection, collectionData, collectionDescriptor, remoteDescriptor, locatorUrls, updateLocators, publicationGates, validated, addReading, stop,
+    selected, collection, collectionData, collectionDescriptor, remoteDescriptor, locatorUrls, parents, updateLocators, publicationGates, validated, addReading, stop,
     apply: context.applyArchiveRoute, queue: context.loadPlayerQueue }
 }
 const single = (i = 0, extra = {}) => ({ view: 'reader', reading: entries[i].document_id, ...extra })
@@ -391,6 +393,17 @@ try {
     await t.apply(single(0, { event: '10001', parentView: 'event_detail' })); const m = t.destinations.length
     await t.closeStoryReader(); assert.equal(t.destinations.length, m, 'superseded preparation applies nothing'); t.stop()
   }
+  // The locator's canonical parent is the return target of a Reader opened cold (no source, no parent identity in the URL).
+  {
+    const parent = { route: { view: 'event_detail', event: '410001' }, source: 'event' }
+    const t = await fixture(); t.parents.set(entries[0].document_id, parent); await t.updateLocators()
+    await t.apply(single(0)); await until(() => t.readingState.value.status === 'ready', 'cold Reader is ready')
+    assert.deepEqual(t.readingState.value.parent, parent, 'the locator parent reaches the reading state')
+    await t.closeStoryReader(); assert.equal(t.destinations.at(-1).view, 'event_detail'); assert.equal(t.destinations.at(-1).event, '410001'); t.stop()
+    const none = await fixture(); await none.apply(single(0)); await until(() => none.readingState.value.status === 'ready', 'Reader without parent data is ready')
+    assert.equal(none.readingState.value.parent, null, 'older locators carry no parent')
+    await none.closeStoryReader(); assert.notEqual(none.destinations.at(-1)?.view, 'event_detail', 'without parent data the old fallback applies'); none.stop()
+  }
   {
     const t = await fixture(); await t.apply(single(0, { storyType: 'work', idol: '001tom', story: 'work.json', workMode: 'lines' }))
     await t.closeStoryReader(); assert.equal(t.destinations.at(-1).view, 'work_archive'); assert.equal(t.destinations.at(-1).workMode, 'lines'); t.stop()
@@ -481,6 +494,16 @@ try {
     assert.deepEqual(decide({}), { action: 'catalog' }, 'no context opens the catalog')
     assert.deepEqual(decide({ storySection: '9', storyFile: 'a.json' }).route, { view: 'story_collection', storyType: 'main', storySection: '9', story: 'a.json' })
     assert.deepEqual(decide({ storyFile: 'a.json' }).route, { view: 'story_detail', storyType: 'main', storySection: '', story: 'a.json' })
+    // Parent data only fills the cold gap; a source, an event, a section or a file still decide first.
+    const parent = { view: 'event_detail', event: '410001' }
+    assert.deepEqual(decide({ parent }), { action: 'route', route: parent }, 'cold Reader returns to its canonical parent')
+    assert.deepEqual(decide({ parent, detailSourceRoute: source }), { action: 'restore-source' }, 'the source beats the parent')
+    assert.equal(decide({ parent, storySection: '9' }).route.view, 'story_collection', 'URL identity beats the parent')
+    assert.equal(decide({ parent, storyFile: 'a.json' }).route.view, 'story_detail')
+    assert.deepEqual(decide({ parent: null }), { action: 'catalog' })
+    // Malformed locator parents are ignored, never an error.
+    assert.deepEqual(readingParent({ route: { view: 'event_detail', event: '1' }, source: 'event' }), { route: { view: 'event_detail', event: '1' }, source: 'event' })
+    for (const bad of [null, {}, { route: {} }, { route: { view: '' } }, { route: { view: 'x', event: 5 } }, { route: { view: 'x', event: ' ' } }, 'x']) assert.equal(readingParent(bad), null)
   }
   console.log(`Reader navigation: actual App/controller/story bindings, real repository/read-model/session transport, route/queue delegation, revision/range proof, cancellation, refresh and Reader return passed (${localSources ? 'local published compiled bytes' : 'source-only synthetic compiled bytes'})`)
 } finally {

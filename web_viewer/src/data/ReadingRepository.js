@@ -10,6 +10,18 @@ function freeze(value) {
   return value
 }
 
+// The locator's canonical parent is advisory navigation data: anything malformed is ignored, never an error.
+export function readingParent(value) {
+  const route = value?.route
+  if (!route || typeof route.view !== 'string' || !route.view) return null
+  const clean = {}
+  for (const [key, field] of Object.entries(route)) {
+    if (typeof field !== 'string' || !field.trim()) return null
+    clean[key] = field
+  }
+  return Object.freeze({ route: Object.freeze(clean), source: typeof value.source === 'string' ? value.source : '' })
+}
+
 export function createReadingRepository({ fetchImpl = (...args) => fetch(...args),
   digest = async bytes => `sha256:${Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')}`,
   locatorResolver = null, timeoutMs = 12000,
@@ -47,7 +59,7 @@ export function createReadingRepository({ fetchImpl = (...args) => fetch(...args
     if (!entry || Object.keys(entry).some(key => entry[key] !== result.entry?.[key]) ||
       Object.keys(result.entry).some(key => entry[key] !== result.entry[key])) throw Error('Reading locator identity mismatch')
     if (entries.some(candidate => readingDirectoryKey(candidate) !== readingDirectoryKey(entry))) throw Error('Reading locator segment mismatch')
-    return freeze({ entry, entries })
+    return freeze({ entry, entries, parent: readingParent(result.parent) })
   }
   async function load(documentId, knownEntry = undefined, {signal} = {}) {
     if (!/^[A-Za-z0-9_-]+$/.test(documentId || '')) throw new TypeError('Invalid reading document ID')
