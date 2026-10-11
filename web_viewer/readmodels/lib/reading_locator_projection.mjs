@@ -5,7 +5,8 @@ const HASH = /^sha256:[a-f0-9]{64}$/;
 
 // directoryEntries is the App's readingDirectoryEntries (src/data/ReadingDirectory.js), passed in by
 // the checkout adapter so the published locator groups segments exactly as the Reader does.
-export function buildReadingLocatorRecords(manifest, directoryEntries) {
+// parentFor(entry) -> { route, source } | null (reading_parent_projection.mjs); omitted means no parent data at all.
+export function buildReadingLocatorRecords(manifest, directoryEntries, parentFor = null) {
   assert(manifest?.schema_version === 1 && Array.isArray(manifest.entries), 'Reading manifest version/entries');
   assert(typeof directoryEntries === 'function', 'Reading directory grouping');
   const ids = new Set();
@@ -20,7 +21,7 @@ export function buildReadingLocatorRecords(manifest, directoryEntries) {
     files.add(entry.source_file);
     return { id: entry.document_id,
       summary: pick(entry, ['source_file', 'status', 'row_count', 'title', 'episode_label', 'domain']),
-      view: { entry, entries: directoryEntries(manifest.entries, entry) },
+      view: { entry, entries: directoryEntries(manifest.entries, entry), ...(parentFor ? { parent: parentFor(entry) } : {}) },
     };
   });
 }

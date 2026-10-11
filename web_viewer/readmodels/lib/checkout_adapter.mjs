@@ -5,6 +5,7 @@ import { assert, safeRead, sha256, jsonBytes, listFiles, pick } from './common.m
 import { buildMobileRecords } from './mobile_projection.mjs';
 import { buildLegacyAliasRecords } from './legacy_alias_projection.mjs';
 import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_locator_projection.mjs';
+import { buildReadingParents } from './reading_parent_projection.mjs';
 import { applyDomainExpansion } from './domain_expansion.mjs';
 import { buildSeasonalLedger } from './seasonal_ledger.mjs';
 
@@ -229,7 +230,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'legacy-files': { records:legacyAliases.fileRecords },
     'legacy-episodes': { records:legacyAliases.episodeRecords },
     'legacy-zero': { records:legacyAliases.zeroRecords },
-    'reading-docs': { sharded:true, records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries) },
+    'reading-docs': null, // built below, once the owner records it inverts have been expanded
     work: { records:data.workStory.idols.map(idol=>({id:idol.idol_code,
       summary:pick(idol,['idol_code','display_name','work_type_name']),view:{idol,
         readingEntries:readingEntriesForFiles(data.readingManifest.entries,
@@ -249,6 +250,15 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   };
   const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
+  // Each reading document's canonical parent comes from the owner records above, so the locator names exactly
+  // the page the Reader's own entry points would have opened (see reading_parent_projection.mjs).
+  const parentFor = buildReadingParents({
+    events: extraDomains.events.records, collections: extraDomains.collections.records,
+    idolStories: extraDomains['idol-stories'].records, work: extraDomains.work.records, seasonal: extraDomains.seasonal.records,
+    stories: stories.map(story => ({ id: story.id, readingEntries: storyViews[story.id].readingEntries })),
+  });
+  extraDomains['reading-docs'] = { sharded:true,
+    records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries, parentFor) };
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
   }
