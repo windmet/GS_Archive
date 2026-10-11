@@ -111,6 +111,7 @@ with tempfile.TemporaryDirectory() as temporary_dir:
     assert direct_authoritative["runtime_contract"] == "story-runtime-v2"
     assert direct_authoritative["compiler_version"] == "python-native-direct-v1"
     manifest = MODULE.compile_candidate(SimpleNamespace(
+        scenario_id=None,
         output_dir=str(authoritative_output),
         expected_parts="",
         raw_file=str(raw_file),

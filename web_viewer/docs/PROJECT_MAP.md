@@ -173,7 +173,7 @@ parity 或兼容参考。
 - strict authoritative Runtime v2 为 4 collections + 1,174 standalone /
   1,203 artifacts；
 - publication ledger 为 198 releases / 1,367 stable logical IDs；
-<!-- authoritative-v2-summary collections=4 standalone=1174 artifacts=1203 -->
+<!-- authoritative-v2-summary collections=4 standalone=1170 artifacts=1199 -->
 <!-- publication-ledger-summary releases=201 stable_logical_ids=1368 -->
 - external GS translation registry 当前有 8 条 exact mapping；
 - tracked PNG 为 186 个；其中 108 个为 grandfathered，
