@@ -20,7 +20,7 @@
 1. **没有 per-view 序列化约束。** 除 portal、welcome、idol_picker、reader、player 有各自的早返回分支外，其余 36 个 view 共用同一个通用分支，能写出同一批约 30 个参数。`normalizeArchiveRoute` 也不按 view 裁剪：饱和 URL 回写后，每个 view 仍保留 20–31 个参数（例如 `?view=about&card=x&story_type=main&gasha=...` 解析后原样回写）。结果：任何手写或残留的无关参数会永久留在该页面 URL 上。
 2. **草案归属表对照的总量**：41 个条目中，emitted 上界多出 511 个、survives 多出 1180 个“非自有”参数。通用分支上的固定 15 个（`availability card category episode event idol mobile_mode mobile_scenario q return sort story_mode story_section story_type unit_filter`）出现在几乎所有目录/详情类 view 上。
 3. **`return` 参数**：`returnViewAfterPlayer` 默认 `files`，非 player view 只要该 ref 残留为其他值，就会把 `return=…` 写进普通页面。这是 emitted 里最像真实泄漏路径的一项，需要确认 `applyArchiveRoute` 是否在非 player 路由上重置它。
-4. **Reader 与 reader-origin Player 重复携带了父页身份**：Reader 写 `category event parent story story_section story_type unit`，这些都能从 `reading` 的 locator 推出（待 locator 增加 canonical parent，见 §5）。Player(return=reader) 的 emitted 里这 7 项同样存在，但 `buildArchiveUrl` 对 reader-origin Player 在 Reader 分支前就返回了 Reader 字段，且 Player 分支不再写 story/event（survives 里仍可存活）。
+4. **Reader 与 reader-origin Player 重复携带了父页身份**：Reader 写 `category event parent story story_section story_type unit`，这些都能从 `reading` 的 locator 推出（待 locator 增加 canonical parent，见 §5）。Player(return=reader) 在写完 Reader 字段后不会早返回，继续落入通用分支，因此同样带这 7 项（emitted 实测），并叠加 scenario 与步数范围。
 5. **`reading_rev` 总是写入。** `currentArchiveRoute()` 每次都带 `readingRev: readingRevision.value`，所以现在每个 Reader/Player 链接都含 64 位 hash，与第 6 项产品要求（默认最新、URL 极简）相反。见 §4。
 
 ## 3. 建议的 schema 机制（未实现）
