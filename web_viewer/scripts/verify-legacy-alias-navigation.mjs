@@ -20,6 +20,7 @@ import { bindStoryArchiveNavigation } from './lib/story-archive-navigation-harne
 import { isDirectScenarioEntry, playerReturnRoute } from '../src/core/PlayerEntryRequest.js'
 import { ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
+import { resolveHomeSelection } from '../src/core/HomeSelection.js'
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const script = parseSfc(app).descriptor.scriptSetup.content
@@ -72,13 +73,13 @@ function restoreFixture() {
   const t = fixture(), c = t.c
   Object.assign(c, { loading: ref(false), loadingPurpose: ref(''), playbackError: ref(''), isDirectScenarioEntry, playerReturnRoute,
     primeArchiveRouteComponent() {}, tracePlayer() {}, adoptArchiveViewContext() {}, captureActiveArchiveView() {}, writeArchiveRoute() {},
-    bootstrapIdolDictionary: { by_idol_code: {} }, normalizeEventBrowseState, ownsArchiveSource,
+    bootstrapIdolDictionary: { by_idol_code: {} }, normalizeEventBrowseState, ownsArchiveSource, resolveHomeSelection,
     stageHandoff: ref(null), archiveHomeIdols: ref([]),
     playbackController: { reset: () => t.calls.push(['reset']), restore: (...args) => t.calls.push(['restore-player', ...args]) },
   })
   bindMobileNavigation(app, c).stop(); bindSongNavigation(app, c).stop()
   bindStoryArchiveNavigation(app, c).stop(); bindStoryNavigation(app, c).stop(); bindEventNavigation(app, c).stop(); bindHomeNavigation(app, c).stop(); bindUnitNavigation(app, c); bindCardNavigation(app, c); bindGashaNavigation(app, c); bindResourceNavigation(app, c); bindIdolFixtureNavigation(app, c)
-  const source = functionSource('restoreRoute')
+  const source = ['prepareRouteData', 'restoreRoute'].map(functionSource).join('\n')
   for (const m of source.matchAll(/\+\+(pending\w+)/g)) c[m[1]] = 0
   vm.runInNewContext('let startupRouteNormalized = false; let restoreRequest = 0;\n' + functionSource('applyArchiveRoute') + '\n' + source, c)
   return t
