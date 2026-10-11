@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
 import { onRequest as assets } from '../functions/assets/[[path]].js'
 import { onRequest as data } from '../functions/data/[[path]].js'
 
@@ -49,6 +50,23 @@ for (const key of ['/data/compiled/1_5_001tom_1_5_001_00_0.json',
     env: { ARCHIVE_WORK_BACKFILL_RELEASE: '2026-09-28-story-work-text-backfill-001' } })
   assert.equal(redirected.status, 302)
   assert.equal(redirected.headers.get('Location'), `https://preview.pages.dev/_work-backfill${key}`)
+}
+const seasonal = JSON.parse(await fs.readFile(new URL('../public/data/reading/manifest.json', import.meta.url), 'utf8'))
+  .entries.filter(entry => entry.domain === 'seasonal')
+assert.equal(seasonal.length, 306)
+for (const entry of seasonal) for (const method of ['GET', 'HEAD']) {
+  const key = `/data/reading/${entry.file}`
+  const redirected = await data({ request: new Request(`https://preview.pages.dev${key}`, { method }),
+    env: { ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' } })
+  assert.equal(redirected.status, 302)
+  assert.equal(redirected.headers.get('Location'), `https://preview.pages.dev/_seasonal-reading${key}`)
+}
+assert.equal((await call(data, '/data/reading/5_01_001_22_a.json')).status, 404, 'Disabled backfill uses R2')
+for (const [key, method] of [['/data/reading/5_01_001_22_a.json', 'POST'],
+  ['/data/reading/1_3_10002_01_a.json', 'GET'], ['/data/compiled/5_01_001_22.json', 'GET']]) {
+  const response = await data({ request: new Request(`https://preview.pages.dev${key}`, { method }),
+    env: { ARCHIVE_ASSETS: bucket, ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' } })
+  assert.notEqual(response.status, 302, `Seasonal Reading backfill must not intercept ${method} ${key}`)
 }
 
 // A transformed domain must serve the historical .png URL from the physical .webp

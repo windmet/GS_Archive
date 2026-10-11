@@ -6,6 +6,7 @@ import { assert, parseArgs, createOutput, listFiles, safeRead, sha256 } from '..
 import { verifyArtifacts } from '../readmodels/tools/verify_artifacts.mjs'
 import { readBuildAudit } from './lib/archive-build-audit.mjs'
 import { copyPreviewTranslations } from './lib/preview-translations.mjs'
+import { SEASONAL_READING_PATH } from '../functions/data/[[path]].js'
 
 // Deliberately separate from final assemble_pages: this package is for device
 // review on a fixed non-production branch. It never grants final acceptance.
@@ -58,6 +59,17 @@ for (const entry of workEntries) {
   workFiles.add(`data/reading/${entry.file}`)
 }
 for (const file of workFiles) await copy(path.join(root, 'public'), file, path.join(dist, '_work-backfill'))
+// The frozen R2 snapshot predates the seasonal Reading documents. Ship the
+// exact documents advertised by this candidate, just as work is backfilled.
+const seasonalEntries = readingManifest.entries.filter(entry => entry.domain === 'seasonal')
+assert(seasonalEntries.length === 306, 'Seasonal preview requires 306 published Reading entries')
+for (const entry of seasonalEntries) {
+  const file = `data/reading/${entry.file}`
+  assert(SEASONAL_READING_PATH.test(`/${file}`), `Seasonal Reading route missing: ${file}`)
+  const bytes = await safeRead(path.join(root, 'public'), file)
+  assert(`sha256:${sha256(bytes)}` === entry.sha256, `Seasonal Reading hash mismatch: ${file}`)
+  await copy(path.join(root, 'public'), file, path.join(dist, '_seasonal-reading'))
+}
 for (const directory of ['functions', 'shared/deploy']) for (const file of await listFiles(path.join(root, directory))) {
   await copy(path.join(root, directory), file, path.join(packageRoot, directory))
 }
@@ -65,10 +77,11 @@ const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
   release: boot.release, dataRevision: a['--data-revision'], initialJsGzipEstimate: budget.initialJsGzipEstimate,
   workBackfillRelease: workRelease,
+  seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
   remainingRoutes: acceptance.routes.unfinished, generatedAt: new Date().toISOString() }
 await fs.writeFile(path.join(dist, 'preview-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')
-await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_work-backfill/*']}))
+await fs.writeFile(path.join(dist, '_routes.json'), JSON.stringify({version: 1, include: ['/assets/*', '/data/*'], exclude: ['/_app/*', '/_catalog/*', '/translations/*', '/_work-backfill/*', '/_seasonal-reading/*']}))
 await fs.writeFile(path.join(dist, '_headers'), `/*
   X-Robots-Tag: noindex, nofollow
 /_app/*
@@ -85,13 +98,14 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
   vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
-    ARCHIVE_WORK_BACKFILL_RELEASE: workRelease },
+    ARCHIVE_WORK_BACKFILL_RELEASE: workRelease, ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' },
   r2_buckets: [{binding: 'ARCHIVE_ASSETS', bucket_name: 'sidem-archive-preview'}] }, null, 2))
 for (const file of await listFiles(dist)) {
   const bytes = await safeRead(dist, file)
   manifest.push({file, bytes: bytes.length, sha256: sha256(bytes)})
 }
 const report = { ...receipt, packageRoot, files: manifest.length, bytes: manifest.reduce((sum, file) => sum + file.bytes, 0), manifest }
+assert(report.files < 18000, 'Pages file budget exceeded after backfills')
 await fs.writeFile(path.join(packageRoot, 'preview-package.json'), JSON.stringify(report, null, 2))
 await fs.writeFile(path.join(packageRoot, 'README.txt'), 'DEVICE REVIEW ONLY. Deploy dist with --project-name gs-archive-preview --branch gs-architecture-device-test. Never deploy this package to master/production. Final assemble_pages gate remains separate.\n')
 console.log(JSON.stringify({packageRoot, files: report.files, bytes: report.bytes, sourceRevision: receipt.sourceRevision,
