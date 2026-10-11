@@ -33,6 +33,20 @@ export function readSpineAtlasPages(atlasText) {
   return pages
 }
 
+/** Declared `size:` of each page, keyed by page file. Missing sizes are omitted. */
+export function readSpineAtlasPageSizes(atlasText) {
+  const sizes = new Map()
+  let page = null
+  for (const raw of atlasText.split(/\r\n|\r|\n/)) {
+    const line = raw.trim()
+    if (!line) { page = null; continue }
+    if (page === null && /\.png$/i.test(line)) { page = line; continue }
+    const match = page && /^size:\s*(\d+)\s*,\s*(\d+)$/.exec(line)
+    if (match) { sizes.set(page, { width: Number(match[1]), height: Number(match[2]) }); page = false }
+  }
+  return sizes
+}
+
 /** Expand logical dependencies without fetching or claiming decode readiness. */
 export function resolveSpineAtlasDependencies(plan, { modelId, atlasText, atlasSha256, modelKind }) {
   if (modelKind !== 'spine' || !/^sha256:[a-f0-9]{64}$/.test(atlasSha256 || '')) {
