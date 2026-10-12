@@ -131,6 +131,16 @@ try {
   const relative = requests.filter(r => /^\/(idols|units)\/[^/]+\/.+/.test(new URL(r.url).pathname))
   const broken = requests.filter(r => r.status >= 400 && new URL(r.url).origin === new URL(base).origin)
   check('P12 no path-relative or failing same-origin requests', relative.length === 0 && broken.length === 0, `requests=${requests.length} relative=${relative.length} failing=${broken.map(r => r.status + ' ' + r.url).join(', ') || 0}`)
+  // P14: unit codes with digits (W is 05w00) publish a path too.
+  await open('/?view=unit_detail&unit=05w00', `!!document.querySelector('.unit-members')`)
+  check('P14 W unit publishes its path', (await loc()) === '/units/05w00/' && errors.length === 0, await loc())
+  // P15: the tab title follows the entity on path pages and returns to the site title elsewhere.
+  const unitTitle = await ev('document.title')
+  await open('/idols/001tom/', idolReady); await waitFor(`document.title !== ${JSON.stringify(unitTitle)}`, 5000)
+  const idolTitle = await ev('document.title')
+  await click('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
+  const otherTitle = await ev('document.title')
+  check('P15 tab title follows the entity', unitTitle === 'W · GS Archive' && /^天濑冬马 · GS Archive$/.test(idolTitle) && otherTitle === 'GS Archive · SideM GROWING STARS 资料馆', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

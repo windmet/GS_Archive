@@ -640,6 +640,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
+import { archiveDocumentTitle } from './presentation/ArchiveDocumentTitle.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
@@ -1512,6 +1513,10 @@ const archiveSearchPlaceholder = computed(() => {
 })
 
 const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
+
+watch(() => archiveDocumentTitle(view.value, view.value === 'idol_detail' ? currentIdolDisplayName.value : view.value === 'unit_detail' ? currentArchiveUnit.value?.unit_name : ''), title => {
+  if (title) document.title = title
+}, { immediate: true })
 
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
