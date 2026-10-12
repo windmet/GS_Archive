@@ -3,6 +3,16 @@ import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortr
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
 import { eventKindLabels, historicalDate } from './DomainPresentation.mjs'
 
+
+// The Portal footprint line: one count per domain, worded for the whole archive or for one idol. Exported so the
+// overview can hold the same four slots while the counts load (no layout shift when they arrive).
+export const PORTAL_FOOTPRINT_IDS = Object.freeze(['cards', 'songs', 'stories', 'events'])
+export function portalFootprintLabel(id, preferred = false) {
+  return (preferred
+    ? { cards: '卡片', songs: '相关歌曲', stories: '出场故事', events: '活动足迹' }
+    : { cards: '卡片', songs: '歌曲', stories: '可读故事', events: '活动记录' })[id] || id
+}
+
 export const PORTAL_SEARCH_DOMAINS = Object.freeze(['cards', 'stories', 'songs', 'idols'])
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 const CARD_CODE = /^\d{3}[a-z0-9]{3}_[a-z0-9_]+$/i
@@ -270,8 +280,8 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       image: boundImage(row.resources?.hero, 'event_banner') || boundImage(row.image, 'event_banner'),
       target: { domain: 'events', view: 'event_detail', eventId: row.id } })),
   }
-  const footprints = [['cards', '卡片', cards], ['songs', '相关歌曲', songs], ['stories', '出场故事', readableStories], ['events', '活动足迹', events]]
-    .map(([id, label, rows]) => ({ id, label: preferredId ? label : { songs: '歌曲', stories: '可读故事', events: '活动记录' }[id] || label,
+  const footprints = [['cards', cards], ['songs', songs], ['stories', readableStories], ['events', events]]
+    .map(([id, rows]) => ({ id, label: portalFootprintLabel(id, Boolean(preferredId)),
       value: loading || available[id] === false || (id === 'events' && preferredId && !preferredDetail) ? null : collections[id].length,
       total: loading || available[id] === false ? null : rows.length }))
   return {

@@ -45,8 +45,8 @@
       </header>
       <slot name="notices" />
       <!-- Scale of the archive as one line of links, not a row of number tiles. -->
-      <p v-if="footprints.length" class="overview-footprint" aria-label="当前视角资料数量">
-        <button v-for="count in footprints" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
+      <p class="overview-footprint" aria-label="当前视角资料数量" :aria-busy="!footprints.length">
+        <button v-for="count in footprintSlots" :key="count.id" type="button" :disabled="count.value === null" :title="count.id === 'stories' ? '当前视角出场条目 / 全站可读故事条目' : '当前视角关联条目 / 全站收录条目'" @click="openDirectory(count.id)">
           <b>{{ formatCount(count.value) }}<small v-if="preferredReference?.actionable"> / {{ formatCount(count.total) }}</small></b> <span>{{ count.label }}</span>
         </button>
       </p>
@@ -55,15 +55,16 @@
         <button v-for="item in directoryItems" :key="item.id" type="button" :data-archive-focus-id="`portal-directory:${item.id}`" @click="emit('navigate', item.id)"><component :is="archiveNavigationIcons[item.id] || ChevronRight" :size="24" aria-hidden="true" />{{ item.label }}</button>
       </nav>
 
-      <p v-if="desktopOverview.loading" class="overview-status" role="status">正在读取门户资料…</p>
+      <!-- Announced only: the placeholders below already hold the layout, so this line must not move it. -->
+      <p v-if="desktopOverview.loading" class="overview-status overview-visually-hidden" role="status">正在读取门户资料…</p>
       <p v-if="desktopOverview.error" class="overview-error" role="status">{{ desktopOverview.error }}<button type="button" data-archive-focus-id="portal-overview-retry" @click="emit('retry-overview')">重试门户资料</button></p>
 
       <section v-if="!preferredReference?.actionable" class="overview-panel overview-unit-hub" aria-labelledby="portal-units-title">
-        <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
+        <header class="overview-section-heading"><h2 id="portal-units-title">找到你的组合 <small>{{ desktopOverview.units?.length || unitPlaceholderCount || '' }} 个组合</small></h2><button type="button" @click="emit('navigate', 'idols')">偶像目录<ChevronRight :size="16" /></button></header>
         <div class="overview-unit-matrix"><article v-for="unit in desktopOverview.units || []" :key="unit.id" class="overview-unit-tile" :style="{'--unit-color':unit.color}">
           <button type="button" class="overview-unit-logo" :aria-label="`打开组合 ${unit.title}`" :data-archive-focus-id="`portal-unit:${unit.id}`" @click="emit('open-result', unit)"><img :src="getUnitLogoUrl(unit.id)" :alt="unit.title" loading="lazy" /></button>
           <div class="overview-unit-members" :aria-label="`${unit.title}成员`"><button v-for="idol in unit.members" :key="idol.id" type="button" :aria-label="`查看${idol.name}的档案`" @click="chooseScope(idol.id)"><ArchiveIdolAvatar :idol-code="idol.id" :size="28" :ring-width="0" decorative /></button></div>
-        </article></div>
+        </article><article v-for="n in unitPlaceholderCount" :key="`unit-placeholder-${n}`" class="overview-unit-tile is-placeholder" aria-hidden="true"></article></div>
       </section>
       <section class="overview-panel overview-featured" :class="{'is-all-view': !preferredReference?.actionable}" :aria-labelledby="preferredReference?.actionable ? 'portal-workbench-title' : 'portal-card-preview-title'">
           <div v-if="preferredReference?.actionable" class="overview-personal" :class="{'has-portrait': activePortrait && !portraitFailed}" :style="heroStyle">
@@ -142,6 +143,7 @@ import { archiveNavigationIcons } from './archiveNavigationIcons.js'
 import { ARCHIVE_NAVIGATION_GROUPS as destinations } from '../../core/archiveNavigationGroups.js'
 import PortalCardBento from './PortalCardBento.vue'
 import {portalTimeline} from '../../presentation/PortalBento.js'
+import { PORTAL_FOOTPRINT_IDS, portalFootprintLabel } from '../../presentation/ArchivePortalPresentation.js'
 import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
 import { getCharaSignUrl, getUnitLogoUrl } from '../../utils/AssetResolver.js'
 import { idolStageLight } from '../../presentation/idolStageLight.js'
@@ -172,6 +174,12 @@ onBeforeUnmount(() => document.removeEventListener('pointerdown',closeSearchOuts
 const heading = ref(null)
 defineExpose({ focusHeading: () => heading.value?.focus({ preventScroll: true }) })
 const footprints = computed(() => props.desktopOverview.footprints || [])
+// Until the overview arrives, keep the same four footprint slots and one empty tile per unit (the unit list is
+// in the bootstrap), so the counts and logos fill in place instead of pushing the page down.
+const footprintSlots = computed(() => footprints.value.length ? footprints.value
+  : PORTAL_FOOTPRINT_IDS.map(id => ({ id, label: portalFootprintLabel(id, Boolean(props.preferredReference?.actionable)), value: null, total: null })))
+const unitPlaceholderCount = computed(() => props.desktopOverview.units?.length || props.desktopOverview.error ? 0
+  : new Set(props.idols.map(idol => idol.unitCode).filter(Boolean)).size)
 // Phones have no sidebar: every section, in sidebar order, as one grid of icons.
 const directoryItems = destinations.flatMap(group => group.items)
 const scopeOpen = ref(false), storyTab = ref('all'), portraitFailed = ref(false)
@@ -353,6 +361,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
 .overview-unit-hub { margin-top:var(--gs-space-7); }
 .overview-unit-matrix { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gs-space-3); }
 .overview-unit-tile { position:relative;container:unit-tile / inline-size;min-width:0;height:100px;overflow:hidden;border-radius:var(--gs-radius-media);background:color-mix(in srgb,var(--unit-color) 12%,var(--gs-surface)); }
+.overview-unit-tile.is-placeholder { --unit-color:var(--gs-ink-3); }
 .overview-unit-logo { display:grid;place-items:center;width:100%;height:100%;padding:10px 12px 40px;border:0;border-radius:inherit;background:transparent; }
 .overview-unit-logo img { width:100%;height:100%;max-width:118px;object-fit:contain; }
 .overview-unit-members { position:absolute;right:0;bottom:8px;left:0;display:flex;justify-content:center;gap:3px; }
