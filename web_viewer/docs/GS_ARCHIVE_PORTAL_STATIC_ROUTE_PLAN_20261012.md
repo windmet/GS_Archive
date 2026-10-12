@@ -61,8 +61,8 @@ L1 的前置。`idol_detail`、`unit_detail` 加入 `ENFORCED_ROUTE_VIEWS`，写
 | **L1** ✅ | idol/unit 路径 URL：`/idols/<id>/`、`/units/<code>/` | 只改地址栏写入和地址解析 | 代码 + 回归脚本 + Browser 证据；[L1 记录](GS_ARCHIVE_PORTAL_STATIC_ROUTE_L1_20261013.md) | 已完成，待用户真机复核 |
 | **L2** ✅ | 65 个实体的 head 外壳（title/description/OG/canonical）+ 标签页标题 | 只加标签页标题 | 生成脚本 + 校验脚本；[L2 记录](GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md) | 已完成；接入发布与部署待用户确认 |
 | **L3** ✅ | 冷加载性能基线（正式站，桌面/模拟手机；真机由用户补） | 不改 | 测量脚本 + [基线报告](GS_ARCHIVE_PORTAL_PERF_BASELINE_20261013.md) | 已完成；真机待用户补 |
-| **L4** | 两页 SSG 实验：A 外壳 / B 预渲染+替换挂载 / C 真 hydration | 实验分支，不合入 | 实验报告 | — |
-| **L5** | 决策门 | — | 决策文档 | **用户** |
+| **L4** ✅ | 两页 SSG 实验：A / A+ / B / B+ / C（静态评估） | 实验分支，不合入 | [实验报告](GS_ARCHIVE_PORTAL_SSG_EXPERIMENT_20261013.md) | 已完成 |
+| **L5** | 决策门 | — | 建议见实验报告 §5：不迁 Astro，先 ①上线 A ②修 Portal CLS ③缩短串行链 | **用户** |
 
 每个阶段单独提交、单独写记录（§7 模板），可以单独回退。
 
