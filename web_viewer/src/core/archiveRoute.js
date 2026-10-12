@@ -611,7 +611,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 // only after it is in ENFORCED_ROUTE_VIEWS (see docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md).
 const PUBLIC_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'idol_detail', prefix: 'idols', param: 'idol', implied: { category: 'idol' }, pattern: /^[0-9]{3}[a-z]{3}$/ }),
-  Object.freeze({ view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z]{3}$/ }),
+  Object.freeze({ view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z0-9]{3}$/ }),
 ])
 
 function locatorQuery(url) {

@@ -1,6 +1,7 @@
 // Public path locators: /idols/<id>/ and /units/<code>/ read as their detail routes, the address bar writes
 // them, and every internal query form (buildArchiveUrl, source frames, restoration keys) is unchanged.
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { VALID_VIEWS, buildArchiveUrl, buildPublicArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { isBareArchiveEntry, resolveArchiveStartup } from '../src/core/archiveStartup.js'
 import { buildArchiveViewContext } from '../src/core/archiveViewRestoration.js'
@@ -18,6 +19,20 @@ for (const href of ['http://x/idols/001tom/', 'http://x/idols/001tom', 'http://x
 for (const href of ['http://x/units/01jup/', 'http://x/units/01jup', 'http://x/?view=unit_detail&unit=01jup']) {
   const route = read(href)
   assert.equal(route.view, 'unit_detail', href); assert.equal(route.unit, '01jup', href)
+}
+// Every real idol and unit publishes a path and reads back (unit codes are not all letters: W is 05w00).
+{
+  const bootstrap = JSON.parse(readFileSync(new URL('../readmodels/bootstrap.inline.json', import.meta.url), 'utf8'))
+  const units = [...new Set(bootstrap.idols.map(entry => entry.unitCode).filter(Boolean))]
+  assert.ok(bootstrap.idols.length >= 49 && units.length >= 16, 'bootstrap lists the idols and units')
+  for (const entry of bootstrap.idols) {
+    assert.equal(buildPublicArchiveUrl('http://x/', { view: 'idol_detail', idol: entry.id }).pathname, `/idols/${entry.id}/`, entry.id)
+    assert.equal(read(`http://x/idols/${entry.id}/`).idol, entry.id, entry.id)
+  }
+  for (const code of units) {
+    assert.equal(buildPublicArchiveUrl('http://x/', { view: 'unit_detail', unit: code }).pathname, `/units/${code}/`, code)
+    assert.equal(read(`http://x/units/${code}/`).unit, code, code)
+  }
 }
 // U5: a query view wins over the path (old links, relative ?view=… links followed from a path page).
 {
