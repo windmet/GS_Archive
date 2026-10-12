@@ -71,8 +71,10 @@ async function measure(pageId) {
   let socket
   try {
     let targets
-    for (let i = 0; i < 50 && !targets?.length; i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() } catch { await sleep(200) } }
-    socket = new WebSocket(targets.find(t => t.type === 'page').webSocketDebuggerUrl)
+    for (let i = 0; i < 100 && !targets?.some(t => t.type === 'page'); i++) { try { targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() } catch { await sleep(200) } }
+    const target = targets?.find(t => t.type === 'page')
+    if (!target) throw new Error('browser did not expose a page target')
+    socket = new WebSocket(target.webSocketDebuggerUrl)
     await new Promise(resolve => socket.addEventListener('open', resolve))
     let seq = 0
     const pending = new Map()
@@ -131,7 +133,8 @@ const results = []
 for (const pageId of pages) {
   for (let i = 0; i < runs; i++) {
     try {
-      const r = await measure(pageId)
+      // One retry when the browser itself fails to start; page errors are recorded, not retried.
+      const r = await measure(pageId).catch(error => /page target|timed out/.test(error.message) ? measure(pageId) : Promise.reject(error))
       results.push(r)
       console.log(`${pageId} #${i + 1}: entity ${Math.round(r.entity ?? -1)} ms, FCP ${Math.round(r.fcp ?? -1)}, LCP ${Math.round(r.lcp ?? -1)}, CLS ${r.cls.toFixed(3)}, script ${Math.round(r.scriptMs)} ms, ${r.requests} req / ${(r.bytes / 1024).toFixed(0)} KiB${r.timedOut ? ' (timed out)' : ''}`)
     } catch (error) {
