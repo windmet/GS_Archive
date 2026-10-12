@@ -123,3 +123,4 @@ Git Bash 下以 `/` 开头的参数会被改写成 Windows 路径，需要 `MSYS
 ## 8. 后续执行状态
 
 - ② 修 Portal CLS：已完成，手机 0.679→0.000、桌面 0.365→0.043。见 [修复记录](GS_ARCHIVE_PORTAL_CLS_FIX_20261013.md)。
+- ① 上线 A：打包接入与缓存头已完成并做过端到端打包验证（`d1828696`，见 [L2 记录](GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md) 末节）；**部署与 noindex 取舍待用户决定**。

@@ -56,3 +56,11 @@ dev `127.0.0.1:5177` + 候选 `E:/GS_readmodels_candidate_20261012_age`，headle
 3. **收录**：`prepare-readmodel-preview.mjs` 的 `_headers` 对 `/*` 设置了 `X-Robots-Tag: noindex, nofollow`。X/Discord/LINE 的预览不受影响，但搜索引擎不会收录。是否放开由用户决定。
 4. **外部预览实测**：部署后用 `curl -A "Twitterbot/1.0"`、`curl -A "Discordbot/2.0"` 复核，再在 X/Discord/LINE 粘贴 `/idols/001tom/`、`/units/05w00/` 截图。148px 的头像只够 `summary` 小卡；若要大图卡需要另备 1200×630 图片。
 5. 部署包含 L1 的版本之前，不要对外发路径链接。
+
+## 上线前事项的执行状态（2026-10-13 更新）
+
+- **1. 生成时机：已接入。** `d1828696` 让 `scripts/prepare-readmodel-preview.mjs` 在代码与模型文件复制进 `dist` 之后、回执与文件清单之前，从包内最终 `index.html` 渲染 65 个外壳（断言与候选包同一 read-model release），回执新增 `entityHeadShells`。
+- **2. 缓存头：已接入。** 同一提交给 `/idols/*`、`/units/*` 加了 `Cache-Control: no-cache`。
+- 端到端验证：`npm run build:check` 后执行 `node scripts/prepare-readmodel-preview.mjs --models E:/GS_readmodels_candidate_20261012_age --out .deploy/shell-package-check-20261013 --data-revision 854190ad…`（数据版本沿用当前正式站 R2 快照）。结果：10900 个文件 / 159,823,752 字节（预算 18000），`verify-entity-head-shells.mjs --dist=<包>/dist` 通过（外壳内含内联 bootstrap），`_headers` 含两条新规则。用本地映射服务浏览包内 `dist` 跑 `verify-portal-path-locator-browser.mjs`：19/20 通过，唯一失败 P12 是称号图片 `/assets/domain-images/…` 本地 `public/` 不存在（正式站经 R2 返回 200，dev 由中间件提供），与打包无关。验证包为可重建产物，已删除；清单与 `_headers` 留在 `.analysis/shell-package-check/`。
+- **3. 收录（noindex）**：未改，仍待用户决定。
+- **4. 外部预览实测 / 5. 部署**：未做，需要用户授权部署。
