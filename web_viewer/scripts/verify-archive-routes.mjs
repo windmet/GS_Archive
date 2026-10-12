@@ -427,6 +427,19 @@ assert.equal(songCatalogBreadcrumbs.length, 2)
     writeArchiveRoute(readArchiveRoute(), { replace: true })
     assert.ok(!new URL(window.location).searchParams.has('from'), 'legacy URL is shortened on the next write')
     assert.equal(readArchiveRoute().sourceRoute, source, 'and its source moved into history state')
+    // An event Reader's placement (parent view, category, unit) rides history state; the URL keeps only the event identity.
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup' })
+    const readerQuery = new URL(window.location).searchParams
+    assert.ok(!readerQuery.has('parent') && !readerQuery.has('category') && !readerQuery.has('unit'), 'event Reader URL carries no placement')
+    assert.equal(readerQuery.get('event'), '10001')
+    assert.deepEqual([readArchiveRoute().parentView, readArchiveRoute().category, readArchiveRoute().unit], ['unit_detail', 'idol', '01jup'], 'refresh restores the placement')
+    assert.deepEqual([readArchiveRoute(window.location.href).parentView, readArchiveRoute(window.location.href).unit], ['', ''], 'a copied link carries no placement')
+    entries[index] = { state: null, href: 'http://localhost/?view=reader&reading=doc1&event=10001&parent=unit_detail&category=idol&unit=01jup' }
+    assert.equal(readArchiveRoute().unit, '01jup', 'legacy placement parameters are still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('unit') && readArchiveRoute().unit === '01jup', 'and move into state on the next write')
+    writeArchiveRoute({ view: 'reader', reading: 'doc2', story_type: 'main', storyType: 'main', storySection: '101', category: 'cards' })
+    assert.equal(new URL(window.location).searchParams.get('category'), 'cards', 'non-event Readers keep their own parameters')
     // Portal / Home launcher returns ride the same versioned context.
     const portalReturn = '?view=idols&category=idol', homeReturn = '?view=portal'
     writeArchiveRoute({ view: 'portal', portalFrom: portalReturn })

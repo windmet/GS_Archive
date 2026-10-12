@@ -48,3 +48,19 @@
 - 起点 URL、操作步骤、实际落点 URL。
 - 是否为新标签或刷新后出现。
 - 控制台报错（如有）。
+
+## 修订（2026-10-12 首轮验收后）
+- B5：首轮失败，已由 `c4b0913f` 修复，需复测。
+- B8：期望改为“返回复刻活动（URL 里的 event 身份优先），不是首次上线活动”。
+- B9：Reader 入口改为故事目录里 `card_scenarios` 的卡片剧情条目；卡片详情的电话/聊天直接进 Player，不属于 Reader。
+- 环境：测试前确认本地服务的 release 与 `readmodels/bootstrap.inline.json` 一致（`999b2c90…`，含 locator parent）。
+
+## E. 批次 F：event Reader 的地址栏瘦身
+| # | 起点 | 操作 | 期望 |
+|---|------|------|------|
+| E1 | 从单位页（unit_detail）进入某活动，再进 Reader | 看地址栏 | 只有 `reading`、`event` 等身份字段，没有 `parent`、`category`、`unit` |
+| E2 | 在 E1 的 Reader | 点返回 | 回到该活动，且活动页的“返回”仍回到单位页 |
+| E3 | 在 E1 的 Reader | 刷新，点返回 | 同 E2 |
+| E4 | 复制 E1 的地址到新标签，点返回 | | 回到该活动；其“返回”回活动目录（不带原来源，属预期） |
+| E5 | 旧链接 `?view=reader&reading=...&event=...&parent=unit_detail&category=idol&unit=01jup` | 直接打开，点返回 | 回到活动，来源仍是单位页；地址栏随后不再含这三个参数 |
+| E6 | 非活动 Reader（main/unit/work/seasonal/idol_story） | 看地址栏与返回 | 与批次 F 前一致 |

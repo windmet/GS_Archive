@@ -612,6 +612,8 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
   const params = url.searchParams
+  // An event Reader's return placement (where the event was opened from) rides history state, not the URL.
+  const readerContext = params.get('view') === 'reader' ? context.reader || {} : {}
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
@@ -630,10 +632,10 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
-    category: clean(params.get('category')),
+    category: clean(params.get('category')) || readerContext.category || '',
     idol: clean(params.get('idol')),
     group: clean(params.get('group')),
-    unit: clean(params.get('unit')),
+    unit: clean(params.get('unit')) || readerContext.unit || '',
     unitFilter: clean(params.get('unit_filter')),
     storyType: params.get('story_type'),
     storyMode: params.get('story_mode'),
@@ -668,7 +670,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     endStep: params.get('end_step'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
-    parentView: clean(params.get('parent')),
+    parentView: clean(params.get('parent')) || readerContext.parent || '',
   })
 }
 
@@ -780,12 +782,23 @@ function localQuery(value) {
   return typeof value === 'string' && value.startsWith('?') ? value : null
 }
 
+// Fields an event Reader carries so that leaving it lands where the event was opened from.
+const READER_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit' }
+
+function readerContextFrom(value) {
+  if (!value || typeof value !== 'object') return null
+  const out = {}
+  for (const key of Object.keys(READER_CONTEXT_PARAMS)) if (typeof value[key] === 'string' && value[key] && value[key].length <= 120) out[key] = value[key]
+  return Object.keys(out).length ? out : null
+}
+
 function historyNavigationContext() {
   if (typeof window === 'undefined') return {}
   const state = window.history.state
   const stored = state?.[NAVIGATION_CONTEXT_KEY]
   if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
-    return Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])]))
+    return { ...Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])])),
+      reader: readerContextFrom(stored.reader) }
   }
   return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
@@ -797,6 +810,15 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
     const value = url.searchParams.get(param)
     if (value) context[key] = value
     url.searchParams.delete(param)
+  }
+  if (url.searchParams.get('view') === 'reader' && url.searchParams.get('event')) {
+    const reader = {}
+    for (const [key, param] of Object.entries(READER_CONTEXT_PARAMS)) {
+      const value = url.searchParams.get(param)
+      if (value) reader[key] = value
+      url.searchParams.delete(param)
+    }
+    if (Object.keys(reader).length) context.reader = reader
   }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
