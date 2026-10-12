@@ -604,6 +604,49 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   return [home, current(fallbackDomains[route.view] || '资料')]
 }
 
+// Public path locators: a detail page whose address is only its identity is published as a path
+// (/idols/001tom/) instead of ?view=…. Internally every route stays in query form (buildArchiveUrl, source
+// frames, restoration keys); only the address bar and shareable hrefs use the path. A query `view` always
+// wins, so older links and relative ?view=… links followed from a path page keep working. Add a view here
+// only after it is in ENFORCED_ROUTE_VIEWS (see docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md).
+const PUBLIC_PATH_ROUTES = Object.freeze([
+  Object.freeze({ view: 'idol_detail', prefix: 'idols', param: 'idol', implied: { category: 'idol' }, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  Object.freeze({ view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z]{3}$/ }),
+])
+
+function locatorQuery(url) {
+  const params = new URLSearchParams(url.searchParams)
+  if (params.has('view')) return params
+  const match = /^\/([a-z]+)\/([^/]+)\/?$/.exec(url.pathname)
+  const locator = match && PUBLIC_PATH_ROUTES.find(entry => entry.prefix === match[1] && entry.pattern.test(match[2]))
+  if (!locator) return params
+  params.set('view', locator.view)
+  params.set(locator.param, match[2])
+  for (const [key, value] of Object.entries(locator.implied)) params.set(key, value)
+  return params
+}
+
+// Rewrites a query-form archive URL to its public address: a path for PUBLIC_PATH_ROUTES, `/` otherwise.
+function publicArchiveUrl(url) {
+  const view = url.searchParams.get('view')
+  const locator = PUBLIC_PATH_ROUTES.find(entry => entry.view === view)
+  const id = locator && url.searchParams.get(locator.param)
+  const implied = locator && Object.entries(locator.implied).every(([key, value]) => url.searchParams.get(key) === value)
+  if (!locator || !implied || !locator.pattern.test(id || '')) {
+    url.pathname = '/'
+    return url
+  }
+  url.pathname = `/${locator.prefix}/${id}/`
+  url.searchParams.delete('view')
+  url.searchParams.delete(locator.param)
+  for (const key of Object.keys(locator.implied)) url.searchParams.delete(key)
+  return url
+}
+
+export function buildPublicArchiveUrl(input, route) {
+  return publicArchiveUrl(buildArchiveUrl(input, route))
+}
+
 // `history` merges the current history entry's source: implied for the live location, opt-in for an
 // explicitly passed current URL; independent links never inherit one.
 export function readArchiveRoute(input = null, { history = !input } = {}) {
@@ -611,7 +654,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
-  const params = url.searchParams
+  const params = locatorQuery(url)
   // An event Reader's return placement (where the event was opened from) rides history state, not the URL.
   const readerContext = params.get('view') === 'reader' ? context.reader || {} : {}
   return normalizeArchiveRoute({
@@ -828,7 +871,7 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
   delete state[LEGACY_SOURCE_KEY]
   if (Object.keys(context).length > 1) state[NAVIGATION_CONTEXT_KEY] = context
   else delete state[NAVIGATION_CONTEXT_KEY]
-  window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
+  window.history[replace ? 'replaceState' : 'pushState'](state, '', publicArchiveUrl(url))
 }
 
 export function onArchivePopState(handler) {

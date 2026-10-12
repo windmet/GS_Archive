@@ -28,7 +28,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { buildArchiveUrl } from '../../core/archiveRoute.js'
+import { buildPublicArchiveUrl } from '../../core/archiveRoute.js'
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -39,7 +39,7 @@ const accessibleLabel = computed(() => (
 ))
 
 function itemHref(item) {
-  return buildArchiveUrl(window.location.href, item.route).href
+  return buildPublicArchiveUrl(window.location.href, item.route).href
 }
 </script>
 

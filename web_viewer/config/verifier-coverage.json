@@ -2,6 +2,7 @@
   "about": "Every scripts/verify-* file is either reached by the Web Viewer Source Gate or listed under localOnly with its reason. 'batch' runs in CI through npm run verify:source-batch; checked by scripts/verify-verifier-coverage.mjs.",
   "batch": [
     "verify-route-schema.mjs",
+    "verify-archive-path-locator.mjs",
     "verify-archive-motion.mjs",
     "verify-unit-navigation.mjs",
     "verify-idol-honor-identity.mjs",
@@ -179,6 +180,7 @@
         "verify-home-lipsync-http.mjs",
         "verify-portal-bento.mjs",
         "verify-portal-directory-navigation.mjs",
+        "verify-portal-path-locator-browser.mjs",
         "verify-portal-projections.mjs",
         "verify-preview-data-http.mjs",
         "verify-preview-http.mjs",

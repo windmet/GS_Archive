@@ -49,29 +49,29 @@ try {
   await send('Page.navigate', { url: `${base}/?view=idol_detail&idol=001tom&unit_filter=1&q=x&card=c&story_type=main` })
   await waitFor(`document.body.innerText.includes('冬馬')`); await settle()
   let l = await loc(); await shot('j1-idol-old-link')
-  check('J1 old idol link shortened', l === '/?view=idol_detail&category=idol&idol=001tom', `${l}; errors=${errors.length}`)
+  check('J1 old idol link shortened', l === '/idols/001tom/', `${l}; errors=${errors.length}`)
   // J2: same for unit.
   errors = []
   await send('Page.navigate', { url: `${base}/?view=unit_detail&unit=01jup&q=x&card=c&idol=002sht` })
   await waitFor(`!!document.querySelector('.unit-members')`); await settle()
   l = await loc(); await shot('j2-unit-old-link')
-  check('J2 old unit link shortened', l === '/?view=unit_detail&unit=01jup', `${l}; errors=${errors.length}`)
+  check('J2 old unit link shortened', l === '/units/01jup/', `${l}; errors=${errors.length}`)
   // J3: unit detail -> member -> page back returns to the unit.
   errors = []
   await ev(`document.querySelector('.unit-members button, .unit-members a, .unit-members [role=button]')?.click()`)
-  await waitFor(`location.search.includes('view=idol_detail')`); await settle()
+  await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
   const memberUrl = await loc(); await shot('j3-member')
-  check('J3a member opens with identity only', /^\/\?view=idol_detail&category=idol&idol=0\d\d[a-z]{3}$/.test(memberUrl), memberUrl)
+  check('J3a member opens with identity only', /^\/idols\/0\d\d[a-z]{3}\/$/.test(memberUrl), memberUrl)
   // J4: refresh, then page back still returns to the unit (history source).
   await send('Page.reload', { ignoreCache: true }); await waitFor(`!!document.querySelector('.archive-back')`); await settle()
   await ev(`document.querySelector('.archive-back').click()`)
-  await waitFor(`location.search.includes('view=unit_detail')`); await settle()
+  await waitFor(`location.pathname.startsWith('/units/')`); await settle()
   l = await loc(); await shot('j4-back-to-unit')
-  check('J4 refresh then back returns to unit', l === '/?view=unit_detail&unit=01jup', `${l}; errors=${errors.length}`)
+  check('J4 refresh then back returns to unit', l === '/units/01jup/', `${l}; errors=${errors.length}`)
   // J5: browser back/forward between the two.
   await ev('history.back()'); await settle(); const back = await loc()
   await ev('history.forward()'); await settle(); const fwd = await loc()
-  check('J5 back/forward keep identity URLs', back === memberUrl && fwd === '/?view=unit_detail&unit=01jup', `back=${back} forward=${fwd}`)
+  check('J5 back/forward keep identity URLs', back === memberUrl && fwd === '/units/01jup/', `back=${back} forward=${fwd}`)
   check('console errors', errors.length === 0, errors.join(' | ') || 'none')
 } finally {
   socket.close(); chrome.kill(); try { rmSync(profile, { recursive: true, force: true }) } catch {}

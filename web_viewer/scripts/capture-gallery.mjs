@@ -32,6 +32,8 @@ const APP = [
   { id: 'app-cards', url: `${base}/?view=cards&idol=001tom`, readModel: true },
   { id: 'app-song', url: `${base}/?view=song_detail&song=brndnf`, readModel: true },
   { id: 'app-idol', url: `${base}/?view=idol_detail&idol=001tom`, readModel: true },
+  { id: 'app-idol-path', url: `${base}/idols/001tom/`, readModel: true },
+  { id: 'app-unit-path', url: `${base}/units/01jup/`, readModel: true },
   { id: 'app-event', url: `${base}/?view=event_detail&event=410018`, readModel: true },
   { id: 'app-song-list', url: `${base}/?view=song_catalog`, readModel: true },
   { id: 'app-event-list', url: `${base}/?view=event_catalog`, readModel: true },
