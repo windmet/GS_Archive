@@ -2,10 +2,11 @@
 // corpus mapped in place, so the production bundle can be browsed and measured without copying public/.
 //   node scripts/serve-archive-build.mjs [--dist=.analysis/build-check] [--catalog=<read-model candidate>] [--port=5181]
 // /_catalog/* -> <candidate>/pages/_catalog, /assets /data /translations -> public/, everything else -> dist,
-// with Cloudflare-Pages-like resolution: /x/ -> /x/index.html, /x -> 308 /x/ when that directory index exists,
+// with gzip for text and Cloudflare-Pages-like resolution: /x/ -> /x/index.html, /x -> 308 /x/ when that directory index exists,
 // unknown paths -> /index.html (SPA fallback). Local verification only; not a deployment.
 import { createServer } from 'node:http'
 import { createReadStream, existsSync, statSync } from 'node:fs'
+import { createGzip } from 'node:zlib'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -47,9 +48,13 @@ createServer((req, res) => {
   }
   const headers = { 'Content-Type': TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream',
     'Cache-Control': file.endsWith('.html') ? 'no-cache' : pathname.startsWith('/_app/') || pathname.startsWith('/_catalog/v/') ? 'public, max-age=31536000, immutable' : 'public, max-age=3600' }
+  // Compress text like the CDN does; images and audio go as stored.
+  const gzip = /^(text\/|application\/json|image\/svg)/.test(headers['Content-Type']) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')
+  if (gzip) { headers['Content-Encoding'] = 'gzip'; headers.Vary = 'Accept-Encoding' }
   res.writeHead(200, headers)
   if (req.method === 'HEAD') { res.end(); return }
-  createReadStream(file).pipe(res)
+  const stream = createReadStream(file)
+  ;(gzip ? stream.pipe(createGzip()) : stream).pipe(res)
 }).listen(port, '127.0.0.1', () => console.log(`Serving ${path.relative(root, dist) || dist} with corpus mapping on http://127.0.0.1:${port}/ (catalog ${catalog})`))
 
 process.on('SIGINT', () => {
