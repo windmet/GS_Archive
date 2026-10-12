@@ -24,9 +24,32 @@
 - 不在拿到基线数据前对框架下结论。
 - 不自行部署（任何 `wrangler pages deploy` 都必须先得到用户明确授权，见 §2.7）。
 
-### 与 Reader R1 的关系
+### 与 Reader R1 的关系（2026-10-12 晚更新）
 
-10/11 交接把 Reader R1（`ReaderReturnPolicy` 纯函数抽取）排在 Route 之前。阶段 L1 只动 idol/unit 两个视图的公开地址编解码，不碰 Reader，可以在本分支先做；如果 Reader R1 在另一分支同时进行，两者都改 `src/core/archiveRoute.js` 时需要 rebase 合并，**不要把两者放进同一个提交**。
+用户决定 Reader R1 先做。核对后发现它**已经完成**：`7b02cbb9 refactor(reader): extract closeStoryReader target choice into pure ReaderReturnPolicy`（`src/core/ReaderReturnPolicy.js`，决策矩阵在 `scripts/verify-reader-navigation.mjs`）。Reader 后续 R2（各来源入口上下文）、R3（播放桥接）仍未做，不属于本计划；以后若与 L1 并行，两者都改 `src/core/archiveRoute.js` 时 rebase 合并，**不要放进同一个提交**。
+
+### 0.1 基线核对（2026-10-12 晚）
+
+10/11 交接（输入 `47d76acc`）之后又进了 44 个提交，下列事项已完成，执行者不要重做：
+
+| 事项 | 提交 / 位置 |
+|---|---|
+| Reader R1 `ReaderReturnPolicy` | `7b02cbb9` |
+| Home 默认选择移出 App（P2 六项之一） | `481b0aa6`，`src/core/HomeSelection.js` |
+| `from`/`portal_from`/`home_from` 移入 history NavigationContext | `eca3c9ad`、`79102407`、`26425444` |
+| 路由 schema 草案 + 写入裁剪机制 | [路由 schema 审计](GS_ARCHIVE_ROUTE_SCHEMA_AUDIT_20261011.md) 批次 A/B/C；`src/core/routeSchema.js` 的 `ENFORCED_ROUTE_VIEWS` + `pruneToRouteSchema`（在 `buildArchiveUrl` 末尾执行） |
+| Reading locator 带 canonical parent（批次 D） | `bd6b549d`、`429bb4d0`、`666aae74` |
+| Event Reader 父页信息改放 history.state（批次 F 的 Reader 部分） | `0ab258af`、`f7551adc` |
+
+仍未做：批次 E（Reader 链接默认不带 `reading_rev`，`useArchiveNavigationState.js:79` 仍每次写入），批次 F 的其余目录/详情页，批次 G、H。
+
+**与路由 schema 审计的顺序关系**：该审计把“path aliases”放在最后的批次 H。本计划 L1 只对 idol/unit 两个**已启用 schema 裁剪**的详情页做路径地址，不涉及 Reader/Player，所以可以先于 E/G/H 进行；但**每扩一个视图到路径地址之前，必须先把这个视图加入 `ENFORCED_ROUTE_VIEWS`**，否则路径后面仍会拖着残留参数。
+
+**语言策略（用户已确认）**：静态 HTML 按 `zh-CN` 渲染，`ja-JP` 用户由客户端切换；不做 `/ja/` 路径前缀。
+
+### 0.2 L0（已完成）：idol/unit 详情页启用写入裁剪
+
+L1 的前置。`idol_detail`、`unit_detail` 加入 `ENFORCED_ROUTE_VIEWS`，写出的地址只剩身份：`?view=idol_detail&category=idol&idol=001tom`、`?view=unit_detail&unit=01jup`。旧链接里多余的参数照常可读，下一次写入时被丢弃。详见 [L0 记录](GS_ARCHIVE_PORTAL_STATIC_ROUTE_L0_20261012.md)。
 
 ---
 
@@ -34,6 +57,7 @@
 
 | 阶段 | 内容 | 是否改 App 行为 | 产出 | 谁决定是否进入下一阶段 |
 |---|---|---|---|---|
+| **L0** ✅ | idol/unit 详情页启用 schema 写入裁剪 | 只改地址栏写入 | 代码 + 回归 + Browser 证据 | 已完成 |
 | **L1** | idol/unit 路径 URL：`/idols/<id>/`、`/units/<code>/` | 只改地址栏写入和地址解析 | 代码 + 回归脚本 + Browser 证据 | 执行者自检后交用户复核 |
 | **L2** | 65 个实体的 head 外壳（title/description/OG/canonical） | 不改 | 生成脚本 + 校验脚本 | 执行者 |
 | **L3** | 冷加载性能基线（本地生产包 + 正式站，桌面/模拟手机；真机由用户补） | 不改 | 测量脚本 + 基线报告 | 用户看报告 |
@@ -251,7 +275,7 @@ curl -s -o /dev/null -w "%{http_code} %{content_type}\n" <url>
 | U7 | `buildPublicArchiveUrl('http://x/idols/001tom/', {view:'cards', idol:'001tom'})` | pathname 为 `/`，query 含 `view=cards` |
 | U8 | `buildPublicArchiveUrl('http://x/?view=portal', {view:'idol_detail', idol:'001tom'})` | `/idols/001tom/`，query 不含 `view`、`idol`、`category` |
 | U9 | 往返：对 `VALID_VIEWS` 中每个 view 构造最小合法路由，`readArchiveRoute(buildPublicArchiveUrl(r))` 与 `readArchiveRoute(buildArchiveUrl(r))` 规范化结果相同 | 全部相同 |
-| U10 | `buildArchiveUrl(...)` 对 idol/unit 路由的 `.search` 与改动前完全一致 | 内部表示未变（保护 source frames 与恢复键） |
+| U10 | `buildArchiveUrl(...)` 对 idol/unit 路由的 `.search` 与 L1 改动前完全一致（L0 之后即 `?view=idol_detail&category=idol&idol=001tom` / `?view=unit_detail&unit=01jup`） | 内部表示未变（保护 source frames 与恢复键） |
 | U11 | `isBareArchiveEntry('http://x/idols/001tom/')` | `false` |
 | U12 | `resolveArchiveStartup('http://x/idols/001tom/', {startupPage:'home'})` | `source:'explicit'`，不被 Home 偏好劫持 |
 

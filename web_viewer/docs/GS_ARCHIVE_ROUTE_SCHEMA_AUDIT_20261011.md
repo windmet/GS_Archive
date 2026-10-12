@@ -68,3 +68,4 @@
 - 批次 C（`return` 只在 player 写入）：完成，守卫测试已覆盖。
 - 批次 B（对 about、archive_status、experiments、spine_lab、welcome、unit_catalog、episode_zero_units 启用写入裁剪）：完成。机制是 `ENFORCED_ROUTE_VIEWS` + `pruneToRouteSchema`，在 `buildArchiveUrl` 末尾裁剪；读取不变，旧 URL 的多余参数照常解析，下一次写入被丢弃；`from` 等上下文参数不被裁剪。实施后同一测量：emitted 上界 379，survives 768。
 - 同批补了 `event_detail` 缺 event 时 `eventBrowse` 为空导致 `buildArchiveUrl` 抛 TypeError 的保护。
+- 批次 F 第一组（2026-10-12，`claude/portal-static-route-20261012`）：`idol_detail`、`unit_detail` 加入 `ENFORCED_ROUTE_VIEWS`，地址只写身份。记录见 [L0](GS_ARCHIVE_PORTAL_STATIC_ROUTE_L0_20261012.md)。这是门户路径地址（批次 H 的 idol/unit 部分提前）的前置。
