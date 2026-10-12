@@ -58,6 +58,8 @@ function fixture({ story = false } = {}) {
     loadCardCatalog: async () => { c.cardReadModelCatalog.value = [{ resource_id: 'card' }] },
     openCard: (...args) => calls.push(['card', ...args]), openIdolReadModel: (...args) => calls.push(['idol', ...args]),
     openArchiveUnit: (...args) => calls.push(['unit', ...args]),
+    applyArchiveRoute: async route => { calls.push(['apply', route]) },
+    prepareRouteData: async route => { calls.push(['prepare', route]); return route },
   }
   if (story) {
     bindStoryNavigation(app, c).stop()
@@ -157,6 +159,20 @@ try {
     assert.equal(c.currentEventId.value, ''); assert.equal(c.eventParentView.value, '')
     assert.equal(t.calls.at(-1)[0], parent === 'source' ? 'source' : parent === 'unknown' ? 'stories' : 'view')
     if (!['source', 'unknown'].includes(parent)) assert.equal(t.calls.at(-1)[1], parent)
+    t.stop()
+  }
+  // A refreshed or shared event link has the parent's identity but not its data: return prepares the target instead of falling back to the catalog.
+  for (const [parent, identity, expected] of [
+    ['unit_detail', { currentArchiveUnitCode: '01jup' }, { view: 'unit_detail', category: 'idol', unit: '01jup' }],
+    ['card_detail', { currentCardId: '001tom_n01' }, { view: 'card_detail', category: 'idol', card: '001tom_n01' }],
+    ['unit_detail', {}, null],
+  ]) {
+    const t = fixture(), c = t.c
+    c.currentEventId.value = '410001'; c.eventParentView.value = parent; c.currentCategoryId.value = 'idol'; c.currentCharacterId.value = '001tom'
+    for (const [key, value] of Object.entries(identity)) c[key].value = value
+    await c.goBackFromEvent(); await flush()
+    if (expected) assert.deepEqual(t.calls.filter(x => ['prepare', 'apply'].includes(x[0])), [['prepare', expected], ['apply', expected]], `cold ${parent} return prepares then applies`)
+    else assert.deepEqual(t.calls.at(-1), ['stories'], 'no identity still falls back to the catalog')
     t.stop()
   }
   for (const kind of ['success', 'failure', 'stale', 'direct']) {

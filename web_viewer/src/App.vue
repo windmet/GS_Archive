@@ -1393,6 +1393,7 @@ const {
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
   openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
   openCard, openIdolReadModel, openArchiveUnit,
+  applyArchiveRoute, prepareReturnRoute: prepareRouteData, currentCardId, currentArchiveUnitCode, currentCategoryId,
 })
 
 const {

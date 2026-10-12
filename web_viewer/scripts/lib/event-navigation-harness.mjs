@@ -20,6 +20,7 @@ export function bindEventNavigation(app, context = {}) {
     ...useArchiveNavigationState(), archiveBootstrap: { idols: [], domains: {} },
     navigation: createArchiveNavigationCoordinator(), readModelClient: { load: unexpected('readModelClient.load') },
     eventReadModelStatus: ref(''), loading: ref(false),
+    applyArchiveRoute: unexpected('applyArchiveRoute'), prepareRouteData: async route => route,
   }
   for (const name of ['eventReadModelCatalog', 'eventReadModelDetail', 'cardReadModelCatalog',
     'currentCard', 'currentArchiveUnit', 'externalStoryResourcesData']) defaults[name] = ref(null)
