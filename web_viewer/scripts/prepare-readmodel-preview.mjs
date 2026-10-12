@@ -7,6 +7,7 @@ import { verifyArtifacts } from '../readmodels/tools/verify_artifacts.mjs'
 import { readBuildAudit } from './lib/archive-build-audit.mjs'
 import { copyPreviewTranslations } from './lib/preview-translations.mjs'
 import { SEASONAL_READING_PATH } from '../functions/data/[[path]].js'
+import { loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 
 // Deliberately separate from final assemble_pages: this package is for device
 // review on a fixed non-production branch. It never grants final acceptance.
@@ -46,6 +47,15 @@ const copy = async (source, file, destination) => {
 for (const file of codeFiles) await copy(bundle, file, dist)
 for (const file of modelFiles) await copy(path.join(models, 'pages'), file, dist)
 await copyPreviewTranslations(root, dist)
+// Idol and unit head shells (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md): rendered from this package's
+// final index.html, which already carries the inline bootstrap, so they boot exactly like the root page.
+const entitySources = loadEntitySources(root)
+assert(entitySources.release === boot.release, 'Entity head shells must come from the same read-model release')
+const entityShells = renderEntityHeadShells({ template: await fs.readFile(path.join(dist, 'index.html'), 'utf8'), ...entitySources })
+for (const shell of entityShells) {
+  await fs.mkdir(path.dirname(path.join(dist, shell.path)), { recursive: true })
+  await fs.writeFile(path.join(dist, shell.path), shell.html, { flag: 'wx' })
+}
 const workRelease = '2026-09-28-story-work-text-backfill-001'
 const readingManifest = JSON.parse(await fs.readFile(path.join(root, 'public/data/reading/manifest.json'), 'utf8'))
 const workEntries = readingManifest.entries.filter(entry => entry.domain === 'work')
@@ -78,7 +88,7 @@ const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
   release: boot.release, dataRevision: a['--data-revision'], initialJsGzipEstimate: budget.initialJsGzipEstimate,
   workBackfillRelease: workRelease,
-  seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length,
+  seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length, entityHeadShells: entityShells.length,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
   remainingRoutes: acceptance.routes.unfinished, generatedAt: new Date().toISOString() }
 await fs.writeFile(path.join(dist, 'preview-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')
@@ -94,6 +104,10 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
 /preview-receipt.json
   Cache-Control: no-store
 /index.html
+  Cache-Control: no-cache
+/idols/*
+  Cache-Control: no-cache
+/units/*
   Cache-Control: no-cache
 `)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
