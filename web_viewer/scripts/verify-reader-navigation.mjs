@@ -487,6 +487,8 @@ try {
     const decide = patch => readerReturnDecision({ ...base, ...patch })
     const source = buildArchiveSourceQuery({ view: 'story_catalog' }), eventSource = buildArchiveSourceQuery({ view: 'event_detail', event: '1' }), otherSource = buildArchiveSourceQuery({ view: 'unit_detail', unit: '01jup' })
     assert.deepEqual(decide({ detailSourceRoute: source }), { action: 'restore-source' }, 'catalog source restores')
+    assert.deepEqual(decide({ storyDomain: 'idol_story', characterId: '001tom', storySection: '20101', episodeId: '2010101', storyFile: 'episodes/1_2_001_01_a.json' }),
+      { action: 'route', route: { view: 'idol_story_archive', storyType: 'idol_story', idol: '001tom', storySection: '20101', episode: '2010101' } }, 'a cold idol-story Reader returns to the idol story page, not a story collection')
     assert.deepEqual(decide({ detailSourceRoute: otherSource, storySection: '1' }), { action: 'restore-source' }, 'no event id: any source restores')
     assert.deepEqual(decide({ detailSourceRoute: eventSource, eventId: '1', characterId: '001tom', storyDomain: 'work' }), { action: 'restore-source' }, 'legacy event source wins over work')
     assert.deepEqual(decide({ detailSourceRoute: otherSource, eventId: '1', eventParentView: 'unit_detail', categoryId: 'c', unitCode: '01jup' }).route,

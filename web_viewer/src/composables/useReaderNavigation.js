@@ -169,7 +169,7 @@ export function useReaderNavigation({
   function closeStoryReader() {
     const decision = readerReturnDecision({
       detailSourceRoute: detailSourceRoute.value, storyDomain: currentStoryDomain.value, characterId: currentCharacterId.value,
-      storyFile: currentStoryFile.value, workMode: currentWorkMode.value, storySection: currentStorySection.value,
+      storyFile: currentStoryFile.value, workMode: currentWorkMode.value, storySection: currentStorySection.value, episodeId: currentEpisodeId.value,
       eventId: currentEventId.value, eventParentView: eventParentView.value, categoryId: currentCategoryId.value, unitCode: currentArchiveUnitCode.value,
       parent: readingState.value.parent?.route || null,
     })
