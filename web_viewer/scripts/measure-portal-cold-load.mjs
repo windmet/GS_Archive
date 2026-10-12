@@ -57,9 +57,19 @@ const OBSERVER = entity => `(() => {
   } catch {}
   try { localStorage.setItem('sidem:archive-user-preferences', JSON.stringify({ version: 3, startupPage: 'portal', homeMode: 'spine', startupIdol: null, preferredIdol: null, portalDefaultScope: 'favorite', stageLight: 'mint', onboardingComplete: true })) } catch {}
   const test = () => { try { return ${entity} } catch { return false } }
-  const mark = () => { if (perf.entity === null && document.body && test()) { perf.entity = performance.now(); observer.disconnect() } }
+  // After the content first appears, keep watching: a prerendered page that the app clears and re-renders
+  // shows up as a content gap (gapMs, from losing the content until it is back).
+  let shown = false, lostAt = 0
+  perf.gapMs = 0; perf.gaps = 0
+  const mark = () => {
+    if (!document.body) return
+    const now = test()
+    if (now && !shown) { shown = true; if (perf.entity === null) perf.entity = performance.now(); else { perf.gapMs += performance.now() - lostAt; perf.restored = performance.now() } }
+    else if (!now && shown) { shown = false; lostAt = performance.now(); perf.gaps++ }
+  }
   const observer = new MutationObserver(mark)
-  document.addEventListener('DOMContentLoaded', () => { observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true }); mark() })
+  // Observe from the first parsed node: module scripts run before DOMContentLoaded and may replace prerendered content.
+  observer.observe(document, { childList: true, subtree: true, characterData: true })
 })()`
 
 async function measure(pageId) {
@@ -136,7 +146,7 @@ for (const pageId of pages) {
       // One retry when the browser itself fails to start; page errors are recorded, not retried.
       const r = await measure(pageId).catch(error => /page target|timed out/.test(error.message) ? measure(pageId) : Promise.reject(error))
       results.push(r)
-      console.log(`${pageId} #${i + 1}: entity ${Math.round(r.entity ?? -1)} ms, FCP ${Math.round(r.fcp ?? -1)}, LCP ${Math.round(r.lcp ?? -1)}, CLS ${r.cls.toFixed(3)}, script ${Math.round(r.scriptMs)} ms, ${r.requests} req / ${(r.bytes / 1024).toFixed(0)} KiB${r.timedOut ? ' (timed out)' : ''}`)
+      console.log(`${pageId} #${i + 1}: entity ${Math.round(r.entity ?? -1)} ms, gap ${Math.round(r.gapMs ?? 0)} ms, FCP ${Math.round(r.fcp ?? -1)}, LCP ${Math.round(r.lcp ?? -1)}, CLS ${r.cls.toFixed(3)}, script ${Math.round(r.scriptMs)} ms, ${r.requests} req / ${(r.bytes / 1024).toFixed(0)} KiB${r.timedOut ? ' (timed out)' : ''}`)
     } catch (error) {
       results.push({ page: pageId, error: error.message })
       console.log(`${pageId} #${i + 1}: FAILED ${error.message}`)
@@ -149,13 +159,13 @@ const summary = pages.map(pageId => {
   const types = {}
   for (const r of rs) for (const [t, v] of Object.entries(r.byType)) (types[t] = types[t] || []).push(v.bytes)
   return { page: pageId, url: PAGES[pageId].url, runs: rs.length, ttfb: pick('ttfb'), fcp: pick('fcp'), lcp: pick('lcp'), entity: pick('entity'), dcl: pick('dcl'), cls: pick('cls'),
-    longTaskMs: pick('longTaskMs'), longTasks: pick('longTasks'), scriptMs: pick('scriptMs'), taskMs: pick('taskMs'), heapMB: pick('heapMB'), requests: pick('requests'), kib: (pick('bytes') ?? 0) / 1024,
+    longTaskMs: pick('longTaskMs'), longTasks: pick('longTasks'), gapMs: pick('gapMs'), gaps: pick('gaps'), restored: pick('restored'), scriptMs: pick('scriptMs'), taskMs: pick('taskMs'), heapMB: pick('heapMB'), requests: pick('requests'), kib: (pick('bytes') ?? 0) / 1024,
     kibByType: Object.fromEntries(Object.entries(types).map(([t, v]) => [t, Math.round(median(v) / 1024)])), lcpTag: rs.at(-1)?.lcpTag || '', entry: rs.at(-1)?.entry || [],
     timedOut: rs.filter(r => r.timedOut).length, failedRequests: Math.max(0, ...rs.map(r => r.failed)), errors: [...new Set(rs.flatMap(r => r.errors))].slice(0, 3) }
 })
 const fmt = v => v === null || v === undefined ? '—' : Math.round(v)
-const table = ['| 页面 | TTFB | FCP | 实体出现 | LCP | CLS | 长任务 ms | 脚本 ms | 请求数 | KiB | script KiB | 超时 |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
-  ...summary.map(s => `| ${s.page} | ${fmt(s.ttfb)} | ${fmt(s.fcp)} | ${fmt(s.entity)} | ${fmt(s.lcp)} | ${s.cls?.toFixed(3) ?? '—'} | ${fmt(s.longTaskMs)} | ${fmt(s.scriptMs)} | ${fmt(s.requests)} | ${fmt(s.kib)} | ${s.kibByType.script ?? '—'} | ${s.timedOut}/${s.runs} |`)].join('\n')
+const table = ['| 页面 | TTFB | FCP | 实体出现 | 内容空窗 ms | LCP | CLS | 长任务 ms | 脚本 ms | 请求数 | KiB | script KiB | 超时 |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|',
+  ...summary.map(s => `| ${s.page} | ${fmt(s.ttfb)} | ${fmt(s.fcp)} | ${fmt(s.entity)} | ${fmt(s.gapMs)} | ${fmt(s.lcp)} | ${s.cls?.toFixed(3) ?? '—'} | ${fmt(s.longTaskMs)} | ${fmt(s.scriptMs)} | ${fmt(s.requests)} | ${fmt(s.kib)} | ${s.kibByType.script ?? '—'} | ${s.timedOut}/${s.runs} |`)].join('\n')
 writeFileSync(path.join(out, 'report.json'), JSON.stringify({ label, base, profile: profileName, runs, usePaths, measuredAt: new Date().toISOString(), summary, results }, null, 2))
 writeFileSync(path.join(out, 'report.md'), `# ${label}\n\n${base} · ${profileName} · ${runs} runs · medians (ms)\n\n${table}\n`)
 console.log('\n' + table + `\n\n-> ${path.relative(root, out)}`)
