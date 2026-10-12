@@ -32,7 +32,7 @@ for (const id of ids) {
   digest.update(JSON.stringify([id, legacyProjection]))
 }
 const hash = digest.digest('hex')
-if (!baseline) assert.equal(hash, '0a961f02253cf9f55c142bb3912f0314cc6f5109c64fed9772f47e8b10974642')
+if (!baseline) assert.equal(hash, '37168ab873eece6d327877d728888a2f9d168ca8257c26be98b506a27f1f6fa0')
 delete data.cardMap
 assert.equal(JSON.stringify(data), before)
 assert.equal(buildIdolProfile('missing'), null)
@@ -50,3 +50,15 @@ const song = { song_id: 1, performance_mapping: { performer_idol_codes: ['id'], 
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].song, song)
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].evidenceLabel, '表 46 明确演唱／参演')
 console.log(`Idol page: ${ids.length} identities including missing ID; hash ${hash}; profile precedence, missing communication, evidence labels and input preservation passed`)
+
+// The game's display age owns the age line; the internal numeric age is never shown.
+{
+  const { formatIdolAge } = await import('../src/data/idolPage.js')
+  assert.equal(formatIdolAge('17'), '17岁'); assert.equal(formatIdolAge('？？'), '？？'); assert.equal(formatIdolAge(' 9 '), '9岁')
+  assert.equal(formatIdolAge(undefined), ''); assert.equal(formatIdolAge(null), ''); assert.equal(formatIdolAge({}), '')
+  const dictionary = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../public/data/masterdata/idol_unit_dictionary.json', import.meta.url), 'utf8'))
+  assert.equal(dictionary.idols.length, 49)
+  assert.ok(dictionary.idols.every(idol => typeof idol.display_age === 'string' && idol.display_age), 'every idol has a display age')
+  assert.equal(dictionary.by_idol_code['007kei'].display_age, '？？', 'the placeholder is kept, not replaced by the internal number')
+  assert.equal(formatIdolAge(dictionary.by_idol_code['007kei'].display_age), '？？')
+}

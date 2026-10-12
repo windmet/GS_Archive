@@ -42,3 +42,9 @@ export function songsForIdol(id, catalog) {
     }))
     .sort((left, right) => Number(left.song.song_id || 0) - Number(right.song.song_id || 0))
 }
+
+// The game's display age: digits get the unit, a placeholder such as ？？ is shown as is. Never fall back to the internal numeric age.
+export function formatIdolAge(displayAge) {
+  const text = typeof displayAge === 'string' || typeof displayAge === 'number' ? String(displayAge).trim() : ''
+  return /^\d+$/.test(text) ? `${text}岁` : text
+}

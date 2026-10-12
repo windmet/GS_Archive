@@ -83,6 +83,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  // The numeric age is internal master-data; the game's own display_age (which can be a placeholder) is what readers see.
+  for (const row of [...data.idolUnit.idols, ...Object.values(data.idolUnit.by_idol_code), ...Object.values(data.idolUnit.by_numeric_id)]) delete row.age;
   // Imported by the portal's pure event selectors; bind its bytes to this release too.
   await readSource('data/editorial/event-resource-graph.json');
   assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&

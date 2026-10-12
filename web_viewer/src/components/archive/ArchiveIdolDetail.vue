@@ -117,6 +117,7 @@ import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
 import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
 import { eventBannerUrl } from '../../data/eventResourceGraph.js'
+import { formatIdolAge } from '../../data/idolPage.js'
 import { honorBondSource } from '../../presentation/HonorBondSource.mjs'
 import ArchiveRelationList from './ArchiveRelationList.vue'
 import ArchiveIdolSwitcher from './ArchiveIdolSwitcher.vue'
@@ -193,7 +194,7 @@ const displayedIdolName = computed(() => props.idol
 void loadArchiveNames('profiles').catch(() => {})
 const profileText = field => props.idol?.[field] ? archiveNamedText('idol-profile', props.idol[field], field) : ''
 const facts = computed(() => [
-  { label: '年龄', value: props.idol?.age ? `${props.idol.age}岁` : '' },
+  { label: '年龄', value: formatIdolAge(props.idol?.display_age) },
   { label: '生日', value: props.idol?.birthday },
   { label: '身高', value: props.idol?.height ? `${props.idol.height} cm` : '' },
   { label: '体重', value: props.idol?.weight ? `${props.idol.weight} kg` : '' },
