@@ -52,3 +52,24 @@ npx --no-install wrangler pages deploy dist --project-name gs-archive-preview --
 1. 在 X、Discord、LINE 粘贴 `https://gs-architecture-device-test.gs-archive-preview.pages.dev/idols/001tom/` 与 `/units/05w00/` 看卡片。
 2. iPhone / Android 真机打开偶像详情页与首页（计划 §2.5）。
 3. 是否发布正式站、是否放开 `noindex`。
+
+---
+
+## 第二轮：接入 `preview.gs-archive.com`（同日）
+
+用户购买 `gs-archive.com`（Cloudflare 注册，2026-10-12），自行完成 DNS：`CNAME preview -> gs-architecture-device-test.gs-archive-preview.pages.dev`（Proxied），并在 Pages 项目添加了自定义域名（API 查询：`active`，验证与证书均 `active`）。用户授权“现在可以部署 preview”。
+
+- `5a306081`：`prepare-readmodel-preview.mjs` 新增 `--origin`（外壳 canonical / og:url / og:image 的站点，回执记 `entityHeadShellOrigin`）；`verify-entity-head-shells.mjs --dist` 配套 `--origin=`。默认仍为 `DEFAULT_ORIGIN`。
+- 包：`.deploy/test-pages-20261013-preview-5a306081`（10,900 文件），`--origin https://preview.gs-archive.com`。部署到同一测试分支，只上传 66 个变化文件（65 外壳 + 回执）。
+- 固定地址：<https://98921ebf.gs-archive-preview.pages.dev>；别名与 <https://preview.gs-archive.com> 都指向它。**测试别名上的外壳现在也指向 preview 域名**，这是有意的：测试统一走自定义域名。
+
+| 线上检查（`preview.gs-archive.com`） | 结果 |
+|---|---|
+| 回执 | source `5a306081`，`entityHeadShellOrigin` = `https://preview.gs-archive.com` |
+| `/idols/001tom/`、`/units/05w00/` | 200，`no-cache`，`noindex, nofollow`；title、canonical、og:url、og:image 都在 preview 域名下 |
+| `/idols/001tom` | 308 → 带斜杠 |
+| `/`、`/idols/xyz/` | 200，站点通用标题 |
+| og:image（头像、W 标志）、`/_catalog/bootstrap.json` | 200；头像实际以 `image/webp` 返回（R2 已是 WebP） |
+| `verify-portal-path-locator-browser.mjs https://preview.gs-archive.com` | **20/20 通过**；P12：914 个同源请求无失败 |
+
+网络边界：本机代理（`127.0.0.1:33317`）对这个新域名 TLS 握手失败（对 `pages.dev` 与 GitHub 时好时坏），检查改为直连；直连与代理都偶有单次超时，重试即 200，耗时约 1 s。这是本机网络，不是站点问题，但说明大陆网络到 Cloudflare 的质量需要真机再看。证据：`.analysis/path-locator-preview-domain-20261013/`。
