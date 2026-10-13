@@ -28,6 +28,20 @@
       </dl>
     </section>
 
+    <!-- The game's profile view (IdolProfileView) plays this line from its 自己紹介 button. -->
+    <section v-if="selfIntroduction" class="idol-intro" aria-labelledby="idol-intro-title">
+      <div class="section-heading">
+        <h3 id="idol-intro-title">自我介绍</h3>
+        <span>偶像资料页「自己紹介」· 1 段语音</span>
+      </div>
+      <div class="idol-intro-body">
+        <p class="idol-intro-line gs-flow" lang="ja">{{ introLine }}</p>
+        <button type="button" class="idol-intro-play" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
+          <Play :size="15" fill="currentColor" aria-hidden="true" /><span>播放 ADV</span>
+        </button>
+      </div>
+    </section>
+
     <section class="idol-related" aria-labelledby="idol-related-title">
       <div class="section-heading">
         <h3 id="idol-related-title">关联资料</h3>
@@ -112,7 +126,8 @@
 <script setup>
 import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed, ref } from 'vue'
-import { BookOpenText, ChevronRight, Images, Camera, Heart, Info, Medal, MessageSquareText, Music, Phone, UsersRound } from '@lucide/vue'
+import { BookOpenText, ChevronRight, Images, Camera, Heart, Info, Medal, MessageSquareText, Music, Phone, Play, UsersRound } from '@lucide/vue'
+import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
 import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
@@ -133,9 +148,11 @@ const props = defineProps({
   idols: { type: Array, default: () => [] },
   selectedIdol: { type: String, default: '' },
   idolName: { type: Function, default: () => '' },
+  selfIntroduction: { type: Object, default: null },
 })
 
-const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor'])
+const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor','play-introduction'])
+const introLine = computed(() => presentProducerAddressingText(props.selfIntroduction?.text || '', 'ja'))
 // Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100), then FES achievements, then event
 // rankings grouped by event. Notes say where each group comes from in reader terms.
 const openHonorNote = ref('')
@@ -295,6 +312,10 @@ function formatDate(timestamp) {
 .song-links button > svg { margin: auto; color: var(--gs-ink-3); }
 .song-links span { display: grid; min-width: 0; }
 .song-links strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
+.idol-intro-body { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-5); padding-top: var(--gs-space-2); }
+.idol-intro-line { margin: 0; color: var(--gs-ink); line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
+.idol-intro-play { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
+.idol-intro-play:hover { color: var(--gs-mint-ink); }
 .idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-8); }
 .idol-notes h3 { padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); }
 .idol-notes p { margin: var(--gs-space-4) 0 0; color: var(--gs-ink-2); line-height: 1.8; overflow-wrap: anywhere; }
@@ -345,6 +366,7 @@ function formatDate(timestamp) {
   .profile-switcher :deep(button) { flex-basis: var(--gs-control-touch); width: var(--gs-control-touch); height: var(--gs-control-touch); }
   .profile-switcher :deep(select) { height: var(--gs-control-touch); font-size: var(--gs-text-subtitle); }
   .related-grid, .song-links, .idol-notes { grid-template-columns: 1fr; gap: 0; }
+  .idol-intro-body { flex-direction: column; }
   .honor-plates, .honor-plates.is-ranked, .honor-plates.is-chocolate { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-4); }
   .honor-plate { height: auto; min-height: 36px; }
   .idol-notes { gap: var(--gs-space-7); }

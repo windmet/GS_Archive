@@ -216,6 +216,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
         stats:modules.idolPage.buildIdolStats(id,{cardIndex:data.cardIndex,cardMap:originalCardMap,episodes:data.idolEpisode,mobile:data.mobileArchive}),
         events:modules.idolPage.eventsForIdol(id,data.archiveManifest),
         songs:modules.idolPage.songsForIdol(id,data.songCatalog),
+        selfIntroduction:modules.idolPage.idolSelfIntroduction(id,data.homeSystemVoice),
       }})) },
     units: { records:unitCatalog.map(entry=>projectUnitRecord(entry,
       modules.unitPage.storiesForUnit(entry.unit,stories),modules.unitPage.songsForUnit(entry.unit,data.songCatalog))) },

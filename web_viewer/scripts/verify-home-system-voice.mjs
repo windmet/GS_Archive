@@ -7,6 +7,7 @@ import { createHomeVoiceDecider, homeVoiceClock, homeVoiceConditionKind, homeVoi
   homeVoiceInTerm, homeVoiceMonthOpen, homeVoicePool } from '../src/data/homeVoiceDecider.js'
 import { validateArchivePayload } from '../src/data/archiveDataContracts.js'
 import { normalizeArchiveHomePreferences } from '../src/data/archiveHomePreferences.js'
+import { idolSelfIntroduction } from '../src/data/idolPage.js'
 
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'))
 const index = readJson('../public/data/masterdata/home_system_voice_index.json')
@@ -42,6 +43,14 @@ const label = id => momo.find(row => row.script_label === id)
 assert.deepEqual([label('3_1_048_05').open_time, label('3_1_048_05').close_time], ['06:00:00', '11:00:00'])
 assert.deepEqual([label('3_1_048_19').open_month, label('3_1_048_19').close_month], [12, 2])
 assert.equal(label('3_1_048_05').compiled_file, '3_x_048mom_3_1_048.json')
+
+// Self-introduction: one IdolDetail row per idol, played by the profile view's 自己紹介 button.
+assert.equal(index.meta.idol_detail_count, 49)
+assert.ok(index.idols.every(idol => idol.idol_detail.length === 1 && idol.idol_detail[0].type === 4))
+const shu = idolSelfIntroduction('047shu', index)
+assert.deepEqual([shu.file, shu.label, shu.voice, shu.stepId], ['3_x_047shu_9_2_047.json', '9_2_047_00', '9_2_047_00.m4a', 2])
+assert.ok(shu.text.startsWith('俺は、この世界を音楽で変える。'), 'the line shown on the in-game profile screen')
+assert.equal(idolSelfIntroduction('missing', index), null)
 
 // Home state: 21 general voices lead each idol; every card voice keeps its HomeStand condition.
 const idols = buildArchiveHomeState(idolUnit, cardIndex, manifest, costumes, index)

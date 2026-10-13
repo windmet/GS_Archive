@@ -153,6 +153,7 @@
         :idol="currentIdolProfile"
         :idol-name="idolDisplayName"
         :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
+        :self-introduction="currentIdolDetail?.selfIntroduction || null"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
@@ -161,6 +162,7 @@
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
+        @play-introduction="file => loadScenario(file, 'idol_detail')"
         @select-idol="selectPrimaryIdol"
       />
 
@@ -2507,7 +2509,7 @@ function isBootstrapRoute(route) {
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.returnView)) ||
-    (route.view === 'player' && ['unit_detail', 'card_detail'].includes(route.returnView)) ||
+    (route.view === 'player' && ['unit_detail', 'card_detail', 'idol_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
     route.view === 'idols'
 }

@@ -44,7 +44,9 @@ def verify():
     assert tables == before
     assert loader.call_args.args[1] == ['3_x_001tom_3_1_001.json']
     rows = result['idols'][0]['scenarios']
-    assert [row['script_label'] for row in rows] == ['3_1_001_00', '3_1_001_01'], 'only HomeStand idol rows'
+    assert [row['script_label'] for row in rows] == ['3_1_001_00', '3_1_001_01'], 'only HomeStand rows in the home pool'
+    # The IdolDetail row is the profile view's self-introduction, kept apart from the home pool.
+    assert [row['id'] for row in result['idols'][0]['idol_detail']] == [3] and result['meta']['idol_detail_count'] == 1
     assert rows[1]['voice'] == '3_1_001_01.m4a' and rows[1]['jump_step_id'] == 3
     assert (rows[1]['open_month'], rows[1]['close_month'], rows[1]['close_time'], rows[1]['param1']) == (12, 2, '02:00:00', 450)
     assert result['idols'][0]['idol_code'] == '001tom' and rows[0]['_source']['offset'] == 10
@@ -58,7 +60,7 @@ def verify():
     broken['jump_points']['3_1_001_01'] = 2
     with patch.object(module, 'load_scenario_payloads', return_value={'3_x_001tom_3_1_001.json': broken}):
         failed = build_home_system_voice_index(tables, None, {'3_x_001tom_3_1_001'}, {})
-    assert failed['meta']['unresolved_count'] == 1 and failed['unresolved'][0]['voice'] == '3_1_001_00.m4a'
+    assert failed['meta']['unresolved_count'] == 2 and {row['voice'] for row in failed['unresolved']} == {'3_1_001_00.m4a'}
 
 
 if __name__ == '__main__':

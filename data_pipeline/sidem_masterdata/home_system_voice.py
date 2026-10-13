@@ -15,6 +15,8 @@ from .provenance import source
 SCENARIO_TYPES = {1: "HomeStand", 2: "HomeCard", 3: "HomeSetting", 4: "IdolDetail", 5: "Training",
                   6: "LiveResult", 7: "ReliabilityRankUp", 8: "HomeStandCard", 9: "LiveStartButtonVoice"}
 HOME_STAND = 1
+# IdolProfileView's 自己紹介 button plays the idol's IdolDetail row.
+IDOL_DETAIL = 4
 SYSTEM_SCENARIO_FIELDS = {"script_name": 1, "script_label": 2, "open_month": 3, "close_month": 4,
                           "open_time": 5, "close_time": 6, "type": 13, "param1": 14, "param2": 15}
 
@@ -56,7 +58,7 @@ def build_home_system_voice_index(
     idol_unit_dictionary: dict[str, Any],
 ) -> dict[str, Any]:
     idols_by_numeric = idol_unit_dictionary.get("by_numeric_id") or {}
-    idol_rows = [row for row in tables.get(90, []) if system_scenario(row.get("3"))["type"] == HOME_STAND]
+    idol_rows = [row for row in tables.get(90, []) if system_scenario(row.get("3"))["type"] in (HOME_STAND, IDOL_DETAIL)]
     files = {row_scenario["script_name"]: script_file(row_scenario["script_name"], compiled_stems)
              for row_scenario in (system_scenario(row.get("3")) for row in idol_rows)}
     payloads = load_scenario_payloads(compiled_dir, [name for name in files.values() if name])
@@ -77,8 +79,8 @@ def build_home_system_voice_index(
                                "jump_step_id": index, "voice": voice})
             continue
         idol = idols.setdefault(idol_id, {"idol_numeric_id": idol_id, "idol_code": identity.get("idol_code"),
-                                          "display_name": identity.get("display_name"), "scenarios": []})
-        idol["scenarios"].append({
+                                          "display_name": identity.get("display_name"), "scenarios": [], "idol_detail": []})
+        idol["scenarios" if scenario["type"] == HOME_STAND else "idol_detail"].append({
             "id": row.get("1"),
             **scenario,
             "compiled_file": compiled_file,
@@ -115,12 +117,14 @@ def build_home_system_voice_index(
     idol_list = sorted(idols.values(), key=lambda item: item["idol_numeric_id"])
     for idol in idol_list:
         idol["scenarios"].sort(key=lambda item: item["id"])
+        idol["idol_detail"].sort(key=lambda item: item["id"])
     scenarios = [scenario for idol in idol_list for scenario in idol["scenarios"]]
     return {
         "schema_version": 1,
         "authority": {
             "selection": "HomeIdol.SetData -> SystemScenarioDecider(idolId, cardId, type=HomeStand, recent=4)",
             "script": "SystemScenarioData.ScriptName names the compiled script; ScriptLabel is its jump point",
+            "idol_detail": "IdolProfileView._introButton / OnClickVoiceButton (自己紹介) plays the IdolDetail row",
             "card_filter": "card rows with Param2 != 0 are excluded while the card is not awakened",
             "override": "a card row's OverrideIdolSystemScenarioId removes that idol row from the pool",
             "clock": "ServerDateTime.Now; month range may wrap the year; time is [open, close) anchored to the current date",
@@ -140,6 +144,7 @@ def build_home_system_voice_index(
             "month_conditioned_count": sum(1 for row in scenarios if (row["open_month"], row["close_month"]) != (1, 12)),
             "time_conditioned_count": sum(1 for row in scenarios if (row["open_time"], row["close_time"]) != ("00:00:00", "00:00:00")),
             "compiled_file_count": len({row["compiled_file"] for row in scenarios}),
+            "idol_detail_count": sum(len(idol["idol_detail"]) for idol in idol_list),
             "unresolved_count": len(unresolved),
         },
     }

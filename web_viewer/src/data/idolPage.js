@@ -54,3 +54,11 @@ export function formatIdolAge(displayAge) {
   const text = typeof displayAge === 'string' || typeof displayAge === 'number' ? String(displayAge).trim() : ''
   return /^\d+$/.test(text) ? `${text}岁` : text
 }
+
+/** The profile view's 自己紹介 line: the idol's IdolDetail system scenario and its script. */
+export function idolSelfIntroduction(id, systemVoiceData) {
+  const row = (systemVoiceData?.idols || []).find(idol => idol.idol_code === id)?.idol_detail?.[0]
+  if (!row?.compiled_file || !row.voice) return null
+  return { file: row.compiled_file, scenarioId: row.scenario_id || '', stepId: row.step_id, label: row.script_label,
+    voice: row.voice, speaker: row.speaker || '', text: row.text || '' }
+}
