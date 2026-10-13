@@ -20,6 +20,7 @@ import { useStoryRuntimeCues } from '../src/core/story-runtime/useStoryRuntimeCu
 import { useStepSceneEffects } from '../src/core/useStepSceneEffects.js'
 import { createDebugSnapshotCue, createDebugSnapshotHandle } from '../src/core/story-runtime/DebugSnapshotRuntime.js'
 import { getStepSceneState, projectStepSceneState } from '../src/core/story-runtime/StepSceneState.js'
+import { AMBIENCE_DUCK_CURVE, AMBIENCE_RESTORE_CURVE, evaluateUnityCurve } from '../src/core/story-runtime/storyAmbienceCurves.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -516,8 +517,8 @@ function verifyRetiredLegacyOwners() {
     audioManager: {
       preloadSE: cue => audioCalls.push(['se:preload', cue]), playSE: cue => audioCalls.push(['se:play', cue]),
       inspect: () => ({ ...observedAudio }),
-      playAmbient: (cue, fade, volume) => {
-        audioCalls.push(['ambient:play', cue, fade, volume])
+      playAmbient: (cue, fade, volume, options = {}) => {
+        audioCalls.push(['ambient:play', cue, fade, volume, options.curve ? 'restore-curve' : null])
         observedAudio.ambient_cue = cue
         observedAudio.has_ambient_source = true
       },
@@ -527,6 +528,7 @@ function verifyRetiredLegacyOwners() {
         observedAudio.has_ambient_source = false
       },
       setAmbientVolume: volume => audioCalls.push(['ambient:volume', volume]),
+      setAmbientCurve: keys => audioCalls.push(['ambient:curve', keys.at(-1).value]),
       playBgm: cue => {
         audioCalls.push(['bgm:play', cue])
         observedAudio.bgm_cue = cue
@@ -554,8 +556,10 @@ function verifyRetiredLegacyOwners() {
   assert.equal(projectStepSceneState(authoritativeStep).state, authoritativeState)
   sceneEffects.handleStepChange(authoritativeStep, step)
   // environmental.volume in older data is the client's start time (vals[3]); never a volume.
+  // An 'adv' (text) cut ducks before its sound list (PlayView), so new ambience in the
+  // same cut starts at the ducked level and restores (CoPlayAmbienceSound).
   assert.deepEqual(audioCalls, [
-    ['ambient:play', 'strict-ambient', 0.5, undefined],
+    ['ambient:play', 'strict-ambient', 0.5, 0.20000000298023224, 'restore-curve'],
     ['bgm:play', 'strict-bgm'],
   ], 'authoritative entry_snapshot must drive persistent scene audio consumers')
 
@@ -563,9 +567,35 @@ function verifyRetiredLegacyOwners() {
   observedAudio.bgm_cue = 'stale-bgm'
   sceneEffects.handleStepChange(authoritativeStep, authoritativeStep)
   assert.deepEqual(audioCalls.slice(-2), [
-    ['ambient:play', 'strict-ambient', 0.5, undefined],
+    ['ambient:play', 'strict-ambient', 0.5, 0.20000000298023224, 'restore-curve'],
     ['bgm:play', 'strict-bgm'],
   ], 'persistent audio must reconcile the actual manager state after a stale async transition')
+
+  for (const [keys, t, expected] of [[AMBIENCE_DUCK_CURVE, 0, 1], [AMBIENCE_DUCK_CURVE, 0.5163201689720154, 0.4198879599571228],
+    [AMBIENCE_DUCK_CURVE, 1.7999999523162842, 0.20000000298023224], [AMBIENCE_DUCK_CURVE, 9, 0.20000000298023224],
+    [AMBIENCE_RESTORE_CURVE, 0.5, 1]]) {
+    assert.ok(Math.abs(evaluateUnityCurve(keys, t) - expected) < 1e-6, `curve key at ${t}`)
+  }
+  const mid = evaluateUnityCurve(AMBIENCE_DUCK_CURVE, 1.1)
+  assert.ok(mid < 0.4198879599571228 && mid > 0.20000000298023224, 'duck curve stays between its keys')
+  // StoryView ambience ducking: a text cut ducks once (no-op while ducked); new
+  // ambience while ducked starts at the ducked level and restores; duckingCompleted
+  // starts ducked; phone cuts duck after _mobileAmbienceDuckingTime.
+  const textStep = id => ({ step_id: id, type: 'adv', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'strict-ambient' } } })
+  let mark = audioCalls.length
+  sceneEffects.handleStepChange(textStep(10), authoritativeStep)
+  sceneEffects.handleStepChange(textStep(11), textStep(10))
+  assert.deepEqual(audioCalls.slice(mark), [['ambient:curve', 0.20000000298023224]], 'one duck per ducked span')
+  mark = audioCalls.length
+  sceneEffects.handleStepChange({ step_id: 12, type: 'stage', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'next-ambient' } } }, textStep(11))
+  assert.deepEqual(audioCalls.slice(mark), [['ambient:play', 'next-ambient', 0.5, 0.20000000298023224, 'restore-curve']])
+  mark = audioCalls.length
+  sceneEffects.handleStepChange({ step_id: 13, type: 'stage', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'quiet-ambient', ducking_completed: true } } }, textStep(11))
+  sceneEffects.handleStepChange({ step_id: 14, type: 'adv', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'quiet-ambient', ducking_completed: true } } }, textStep(11))
+  assert.deepEqual(audioCalls.slice(mark), [['ambient:play', 'quiet-ambient', 0.5, 0.20000000298023224, null]], 'duckingCompleted starts ducked and is not ducked again')
+  sceneEffects.handleStepChange({ step_id: 15, type: 'stage', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'room' } } }, textStep(11))
+  sceneEffects.handleStepChange({ step_id: 16, type: 'talk', entry_snapshot: { bgm: 'strict-bgm', environmental: { cue: 'room' } } }, textStep(11))
+  assert.equal(sceneEffects.inspect().audio_waits_pending, 1, 'phone cut ducks after the mobile ducking wait')
 
   const delayedStep = { step_id: 4, type: 'adv', entry_snapshot: {
     bgm: 'delayed-bgm', bgm_delay: 3, environmental: { cue: 'delayed-ambient', delay: 1.25 },

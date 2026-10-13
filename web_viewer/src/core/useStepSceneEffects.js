@@ -1,6 +1,17 @@
 import { getAutoAdvanceTiming } from '../utils/StoryStepFlow.js'
 
 import { getStepSceneState } from './story-runtime/StepSceneState.js'
+import {
+  AMBIENCE_DUCK_CURVE,
+  AMBIENCE_DUCKED_LEVEL,
+  AMBIENCE_RESTORE_CURVE,
+} from './story-runtime/storyAmbienceCurves.js'
+
+// Client StoryView.PlayView ducks ambience (AmbienceDucking) when a Title, TimeText or
+// Text cut is shown, and StoryPhone.OpenPhone ducks after _mobileAmbienceDuckingTime.
+const TEXT_DUCK_STEPS = new Set(['adv', 'title', 'text_time'])
+const PHONE_DUCK_STEPS = new Set(['talk', 'call', 'talk_stamp'])
+const MOBILE_AMBIENCE_DUCKING_TIME = 0.5
 
 export function useStepSceneEffects({
   currentStepIndex,
@@ -24,6 +35,20 @@ export function useStepSceneEffects({
   // play/stop (WaitSound). Pending waits are dropped on the next step, which then
   // reconciles against what is actually playing.
   let _audioWaits = []
+  // StoryView.ambienceVolume: Normal / Ducking. AmbienceDucking is a no-op once ducked;
+  // new ambience resets it (CoPlayAmbienceSound).
+  let _ambienceDucked = false
+
+  function duckAmbience(seconds) {
+    if (_ambienceDucked) return
+    _ambienceDucked = true
+    // With nothing playing only the state changes; the next ambience restores from it.
+    afterAudioWait(seconds, () => {
+      const observed = audioManager.inspect?.()
+      if (observed && !observed.ambient_cue && !observed.has_ambient_source) return
+      audioManager.setAmbientCurve?.(AMBIENCE_DUCK_CURVE)
+    })
+  }
 
   function clearAudioWaits() {
     for (const timer of _audioWaits) clearTimeout(timer)
@@ -64,9 +89,26 @@ export function useStepSceneEffects({
     const observedAudio = audioManager.inspect?.()
     const activeEnvCue = observedAudio ? observedAudio.ambient_cue : _lastEnvCue
     const hasAmbientSource = observedAudio ? observedAudio.has_ambient_source : Boolean(_lastEnvCue)
+    const textStep = TEXT_DUCK_STEPS.has(newStep?.type) || PHONE_DUCK_STEPS.has(newStep?.type)
+    // Text handling precedes the cut's sound list in PlayView.
+    if (restore) {
+      _ambienceDucked = textStep
+    } else if (TEXT_DUCK_STEPS.has(newStep?.type)) {
+      duckAmbience(0)
+    } else if (PHONE_DUCK_STEPS.has(newStep?.type)) {
+      duckAmbience(MOBILE_AMBIENCE_DUCKING_TIME)
+    }
+    if (sceneState?.environmental_ducking_delay != null && !restore) {
+      duckAmbience(sceneState.environmental_ducking_delay)
+    }
     if (envCue && envCue !== activeEnvCue) {
       _lastEnvCue = envCue
-      afterAudioWait(wait(env?.delay), () => audioManager.playAmbient(envCue, 0.5))
+      const startDucked = Boolean(env?.ducking_completed) || (restore && _ambienceDucked)
+      const restoring = !startDucked && _ambienceDucked
+      _ambienceDucked = startDucked
+      afterAudioWait(wait(env?.delay), () => audioManager.playAmbient(envCue, 0.5,
+        startDucked || restoring ? AMBIENCE_DUCKED_LEVEL : 1,
+        { curve: restoring ? AMBIENCE_RESTORE_CURVE : null }))
     } else if (!envCue && (activeEnvCue || hasAmbientSource)) {
       _lastEnvCue = null
       afterAudioWait(wait(sceneState?.environmental_stop_delay), () => audioManager.stopAmbient())
