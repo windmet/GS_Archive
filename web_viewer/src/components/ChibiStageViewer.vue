@@ -175,7 +175,8 @@
             :data-runtime-ready="Boolean(runtimeForPosition(position))"
             :data-motion="slotByPosition(position)?.currentMotion || ''"
             :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
-            :data-motion-fragment="runtimes.get(position)?.currentMotionPlayback?.mainName || ''"
+            :data-motion-fragment="runtimes.get(position)?.spine?.state?.getCurrent(0)?.animation?.name || ''"
+            :data-motion-sequence="runtimes.get(position)?.currentMotionPlayback?.sequence?.join(' → ') || ''"
             :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
             :data-position-sort-order="positionDebugState(position).sortingOrder"
             :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
@@ -3604,11 +3605,14 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
   const loadSequence = slot.loadSequence
   // A paused seek inside a cross-fade needs the outgoing pose too. Rebuild
   // only the recent mixing chain and its predecessor, not the whole song.
-  const mixMilliseconds = Math.max(0, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
+  const mixMilliseconds = Math.max(0.15, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
   let start = index
-  if (reset) {
-    while (start > 0 && events[start].mode !== 3
-      && events[start].time > milliseconds - mixMilliseconds) start -= 1
+  if (reset && start > 0 && events[start].mode !== 3 && events[start].time > milliseconds - mixMilliseconds) {
+    // A previous command can still be mixing when a second handoff interrupts
+    // it. Include the connected handoff chain, not just timestamps within the
+    // current frame's lookback window, then its settled predecessor.
+    do { start -= 1 } while (start > 0 && events[start].mode !== 3
+      && events[start + 1].time - events[start].time < mixMilliseconds)
   }
   for (let cursor = start; cursor <= index; cursor += 1) {
     if (stageIntent.revision() !== revision || slot.loadSequence !== loadSequence

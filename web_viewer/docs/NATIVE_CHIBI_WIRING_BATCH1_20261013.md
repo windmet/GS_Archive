@@ -2,6 +2,8 @@
 
 日期：2026-10-13。分支：`codex/stage-chibi-wiring-20261013`。输入 HEAD：`96294431`，开始时与同名 origin 分支一致，已跟踪文件无改动；既有未跟踪文件保留。
 
+**后续纠正（2026-10-14）**：本记录第 3 项把模式 2 与模式 3 都判断为直接 loop，遗漏正常播放的延迟回调，结论有误，且造成 FLASH LIGHT 主动作被跳过。下面保留首批记录以便追溯；正确链路、修复及重新验收见 [FLASH LIGHT 动作链路复查](NATIVE_CHIBI_FLASH_CHAIN_RECHECK_20261014.md)。首批片段存在性与窄路径 Browser 检查不能证明该语义正确。
+
 ## 已完成
 
 1. **站位与基础排序分离**。原版 `LiveObjectIdol.SetPosition`（RVA `0x221bea0`）将第四参数写入 baseSortOrder 并直接设置位置，不修改 scale，也没有 350ms tween。本批移除该平滑过渡，按命令时间即时切换；人物大小只使用原有体型/身高与视口尺度。排序采用脚本值，影子排序为人物减 10，对应 `UpdateSortOrder`（`0x221ab58`）。
