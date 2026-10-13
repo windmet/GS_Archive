@@ -7,14 +7,17 @@ import { verifyArtifacts } from '../readmodels/tools/verify_artifacts.mjs'
 import { readBuildAudit } from './lib/archive-build-audit.mjs'
 import { copyPreviewTranslations } from './lib/preview-translations.mjs'
 import { SEASONAL_READING_PATH } from '../functions/data/[[path]].js'
-import { loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
+import { DEFAULT_ORIGIN, loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 
 // Deliberately separate from final assemble_pages: this package is for device
 // review on a fixed non-production branch. It never grants final acceptance.
 const root = fileURLToPath(new URL('..', import.meta.url))
-const a = parseArgs(process.argv.slice(2), ['--models', '--out', '--data-revision'])
+const a = parseArgs(process.argv.slice(2), ['--models', '--out', '--data-revision', '--origin'])
 assert(a['--models'] && a['--out'] && /^[a-f0-9]{64}$/.test(a['--data-revision'] || ''),
-  'Usage: --models <verified candidate> --out <new package directory> --data-revision <existing R2 snapshot>')
+  'Usage: --models <verified candidate> --out <new package directory> --data-revision <existing R2 snapshot> [--origin https://<site host>]')
+// The site the shells' canonical and og:url/og:image point at; a preview on its own host passes that host.
+const shellOrigin = (a['--origin'] || DEFAULT_ORIGIN).replace(/\/$/, '')
+assert(/^https:\/\/[a-z0-9.-]+$/.test(shellOrigin), '--origin must be an https origin without a path')
 const bundle = path.join(root, '.analysis/build-check')
 const models = await fs.realpath(a['--models'])
 if (process.platform === 'win32') assert(path.parse(path.resolve(a['--out'])).root === path.parse(root).root, 'Keep preview packages on the workspace drive')
@@ -51,7 +54,7 @@ await copyPreviewTranslations(root, dist)
 // final index.html, which already carries the inline bootstrap, so they boot exactly like the root page.
 const entitySources = loadEntitySources(root)
 assert(entitySources.release === boot.release, 'Entity head shells must come from the same read-model release')
-const entityShells = renderEntityHeadShells({ template: await fs.readFile(path.join(dist, 'index.html'), 'utf8'), ...entitySources })
+const entityShells = renderEntityHeadShells({ template: await fs.readFile(path.join(dist, 'index.html'), 'utf8'), ...entitySources, origin: shellOrigin })
 for (const shell of entityShells) {
   await fs.mkdir(path.dirname(path.join(dist, shell.path)), { recursive: true })
   await fs.writeFile(path.join(dist, shell.path), shell.html, { flag: 'wx' })
@@ -88,7 +91,7 @@ const receipt = { purpose: 'device-review-preview', productionApproved: false,
   branch: 'gs-architecture-device-test', sourceRevision: budget.sourceRevision, sourceDigest: budget.sourceDigest,
   release: boot.release, dataRevision: a['--data-revision'], initialJsGzipEstimate: budget.initialJsGzipEstimate,
   workBackfillRelease: workRelease,
-  seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length, entityHeadShells: entityShells.length,
+  seasonalReadingRelease: 'seasonal-reading-v1', seasonalReadingCount: seasonalEntries.length, entityHeadShells: entityShells.length, entityHeadShellOrigin: shellOrigin,
   allPublicRoutesMigrated: acceptance.allPublicRoutesMigrated, deviceReviewAccepted: acceptance.deviceReviewAccepted,
   remainingRoutes: acceptance.routes.unfinished, generatedAt: new Date().toISOString() }
 await fs.writeFile(path.join(dist, 'preview-receipt.json'), JSON.stringify(receipt, null, 2) + '\n')

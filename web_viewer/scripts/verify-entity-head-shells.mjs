@@ -2,6 +2,7 @@
 // set pointing at its path locator, escaped text, and a body byte-identical to index.html.
 //   node scripts/verify-entity-head-shells.mjs              pure checks against a synthetic template (CI)
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
+//     [--origin=https://…]   the origin that build's shells were rendered for (default DEFAULT_ORIGIN)
 import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
@@ -95,19 +96,20 @@ const sources = loadEntitySources(root)
 
 // Built output: the written shells match a fresh render of that build's index.html.
 const distOption = process.argv.slice(2).find(arg => arg.startsWith('--dist='))?.slice('--dist='.length)
+const distOrigin = (process.argv.slice(2).find(arg => arg.startsWith('--origin='))?.slice('--origin='.length) || DEFAULT_ORIGIN).replace(/\/$/, '')
 let built = ''
 if (distOption) {
   const dist = path.resolve(root, distOption)
   const builtTemplate = readFileSync(path.join(dist, 'index.html'), 'utf8')
-  const shells = renderEntityHeadShells({ template: builtTemplate, ...sources })
-  checkShells(shells, { idols: sources.idols, origin: DEFAULT_ORIGIN, sourceTemplate: builtTemplate })
+  const shells = renderEntityHeadShells({ template: builtTemplate, ...sources, origin: distOrigin })
+  checkShells(shells, { idols: sources.idols, origin: distOrigin, sourceTemplate: builtTemplate })
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
     assert.ok(existsSync(file), `${shell.path} exists in ${distOption}`)
     assert.equal(readFileSync(file, 'utf8'), shell.html, `${shell.path} is current`)
   }
   assert.ok(!existsSync(path.join(dist, '404.html')), 'no 404.html, so Cloudflare Pages keeps the SPA fallback for other paths')
-  built = `; ${shells.length} built shells in ${distOption} are current`
+  built = `; ${shells.length} built shells in ${distOption} are current for ${distOrigin}`
 }
 
 const units = new Set(sources.idols.map(idol => idol.unitCode).filter(Boolean)).size
