@@ -86,3 +86,69 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 
 - 5212：用户的 Codex 预览，跑的是主工作区。
 - 5177：本 worktree 的预览，用上面的候选启动，已带本机素材配置。用完关闭。
+
+## 六、推送与 preview 部署（用户授权，同日 22:50 前后）
+
+- 推送：`claude/native-relations-integrated-20261013` 推送到 `origin`，HEAD 为 `96294431`（release 绑定提交：`bootstrap.inline.json`、`contracts/routes.json`、`portal_card_facets.json`、`collection-browse.v1.json` 都改为 `b3c1f13a…`）。
+- 打包：`node scripts/prepare-readmodel-preview.mjs --models E:/Web_build/GS_Archive_Domain_Work/rm-native-relations-integrated-20261013 --out .deploy/preview-20261013-96294431 --data-revision 854190ad… --origin https://preview.gs-archive.com`。共 10,972 个文件 / 163,115,796 字节；`verify-entity-head-shells --dist` 通过。
+- 部署：Pages 项目 `gs-archive-preview` 的分支 `gs-architecture-device-test`，固定地址 <https://dcffcce5.gs-archive-preview.pages.dev>，`preview.gs-archive.com` 指向它。覆盖前的版本是 `9c136d94`，为本提交的祖先。正式站未动，R2 未改。
+  - wrangler：项目里没有安装，`npx` 会去下载新版本，这次直接调用 npx 缓存里的 4.149.0（`npm-cache/_npx/32026684e21afda6`）。
+- 线上核对：
+  - 回执的 source 为 `96294431`，release 为 `b3c1f13a`，外壳指向 preview 域名。
+  - `/idols/047shu/` 外壳标题为「天峰秀 · GS Archive」；自我介绍用到的剧本 `3_x_047shu_9_2_047.json`、语音 `9_2_047_00.m4a`、称号图片都是 200。
+  - 本机到 `preview.gs-archive.com` 的 TLS 时通时断，这是本机网络问题，同样的内容改用 `pages.dev` 地址核对。
+- **未闭环**：`verify-portal-path-locator-browser.mjs` 对新部署跑了三次，结果不一致：
+  - 第 1 次未见失败（只看了末尾输出）。
+  - 第 2 次 19/20，P8 失败。
+  - 第 3 次 15/20，P5–P8 失败。
+  - 失败的共同现象是：后退或冷启动之后落到 `/?view=home&home_idol=002sht…`。
+  - 还没有用同一个脚本跑上一版部署做对照（那次运行被中止），所以还不能区分是本批引入的回归，还是原来就不稳定。**这是短链接分支的第一项工作。**
+
+## 七、首页「变慢」与播放器语音晚到
+
+### 首页（`?view=home&home_idol=045sor`）
+
+读模型数据：cue 分页 3 页 → 5 页（46 → 67 句），解压后多约 62 KB；首句模型都是 `045sor_002_00`。另外多一张事务所背景（首句改成通用语音后，用它的背景，约 226 KB）。
+
+无头浏览器冷加载实测，舞台就绪时间：
+
+| 部署 | 第 1 轮 | 第 2 轮 |
+| --- | --- | --- |
+| 旧 `05fafaa1` | 10.7 s | 5.5 s |
+| 新 `dcffcce5` | 8.7 s | 5.4 s |
+
+差异在网络噪声范围内。新部署刚上线时，新文件名的读模型分页还没进边缘缓存，首访会慢。
+
+可以优化的点：`useHomeNavigation.loadHomeIdol` 要等**全部** cue 分页到齐才显示首页。可以先显示首句所在的那一页，其余分页后台补齐。
+
+### 播放器：动作先做完、语音后到、口型不动
+
+复现地址：`/?view=player&…&scenario=3_x_004ter_9_2_004.json&return=idol_detail`。
+
+根因：
+- `src/core/useStepSceneEffects.js` 预留了 `takePreparedVoice`，但播放器里没有任何地方提供它，所以每一步的语音都是**进入该步才开始下载**。
+- Spine 动作由剧情时钟照常推进，不等语音。首访冷缓存时语音要几秒，表现为动作做完才出声。刷新后语音已在缓存里，所以正常。
+- 加载中只有 1.5 秒后才出现的「语音加载中」小字；重试按钮要等 20 秒超时、状态变成 unavailable 才出现。
+
+口型没挂上的原因还没确认。口型曲线是和语音并行加载的（8 秒超时）。需要在限速网络下复现，确认是曲线超时、还是动作轨道已经结束。
+
+建议的策略：
+1. 打开剧本时预取前 N 步的语音与口型（自我介绍这类短剧本取全部）；播放过程中提前预取下一句。用 `prepareVoice` 填上 `takePreparedVoice`。
+2. 进入有语音的一步时，如果语音还没就绪，剧情时钟（动作、表情）**等待语音，并设上限**（例如 3 s）。超过上限就按现在的方式无声推进，并显示明显的「重新播放语音」按钮，不再等 20 s。
+3. 语音晚到时，从语音开始的时刻重放这一步的动作，或至少重新挂上口型。具体用哪种，以原版行为为准（待查 `StoryView` 的语音与动作同步逻辑）。
+4. 回归：在限速 / 冷缓存条件下验证自我介绍、普通剧情首句、自动播放和跳过。
+
+这一项会改播放器核心，和舞台小人接线、短链接都不是同一块，建议单独开一批（见下节分工）。
+
+## 八、分支分工（基于 `96294431`）
+
+| 分支 | 负责 | 范围 |
+| --- | --- | --- |
+| `codex/stage-chibi-wiring-20261013` | Codex | 舞台小人接线。改动集中在 chibi 舞台相关模块；不改 `archiveRoute.js`、路由 schema、head 外壳。 |
+| `claude/short-link-paths-20261013` | Claude | 短链接：先查清第六节的路径定位不稳定，再把路径地址扩展到卡片、歌曲、活动（每类先进入 `ENFORCED_ROUTE_VIEWS`）。 |
+| （另开）播放器语音预取与等待 | 待定 | 第七节的语音策略。 |
+
+两边都会碰到的文件：`src/App.vue`、`readmodels/bootstrap.inline.json` 及 release 绑定的四个文件。约定如下：
+- 只有需要发 preview 的一方重新生成候选并绑定 release，单独做一个 `chore: bind …` 提交。
+- 合并时以后合入的一方为准，重新生成并绑定。
+- preview 同一时间只部署一个分支；部署前在交接里登记来源提交。
