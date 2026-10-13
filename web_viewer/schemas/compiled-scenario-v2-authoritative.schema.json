@@ -494,6 +494,7 @@
       "properties": {
         "id": { "type": "string" },
         "visible": { "type": "boolean" },
+        "alpha": { "type": "number", "minimum": 0 },
         "action": { "enum": ["start", "end"] },
         "delay": { "type": "number", "minimum": 0 },
         "duration": { "type": "number", "minimum": 0 }

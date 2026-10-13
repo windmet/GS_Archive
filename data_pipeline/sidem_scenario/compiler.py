@@ -524,12 +524,17 @@ class ScenarioCompiler(ScenarioFileIO):
         return None
 
     def _effect_bgstart(self, vals: list):
-        """Start persistent background effect. Values: [effect_id, delay?, duration?, ...]."""
+        """Start persistent background effect. Values: [effect_id, startTime, alpha].
+
+        Client EffectCommandData: [2] is the particle alpha (default -1: cameraflare uses
+        the background's lightAlpha, other effects 1.0). StoryParticleEffect.SetUp applies
+        it to the particle colours with no fade-in, so the start has no duration.
+        """
         if not vals or not vals[0]:
             return
         effect_id = vals[0]
         delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
-        duration = self._safe_float(vals[2], 0.0) if len(vals) > 2 and vals[2] != "" else 0.0
+        duration = 0.0
         payload = {
             "id": effect_id,
             "visible": True,
@@ -537,8 +542,12 @@ class ScenarioCompiler(ScenarioFileIO):
             "delay": delay,
             "duration": duration,
         }
+        alpha = self._safe_float(vals[2], -1.0) if len(vals) > 2 and vals[2] != "" else -1.0
+        if alpha >= 0:
+            payload["alpha"] = alpha
         effect = self._find_bg_effect(effect_id)
         if effect:
+            effect.pop("alpha", None)
             effect.update(payload)
         else:
             self.state.bg_effects.append(payload)

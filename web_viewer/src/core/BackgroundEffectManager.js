@@ -35,7 +35,13 @@ export class BackgroundEffectManager {
       }
       entry.bgProfile = bgProfile || entry.bgProfile || null
       const ending = effect.action === 'end' || effect.visible === false
-      const targetAlpha = ending ? 0 : this._bgEffectTargetAlpha(id)
+      // Client effect_bgstart [2] is the particle alpha; older compiled data carried it
+      // as the start's `duration`. The start itself has no fade-in.
+      const starting = effect.action === 'start'
+      const legacyAlpha = starting && Number(effect.duration) > 0 ? Number(effect.duration) : undefined
+      if (effect.alpha != null || legacyAlpha != null || starting) entry.effectAlpha = effect.alpha ?? legacyAlpha
+      const fadeDuration = starting ? 0 : effect.duration
+      const targetAlpha = ending ? 0 : this._bgEffectTargetAlpha(id) * (id === 'cameraflare' ? 1 : (entry.effectAlpha ?? 1))
       if (ending) {
         const delayMs = Math.max(0, Number(effect.delay || 0)) * 1000
         const durationMs = Math.max(0, Number(effect.duration || 0)) * 1000
@@ -44,7 +50,7 @@ export class BackgroundEffectManager {
         entry.pendingEndUntil = null
       }
       entry.container.visible = true
-      this._animateBgEffectAlpha(entry, targetAlpha, effect.duration, effect.delay, () => {
+      this._animateBgEffectAlpha(entry, targetAlpha, fadeDuration, effect.delay, () => {
         if (ending) this._removeBgEffect(id)
       })
     }
@@ -103,7 +109,8 @@ export class BackgroundEffectManager {
         this._makeFlareSubTexture(texture, 1, 1),
       ]
       entry.cameraflareSide = this._resolveCameraflareSide(entry.bgProfile)
-      const sides = entry.cameraflareSide === 'both' ? ['left', 'right'] : [entry.cameraflareSide]
+      const sides = entry.cameraflareSide === 'both' ? ['left', 'right']
+        : entry.cameraflareSide === 'none' ? [] : [entry.cameraflareSide]
       entry.emitters = sides
         .map(side => this._createCameraflareEmitter(entry, cells, side))
         .filter(Boolean)
@@ -152,7 +159,9 @@ export class BackgroundEffectManager {
     const height = this.getHeight()
     const stageScale = Math.max(width / 1024, height / 506)
     const params = this._getCameraflareParams()
-    const lightAlpha = Number(entry.bgProfile?.lightAlpha ?? 1)
+    // Client CreateBgEffectCoroutine: a negative command alpha falls back to the
+    // background's ScenarioBackgroundData.lightAlpha.
+    const lightAlpha = Number(entry.effectAlpha ?? entry.bgProfile?.lightAlpha ?? 1)
     const strength = params.strength * (Number.isFinite(lightAlpha) ? lightAlpha : 1) * 0.470588237
 
     for (const emitter of entry.emitters || []) {
@@ -200,8 +209,9 @@ export class BackgroundEffectManager {
   _resolveCameraflareSide(bgProfile = null) {
     const { side } = this._getCameraflareParams()
     if (side === 'left' || side === 'right' || side === 'both') return side
+    // ScenarioBackgroundData.LightPosition: None=0 (no flare), Left=1, Right=2.
     const position = Number(bgProfile?.lightPosition ?? 0)
-    return position === 1 ? 'left' : 'right'
+    return position === 1 ? 'left' : position === 2 ? 'right' : 'none'
   }
 
   _projectCameraflareX(emitter) {
