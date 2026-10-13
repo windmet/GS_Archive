@@ -47,7 +47,7 @@ export function homeVoicePool(idolCues, cardCues, { awakened = true } = {}) {
 }
 
 // DecideByWeight split in two: the home prepares the next voice ahead of the tap, so a draw is
-// only remembered once that voice is actually played.
+// only remembered once the tap shows it.
 export function createHomeVoiceDecider({ random = Math.random, capacity = HOME_VOICE_RECENT_CAPACITY } = {}) {
   const recent = []
   const decider = {

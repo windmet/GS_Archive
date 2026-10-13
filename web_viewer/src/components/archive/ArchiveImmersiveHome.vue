@@ -756,13 +756,14 @@ async function handleStageTap() {
     homeCueRuntime.cancelCurrentStep('home-next-cue')
     stageTapCommitPending.value = true
     emit('update:selectedCue', next.cue)
+    // DecideByWeight remembers the draw when it is made: the line is now shown, voiced or not.
+    if (preferences.dialogueOrder === 'native') homeVoiceDecider.commit(next)
     await nextTick()
     if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
     const started = prepared ? await voicePlayer.playPreparedVoice(prepared) : false
     if (!isCurrent()) return
     voiceError.value = !started
     if (started) {
-      if (preferences.dialogueOrder === 'native') homeVoiceDecider.commit(next)
       lastStartedVoice.value = next.voice || ''
       props.homeMode === 'spine' && homeCueRuntime.handleStepChange()
     }

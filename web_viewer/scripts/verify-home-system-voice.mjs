@@ -103,7 +103,7 @@ assert.deepEqual(Array.from({ length: 3 }, () => small.decide(five.slice(0, 2), 
   'with no more candidates than recent entries nothing is excluded')
 const peek = createHomeVoiceDecider({ random: () => 0 })
 peek.pick(five, at(5, '12:00:00'))
-assert.deepEqual(peek.recent, [], 'a prepared voice is remembered only when it plays')
+assert.deepEqual(peek.recent, [], 'a prepared voice is remembered only once a tap shows it')
 assert.equal(createHomeVoiceDecider().pick([cue('night', condition(1, 12, '19:00:00', '00:00:00'))], at(5, '08:00:00')), null)
 
 // Momo at 07:00 in May: card voices plus the all-day, morning and spring rows, never winter or night.
