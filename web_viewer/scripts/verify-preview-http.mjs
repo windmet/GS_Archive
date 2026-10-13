@@ -2,12 +2,51 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
 
-const origin = process.argv[2]
-if (!origin || !/^https:\/\/[^/]+\/?$/.test(origin)) throw new Error('Usage: npm run verify:preview-http -- https://<preview>.pages.dev')
+const [origin, ...chainArgs] = process.argv.slice(2)
+if (!origin || !/^https:\/\/[^/]+\/?$/.test(origin)) throw new Error('Usage: npm run verify:preview-http -- https://<preview host> [full manifest] [incremental manifest …]')
 const base = origin.replace(/\/$/, '')
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const manifest = JSON.parse(await fs.readFile(path.resolve(root, process.argv[3] || '.deploy/r2-manifest.json'), 'utf8'))
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
+
+// What the bucket holds is a full manifest plus every incremental upload since, applied in upload order (a later
+// upload replaces an earlier row for the same request key). A single full manifest goes stale as soon as anything
+// is re-encoded: the 09-14 one predates voice64 and the 10-06 picture passes, which is why this check failed on a
+// healthy site. Extend this list with each new R2 upload; the data-revision check below fails until you do.
+const DEFAULT_CHAIN = [
+  '.deploy/voice64/full-manifest.json',
+  '.deploy/productization-assets-lossless-20261002/manifest.json',
+  '.deploy/ui-gallery-lossless-20261004/manifest.json',
+  '.deploy/lossy-pictures-20261006/manifest.json',
+  '.deploy/background-finish-lossless-thumbs-20261006/manifest.json',
+  '.deploy/release-20261007/manifest.json',
+  '.deploy/release-20261009/manifest.json',
+]
+const [fullFile, ...overlayFiles] = (chainArgs.length ? chainArgs : DEFAULT_CHAIN).map(file => path.resolve(root, file))
+const manifest = JSON.parse(await fs.readFile(fullFile, 'utf8'))
+assert.ok(Array.isArray(manifest.entries) && manifest.kind !== 'incremental-preview', `${fullFile} must be a full manifest`)
+const rows = new Map(manifest.entries.map(item => [item.request_key, item]))
+let dataRevision = null, lastUpload = -Infinity, remote = null
+for (const file of overlayFiles) {
+  const bytes = await fs.readFile(file)
+  const overlay = JSON.parse(bytes)
+  assert.equal(overlay.kind, 'incremental-preview', `${file} is not an incremental manifest`)
+  // Only uploads that completed count: the receipt must name these exact manifest bytes.
+  const receipt = JSON.parse((await fs.readFile(path.join(path.dirname(file), 'upload-receipt.json'), 'utf8')).replace(/^﻿/, ''))
+  assert.equal(receipt.mode, '--upload', `${file}: receipt is not a completed upload`)
+  assert.equal(receipt.manifest_sha256, sha256(bytes), `${file}: receipt is for different manifest bytes`)
+  assert.ok(Date.parse(receipt.completed_at) > lastUpload, `${file}: overlays must be listed in upload order`)
+  assert.ok(remote === null || receipt.remote === remote, `${file}: uploaded to ${receipt.remote}, not ${remote}`)
+  lastUpload = Date.parse(receipt.completed_at); remote = receipt.remote; dataRevision = overlay.dataRevision
+  const stage = path.relative(root, path.join(path.dirname(file), overlay.stage))
+  for (const item of overlay.entries) rows.set(item.request_key, { ...item, stage })
+}
+manifest.entries = [...rows.values()]
+if (dataRevision) {
+  const deployed = await (await fetch(`${base}/preview-receipt.json`, { headers: { 'Accept-Encoding': 'identity' } })).json()
+  assert.equal(deployed.dataRevision, dataRevision, 'The deployment reads a different R2 snapshot than the last listed upload; add the newer upload to the chain')
+}
 const choose = predicate => {
   const item = manifest.entries.find(predicate)
   assert.ok(item, 'Manifest does not contain a required HTTP probe')
@@ -77,4 +116,4 @@ response = await request('assets/__preview_probe_missing__.png')
 assert.equal(response.status, 404, 'Missing R2 key')
 response = await request(image.request_key, { method: 'POST' })
 assert.equal(response.status, 405, 'Unsupported method')
-console.log(`Preview HTTP verified at ${base}: brand PNG control, WebP mapping across transformed domains, ETag/304, data HEAD, voice Range/416, 404, 405`)
+console.log(`Preview HTTP verified at ${base} against ${overlayFiles.length ? `a full manifest + ${overlayFiles.length} uploads (data ${dataRevision.slice(0, 8)})` : path.relative(root, fullFile)}: brand PNG control, WebP mapping across transformed domains, ETag/304, data HEAD, voice Range/416, 404, 405`)

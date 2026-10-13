@@ -83,3 +83,16 @@ npx --no-install wrangler pages deploy dist --project-name gs-archive-preview --
 | Reader 深链接 | `/?view=reader&reading=001tom_307_2_3_001_07_09_a&reading_mode=translation`：正文与译文显示，无报错。地址栏改写为 `reading_scope=chapter`、`reading_mode` 不保留——现有行为，本轮未改 Reader |
 | m4a 普通 GET / Range | `assets/voice/1_1_001_01_a1000.m4a`：GET 200 17,904 B；`Range: bytes=0-31` → 206 `bytes 0-31/17904`；越界 → 416。字节 SHA-256 与 `.deploy/voice64/manifest.json` 的 `deployed_sha256` 一致。正式站相同 |
 | `verify-preview-http.mjs` | **preview 与正式站在同一处失败，原因是校验脚本的默认参照清单过期**：`.deploy/r2-manifest.json`（9/14）早于 voice64 语音重编码与 10/06 背景有损转码。用 voice64 叠加后，语音断言通过，转而在 `assets/bg/BG_locker.png` 长度（实际 41,596，旧清单 351,234）失败。10/10 交接里“Range 断言失败，未查”即此原因。站点无问题；脚本参照清单需更新（后续任务） |
+
+### `verify-preview-http.mjs` 参照清单修复（后续步骤 2）
+
+脚本不再只读一份全量清单，而是按上传顺序叠加：`.deploy/voice64/full-manifest.json`（9/24，已含 voice64）+ 6 次增量上传（10/02 productization、10/04 ui-gallery、10/06 lossy-pictures、10/06 background thumbs、10/07、10/09），同一 request key 后上传覆盖先上传。每份增量要求同目录 `upload-receipt.json` 为 `--upload`、`manifest_sha256` 等于清单字节、完成时间递增、同一 remote；叠加后最后一次上传的 `dataRevision` 必须等于线上 `preview-receipt.json` 的值。仍可在命令行显式传入链（第一份全量，其余增量）。
+
+| 运行 | 结果 |
+|---|---|
+| `node scripts/verify-preview-http.mjs https://preview.gs-archive.com` | 通过：full + 6 uploads（data `854190ad`），brand PNG、11 个转码域的 WebP 映射与字节、ETag/304、data HEAD、语音 Range/416、404、405 |
+| 同上，`https://gs-archive-preview.pages.dev`（正式站） | 通过 |
+| 故意少列最后一次上传 | 失败：“deployment reads a different R2 snapshot…add the newer upload” |
+| 故意打乱顺序 | 失败：“overlays must be listed in upload order” |
+
+以后每做一次 R2 上传，都要把它的 `manifest.json` 追加到脚本里的 `DEFAULT_CHAIN`；漏加时 data-revision 断言会直接指出。10/10 交接里“Range 断言失败，未查”到此结案。
