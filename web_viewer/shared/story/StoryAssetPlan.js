@@ -10,7 +10,8 @@ const noAssetActions = new Set(['camera.transform', 'screen.fade', 'screen.direc
   'spine.face.set', 'spine.body.play', 'spine.neck.play', 'spine.neck.stop', 'spine.visual.tint'])
 const knownSnapshotFields = new Set(['bg', 'bg_effect', 'bg_effects', 'bg_transition', 'bg_profile',
   'bgm', 'bgm_volume', 'bgm_stop_fade', 'se', 'se_events', 'environmental', 'environmental_volume',
-  'environmental_duck_target', 'spines', 'talk_mode', 'phone_mode', 'camera_zoom', 'screen_fade',
+  'environmental_duck_target', 'bgm_delay', 'bgm_stop_delay', 'environmental_stop_delay',
+  'environmental_ducking_delay', 'spines', 'talk_mode', 'phone_mode', 'camera_zoom', 'screen_fade',
   'screen_slide', 'screen_effects', 'camera_filter', 'bg_color', 'bg_dof', 'bg_color_transition',
   'bg_dof_transition', 'text_disabled', 'image_icon', 'screen_overlay'])
 

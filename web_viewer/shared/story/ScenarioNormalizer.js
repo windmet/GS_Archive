@@ -108,6 +108,10 @@ function stripLegacyTransientState(state) {
   settled.bg_color_transition = null
   settled.bgm_stop_fade = null
   settled.environmental_duck_target = null
+  settled.bgm_delay = null
+  settled.bgm_stop_delay = null
+  settled.environmental_stop_delay = null
+  settled.environmental_ducking_delay = null
   settled.text_disabled = false
   settled.camera_zoom = stableCamera(settled.camera_zoom)
   for (const effect of settled.bg_effects || []) {
@@ -115,6 +119,7 @@ function stripLegacyTransientState(state) {
     delete effect.delay
     delete effect.duration
   }
+  if (settled.environmental) delete settled.environmental.delay
   for (const spine of settled.spines || []) {
     delete spine.fade
     delete spine.idol_color_transition

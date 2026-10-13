@@ -20,6 +20,21 @@ export function useStepSceneEffects({
   let _fadeAutoSeq = 0
   let _lastEnvCue = null
   let _lastBgmId = null
+  // Client StoryView waits `time` seconds from the cut start before ambience/BGM
+  // play/stop (WaitSound). Pending waits are dropped on the next step, which then
+  // reconciles against what is actually playing.
+  let _audioWaits = []
+
+  function clearAudioWaits() {
+    for (const timer of _audioWaits) clearTimeout(timer)
+    _audioWaits = []
+  }
+
+  function afterAudioWait(seconds, action) {
+    const ms = Number(seconds) > 0 ? Number(seconds) * 1000 : 0
+    if (!ms) return action()
+    _audioWaits.push(setTimeout(action, ms))
+  }
 
   function clearFadeAutoAdvance() {
     _fadeAutoSeq++
@@ -38,36 +53,35 @@ export function useStepSceneEffects({
       spineStageRef.value?.manager?.cancelAllSpineTweens?.()
     }
 
+    clearAudioWaits()
     const sceneState = getStepSceneState(newStep)
+    const wait = seconds => (restore ? 0 : seconds)
+    // `environmental.volume`, `environmental_duck_target` and `bgm_stop_fade` in older
+    // compiled data hold the client's start times (vals[3] / vals[0]), not volumes or
+    // fade lengths, so they are never applied as volume.
     const env = sceneState?.environmental
     const envCue = env?.cue
     const observedAudio = audioManager.inspect?.()
     const activeEnvCue = observedAudio ? observedAudio.ambient_cue : _lastEnvCue
     const hasAmbientSource = observedAudio ? observedAudio.has_ambient_source : Boolean(_lastEnvCue)
     if (envCue && envCue !== activeEnvCue) {
-      audioManager.playAmbient(envCue, 0.5, env?.volume)
       _lastEnvCue = envCue
+      afterAudioWait(wait(env?.delay), () => audioManager.playAmbient(envCue, 0.5))
     } else if (!envCue && (activeEnvCue || hasAmbientSource)) {
-      audioManager.stopAmbient()
       _lastEnvCue = null
-    }
-    if (env?.volume != null && env.volume !== '' && envCue === _lastEnvCue) {
-      audioManager.setAmbientVolume(env.volume)
-    }
-    if (sceneState?.environmental_duck_target != null) {
-      audioManager.setAmbientVolume(sceneState.environmental_duck_target)
+      afterAudioWait(wait(sceneState?.environmental_stop_delay), () => audioManager.stopAmbient())
     }
 
     const bgmId = sceneState?.bgm
-    const bgmStopFade = sceneState?.bgm_stop_fade
+    const bgmStopDelay = sceneState?.bgm_stop_delay ?? sceneState?.bgm_stop_fade
     const activeBgmId = observedAudio ? observedAudio.bgm_cue : _lastBgmId
     const hasBgmSource = observedAudio ? observedAudio.has_bgm_source : Boolean(_lastBgmId)
     if (bgmId && bgmId !== activeBgmId) {
-      audioManager.playBgm(bgmId)
       _lastBgmId = bgmId
+      afterAudioWait(wait(sceneState?.bgm_delay), () => audioManager.playBgm(bgmId))
     } else if (!bgmId && (activeBgmId || hasBgmSource)) {
-      audioManager.stopBgm(bgmStopFade != null ? bgmStopFade : 1.0)
       _lastBgmId = null
+      afterAudioWait(wait(bgmStopDelay), () => audioManager.stopBgm(1.0))
     }
 
     const autoAdvance = restore ? null : getAutoAdvanceTiming(newStep)
@@ -107,10 +121,11 @@ export function useStepSceneEffects({
 
   function cleanup() {
     clearFadeAutoAdvance()
+    clearAudioWaits()
   }
 
   function inspect() {
-    return { timer_pending: Number(_fadeAutoTimer != null) }
+    return { timer_pending: Number(_fadeAutoTimer != null), audio_waits_pending: _audioWaits.length }
   }
 
   return {

@@ -28,9 +28,14 @@ class ScenarioState:
         self.screen_effects: list[dict] = []       # one-shot screen/effect flashes
         # Audio extras
         self.bgm_volume: int = 100
-        self.bgm_stop_fade: Optional[float] = None  # fade duration for bgm_stop
+        self.bgm_stop_fade: Optional[float] = None  # legacy; no longer written (vals[0] is a delay)
         self.environmental_volume: Optional[float] = None  # 0.0-1.0 volume for ambient
-        self.environmental_duck_target: Optional[float] = None  # duck target volume
+        self.environmental_duck_target: Optional[float] = None  # legacy; no longer written
+        # One-shot waits from the cut start (client StoryView.WaitSound), seconds
+        self.bgm_delay: Optional[float] = None
+        self.bgm_stop_delay: Optional[float] = None
+        self.environmental_stop_delay: Optional[float] = None
+        self.environmental_ducking_delay: Optional[float] = None
         # Visual filters (memory/flashback effects)
         self.camera_filter: Optional[str] = None   # e.g. "gray" from camera_color
         self.bg_color: Optional[str] = None        # hex color overlay e.g. "#AAAAAA"
@@ -160,3 +165,12 @@ class ScenarioState:
         self.bgm_stop_fade = None
         self.environmental_volume = None
         self.environmental_duck_target = None
+        self.clear_audio_delays()
+
+    def clear_audio_delays(self):
+        if self.environmental:
+            self.environmental.pop("delay", None)
+        self.bgm_delay = None
+        self.bgm_stop_delay = None
+        self.environmental_stop_delay = None
+        self.environmental_ducking_delay = None

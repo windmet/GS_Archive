@@ -553,20 +553,29 @@ function verifyRetiredLegacyOwners() {
   assert.equal(getStepSceneState(authoritativeStep), authoritativeState)
   assert.equal(projectStepSceneState(authoritativeStep).state, authoritativeState)
   sceneEffects.handleStepChange(authoritativeStep, step)
+  // environmental.volume in older data is the client's start time (vals[3]); never a volume.
   assert.deepEqual(audioCalls, [
-    ['ambient:play', 'strict-ambient', 0.5, 0.35],
-    ['ambient:volume', 0.35],
+    ['ambient:play', 'strict-ambient', 0.5, undefined],
     ['bgm:play', 'strict-bgm'],
   ], 'authoritative entry_snapshot must drive persistent scene audio consumers')
 
   observedAudio.ambient_cue = 'stale-ambient'
   observedAudio.bgm_cue = 'stale-bgm'
   sceneEffects.handleStepChange(authoritativeStep, authoritativeStep)
-  assert.deepEqual(audioCalls.slice(-3), [
-    ['ambient:play', 'strict-ambient', 0.5, 0.35],
-    ['ambient:volume', 0.35],
+  assert.deepEqual(audioCalls.slice(-2), [
+    ['ambient:play', 'strict-ambient', 0.5, undefined],
     ['bgm:play', 'strict-bgm'],
   ], 'persistent audio must reconcile the actual manager state after a stale async transition')
+
+  const delayedStep = { step_id: 4, type: 'adv', entry_snapshot: {
+    bgm: 'delayed-bgm', bgm_delay: 3, environmental: { cue: 'delayed-ambient', delay: 1.25 },
+  } }
+  const before = audioCalls.length
+  sceneEffects.handleStepChange(delayedStep, authoritativeStep)
+  assert.equal(audioCalls.length, before, 'client WaitSound(time): delayed play must not start immediately')
+  assert.equal(sceneEffects.inspect().audio_waits_pending, 2)
+  sceneEffects.handleStepChange(authoritativeStep, delayedStep, { restore: true })
+  assert.equal(sceneEffects.inspect().audio_waits_pending, 0, 'a step change drops pending audio waits')
 
   observedAudio.ambient_cue = null
   observedAudio.bgm_cue = null

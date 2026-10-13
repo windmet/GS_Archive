@@ -1687,6 +1687,7 @@ class ScenarioCompiler(ScenarioFileIO):
         self.state.bg_color_transition = None
         self.state.bgm_stop_fade = None
         self.state.environmental_duck_target = None
+        self.state.clear_audio_delays()
         self.state.text_disabled = False
         # Camera delay is an authored one-shot cue relative to this emitted
         # step. Keep the resulting zoom state, but do not replay its delay on
