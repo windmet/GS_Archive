@@ -73,3 +73,13 @@ npx --no-install wrangler pages deploy dist --project-name gs-archive-preview --
 | `verify-portal-path-locator-browser.mjs https://preview.gs-archive.com` | **20/20 通过**；P12：914 个同源请求无失败 |
 
 网络边界：本机代理（`127.0.0.1:33317`）对这个新域名 TLS 握手失败（对 `pages.dev` 与 GitHub 时好时坏），检查改为直连；直连与代理都偶有单次超时，重试即 200，耗时约 1 s。这是本机网络，不是站点问题，但说明大陆网络到 Cloudflare 的质量需要真机再看。证据：`.analysis/path-locator-preview-domain-20261013/`。
+
+### 第二轮补充验收（按外部指导清单补齐）
+
+| 项 | 结果 |
+|---|---|
+| `/units/01jup/`、旧 `?view=` 链接 | 浏览器旅程 P8、P9 已覆盖；`capture-gallery.mjs preview-domain-20261013 --base=https://preview.gs-archive.com --only=app-player,app-card,app-idol-path,app-unit-path,app-portal,app-song` 18/18 干净 |
+| Player 深链接 + Spine | `/?view=player&scenario=001tom_101_2_1_001_01_00.json`：13 s 内加载完成，Spine 冬马、背景、对话框均渲染（`.analysis/deep-links-preview-20261013/player.png`）；spine atlas/skel/png 全 200，无报错、无失败请求。注意 gallery 的 app-player 截图停在 “Now Loading 0/8”：gallery 判定“干净”不等于加载完成 |
+| Reader 深链接 | `/?view=reader&reading=001tom_307_2_3_001_07_09_a&reading_mode=translation`：正文与译文显示，无报错。地址栏改写为 `reading_scope=chapter`、`reading_mode` 不保留——现有行为，本轮未改 Reader |
+| m4a 普通 GET / Range | `assets/voice/1_1_001_01_a1000.m4a`：GET 200 17,904 B；`Range: bytes=0-31` → 206 `bytes 0-31/17904`；越界 → 416。字节 SHA-256 与 `.deploy/voice64/manifest.json` 的 `deployed_sha256` 一致。正式站相同 |
+| `verify-preview-http.mjs` | **preview 与正式站在同一处失败，原因是校验脚本的默认参照清单过期**：`.deploy/r2-manifest.json`（9/14）早于 voice64 语音重编码与 10/06 背景有损转码。用 voice64 叠加后，语音断言通过，转而在 `assets/bg/BG_locker.png` 长度（实际 41,596，旧清单 351,234）失败。10/10 交接里“Range 断言失败，未查”即此原因。站点无问题；脚本参照清单需更新（后续任务） |
