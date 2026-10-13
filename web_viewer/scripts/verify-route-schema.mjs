@@ -72,6 +72,11 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=idol_detail&category=idol&idol=001tom')
     state.currentArchiveUnitCode.value = '01jup'; state.view.value = 'unit_detail'
     assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=unit_detail&unit=01jup')
+    state.currentCardId.value = '001tom_ssr01'; state.currentEventId.value = '10011'; state.view.value = 'card_detail'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=card_detail&card=001tom_ssr01')
+    const oldCard = readArchiveRoute('http://localhost/?view=card_detail&category=cards&idol=001tom&card=001tom_ssr01&event=10011&q=q', { history: false })
+    assert.equal(oldCard.view, 'card_detail'); assert.equal(oldCard.card, '001tom_ssr01')
+    assert.equal(buildArchiveUrl('http://localhost/', oldCard).search, '?view=card_detail&card=001tom_ssr01', 'an old card link is shortened on write')
     const old = readArchiveRoute('http://localhost/?view=idol_detail&idol=001tom&unit_filter=1&q=x&card=c&story_type=main', { history: false })
     assert.equal(old.view, 'idol_detail'); assert.equal(old.idol, '001tom')
     assert.equal(buildArchiveUrl('http://localhost/', old).search, '?view=idol_detail&category=idol&idol=001tom', 'an old idol link is shortened on write')

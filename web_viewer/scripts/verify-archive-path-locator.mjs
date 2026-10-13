@@ -1,4 +1,4 @@
-// Public path locators: /idols/<id>/ and /units/<code>/ read as their detail routes, the address bar writes
+// Public path locators: /idols/<id>/, /units/<code>/ and /cards/<resource_id>/ read as their detail routes, the address bar writes
 // them, and every internal query form (buildArchiveUrl, source frames, restoration keys) is unchanged.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -9,6 +9,7 @@ import { buildArchiveViewContext } from '../src/core/archiveViewRestoration.js'
 const read = href => readArchiveRoute(href, { history: false })
 const idol = { view: 'idol_detail', idol: '001tom' }
 const unit = { view: 'unit_detail', unit: '01jup' }
+const card = { view: 'card_detail', card: '001tom_ssr01' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
 // U1–U4: path and legacy query forms read as the same route.
@@ -19,6 +20,12 @@ for (const href of ['http://x/idols/001tom/', 'http://x/idols/001tom', 'http://x
 for (const href of ['http://x/units/01jup/', 'http://x/units/01jup', 'http://x/?view=unit_detail&unit=01jup']) {
   const route = read(href)
   assert.equal(route.view, 'unit_detail', href); assert.equal(route.unit, '01jup', href)
+}
+// Cards: older links carried the list filters and the parent event; they still read as the same card.
+for (const href of ['http://x/cards/001tom_ssr01/', 'http://x/cards/001tom_ssr01', 'http://x/?view=card_detail&card=001tom_ssr01',
+  'http://x/?view=card_detail&category=cards&idol=001tom&card=001tom_ssr01&event=10011&q=q']) {
+  const route = read(href)
+  assert.equal(route.view, 'card_detail', href); assert.equal(route.card, '001tom_ssr01', href); assert.equal(route.category, 'cards', href)
 }
 // Every real idol and unit publishes a path and reads back (unit codes are not all letters: W is 05w00).
 {
@@ -33,6 +40,14 @@ for (const href of ['http://x/units/01jup/', 'http://x/units/01jup', 'http://x/?
     assert.equal(buildPublicArchiveUrl('http://x/', { view: 'unit_detail', unit: code }).pathname, `/units/${code}/`, code)
     assert.equal(read(`http://x/units/${code}/`).unit, code, code)
   }
+  // Every published card (the tutorial copies with card_id 9xxxxxx reuse a real card's resource_id).
+  const cards = JSON.parse(readFileSync(new URL('../public/data/masterdata/card_index.json', import.meta.url), 'utf8')).cards
+    .filter(entry => entry.card_id < 9000000)
+  assert.equal(cards.length, 826)
+  for (const entry of cards) {
+    assert.equal(buildPublicArchiveUrl('http://x/', { view: 'card_detail', card: entry.resource_id }).pathname, `/cards/${entry.resource_id}/`, entry.resource_id)
+    assert.equal(read(`http://x/cards/${entry.resource_id}/`).card, entry.resource_id, entry.resource_id)
+  }
 }
 // U5: a query view wins over the path (old links, relative ?view=… links followed from a path page).
 {
@@ -40,7 +55,8 @@ for (const href of ['http://x/units/01jup/', 'http://x/units/01jup', 'http://x/?
   assert.equal(route.view, 'cards'); assert.equal(route.idol, '002sht')
 }
 // U6: anything that is not an exact locator reads like the bare entry, without throwing.
-for (const href of ['http://x/idols/xyz/', 'http://x/idols/001tom/extra/', 'http://x/units/1/', 'http://x/songs/brndnf/', 'http://x/idols/', 'http://x/IDOLS/001tom/']) {
+for (const href of ['http://x/idols/xyz/', 'http://x/idols/001tom/extra/', 'http://x/units/1/', 'http://x/songs/brndnf/',
+  'http://x/cards/1101001/', 'http://x/cards/001tom/', 'http://x/cards/001TOM_n01/', 'http://x/idols/', 'http://x/IDOLS/001tom/']) {
   same(read(href), read('http://x/'), href)
 }
 // Other query parameters on a path still read (e.g. a debug flag); a path never adds a second identity.
@@ -49,6 +65,9 @@ assert.equal(read('http://x/idols/001tom/?q=x').idol, '001tom')
 // U7–U8: public addresses. Locator views become paths without view/identity/implied category; others go to `/`.
 assert.equal(buildPublicArchiveUrl('http://x/?view=portal', idol).href, 'http://x/idols/001tom/')
 assert.equal(buildPublicArchiveUrl('http://x/?view=portal', unit).href, 'http://x/units/01jup/')
+assert.equal(buildPublicArchiveUrl('http://x/?view=portal', card).href, 'http://x/cards/001tom_ssr01/')
+// The list filters and parent event of a card opened from a filtered list or an event stay out of its address.
+assert.equal(buildPublicArchiveUrl('http://x/', { ...card, category: 'cards', idol: '001tom', event: '10011', portalQuery: 'q' }).href, 'http://x/cards/001tom_ssr01/')
 {
   const url = buildPublicArchiveUrl('http://x/idols/001tom/', { view: 'cards', idol: '001tom' })
   assert.equal(url.pathname, '/'); assert.equal(url.searchParams.get('view'), 'cards'); assert.equal(url.searchParams.get('idol'), '001tom')
@@ -60,7 +79,7 @@ assert.equal(buildPublicArchiveUrl('http://x/', { view: 'idol_detail', idol: 'id
 // U9: for every view, the public address reads back as the same route as the internal query form.
 const sample = {
   idol_detail: idol, unit_detail: unit, idols: { view: 'idols', unitFilter: '1' }, cards: { view: 'cards', idol: '001tom', rarity: 'SSR' },
-  card_detail: { view: 'card_detail', card: '001tom_ssr01' }, event_detail: { view: 'event_detail', event: '410018' },
+  card_detail: card, event_detail: { view: 'event_detail', event: '410018' },
   song_detail: { view: 'song_detail', song: 'brndnf' }, gasha_detail: { view: 'gasha_detail', gasha: '1' },
   reader: { view: 'reader', reading: 'doc1' }, player: { view: 'player', scenario: 'a.json' }, home: { view: 'home', homeIdol: '001tom' },
 }
@@ -71,9 +90,10 @@ for (const view of VALID_VIEWS) {
   same(published, internal, `${view} reads the same through its public address`)
 }
 
-// U10: the internal query form of the two detail views is exactly the post-L0 identity query.
+// U10: the internal query form of the three detail views is exactly the post-L0 identity query.
 assert.equal(buildArchiveUrl('http://x/idols/002sht/', idol).search, '?view=idol_detail&category=idol&idol=001tom')
 assert.equal(buildArchiveUrl('http://x/', unit).search, '?view=unit_detail&unit=01jup')
+assert.equal(buildArchiveUrl('http://x/', card).search, '?view=card_detail&card=001tom_ssr01')
 // Restoration keys do not depend on which address form the page was opened with.
 assert.equal(buildArchiveViewContext('http://x/idols/001tom/').routeKey, buildArchiveViewContext('http://x/?view=idol_detail&idol=001tom').routeKey)
 
@@ -106,4 +126,4 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   delete globalThis.window
 }
 
-console.log('Archive path locators: /idols/ and /units/ read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')
+console.log('Archive path locators: /idols/, /units/ and /cards/ read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')

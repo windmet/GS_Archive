@@ -617,7 +617,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import {loadArchiveNames,archiveNamedText,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
+import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -644,7 +644,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { archiveDocumentTitle } from './presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveDocumentTitle } from './presentation/ArchiveDocumentTitle.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
@@ -908,6 +908,8 @@ async function copyPlayerDiagnostics() {
 }
 const externalStoryResourcesData = ref(null)
 const idolEntityTranslationRevision = ref(0)
+// The first idol name overlay has loaded or failed; tab titles wait for it (see archiveTabEntityName).
+const idolNamesSettled = ref(false)
 const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
 const readModelClient = new ReadModelClient({ release: archiveBootstrap.release, observe: event => tracePlayer('read-model', event) })
@@ -1518,7 +1520,17 @@ const archiveSearchPlaceholder = computed(() => {
 
 const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
 
-watch(() => archiveDocumentTitle(view.value, view.value === 'idol_detail' ? currentIdolDisplayName.value : view.value === 'unit_detail' ? currentArchiveUnit.value?.unit_name : ''), title => {
+// Names wait for their translation overlay, so a slow first visit keeps the head shell's title instead of
+// switching to the Japanese source name and back.
+const archiveTabEntityName = computed(() => {
+  if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || ''
+  if (!idolNamesSettled.value) return ''
+  if (view.value === 'idol_detail') return currentIdolDisplayName.value
+  if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''
+  return archiveCardName(archiveNamedText('card', currentCard.value.title, 'title'), idolDisplayName(currentCard.value.character_id))
+})
+
+watch(() => archiveDocumentTitle(view.value, archiveTabEntityName.value), title => {
   if (title) document.title = title
 }, { immediate: true })
 
@@ -2589,7 +2601,7 @@ onMounted(async () => {
   cardArtMode.value = localStorageValue('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
   loadIdolEntityTranslations().catch(error => {
     console.error('[EntityTranslations] Failed to load idols:', error)
-  })
+  }).finally(() => { idolNamesSettled.value = true })
   archiveRouteReady = true
   // Listen before restoration: a newer history entry may finish before the
   // initial route's assets. Only its completion may finalize startup.

@@ -1,4 +1,4 @@
-// Entity head shells: one shell per bootstrap idol and unit, each with exactly one title/description/canonical/OG
+// Entity head shells: one shell per bootstrap idol, unit and published card, each with exactly one title/description/canonical/OG
 // set pointing at its path locator, escaped text, and a body byte-identical to index.html.
 //   node scripts/verify-entity-head-shells.mjs              pure checks against a synthetic template (CI)
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DEFAULT_ORIGIN, escapeHtml, loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
-import { ARCHIVE_SITE_TITLE, archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const template = `<!DOCTYPE html>
@@ -27,9 +27,10 @@ const body = html => html.slice(html.indexOf('</head>'))
 const count = (html, pattern) => (html.match(pattern) || []).length
 const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([^"]*)"`))?.[1]
 
-function checkShells(shells, { idols, origin, sourceTemplate }) {
+function checkShells(shells, { idols, cards = [], origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
-  assert.equal(shells.length, idols.length + unitCodes.length, 'one shell per idol and unit')
+  assert.equal(shells.length, idols.length + unitCodes.length + cards.length, 'one shell per idol, unit and card')
+  assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'unit').map(s => s.path).sort(), unitCodes.map(c => `units/${c}/index.html`).sort())
   for (const shell of shells) {
@@ -73,12 +74,31 @@ function checkShells(shells, { idols, origin, sourceTemplate }) {
   assert.ok(jup.includes('Jupiter（天濑冬马、御手洗 翔太）的成员'), 'units list their members by display name')
   assert.throws(() => renderEntityHeadShells({ template: template.replace('<title>', '<title>x</title><title>'), idols }), /exactly one <title>/)
   assert.throws(() => renderEntityHeadShells({ template, idols: [{ id: '../x', name: 'x' }] }), /Unexpected idol id/)
+
+  // Cards: the title carries the idol, since one card title is shared by many idols.
+  const cards = [
+    { resource_id: '001tom_n01', character_id: '001tom', rarity: 'N', title: 'スタートライン' },
+    { resource_id: '002sht_ssr12', character_id: '002sht', rarity: 'SSR', title: '<未訳>' },
+  ]
+  const cardShells = renderEntityHeadShells({ template, idols, idolNames: { '001tom': '天濑冬马' }, cards, cardTitles: { スタートライン: '起跑线' }, origin: 'https://example.test' })
+  checkShells(cardShells, { idols, cards, origin: 'https://example.test', sourceTemplate: template })
+  const start = cardShells.find(s => s.id === '001tom_n01').html
+  assert.ok(start.includes('<title>【起跑线】天濑冬马 · GS Archive</title>'))
+  assert.ok(start.includes('天濑冬马的N卡片「起跑线」（スタートライン）'), 'the description keeps the source title')
+  assert.ok(start.includes('https://example.test/assets/cards/icons/image_card_icon_001tom_n01.png'))
+  const untranslated = cardShells.find(s => s.id === '002sht_ssr12').html
+  assert.ok(untranslated.includes('<title>【&lt;未訳&gt;】御手洗 翔太 · GS Archive</title>'), 'untranslated titles stay in the source and are escaped')
+  assert.ok(untranslated.includes('卡片「&lt;未訳&gt;」：'), 'no repeated source title')
+  assert.throws(() => renderEntityHeadShells({ template, idols, cards: [{ ...cards[0], resource_id: '001tom' }] }), /Unexpected card id/)
+  assert.throws(() => renderEntityHeadShells({ template, idols, cards: [{ ...cards[0], character_id: '099zzz' }] }), /has no idol/)
 }
 
 // The app's tab title matches the shell title for the same entity, and other pages keep the site title.
 {
   assert.equal(archiveDocumentTitle('idol_detail', '天濑冬马'), '天濑冬马 · GS Archive')
   assert.equal(archiveDocumentTitle('unit_detail', 'W'), 'W · GS Archive')
+  assert.equal(archiveDocumentTitle('card_detail', archiveCardName('起跑线', '天濑冬马')), '【起跑线】天濑冬马 · GS Archive')
+  assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
   assert.equal(archiveDocumentTitle('cards', 'x'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
@@ -91,7 +111,10 @@ const sources = loadEntitySources(root)
   const missing = sources.idols.filter(idol => !sources.idolNames[idol.id]).map(idol => idol.id)
   assert.deepEqual(missing, [], 'every bootstrap idol has a zh-CN display name')
   const shells = renderEntityHeadShells({ template, ...sources })
-  checkShells(shells, { idols: sources.idols, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  assert.equal(sources.cards.length, 826, 'the published card catalog: 836 index rows less 10 tutorial copies')
+  const untitled = sources.cards.filter(card => !sources.cardTitles[card.title]).map(card => card.resource_id)
+  assert.deepEqual(untitled, [], 'every card title has a zh-CN translation')
 }
 
 // Built output: the written shells match a fresh render of that build's index.html.
@@ -102,7 +125,7 @@ if (distOption) {
   const dist = path.resolve(root, distOption)
   const builtTemplate = readFileSync(path.join(dist, 'index.html'), 'utf8')
   const shells = renderEntityHeadShells({ template: builtTemplate, ...sources, origin: distOrigin })
-  checkShells(shells, { idols: sources.idols, origin: distOrigin, sourceTemplate: builtTemplate })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, origin: distOrigin, sourceTemplate: builtTemplate })
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
     assert.ok(existsSync(file), `${shell.path} exists in ${distOption}`)
@@ -113,4 +136,4 @@ if (distOption) {
 }
 
 const units = new Set(sources.idols.map(idol => idol.unitCode).filter(Boolean)).size
-console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units, one escaped title/description/canonical/OG set each, body unchanged${built}`)
+console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units + ${sources.cards.length} cards, one escaped title/description/canonical/OG set each, body unchanged${built}`)

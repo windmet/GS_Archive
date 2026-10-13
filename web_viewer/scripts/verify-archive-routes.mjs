@@ -338,7 +338,10 @@ const sourceRoute = {
 const builtUrl = buildArchiveUrl('http://localhost/?unknown=kept&file=old', sourceRoute)
 assert.equal(builtUrl.searchParams.get('unknown'), 'kept')
 assert.equal(builtUrl.searchParams.has('file'), false)
-assert.deepEqual(readArchiveRoute(builtUrl.href), normalizeArchiveRoute(sourceRoute))
+// A card's address is its identity (/cards/<resource_id>/); the list filters it was opened from ride the
+// history source, so the written URL drops them and reads back as the bare card.
+assert.equal(builtUrl.search, '?unknown=kept&view=card_detail&card=001tom_n01')
+assert.deepEqual(readArchiveRoute(builtUrl.href), normalizeArchiveRoute({ view: 'card_detail', card: '001tom_n01' }))
 
 const cardDetailContext = readArchiveRoute('http://localhost/?view=card_detail&idol=001tom&card=001tom_ssr01&rarity=SSR&q=Jupiter')
 assert.equal(cardDetailContext.query, 'Jupiter')

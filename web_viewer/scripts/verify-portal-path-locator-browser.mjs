@@ -1,4 +1,5 @@
-// Browser journey for public path locators (/idols/<id>/, /units/<code>/): plan section 3.6, P1-P13.
+// Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/): plan
+// section 3.6, P1-P15, and the card steps P16-P19.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -44,24 +45,45 @@ const usePreferences = async startupPage => {
 await usePreferences('portal')
 const requests = []
 await send('Network.enable')
-socket.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.method === 'Network.responseReceived') requests.push({ url: m.params.response.url, status: m.params.response.status }) })
-const waitFor = async (expr, ms = 20000) => { for (let i = 0; i < ms / 250; i++) { if (await ev(expr)) return true; await sleep(250) } return false }
+// Requests the network dropped (no HTTP status). A failing check after these is a transport failure: the
+// app reports it and a second click recovers, so it says nothing about the locators themselves.
+const dropped = []
+socket.addEventListener('message', e => {
+  const m = JSON.parse(e.data)
+  if (m.method === 'Network.responseReceived') requests.push({ url: m.params.response.url, status: m.params.response.status })
+  if (m.method === 'Network.loadingFailed' && !m.params.canceled) dropped.push(m.params.errorText)
+})
+// A remote preview can take many seconds per cold request; a route only publishes its URL once
+// its data is in, so every navigation waits for the address to change, not for a fixed delay.
+const remote = !/^https?:\/\/(127\.0\.0\.1|localhost)[:/]/.test(base)
+const WAIT_MS = remote ? 60000 : 20000
+const waitFor = async (expr, ms = WAIT_MS) => { for (let i = 0; i < ms / 250; i++) { if (await ev(expr)) return true; await sleep(250) } return false }
 const settle = () => sleep(1200)
 const loc = () => ev('location.pathname + location.search')
+const changedFrom = before => `location.pathname + location.search !== ${JSON.stringify(before)}`
 const shot = async name => writeFileSync(path.join(out, name + '.png'), Buffer.from((await send('Page.captureScreenshot', { format: 'png' })).data, 'base64'))
 const results = []
-const check = (id, ok, detail) => { results.push({ id, ok, detail }); console.log(`${ok ? 'ok  ' : 'FAIL'} ${id} — ${detail}`) }
+let droppedSeen = 0
+const check = (id, ok, detail) => {
+  const network = dropped.slice(droppedSeen); droppedSeen = dropped.length
+  const note = !ok && network.length ? ` [network dropped ${network.length}: ${[...new Set(network)].join(', ')}]` : ''
+  results.push({ id, ok, detail: detail + note, droppedRequests: network.length })
+  console.log(`${ok ? 'ok  ' : 'FAIL'} ${id} — ${detail}${note}`)
+}
 const idolPath = /^\/idols\/0\d\d[a-z]{3}\/$/
 const open = async (url, ready) => { errors = []; await send('Page.navigate', { url: base + url }); await waitFor(ready); await settle() }
 const click = async selector => { await ev(`document.querySelector(${JSON.stringify(selector)})?.click()`); await settle() }
-const pageBack = () => click('.archive-back')
+const navigate = async action => { const before = await loc(); await action(); await waitFor(changedFrom(before)); await settle() }
+const clickTo = selector => navigate(() => ev(`document.querySelector(${JSON.stringify(selector)})?.click()`))
+const pageBack = () => clickTo('.archive-back')
+const historyStep = direction => navigate(() => ev(`history.${direction}()`))
 const idolReady = `location.pathname.startsWith('/idols/') || location.search.includes('view=idol_detail') ? !!document.querySelector('[data-archive-focus-id^="idol-domain:"]') : false`
 const journey = async (size, label) => {
   await send('Emulation.setDeviceMetricsOverride', size)
   // P1: idol directory -> an idol publishes its path.
   await open('/?view=idols', `!!document.querySelector('.idol-card')`)
   const directory = await loc()
-  await click('.idol-card')
+  await clickTo('.idol-card')
   await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
   const detail = await loc(); await shot(`p1-${label}`)
   check(`P1 ${label} idol opens at its path`, idolPath.test(detail) && errors.length === 0, `${directory} -> ${detail}; errors=${errors.length}`)
@@ -69,9 +91,9 @@ const journey = async (size, label) => {
   await pageBack(); await waitFor(`location.search.includes('view=idols')`)
   check(`P2 ${label} page back to directory`, (await loc()) === directory, await loc())
   // P3: page back pushed an entry, so history is [directory, detail, directory]: back, back, forward.
-  await ev('history.back()'); await settle(); const back = await loc()
-  await ev('history.back()'); await settle(); const back2 = await loc()
-  await ev('history.forward()'); await settle(); const fwd = await loc()
+  await historyStep('back'); const back = await loc()
+  await historyStep('back'); const back2 = await loc()
+  await historyStep('forward'); const fwd = await loc()
   check(`P3 ${label} back/forward`, back === detail && back2 === directory && fwd === detail, `back=${back} back2=${back2} forward=${fwd}`)
   const overflow = await ev('document.documentElement.scrollWidth > innerWidth + 1')
   check(`P13 ${label} no sideways scroll`, !overflow, `overflow=${overflow}`)
@@ -95,18 +117,18 @@ try {
   check('P5 cold path renders and backs out like the legacy link', coldText && coldErrors === 0 && coldPathBack === coldLegacyBack && legacyNormalized === '/idols/001tom/', `legacy shown as ${legacyNormalized}; path back=${coldPathBack} legacy back=${coldLegacyBack}`)
   // P6/P7: a related page from the path resets the pathname; back returns to the path.
   await open('/idols/001tom/', idolReady)
-  await click('[data-archive-focus-id^="idol-domain:001tom:"]')
+  await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]')
   await waitFor(`location.pathname === '/' && location.search.includes('view=')`)
   const related = await loc()
   check('P6 related page leaves the path', related.startsWith('/?view=') && !related.includes('/idols/'), related)
-  await ev('history.back()'); await settle()
+  await historyStep('back')
   check('P7 back returns to the path', (await loc()) === '/idols/001tom/', await loc())
   // P8: unit directory -> unit -> member -> page back -> page back.
   await open('/?view=unit_catalog', `!!document.querySelector('.unit-entry, .unit-card')`)
   const units = await loc()
-  await click('.unit-entry, .unit-card'); await waitFor(`location.pathname.startsWith('/units/') && !!document.querySelector('.unit-members')`); await settle()
+  await clickTo('.unit-entry, .unit-card'); await waitFor(`location.pathname.startsWith('/units/') && !!document.querySelector('.unit-members')`); await settle()
   const unitPath = await loc()
-  await click('.unit-members .archive-idol-reference'); await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
+  await clickTo('.unit-members .archive-idol-reference'); await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
   const member = await loc()
   await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`); const backUnit = await loc()
   await pageBack(); await waitFor(`location.search.includes('view=unit_catalog')`); const backUnits = await loc()
@@ -117,7 +139,7 @@ try {
   const lengthBefore = await ev('history.length')
   await open('/?view=unit_detail&unit=01jup&q=x', `!!document.querySelector('.unit-members')`)
   const shown = await loc(); const lengthAfter = await ev('history.length')
-  await ev('history.back()'); await settle(); const previous = await loc()
+  await historyStep('back'); const previous = await loc()
   check('P9 legacy link becomes its path in place', shown === '/units/01jup/' && lengthAfter === lengthBefore + 1 && previous === '/?view=about', `shown=${shown}; history ${lengthBefore}->${lengthAfter}; previous=${previous}`)
   // P10: malformed locator falls back without an uncaught error.
   await open('/idols/xyz/', `document.body.innerText.trim().length > 40`)
@@ -128,7 +150,7 @@ try {
   check('P11 Home preference keeps the path', (await loc()) === '/idols/001tom/' && await ev(`/冬[马馬]/.test(document.body.innerText)`), await loc())
   await usePreferences('portal')
   // P12: nothing is requested relative to the path, and no same-origin request fails.
-  const relative = requests.filter(r => /^\/(idols|units)\/[^/]+\/.+/.test(new URL(r.url).pathname))
+  const relative = requests.filter(r => /^\/(idols|units|cards)\/[^/]+\/.+/.test(new URL(r.url).pathname))
   const broken = requests.filter(r => r.status >= 400 && new URL(r.url).origin === new URL(base).origin)
   check('P12 no path-relative or failing same-origin requests', relative.length === 0 && broken.length === 0, `requests=${requests.length} relative=${relative.length} failing=${broken.map(r => r.status + ' ' + r.url).join(', ') || 0}`)
   // P14: unit codes with digits (W is 05w00) publish a path too.
@@ -136,11 +158,42 @@ try {
   check('P14 W unit publishes its path', (await loc()) === '/units/05w00/' && errors.length === 0, await loc())
   // P15: the tab title follows the entity on path pages and returns to the site title elsewhere.
   const unitTitle = await ev('document.title')
-  await open('/idols/001tom/', idolReady); await waitFor(`document.title !== ${JSON.stringify(unitTitle)}`, 5000)
+  // The title waits for the translation pack, so it never shows the source name first.
+  await open('/idols/001tom/', idolReady); await waitFor(`/^天濑冬马 · GS Archive$/.test(document.title)`)
   const idolTitle = await ev('document.title')
-  await click('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
+  await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]'); await waitFor(`location.pathname === '/'`)
   const otherTitle = await ev('document.title')
   check('P15 tab title follows the entity', unitTitle === 'W · GS Archive' && /^天濑冬马 · GS Archive$/.test(idolTitle) && otherTitle === 'GS Archive · SideM GROWING STARS 资料馆', `unit="${unitTitle}" idol="${idolTitle}" other="${otherTitle}"`)
+  // P16: a card path opens cold, keeps its address and titles the tab with the card and its idol, never the source text.
+  const cardReady = `!!document.querySelector('.card-detail .card-identity')`
+  const titles = []
+  await open('/cards/001tom_ssr01/', cardReady)
+  for (let i = 0; i < WAIT_MS / 250 && !/^【.+】天濑冬马 · GS Archive$/.test(titles.at(-1) || ''); i++) { titles.push(await ev('document.title')); await sleep(250) }
+  const sourceShown = titles.filter(title => /天ヶ瀬|瞳に映る/.test(title))
+  check('P16 card path opens cold with its title', (await loc()) === '/cards/001tom_ssr01/' && /^【.+】天濑冬马 · GS Archive$/.test(titles.at(-1)) && !sourceShown.length && errors.length === 0,
+    `${await loc()} title="${titles.at(-1)}" source titles=${sourceShown.length} errors=${errors.join(' | ') || 0}`)
+  // P17: with no source, page back goes to the card's idol's cards.
+  await pageBack(); await waitFor(`location.search.includes('view=cards')`)
+  const coldBack = await loc()
+  check('P17 cold card back lists its idol cards', /^\/\?view=cards&(category=cards&)?idol=001tom$/.test(coldBack), coldBack)
+  // P18: a filtered list -> card -> page back returns to the same filtered list.
+  await open('/?view=cards&idol=004ter&rarity=SSR', `!!document.querySelector('.card-archive-row')`)
+  const list = await loc()
+  await clickTo('.card-archive-row'); await waitFor(cardReady)
+  const cardPath = await loc()
+  await pageBack(); await waitFor(`location.search.includes('view=cards')`)
+  const listBack = await loc()
+  // Page back pushed an entry (as in P3): browser back reaches the card, then the list.
+  await historyStep('back'); const historyCard = await loc()
+  await historyStep('back'); const historyList = await loc()
+  check('P18 card from a filtered list and back', /^\/cards\/004ter_ssr\d\d\/$/.test(cardPath) && listBack === list && historyCard === cardPath && historyList === list,
+    `${list} -> ${cardPath} -> ${listBack}; history back ${historyCard} -> ${historyList}`)
+  // P19: an old card link with list filters and a parent event is rewritten in place to the card path.
+  await open('/?view=about', `document.body.innerText.trim().length > 40`)
+  const before = await ev('history.length')
+  await open('/?view=card_detail&category=cards&idol=001tom&card=001tom_n01&event=10011&q=q', cardReady)
+  const legacy = await loc(); const after = await ev('history.length')
+  check('P19 legacy card link becomes its path in place', legacy === '/cards/001tom_n01/' && after === before + 1, `shown=${legacy}; history ${before}->${after}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

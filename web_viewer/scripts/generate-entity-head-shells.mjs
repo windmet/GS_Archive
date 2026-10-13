@@ -1,19 +1,21 @@
-// Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html) and unit
-// (/units/<code>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
+// Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html), unit
+// (/units/<code>/index.html) and card (/cards/<resource_id>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
 // tags. The body and scripts are untouched, so the SPA boots as usual and reads the path locator. Link
 // previews (X, Discord, LINE) and crawlers that do not run JavaScript see the entity instead of the generic page.
 //   node scripts/generate-entity-head-shells.mjs [--dist=.analysis/build-check] [--origin=https://…] [--check]
 // Static HTML is zh-CN (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md §0.1). Names come from the same
-// sources the app uses: bootstrap idols for identity and units, zh-CN entity translations for display names.
+// sources the app uses: bootstrap idols for identity and units, zh-CN entity translations for display names,
+// the card index and the zh-CN card title overlay for cards.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveEntityTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveEntityTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
 const IDOL_ID = /^[0-9]{3}[a-z]{3}$/
 const UNIT_CODE = /^[0-9]{2}[a-z0-9]{3}$/  // W is 05w00
+const CARD_ID = /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/
 
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
@@ -43,8 +45,9 @@ function withHead(template, tags) {
   return template.replace(/[ \t]*<title>[\s\S]*?<\/title>\r?\n?/, '').replace('</head>', `${tags}\n  </head>`)
 }
 
-// idols: bootstrap `idols[]` ({ id, name, kana, unitCode, unitName }); idolNames: { [id]: zh-CN display name }.
-export function renderEntityHeadShells({ template, idols, idolNames = {}, origin = DEFAULT_ORIGIN }) {
+// idols: bootstrap `idols[]` ({ id, name, kana, unitCode, unitName }); idolNames: { [id]: zh-CN display name };
+// cards: card index rows ({ resource_id, character_id, rarity, title }); cardTitles: { [source title]: zh-CN }.
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
@@ -85,17 +88,47 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, origin
       })),
     })
   }
+  const idolById = new Map(idols.map(idol => [idol.id, idol]))
+  for (const card of cards) {
+    if (!CARD_ID.test(card.resource_id)) throw new Error(`Unexpected card id ${card.resource_id}`)
+    const idol = idolById.get(card.character_id)
+    if (!idol) throw new Error(`Card ${card.resource_id} has no idol ${card.character_id}`)
+    const title = cardTitles[card.title] || card.title
+    const name = archiveCardName(title, display(idol))
+    const location = `/cards/${card.resource_id}/`
+    shells.push({
+      path: `cards/${card.resource_id}/index.html`,
+      kind: 'card', id: card.resource_id, url: base + location,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(name),
+        description: `${display(idol)}的${card.rarity}卡片「${title}」${title !== card.title ? `（${card.title}）` : ''}：卡面、技能、语音与相关剧情。`,
+        url: base + location,
+        image: `${base}/assets/cards/icons/image_card_icon_${card.resource_id}.png`,
+        type: 'website',
+      })),
+    })
+  }
   return shells
+}
+
+// The published card catalog leaves out the tutorial copies (card_id 9xxxxxx), which reuse a real card's
+// resource_id; every remaining resource_id is unique.
+export function publishedCards(cardIndex) {
+  const cards = cardIndex.cards.filter(card => card.card_id < 9000000)
+  if (new Set(cards.map(card => card.resource_id)).size !== cards.length) throw new Error('Duplicate card resource_id')
+  return cards
 }
 
 export function loadEntitySources(root) {
   const bootstrap = JSON.parse(readFileSync(path.join(root, 'readmodels/bootstrap.inline.json'), 'utf8'))
   const translations = JSON.parse(readFileSync(path.join(root, 'public/translations/zh-CN/entities/idols.json'), 'utf8'))
   const idolNames = Object.fromEntries(Object.entries(translations.entries || {}).map(([id, entry]) => [id, entry?.name]).filter(([, name]) => name))
-  return { idols: bootstrap.idols, idolNames, release: bootstrap.release }
+  const cards = publishedCards(JSON.parse(readFileSync(path.join(root, 'public/data/masterdata/card_index.json'), 'utf8')))
+  const cardTitles = JSON.parse(readFileSync(path.join(root, 'public/translations/zh-CN/archive-general/cards.json'), 'utf8')).entries?.card?.title || {}
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, release: bootstrap.release }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const root = fileURLToPath(new URL('..', import.meta.url))
   const option = name => process.argv.slice(2).find(arg => arg.startsWith(`--${name}=`))?.split('=').slice(1).join('=')
   const dist = path.resolve(root, option('dist') || '.analysis/build-check')
@@ -112,7 +145,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     mkdirSync(path.dirname(file), { recursive: true })
     writeFileSync(file, shell.html)
   }
-  const idols = shells.filter(s => s.kind === 'idol').length
+  const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${idols} idols + ${shells.length - idols} units in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

@@ -42,7 +42,7 @@ export function ownedRouteParams(view, returnView = '') {
 export const ENFORCED_ROUTE_VIEWS = Object.freeze(new Set([
   'about', 'archive_status', 'live', 'studio', 'spine_lab', 'welcome', 'unit_catalog', 'episode_zero_units',
   // Detail pages whose address is only their identity; list filters ride the history source, not the URL.
-  'idol_detail', 'unit_detail',
+  'idol_detail', 'unit_detail', 'card_detail',
 ]))
 
 // Context parameters are moved into history state by writeArchiveRoute; the builder may still carry them.

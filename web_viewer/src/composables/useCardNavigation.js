@@ -116,7 +116,10 @@ export function useCardNavigation({
       currentCardId.value = ''
       return restoreDetailSource(() => commitView('cards'))
     }
+    // A card opened directly (a shared /cards/<id>/ link) has no source: go back to its idol's cards.
+    const owner = currentCard.value?.character_id || ''
     currentCardId.value = ''
+    if (owner) currentCharacterId.value = owner
     commitView('cards')
   }
 

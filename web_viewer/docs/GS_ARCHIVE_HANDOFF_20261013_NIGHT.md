@@ -66,7 +66,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
    - 是否放开整站的 `X-Robots-Tag: noindex, nofollow`：不影响分享卡片，影响搜索收录。
    - 是否把正式站迁到 `gs-archive.com`。
 2. **正式站发布**：用本分支重建 read-model 候选，按发布清单打包（`prepare-readmodel-preview` / `assemble_pages` 都要生成外壳），部署需用户授权。正式站目前还是 10-12 的 `?view=` 版本，**正式站发布前不要对外推广路径链接**。
-3. **扩展路径地址**：现在只有偶像和 Unit 有路径。下一批建议是卡片 `/cards/<id>/`、歌曲 `/songs/<code>/`、活动 `/events/<id>/`。
+3. **扩展路径地址**：偶像、Unit 和卡片（`/cards/<resource_id>/`，见第十节）已有路径。下一批是歌曲 `/songs/<code>/`、活动 `/events/<id>/`。
    - 每扩一类，先把该视图加入 `ENFORCED_ROUTE_VIEWS`（路由 schema 审计的批次 F/G）。
    - 再在 `archiveRoute.js` 加路径读写，在 `verify-archive-path-locator.mjs` 里全量往返，在 `generate-entity-head-shells.mjs` 里加外壳。
    - Reader、Player、Home 按原计划不改格式。批次 E（Reader 链接默认不带 `reading_rev`）仍未做。
@@ -103,6 +103,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
   - 第 3 次 15/20，P5–P8 失败。
   - 失败的共同现象是：后退或冷启动之后落到 `/?view=home&home_idol=002sht…`。
   - 还没有用同一个脚本跑上一版部署做对照（那次运行被中止），所以还不能区分是本批引入的回归，还是原来就不稳定。**这是短链接分支的第一项工作。**
+  - 已查清，不是回归，结论见第十节。
 
 ## 七、首页「变慢」与播放器语音晚到
 
@@ -152,3 +153,55 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 - 只有需要发 preview 的一方重新生成候选并绑定 release，单独做一个 `chore: bind …` 提交。
 - 合并时以后合入的一方为准，重新生成并绑定。
 - preview 同一时间只部署一个分支；部署前在交接里登记来源提交。
+
+## 十、短链接：定位不稳定的结论与卡片路径（2026-10-14，`claude/short-link-paths-20261013`）
+
+### 路径定位「不稳定」的结论
+
+- 不是回归。旧部署 `05fafaa1` 和新部署 `dcffcce5` 用同一脚本都会失败；本地 5177 连续多次全部通过。
+- 原因在测试和网络两侧：
+  - 本机到 `pages.dev` 的 TLS 握手要 2–6 s，偶有请求直接失败。
+  - 旧脚本每次点击后固定等 1.2 s，冷请求还没回来就读地址了。
+- 各项失败的具体情况：
+  - P5：地址还没变就读了。
+  - P8：组合详情请求被网络丢掉时，页面提示「组合详情暂时无法读取，请重试。」并留在目录，再点一次即可。本地用 `Fetch.failRequest` 复现过，行为正确。
+  - P15：中文名随翻译包到达，旧脚本等得不够久。
+- 脚本修正：
+  - 每次导航等地址变化，远端最长 60 s。
+  - 记录被网络丢掉的请求，失败时一并列出。
+  - 修正后对 `dcffcce5` 跑两轮，结果为 20/20 和 19/20。
+- 那次 19/20 的 P8 没有丢请求，原因是组合详情 60 s 内没加载完：
+  - 本地用 1.5 s 延迟复现过，点击没有丢，只是开发模式下页面模块逐个串行加载，80 s 后仍在加载。
+  - 打包后的站点块少得多，远端这次是慢请求叠加。
+  - 这和路径定位无关，记为待办：慢网络下点组合后，提示要足够明显。
+
+### 标签页标题不再先显示日文
+
+- 原来翻译包慢于详情数据时，标题会先变成日文名，再变回中文。
+- 现在偶像名等第一次偶像翻译加载结束（成功或失败），卡片名等卡片标题翻译结束；在此之前保留外壳的标题。
+- 实现在 `App.vue` 的 `archiveTabEntityName` 与 `useArchiveNamedText.archiveNamesSettled`。
+
+### 卡片路径 `/cards/<resource_id>/`
+
+- 地址用 `resource_id`（如 `001tom_ssr01`），不是 7 位 `card_id`：卡片链接、读模型行、事件跳转都用它。
+- 卡片清单：
+  - `card_index.json` 有 836 行，其中 10 行是 `card_id` 9xxxxxx 的教程副本，和正式卡重用同一 `resource_id`。
+  - 读模型目录不含这 10 行，共 826 张。外壳用同一过滤（`publishedCards`），已核对与候选 `b3c1f13a` 的卡片目录完全一致。
+- 改动：
+  - `card_detail` 进入 `ENFORCED_ROUTE_VIEWS`，地址只保留 `card`。列表筛选（idol、稀有度、搜索词）和来源活动不再写进地址，返回列表靠历史记录里的来源，与偶像、Unit 一致。
+  - 旧链接（带 `category/idol/event/q`）照常打开，并原地改写成路径。
+  - 没有来源时（直接打开分享的卡片链接），页内返回到该卡所属偶像的卡片列表，以前是全部卡片。
+  - 标签页标题为「【卡名】偶像名 · GS Archive」，如「【映入眼帘的彼方】天濑冬马 · GS Archive」。卡名可以重复（「起跑线」有 49 张），所以带上偶像名。
+  - 外壳从 65 个增加到 891 个（49 + 16 + 826），预览包约多 826 个文件（仍远低于 Pages 的 20,000 上限），`/cards/*` 和 `/idols/*`、`/units/*` 一样设为 no-cache；图片用卡片小图 `assets/cards/icons/image_card_icon_<id>.png`。在 `dcffcce5` 上抽查 3 张，均为 200，以 WebP 返回，与偶像头像相同。
+- 有意改变的旧契约：`verify-archive-routes.mjs` 原来断言卡片详情 URL 带着列表筛选往返。现在改为断言地址只剩身份；旧 URL 仍能读取。
+- 验证：
+  - `verify:routes`（含全部 826 张卡往返与新的反例）、`verify-route-schema`、`verify-entity-head-shells`、`verify:source-batch` 133/133、`build:check` 均通过。
+  - 浏览器旅程（5177）24/24，新增 4 项：
+    - P16：冷开卡片路径，标题全程不出现日文。
+    - P17：冷开后返回到偶像的卡片列表。
+    - P18：从筛选列表进出卡片，浏览器前进、后退正确。
+    - P19：旧卡片链接原地改写。
+- 未做：
+  - 远端部署上的卡片旅程（本分支未部署）。
+  - 卡片分享卡在 X、Discord、LINE 里的实际效果。
+  - 歌曲与活动的路径。
