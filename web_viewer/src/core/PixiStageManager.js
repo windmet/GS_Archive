@@ -1890,8 +1890,8 @@ export class PixiStageManager {
    *   - Single-shot animations (e.g. `neck_yes`, `neck_no`) have no `_loop` variant
    *     and should fall back to `wait_loop`.
    */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
-    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix)
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null) {
+    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix, motionTable)
   }
 
   /**

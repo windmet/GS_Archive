@@ -169,7 +169,7 @@ print(json.dumps(result))
   let now = 0
   const dependencies = {
     getManager: () => direct.manager, getGeneration: () => 1,
-    motionSettingFor: () => 'motion-fixture', now: () => now,
+    motionSettingFor: () => 'motion-fixture', motionTableFor: () => 'table-fixture', now: () => now,
   }
   for (const action of ['spine.body.play', 'spine.visual.tint', 'spine.neck.stop']) {
     const step = makeStep(1, { action })
@@ -179,12 +179,25 @@ print(json.dumps(result))
     await handle.start()
     await handle.complete()
   }
+  // A body cue with no neck cue at the same time resets the neck first (client
+  // IdolCharacter.CoPlayAnimation) and passes the model's whole motion table.
   assert.deepEqual(direct.calls, [
-    ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, 0.3],
+    ['neck-stop', 'fixture', 'step-1:spine.body.play:motion-neck-reset'],
+    ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, 0.3, 'table-fixture'],
     ['tint', 'fixture', 'value-1', 0.7, 0, dependencies.now],
     ['neck-stop', 'fixture', 'step-1:spine.neck.stop'],
   ])
   direct.calls.length = 0
+  {
+    // Same start time as a neck cue: one animation entry, so no neck reset.
+    const step = makeStep(1, { action: 'spine.body.play' })
+    step.cues.push({ ...step.cues[0], cue_id: 'step-1:neck-same-time', action: 'spine.neck.play' })
+    const handle = createSpineCueHandle(step.cues[0], { step }, dependencies)
+    await handle.start()
+    await handle.complete()
+    assert.deepEqual(direct.calls.map(call => call[0]), ['body'])
+    direct.calls.length = 0
+  }
 
   for (const completion of ['natural', 'fallback', 'skip', 'step-change', 'cleanup']) {
     const step = makeStep(1, { action: 'spine.neck.play', transient: true })

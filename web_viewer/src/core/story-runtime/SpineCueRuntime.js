@@ -1,5 +1,5 @@
 import { createPerformanceHandle } from './PerformanceRegistry.js'
-import { getCachedMotionSetting } from '../../utils/IdolMotionSettingStore.js'
+import { getCachedMotionSetting, getCachedMotionTable } from '../../utils/IdolMotionSettingStore.js'
 
 export function settleSpineNeckCue(manager, cue) {
   if (!manager || !cue?.target || !cue?.payload?.value) return false
@@ -19,6 +19,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
   getManager, getGeneration,
   isTargetReady = () => true,
   motionSettingFor = getCachedMotionSetting,
+  motionTableFor = getCachedMotionTable,
   requestFrame = callback => globalThis.requestAnimationFrame(callback),
   cancelFrame = id => globalThis.cancelAnimationFrame(id),
   now = () => performance.now(),
@@ -59,7 +60,14 @@ export function createSpineCueHandle(cue, { step } = {}, {
     } else if (cue.action === 'spine.body.play') {
       const modelId = manager.spineInstances?.[target]?.modelId || ''
       const motionSetting = motionSettingFor(target, modelId, payload.value)
-      manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3)
+      // Client IdolCharacter.CoPlayAnimation: a motion entry without a neck motion
+      // at the same start time resets the neck before the motion plays.
+      const neckAtSameTime = (step?.cues || []).some(other => other !== cue
+        && other.action === 'spine.neck.play' && other.target === target
+        && Number(other.at || 0) === Number(cue.at || 0))
+      if (!neckAtSameTime) manager.stopSpineNeckAnim?.(target, `${cue.cue_id}:motion-neck-reset`)
+      manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3,
+        motionTableFor(target, modelId))
     } else if (cue.action === 'spine.neck.play') {
       if (settleNeck) {
         settleSpineNeckCue(manager, cue)
