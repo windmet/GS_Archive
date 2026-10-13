@@ -1,6 +1,7 @@
 // Portal image budget (docs/GS_ARCHIVE_PORTAL_IMAGE_BUDGET_20261013.md): on a phone the card bento is below the
 // fold, so its card art (≈1.6 MB of 640×800 portraits) must not be requested until the reader scrolls near it; on
-// desktop the bento is on screen and its art loads at once. Checks the requests actually sent, not the markup.
+// desktop the bento is on screen and its art loads at once. Story banners and song covers below the fold wait the
+// same way on every width. Checks the requests actually sent, not the markup.
 //   node scripts/verify-portal-image-budget-browser.mjs [base] [outDir]
 // Needs a running server (dev, scripts/serve-archive-build.mjs or a preview URL) and a cached Playwright Chromium.
 import { spawn } from 'node:child_process'
@@ -51,6 +52,8 @@ async function session(viewport, run) {
   }
 }
 const cardArt = requests => requests.filter(r => /\/assets\/card-art\//.test(r.url))
+const rows = requests => requests.filter(r => /\/assets\/(songs|stories)\//.test(r.url))
+const ROWS = `[...document.querySelectorAll('.overview-song-image img, .overview-main-index img, .overview-story-image img')].map(i => ({ src: i.getAttribute('src'), done: i.complete && i.naturalWidth > 0 }))`
 const imageBytes = requests => requests.filter(r => /\.(png|webp|jpe?g)(\?|$)/.test(r.url)).reduce((sum, r) => sum + r.bytes, 0)
 const kib = bytes => `${(bytes / 1024).toFixed(0)} KiB`
 const BENTO = `[...document.querySelectorAll('.card-bento img')].map(i => ({ src: i.getAttribute('src'), done: i.complete && i.naturalWidth > 0 }))`
@@ -59,6 +62,7 @@ await session({ width: 390, height: 844, deviceScaleFactor: 3, mobile: true }, a
   const top = await ev(`Math.round(document.querySelector('.card-bento').getBoundingClientRect().top)`)
   const before = cardArt(requests)
   check('phone: bento starts below the fold', top > 844, `bento top ${top}px, viewport 844px`)
+  check('phone: story banners and song covers wait below the fold', rows(requests).length === 0, `${rows(requests).length} song/story image requests before scrolling`)
   check('phone: no card art requested before scrolling', before.length === 0, `${before.length} card-art requests; ${kib(imageBytes(requests))} of images before scrolling`)
   const unbound = (await ev(BENTO)).filter(i => !i.src).length
   check('phone: bento images hold no src yet', unbound > 0 && unbound === (await ev(BENTO)).length, `${unbound} unbound`)
@@ -70,6 +74,13 @@ await session({ width: 390, height: 844, deviceScaleFactor: 3, mobile: true }, a
   const images = await ev(BENTO)
   check('phone: card art loads once scrolled near', after.length > 0 && images.every(i => i.done), `${after.length} card-art requests (${kib(after.reduce((s, r) => s + r.bytes, 0))}); ${images.filter(i => i.done).length}/${images.length} rendered`)
   await shot('phone-after-scroll')
+  const rowCount = await ev(`${ROWS}.length`)
+  for (let n = 0; n < rowCount; n++) {
+    await ev(`document.querySelectorAll('.overview-song-image img, .overview-main-index img, .overview-story-image img')[${n}].scrollIntoView({ block: 'center' })`)
+    for (let i = 0; i < 40 && !(await ev(`${ROWS}[${n}].done`)); i++) await sleep(250)
+  }
+  const rowImages = await ev(ROWS)
+  check('phone: banners and covers load once scrolled to', rowImages.length > 0 && rowImages.every(i => i.done), `${rowImages.filter(i => i.done).length}/${rowImages.length} rendered; ${rows(requests).length} requests`)
   check('phone: no page errors', errors.length === 0, errors.slice(0, 2).join(' | ') || 'none')
 })
 

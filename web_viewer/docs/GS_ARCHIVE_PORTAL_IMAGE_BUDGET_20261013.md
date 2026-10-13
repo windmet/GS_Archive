@@ -35,7 +35,25 @@
 
 全部为 headless Chromium，不是真机。
 
+## 第二批：故事横幅与歌曲封面
+
+线上瀑布图（`623e6c72` vs `98921ebf`，模拟手机，各一次）显示 **Portal 的 LCP 元素是首屏的组合 logo**（`image_unit_logo_04bei.png`，每次测量都是），不是卡面。去掉卡面后 logo 组结束时间 11.3 → 10.3 s；但歌曲封面与故事横幅（297 KB，手机 1685–2728px、桌面 1198px 以下）仍在 3.5 s 与 logo 同时开始下载、抢带宽。
+
+- `DomainMediaPreview.vue` 新增 `deferred` 属性（默认关，其他页面行为不变）；Portal 的章节横幅、歌曲封面、故事图、活动图传 `deferred`，所有宽度都等接近视口再请求（桌面同样在首屏以下）。
+- `verify-photo-catalog-navigation.mjs` 的沙箱依赖白名单加入 `./useNearViewport.js`（真实模块；Node 无 IntersectionObserver，即立即加载）。
+- 浏览器验收加两项：手机滚动前 0 个 songs/stories 图片请求；逐个滚到后 7/7 渲染。共 9/9。
+
+本地 A/B/A（手机 ×5，只换这两个文件）：
+
+| 组 | FCP | 实体出现 | LCP | 传输 KiB |
+|---|---:|---:|---:|---:|
+| 第二批 | 2444 | 2802 | 5616 | 1413 |
+| 仅卡面（上一提交） | 2520 | 2914 | 7464 | 1712 |
+| 第二批复测 | 2432 | 2816 | 6296 | 1413 |
+
+相对最初基准：本地手机首屏传输 3,301 → 1,413 KiB（−57%），LCP 约 10.0 s → 5.6–6.3 s。回归：`verify:source-batch` 128/128；gallery `image-budget-rows`（portal、event、event-list、collection-list、photo-list、card、song）21/21；路径旅程 20/20。
+
 ## 仍可做（未做）
 
-- 手机首屏前剩下的 1.4 MB：故事章节横幅与歌曲封面（`DomainMediaPreview`，无 lazy）、49 个偶像头像（已是 lazy，但在原生阈值内仍会加载）。可用同一 composable 逐个处理，按实测请求验收。
+- 首屏 LCP 的组合 logo：原图 402×117、显示 95×34，且是原生 `lazy`（低优先级）。首屏内的几张可去掉 `lazy` 或加 `fetchpriority="high"`；首屏外的 Unit 卡片（连同 49 个偶像头像中的大部分）可用同一 composable 延后。需按 LCP 与请求实测验收。
 - 中期：卡面缩略位用 256–320px 有损变体，桌面主图 1800×960 横版（显示 709×378）同样过大。需要动 R2 素材。
