@@ -7,6 +7,13 @@ from .provenance import source
 from .story_resources import compiled_filename
 
 
+def term(value: Any) -> dict[str, Any] | None:
+    """A protobuf Term message: 1 is the opening and 2 the closing Unix time."""
+    if not isinstance(value, dict):
+        return None
+    return {"start_at": value.get("1"), "end_at": value.get("2")}
+
+
 def work_story_files(tables: dict[int, list[dict[str, Any]]], compiled_stems: set[str]) -> list[str]:
     """Only load resources used by valid work entries, in first-use order."""
     files = []
@@ -38,7 +45,10 @@ def build_work_story_index(
             "story_relation_id": row.get("4"),
             "image_resource_id": row.get("7"),
             "color": row.get("8"),
-            "sort_order": row.get("10"),
+            # JobData: 6 is SortOrder, 9 Term and 10 IdolType (il2cpp protobuf schema).
+            "sort_order": row.get("6"),
+            "idol_type": row.get("10"),
+            "term": term(row.get("9")),
             "_source": source(53, {
                 "id": 1,
                 "name": 2,
@@ -46,7 +56,9 @@ def build_work_story_index(
                 "story_relation_id": 4,
                 "image_resource_id": 7,
                 "color": 8,
-                "sort_order": 10,
+                "sort_order": 6,
+                "term": 9,
+                "idol_type": 10,
             }, row.get("_offset")),
         }
         work_types.append(entry)
@@ -150,6 +162,7 @@ def build_work_story_index(
                 "title": summary.get("title") if summary else None,
                 "step_count": summary.get("step_count") if summary else 0,
                 "voice_count": summary.get("voice_count") if summary else 0,
+                "term": term(row.get("4")),
                 **scenario_details(compiled_file),
                 "_source": source(table_id, {
                     "id": 1,
