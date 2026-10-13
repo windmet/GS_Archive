@@ -53,6 +53,18 @@
       />
     </section>
 
+    <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
+    <section v-if="gasha.announce_movie" class="detail-section">
+      <div class="section-heading">
+        <div>
+          <h3>告知视频</h3>
+          <p>视频记录的资源编号与本卡池编号一致，开放时间与公告开始时间一致；原版卡池指向视频的字段未保存在客户端数据中。</p>
+        </div>
+        <span class="relation-count">推定关联</span>
+      </div>
+      <p class="gasha-note">已收录原始视频 {{ gasha.announce_movie.raw_file }}，尚未转为浏览器可播放的格式。</p>
+    </section>
+
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
       <dl class="evidence-grid">
         <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>

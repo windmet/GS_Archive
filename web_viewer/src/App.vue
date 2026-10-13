@@ -341,6 +341,8 @@
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-count="storyCatalogIndex?.seasonalCount ?? 0"
         :work-count="storyCatalogIndex?.workCount ?? 0"
+        :birthday-count="storyCatalogIndex?.birthdayCount ?? 0"
+        :birthday-shared-count="storyCatalogIndex?.birthdaySharedCount ?? 0"
         :idol-story-count="archiveBootstrap.idols.length"
         :external-resource-count="externalStoryNavigationEntries.length"
         :main-domain="mainStoryDomain"

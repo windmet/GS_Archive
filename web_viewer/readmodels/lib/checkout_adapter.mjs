@@ -16,6 +16,7 @@ export const INPUTS = {
  domainLogin:'data/masterdata/domains/login_campaign_catalog.json',
  domainCollectionMedia:'data/masterdata/domains/collection_media.json', domainPhotoMedia:'data/masterdata/domains/photo_media.json',
  domainEventMedia:'data/masterdata/domains/event_media.json',
+ homeSystemVoice: 'data/masterdata/home_system_voice_index.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
@@ -23,7 +24,7 @@ export const INPUTS = {
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
- gashaIndex: 'data/masterdata/gasha_index.json',
+ gashaIndex: 'data/masterdata/gasha_index.json', movieAnnounce: 'data/masterdata/movie_announce_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
@@ -87,19 +88,28 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   await readSource('data/editorial/event-resource-graph.json');
   assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&
     data.songTimelines.songs && typeof data.songTimelines.songs === 'object', 'Song timeline manifest contract mismatch');
-  const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
+  const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary, data.homeSystemVoice);
   const homeStats = [
     { label: '剧情文件', value: data.archiveVerification.scenarios?.parsed_files ?? data.archiveManifest.counts?.indexed_scenarios ?? 0 },
     { label: '偶像', value: data.archiveManifest.counts?.idols ?? Object.keys(data.idolUnit.by_idol_code || {}).length },
     { label: '卡片', value: data.archiveManifest.counts?.cards ?? data.cardIndex.meta?.card_count ?? data.cardIndex.cards.length },
     { label: '卡池', value: data.gashaIndex.meta?.logical_gasha_count ?? data.archiveManifest.counts?.gashas ?? 0 },
-    { label: '首页语音', value: data.archiveManifest.counts?.home_voice_cues ?? data.cardIndex.meta?.home_voice_cue_count ?? 0 },
+    { label: '首页语音', value: homes.reduce((sum, home) => sum + home.cues.length, 0) },
   ];
   const homeHighlights = modules.home.buildArchiveHomeHighlights(data.archiveManifest, data.uiAssetCatalog);
   const cards = [...modules.cards.buildCardMap(data.cardIndex).values()].map(card => modules.cards.mergeCardDetail(card, data.cardDetailIndex));
   // Move the actual App.vue event decoration into the producer, rather than losing it during data splitting.
   const eventByFile = new Map((data.archiveManifest.unit_event_relations || []).map(e => [e.file, e]));
+  const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
+  const birthdayLabels = modules.domainIdentity.birthdayStoryFileLabels(birthdayDomain);
   const stories = modules.stories.buildStoryCatalog(data.storyCatalog, data.storyPresentation).map(entry => {
+    // Birthday files say which year and whose birthday; a shared Small Talk stays in its personal
+    // story and is findable from the birthday side.
+    const birthday = birthdayLabels.get(entry.file);
+    if (birthday && entry.domain === 'birthday') entry = { ...entry, episodeLabel: entry.episodeLabel || birthday.label,
+      searchText: `${entry.searchText} ${birthday.label}`.toLowerCase() };
+    else if (birthday) entry = { ...entry, domainAliases: ['生日剧情', birthday.label],
+      searchText: `${entry.searchText} 生日剧情 ${birthday.label}`.toLowerCase() };
     if (entry.domain !== 'event') return entry;
     const relation = eventByFile.get(entry.file);
     if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' };
@@ -115,7 +125,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   for (const gasha of Object.values(data.gashaIndex.by_id || {})) {
     if (!gashaMap.has(String(gasha.id))) gashaMap.set(String(gasha.id), modules.gashas.resolveGashaRelatedCards(gasha,data.gashaIndex));
   }
-  const gashas = [...gashaMap.values()];
+  const gashas = [...gashaMap.values()].map(gasha => modules.gashas.withGashaAnnounceMovie(gasha, data.movieAnnounce));
   const cardMap = new Map(cards.map(c => [c.resource_id,c]));
   const originalCardMap = modules.cards.buildCardMap(data.cardIndex);
   const storyGroups = new Map();
@@ -137,7 +147,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     return [story.id,{ related, castReferences, promotedVisualUrl,
       readingEntries:readingEntriesForFiles(data.readingManifest.entries,[story.file],{includeChildrenOf:[story.file]}) }];
   }));
-  const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
   const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
   const mainDomain = modules.domainIdentity.buildMainStoryDomainIdentity(data.storyCatalog);
   const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
@@ -265,7 +274,10 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
-      seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length },
+      seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length,
+      // Logical birthday records; the shared ones are personal-story Small Talk files, published once.
+      birthdayCount: birthdayDomain.meta.logicalEntryCount,
+      birthdaySharedCount: birthdayDomain.logicalEntries.filter(entry => entry.domainMemberships.length > 1).length },
     portalPortraits:data.rawCharacterImagePromotions, portalStageManifest:data.songTimelines,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),
