@@ -63,4 +63,5 @@ dev `127.0.0.1:5177` + 候选 `E:/GS_readmodels_candidate_20261012_age`，headle
 - **2. 缓存头：已接入。** 同一提交给 `/idols/*`、`/units/*` 加了 `Cache-Control: no-cache`。
 - 端到端验证：`npm run build:check` 后执行 `node scripts/prepare-readmodel-preview.mjs --models E:/GS_readmodels_candidate_20261012_age --out .deploy/shell-package-check-20261013 --data-revision 854190ad…`（数据版本沿用当前正式站 R2 快照）。结果：10900 个文件 / 159,823,752 字节（预算 18000），`verify-entity-head-shells.mjs --dist=<包>/dist` 通过（外壳内含内联 bootstrap），`_headers` 含两条新规则。用本地映射服务浏览包内 `dist` 跑 `verify-portal-path-locator-browser.mjs`：19/20 通过，唯一失败 P12 是称号图片 `/assets/domain-images/…` 本地 `public/` 不存在（正式站经 R2 返回 200，dev 由中间件提供），与打包无关。验证包为可重建产物，已删除；清单与 `_headers` 留在 `.analysis/shell-package-check/`。
 - **3. 收录（noindex）**：未改，仍待用户决定。
-- **4. 外部预览实测 / 5. 部署**：未做，需要用户授权部署。
+- **5. 部署：已发布到测试别名**（用户授权，正式站未动），见 [测试站发布记录](GS_ARCHIVE_PORTAL_TEST_DEPLOY_20261013.md)。
+- **4. 外部预览实测**：爬虫 UA 的 curl 复核已通过；X/Discord/LINE 实际粘贴待用户做。
