@@ -115,7 +115,7 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
 `)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',
-  vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_DATA_REVISION: a['--data-revision'],
+  vars: { ARCHIVE_GZIP_MODE: 'all', ARCHIVE_EDGE_CACHE: 'images', ARCHIVE_DATA_REVISION: a['--data-revision'],
     ARCHIVE_WORK_BACKFILL_RELEASE: workRelease, ARCHIVE_SEASONAL_READING_RELEASE: 'seasonal-reading-v1' },
   r2_buckets: [{binding: 'ARCHIVE_ASSETS', bucket_name: 'sidem-archive-preview'}] }, null, 2))
 for (const file of await listFiles(dist)) {

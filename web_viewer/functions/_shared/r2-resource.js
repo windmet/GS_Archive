@@ -47,7 +47,25 @@ function requestedRange(value, size) {
   return { start, end: Math.min(end, size - 1) }
 }
 
-export async function serveR2Resource({ request, env, prefix }) {
+// Image edge cache (experiment, docs/GS_ARCHIVE_PREVIEW_IMAGE_EDGE_CACHE_20261013.md). With ARCHIVE_EDGE_CACHE=images,
+// whole-object GETs for pictures under /assets/ are kept in the data centre's cache, keyed by data revision and
+// object key: a hit skips the R2 head and get, but this Function still runs. Ranged requests, audio, data and
+// JSON are untouched, and a new R2 snapshot (new revision) misses cleanly. X-GS-Edge-Cache reports HIT or MISS.
+const EDGE_CACHE_PICTURE = /\.(png|webp|jpe?g)$/i
+const EDGE_CACHE_TTL = 86400
+
+function edgeCacheKey(request, env, prefix, objectKey) {
+  if (env.ARCHIVE_EDGE_CACHE !== 'images' || typeof caches === 'undefined' || !env.ARCHIVE_DATA_REVISION) return null
+  if (prefix !== 'assets' || !EDGE_CACHE_PICTURE.test(objectKey) || request.headers.has('Range')) return null
+  return new Request(`${new URL(request.url).origin}/__edge-cache/${env.ARCHIVE_DATA_REVISION}/${objectKey}`)
+}
+
+const matchesValidator = (request, etag) => {
+  const validators = request.headers.get('If-None-Match')?.split(',').map(value => value.trim().replace(/^W\//, ''))
+  return !!validators && (validators.includes('*') || (!!etag && validators.includes(etag.replace(/^W\//, ''))))
+}
+
+export async function serveR2Resource({ request, env, prefix, waitUntil }) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } })
   }
@@ -76,6 +94,20 @@ export async function serveR2Resource({ request, env, prefix }) {
   if (gzip && !acceptsGzip(acceptEncoding)) {
     return new Response(null, { status: 406, headers: { Vary: 'Accept-Encoding', 'Cache-Control': 'no-store' } })
   }
+  const cacheKey = edgeCacheKey(request, env, prefix, objectKey)
+  if (cacheKey) {
+    const cached = await caches.default.match(cacheKey)
+    if (cached) {
+      const headers = new Headers(cached.headers)
+      headers.set('Cache-Control', 'public, max-age=3600')
+      headers.set('X-GS-Edge-Cache', 'HIT')
+      if (matchesValidator(request, headers.get('ETag'))) {
+        headers.delete('Content-Length')
+        return new Response(null, { status: 304, headers, encodeBody: 'manual' })
+      }
+      return new Response(request.method === 'HEAD' ? null : cached.body, { status: 200, headers, encodeBody: 'manual' })
+    }
+  }
   const bucket = env.ARCHIVE_ASSETS
   const meta = await bucket.head(objectKey)
   if (!meta) return new Response(null, { status: 404 })
@@ -98,8 +130,8 @@ export async function serveR2Resource({ request, env, prefix }) {
     headers.delete('Content-Range')
   } else headers.set('Accept-Ranges', 'bytes')
   if (etag) headers.set('ETag', etag)
-  const validators = request.headers.get('If-None-Match')?.split(',').map(value => value.trim().replace(/^W\//, ''))
-  if (validators?.includes('*') || (etag && validators?.includes(etag.replace(/^W\//, '')))) {
+  if (cacheKey) headers.set('X-GS-Edge-Cache', 'MISS')
+  if (matchesValidator(request, etag)) {
     headers.delete('Content-Length')
     return new Response(null, { status: 304, headers, encodeBody: 'manual' })
   }
@@ -118,5 +150,13 @@ export async function serveR2Resource({ request, env, prefix }) {
   if (request.method === 'HEAD') return new Response(null, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
   const object = await bucket.get(objectKey, range ? { range: { offset: range.start, length: range.end - range.start + 1 } } : undefined)
   if (!object) return new Response(null, { status: 404 })
+  if (cacheKey && !range && typeof waitUntil === 'function') {
+    const [body, copy] = object.body.tee()
+    const stored = new Headers(headers)
+    stored.set('Cache-Control', `public, max-age=${EDGE_CACHE_TTL}`)
+    stored.delete('X-GS-Edge-Cache')
+    waitUntil(caches.default.put(cacheKey, new Response(copy, { status: 200, headers: stored })).catch(() => {}))
+    return new Response(body, { status: 200, headers, encodeBody: 'manual' })
+  }
   return new Response(object.body, { status: range ? 206 : 200, headers, encodeBody: 'manual' })
 }
