@@ -545,8 +545,6 @@ const renderStep = computed(() => {
 const cards = ref([]), cardLoading = ref(false), cardError = ref('')
 const idolCards = computed(() => cards.value.filter(card => card.idolCode === activeIdol.value?.id))
 const selectedCard = computed(() => resolveHomeCard(cards.value, activeIdol.value?.id, preferences.cardKey))
-})
-
 async function loadCards(retry = false) {
   if (cardLoading.value || (cards.value.length && !retry)) return
   cardLoading.value = true; cardError.value = ''
