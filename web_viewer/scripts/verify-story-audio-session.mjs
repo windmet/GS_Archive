@@ -595,7 +595,13 @@ const [appSource, homeSource, viewerSource, voicePlayerSource, audioManagerSourc
   readFile(new URL('../src/core/useVoicePlayer.js', import.meta.url), 'utf8'),
   readFile(new URL('../src/core/AudioManager.js', import.meta.url), 'utf8'),
 ])
-assert.doesNotMatch(viewerSource, /prepareStepAudio:|voice-preparing|voicePending/, 'audio must not participate in scene readiness or frame hold')
+// Voice joins readiness only through a bounded gate: never frame hold, never a blocked scene.
+assert.doesNotMatch(viewerSource, /voicePending/, 'audio must not participate in frame hold')
+assert.match(viewerSource, /prepareStepAudio: prepareStepVoice/)
+const voiceGate = /const VOICE_GATE_MS = (\d+)/.exec(viewerSource)
+assert.ok(voiceGate && Number(voiceGate[1]) > 0 && Number(voiceGate[1]) <= 3000, 'the voice gate is capped at three seconds')
+const gateBody = viewerSource.slice(viewerSource.indexOf('async function prepareStepVoice'), viewerSource.indexOf('function takeStepVoice'))
+assert.doesNotMatch(gateBody, /status: 'failed'/, 'a missing voice never blocks the scene')
 assert.match(viewerSource, /runtimeReadinessStatus\.value !== 'playable'/, 'scene loading must reject manual advance')
 assert.match(viewerSource, /new StoryAudioSession/)
 assert.match(viewerSource, /voice_player: voicePlayer.getDiagnostics\(\)/)

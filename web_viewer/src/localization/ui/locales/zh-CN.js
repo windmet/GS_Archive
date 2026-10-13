@@ -18,6 +18,8 @@ export default Object.freeze({
   'player.voice.compat': '兼容播放',
   'player.voice.retry': '语音未载入 · 重试',
   'player.voice.loading': '正在准备语音…',
+  'player.voice.reload': '重新加载语音',
+  'player.voice.replay': '重播本句语音',
   'player.queue.loading': '正在读取下一话信息…',
   'player.queue.retry': '重试下一话信息',
 

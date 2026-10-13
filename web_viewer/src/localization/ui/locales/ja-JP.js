@@ -18,6 +18,8 @@ export default Object.freeze({
   'player.voice.compat': '互換モードで再生',
   'player.voice.retry': '音声を再試行',
   'player.voice.loading': '音声を準備中…',
+  'player.voice.reload': '音声を再読み込み',
+  'player.voice.replay': 'この台詞の音声を再生',
   'player.queue.loading': '次の話を確認中…',
   'player.queue.retry': '次の話の情報を再取得',
 

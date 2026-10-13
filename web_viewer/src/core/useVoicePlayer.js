@@ -18,7 +18,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   const session = audioSession || new StoryAudioSession({ masterVolume: volumes.master, busVolumes: volumes })
   const ownsAudioSession = !audioSession
   const lifetime = new AbortController()
-  const preparations = new Set(), lipRequests = new Set()
+  const preparations = new Set(), lipRequests = new Set(), prefetches = new Map()
   const decodedCache = new Map(), resolvedUrls = new Map()
   let decodedBytes = 0, audioCtx = null, generation = 0, foregroundPreparation = null
   let current = null, voiceState = 'idle', mode = backendMode
@@ -53,13 +53,15 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
   function startLip(step, enabled) {
     if (!enabled || step?.lipSync === false) return null
     const controller = new AbortController()
-    const request = { controller, curve: null, cancel: () => controller.abort() }
+    const request = { controller, curve: null, failed: false, cancel: () => controller.abort() }
     lipRequests.add(request)
     request.done = lipStore.load(step, { signal: controller.signal, timeoutMs: lipTimeoutMs })
       .then(curve => {
         if (!controller.signal.aborted && !disposed()) request.curve = curve
       }).catch(error => {
-        if (!controller.signal.aborted) tracePlayer('optional-lip-unavailable', { message: error.message })
+        if (controller.signal.aborted) return
+        request.failed = true
+        tracePlayer('optional-lip-unavailable', { message: error.message })
       }).finally(() => lipRequests.delete(request))
     return request
   }
@@ -78,7 +80,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       lipRequest: startLip(step, includeLip), diagnostics: { voice, scenarioId, url, backend: 'media', sourceStarted: false } }
   }
   async function prepareVoice({ step = currentStep.value, scenarioId = compiledData.value?.scenario_id,
-    includeLip = true, signal, backend = mode } = {}) {
+    includeLip = true, signal, backend = mode, background = false } = {}) {
     if (!requiresVoice(step, scenarioId) || signal?.aborted) return null
     if (backend === 'media') return makeMediaPrepared(step, scenarioId, includeLip)
     const context = ensureAudioCtx()
@@ -92,8 +94,8 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
     const key = keyOf(step, scenarioId), voice = step.dialogue.voice
     const attempt = { voice, scenarioId, url: null, transport: null, decoded: null, sourceStarted: false,
       backend: 'webaudio', startedAt: performance.now(), timings: {} }
-    lastAttempt = attempt
-    lastFailure = null
+    // A lookahead preparation never replaces the current line's diagnostics.
+    if (!background) { lastAttempt = attempt; lastFailure = null }
     // Start optional lip alongside audio, never after source.start and never as a gate.
     const lipRequest = startLip(step, includeLip)
     let transferred = false
@@ -135,7 +137,8 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
           if (!currentOwner()) return null
           attempt.decodeError = { code: error.code || error.name, message: error.message }
           if (backend !== 'auto' || ['InvalidStateError', 'AbortError'].includes(error.name)) {
-            fail(error, 'decode-audio', attempt); return null
+            if (!background) fail(error, 'decode-audio', attempt)
+            return null
           }
           // Only a failure INSIDE the decoder selects this path; network and
           // cancellation failures do not silently change playback backend.
@@ -152,7 +155,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       transferred = true
       return { voice, step, scenarioId, audioBuffer, backend: 'webaudio', url: attempt.url, diagnostics: attempt, lipRequest }
     } catch (error) {
-      if (currentOwner()) fail(error, 'fetch-or-prepare', attempt)
+      if (currentOwner() && !background) fail(error, 'fetch-or-prepare', attempt)
       return null
     } finally {
       if (!transferred) lipRequest?.cancel()
@@ -160,6 +163,23 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       lifetime.signal.removeEventListener('abort', abort)
       preparations.delete(controller)
     }
+  }
+  /** Lookahead: decode an upcoming line and warm its lip curve without touching the current line. */
+  function prefetchVoice({ step, scenarioId = compiledData.value?.scenario_id, signal, includeLip = true } = {}) {
+    if (!requiresVoice(step, scenarioId) || signal?.aborted) return Promise.resolve(false)
+    const key = keyOf(step, scenarioId)
+    if (includeLip && step?.lipSync !== false) {
+      lipStore.load(step, { signal, timeoutMs: voiceTimeoutMs }).catch(() => {})
+    }
+    if (decodedCache.has(key)) return Promise.resolve(true)
+    if (prefetches.has(key)) return prefetches.get(key)
+    const work = (mode === 'media'
+      ? voiceCache.get(resolvedUrls.get(key) || resolveVoiceUrls(step.dialogue.voice, scenarioId)[0], { signal }).then(() => true)
+      : prepareVoice({ step, scenarioId, includeLip: false, signal, background: true }).then(Boolean))
+      .catch(() => false)
+      .finally(() => prefetches.delete(key))
+    prefetches.set(key, work)
+    return work
   }
   function getVoiceVolume() {
     const curve = current?.prepared.lipRequest?.curve || current?.prepared.lipCurve
@@ -231,6 +251,8 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
         source.start(0)
       }
       if (!isCurrent()) return false
+      // A slow voice can outlive its lip deadline; the shared lip flight may have finished since.
+      if (prepared.lipRequest?.failed) prepared.lipRequest = startLip(prepared.step, true)
       owner.started = true
       lastAttempt.sourceStarted = true
       lastAttempt.contextAtStart = audioCtx.state
@@ -240,17 +262,20 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       return true
     } catch (error) { failed(error); return false }
   }
-  async function playVoice() {
+  /** `pending` is a preparation the step's voice gate already started: { promise, controller }. */
+  async function playVoice({ pending = null } = {}) {
     const step = currentStep.value, scenarioId = compiledData.value?.scenario_id
-    if (!requiresVoice(step, scenarioId)) { stopCurrentVoice('no-voice'); return false }
+    const dropPending = () => { pending?.controller?.abort(); pending?.promise?.then(releasePreparedVoice) }
+    if (!requiresVoice(step, scenarioId)) { dropPending(); stopCurrentVoice('no-voice'); return false }
     const voice = step.dialogue.voice, index = currentStepIndex.value
-    if (voice === lastVoiceUrl && index === lastVoiceStepIndex) return false
+    if (voice === lastVoiceUrl && index === lastVoiceStepIndex) { dropPending(); return false }
     stopCurrentVoice('step-change-new-voice')
     const request = generation
     lastVoiceUrl = voice; lastVoiceStepIndex = index
-    const controller = foregroundPreparation = new AbortController()
+    const controller = foregroundPreparation = pending?.controller || new AbortController()
     setVoiceState('preparing')
-    const prepared = await prepareVoice({ step, scenarioId, includeLip: canAnimateStage(), signal: controller.signal })
+    const prepared = await (pending?.promise
+      || prepareVoice({ step, scenarioId, includeLip: canAnimateStage(), signal: controller.signal }))
     if (request !== generation || step !== currentStep.value || index !== currentStepIndex.value) {
       releasePreparedVoice(prepared); return false
     }
@@ -289,20 +314,20 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
     lifetime.abort()
     for (const controller of preparations) controller.abort()
     for (const request of lipRequests) request.cancel()
-    preparations.clear(); lipRequests.clear()
+    preparations.clear(); lipRequests.clear(); prefetches.clear()
     media.dispose(); lipStore.clear(); decodedCache.clear(); resolvedUrls.clear(); decodedBytes = 0
     audioCtx = null
     if (ownsAudioSession) session.dispose().catch(() => {})
     resetVoiceDedup()
   }
-  return { playVoice, retryVoice, replayVoiceDetached, prepareVoice, playPreparedVoice, releasePreparedVoice,
+  return { playVoice, retryVoice, replayVoiceDetached, prepareVoice, prefetchVoice, playPreparedVoice, releasePreparedVoice,
     requiresVoice, hasDecodedVoice, stopCurrentVoice, resetVoiceDedup, setTalking, getVoiceVolume,
     ensureAudioCtx, unlockAudioContext, setBackendMode, getBackendMode: () => mode,
     getVoiceState: () => voiceState, getAudioSession: () => session, dispose,
     getDiagnostics: () => ({ state: voiceState, contextState: audioCtx?.state || 'uninitialized',
       voiceGain: session.inspect().buses.voice, activeSource: Boolean(current?.started), backendMode: mode,
       attempt: lastAttempt && structuredClone(lastAttempt), lastFailure: lastFailure && { ...lastFailure },
-      decodedCache: { entries: decodedCache.size, bytes: decodedBytes }, compressedCache: voiceCache.inspect(),
+      decodedCache: { entries: decodedCache.size, bytes: decodedBytes }, prefetches: prefetches.size, compressedCache: voiceCache.inspect(),
       lipCache: lipStore.inspect(), media: media.inspect() }),
   }
 }

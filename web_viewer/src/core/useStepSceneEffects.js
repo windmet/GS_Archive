@@ -155,8 +155,10 @@ export function useStepSceneEffects({
     }
 
     if (!restore) {
+      // The step's voice gate hands over either a finished preparation or one still in flight.
       const prepared = takePreparedVoice(newStep, currentStepIndex.value)
-      const work = prepared ? voicePlayer?.playPreparedVoice?.(prepared) : voicePlayer?.playVoice?.()
+      const work = prepared?.promise ? voicePlayer?.playVoice?.({ pending: prepared })
+        : prepared ? voicePlayer?.playPreparedVoice?.(prepared) : voicePlayer?.playVoice?.()
       void Promise.resolve(work).catch(error => console.warn('[Voice] Playback failed:', error))
     }
   }

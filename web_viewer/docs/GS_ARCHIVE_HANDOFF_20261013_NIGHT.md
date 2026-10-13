@@ -152,3 +152,33 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 - 只有需要发 preview 的一方重新生成候选并绑定 release，单独做一个 `chore: bind …` 提交。
 - 合并时以后合入的一方为准，重新生成并绑定。
 - preview 同一时间只部署一个分支；部署前在交接里登记来源提交。
+
+## 九、语音预加载（分支 `claude/player-voice-preload-20261013`，基于 `0f711c9f`）
+
+问题：首次访问时动作播完语音才到，口型也没挂上，刷新后正常。原因有三：
+- 播放器没有预取。每句语音都是进入该句才开始下载。
+- 9 月的「等语音就绪」门禁会无限等，已于 `1a4d9423` 撤掉，之后动作完全不等语音。
+- 口型请求有 8 秒期限，从准备语音时开始计时。语音慢于 8 秒时，口型请求先超时，之后不再重试。
+
+改动：
+- **预取**：每句进入可播放状态后，下载并解码后面 3 句的语音，同时预热口型；同时最多 2 个请求。语音不超过 8 句的短剧本（如自我介绍）一次全取。换剧本时取消旧剧本的预取。预取不写入当前句的诊断信息。
+  - 位置：`story-runtime/VoiceLookahead.js`、`useVoicePlayer.prefetchVoice`。
+- **有上限的门禁**：动作最多等本句语音 2.5 秒（`VOICE_GATE_MS`），等待时显示「正在准备语音…」。超时后照常播放。语音缺失或失败不会阻塞画面，也不参与冻结画面（frame hold）。门禁里已经发出的请求直接交给播放（`playVoice({ pending })`），不重复下载。
+- **口型共享请求**：同一路径只下载一次。调用方超时只是放弃等待，下载会继续并写入缓存；所有调用方都取消后才中止下载。语音开始播放时，如果口型此前超时，会重新取一次（`VoiceLipStore.js`、`playPreparedVoice`）。
+- **对话框**：本句语音晚于门禁时，立即显示「正在准备语音…」，4 秒后出现「重新加载语音」。语音晚到并播放后，显示「重播本句语音」。
+
+验证：
+- 新增 `verify-story-voice-preload.mjs`，已并入 `verify:story-audio`。口型重试做过变异测试：删掉重试那一行，测试会失败。
+- 旧断言「语音不得参与就绪」改为门禁上限检查：不超过 3 秒、不返回 failed、不进入 frame hold。
+- 加载文案契约补上了语音文案。翻译审计新增 2 个 UI 词条（71→73）。
+- `verify:source-batch` 133/133，`verify:story-loading-safety`、`verify:story-audio`、`player-*`、`verify:home` 通过。`verifier-coverage` 413 个脚本，`build:check` 通过。
+- `verify:story-stage-loading` 在基线上已经失败（`applyStateBodyMotion is not defined`），与本批无关，未处理。
+- 浏览器：5177，headless Chromium，禁用缓存，用 DevTools 拦截让语音和口型延迟返回。脚本在 scratchpad 的 `voice-preload.mjs`，截图在 `.analysis/voice-preload/`。
+  - 延迟 300 ms：自我介绍的语音在开场淡入时已取到。进入台词后约 0.1 秒开始发声，口型张合。
+  - 延迟 6 s：门禁等 2.5 秒后继续，对话框提示加载中。语音到达后有声且口型张合（音量 73/76），对话框显示「重播本句语音」。
+  - 延迟 15 s：4 秒后出现「重新加载语音」。
+  - 长剧情：后续语音在到达前已经请求。
+  - 无控制台错误。
+- 未做：真机和 iOS Safari 实测；preview 部署（需按第八节登记后再发）。
+
+待定：要不要让晚到的语音连同动作一起重播本句（`replay step`）。现在只重播语音。重放动作需要回到进入本句时的画面快照，等确认原版行为后再做。

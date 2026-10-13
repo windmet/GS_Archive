@@ -13,7 +13,14 @@
       <!-- Dialog panel -->
       <div class="dialog" :class="{ 'is-bilingual': isBilingual }">
         <LocalizedTextBlock class="dialog-text" :display="display" />
-        <small v-if="voiceStatus === 'preparing'" class="voice-status voice-preparing" role="status"><span aria-hidden="true">···</span><span class="voice-loading-label">语音加载中</span></small>
+        <div v-if="voiceStatus === 'preparing' && voiceLate" class="voice-recovery-actions voice-late" role="status">
+          <span class="voice-late-label">{{ uiText('player.voice.loading') }}</span>
+          <button type="button" class="voice-late-retry" @click.stop="emit('retry-voice')">{{ uiText('player.voice.reload') }}</button>
+        </div>
+        <small v-else-if="voiceStatus === 'preparing'" class="voice-status voice-preparing" role="status"><span aria-hidden="true">···</span><span class="voice-loading-label">语音加载中</span></small>
+        <div v-else-if="voiceLate && ['playing', 'ended'].includes(voiceStatus)" class="voice-recovery-actions">
+          <button type="button" @click.stop="emit('retry-voice')">{{ uiText('player.voice.replay') }}</button>
+        </div>
         <div v-else-if="voiceStatus === 'unavailable'" class="voice-recovery-actions">
           <button type="button" @click.stop="emit('retry-voice')">{{ uiText('player.voice.retry') }}</button>
           <button type="button" @click.stop="emit('retry-voice', { backend: 'media' })">{{ uiText('player.voice.compat') }}</button>
@@ -38,6 +45,8 @@ const props = defineProps({
   step: { type: Object, default: null },
   playing: { type: Boolean, default: false },
   voiceStatus: { type: String, default: 'idle' },
+  // The step started before its voice arrived: say so at once and offer a retry, then a replay.
+  voiceLate: { type: Boolean, default: false },
 })
 
 const localization = useStoryLocalization()
@@ -50,6 +59,9 @@ const isBilingual = computed(() => Boolean(display.value?.view?.secondary?.text)
 .voice-recovery-actions { display: flex; flex-wrap: wrap; gap: 4px 10px; flex-shrink: 0; margin-top: 4px; padding-right: 20px; }
 .voice-recovery-actions button { min-height: 44px; border: 0; padding: 6px 0; background: transparent; color: #176f69; font: 12px/1.4 system-ui; text-decoration: underline; cursor: pointer; }
 .voice-recovery-actions button:focus-visible { outline: 2px solid #168f87; outline-offset: 2px; }
+.voice-late { align-items: center; }
+.voice-late-label { color: var(--gs-color-muted); font: 12px/1.4 system-ui, sans-serif; }
+.voice-late-retry { visibility: hidden; animation: reveal-voice-status 0s 4s forwards; }
 .voice-preparing { visibility: hidden; animation: reveal-voice-status 0s 350ms forwards; }
 .voice-loading-label { margin-left: 5px; visibility: hidden; animation: reveal-voice-status 0s 1500ms forwards; }
 @keyframes reveal-voice-status { to { visibility: visible; } }

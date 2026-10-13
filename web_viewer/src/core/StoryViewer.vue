@@ -53,6 +53,7 @@
           :step="currentStep"
           :playing="isPlaying"
           :voice-status="voiceStatus"
+          :voice-late="voiceLate"
           @retry-voice="retryCurrentVoice"
           @click="goNext"
         />
@@ -259,6 +260,7 @@ import { AudioManager } from './AudioManager.js'
 import { useStoryNavigation } from './useStoryNavigation.js'
 import { useStepSceneEffects } from './useStepSceneEffects.js'
 import { useStoryRuntimeCues } from './story-runtime/useStoryRuntimeCues.js'
+import { createVoiceLookahead } from './story-runtime/VoiceLookahead.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
 import { getStepSceneState, projectStepSceneState } from './story-runtime/StepSceneState.js'
 import { SceneSnapshotStore, isReadableHistoryStep } from './story-runtime/SceneSnapshotStore.js'
@@ -383,8 +385,11 @@ let heldTargetIndex = null
 const MAX_HELD_FRAME_PIXELS = 1920 * 1080
 const localBuffering = computed(() => initialReadyEmitted.value && runtimeReadinessStatus.value === 'waiting'
   && (frameHolding.value || !frameHoldRequired.value))
-const localBufferingText = '正在准备下一段画面…'
+const localBufferingText = computed(() => runtimeReadinessReason.value === 'voice-preparing'
+  ? '正在准备语音…' : '正在准备下一段画面…')
 const voiceStatus = ref('idle')
+// True when the step started before its voice arrived (the voice gate ran out).
+const voiceLate = ref(false)
 const voiceBackend = ref(['auto', 'webaudio', 'media'].includes(URL_FLAGS.get('voiceBackend')) ? URL_FLAGS.get('voiceBackend') : 'auto')
 const backlogVoiceNode = ref('')
 const isPlaying = ref(false)
@@ -442,6 +447,10 @@ let cleanupRuntimeCues = () => {}
 let isRuntimeAutoBlocked = () => false
 let playbackController = null
 let pendingStepEffects = null
+// The step's voice gate: motion waits for the line's voice, but never longer than this.
+const VOICE_GATE_MS = 2500
+let stepVoice = null
+let voiceLookahead = null
 
 // True while a title step is playing its FX. The FX is a transition the player
 // owns, not a screen the user dismisses: it always advances when it ends, which
@@ -971,6 +980,7 @@ const stepSceneEffects = useStepSceneEffects({
   spineStageRef,
   audioManager: _audioManager,
   voicePlayer,
+  takePreparedVoice: takeStepVoice,
   resetVoiceDedup: _resetVoiceDedup,
   onEpisodeEnd: finishEpisode,
   isAutoBlocked: () => isRuntimeAutoBlocked(),
@@ -999,7 +1009,68 @@ const storyRuntimeCues = useStoryRuntimeCues({
   isPaused: () => runtimePauseReasons.size > 0,
   debugSnapshotAction: () => freezeScene('snapshotAt'),
   onReadinessChange: handleRuntimeReadinessChange,
+  prepareStepAudio: prepareStepVoice,
 })
+
+// Bounded voice gate. The client plays a cut's motion and voice together because its voices
+// are on disk; here the cut waits up to VOICE_GATE_MS for the stream, then starts anyway and
+// the voice joins when it arrives. A missing voice never blocks the scene.
+async function prepareStepVoice({ stepIndex, restore, signal, reportWaiting }) {
+  releaseStepVoice()
+  const step = currentStep.value
+  const scenarioId = compiledData.value?.scenario_id
+  if (restore || !voicePlayer?.requiresVoice(step, scenarioId)) return { status: 'ready' }
+  const controller = new AbortController()
+  const entry = { step, stepIndex, controller, settled: false }
+  entry.promise = voicePlayer.prepareVoice({ step, scenarioId, includeLip: communicationContext.value.needsStage,
+    signal: controller.signal }).finally(() => { entry.settled = true })
+  stepVoice = entry
+  if (!voicePlayer.hasDecodedVoice(step, scenarioId)) {
+    reportWaiting('voice-preparing', [step.dialogue.voice])
+    let timer
+    await Promise.race([entry.promise.catch(() => null), new Promise(resolve => {
+      timer = setTimeout(resolve, VOICE_GATE_MS)
+      signal.addEventListener('abort', resolve, { once: true })
+    })])
+    clearTimeout(timer)
+  } else {
+    await entry.promise.catch(() => null)
+  }
+  if (signal.aborted || step !== currentStep.value || stepIndex !== currentStepIndex.value) return { status: 'cancelled' }
+  voiceLate.value = !entry.settled
+  return { status: 'ready' }
+}
+
+function takeStepVoice(step, stepIndex) {
+  const entry = stepVoice
+  stepVoice = null
+  if (entry?.step === step && entry.stepIndex === stepIndex) return entry
+  if (entry) dropStepVoice(entry)
+  return null
+}
+
+function dropStepVoice(entry) {
+  entry.controller.abort()
+  entry.promise.then(prepared => voicePlayer?.releasePreparedVoice(prepared), () => {})
+}
+
+function releaseStepVoice() {
+  const entry = stepVoice
+  stepVoice = null
+  if (entry) dropStepVoice(entry)
+}
+
+// Fetch the next lines once the current one has its turn on the network.
+function scheduleVoiceLookahead() {
+  if (NO_VOICE || !voicePlayer?.prefetchVoice) return
+  voiceLookahead ||= createVoiceLookahead({ prefetch: options => voicePlayer.prefetchVoice({
+    ...options, includeLip: communicationContext.value.needsStage }) })
+  const scenario = compiledData.value, index = currentStepIndex.value
+  const current = stepVoice?.promise || Promise.resolve()
+  current.catch(() => null).finally(() => {
+    if (scenario === compiledData.value && index === currentStepIndex.value) voiceLookahead?.update(scenario, index)
+  })
+}
 
 function handleRuntimeReadinessChange(readiness) {
   runtimeReadinessStatus.value = readiness.status
@@ -1025,6 +1096,7 @@ function handleRuntimeReadinessChange(readiness) {
     pendingStepEffects = null
     handleStepChange(pending.step, pending.oldStep, { restore: pending.restore })
   }
+  scheduleVoiceLookahead()
   if (!initialReadyEmitted.value) {
     initialReadyEmitted.value = true
     emit('ready')
@@ -1228,6 +1300,8 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateViewingViewport)
   titleAdvancePending = null
   pendingStepEffects = null
+  releaseStepVoice()
+  voiceLookahead?.dispose(); voiceLookahead = null
   releaseFrameHold()
   if (RUNTIME_DEBUG) console.debug('[Lifecycle] StoryViewer onBeforeUnmount')
   cleanupStepSceneEffects()
@@ -1267,6 +1341,8 @@ watch(currentStep, (newStep, oldStep) => {
     restore: Boolean(restoredSceneState.value),
   }
   clearFadeAutoAdvance()
+  releaseStepVoice()
+  voiceLate.value = false
   _stopCurrentVoice('step-buffering')
   isPlaying.value = false
   playbackController?.notifyStateChanged()

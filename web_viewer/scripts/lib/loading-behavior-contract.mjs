@@ -162,9 +162,11 @@ export async function verifyLoadingBehavior({ source, render, LoadingScreen }) {
   assert.ok(localIndicator)
   assert.equal(evaluate(directive(localIndicator, 'if'), { localBuffering: true, HIDE_UI: false }), true)
   assert.equal(evaluate(directive(localIndicator, 'if'), { localBuffering: true, HIDE_UI: true }), false)
-  assert.equal(evaluate(directive(localIndicator, 'bind', 'message'), {
-    localBufferingText: story.expression('localBufferingText', {}),
-  }), '正在准备下一段画面…')
+  const bufferingReason = ref('scene-renderable')
+  const bufferingText = story.expression('localBufferingText', { computed, runtimeReadinessReason: bufferingReason })
+  assert.equal(evaluate(directive(localIndicator, 'bind', 'message'), { localBufferingText: bufferingText }), '正在准备下一段画面…')
+  bufferingReason.value = 'voice-preparing'
+  assert.equal(evaluate(directive(localIndicator, 'bind', 'message'), { localBufferingText: bufferingText }), '正在准备语音…')
 
   for (const [name, flag, initialMessage] of [
     ['SpineViewer', 'loading', '正在准备舞台…'],
