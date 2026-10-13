@@ -125,6 +125,10 @@ function domainImagePlugin() {
   return {
     name:'sidem-domain-images',
     configureServer(server) {
+      // These dev-only media come from local roots, usually set by the ignored config/archive_sources.local.json.
+      // A fresh worktree lacks that file, and the pages then quietly lose honors, card art and audio.
+      const missing=Object.entries(assetResolver.roots).filter(([,dir])=>dir && !fs.existsSync(dir)).map(([name])=>name)
+      if (missing.length) server.config.logger.warn(`  local media roots not found: ${missing.join(', ')}; copy config/archive_sources.local.json or set the SIDEM_*_ROOT variables`)
       server.middlewares.use('/assets/domain-images',(req,res,next)=>{
         let clean
         try { clean=decodeURIComponent((req.url || '').split('?')[0]) } catch { next(); return }
