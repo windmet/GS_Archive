@@ -33,10 +33,14 @@ import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
+
 import { LipSyncController } from './LipSyncController.js'
 import { cancelBlinkCover } from './spineBlinkCover.js'
 import { detectBlinkSlots } from './spineBlinkSlots.js'
 
+// IdolFigureSkeleton._trackIndexCloseEye / ANIMATION_EYE_CLOSE (client 2.6.10).
+const EYE_TRACK = 4
+const EYE_CLOSE_ANIMATION = 'eye_close'
 const ADULT_BASE_SCALE = 0.26
 const SUB_BASE_SCALE = 0.235
 
@@ -1776,6 +1780,18 @@ export class PixiStageManager {
     else this._fadeOutWrapper(wrapper || spine)
   }
 
+  _applyCloseEye(spine, closed, allAnims) {
+    if (closed && allAnims.includes(EYE_CLOSE_ANIMATION)) {
+      if (spine.state.getCurrent(EYE_TRACK)?.animation?.name !== EYE_CLOSE_ANIMATION) {
+        spine.state.setAnimation(EYE_TRACK, EYE_CLOSE_ANIMATION, false).mixDuration = 0
+      }
+    } else if (spine.state.getCurrent(EYE_TRACK)?.animation?.name === EYE_CLOSE_ANIMATION) {
+      // ResetCloseEye: an empty animation mixes eye_close out and restores the
+      // eye attachments (clearTrack would leave the closed-eye attachments).
+      spine.state.setEmptyAnimation(EYE_TRACK, 0)
+    }
+  }
+
   /**
    * Set facial expression via Track 1 animation, with original game engine flag control.
    *
@@ -1783,11 +1799,11 @@ export class PixiStageManager {
    *
    * @param {string} idolId
    * @param {string} faceName
-   * @param {object|boolean} [faceFlags] - Flags from original data, or boolean shouldBlink for backward compat.
-   *   { anim_flag: 'ç›?|'off', blush_flag: 'ãƒãƒ¼ã‚?|'off', sweat_flag: 'æ±?|'off' }
+   * @param {object|boolean} [faceFlags] - Flags from the RAW idol_face row:
+   *   { anim_flag: '目' | 'off', blush_flag: 'チーク' | 'off', sweat_flag: '汗' | 'off' }
    *
-    * faceFlags.anim_flag controls blink cover timing. 'off' keeps the switch instant; 'ç›? or
-   * an unknown value applies a ~150ms blink cover.
+   * anim_flag is the client's isEyeOff: 'off' holds eye_close on the eye track,
+   * anything else clears it (eyes open). The face switch itself has no blink cover.
    */
   updateSpineFace(idolId, faceName, faceFlags) {
     const entry = this.spineInstances[idolId]
@@ -1820,25 +1836,14 @@ export class PixiStageManager {
         spine._currentFaceKey = faceKey
         if (trackEntry) {
           trackEntry.mixAttachmentThreshold = 0.0
+          trackEntry.mixDuration = 0
           spine._blinkCoverEndTime = 0
-
-          if (faceFlags && typeof faceFlags === 'object' && faceFlags.anim_flag === 'off') {
-            // off means the switch is instant, without blink masking.
-            spine._blinkCoverEndTime = 0
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0.05
-          } else if (faceFlags && typeof faceFlags === 'object' && faceFlags.anim_flag === '\u76EE') {
-            // anim_flag === '\u76EE': cover the blink for about 150ms.
-            spine._blinkCoverEndTime = performance.now() + 150
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0
-          } else {
-            // Unknown or missing flag: use the safe blink-cover transition.
-            spine._blinkCoverEndTime = performance.now() + 150
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0
-          }
+          spine._savedEyeAtts = null
         }
+        // Client idol_face [3] is isEyeOff (== "off"): IdolCharacter.CoPlayAnimation
+        // calls PlayCloseEye (eye_close held on the eye track) for "off" and
+        // ResetCloseEye (empty eye track) otherwise; "\u76EE" therefore means open eyes.
+        if (faceFlags && typeof faceFlags === 'object') this._applyCloseEye(spine, faceFlags.anim_flag === 'off', allAnims)
       } else {
         // Fallback: clear Track 1 to show the default skeleton face
         console.warn(`[PixiStageManager] Face anim "${animName}" not found on "${entry.modelId}", clearing track`)

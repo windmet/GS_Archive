@@ -978,16 +978,13 @@ class ScenarioCompiler(ScenarioFileIO):
         Raw values (8 fields):
           [chara_id, delay, face_name, anim_flag, sweat_flag, blush_flag, '', '']
 
-        - anim_flag (vals[3]):  '目'=眼睑遮盖过渡 (blink cover),  'off'=瞬时切换
-        - sweat_flag (vals[4]): '汗'=强制汗滴显示,  'off'=强制隐藏汗滴
-        - blush_flag (vals[5]): 'チーク'=强制脸红显示,  'off'=强制隐藏脸红
+        - anim_flag (vals[3]):  client isEyeOff (== 'off'). 'off' holds eye_close on the
+          eye track (eyes closed); '目' or anything else resets it (eyes open).
+        - sweat_flag (vals[4]): isSweatOff (== 'off'); '汗' leaves sweat visible.
+        - blush_flag (vals[5]): isCheekOff (== 'off'); 'チーク' leaves the blush visible.
 
         delay=0   → immediate state update (initial state for next step)
         delay>0   → mid-sentence timeline event
-
-        原版引擎调度模式（延迟 0.1s 的成对命令）：
-          T:      off   → 表情瞬时切换，不做眨眼
-          T+0.1:  目    → 闭眼遮盖 150ms，掩盖切换痕迹
         """
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
