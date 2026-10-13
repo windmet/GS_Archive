@@ -407,9 +407,18 @@ export function playLiveChibiMotion(runtime, animationNames, {
   reset = false,
   mode = 2,
   mixDuration = 0.12,
+  nativeCommand = false,
 } = {}) {
   if (!animationNames?.length) return
-  const mainName = animationNames.find(name => name.includes('_3dance')) || animationNames[0]
+  // LiveObjectIdol.PlayMotionInner (0x221c094): modes 2/3 select loop
+  // immediately; the other branch selects dance, falling back to after.
+  // Standalone motion previews retain their main -> loop demonstration.
+  const directLoop = nativeCommand && (Number(mode) === 2 || Number(mode) === 3)
+  const mainName = nativeCommand
+    ? directLoop ? animationNames.find(name => name.includes('_4loop'))
+      : animationNames.find(name => name.includes('_3dance')) || animationNames.find(name => name.includes('_2after'))
+    : animationNames.find(name => name.includes('_3dance')) || animationNames[0]
+  if (!mainName) throw new Error(`Live motion has no native fragment for mode ${mode}`)
   const loopName = animationNames.find(name => name.includes('_4loop')) || animationNames[1]
   const state = runtime.spine.state
   const skeleton = runtime.spine.skeleton
@@ -426,7 +435,7 @@ export function playLiveChibiMotion(runtime, animationNames, {
   }
   skeleton.updateWorldTransform()
 
-  const mainEntry = state.setAnimation(0, mainName, false)
+  const mainEntry = state.setAnimation(0, mainName, directLoop)
   if (!shouldReset && mainEntry.mixingFrom) {
     mainEntry.mixDuration = mixDuration
     mainEntry.mixingFrom.attachmentThreshold = 0
@@ -436,7 +445,7 @@ export function playLiveChibiMotion(runtime, animationNames, {
   }
 
   let loopEntry = null
-  if (loopName) {
+  if (loopName && !nativeCommand) {
     const mainAnimation = runtime.skeletonData.findAnimation(mainName)
     // A positive delay is measured from the previous entry's start. Passing
     // the full duration avoids Spine's delay=0 shortcut, which otherwise
@@ -449,6 +458,8 @@ export function playLiveChibiMotion(runtime, animationNames, {
   runtime.currentTrackEntry = mainEntry
   runtime.currentMotionPlayback = {
     mainName,
+    policy: nativeCommand ? 'native-command' : 'preview-main-loop',
+    loop: directLoop,
     loopName: loopEntry?.animation?.name || null,
     mode,
     reset: shouldReset,

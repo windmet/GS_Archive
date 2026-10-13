@@ -39,7 +39,7 @@ let cases=0
     for (let id=1;id<=4;id++) {
       const curve=new RotateTimeline(2);curve.boneIndex=0
       curve.setFrame(0,0,id*25);curve.setFrame(1,2,id*25+15)
-      data.animations.push(new Animation(`motion${id}_3dance`,[curve],2))
+      data.animations.push(new Animation(`motion${id}_4loop`,[curve],2))
     }
     const stateData=new AnimationStateData(data);stateData.defaultMix=.12
     const skeleton=new Skeleton(data),state=new AnimationState(stateData)
@@ -48,7 +48,7 @@ let cases=0
     const slot={position:3,loadSequence:1,motionSequence:0}
     const c={lifetime:new AbortController(),runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
       playing:ref(false),playbackSpeed:ref(1),motionCatalog:ref(new Map(events.map(e=>[e.motion,{id:e.motion}]))),
-      injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_3dance`],
+      injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_4loop`],
       layoutRuntime(){},eventsForPosition:()=>events}
     vm.createContext(c)
     for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])
@@ -86,7 +86,7 @@ let cases=0
   assert(Math.abs(backwards.runtime.spine.skeleton.bones[0].rotation-await continuous(1030))<.001);cases++
   for(const invalidation of ['intent','runtime','costume']) {
     const f=harness(),pending=deferred();let loads=0
-    f.c.injectLiveChibiMotion=async(_runtime,motion)=>{loads++;await pending.promise;return [`motion${motion.id}_3dance`]}
+    f.c.injectLiveChibiMotion=async(_runtime,motion)=>{loads++;await pending.promise;return [`motion${motion.id}_4loop`]}
     const seek=f.c.syncSlotAtTime(f.slot,1030,true);await flush()
     if(invalidation==='intent')f.c.stageIntent.cancel()
     if(invalidation==='runtime')f.c.runtimes.set(3,{})
@@ -98,15 +98,15 @@ let cases=0
 {
   const c={};vm.createContext(c)
   for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
-  function actor(){
+  function actor(options={}){
     const data=new SkeletonData();data.bones.push(new BoneData(0,'root',null))
-    for(const [name,a,b] of [['test_3dance',0,10],['test_4loop',20,40]]){
+    for(const [name,a,b] of [['test_3dance',0,10],['test_4loop',20,40],['test_2after',50,60]]){
       const curve=new RotateTimeline(2);curve.boneIndex=0;curve.setFrame(0,0,a);curve.setFrame(1,1,b)
       data.animations.push(new Animation(name,[curve],1))
     }
     const skeleton=new Skeleton(data),state=new AnimationState(new AnimationStateData(data))
     const runtime={skeletonData:data,spine:{state,skeleton,update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
-    c.playLiveChibiMotion(runtime,data.animations.map(a=>a.name),{reset:true,paused:true})
+    c.playLiveChibiMotion(runtime,data.animations.map(a=>a.name),{reset:true,paused:true,...options})
     return runtime
   }
   for(const time of [0,.2,.95,1.04,1.1,2.25,7.5]){
@@ -121,6 +121,28 @@ let cases=0
   const old=actor();old.spine.state.timeScale=1;old.spine.update(2.25)
   assert.equal(old.spine.state.getCurrent(0).animation.name,'test_3dance','Witness must reproduce old queued-loop failure')
   assert.throws(()=>c.seekLiveChibiMotion(actor(),NaN),/Invalid motion/);cases++
+  for (const mode of [2,3]) {
+    for (const time of [0,.2,1.04,2.25,7.5]) {
+      const actual=actor({mode,nativeCommand:true}),reference=actor({mode,nativeCommand:true})
+      const track=actual.spine.state.getCurrent(0)
+      assert.equal(track.animation.name,'test_4loop','Native modes select loop at time zero')
+      assert.equal(track.loop,true);assert.equal(track.next ?? null,null,'Native command does not queue a dance/loop handoff')
+      reference.spine.state.timeScale=1
+      let elapsed=0
+      while(elapsed<time-1e-9){const dt=Math.min(1/60,time-elapsed);reference.spine.update(dt);elapsed+=dt}
+      c.seekLiveChibiMotion(actual,time)
+      assert(Math.abs(actual.spine.skeleton.bones[0].rotation-reference.spine.skeleton.bones[0].rotation)<.001)
+      assert.equal(actual.spine.state.timeScale,0);cases++
+    }
+  }
+  const dance=actor({mode:1,nativeCommand:true})
+  assert.equal(dance.spine.state.getCurrent(0).animation.name,'test_3dance')
+  assert.equal(dance.spine.state.getCurrent(0).loop,false)
+  assert.equal(dance.spine.state.getCurrent(0).next ?? null,null)
+  c.playLiveChibiMotion(dance,['test_2after','test_4loop'],{mode:1,nativeCommand:true})
+  assert.equal(dance.spine.state.getCurrent(0).animation.name,'test_2after','Native non-loop falls back to after')
+  assert.throws(()=>c.playLiveChibiMotion(dance,['test_3dance'],{mode:2,nativeCommand:true}),/no native fragment/)
+  assert.equal(dance.spine.state.getCurrent(0).animation.name,'test_2after','Invalid fragment does not clear the current pose');cases++
 }
 {
   const f=fixture(),p=f.c.toggleStage();await flush();f.runtime.motionSpeedScale=0.5

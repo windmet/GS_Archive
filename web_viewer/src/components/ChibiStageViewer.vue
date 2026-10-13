@@ -175,7 +175,10 @@
             :data-runtime-ready="Boolean(runtimeForPosition(position))"
             :data-motion="slotByPosition(position)?.currentMotion || ''"
             :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
-            :data-position-scale="positionDebugState(position).scale"
+            :data-motion-fragment="runtimes.get(position)?.currentMotionPlayback?.mainName || ''"
+            :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
+            :data-position-sort-order="positionDebugState(position).sortingOrder"
+            :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
             :data-position-tween-progress="positionDebugState(position).progress"
             :data-position-x="positionDebugState(position).x"
             :data-position-y="positionDebugState(position).y"
@@ -345,7 +348,7 @@
               <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '社长' : currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ isSpecialSingle ? '2D 对象按需载入' : (preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入')) }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
-              <div v-if="!isSpecialSingle"><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
+              <div v-if="!isSpecialSingle"><dt>位置切换</dt><dd>按原脚本即时设置</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
@@ -518,7 +521,7 @@ import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogo
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
-import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
+import { chibiGroundRegistration, projectChibiGround, chibiPositionStateAt, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
@@ -641,7 +644,7 @@ const visiblePinspotlightCount = ref(0)
 const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
-const POSITION_TWEEN_MS = 350
+const POSITION_TWEEN_MS = 0
 // Authored Camera zoom is the baseline; do not add a presentation magnification.
 const STAGE_BASE_ZOOM = 1
 // Debug multiplier for the complete camera container. Unlike environmentScale,
@@ -650,8 +653,6 @@ const stageViewScale = ref(1)
 // Stage art, monitor movies and fixed effects share an unexpanded environment
 // plane. Keep the optional inspection control separate from source camera zoom.
 const environmentScale = ref(1)
-const CHARACTER_DEPTH_BASE = 2000
-const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
 
 let app = null
@@ -1605,25 +1606,7 @@ function weightedGroupMotion(group, milliseconds, position) {
 
 function positionStateForStage(position, milliseconds) {
   const sourceSlot = sourceSlotForStagePosition(position)
-  const events = (selectedSong.value?.positionEvents || [])
-    .filter(event => event.position === sourceSlot)
-  if (!events.length) return null
-  const currentIndex = Math.max(0, events.findLastIndex(event => event.time <= milliseconds))
-  const current = events[currentIndex]
-  const previous = events[currentIndex - 1]
-  if (!previous || milliseconds >= Number(current.time) + POSITION_TWEEN_MS) {
-    return { ...current, tweenProgress: 1 }
-  }
-  const rawProgress = Math.max(0, Math.min(1, (milliseconds - Number(current.time)) / POSITION_TWEEN_MS))
-  const progress = rawProgress * rawProgress * (3 - 2 * rawProgress)
-  const interpolate = key => Number(previous[key]) + (Number(current[key]) - Number(previous[key])) * progress
-  return {
-    ...current,
-    x: interpolate('x'),
-    y: interpolate('y'),
-    scale: interpolate('scale'),
-    tweenProgress: rawProgress,
-  }
+  return chibiPositionStateAt(selectedSong.value?.positionEvents, sourceSlot, milliseconds)
 }
 
 function positionDebugState(position) {
@@ -1632,8 +1615,8 @@ function positionDebugState(position) {
   return {
     x: coordinates.x,
     y: coordinates.y,
-    scale: state ? Number(state.scale).toFixed(2) : '',
-    progress: state ? Number(state.tweenProgress ?? 1).toFixed(3) : '',
+    sortingOrder: coordinates.sortingOrder,
+    progress: state ? '1.000' : '',
   }
 }
 
@@ -3287,7 +3270,7 @@ function syncCharacterShadow(runtime) {
   if (!layout) return
   shadow.position.set(layout.x, layout.y)
   shadow.scale.set(layout.scaleX, layout.scaleY)
-  shadow.zIndex = runtime.spine.zIndex - 1
+  shadow.zIndex = runtime.spine.zIndex - 10
   // Spine evaluates its pose during Pixi's transform pass, after the earlier
   // shadow sibling. Refresh that sibling before rendering to avoid frame lag.
   if (shadow.parent) shadow.updateTransform()
@@ -3299,8 +3282,7 @@ function layoutRuntime(position, motionEvent = null) {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const coordinates = layoutCoordinatesForStage(position, stageTime.value, motionEvent)
-  const { x, y, scale: sourceScale, positionState } = coordinates
-  const viewportScale = Math.min(width / 1280, height / 720)
+  const { y, sortingOrder } = coordinates
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
   const viewportFit = Math.min(1, height / 620)
@@ -3314,18 +3296,13 @@ function layoutRuntime(position, motionEvent = null) {
   // lives. Formation coordinates and the authored camera provide the framing;
   // scaling characters by active member count made three-person stages about
   // 24% larger than the already calibrated five-person reference.
-  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit * sourceScale / 1700)
+  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit)
   runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
-  // Unity reserves the 1200-1900 band for environment washes, beams and
-  // image/object layers. Characters occupy their own band around 2000; Y only
-  // orders performers against one another. The previous x10 mapping pushed a
-  // rear-platform performer down to z=900, causing authored light planes at
-  // z=1500 to cut across the body.
-  runtime.spine.zIndex = CHARACTER_DEPTH_BASE
-    + Math.round((360 - y) * CHARACTER_DEPTH_Y_FACTOR)
-    + position
+  // LiveObjectIdol uses the authored baseSortOrder; neither Y nor a performer
+  // index may override it. Equal orders retain the scene's stable child order.
+  runtime.spine.zIndex = sortingOrder
   syncCharacterShadow(runtime)
-  runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
+  runtime.positionTweenProgress = 1
 }
 
 function resizeStage() {
@@ -3607,7 +3584,7 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const speedScale = (Number(event.speed) || 1000) / 1000
   runtime.currentMotionEvent = event
   runtime.motionSpeedScale = speedScale
-  playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset })
+  playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset, nativeCommand: true })
   if (seekTime !== null && seekTime > event.time) {
     seekLiveChibiMotion(runtime, (seekTime - event.time) / 1000 * speedScale)
   }

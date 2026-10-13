@@ -562,7 +562,7 @@ def read_choreography_scripts(
                             "position": parse_number(row[2], 1),
                             "x": parse_number(row[3]),
                             "y": parse_number(row[4]),
-                            "scale": parse_number(row[5], 1000),
+                            "sortingOrder": parse_number(row[5]),
                         }
                     )
                     continue
