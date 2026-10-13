@@ -9,13 +9,14 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent/'data_pipeline'))
 from sidem_scenario import ScenarioCompiler, ScenarioState
-from sidem_scenario.audio_commands import apply_audio_state_command, AudioCommandEffect
+from sidem_scenario.audio_commands import apply_audio_state_command, authors_story_audio, AudioCommandEffect
 
 Legacy = runpy.run_path(str(ROOT/'fixtures/story-runtime/legacy-audio-commands.py'))['LegacyAudioCommands']
 # Commands whose column meanings were corrected to the client's
-# SoundCommandData.SetCommandData are checked against that contract below instead of
-# legacy parity: bgm_stop, environmental, environmental_stop, environmental_ducking.
-names = ['bgm', 'se', 'se_stop', 'environmental_volume']
+# SoundCommandData.SetCommandData / StoryView.PlayView are checked against that contract
+# below instead of legacy parity: bgm, bgm_stop, environmental, environmental_stop,
+# environmental_ducking.
+names = ['se', 'se_stop', 'environmental_volume']
 inputs = [[], [''], [None], ['cue'], ['no_bgm'], ['0'], [0], ['0.5'], ['bad'],
           ['cue', '0.2'], ['cue', 'invalid'], ['cue', '', '', '0.25'], ['cue', '', '', 'invalid'],
           ['cue', '', '', {}]]
@@ -28,8 +29,6 @@ for name in names:
                 compiler = object.__new__(cls)
                 compiler.state = ScenarioState()
                 compiler.state.environmental = copy.deepcopy(ambient)
-                compiler._bgm_from_advbackground = True
-                compiler._environmental_from_advbackground = True
                 marked = []
                 compiler._mark_stage_change = lambda: marked.append(True)
                 compiler._safe_float = ScenarioCompiler._safe_float
@@ -39,9 +38,7 @@ for name in names:
                     getattr(compiler, '_' + name)(arguments)
                 except Exception as exc:
                     error = (type(exc).__name__, str(exc))
-                observations.append((copy.deepcopy(vars(compiler.state)), marked,
-                                     compiler._bgm_from_advbackground,
-                                     compiler._environmental_from_advbackground, error))
+                observations.append((copy.deepcopy(vars(compiler.state)), marked, error))
                 assert arguments == values
             assert observations[0] == observations[1], (name, values, ambient)
             count += 1
@@ -99,12 +96,50 @@ assert state.environmental == {'cue': 'ambi_room', 'cue_name': 'ambi_room'} and 
 contract += 1
 print(f'Audio command client contract: {contract} column-semantics cases passed')
 
-LegacyBackground = runpy.run_path(str(ROOT/'fixtures/story-runtime/legacy-audio-commands.py'))['LegacyBackgroundDefaults']
+# Background audio (client StoryView.PlayView): a background change never touches audio;
+# an empty bgm / environmental row plays the current background's available cue, and
+# does nothing when the background has none.
 background_cases = 0
+for has_metadata, has_bgm, has_ambient, bgm_available, ambient_available in product([False, True], repeat=5):
+    compiler = object.__new__(ScenarioCompiler)
+    compiler._story_view_bgm = compiler._story_view_ambience = True
+    compiler.state = ScenarioState()
+    compiler.state.bgm = 'prior-music' if has_bgm else None
+    compiler.state.environmental = {'cue': 'prior-rain'} if has_ambient else None
+    compiler._mark_stage_change = lambda: None
+    compiler._safe_float = ScenarioCompiler._safe_float
+    metadata = {'imageId': 'bg', 'bgmCueName': 'new-music', 'ambienceCueName': 'new-rain'}
+    compiler.resources = SimpleNamespace(
+        background_index=lambda: {'bg': metadata} if has_metadata else {},
+        audio_exists=lambda kind, cue: cue and (bgm_available if kind == 'bgm' else ambient_available))
+    before = copy.deepcopy((compiler.state.bgm, compiler.state.environmental))
+    compiler.state.set_bg('bg')
+    compiler._apply_adv_background_defaults('bg')
+    assert (compiler.state.bgm, compiler.state.environmental) == before, 'image_bg must not change audio'
+    compiler._bgm(['', '', '2'])
+    expected_bgm = 'new-music' if has_metadata and bgm_available else before[0]
+    assert compiler.state.bgm == expected_bgm
+    assert compiler.state.bgm_delay == (2.0 if expected_bgm == 'new-music' else None)
+    compiler._environmental(['', '', 'loop', '1.5'])
+    expected_env = {'cue': 'new-rain', 'loop': True, 'delay': 1.5} if has_metadata and ambient_available else before[1]
+    assert compiler.state.environmental == expected_env, compiler.state.environmental
+    background_cases += 1
+state, _ = apply('bgm', ['no_bgm'])
+assert state.bgm is None, 'no_bgm stops the music'
+print(f'Background audio: {background_cases} metadata/current/availability combinations follow PlayView (no audio on image_bg, empty rows use the background)')
+
+# A channel (bgm / environmental) with no authored row in the compile unit keeps the
+# archive's background-default rule (menu-carried BGM / non-StoryView paths).
+assert authors_story_audio([{'Command': [{'Type': 'text'}, {'Type': 'environmental', 'Values': ['']}]}], 'environmental')
+assert not authors_story_audio([{'Command': [{'Type': 'environmental', 'Values': ['']}]}], 'bgm')
+assert not authors_story_audio([{'Command': [{'Type': 'image_bg', 'Values': ['bg']}]}, {}], 'environmental')
+LegacyBackground = runpy.run_path(str(ROOT/'fixtures/story-runtime/legacy-audio-commands.py'))['LegacyBackgroundDefaults']
+unscripted_cases = 0
 for has_metadata, has_bgm, has_ambient, bgm_owned, ambient_owned, bgm_available, ambient_available in product([False, True], repeat=7):
     outcomes = []
     for cls in [LegacyBackground, ScenarioCompiler]:
         compiler = object.__new__(cls)
+        compiler._story_view_bgm = compiler._story_view_ambience = False
         compiler.state = ScenarioState()
         compiler.state.bgm = 'prior-music' if has_bgm else None
         compiler.state.bgm_volume = 0.7
@@ -121,5 +156,5 @@ for has_metadata, has_bgm, has_ambient, bgm_owned, ambient_owned, bgm_available,
         outcomes.append((copy.deepcopy(vars(compiler.state)), compiler._bgm_from_advbackground,
                          compiler._environmental_from_advbackground, requests))
     assert outcomes[0] == outcomes[1]
-    background_cases += 1
-print(f'Background audio: {background_cases} metadata/current/ownership/availability combinations preserve full state and lookup sequence')
+    unscripted_cases += 1
+print(f'Unscripted background audio: {unscripted_cases} legacy-parity combinations for compile units without bgm/environmental rows')

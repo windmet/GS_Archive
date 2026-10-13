@@ -16,7 +16,10 @@ import os
 import re
 from typing import Any, Optional
 from .state import ScenarioState
-from .audio_commands import apply_audio_state_command, apply_background_bgm, apply_background_ambient
+from .audio_commands import (
+    apply_audio_state_command, apply_unscripted_background_ambient, apply_unscripted_background_bgm,
+    authors_story_audio,
+)
 from .commands import COMMAND_HANDLERS, SELECTION_COMMANDS
 from . import text_identity
 from .file_io import ScenarioFileIO
@@ -98,6 +101,10 @@ class ScenarioCompiler(ScenarioFileIO):
         self._pending_parts_visible: dict[str, bool] = {}
         self._pending_fadeout_ids: set[str] = set()
         self._pending_bg_effect_end_ids: set[str] = set()
+        # StoryView audio path per channel when the compile unit authors that row type;
+        # compile_group re-evaluates these over all parts.
+        self._story_view_bgm: bool = authors_story_audio([raw_data], "bgm")
+        self._story_view_ambience: bool = authors_story_audio([raw_data], "environmental")
         self._bgm_from_advbackground: bool = False
         self._environmental_from_advbackground: bool = False
 
@@ -151,6 +158,8 @@ class ScenarioCompiler(ScenarioFileIO):
         first_part_id = part_ids[0] if part_ids else group_id
         first_source_file = source_files[0] if source_files else f"{first_part_id}.json"
         compiler = cls(raw_data_list[0], group_id, first_part_id, first_source_file, resources=resources)
+        compiler._story_view_bgm = authors_story_audio(raw_data_list, "bgm")
+        compiler._story_view_ambience = authors_story_audio(raw_data_list, "environmental")
         for idx, data in enumerate(raw_data_list):
             if idx > 0:
                 # Lettered scenario files are authored as episode chunks.
@@ -403,13 +412,27 @@ class ScenarioCompiler(ScenarioFileIO):
             "colorScale": meta.get("colorScale"),
             "colorSaturation": meta.get("colorSaturation"),
         }
+        # StoryView: a background change never touches audio on an authored channel.
+        if not self._story_view_bgm:
+            self._bgm_from_advbackground = apply_unscripted_background_bgm(
+                self.state, meta.get("bgmCueName"), self._bgm_from_advbackground, self.resources.audio_exists,
+            )
+        if not self._story_view_ambience:
+            self._environmental_from_advbackground = apply_unscripted_background_ambient(
+                self.state, meta.get("ambienceCueName"), self._environmental_from_advbackground, self.resources.audio_exists,
+            )
 
-        self._bgm_from_advbackground = apply_background_bgm(
-            self.state, meta.get("bgmCueName"), self._bgm_from_advbackground, self.resources.audio_exists,
-        )
-        self._environmental_from_advbackground = apply_background_ambient(
-            self.state, meta.get("ambienceCueName"), self._environmental_from_advbackground, self.resources.audio_exists,
-        )
+    def _background_audio(self) -> dict:
+        """Current background's BGM/ambience, used only by empty bgm/environmental rows."""
+        meta = self.resources.background_index().get(self.state.bg) if self.state.bg else None
+        if not meta:
+            return {}
+        audio = {}
+        if self.resources.audio_exists('bgm', meta.get("bgmCueName")):
+            audio['bgm'] = meta["bgmCueName"]
+        if self.resources.audio_exists('ambient', meta.get("ambienceCueName")):
+            audio['ambient'] = meta["ambienceCueName"]
+        return audio
 
     def _image_bg(self, vals: list):
         """Values: [bg_id, ...]"""
@@ -705,7 +728,8 @@ class ScenarioCompiler(ScenarioFileIO):
         self._mark_stage_change()
 
     def _apply_audio_state_command(self, command: str, vals: list):
-        effect = apply_audio_state_command(self.state, command, vals, self._safe_float)
+        background_audio = self._background_audio() if command in ('bgm', 'environmental') else None
+        effect = apply_audio_state_command(self.state, command, vals, self._safe_float, background_audio)
         if effect.clear_bgm_inheritance:
             self._bgm_from_advbackground = False
         if effect.clear_ambient_inheritance:
