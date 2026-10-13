@@ -63,10 +63,10 @@ assert.equal(toma.chapterCount, 4)
 assert.deepEqual(
   [...new Set(toma.chapters.map(chapter => chapter.label))].sort(),
   [
-    '第1期 · 偶像生日祝福',
-    '第2期 · 个人故事共享入口',
-    '制作人生日问候 · 第1期',
-    '制作人生日问候 · 第2期',
+    '第1年 · 偶像生日祝福',
+    '第2年 · 个人故事共享入口',
+    '制作人生日问候 · 第1年',
+    '制作人生日问候 · 第2年',
   ].sort(),
 )
 assert.equal(toma.officialBirthdayLabel, '3月3日')

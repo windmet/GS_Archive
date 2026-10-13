@@ -494,6 +494,7 @@
       "properties": {
         "id": { "type": "string" },
         "visible": { "type": "boolean" },
+        "alpha": { "type": "number", "minimum": 0 },
         "action": { "enum": ["start", "end"] },
         "delay": { "type": "number", "minimum": 0 },
         "duration": { "type": "number", "minimum": 0 }
@@ -543,6 +544,10 @@
       "required": ["cue"],
       "properties": {
         "cue": { "type": "string", "minLength": 1 },
+        "cue_name": { "type": "string", "minLength": 1 },
+        "loop": { "type": "boolean" },
+        "delay": { "type": "number", "exclusiveMinimum": 0 },
+        "ducking_completed": { "type": "boolean" },
         "volume": {
           "anyOf": [
             { "type": "string" },
@@ -672,6 +677,7 @@
         "blush_flag": { "type": "string" },
         "sweat_flag": { "type": "string" },
         "anim_no_back": { "type": "boolean" },
+        "anim_track_time": { "type": "number", "minimum": 0 },
         "fade": { "$ref": "#/$defs/spineFade" },
         "idol_color": { "type": "string" },
         "idol_color_transition": { "$ref": "#/$defs/durationTransition" },
@@ -736,6 +742,10 @@
         },
         "environmental_duck_target": { "type": ["number", "null"] },
         "environmental_volume": { "type": ["number", "null"] },
+        "bgm_delay": { "type": ["number", "null"] },
+        "bgm_stop_delay": { "type": ["number", "null"] },
+        "environmental_stop_delay": { "type": ["number", "null"] },
+        "environmental_ducking_delay": { "type": ["number", "null"] },
         "image_icon": {
           "anyOf": [
             { "$ref": "#/$defs/imageIcon" },
@@ -835,6 +845,7 @@
         "blush_flag": { "type": "string" },
         "sweat_flag": { "type": "string" },
         "no_back": { "type": "boolean" },
+        "track_time": { "type": "number", "minimum": 0 },
         "duration": { "type": "number", "minimum": 0 }
       },
       "additionalProperties": false

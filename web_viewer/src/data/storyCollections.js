@@ -176,9 +176,10 @@ function birthdaySeriesLabel(entry, canonicalRelation = null) {
   const seriesNumber = Number(entry?.series?.seriesNumber || 0)
   const target = String(entry?.series?.target || '')
   if (seriesNumber && target) {
-    if (canonicalRelation) return `第${seriesNumber}期 · 个人故事共享入口`
-    if (target === 'producer') return `制作人生日问候 · 第${seriesNumber}期`
-    if (target === 'idol') return `第${seriesNumber}期 · 偶像生日祝福`
+    // PlayYearCount: the first or second birthday year, not a release batch.
+    if (canonicalRelation) return `第${seriesNumber}年 · 个人故事共享入口`
+    if (target === 'producer') return `制作人生日问候 · 第${seriesNumber}年`
+    if (target === 'idol') return `第${seriesNumber}年 · 偶像生日祝福`
   }
   const releaseAt = entry?.releaseAt
   const year = birthdayReleaseYear(releaseAt)

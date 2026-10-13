@@ -1,3 +1,4 @@
+import { SPINE_TRACK } from './spineTracks.js'
 import * as PIXI from 'pixi.js'
 
 export function finalizeSpawnedSpine({
@@ -67,12 +68,12 @@ export function finalizeSpawnedSpine({
       spine._currentBodyAnim = defaultBody
     }
     if (animNames.includes('face_default')) {
-      spine.state.setAnimation(1, 'face_default', true)
+      spine.state.setAnimation(SPINE_TRACK.face, 'face_default', true)
       spine._currentFaceAnim = 'face_default'
       spine._currentFaceKey = null
     } else if (animNames.some(n => n.startsWith('face_'))) {
       const firstFace = animNames.find(n => n.startsWith('face_'))
-      spine.state.setAnimation(1, firstFace, true)
+      spine.state.setAnimation(SPINE_TRACK.face, firstFace, true)
       spine._currentFaceAnim = firstFace
       spine._currentFaceKey = null
     }

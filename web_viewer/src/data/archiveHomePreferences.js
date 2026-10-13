@@ -1,13 +1,13 @@
 export const ARCHIVE_HOME_PREFERENCES_KEY = 'sidem:archive-home-preferences'
 const SCHEMA_VERSION = 2
 export const DEFAULT_ARCHIVE_HOME_PREFERENCES = Object.freeze({
-  background: 'cue', dialogueOrder: 'sequential', autoVoice: false, cardKey: '', interfaceOpacity: 88,
+  background: 'cue', dialogueOrder: 'native', autoVoice: false, cardKey: '', interfaceOpacity: 88,
 })
 export function normalizeArchiveHomePreferences(value = {}) {
   value ||= {}
   return {
     background: typeof value.background === 'string' && /^bg[a-z0-9_]+$/i.test(value.background) ? value.background : 'cue',
-    dialogueOrder: value.dialogueOrder === 'random' ? 'random' : 'sequential',
+    dialogueOrder: ['native', 'random'].includes(value.dialogueOrder) ? value.dialogueOrder : 'sequential',
     autoVoice: value.autoVoice === true,
     cardKey: /^[a-z0-9_]+:(base|p)$/.test(value.cardKey || '') ? value.cardKey : '',
     interfaceOpacity: Math.min(100, Math.max(68, Number(value.interfaceOpacity) || 88)),

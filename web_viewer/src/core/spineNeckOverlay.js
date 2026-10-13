@@ -5,7 +5,7 @@ const slotAppearance = timeline => Number.isInteger(timeline.slotIndex)
   && (timeline instanceof AttachmentTimeline || timeline instanceof ColorTimeline || timeline instanceof TwoColorTimeline)
 
 // Exported neck clips contain neutral face attachments/colors. Additive blending
-// only applies to transforms: discrete attachments still replace Track 1.
+// only applies to transforms: discrete attachments still replace the face layer.
 export function neckOverlayAnimation(animation, skeletonData) {
   if (!animation?.timelines?.length || !skeletonData?.animations) return animation
   if (cache.has(animation)) return cache.get(animation)

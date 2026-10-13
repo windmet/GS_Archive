@@ -43,3 +43,22 @@ export function filterGashaCatalog(catalog, { query = '', category = 'all', idol
       )
   })
 }
+
+// GashaData.MovieAnnounceId is not in client masterdata. A MovieAnnounce record is attached only
+// when two independent keys agree exactly — its ResourceId is the announcement's gasha code and
+// its term opens at the announcement's start — and it stays a derived relation. A start time
+// alone (the GROWING FES records) is never enough.
+export function gashaAnnounceMovie(gasha, movieIndex) {
+  const matches = (movieIndex?.movie_announces || []).filter(movie =>
+    String(movie.resource_id) === String(gasha?.code) && Number.isFinite(gasha?.start_at) &&
+    movie.term?.start_at === gasha.start_at)
+  if (matches.length !== 1) return null
+  const [movie] = matches
+  return { movie_id: movie.id, resource_id: movie.resource_id, raw_file: `movie_home_announce_${movie.resource_id}.usm`,
+    evidence_level: 'derived', keys: ['ResourceId = 公告卡池编号', 'Term.start = 公告开始时间'], playable: false }
+}
+
+export function withGashaAnnounceMovie(gasha, movieIndex) {
+  const movie = gashaAnnounceMovie(gasha, movieIndex)
+  return movie ? { ...gasha, announce_movie: movie } : gasha
+}

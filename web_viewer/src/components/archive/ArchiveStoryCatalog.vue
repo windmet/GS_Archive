@@ -203,7 +203,7 @@
         <div class="story-rows">
           <button v-for="gateway in secondaryGateways" :key="gateway.id" class="story-row gateway-row" @click="openGateway(gateway)">
             <span class="gateway-icon" aria-hidden="true"><component :is="gateway.icon" :size="20" /></span>
-            <span class="story-row-copy"><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}</small></span>
+            <span class="story-row-copy"><strong>{{ gateway.label }}</strong><small>{{ gatewayCount(gateway) }} {{ gateway.unit || '篇' }}<template v-if="storyGatewayNote(gateway, props)"> · {{ storyGatewayNote(gateway, props) }}</template></small></span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
         </div>
@@ -262,7 +262,7 @@
 
 <script setup>
 import { chapterLabel } from '../../presentation/chapterLabel.js'
-import {storyGateways,storyGatewayCount} from '../../presentation/StoryGateways.js'
+import {storyGateways,storyGatewayCount,storyGatewayNote} from '../../presentation/StoryGateways.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../../../shared/deploy/ExternalStoryResourcePolicy.js'
 import { computed } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
@@ -290,6 +290,8 @@ const props = defineProps({
   catalogTotal: { type: Number, default: 0 }, filteredTotal: { type: Number, default: 0 },
   seasonalCount: { type: Number, default: 0 },
   workCount: { type: Number, default: 0 },
+  birthdayCount: { type: Number, default: 0 },
+  birthdaySharedCount: { type: Number, default: 0 },
   idolStoryCount: { type: Number, default: 0 },
   externalResourceCount: { type: Number, default: 0 },
   mainDomain: { type: Object, default: null },

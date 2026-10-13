@@ -95,7 +95,7 @@ import {
 } from '../utils/AssetResolver.js'
 import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
-import { getCachedMotionSetting, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
+import { getCachedMotionSetting, getCachedMotionTable, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
 import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
 import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
@@ -704,6 +704,17 @@ function getMotionSetting(charaId, modelId, animName) {
   return getCachedMotionSetting(charaId, modelId, animName)
 }
 
+// Client IdolCharacter.CoPlayAnimation: an animation entry with a body motion and no
+// neck motion at the same time resets the neck (ResetNeck) before the motion plays.
+function applyStateBodyMotion(manager, sid, modelId, spineState, step) {
+  if (!spineState.anim) return
+  const started = manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back,
+    getMotionSetting(sid, modelId, spineState.anim), false, null, getCachedMotionTable(sid, modelId), spineState.anim_track_time ?? 0)
+  if (started && !spineState.neck_anim && !spineState.neck_anim_stop) {
+    manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:motion-neck-reset:${sid}`)
+  }
+}
+
 async function _loadOtherSetting(charaId, signal) {
   if (_otherSettingCache[charaId] !== undefined) return
   try {
@@ -933,7 +944,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       existing.prefabMeta = prefabMeta
       // Same model: update face/anim and reposition.
       if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-      if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+      applyStateBodyMotion(manager, sid, modelId, spineState, step)
       if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
       else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
       manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
@@ -1006,7 +1017,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         let posY = spineState.pos_y ?? 0
         if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
         if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
-        if (spineState.anim) manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back, getMotionSetting(sid, modelId, spineState.anim))
+        applyStateBodyMotion(manager, sid, modelId, spineState, step)
         if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
         else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
         manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)

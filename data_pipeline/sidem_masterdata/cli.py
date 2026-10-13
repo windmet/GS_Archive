@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Generate only work_story_index.json with scene lines and short stories.",
     )
     parser.add_argument(
+        "--home-system-voice-only",
+        action="store_true",
+        help="Generate only home_system_voice_index.json: HomeStand rows of tables 90/91 with their conditions.",
+    )
+    parser.add_argument(
         "--idol-communication-only",
         action="store_true",
         help="Generate only idol_episode_index.json, mobile_archive_index.json and the corrected home interaction index.",

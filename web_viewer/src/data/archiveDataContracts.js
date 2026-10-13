@@ -59,6 +59,10 @@ export function validateArchivePayload(key, payload) {
   if (key === 'compiledIndex' && !Array.isArray(payload.categories)) {
     throw new Error('compiledIndex.categories must be an array')
   }
+  if (key === 'homeSystemVoice' && (payload.schema_version !== 1 || !Array.isArray(payload.idols) ||
+    !isRecord(payload.card_home_stand) || payload.meta?.unresolved_count !== 0)) {
+    throw new Error('homeSystemVoice must resolve every HomeStand script and jump point')
+  }
   if (key === 'cardIndex' && (!Array.isArray(payload.cards) || !payload.by_character)) {
     throw new Error('cardIndex must include cards and by_character')
   }

@@ -291,3 +291,17 @@ export function buildStoryDomainIdentityIndex({
     byCompiledFile: buildPlaybackIndex(domains),
   }
 }
+
+/** Per compiled file: its birthday year/target label, and whether the file also belongs to another domain. */
+export function birthdayStoryFileLabels(birthdayDomain) {
+  const result = new Map()
+  for (const entry of birthdayDomain?.logicalEntries || []) {
+    const { seriesNumber, target } = entry.series || {}
+    if (!entry.compiledFile || !seriesNumber || !['producer', 'idol'].includes(target)) continue
+    result.set(entry.compiledFile, {
+      label: `第${seriesNumber}年 · ${target === 'producer' ? '制作人生日' : '偶像生日'}`,
+      shared: entry.domainMemberships.length > 1,
+    })
+  }
+  return result
+}

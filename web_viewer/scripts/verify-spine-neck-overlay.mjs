@@ -25,8 +25,8 @@ assert.ok(overlay.timelines.some(t=>data.bones[t.boneIndex]?.name==='head'), 'he
 const originalCount=original.timelines.length;
 for(const fixed of [false,true]) {
  const skeleton=new Skeleton(data);const state=new AnimationState(new AnimationStateData(data));
- state.setAnimation(0,'wait_loop',true);state.setAnimation(1,'face_happy',true);
- const neck=state.setAnimation(3,'neck_question',false);neck.mixBlend=MixBlend.add;
+ state.setAnimation(0,'wait_loop',true);state.setAnimation(fixed ? 2 : 1,'face_happy',true);
+ const neck=state.setAnimation(fixed ? 1 : 3,'neck_question',false);neck.mixBlend=MixBlend.add;
  if(fixed) neck.animation=overlay;
  for(let frame=0;frame<180;frame++){
   for(const t of neck.animation.timelines) if(Number.isInteger(t.boneIndex)) skeleton.bones[t.boneIndex].setToSetupPose();
@@ -37,7 +37,7 @@ for(const fixed of [false,true]) {
   }
  }
  if(fixed){
-  state.setAnimation(1,'face_default',true);state.update(.5);state.apply(skeleton);
+  state.setAnimation(2,'face_default',true);state.update(.5);state.apply(skeleton);
   assert.equal(skeleton.findSlot('eyewhite_L').attachment.name,'eyewhite_L','open expression remains available while neck holds');
  }
 }

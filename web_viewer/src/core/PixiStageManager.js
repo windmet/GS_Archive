@@ -1,3 +1,4 @@
+import { SPINE_TRACK } from './spineTracks.js'
 import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { stageRenderResolution } from './StageRenderBudget.js'
 import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
@@ -33,10 +34,14 @@ import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
 import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
+
 import { LipSyncController } from './LipSyncController.js'
 import { cancelBlinkCover } from './spineBlinkCover.js'
 import { detectBlinkSlots } from './spineBlinkSlots.js'
 
+// IdolFigureSkeleton._trackIndexCloseEye / ANIMATION_EYE_CLOSE (client 2.6.10).
+const EYE_TRACK = SPINE_TRACK.eye
+const EYE_CLOSE_ANIMATION = 'eye_close'
 const ADULT_BASE_SCALE = 0.26
 const SUB_BASE_SCALE = 0.235
 
@@ -1155,7 +1160,7 @@ export class PixiStageManager {
       const origStateUpdate = spine.state.update.bind(spine.state)
       spine.state.update = (dt) => {
         origStateUpdate(dt)
-        for (let i = 0; i <= 1; i++) {
+        for (const i of [SPINE_TRACK.body, SPINE_TRACK.face]) {
           const track = spine.state.tracks[i]
           if (!track || track.alpha <= 0 || track.alpha >= 1 || track.mixDuration <= 0) continue
           const t = track.alpha
@@ -1176,11 +1181,11 @@ export class PixiStageManager {
 
       const origApply = spine.state.apply.bind(spine.state)
       spine.state.apply = (skeleton) => {
-        // Additive neck clips must start from a stable Track 0/1 baseline on
+        // Additive neck clips must start from a stable body/face baseline on
         // every frame. Pixi Spine otherwise retains the prior local pose, so
         // unkeyed controls such as chara_MIX accumulate their Y offset and the
         // whole character drifts down. Keep the targets for one extra apply
-        // after Track 3 is cleared so its final offset cannot leak into state.
+        // after the neck track is cleared so its final offset cannot leak into state.
         const neckTargets = spine._neckAdditiveTargets
         const finishNeckCleanup = !!spine._neckAdditiveCleanupPending
         if (neckTargets) {
@@ -1393,7 +1398,7 @@ export class PixiStageManager {
         ? 'face_default'
         : (animNames.find(n => typeof n === 'string' && n.startsWith('face_')) || null)
       if (defaultFace) {
-        spine.state.setAnimation(1, defaultFace, true)
+        spine.state.setAnimation(SPINE_TRACK.face, defaultFace, true)
         spine._currentFaceAnim = defaultFace
         spine._currentFaceKey = null
       }
@@ -1776,18 +1781,30 @@ export class PixiStageManager {
     else this._fadeOutWrapper(wrapper || spine)
   }
 
+  _applyCloseEye(spine, closed, allAnims) {
+    if (closed && allAnims.includes(EYE_CLOSE_ANIMATION)) {
+      if (spine.state.getCurrent(EYE_TRACK)?.animation?.name !== EYE_CLOSE_ANIMATION) {
+        spine.state.setAnimation(EYE_TRACK, EYE_CLOSE_ANIMATION, false).mixDuration = 0
+      }
+    } else if (spine.state.getCurrent(EYE_TRACK)?.animation?.name === EYE_CLOSE_ANIMATION) {
+      // ResetCloseEye: an empty animation mixes eye_close out and restores the
+      // eye attachments (clearTrack would leave the closed-eye attachments).
+      spine.state.setEmptyAnimation(EYE_TRACK, 0)
+    }
+  }
+
   /**
-   * Set facial expression via Track 1 animation, with original game engine flag control.
+   * Set facial expression via Track 2 animation, with original game engine flag control.
    *
    * SideM spine data includes `face_xxx` animations (for example `face_happy` and `face_angry`).
    *
    * @param {string} idolId
    * @param {string} faceName
-   * @param {object|boolean} [faceFlags] - Flags from original data, or boolean shouldBlink for backward compat.
-   *   { anim_flag: 'ç›?|'off', blush_flag: 'ãƒãƒ¼ã‚?|'off', sweat_flag: 'æ±?|'off' }
+   * @param {object|boolean} [faceFlags] - Flags from the RAW idol_face row:
+   *   { anim_flag: '目' | 'off', blush_flag: 'チーク' | 'off', sweat_flag: '汗' | 'off' }
    *
-    * faceFlags.anim_flag controls blink cover timing. 'off' keeps the switch instant; 'ç›? or
-   * an unknown value applies a ~150ms blink cover.
+   * anim_flag is the client's isEyeOff: 'off' holds eye_close on the eye track,
+   * anything else clears it (eyes open). The face switch itself has no blink cover.
    */
   updateSpineFace(idolId, faceName, faceFlags) {
     const entry = this.spineInstances[idolId]
@@ -1815,34 +1832,23 @@ export class PixiStageManager {
 
       if (allAnims.includes(animName)) {
         if (spine._currentFaceKey === faceKey) return
-        const trackEntry = spine.state.setAnimation(1, animName, true)
+        const trackEntry = spine.state.setAnimation(SPINE_TRACK.face, animName, true)
         spine._currentFaceAnim = animName
         spine._currentFaceKey = faceKey
         if (trackEntry) {
           trackEntry.mixAttachmentThreshold = 0.0
+          trackEntry.mixDuration = 0
           spine._blinkCoverEndTime = 0
-
-          if (faceFlags && typeof faceFlags === 'object' && faceFlags.anim_flag === 'off') {
-            // off means the switch is instant, without blink masking.
-            spine._blinkCoverEndTime = 0
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0.05
-          } else if (faceFlags && typeof faceFlags === 'object' && faceFlags.anim_flag === '\u76EE') {
-            // anim_flag === '\u76EE': cover the blink for about 150ms.
-            spine._blinkCoverEndTime = performance.now() + 150
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0
-          } else {
-            // Unknown or missing flag: use the safe blink-cover transition.
-            spine._blinkCoverEndTime = performance.now() + 150
-            spine._savedEyeAtts = null
-            trackEntry.mixDuration = 0
-          }
+          spine._savedEyeAtts = null
         }
+        // Client idol_face [3] is isEyeOff (== "off"): IdolCharacter.CoPlayAnimation
+        // calls PlayCloseEye (eye_close held on the eye track) for "off" and
+        // ResetCloseEye (empty eye track) otherwise; "\u76EE" therefore means open eyes.
+        if (faceFlags && typeof faceFlags === 'object') this._applyCloseEye(spine, faceFlags.anim_flag === 'off', allAnims)
       } else {
-        // Fallback: clear Track 1 to show the default skeleton face
+        // Fallback: clear Track 2 to show the default skeleton face
         console.warn(`[PixiStageManager] Face anim "${animName}" not found on "${entry.modelId}", clearing track`)
-        spine.state.clearTrack(1)
+        spine.state.clearTrack(SPINE_TRACK.face)
         spine._currentFaceAnim = null
         spine._currentFaceKey = null
       }
@@ -1890,8 +1896,8 @@ export class PixiStageManager {
    *   - Single-shot animations (e.g. `neck_yes`, `neck_no`) have no `_loop` variant
    *     and should fall back to `wait_loop`.
    */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
-    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix)
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null, trackTime = 0) {
+    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix, motionTable, trackTime)
   }
 
   /**
@@ -1902,8 +1908,8 @@ export class PixiStageManager {
     return this.spineManager?.switchSpineAnim(idolId, animName)
   }
 
-  playSpineNeckAnim(idolId, animName, eventKey = '') {
-    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey)
+  playSpineNeckAnim(idolId, animName, eventKey = '', trackTime = 0) {
+    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey, trackTime)
   }
 
   stopSpineNeckAnim(idolId, eventKey = '') {

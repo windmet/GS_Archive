@@ -17,9 +17,15 @@ export function buildIdolStats(id, { cardIndex, cardMap = new Map(), episodes, m
   const chapter = episodes?.by_idol_code?.[id]?.[0]
   const mobileById = new Map((mobile?.scenarios || []).map(scenario => [scenario.id, scenario]))
   const mobileScenarios = (mobile?.by_idol_code?.[id] || []).map(scenarioId => mobileById.get(scenarioId)).filter(Boolean)
+  // A personal story is 第N話 sections; Small Talk episodes are counted apart from the Episode parts.
+  const storyEpisodes = (chapter?.sections || []).flatMap(section => section.episodes || [])
+  const smallTalks = storyEpisodes.filter(episode => /^スモールトーク/u.test(String(episode.name || ''))).length
   return {
     cards: cardsForCharacter(cardIndex, cardMap, id).length,
-    stories: episodes ? (chapter?.sections || []).reduce((sum, section) => sum + (section.episodes?.length || 0), 0) : null,
+    stories: episodes ? storyEpisodes.length : null,
+    storySections: episodes ? (chapter?.sections || []).length : null,
+    storyEpisodes: episodes ? storyEpisodes.length - smallTalks : null,
+    storySmallTalks: episodes ? smallTalks : null,
     chats: mobile ? mobileScenarios.filter(scenario => scenario.kind === 'idol_talk').length : null,
     phones: mobile ? mobileScenarios.filter(scenario => scenario.kind === 'idol_phone').length : null,
   }

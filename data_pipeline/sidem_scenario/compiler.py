@@ -12,11 +12,15 @@ Output:
 """
 
 import copy
+import math
 import os
 import re
 from typing import Any, Optional
 from .state import ScenarioState
-from .audio_commands import apply_audio_state_command, apply_background_bgm, apply_background_ambient
+from .audio_commands import (
+    apply_audio_state_command, apply_unscripted_background_ambient, apply_unscripted_background_bgm,
+    authors_story_audio,
+)
 from .commands import COMMAND_HANDLERS, SELECTION_COMMANDS
 from . import text_identity
 from .file_io import ScenarioFileIO
@@ -98,6 +102,10 @@ class ScenarioCompiler(ScenarioFileIO):
         self._pending_parts_visible: dict[str, bool] = {}
         self._pending_fadeout_ids: set[str] = set()
         self._pending_bg_effect_end_ids: set[str] = set()
+        # StoryView audio path per channel when the compile unit authors that row type;
+        # compile_group re-evaluates these over all parts.
+        self._story_view_bgm: bool = authors_story_audio([raw_data], "bgm")
+        self._story_view_ambience: bool = authors_story_audio([raw_data], "environmental")
         self._bgm_from_advbackground: bool = False
         self._environmental_from_advbackground: bool = False
 
@@ -151,6 +159,8 @@ class ScenarioCompiler(ScenarioFileIO):
         first_part_id = part_ids[0] if part_ids else group_id
         first_source_file = source_files[0] if source_files else f"{first_part_id}.json"
         compiler = cls(raw_data_list[0], group_id, first_part_id, first_source_file, resources=resources)
+        compiler._story_view_bgm = authors_story_audio(raw_data_list, "bgm")
+        compiler._story_view_ambience = authors_story_audio(raw_data_list, "environmental")
         for idx, data in enumerate(raw_data_list):
             if idx > 0:
                 # Lettered scenario files are authored as episode chunks.
@@ -403,13 +413,27 @@ class ScenarioCompiler(ScenarioFileIO):
             "colorScale": meta.get("colorScale"),
             "colorSaturation": meta.get("colorSaturation"),
         }
+        # StoryView: a background change never touches audio on an authored channel.
+        if not self._story_view_bgm:
+            self._bgm_from_advbackground = apply_unscripted_background_bgm(
+                self.state, meta.get("bgmCueName"), self._bgm_from_advbackground, self.resources.audio_exists,
+            )
+        if not self._story_view_ambience:
+            self._environmental_from_advbackground = apply_unscripted_background_ambient(
+                self.state, meta.get("ambienceCueName"), self._environmental_from_advbackground, self.resources.audio_exists,
+            )
 
-        self._bgm_from_advbackground = apply_background_bgm(
-            self.state, meta.get("bgmCueName"), self._bgm_from_advbackground, self.resources.audio_exists,
-        )
-        self._environmental_from_advbackground = apply_background_ambient(
-            self.state, meta.get("ambienceCueName"), self._environmental_from_advbackground, self.resources.audio_exists,
-        )
+    def _background_audio(self) -> dict:
+        """Current background's BGM/ambience, used only by empty bgm/environmental rows."""
+        meta = self.resources.background_index().get(self.state.bg) if self.state.bg else None
+        if not meta:
+            return {}
+        audio = {}
+        if self.resources.audio_exists('bgm', meta.get("bgmCueName")):
+            audio['bgm'] = meta["bgmCueName"]
+        if self.resources.audio_exists('ambient', meta.get("ambienceCueName")):
+            audio['ambient'] = meta["ambienceCueName"]
+        return audio
 
     def _image_bg(self, vals: list):
         """Values: [bg_id, ...]"""
@@ -524,12 +548,17 @@ class ScenarioCompiler(ScenarioFileIO):
         return None
 
     def _effect_bgstart(self, vals: list):
-        """Start persistent background effect. Values: [effect_id, delay?, duration?, ...]."""
+        """Start persistent background effect. Values: [effect_id, startTime, alpha].
+
+        Client EffectCommandData: [2] is the particle alpha (default -1: cameraflare uses
+        the background's lightAlpha, other effects 1.0). StoryParticleEffect.SetUp applies
+        it to the particle colours with no fade-in, so the start has no duration.
+        """
         if not vals or not vals[0]:
             return
         effect_id = vals[0]
         delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 else 0.0
-        duration = self._safe_float(vals[2], 0.0) if len(vals) > 2 and vals[2] != "" else 0.0
+        duration = 0.0
         payload = {
             "id": effect_id,
             "visible": True,
@@ -537,8 +566,12 @@ class ScenarioCompiler(ScenarioFileIO):
             "delay": delay,
             "duration": duration,
         }
+        alpha = self._safe_float(vals[2], -1.0) if len(vals) > 2 and vals[2] != "" else -1.0
+        if alpha >= 0:
+            payload["alpha"] = alpha
         effect = self._find_bg_effect(effect_id)
         if effect:
+            effect.pop("alpha", None)
             effect.update(payload)
         else:
             self.state.bg_effects.append(payload)
@@ -696,7 +729,8 @@ class ScenarioCompiler(ScenarioFileIO):
         self._mark_stage_change()
 
     def _apply_audio_state_command(self, command: str, vals: list):
-        effect = apply_audio_state_command(self.state, command, vals, self._safe_float)
+        background_audio = self._background_audio() if command in ('bgm', 'environmental') else None
+        effect = apply_audio_state_command(self.state, command, vals, self._safe_float, background_audio)
         if effect.clear_bgm_inheritance:
             self._bgm_from_advbackground = False
         if effect.clear_ambient_inheritance:
@@ -945,16 +979,13 @@ class ScenarioCompiler(ScenarioFileIO):
         Raw values (8 fields):
           [chara_id, delay, face_name, anim_flag, sweat_flag, blush_flag, '', '']
 
-        - anim_flag (vals[3]):  '目'=眼睑遮盖过渡 (blink cover),  'off'=瞬时切换
-        - sweat_flag (vals[4]): '汗'=强制汗滴显示,  'off'=强制隐藏汗滴
-        - blush_flag (vals[5]): 'チーク'=强制脸红显示,  'off'=强制隐藏脸红
+        - anim_flag (vals[3]):  client isEyeOff (== 'off'). 'off' holds eye_close on the
+          eye track (eyes closed); '目' or anything else resets it (eyes open).
+        - sweat_flag (vals[4]): isSweatOff (== 'off'); '汗' leaves sweat visible.
+        - blush_flag (vals[5]): isCheekOff (== 'off'); 'チーク' leaves the blush visible.
 
         delay=0   → immediate state update (initial state for next step)
         delay>0   → mid-sentence timeline event
-
-        原版引擎调度模式（延迟 0.1s 的成对命令）：
-          T:      off   → 表情瞬时切换，不做眨眼
-          T+0.1:  目    → 闭眼遮盖 150ms，掩盖切换痕迹
         """
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
@@ -977,39 +1008,53 @@ class ScenarioCompiler(ScenarioFileIO):
                 self.state.update_spine_face(vals[0], vals[2], face_flags)
             self._mark_stage_change()
 
+    @staticmethod
+    def _animation_track_time(vals: list) -> float:
+        # IdolCommandData uses ConvertFloat(values[3], default=0). Some RAW
+        # rows contain face flags in this column; retain the client fallback.
+        try:
+            value = float(vals[3]) if len(vals) > 3 and vals[3] else 0.0
+            return max(0.0, value) if math.isfinite(value) else 0.0
+        except (ValueError, TypeError):
+            return 0.0
+
     def _idol_animation(self, vals: list):
         """
-        Values: [chara_id, delay, anim_name, ...]
+        Values: [chara_id, delay, anim_name, track_time, ...]
         delay=0 → immediate state update
         delay>0 → mid-sentence timeline event
         """
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
+            track_time = self._animation_track_time(vals)
             if delay > 0:
                 self._timeline_events.append({
                     "time": delay,
                     "type": "spine_anim",
                     "chara_id": vals[0],
                     "value": vals[2],
+                    **({"track_time": track_time} if track_time else {}),
                 })
             else:
-                self.state.update_spine_anim(vals[0], vals[2])
+                self.state.update_spine_anim(vals[0], vals[2], track_time)
             self._mark_stage_change()
 
     def _idol_nobackanimation(self, vals: list):
-        """Body animation that should not auto-chain back to wait/loop."""
+        """Body animation without the previous motion back (still queues its pose)."""
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
+            track_time = self._animation_track_time(vals)
             if delay > 0:
                 self._timeline_events.append({
                     "time": delay,
                     "type": "spine_anim",
                     "chara_id": vals[0],
                     "value": vals[2],
+                    **({"track_time": track_time} if track_time else {}),
                     "no_back": True,
                 })
             else:
-                self.state.update_spine_anim(vals[0], vals[2])
+                self.state.update_spine_anim(vals[0], vals[2], track_time)
                 spine = self.state.find_spine(vals[0])
                 if spine:
                     spine["anim_no_back"] = True
@@ -1523,14 +1568,14 @@ class ScenarioCompiler(ScenarioFileIO):
             if event["type"] == "spine_face":
                 self.state.update_spine_face(event["chara_id"], event["value"], event)
             elif event["type"] == "spine_anim":
-                self.state.update_spine_anim(event["chara_id"], event["value"])
+                self.state.update_spine_anim(event["chara_id"], event["value"], event.get("track_time", 0))
                 if event.get("no_back"):
                     spine = self.state.find_spine(event["chara_id"])
                     if spine:
                         spine["anim_no_back"] = True
             elif event["type"] in ("spine_neck_anim", "spine_neck_stop"):
                 # Neck commands are one-shot overlay events. Runtime owns the
-                # live Track 3 pose until an authored stop/replacement clears it;
+                # live neck-track pose until an authored stop/replacement clears it;
                 # cumulative state must not restart the clip on later steps.
                 continue
             elif event["type"] == "spine_color":
@@ -1687,6 +1732,7 @@ class ScenarioCompiler(ScenarioFileIO):
         self.state.bg_color_transition = None
         self.state.bgm_stop_fade = None
         self.state.environmental_duck_target = None
+        self.state.clear_audio_delays()
         self.state.text_disabled = False
         # Camera delay is an authored one-shot cue relative to this emitted
         # step. Keep the resulting zoom state, but do not replay its delay on

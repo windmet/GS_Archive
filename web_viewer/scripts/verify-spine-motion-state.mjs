@@ -87,7 +87,7 @@ function verifyNeckLifecycle() {
   const { spineManager, spine, calls } = createHarness()
 
   spineManager.playSpineNeckAnim('idol', 'neck_lookup', 'step:10:event:0')
-  const firstEntry = calls.find(call => call[0] === 'set' && call[1] === 3)[4]
+  const firstEntry = calls.find(call => call[0] === 'set' && call[1] === 1)[4]
   assert.equal(firstEntry.mixBlend, 3, 'neck motion must add offsets without replacing the body pose at frame zero')
   assert.equal(firstEntry.mixDuration, 0)
   assert.deepEqual(spine._neckAdditiveTargets, {
@@ -97,29 +97,29 @@ function verifyNeckLifecycle() {
   assert.equal(typeof firstEntry.listener?.complete, 'function')
 
   spineManager.playSpineNeckAnim('idol', 'neck_question', 'step:10:event:1')
-  const neckSets = calls.filter(call => call[0] === 'set' && call[1] === 3)
+  const neckSets = calls.filter(call => call[0] === 'set' && call[1] === 1)
   assert.equal(neckSets.length, 2)
 
   firstEntry.listener.complete()
-  assert.equal(calls.filter(call => call[0] === 'clear' && call[1] === 3).length, 0,
+  assert.equal(calls.filter(call => call[0] === 'clear' && call[1] === 1).length, 0,
     'completion from a replaced overlay must not clear the newer overlay')
 
   const secondEntry = neckSets[1][4]
   secondEntry.listener.complete()
-  assert.equal(calls.filter(call => call[0] === 'clear' && call[1] === 3).length, 0,
+  assert.equal(calls.filter(call => call[0] === 'clear' && call[1] === 1).length, 0,
     'natural completion must hold the authored final neck pose')
   assert.equal(spine._currentNeckAnim, 'neck_question')
   assert.equal(secondEntry.trackTime, secondEntry.animationEnd)
 
   spineManager.playSpineNeckAnim('idol', 'neck_question', 'step:10:event:1')
-  assert.equal(calls.filter(call => call[0] === 'set' && call[1] === 3).length, 2,
+  assert.equal(calls.filter(call => call[0] === 'set' && call[1] === 1).length, 2,
     'reapplying the same step must not replay a completed neck cue')
 
   spineManager.playSpineNeckAnim('idol', 'neck_question', 'step:11:event:0')
-  assert.equal(calls.filter(call => call[0] === 'set' && call[1] === 3).length, 3)
+  assert.equal(calls.filter(call => call[0] === 'set' && call[1] === 1).length, 3)
   spineManager.stopSpineNeckAnim('idol', 'step:11:event:1')
   assert.equal(calls.at(-1)[0], 'clear')
-  assert.equal(calls.at(-1)[1], 3)
+  assert.equal(calls.at(-1)[1], 1)
   assert.equal(spine._neckAdditiveCleanupPending, true,
     'an explicit stop must retain the reset targets for one final base-pose apply')
 }
@@ -129,7 +129,7 @@ function verifyScheduledNeckSettle() {
   const calls = []
   const manager = {
     spineInstances: {
-      idol: { spine: { state: { getCurrent: index => index === 3 ? track : null } } },
+      idol: { spine: { state: { getCurrent: index => index === 1 ? track : null } } },
     },
     playSpineNeckAnim: (...args) => calls.push(['play', ...args]),
     flushSpinePose: (...args) => calls.push(['flush', ...args]),

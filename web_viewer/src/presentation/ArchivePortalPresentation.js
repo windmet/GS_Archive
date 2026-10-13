@@ -266,7 +266,8 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       relationLabel: preferredId && (row.performance?.performers || []).some(person => person.id === preferredId) ? '演唱成员' : preferredId ? '组合歌曲' : '',
       isPreferredRelated: relatedSong(row), stageTarget: songStageTarget(row, stageManifest, text(preferred?.unitCode)) })),
     stories: previewStories.map(row => ({ id: row.id, domain: row.domain, title: sourceText(storyTitle, text(row.title)),
-      subtitle: [text(row.domainLabel) || storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '),
+      subtitle: [text(row.domainLabel) || storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle),
+        Array.isArray(row.domainAliases) && row.domainAliases.length ? '生日共享' : ''].filter(Boolean).join(' · '),
       summary: sourceText(storySummary, text(row.preplaySynopsis?.text)),
       cast: [...new Set(row.characters || [])].filter(id => directory.has(id))
         .map(id => ({ id, name: idolDisplay(id, directory, idolName), accentColor: directory.get(id).color || '' })),
@@ -353,9 +354,10 @@ export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootst
       } else {
         if (row.exists !== true) continue
         result = { key: `stories:${row.id}`, domain, label: text(row.title),
-          subtitle: [storyLabels[row.domain], text(row.subtitle)].filter(Boolean).join(' · '), image: null,
+          subtitle: [storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '), image: null,
           target: storyTarget(row) }
-        searchable = [row.title, row.subtitle, storyLabels[row.domain], row.id, row.file,
+        searchable = [row.title, row.subtitle, row.episodeLabel, storyLabels[row.domain], row.id, row.file,
+          ...(Array.isArray(row.domainAliases) ? row.domainAliases : []),
           ...(Array.isArray(row.characters) ? row.characters.flatMap(id => directory.has(id)
             ? [idolDisplay(id, directory, idolName), text(directory.get(id).name), sourceText(idolSearch, id, text(directory.get(id).name))] : []) : [])]
       }

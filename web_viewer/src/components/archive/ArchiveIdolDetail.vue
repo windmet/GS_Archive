@@ -207,8 +207,14 @@ const facts = computed(() => [
 const communicationCount = (value, unit) => value == null
   ? '尚未确认'
   : `${value} ${unit}`
+// 第N話 with its Episode parts, and Small Talk apart; an older stats leaf only has the total.
+const storyCount = computed(() => {
+  const { storySections: sections, storyEpisodes: episodes, storySmallTalks: talks } = props.stats
+  if (sections == null || episodes == null) return communicationCount(props.stats.stories, '篇')
+  return [`${sections} 话`, `${episodes} Episode`, talks ? `${talks} Small Talk` : ''].filter(Boolean).join(' · ')
+})
 const related = computed(() => [
-  { id: 'stories', label: '个人故事', count: communicationCount(props.stats.stories, '篇'), icon: BookOpenText },
+  { id: 'stories', label: '个人故事', count: storyCount.value, icon: BookOpenText },
   // Every archive idol has a Valentine / White Day arc; the seasonal page opens on theirs.
   { id: 'seasonal', label: '季节企划', count: '情人节与白色情人节', icon: Heart },
   { id: 'cards', label: '卡片', count: `${props.stats.cards || 0} 张`, icon: Images },

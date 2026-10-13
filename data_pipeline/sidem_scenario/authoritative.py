@@ -117,12 +117,18 @@ def _strip_transient_state(state: Any) -> dict[str, Any]:
         "bg_color_transition": None,
         "bgm_stop_fade": None,
         "environmental_duck_target": None,
+        "bgm_delay": None,
+        "bgm_stop_delay": None,
+        "environmental_stop_delay": None,
+        "environmental_ducking_delay": None,
         "text_disabled": False,
         "camera_zoom": _stable_camera(settled.get("camera_zoom")),
     })
     for effect in settled.get("bg_effects") or []:
         for key in ("action", "delay", "duration"):
             effect.pop(key, None)
+    if settled.get("environmental"):
+        settled["environmental"].pop("delay", None)
     for spine in settled.get("spines") or []:
         for key in ("fade", "idol_color_transition", "neck_anim", "neck_anim_stop"):
             spine.pop(key, None)
@@ -148,6 +154,10 @@ def _apply_timeline(settled: dict[str, Any], timeline: Any) -> None:
                 spine["sweat_flag"] = event["sweat_flag"]
         elif event_type == "spine_anim":
             spine["anim"] = event.get("value")
+            if event.get("track_time"):
+                spine["anim_track_time"] = event["track_time"]
+            else:
+                spine.pop("anim_track_time", None)
             if event.get("no_back"):
                 spine["anim_no_back"] = True
             else:

@@ -108,6 +108,10 @@ function stripLegacyTransientState(state) {
   settled.bg_color_transition = null
   settled.bgm_stop_fade = null
   settled.environmental_duck_target = null
+  settled.bgm_delay = null
+  settled.bgm_stop_delay = null
+  settled.environmental_stop_delay = null
+  settled.environmental_ducking_delay = null
   settled.text_disabled = false
   settled.camera_zoom = stableCamera(settled.camera_zoom)
   for (const effect of settled.bg_effects || []) {
@@ -115,6 +119,7 @@ function stripLegacyTransientState(state) {
     delete effect.delay
     delete effect.duration
   }
+  if (settled.environmental) delete settled.environmental.delay
   for (const spine of settled.spines || []) {
     delete spine.fade
     delete spine.idol_color_transition
@@ -135,6 +140,8 @@ function applyLegacyTimeline(settled, timeline) {
       if (event.sweat_flag != null) spine.sweat_flag = event.sweat_flag
     } else if (event.type === 'spine_anim') {
       spine.anim = event.value
+      if (event.track_time) spine.anim_track_time = event.track_time
+      else delete spine.anim_track_time
       if (event.no_back) spine.anim_no_back = true
       else delete spine.anim_no_back
     } else if (event.type === 'spine_color') {

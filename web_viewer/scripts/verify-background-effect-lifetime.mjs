@@ -128,7 +128,30 @@ try {
     assert.equal(frames.size, 0); assert.equal(ticks.size, 0)
     manager.destroy(); manager.bgEffectContainer.destroy()
   }
+  {
+    // Client effect_bgstart [2] is the particle alpha and the start has no fade-in.
+    for (const [effect, expected] of [
+      [{ id: 'fx_adv_rain', action: 'start', delay: 0, duration: 0, alpha: 0.5 }, 0.85 * 0.5],
+      [{ id: 'fx_adv_rain', action: 'start', delay: 0, duration: 0.6 }, 0.85 * 0.6],
+      [{ id: 'fx_adv_rain', action: 'start', delay: 0, duration: 0 }, 0.85],
+    ]) {
+      const { manager, entry: unused } = setup()
+      manager._removeBgEffect(unused.id)
+      manager._loadEffectTexture = async () => white
+      manager.applyBgEffects([effect], null, () => wall)
+      frame()
+      const entry = manager._bgEffectEntries.fx_adv_rain
+      assert.ok(Math.abs(entry.container.alpha - expected) < 1e-9, `start alpha ${JSON.stringify(effect)}`)
+      manager.destroy(); manager.bgEffectContainer.destroy()
+    }
+    const { manager } = setup()
+    assert.equal(manager._resolveCameraflareSide({ lightPosition: 0 }), 'none')
+    assert.equal(manager._resolveCameraflareSide({ lightPosition: 1 }), 'left')
+    assert.equal(manager._resolveCameraflareSide({ lightPosition: 2 }), 'right')
+    manager.destroy(); manager.bgEffectContainer.destroy()
+  }
   console.log('Background effects: lifecycle, continuous clock, step resets, pause/rate and logical retirement passed')
+  console.log('Background effects: client start alpha (incl. legacy start duration) without fade-in and LightPosition None/Left/Right passed')
 } finally {
   Object.defineProperty(Texture, 'WHITE', whiteDescriptor)
   white.destroy(true)
