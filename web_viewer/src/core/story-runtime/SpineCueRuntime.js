@@ -1,10 +1,11 @@
+import { SPINE_TRACK } from '../spineTracks.js'
 import { createPerformanceHandle } from './PerformanceRegistry.js'
 import { getCachedMotionSetting, getCachedMotionTable } from '../../utils/IdolMotionSettingStore.js'
 
 export function settleSpineNeckCue(manager, cue) {
   if (!manager || !cue?.target || !cue?.payload?.value) return false
   manager.playSpineNeckAnim?.(cue.target, cue.payload.value, cue.cue_id)
-  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(3)
+  const track = manager.spineInstances?.[cue.target]?.spine?.state?.getCurrent?.(SPINE_TRACK.neck)
   if (!track) return false
   track.trackTime = track.animationEnd
   manager.flushSpinePose?.(cue.target, 0)
@@ -67,16 +68,18 @@ export function createSpineCueHandle(cue, { step } = {}, {
         && Number(other.at || 0) === Number(cue.at || 0))
       if (!neckAtSameTime) manager.stopSpineNeckAnim?.(target, `${cue.cue_id}:motion-neck-reset`)
       manager.playSpineAnim?.(target, payload.value, false, !!payload.no_back, motionSetting, true, 0.3,
-        motionTableFor(target, modelId))
+        motionTableFor(target, modelId), payload.track_time ?? 0)
     } else if (cue.action === 'spine.neck.play') {
       if (settleNeck) {
         settleSpineNeckCue(manager, cue)
         releasePending?.()
         return
       }
+      // IdolCharacter.CoPlayAnimation explicitly passes 0 to PlayNeck; the
+      // merged row trackTime is passed only to CoPlayMotion.
       manager.playSpineNeckAnim?.(target, payload.value, cue.cue_id)
       const entry = manager.spineInstances?.[target]
-      const track = entry?.spine?.state?.getCurrent?.(3)
+      const track = entry?.spine?.state?.getCurrent?.(SPINE_TRACK.neck)
       if (track) {
         return new Promise(resolve => {
           let completed = false
@@ -92,7 +95,7 @@ export function createSpineCueHandle(cue, { step } = {}, {
             resolve()
           }
           releasePending = finish
-          // Keep Track 3 clamped at its final pose. The step transition or an
+          // Keep the neck track clamped at its final pose. The step transition or an
           // explicit neck.stop cue owns clearing it.
           track.listener = listener
           const durationMs = Math.max(0, Number(track.animationEnd || 0) - Number(track.animationStart || 0)) * 1000

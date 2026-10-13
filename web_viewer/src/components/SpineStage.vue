@@ -709,7 +709,7 @@ function getMotionSetting(charaId, modelId, animName) {
 function applyStateBodyMotion(manager, sid, modelId, spineState, step) {
   if (!spineState.anim) return
   const started = manager.playSpineAnim(sid, spineState.anim, false, !!spineState.anim_no_back,
-    getMotionSetting(sid, modelId, spineState.anim), false, null, getCachedMotionTable(sid, modelId))
+    getMotionSetting(sid, modelId, spineState.anim), false, null, getCachedMotionTable(sid, modelId), spineState.anim_track_time ?? 0)
   if (started && !spineState.neck_anim && !spineState.neck_anim_stop) {
     manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:motion-neck-reset:${sid}`)
   }

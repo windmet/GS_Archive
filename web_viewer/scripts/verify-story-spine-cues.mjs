@@ -183,7 +183,7 @@ print(json.dumps(result))
   // IdolCharacter.CoPlayAnimation) and passes the model's whole motion table.
   assert.deepEqual(direct.calls, [
     ['neck-stop', 'fixture', 'step-1:spine.body.play:motion-neck-reset'],
-    ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, 0.3, 'table-fixture'],
+    ['body', 'fixture', 'value-1', false, true, 'motion-fixture', true, 0.3, 'table-fixture', 0],
     ['tint', 'fixture', 'value-1', 0.7, 0, dependencies.now],
     ['neck-stop', 'fixture', 'step-1:spine.neck.stop'],
   ])

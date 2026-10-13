@@ -1,3 +1,4 @@
+import { SPINE_TRACK } from './spineTracks.js'
 import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { stageRenderResolution } from './StageRenderBudget.js'
 import { decodeSpineAtlasText } from '../../shared/story/SpineAtlasPages.js'
@@ -39,7 +40,7 @@ import { cancelBlinkCover } from './spineBlinkCover.js'
 import { detectBlinkSlots } from './spineBlinkSlots.js'
 
 // IdolFigureSkeleton._trackIndexCloseEye / ANIMATION_EYE_CLOSE (client 2.6.10).
-const EYE_TRACK = 4
+const EYE_TRACK = SPINE_TRACK.eye
 const EYE_CLOSE_ANIMATION = 'eye_close'
 const ADULT_BASE_SCALE = 0.26
 const SUB_BASE_SCALE = 0.235
@@ -1159,7 +1160,7 @@ export class PixiStageManager {
       const origStateUpdate = spine.state.update.bind(spine.state)
       spine.state.update = (dt) => {
         origStateUpdate(dt)
-        for (let i = 0; i <= 1; i++) {
+        for (const i of [SPINE_TRACK.body, SPINE_TRACK.face]) {
           const track = spine.state.tracks[i]
           if (!track || track.alpha <= 0 || track.alpha >= 1 || track.mixDuration <= 0) continue
           const t = track.alpha
@@ -1180,11 +1181,11 @@ export class PixiStageManager {
 
       const origApply = spine.state.apply.bind(spine.state)
       spine.state.apply = (skeleton) => {
-        // Additive neck clips must start from a stable Track 0/1 baseline on
+        // Additive neck clips must start from a stable body/face baseline on
         // every frame. Pixi Spine otherwise retains the prior local pose, so
         // unkeyed controls such as chara_MIX accumulate their Y offset and the
         // whole character drifts down. Keep the targets for one extra apply
-        // after Track 3 is cleared so its final offset cannot leak into state.
+        // after the neck track is cleared so its final offset cannot leak into state.
         const neckTargets = spine._neckAdditiveTargets
         const finishNeckCleanup = !!spine._neckAdditiveCleanupPending
         if (neckTargets) {
@@ -1397,7 +1398,7 @@ export class PixiStageManager {
         ? 'face_default'
         : (animNames.find(n => typeof n === 'string' && n.startsWith('face_')) || null)
       if (defaultFace) {
-        spine.state.setAnimation(1, defaultFace, true)
+        spine.state.setAnimation(SPINE_TRACK.face, defaultFace, true)
         spine._currentFaceAnim = defaultFace
         spine._currentFaceKey = null
       }
@@ -1793,7 +1794,7 @@ export class PixiStageManager {
   }
 
   /**
-   * Set facial expression via Track 1 animation, with original game engine flag control.
+   * Set facial expression via Track 2 animation, with original game engine flag control.
    *
    * SideM spine data includes `face_xxx` animations (for example `face_happy` and `face_angry`).
    *
@@ -1831,7 +1832,7 @@ export class PixiStageManager {
 
       if (allAnims.includes(animName)) {
         if (spine._currentFaceKey === faceKey) return
-        const trackEntry = spine.state.setAnimation(1, animName, true)
+        const trackEntry = spine.state.setAnimation(SPINE_TRACK.face, animName, true)
         spine._currentFaceAnim = animName
         spine._currentFaceKey = faceKey
         if (trackEntry) {
@@ -1845,9 +1846,9 @@ export class PixiStageManager {
         // ResetCloseEye (empty eye track) otherwise; "\u76EE" therefore means open eyes.
         if (faceFlags && typeof faceFlags === 'object') this._applyCloseEye(spine, faceFlags.anim_flag === 'off', allAnims)
       } else {
-        // Fallback: clear Track 1 to show the default skeleton face
+        // Fallback: clear Track 2 to show the default skeleton face
         console.warn(`[PixiStageManager] Face anim "${animName}" not found on "${entry.modelId}", clearing track`)
-        spine.state.clearTrack(1)
+        spine.state.clearTrack(SPINE_TRACK.face)
         spine._currentFaceAnim = null
         spine._currentFaceKey = null
       }
@@ -1895,8 +1896,8 @@ export class PixiStageManager {
    *   - Single-shot animations (e.g. `neck_yes`, `neck_no`) have no `_loop` variant
    *     and should fall back to `wait_loop`.
    */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null) {
-    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix, motionTable)
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null, trackTime = 0) {
+    return this.spineManager?.playSpineAnim(idolId, animName, skipChain, noBack, motionSetting, forceRestart, transitionMix, motionTable, trackTime)
   }
 
   /**
@@ -1907,8 +1908,8 @@ export class PixiStageManager {
     return this.spineManager?.switchSpineAnim(idolId, animName)
   }
 
-  playSpineNeckAnim(idolId, animName, eventKey = '') {
-    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey)
+  playSpineNeckAnim(idolId, animName, eventKey = '', trackTime = 0) {
+    return this.spineManager?.playSpineNeckAnim(idolId, animName, eventKey, trackTime)
   }
 
   stopSpineNeckAnim(idolId, eventKey = '') {

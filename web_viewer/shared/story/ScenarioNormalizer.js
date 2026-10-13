@@ -140,6 +140,8 @@ function applyLegacyTimeline(settled, timeline) {
       if (event.sweat_flag != null) spine.sweat_flag = event.sweat_flag
     } else if (event.type === 'spine_anim') {
       spine.anim = event.value
+      if (event.track_time) spine.anim_track_time = event.track_time
+      else delete spine.anim_track_time
       if (event.no_back) spine.anim_no_back = true
       else delete spine.anim_no_back
     } else if (event.type === 'spine_color') {

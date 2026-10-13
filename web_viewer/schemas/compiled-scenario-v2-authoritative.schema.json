@@ -677,6 +677,7 @@
         "blush_flag": { "type": "string" },
         "sweat_flag": { "type": "string" },
         "anim_no_back": { "type": "boolean" },
+        "anim_track_time": { "type": "number", "minimum": 0 },
         "fade": { "$ref": "#/$defs/spineFade" },
         "idol_color": { "type": "string" },
         "idol_color_transition": { "$ref": "#/$defs/durationTransition" },
@@ -844,6 +845,7 @@
         "blush_flag": { "type": "string" },
         "sweat_flag": { "type": "string" },
         "no_back": { "type": "boolean" },
+        "track_time": { "type": "number", "minimum": 0 },
         "duration": { "type": "number", "minimum": 0 }
       },
       "additionalProperties": false

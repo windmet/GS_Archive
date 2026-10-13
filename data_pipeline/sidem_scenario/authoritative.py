@@ -154,6 +154,10 @@ def _apply_timeline(settled: dict[str, Any], timeline: Any) -> None:
                 spine["sweat_flag"] = event["sweat_flag"]
         elif event_type == "spine_anim":
             spine["anim"] = event.get("value")
+            if event.get("track_time"):
+                spine["anim_track_time"] = event["track_time"]
+            else:
+                spine.pop("anim_track_time", None)
             if event.get("no_back"):
                 spine["anim_no_back"] = True
             else:

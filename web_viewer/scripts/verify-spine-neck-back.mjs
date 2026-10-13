@@ -25,7 +25,7 @@ const state = new AnimationState(new AnimationStateData(data))
 const manager = new SpineManager({ spineInstances: { '002sht': { modelId: '002sht_002_00', spine: { state } } } })
 const sequence = () => {
   const out = []
-  for (let entry = state.getCurrent(3); entry; entry = entry.next) out.push([entry.animation.name, entry.mixBlend])
+  for (let entry = state.getCurrent(1); entry; entry = entry.next) out.push([entry.animation.name, entry.mixBlend])
   return out
 }
 
@@ -36,7 +36,7 @@ assert.deepEqual(sequence().map(([name]) => name), ['neck_lookup'])
 // (first available of neck_back / neck_back_lookup, mix 0.25 s), then queues the new neck.
 manager.playSpineNeckAnim('002sht', 'neck_yes')
 assert.deepEqual(sequence(), [[expectedBack, MixBlend.add], ['neck_yes', MixBlend.add]])
-assert.equal(state.getCurrent(3).mixDuration, 0.25)
+assert.equal(state.getCurrent(1).mixDuration, 0.25)
 // neck_yes is not a held pose: the next neck is set directly.
 manager.playSpineNeckAnim('002sht', 'neck_no')
 assert.deepEqual(sequence().map(([name]) => name), ['neck_no'])

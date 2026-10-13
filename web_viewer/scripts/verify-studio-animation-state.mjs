@@ -63,7 +63,7 @@ for (const poseTime of [null, 0.42]) {
     assert.equal(body.animation.name, model.pose.motion, 'Preview must start the source main clip, rather than replaying the static loop');
     assert.equal(body.trackTime, 0);
     assert.equal(body.next?.animation.name, `${model.pose.motion}_loop`);
-    assert.equal(model.spine.state.getCurrent(1).trackTime, 0, 'Expression previews start independently of the saved blink frame');
+    assert.equal(model.spine.state.getCurrent(2).trackTime, 0, 'Expression previews start independently of the saved blink frame');
     stage.updateModel(model, body.animation.duration + 0.1);
     stage.updateModel(model, 0.1);
     assert.equal(model.spine.state.getCurrent(0).animation.name, `${model.pose.motion}_loop`);
@@ -71,7 +71,7 @@ for (const poseTime of [null, 0.42]) {
   stage.setPlaying(false);
   assert.deepEqual([...stage.actorInstances.values()].map(snapshot), frames, 'Stop must restore exact body, face, neck and attachment state for every instance');
   for (const model of stage.actorInstances.values()) {
-    assert.equal(model.spine.state.getCurrent(1).trackTime, model.row.faceTime);
+    assert.equal(model.spine.state.getCurrent(2).trackTime, model.row.faceTime);
     stage.updateModel(model, 0);
   }
   assert.deepEqual([...stage.actorInstances.values()].map(snapshot), frames, 'Repeated static updates must not accumulate neck transforms');

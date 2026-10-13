@@ -88,6 +88,8 @@ class ScenarioState:
             pos_x = existing.get("pos_x")
             pos_y = existing.get("pos_y")
             idol_priority = existing.get("idol_priority")
+            existing.pop("anim_track_time", None)
+            existing.pop("anim_no_back", None)
             existing.update(entry)
             if pos_x is not None:
                 existing["pos_x"] = pos_x
@@ -110,10 +112,14 @@ class ScenarioState:
                 spine["blush_flag"] = face_flags.get("blush_flag", "")
                 spine["sweat_flag"] = face_flags.get("sweat_flag", "")
 
-    def update_spine_anim(self, idol_id: str, anim: str):
+    def update_spine_anim(self, idol_id: str, anim: str, track_time: float = 0):
         spine = self.find_spine(idol_id)
         if spine:
             spine["anim"] = anim
+            if track_time:
+                spine["anim_track_time"] = track_time
+            else:
+                spine.pop("anim_track_time", None)
             spine.pop("anim_no_back", None)
 
     def update_spine_neck_anim(self, idol_id: str, anim: Optional[str]):

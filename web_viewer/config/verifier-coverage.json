@@ -1,6 +1,11 @@
 {
   "about": "Every scripts/verify-* file is either reached by the Web Viewer Source Gate or listed under localOnly with its reason. 'batch' runs in CI through npm run verify:source-batch; checked by scripts/verify-verifier-coverage.mjs.",
   "batch": [
+    "verify-spine-client-motion.mjs",
+    "verify-spine-close-eye.mjs",
+    "verify-spine-neck-back.mjs",
+    "verify-spine-track-time.mjs",
+    "verify-story-track-time.py",
     "verify-route-schema.mjs",
     "verify-archive-motion.mjs",
     "verify-unit-navigation.mjs",

@@ -1,3 +1,4 @@
+import { SPINE_TRACK, applySpineTrackTime } from './spineTracks.js'
 import { neckOverlayAnimation } from './spineNeckOverlay.js'
 import { playClientMotion } from './spineClientMotion.js'
 
@@ -189,18 +190,19 @@ export class SpineManager {
   }
 
   /** Returns true when a body animation was (re)started. */
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null) {
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null, trackTime = 0) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry) return false
     const { spine } = entry
     try {
       const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!forceRestart && spine._currentBodyAnim === animName) return false
+      if (!forceRestart && spine._currentBodyAnim === animName && (spine._currentBodyTrackTime || 0) === (Number(trackTime) || 0)) return false
 
       if (motionTable && !skipChain && allAnims.includes(animName)) {
-        const track = playClientMotion(spine.state, allAnims, motionTable, animName, !noBack)
+        const track = playClientMotion(spine.state, allAnims, motionTable, animName, !noBack, trackTime)
         if (track && Number.isFinite(transitionMix)) track.mixDuration = Math.max(0, transitionMix)
         spine._currentBodyAnim = animName
+        spine._currentBodyTrackTime = Number(trackTime) || 0
         return true
       }
 
@@ -223,10 +225,12 @@ export class SpineManager {
           spine.state.addAnimation(0, fallback, true, 0)
         }
       }
+      applySpineTrackTime(track, trackTime)
       if (track && Number.isFinite(transitionMix)) {
         track.mixDuration = Math.max(0, transitionMix)
       }
       spine._currentBodyAnim = animName
+      spine._currentBodyTrackTime = Number(trackTime) || 0
       return true
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to play anim "${animName}" on "${idolId}":`, err.message)
@@ -253,7 +257,7 @@ export class SpineManager {
     }
   }
 
-  playSpineNeckAnim(idolId, animName, eventKey = '') {
+  playSpineNeckAnim(idolId, animName, eventKey = '', trackTime = 0) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry?.spine) return
     const { spine } = entry
@@ -295,11 +299,15 @@ export class SpineManager {
       const back = (NECK_BACK_ANIMATIONS[spine._currentNeckAnim] || []).find(name => allAnims.includes(name))
       let track = null
       if (back) {
-        const backTrack = spine.state.setAnimation(3, back, false)
-        if (backTrack) prepareNeckTrack(backTrack, 0.25)
-        track = spine.state.addAnimation(3, animName, false, 0)
+        const backTrack = spine.state.setAnimation(SPINE_TRACK.neck, back, false)
+        if (backTrack) {
+          prepareNeckTrack(backTrack, 0.25)
+          applySpineTrackTime(backTrack, trackTime)
+        }
+        track = spine.state.addAnimation(SPINE_TRACK.neck, animName, false, 0)
       } else {
-        track = spine.state.setAnimation(3, animName, false)
+        track = spine.state.setAnimation(SPINE_TRACK.neck, animName, false)
+        applySpineTrackTime(track, trackTime)
       }
       spine._currentNeckAnim = animName
       if (track) {
@@ -328,7 +336,7 @@ export class SpineManager {
       if (eventKey && spine._lastNeckStopEventKey === eventKey) return
       spine._lastNeckStopEventKey = eventKey || ''
       spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
-      spine.state.clearTrack(3)
+      spine.state.clearTrack(SPINE_TRACK.neck)
       spine._currentNeckAnim = null
       if (spine._neckAdditiveTargets) spine._neckAdditiveCleanupPending = true
     } catch (err) {

@@ -7,6 +7,8 @@
 //   is not wait_loop; otherwise it is set directly;
 // - the motion's pose is queued looping after it (also for idol_nobackanimation).
 
+import { applySpineTrackTime } from './spineTracks.js'
+
 const WAIT_LOOP = 'wait_loop'
 const BACK_MIX = 0.3
 
@@ -25,11 +27,15 @@ export function motionTableQueries(table) {
 }
 
 /** Returns the first TrackEntry set on track 0 (back animation or the motion). */
-export function playClientMotion(state, skeletonAnimations, table, name, transitionWithBackMotion = true) {
+export function playClientMotion(state, skeletonAnimations, table, name, transitionWithBackMotion = true, trackTime = 0) {
   const has = animation => !!animation && skeletonAnimations.includes(animation)
   const q = motionTableQueries(table)
   const loop = q.isLoop(name)
-  if (!q.isMotion(name)) return state.setAnimation(0, name, loop)
+  if (!q.isMotion(name)) {
+    const entry = state.setAnimation(0, name, loop)
+    applySpineTrackTime(entry, trackTime)
+    return entry
+  }
 
   const current = state.getCurrent(0)?.animation?.name || ''
   const pose = q.pose(name)
@@ -45,6 +51,7 @@ export function playClientMotion(state, skeletonAnimations, table, name, transit
     }
   }
   if (!motionEntry) motionEntry = first = state.setAnimation(0, name, loop)
+  applySpineTrackTime(motionEntry, trackTime)
   if (has(pose)) state.addAnimation(0, pose, true, 0)
   return first
 }

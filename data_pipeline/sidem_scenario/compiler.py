@@ -12,6 +12,7 @@ Output:
 """
 
 import copy
+import math
 import os
 import re
 from typing import Any, Optional
@@ -1007,39 +1008,53 @@ class ScenarioCompiler(ScenarioFileIO):
                 self.state.update_spine_face(vals[0], vals[2], face_flags)
             self._mark_stage_change()
 
+    @staticmethod
+    def _animation_track_time(vals: list) -> float:
+        # IdolCommandData uses ConvertFloat(values[3], default=0). Some RAW
+        # rows contain face flags in this column; retain the client fallback.
+        try:
+            value = float(vals[3]) if len(vals) > 3 and vals[3] else 0.0
+            return max(0.0, value) if math.isfinite(value) else 0.0
+        except (ValueError, TypeError):
+            return 0.0
+
     def _idol_animation(self, vals: list):
         """
-        Values: [chara_id, delay, anim_name, ...]
+        Values: [chara_id, delay, anim_name, track_time, ...]
         delay=0 → immediate state update
         delay>0 → mid-sentence timeline event
         """
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
+            track_time = self._animation_track_time(vals)
             if delay > 0:
                 self._timeline_events.append({
                     "time": delay,
                     "type": "spine_anim",
                     "chara_id": vals[0],
                     "value": vals[2],
+                    **({"track_time": track_time} if track_time else {}),
                 })
             else:
-                self.state.update_spine_anim(vals[0], vals[2])
+                self.state.update_spine_anim(vals[0], vals[2], track_time)
             self._mark_stage_change()
 
     def _idol_nobackanimation(self, vals: list):
-        """Body animation that should not auto-chain back to wait/loop."""
+        """Body animation without the previous motion back (still queues its pose)."""
         if len(vals) >= 3 and vals[0] and vals[2]:
             delay = float(vals[1]) if vals[1] else 0
+            track_time = self._animation_track_time(vals)
             if delay > 0:
                 self._timeline_events.append({
                     "time": delay,
                     "type": "spine_anim",
                     "chara_id": vals[0],
                     "value": vals[2],
+                    **({"track_time": track_time} if track_time else {}),
                     "no_back": True,
                 })
             else:
-                self.state.update_spine_anim(vals[0], vals[2])
+                self.state.update_spine_anim(vals[0], vals[2], track_time)
                 spine = self.state.find_spine(vals[0])
                 if spine:
                     spine["anim_no_back"] = True
@@ -1553,14 +1568,14 @@ class ScenarioCompiler(ScenarioFileIO):
             if event["type"] == "spine_face":
                 self.state.update_spine_face(event["chara_id"], event["value"], event)
             elif event["type"] == "spine_anim":
-                self.state.update_spine_anim(event["chara_id"], event["value"])
+                self.state.update_spine_anim(event["chara_id"], event["value"], event.get("track_time", 0))
                 if event.get("no_back"):
                     spine = self.state.find_spine(event["chara_id"])
                     if spine:
                         spine["anim_no_back"] = True
             elif event["type"] in ("spine_neck_anim", "spine_neck_stop"):
                 # Neck commands are one-shot overlay events. Runtime owns the
-                # live Track 3 pose until an authored stop/replacement clears it;
+                # live neck-track pose until an authored stop/replacement clears it;
                 # cumulative state must not restart the clip on later steps.
                 continue
             elif event["type"] == "spine_color":
