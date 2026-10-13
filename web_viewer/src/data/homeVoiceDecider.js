@@ -1,4 +1,7 @@
 // Native home stand selection (SystemScenarioDecider, HomeStand type, recent capacity 4).
+// TODO: not wired to the home yet. Taps keep the archive's sequential/random order over the whole
+// general + card list; only the directory uses the condition labels below. Before wiring the
+// native draw, decide how a tap leaves the current time window for the card voices.
 // The pool is the current card's rows plus the idol's general rows: a card row with Param2 set
 // waits for awakening, and a card row's override removes that idol row. Each tap keeps the rows
 // in term, drops the recent ones while enough remain, and draws by Param1 weight.

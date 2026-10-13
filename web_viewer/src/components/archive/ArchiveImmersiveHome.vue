@@ -298,7 +298,6 @@
         <fieldset class="settings-segment">
           <legend>台词切换</legend>
           <div class="settings-segment-options">
-            <button type="button" title="按原版条件、权重与最近播放抽选" :class="{ active: preferences.dialogueOrder === 'native' }" :aria-pressed="preferences.dialogueOrder === 'native'" @click="preferences.dialogueOrder = 'native'">原版</button>
             <button type="button" :class="{ active: preferences.dialogueOrder === 'sequential' }" :aria-pressed="preferences.dialogueOrder === 'sequential'" @click="preferences.dialogueOrder = 'sequential'">顺序</button>
             <button type="button" :class="{ active: preferences.dialogueOrder === 'random' }" :aria-pressed="preferences.dialogueOrder === 'random'" @click="preferences.dialogueOrder = 'random'">随机</button>
           </div>
@@ -360,7 +359,7 @@ import {
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
-import { createHomeVoiceDecider, homeVoiceClock, homeVoiceConditionKind, homeVoiceConditionLabel, homeVoicePool } from '../../data/homeVoiceDecider.js'
+import { homeVoiceConditionKind, homeVoiceConditionLabel } from '../../data/homeVoiceDecider.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
 import { archiveLineText, archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
@@ -546,18 +545,6 @@ const renderStep = computed(() => {
 const cards = ref([]), cardLoading = ref(false), cardError = ref('')
 const idolCards = computed(() => cards.value.filter(card => card.idolCode === activeIdol.value?.id))
 const selectedCard = computed(() => resolveHomeCard(cards.value, activeIdol.value?.id, preferences.cardKey))
-// The native pool's card: the chosen wallpaper in card mode (its awakening too), otherwise the card
-// of the last card voice heard, else the idol's first card.
-const homeVoiceDecider = createHomeVoiceDecider()
-const lastVoiceCardId = ref('')
-watch(activeCue, cue => { if (cue?.cardId) lastVoiceCardId.value = cue.cardId })
-watch(() => activeIdol.value?.id, () => { homeVoiceDecider.reset(); lastVoiceCardId.value = '' })
-const nativeVoicePool = computed(() => {
-  const cues = activeIdol.value?.cues || []
-  const wallpaper = props.homeMode === 'card' ? selectedCard.value : null
-  const cardId = wallpaper?.resourceId || lastVoiceCardId.value || cues.find(cue => cue.cardId)?.cardId || ''
-  return homeVoicePool(cues.filter(cue => cue.source === 'idol'), cues.filter(cue => cue.cardId && cue.cardId === cardId),
-    { awakened: wallpaper ? wallpaper.variant === 'p' : true })
 })
 
 async function loadCards(retry = false) {
@@ -651,7 +638,6 @@ watch([
   () => activeIdol.value?.id,
   () => activeCue.value?.cue,
   () => preferences.dialogueOrder,
-  () => nativeVoicePool.value,
 ], () => queueNextStageVoice(), { immediate: true })
 
 watch(preferences, value => {
@@ -681,10 +667,6 @@ function selectCostume(modelId) {
 function resolveNextCue() {
   const cues = activeIdol.value?.cues || []
   if (!cues.length) return null
-  if (preferences.dialogueOrder === 'native') {
-    const next = homeVoiceDecider.pick(nativeVoicePool.value, homeVoiceClock())
-    if (next) return next
-  }
   let nextIndex = (cueIndex.value + 1) % cues.length
   if (preferences.dialogueOrder === 'random' && cues.length > 1) {
     nextIndex = Math.floor(Math.random() * (cues.length - 1))
@@ -756,8 +738,6 @@ async function handleStageTap() {
     homeCueRuntime.cancelCurrentStep('home-next-cue')
     stageTapCommitPending.value = true
     emit('update:selectedCue', next.cue)
-    // DecideByWeight remembers the draw when it is made: the line is now shown, voiced or not.
-    if (preferences.dialogueOrder === 'native') homeVoiceDecider.commit(next)
     await nextTick()
     if (!isCurrent()) { voicePlayer.releasePreparedVoice(prepared); return }
     const started = prepared ? await voicePlayer.playPreparedVoice(prepared) : false

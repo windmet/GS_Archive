@@ -111,6 +111,9 @@ const morningPool = homeVoicePool(momoHome.cues.filter(row => row.source === 'id
   .filter(row => homeVoiceInTerm(row.condition, at(5, '07:00:00'))).map(row => row.cue)
 assert.ok(morningPool.includes('3_1_048_05') && !morningPool.includes('3_1_048_12') && !morningPool.includes('3_1_048_19'))
 
-assert.equal(normalizeArchiveHomePreferences({}).dialogueOrder, 'sequential', 'a stored legacy preference stays sequential')
-assert.equal(normalizeArchiveHomePreferences({ dialogueOrder: 'native' }).dialogueOrder, 'native')
+// The native draw is a pending item: taps step or shuffle the whole general + card list.
+assert.equal(normalizeArchiveHomePreferences({}).dialogueOrder, 'sequential')
+assert.equal(normalizeArchiveHomePreferences({ dialogueOrder: 'native' }).dialogueOrder, 'sequential', 'an earlier native choice falls back')
+assert.doesNotMatch(fs.readFileSync(new URL('../src/components/archive/ArchiveImmersiveHome.vue', import.meta.url), 'utf8'),
+  /createHomeVoiceDecider|dialogueOrder === 'native'/, 'the home does not run the native draw yet')
 console.log(`Home system voices verified: ${stats.idolCues} general + ${stats.cardCues} card voices for ${stats.idols} idols${localMedia ? ', local scripts and audio checked' : ''}.`)
