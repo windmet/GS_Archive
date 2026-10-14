@@ -7,7 +7,7 @@
           <ArchiveGashaArt v-else-if="poolArt" :art="poolArt" :alt="gashaText(gasha.display_name)" loading="eager" />
           <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
         </div>
-        <figcaption v-if="!gasha.banner_url && artRecord?.primary">游戏内卡池素材（编号 {{ artRecord.primary.gasha_id }}）· {{ artRecord.primary.basis_text }}</figcaption>
+        <figcaption v-if="!gasha.banner_url && artRecord?.primary">游戏内卡池素材 · {{ artRecord.primary.basis_text }}</figcaption>
       </figure>
       <div class="gasha-summary">
         <h2>{{ gashaText(gasha.display_name) }}</h2>
@@ -83,9 +83,8 @@
       <ul class="art-strip">
         <li v-for="item in artStrip" :key="item.gasha_id">
           <span class="art-frame"><ArchiveGashaArt :art="item" alt="" /></span>
-          <strong>编号 {{ item.gasha_id }}</strong>
-          <small v-if="item.label">{{ item.label }}</small>
-          <small v-else-if="item.banner_text" lang="ja">{{ item.banner_text }}</small>
+          <strong v-if="item.label">{{ item.label }}</strong>
+          <strong v-else-if="item.banner_text" lang="ja">{{ item.banner_text }}</strong>
         </li>
       </ul>
     </section>

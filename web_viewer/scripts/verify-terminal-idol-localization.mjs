@@ -84,13 +84,19 @@ const { product: eventProduct } = await readCheckout(fileURLToPath(new URL('../'
 const derivedCards = view => view.cards.filter(card =>
   !view.rewards.cards.some(reward => reward.card_resource_id === card.card_resource_id))
 const usableEvent = record => record.view.castReferences.some(entry => entry.idol_code === profile.idol_code) &&
-  derivedCards(record.view).length > 0 && record.view.episodes.length > 1 &&
+  record.view.episodes.length > 1 &&
   record.view.readingEntries.some(entry => entry.status === 'ready' && entry.source_file === record.view.episodes[0].file)
 const preferredEvent = eventProduct.extraDomains.events.records.find(record => record.id === '430013')
 const eventRecord = preferredEvent && usableEvent(preferredEvent) ? preferredEvent :
   eventProduct.extraDomains.events.records.find(usableEvent)
-assert.ok(eventRecord, 'a real event has Aslan, derived cards and a ready first episode')
-const eventView = eventRecord.view
+assert.ok(eventRecord, 'a real event has Aslan and a ready first episode')
+// Wikiwiki acquisition now confirms every event card as a reward, so no real event keeps a derived card.
+// Demote one reward card on a copy so the derived-card consumer is still exercised against real card data.
+const eventView = derivedCards(eventRecord.view).length ? eventRecord.view : {
+  ...eventRecord.view,
+  rewards: { ...eventRecord.view.rewards, cards: eventRecord.view.rewards.cards.slice(1) },
+}
+assert.ok(derivedCards(eventView).length > 0, 'the event fixture keeps a derived card')
 console.log(`Event localization source fixture: ${eventRecord.id} / ${eventView.identity.title}; ${eventView.castReferences.length} cast references, ${derivedCards(eventView).length} derived cards`)
 const rewardView = eventProduct.extraDomains.events.records.find(record => record.id === '410012')?.view
 const exchangeView = eventProduct.extraDomains.events.records.find(record => record.id === 'event:20001')?.view
