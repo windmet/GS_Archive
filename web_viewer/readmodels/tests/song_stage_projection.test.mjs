@@ -20,3 +20,20 @@ test('[local-corpus] song leaves carry the same primary stage entry as the sourc
   assert.equal(product.songViews.brndnf.stageCandidate?.id, 'brndnf_live_effect')
   assert.equal(product.songViews.drv999.stageCandidate?.stageKind, 'special_single')
 })
+
+test('[local-corpus] song leaves name their albums and official 3D live videos', async () => {
+  const { product } = await readCheckout(viewer, { dataRevision: 'test', mediaEpoch: 'test' })
+  const views = product.songViews
+  assert.ok(Object.values(views).every(view => view.albums.length === view.links.length), 'every master-data link has a curated album')
+  assert.deepEqual(views.drvalv.albums, [{ url: 'https://lnk.to/LACM-24181s',
+    title: 'THE IDOLM@STER SideM GROWING SIGN@L 01 Growing Smiles！', catalogNumber: 'LACM-24181' }])
+  const withVideo = Object.entries(views).filter(([, view]) => view.officialVideos.length)
+  assert.equal(withVideo.length, 16)
+  assert.equal(withVideo.filter(([, view]) => view.officialVideos[0].source === 'growing_stars').length, 11)
+  // Every GROWING STARS 3D MV the client ships has its official upload; MV LIVE (reason) has none.
+  for (const [code, view] of Object.entries(views)) {
+    if (view.movies.some(movie => movie.title === '3DMV')) assert.equal(view.officialVideos[0]?.source, 'growing_stars', code)
+  }
+  assert.deepEqual(views.reason.officialVideos, [])
+  assert.equal(views.wathon.officialVideos[0].youtubeId, 'HeiptD9Hb-k')
+})

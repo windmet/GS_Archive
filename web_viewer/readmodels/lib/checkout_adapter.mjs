@@ -24,6 +24,7 @@ export const INPUTS = {
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
+ songExternalMedia: 'data/song_external_media.json',
  gashaIndex: 'data/masterdata/gasha_index.json', movieAnnounce: 'data/masterdata/movie_announce_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
@@ -284,7 +285,20 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     }
     view.relatedEvents = songEvents[code] || [];
     view.unlockStory = unlockStory;
+    // Curated, dated lookups: album pages behind the master-data links, and the official 3D live uploads.
+    view.albums = (song.links || []).map(url => {
+      const album = data.songExternalMedia.albums[url];
+      assert(album?.title && album.catalog_number && album.song_codes.includes(code), `Uncurated album link for ${code}: ${url}`);
+      return { url, title: album.title, catalogNumber: album.catalog_number };
+    });
+    view.officialVideos = (data.songExternalMedia.official_videos[code] || []).map(video => {
+      assert(/^[\w-]{11}$/.test(video.youtube_id) && ['growing_stars', 'sidem'].includes(video.source), `Invalid official video for ${code}`);
+      return { youtubeId: video.youtube_id, source: video.source, title: video.title };
+    });
   }
+  for (const code of Object.keys(data.songExternalMedia.official_videos)) assert(songViews[code], `Official video for unknown song: ${code}`);
+  for (const album of Object.values(data.songExternalMedia.albums)) for (const code of album.song_codes)
+    assert((data.songCatalog.songs[code]?.links || []).length, `Album lists a song without links: ${code}`);
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
   }
