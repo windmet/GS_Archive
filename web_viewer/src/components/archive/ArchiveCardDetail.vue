@@ -154,6 +154,18 @@
         </div>
       </section>
 
+      <section v-if="skillMovie" class="card-detail-section card-skill-movie">
+        <h4>技能演出</h4>
+        <div class="skill-movie-frame" :style="{ aspectRatio: `${skillMovie.width} / ${skillMovie.height}` }">
+          <video v-if="skillMoviePlaying" :key="skillMovie.url" :src="skillMovie.url" :poster="skillMovie.poster" autoplay playsinline controls muted preload="auto" aria-label="技能演出动画"></video>
+          <button v-else type="button" class="skill-movie-poster" :aria-label="`播放技能演出（约 ${skillMovieMegabytes} MB）`" @click="skillMoviePlaying = true">
+            <img :src="skillMovie.poster" alt="" loading="lazy" />
+            <span class="skill-movie-play" aria-hidden="true"><Play :size="22" /></span>
+          </button>
+        </div>
+        <p class="skill-movie-note">游戏内发动技能时的过场动画 · {{ (skillMovie.durationMs / 1000).toFixed(1) }} 秒 · 约 {{ skillMovieMegabytes }} MB，点击后才加载</p>
+      </section>
+
       <section v-if="visibleCostumes.length" class="card-detail-section">
         <h4>关联衣装</h4>
         <div class="costume-list">
@@ -293,7 +305,7 @@ void loadArchiveNames('card-lines').catch(() => {})
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
+import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Play, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
@@ -328,6 +340,7 @@ const props = defineProps({
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
   limitbreakMaterial: { type: Object, default: null },
+  skillMovie: { type: Object, default: null },
   // A touch voice the reader came for (from the home dialogue): scrolled to and marked.
   focusVoice: { type: String, default: '' },
 })
@@ -403,7 +416,11 @@ watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   detailRoot.value?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)?.scrollIntoView({ block: 'center' })
 }, { immediate: true, flush: 'post' })
 
+// The skill cut-in loads only on request; switching cards returns to the poster.
+const skillMoviePlaying = ref(false)
+const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
 watch(() => props.card?.resource_id, () => {
+  skillMoviePlaying.value = false
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
   heroState.value = props.card?.single_state ? 'awakened' : 'normal'
   heroFrame.value = 'landscape'
@@ -629,6 +646,14 @@ function openRelation(item) {
 
 /* Sections */
 .card-detail-section { display: grid; gap: var(--gs-space-5); min-width: 0; }
+.skill-movie-frame { position: relative; overflow: hidden; border-radius: var(--gs-radius-panel); background: #000; }
+.skill-movie-frame video, .skill-movie-poster { display: block; width: 100%; height: 100%; }
+.skill-movie-poster { position: relative; padding: 0; border: 0; background: #000; cursor: pointer; }
+.skill-movie-poster img { width: 100%; height: 100%; object-fit: cover; }
+.skill-movie-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(0 0 0 / .62); color: #fff; }
+.skill-movie-play svg { margin-left: 3px; fill: currentColor; }
+@media (hover: hover) { .skill-movie-poster:hover .skill-movie-play { background: var(--gs-mint-ink); } }
+.skill-movie-note { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-detail-section h4 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .release-series-cards { display: flex; gap: var(--gs-space-3); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
