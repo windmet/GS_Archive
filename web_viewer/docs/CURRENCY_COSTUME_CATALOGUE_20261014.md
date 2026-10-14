@@ -86,6 +86,23 @@
 - 1280、1024、820、390 宽的 Chromium 测量中都没有元素越出面板。这次是加固排版，没有找到可以复现的溢出。
 - 资料馆入口：手机端「资料馆」目录给货币、服装补上图标（Coins / Shirt），桌面侧栏同样适用。
 
+## 卡片技能演出播放器（87828e0f）
+
+- 原来的技能演出铺满内容宽度，1280 宽时约 1013×540，占了大半屏。现在最大 560px，右侧列出时长、大小、分辨率（无声）；容器窄于 820px 时上下排列，播放器仍限 560px。
+- `ArchiveVideoPlayer.vue`：
+  - 仍是点击后才加载；
+  - 播放/暂停、进度条、逐帧（30 fps）、0.25× / 0.5× / 1×、循环；
+  - 大屏：用 Teleport 把同一个 video 元素移到 body，播放位置和速度不中断；
+  - 全屏：iOS 用 `webkitEnterFullscreen` 兜底；
+  - 快捷键：空格/k、←/→、f、Esc。
+- 浏览器 28/28：1280、1024、390 宽。全屏在无头浏览器中无法验证，需要实机确认。
+
+## 卡池规则排版（d42ad71b）
+
+- 改成一张键值表：开放期间、抽取方式、阶梯价格、保底、提供割合、记忆之星、×× 交换、其他说明。只在行间用细线；窄容器下标签在上、内容在下。
+- 提供割合始终单列一行，只写「具体数值未留存」。资料来源和缺失原因合并成底部一条浅灰提示。
+- 交换行写成「每张 N 个 · 上方 M 张关联卡片均可交换」，截止时间另起一行。
+
 ## 正比图
 
 客户端没有静态的正比衣装图。衣装相关的静态图片只有：
@@ -121,4 +138,5 @@
 - 商店与兑换所的商品只能从 wiki 整理，下一步做；歌曲、任务、生日奖励同样从 wiki 补。PremiumPacks 只做记录。
 - 30 个没有缩略图的服装模型以后可以考虑用 Spine 渲染。
 - `verify-card-costume-presentation` 已修复：补上 ArchiveSourceLink 桩；契约改为「只有款式条目本身可以点，点开各自的服装」。
-- `verify-design-tokens` 仍未通过：ArchiveCardDetail、ArchiveSongDetail 视频区的 `#000`/`#fff`，ArchiveSongLineupPlayer 的两个原始字号。修复需要新增媒体色 token。
+- `verify-design-tokens` 已修复：新增 `--gs-media-*` token；歌曲阵容的「+」「×」字符改为图标。
+- 既有失败，与本批无关：`verify-archive-presentation`（ArchiveGashaDetail 模板里出现原始 `gasha_id`）、`verify-terminal-idol-localization`（数据断言）。在本批之前的提交上同样失败。
