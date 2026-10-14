@@ -1,6 +1,7 @@
 // Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html), unit
 // (/units/<code>/index.html), card (/cards/<resource_id>/index.html), song (/songs/<song_code>/index.html) and event
-// (/events/<410001 | 10019>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
+// (/events/<410001 | 10019>/index.html) and gasha (/gashas/<210003 | ticket-…>/index.html), plus one per section root
+// (/cards/index.html, /items/index.html, …), whose <head> carries that page's title, description, canonical and Open Graph
 // tags. The body and scripts are untouched, so the SPA boots as usual and reads the path locator. Link
 // previews (X, Discord, LINE) and crawlers that do not run JavaScript see the entity instead of the generic page.
 //   node scripts/generate-entity-head-shells.mjs [--dist=.analysis/build-check] [--origin=https://…] [--check]
@@ -12,7 +13,9 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { archiveCardName, archiveEntityTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveEntityTitle, archiveSectionTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SECTION_PATHS } from '../src/core/archiveRoute.js'
+import { translatedGashaName } from '../src/data/gashaTicketCatalog.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
 
@@ -25,6 +28,20 @@ const SONG_CODE = /^[a-z0-9]{6}$/
 // Read-model event ids and their path segment (archiveRoute.js PUBLIC_PATH_ROUTES).
 const EVENT_ID = /^(4[0-9]{5}|event:[1-9][0-9]{4})$/
 export const eventPathSegment = id => id.replace(/^event:/, '')
+const GASHA_ID = /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/
+// Section roots (archiveRoute.js SECTION_PATH_ROUTES): the view whose section name titles the page, and what it lists.
+export const SECTION_SHELLS = Object.freeze({
+  idols: { view: 'idols', description: 'SideM GROWING STARS 全部偶像一览：按组合浏览档案、卡片与剧情。' },
+  units: { view: 'unit_catalog', description: 'SideM GROWING STARS 全部组合一览：成员、团体剧情、活动与歌曲。' },
+  cards: { view: 'cards', description: 'SideM GROWING STARS 全部卡片一览：按偶像、稀有度与属性筛选，查看卡面、技能与获得方式。' },
+  songs: { view: 'song_catalog', description: 'SideM GROWING STARS 全部歌曲一览：演唱成员、试听、谱面与相关活动。' },
+  events: { view: 'event_catalog', description: 'SideM GROWING STARS 历史活动一览：活动剧情、报酬卡与参加偶像。' },
+  gashas: { view: 'gashas', description: 'SideM GROWING STARS 历史卡池一览：开放时间、Pickup 卡片与抽取道具。' },
+  stories: { view: 'story_catalog', description: 'SideM GROWING STARS 剧情一览：主线、活动、个人故事、生日与季节企划。' },
+  items: { view: 'collection_catalog', kind: 'items', description: 'SideM GROWING STARS 道具图鉴：用途、获得来源与相关卡片。' },
+  honors: { view: 'collection_catalog', kind: 'honors', description: 'SideM GROWING STARS 称号图鉴：获得条件与相关偶像、组合。' },
+  photos: { view: 'photo_catalog', description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
+})
 
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
@@ -58,7 +75,8 @@ function withHead(template, tags) {
 // cards: card index rows ({ resource_id, character_id, rarity, title }); cardTitles: { [source title]: zh-CN };
 // songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping });
 // events: publishedEvents() rows ({ id, code, title, kind, openAt, image }).
-export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], origin = DEFAULT_ORIGIN }) {
+// gashas: publishedGashas() rows ({ id, name, openAt, image }); sections: include the section root shells.
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], gashas = [], sections = false, origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
@@ -158,7 +176,52 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       })),
     })
   }
+  for (const gasha of gashas) {
+    if (!GASHA_ID.test(gasha.id)) throw new Error(`Unexpected gasha id ${gasha.id}`)
+    if (!gasha.name) throw new Error(`Gasha ${gasha.id} has no name`)
+    if (!/^\/assets\/[a-z0-9_/.-]+\.(png|jpg|webp)$/i.test(gasha.image || '')) throw new Error(`Gasha ${gasha.id} has no image`)
+    const location = `/gashas/${gasha.id}/`
+    shells.push({
+      path: `gashas/${gasha.id}/index.html`,
+      kind: 'gasha', id: gasha.id, url: base + location,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(gasha.name),
+        description: `卡池「${gasha.name}」${gasha.openAt ? `，${historicalDate(gasha.openAt)}开放` : ''}：Pickup 卡片、开放时间与抽取道具。`,
+        url: base + location,
+        image: base + gasha.image,
+        type: 'website',
+      })),
+    })
+  }
+  if (sections) for (const prefix of ARCHIVE_SECTION_PATHS) {
+    const section = SECTION_SHELLS[prefix]
+    if (!section) throw new Error(`Section ${prefix} has no head shell`)
+    const location = `/${prefix}/`
+    shells.push({
+      path: `${prefix}/index.html`,
+      kind: 'section', id: prefix, url: base + location,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(archiveSectionTitle(section.view, section.kind)),
+        description: section.description,
+        url: base + location,
+        image: `${base}/assets/brand/image_chara_icon_producer.png`,  // the site icon, as index.html
+        type: 'website',
+      })),
+    })
+  }
   return shells
+}
+
+// Every gasha with a detail page: the read model's announcements (gasha_index.gashas) and the ticket-only pools the
+// catalogue adds from gasha-ticket-evidence.json. Names are the zh-CN pool names the gasha page shows.
+export function publishedGashas(gashaIndex, ticketEvidence) {
+  const gashas = [
+    ...gashaIndex.gashas.map(gasha => ({ id: String(gasha.id), source: gasha.display_name, openAt: gasha.start_at || 0, image: gasha.banner_url })),
+    ...ticketEvidence.rows.filter(row => !row.matched_ids.length).map(row => ({ id: row.id, source: row.source_name,
+      openAt: row.wiki_pools?.[0]?.start_at || 0, image: row.tickets[0]?.image?.url || '' })),
+  ].map(({ source, ...gasha }) => ({ ...gasha, name: translatedGashaName(source, 'zh-CN') || source }))
+  if (new Set(gashas.map(gasha => gasha.id)).size !== gashas.length) throw new Error('Duplicate gasha id')
+  return gashas
 }
 
 // The event catalogue the read model publishes (readmodels/lib/domain_expansion.mjs): one row per supplement
@@ -196,7 +259,8 @@ export function loadEntitySources(root) {
     .sort((a, b) => a.song_code.localeCompare(b.song_code))
   const json = file => JSON.parse(readFileSync(path.join(root, 'public/data', file), 'utf8'))
   const events = publishedEvents(json('masterdata/domains/event_supplement_index.json'), json('masterdata/domains/event_media.json'), json('archive_manifest.json'))
-  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, release: bootstrap.release }
+  const gashas = publishedGashas(json('masterdata/gasha_index.json'), json('editorial/gasha-ticket-evidence.json'))
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, gashas, sections: true, release: bootstrap.release }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -218,5 +282,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events + ${count('gasha')} gashas + ${count('section')} section roots in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

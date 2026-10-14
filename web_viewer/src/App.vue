@@ -648,7 +648,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
-import { archiveCardName, archiveDocumentTitle } from './presentation/ArchiveDocumentTitle.js'
+import { archiveCardName, archiveDocumentTitle, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
@@ -1532,6 +1532,9 @@ const archiveTabEntityName = computed(() => {
   if (view.value === 'song_detail') return currentSong.value?.title || ''
   // Event titles are shown in the source on the event page as well.
   if (view.value === 'event_detail') return currentEventProjection.value?.identity?.title || ''
+  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value?.kind)
+  // Same zh-CN pool name as the gasha's head shell; empty until the catalogue functions load.
+  if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name, uiLocale.value) || ''
   if (!idolNamesSettled.value) return ''
   if (view.value === 'idol_detail') return currentIdolDisplayName.value
   if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''

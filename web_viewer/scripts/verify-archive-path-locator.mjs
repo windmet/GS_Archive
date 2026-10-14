@@ -1,4 +1,5 @@
-// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/, /songs/<song_code>/ and /events/<id>/ read as their detail routes, the address bar writes
+// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/, /songs/<song_code>/, /events/<id>/ and /gashas/<id>/ read as their
+// detail routes and the section roots (/idols/, /cards/, /items/, …) as their catalogues; the address bar writes
 // them, and every internal query form (buildArchiveUrl, source frames, restoration keys) is unchanged.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -89,8 +90,28 @@ for (const [href, id] of [['http://x/events/410018/', '410018'], ['http://x/even
 // U6: anything that is not an exact locator reads like the bare entry, without throwing.
 for (const href of ['http://x/idols/xyz/', 'http://x/idols/001tom/extra/', 'http://x/units/1/', 'http://x/songs/brnd/', 'http://x/songs/BRNDNF/', 'http://x/songs/brndnf1/',
   'http://x/events/event:10019/', 'http://x/events/510001/', 'http://x/events/1001/', 'http://x/events/01001/', 'http://x/events/4100181/',
-  'http://x/cards/1101001/', 'http://x/cards/001tom/', 'http://x/cards/001TOM_n01/', 'http://x/idols/', 'http://x/IDOLS/001tom/']) {
+  'http://x/cards/1101001/', 'http://x/cards/001tom/', 'http://x/cards/001TOM_n01/', 'http://x/IDOLS/001tom/', 'http://x/IDOLS/',
+  'http://x/gashas/12345/', 'http://x/gashas/ticket-02B623E0ABC38CE0/', 'http://x/gashas/ticket-1/', 'http://x/items/x/', 'http://x/library/']) {
   same(read(href), read('http://x/'), href)
+}
+// Gashas: announcement ids and ticket-only pools; where the gasha was opened from stays out of the address.
+for (const id of ['210003', '1300012', '12007210', 'ticket-02b623e0abc38ce0']) {
+  assert.equal(buildPublicArchiveUrl('http://x/', { view: 'gasha_detail', gasha: id }).href, `http://x/gashas/${id}/`, id)
+  const route = read(`http://x/gashas/${id}/`)
+  assert.equal(route.view, 'gasha_detail', id); assert.equal(route.gasha, id, id)
+}
+// Section roots: the catalogue is its path, its filters stay in the query, and an implied identity must match.
+for (const [route, href] of [
+  [{ view: 'idols', category: 'idol' }, 'http://x/idols/'], [{ view: 'unit_catalog' }, 'http://x/units/'], [{ view: 'cards', rarity: 'SSR' }, 'http://x/cards/?rarity=SSR'],
+  [{ view: 'song_catalog' }, 'http://x/songs/'], [{ view: 'event_catalog' }, 'http://x/events/'], [{ view: 'gashas' }, 'http://x/gashas/'],
+  [{ view: 'story_catalog' }, 'http://x/stories/'], [{ view: 'photo_catalog' }, 'http://x/photos/'],
+  [{ view: 'collection_catalog', collection: { kind: 'items' } }, 'http://x/items/'],
+  [{ view: 'collection_catalog', collection: { kind: 'honors' } }, 'http://x/honors/'],
+  [{ view: 'collection_catalog', entity: 'item:10501' }, 'http://x/items/?entity=item%3A10501'],
+]) {
+  assert.equal(buildPublicArchiveUrl('http://x/', route).href, href, href)
+  same(read(href), read(buildArchiveUrl('http://x/', route).href), href)
+  same(read(href.replace(/\/(\?|$)/, '$1')), read(href), `${href} without its trailing slash`)
 }
 // Other query parameters on a path still read (e.g. a debug flag); a path never adds a second identity.
 assert.equal(read('http://x/idols/001tom/?q=x').idol, '001tom')
@@ -110,7 +131,7 @@ assert.equal(buildPublicArchiveUrl('http://x/', { view: 'event_detail', event: '
 assert.equal(buildPublicArchiveUrl('http://x/', { ...song, category: 'idol', idol: '001tom', songScope: 'unit', parentView: 'unit_detail', unit: '01jup', query: 'q' }).href, 'http://x/songs/brndnf/')
 {
   const url = buildPublicArchiveUrl('http://x/idols/001tom/', { view: 'cards', idol: '001tom' })
-  assert.equal(url.pathname, '/'); assert.equal(url.searchParams.get('view'), 'cards'); assert.equal(url.searchParams.get('idol'), '001tom')
+  assert.equal(url.pathname, '/cards/'); assert.equal(url.searchParams.get('view'), null); assert.equal(url.searchParams.get('idol'), '001tom')
 }
 assert.equal(buildPublicArchiveUrl('http://x/units/01jup/', { view: 'about' }).href, 'http://x/?view=about')
 // An id outside the locator pattern keeps the query form rather than inventing a path.
@@ -120,7 +141,8 @@ assert.equal(buildPublicArchiveUrl('http://x/', { view: 'idol_detail', idol: 'id
 const sample = {
   idol_detail: idol, unit_detail: unit, idols: { view: 'idols', unitFilter: '1' }, cards: { view: 'cards', idol: '001tom', rarity: 'SSR' },
   card_detail: card, event_detail: event,
-  song_detail: song, gasha_detail: { view: 'gasha_detail', gasha: '1' },
+  song_detail: song, gasha_detail: { view: 'gasha_detail', gasha: 'ticket-02b623e0abc38ce0' },
+  collection_catalog: { view: 'collection_catalog', collection: { kind: 'honors', category: '' } },
   reader: { view: 'reader', reading: 'doc1' }, player: { view: 'player', scenario: 'a.json' }, home: { view: 'home', homeIdol: '001tom' },
 }
 for (const view of VALID_VIEWS) {
@@ -162,9 +184,12 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   assert.equal(entries.at(-1).url, 'http://x/idols/001tom/')
   assert.equal(entries.at(-1).state.sidemArchiveNav?.source, '?view=portal', 'the source rides history state')
   assert.equal(readArchiveRoute().sourceRoute, '?view=portal', 'the live location reads the path and its history source')
-  // Leaving a path page for a query page resets the path instead of writing /idols/001tom/?view=cards.
+  // Leaving a path page for a catalogue writes the section root with its filters, never /idols/001tom/?view=cards;
+  // a page without a path resets to `/`.
   writeArchiveRoute({ view: 'cards', idol: '001tom' })
-  assert.equal(new URL(entries.at(-1).url).pathname, '/')
+  assert.equal(entries.at(-1).url, 'http://x/cards/?idol=001tom')
+  writeArchiveRoute({ view: 'about' })
+  assert.equal(entries.at(-1).url, 'http://x/?view=about')
   writeArchiveRoute(unit, { replace: true })
   assert.equal(entries.at(-1).url, 'http://x/units/01jup/'); assert.equal(entries.at(-1).replace, true)
   // An event's address is its id; where it was opened from rides history state, so refresh keeps the cold return.
@@ -177,10 +202,16 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   writeArchiveRoute({ view: 'event_detail', event: 'event:10019', parentView: 'unit_detail', unit: '01jup' })
   assert.equal(entries.at(-1).url, 'http://x/events/10019/')
   assert.deepEqual([readArchiveRoute().event, readArchiveRoute().parentView, readArchiveRoute().unit], ['event:10019', 'unit_detail', '01jup'])
+  // A gasha keeps only its id too; the parent rides history state.
+  writeArchiveRoute({ view: 'gasha_detail', gasha: '210003', parentView: 'card_detail' })
+  assert.equal(entries.at(-1).url, 'http://x/gashas/210003/')
+  assert.deepEqual(entries.at(-1).state.sidemArchiveNav.gasha, { parent: 'card_detail' })
+  assert.deepEqual([readArchiveRoute().gasha, readArchiveRoute().parentView], ['210003', 'card_detail'])
+  assert.equal(readArchiveRoute(href).parentView, '', 'a copied gasha link carries no placement')
   // Other pages never read an event placement.
   writeArchiveRoute(card)
   assert.equal(entries.at(-1).state.sidemArchiveNav, undefined); assert.equal(readArchiveRoute().parentView, '')
   delete globalThis.window
 }
 
-console.log('Archive path locators: /idols/, /units/, /cards/, /songs/ and /events/ read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')
+console.log('Archive path locators: /idols/, /units/, /cards/, /songs/, /events/ and /gashas/ details and the section roots read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')

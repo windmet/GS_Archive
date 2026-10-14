@@ -1,4 +1,4 @@
-// Entity head shells: one shell per bootstrap idol, unit, published card, song and event, each with exactly one title/description/canonical/OG
+// Entity head shells: one shell per bootstrap idol, unit, published card, song, event, gasha and section root, each with exactly one title/description/canonical/OG
 // set pointing at its path locator, escaped text, and a body byte-identical to index.html.
 //   node scripts/verify-entity-head-shells.mjs              pure checks against a synthetic template (CI)
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
@@ -7,8 +7,9 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DEFAULT_ORIGIN, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
+import { DEFAULT_ORIGIN, SECTION_SHELLS, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { ARCHIVE_SECTION_PATHS, readArchiveRoute } from '../src/core/archiveRoute.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const template = `<!DOCTYPE html>
@@ -27,9 +28,13 @@ const body = html => html.slice(html.indexOf('</head>'))
 const count = (html, pattern) => (html.match(pattern) || []).length
 const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([^"]*)"`))?.[1]
 
-function checkShells(shells, { idols, cards = [], songs = [], events = [], origin, sourceTemplate }) {
+function checkShells(shells, { idols, cards = [], songs = [], events = [], gashas = [], sections = false, origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
-  assert.equal(shells.length, idols.length + unitCodes.length + cards.length + songs.length + events.length, 'one shell per idol, unit, card, song and event')
+  const sectionCount = sections ? ARCHIVE_SECTION_PATHS.length : 0
+  assert.equal(shells.length, idols.length + unitCodes.length + cards.length + songs.length + events.length + gashas.length + sectionCount,
+    'one shell per idol, unit, card, song, event, gasha and section root')
+  assert.deepEqual(shells.filter(s => s.kind === 'gasha').map(s => s.path).sort(), gashas.map(g => `gashas/${g.id}/index.html`).sort())
+  assert.deepEqual(shells.filter(s => s.kind === 'section').map(s => s.path).sort(), sections ? ARCHIVE_SECTION_PATHS.map(p => `${p}/index.html`).sort() : [])
   assert.deepEqual(shells.filter(s => s.kind === 'event').map(s => s.path).sort(), events.map(e => `events/${eventPathSegment(e.id)}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'song').map(s => s.path).sort(), songs.map(s => `songs/${s.song_code}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
@@ -150,7 +155,11 @@ function checkShells(shells, { idols, cards = [], songs = [], events = [], origi
   assert.equal(archiveDocumentTitle('event_detail', '315カーニバル'), '315カーニバル · GS Archive')
   assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
-  assert.equal(archiveDocumentTitle('cards', 'x'), ARCHIVE_SITE_TITLE)
+  assert.equal(archiveDocumentTitle('gasha_detail', 'Growing Twilight Live招募'), 'Growing Twilight Live招募 · GS Archive')
+  // Section roots carry their section name, as their shells do; other pages keep the site title.
+  assert.equal(archiveDocumentTitle('cards'), '卡片 · GS Archive')
+  assert.equal(archiveDocumentTitle('collection_catalog', '称号'), '称号 · GS Archive')
+  assert.equal(archiveDocumentTitle('about', 'x'), ARCHIVE_SITE_TITLE)
   assert.ok(template.includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'the site title constant matches index.html')
   assert.ok(readFileSync(path.join(root, 'index.html'), 'utf8').includes(`<title>${ARCHIVE_SITE_TITLE}</title>`), 'index.html still ships the site title')
 }
@@ -161,7 +170,7 @@ const sources = loadEntitySources(root)
   const missing = sources.idols.filter(idol => !sources.idolNames[idol.id]).map(idol => idol.id)
   assert.deepEqual(missing, [], 'every bootstrap idol has a zh-CN display name')
   const shells = renderEntityHeadShells({ template, ...sources })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, gashas: sources.gashas, sections: true, origin: DEFAULT_ORIGIN, sourceTemplate: template })
   assert.equal(sources.cards.length, 826, 'the published card catalog: 836 index rows less 10 tutorial copies')
   const untitled = sources.cards.filter(card => !sources.cardTitles[card.title]).map(card => card.resource_id)
   assert.deepEqual(untitled, [], 'every card title has a zh-CN translation')
@@ -176,6 +185,22 @@ const sources = loadEntitySources(root)
   assert.ok(sources.events.every(event => event.image), 'every event has a banner or a logo')
 }
 
+// Gashas: the 61 read-model announcements and the 25 ticket-only pools, each at the path its page publishes.
+{
+  assert.equal(sources.gashas.length, 61 + 25)
+  for (const gasha of sources.gashas) assert.equal(readArchiveRoute(`http://x/gashas/${gasha.id}/`, { history: false }).gasha, gasha.id, gasha.id)
+  const shells = renderEntityHeadShells({ template, ...sources })
+  assert.ok(shells.find(s => s.id === '210003').html.includes('<title>Growing Twilight Live招募 · GS Archive</title>'), 'zh-CN pool name')
+  assert.ok(shells.find(s => s.id === 'ticket-02b623e0abc38ce0').html.includes('2021年10月10日开放'), 'a wiki-dated ticket pool states its run')
+  // Every section root reads as its catalogue and is titled as the app titles it.
+  for (const prefix of ARCHIVE_SECTION_PATHS) {
+    const route = readArchiveRoute(`http://x/${prefix}/`, { history: false })
+    assert.equal(route.view, SECTION_SHELLS[prefix].view, prefix)
+    const kind = route.collection?.kind
+    assert.ok(shells.find(s => s.kind === 'section' && s.id === prefix).html.includes(`<title>${archiveDocumentTitle(route.view, route.view === 'collection_catalog' ? (kind === 'honors' ? '称号' : '道具') : '')}</title>`), prefix)
+  }
+}
+
 // Built output: the written shells match a fresh render of that build's index.html.
 const distOption = process.argv.slice(2).find(arg => arg.startsWith('--dist='))?.slice('--dist='.length)
 const distOrigin = (process.argv.slice(2).find(arg => arg.startsWith('--origin='))?.slice('--origin='.length) || DEFAULT_ORIGIN).replace(/\/$/, '')
@@ -184,7 +209,7 @@ if (distOption) {
   const dist = path.resolve(root, distOption)
   const builtTemplate = readFileSync(path.join(dist, 'index.html'), 'utf8')
   const shells = renderEntityHeadShells({ template: builtTemplate, ...sources, origin: distOrigin })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, origin: distOrigin, sourceTemplate: builtTemplate })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, gashas: sources.gashas, sections: true, origin: distOrigin, sourceTemplate: builtTemplate })
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
     assert.ok(existsSync(file), `${shell.path} exists in ${distOption}`)
@@ -195,4 +220,4 @@ if (distOption) {
 }
 
 const units = new Set(sources.idols.map(idol => idol.unitCode).filter(Boolean)).size
-console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units + ${sources.cards.length} cards + ${sources.songs.length} songs + ${sources.events.length} events, one escaped title/description/canonical/OG set each, body unchanged${built}`)
+console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units + ${sources.cards.length} cards + ${sources.songs.length} songs + ${sources.events.length} events + ${sources.gashas.length} gashas + ${ARCHIVE_SECTION_PATHS.length} section roots, one escaped title/description/canonical/OG set each, body unchanged${built}`)

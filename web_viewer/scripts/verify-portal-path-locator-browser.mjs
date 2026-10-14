@@ -78,18 +78,22 @@ const navigate = async action => { const before = await loc(); await action(); a
 const clickTo = selector => navigate(() => ev(`document.querySelector(${JSON.stringify(selector)})?.click()`))
 const pageBack = () => clickTo('.archive-back')
 const historyStep = direction => navigate(() => ev(`history.${direction}()`))
-const idolReady = `location.pathname.startsWith('/idols/') || location.search.includes('view=idol_detail') ? !!document.querySelector('[data-archive-focus-id^="idol-domain:"]') : false`
+// Section roots publish /<section>/ (filters stay in the query); details publish /<section>/<id>/.
+const atRoot = section => `location.pathname === '/${section}/'`
+const atDetail = section => `new RegExp('^/${section}/[^/]+/$').test(location.pathname)`
+const idolReady = `${atDetail('idols')} || location.search.includes('view=idol_detail') ? !!document.querySelector('[data-archive-focus-id^="idol-domain:"]') : false`
+const clickText = (selector, text) => navigate(() => ev(`[...document.querySelectorAll(${JSON.stringify(selector)})].find(n => n.textContent.trim() === ${JSON.stringify(text)})?.click()`))
 const journey = async (size, label) => {
   await send('Emulation.setDeviceMetricsOverride', size)
   // P1: idol directory -> an idol publishes its path.
   await open('/?view=idols', `!!document.querySelector('.idol-card')`)
   const directory = await loc()
   await clickTo('.idol-card')
-  await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
+  await waitFor(atDetail('idols')); await settle()
   const detail = await loc(); await shot(`p1-${label}`)
-  check(`P1 ${label} idol opens at its path`, idolPath.test(detail) && errors.length === 0, `${directory} -> ${detail}; errors=${errors.length}`)
+  check(`P1 ${label} idol opens at its path`, directory === '/idols/' && idolPath.test(detail) && errors.length === 0, `${directory} -> ${detail}; errors=${errors.length}`)
   // P2: page back returns to the directory.
-  await pageBack(); await waitFor(`location.search.includes('view=idols')`)
+  await pageBack(); await waitFor(atRoot('idols'))
   check(`P2 ${label} page back to directory`, (await loc()) === directory, await loc())
   // P3: page back pushed an entry, so history is [directory, detail, directory]: back, back, forward.
   await historyStep('back'); const back = await loc()
@@ -105,7 +109,7 @@ try {
   // P4: refresh on the path, then page back still reaches the directory (history source survives reload).
   await send('Page.reload', { ignoreCache: true }); await waitFor(idolReady); await settle()
   check('P4a refresh keeps the path', (await loc()) === detail, await loc())
-  await pageBack(); await waitFor(`location.search.includes('view=idols')`)
+  await pageBack(); await waitFor(atRoot('idols'))
   check('P4 refresh then page back', (await loc()) === directory, await loc())
   // P5: cold path and cold legacy link behave the same, including where page back lands.
   await open('/idols/001tom/', idolReady); await shot('p5-cold-path')
@@ -119,9 +123,9 @@ try {
   // P6/P7: a related page from the path resets the pathname; back returns to the path.
   await open('/idols/001tom/', idolReady)
   await clickTo('[data-archive-focus-id^="idol-domain:001tom:"]')
-  await waitFor(`location.pathname === '/' && location.search.includes('view=')`)
+  await waitFor(`!location.pathname.startsWith('/idols/')`)
   const related = await loc()
-  check('P6 related page leaves the path', related.startsWith('/?view=') && !related.includes('/idols/'), related)
+  check('P6 related page leaves the idol path', !related.startsWith('/idols/'), related)
   await historyStep('back')
   check('P7 back returns to the path', (await loc()) === '/idols/001tom/', await loc())
   // P8: unit directory -> unit -> member -> page back -> page back.
@@ -132,9 +136,9 @@ try {
   await clickTo('.unit-members .archive-idol-reference'); await waitFor(`location.pathname.startsWith('/idols/')`); await settle()
   const member = await loc()
   await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`); const backUnit = await loc()
-  await pageBack(); await waitFor(`location.search.includes('view=unit_catalog')`); const backUnits = await loc()
+  await pageBack(); await waitFor(atRoot('units')); const backUnits = await loc()
   await shot('p8-units')
-  check('P8 unit chain', /^\/units\/\d\d[a-z]{3}\/$/.test(unitPath) && idolPath.test(member) && backUnit === unitPath && backUnits === units, `${units} -> ${unitPath} -> ${member} -> ${backUnit} -> ${backUnits}`)
+  check('P8 unit chain', units === '/units/' && /^\/units\/\d\d[a-z]{3}\/$/.test(unitPath) && idolPath.test(member) && backUnit === unitPath && backUnits === units, `${units} -> ${unitPath} -> ${member} -> ${backUnit} -> ${backUnits}`)
   // P9: a legacy link is rewritten in place to its path, without adding a history entry.
   await open('/?view=about', `document.body.innerText.trim().length > 40`)
   const lengthBefore = await ev('history.length')
@@ -151,7 +155,7 @@ try {
   check('P11 Home preference keeps the path', (await loc()) === '/idols/001tom/' && await ev(`/冬[马馬]/.test(document.body.innerText)`), await loc())
   await usePreferences('portal')
   // P12: nothing is requested relative to the path, and no same-origin request fails.
-  const relative = requests.filter(r => /^\/(idols|units|cards|songs|events)\/[^/]+\/.+/.test(new URL(r.url).pathname))
+  const relative = requests.filter(r => /^\/(idols|units|cards|songs|events|gashas|stories|items|honors|photos)\/[^/]+\/.+/.test(new URL(r.url).pathname))
   const broken = requests.filter(r => r.status >= 400 && new URL(r.url).origin === new URL(base).origin)
   check('P12 no path-relative or failing same-origin requests', relative.length === 0 && broken.length === 0, `requests=${requests.length} relative=${relative.length} failing=${broken.map(r => r.status + ' ' + r.url).join(', ') || 0}`)
   // P14: unit codes with digits (W is 05w00) publish a path too.
@@ -174,20 +178,20 @@ try {
   check('P16 card path opens cold with its title', (await loc()) === '/cards/001tom_ssr01/' && /^【.+】天濑冬马 · GS Archive$/.test(titles.at(-1)) && !sourceShown.length && errors.length === 0,
     `${await loc()} title="${titles.at(-1)}" source titles=${sourceShown.length} errors=${errors.join(' | ') || 0}`)
   // P17: with no source, page back goes to the card's idol's cards.
-  await pageBack(); await waitFor(`location.search.includes('view=cards')`)
+  await pageBack(); await waitFor(atRoot('cards'))
   const coldBack = await loc()
-  check('P17 cold card back lists its idol cards', /^\/\?view=cards&(category=cards&)?idol=001tom$/.test(coldBack), coldBack)
+  check('P17 cold card back lists its idol cards', coldBack === '/cards/?idol=001tom', coldBack)
   // P18: a filtered list -> card -> page back returns to the same filtered list.
   await open('/?view=cards&idol=004ter&rarity=SSR', `!!document.querySelector('.card-archive-row')`)
   const list = await loc()
   await clickTo('.card-archive-row'); await waitFor(cardReady)
   const cardPath = await loc()
-  await pageBack(); await waitFor(`location.search.includes('view=cards')`)
+  await pageBack(); await waitFor(atRoot('cards'))
   const listBack = await loc()
   // Page back pushed an entry (as in P3): browser back reaches the card, then the list.
   await historyStep('back'); const historyCard = await loc()
   await historyStep('back'); const historyList = await loc()
-  check('P18 card from a filtered list and back', /^\/cards\/004ter_ssr\d\d\/$/.test(cardPath) && listBack === list && historyCard === cardPath && historyList === list,
+  check('P18 card from a filtered list and back', list === '/cards/?idol=004ter&rarity=SSR' && /^\/cards\/004ter_ssr\d\d\/$/.test(cardPath) && listBack === list && historyCard === cardPath && historyList === list,
     `${list} -> ${cardPath} -> ${listBack}; history back ${historyCard} -> ${historyList}`)
   // P19: an old card link with list filters and a parent event is rewritten in place to the card path.
   await open('/?view=about', `document.body.innerText.trim().length > 40`)
@@ -201,14 +205,14 @@ try {
   check('P20 song path opens cold with its title', (await loc()) === '/songs/brndnf/' && (await ev('document.title')) === 'BRAND NEW FIELD · GS Archive' && errors.length === 0,
     `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
   // P21: with no source, page back goes to the song catalogue.
-  await pageBack(); await waitFor(`location.search.includes('view=song_catalog')`)
-  check('P21 cold song back lists the songs', (await loc()) === '/?view=song_catalog', await loc())
+  await pageBack(); await waitFor(atRoot('songs'))
+  check('P21 cold song back lists the songs', (await loc()) === '/songs/', await loc())
   // P22: a filtered catalogue -> song -> page back returns to the same filter; browser history agrees.
   await open('/?view=song_catalog&song_scope=layered', `!!document.querySelector('.song-card')`)
   const songs = await loc()
   await clickTo('.song-card'); await waitFor(songReady)
   const songPath = await loc()
-  await pageBack(); await waitFor(`location.search.includes('view=song_catalog')`)
+  await pageBack(); await waitFor(atRoot('songs'))
   const songsBack = await loc()
   await historyStep('back'); const historySong = await loc()
   await historyStep('back'); const historySongs = await loc()
@@ -236,8 +240,8 @@ try {
   check('P25 event path opens cold with its title', (await loc()) === '/events/410018/' && (await ev('document.title')) === `${eventHeading} · GS Archive` && errors.length === 0,
     `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
   // P26: with no source and no placement, page back returns to the event catalogue, the event's own section.
-  await pageBack(); await waitFor(`location.search.includes('view=event_catalog')`)
-  check('P26 cold event back returns to the event catalogue', (await loc()).startsWith('/?view=event_catalog'), await loc())
+  await pageBack(); await waitFor(atRoot('events'))
+  check('P26 cold event back returns to the event catalogue', /^\/events\/(\?.*)?$/.test(await loc()), await loc())
   // P27: an event:<code> id publishes the five-digit path and opens cold.
   await open('/events/20001/', eventReady)
   check('P27 a 315 CARNIVAL event opens at its code', (await loc()) === '/events/20001/' && errors.length === 0, `${await loc()} errors=${errors.join(' | ') || 0}`)
@@ -246,7 +250,7 @@ try {
   const eventList = await loc()
   await clickTo('.event-item'); await waitFor(eventReady)
   const eventPath = await loc()
-  await pageBack(); await waitFor(`location.search.includes('view=event_catalog')`)
+  await pageBack(); await waitFor(atRoot('events'))
   const eventListBack = await loc()
   await historyStep('back'); const historyEvent = await loc()
   await historyStep('back'); const historyEventList = await loc()
@@ -342,6 +346,39 @@ try {
   check('P37 Reader links default to the latest text', !readerUrl.includes('reading_rev') && playerUrl37.includes('view=player') && !playerUrl37.includes('reading_rev') &&
     reloadedPlayer.includes('view=player') && (await ev(`!document.querySelector('[role=alert]')`)) !== false && pinnedLoc.includes('reading_rev=') && errors.length === 0,
     `${readerUrl.slice(0, 70)} -> ${playerUrl37.slice(0, 70)} -> reload ${reloadedPlayer.slice(0, 40)}; pinned keeps rev=${pinnedLoc.includes('reading_rev=')} errors=${errors.join(' | ') || 0}`)
+  // P38: a gasha path opens cold with its title; with no source, page back returns to the gasha catalogue.
+  const gashaReady = `!!document.querySelector('.gasha-detail .gasha-identity h2')`
+  await open('/gashas/210003/', gashaReady); await waitFor(`/ · GS Archive$/.test(document.title) && !document.title.startsWith('GS Archive')`); await shot('p38-gasha')
+  const gashaHeading = await ev(`document.querySelector('.gasha-detail .gasha-identity h2')?.textContent.trim()`)
+  const gashaTitle = await ev('document.title')
+  await pageBack(); await waitFor(atRoot('gashas'))
+  check('P38 gasha path opens cold and backs out to the catalogue', gashaTitle === `${gashaHeading} · GS Archive` && (await loc()) === '/gashas/' && errors.length === 0,
+    `title="${gashaTitle}" back=${await loc()} errors=${errors.join(' | ') || 0}`)
+  // P39: a ticket-only pool has a path too; the legacy link is rewritten in place.
+  await open('/?view=gasha_detail&gasha=ticket-ee75311e4c092124&q=x', gashaReady); await shot('p39-ticket-gasha')
+  check('P39 ticket pool legacy link becomes its path', (await loc()) === '/gashas/ticket-ee75311e4c092124/' && errors.length === 0, `${await loc()} errors=${errors.join(' | ') || 0}`)
+  // P40: a filtered gasha catalogue -> gasha -> page back returns to the same filter.
+  await open('/gashas/', `!!document.querySelector('.gasha-item')`)
+  await clickTo('.gasha-item'); await waitFor(gashaReady)
+  const gashaPath = await loc()
+  await pageBack(); await waitFor(atRoot('gashas'))
+  check('P40 gasha from the catalogue and back', /^\/gashas\/([0-9]{6,8}|ticket-[0-9a-f]{16})\/$/.test(gashaPath) && (await loc()).startsWith('/gashas/') && (await ev(`!!document.querySelector('.gasha-item')`)),
+    `${gashaPath} -> ${await loc()}`)
+  // P41: section roots open cold at their path with the section title; the sidebar publishes the same path.
+  const roots = []
+  for (const [path, title, ready] of [['/units/', '组合', '.unit-entry, .unit-card'], ['/songs/', '歌曲', '.song-card'], ['/events/', '活动', '.event-item'], ['/items/', '道具', '.collection-catalog, main'], ['/honors/', '称号', '.collection-catalog, main']]) {
+    await open(path, `!!document.querySelector(${JSON.stringify(ready)}) && document.title === '${title} · GS Archive'`)
+    roots.push(`${await loc()}=${await ev('document.title')}`)
+    if ((await loc()) !== path) break
+  }
+  await open('/?view=about', `document.body.innerText.trim().length > 40`)
+  // The sidebar group opens its first section (events); its sub-entry opens the gasha catalogue.
+  await clickText('.archive-nav button', '活动与卡池'); await waitFor(atRoot('events'))
+  const sidebarEvents = await loc()
+  await clickText('.archive-nav-sub button', '卡池'); await waitFor(atRoot('gashas'))
+  const sidebarGashas = await loc()
+  check('P41 section roots open at their path with section titles', roots.length === 5 && roots.every(row => row.endsWith(' · GS Archive')) && sidebarEvents === '/events/' && sidebarGashas === '/gashas/' && errors.length === 0,
+    `${roots.join(' ')}; sidebar ${sidebarEvents} -> ${sidebarGashas}; errors=${errors.join(' | ') || 0}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

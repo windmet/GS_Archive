@@ -57,7 +57,7 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     const written = buildArchiveUrl('http://localhost/', read)
     const keys = [...new Set([...written.searchParams.keys()])].filter(key => key !== 'view' && key !== 'from')
     assert.deepEqual(keys.filter(key => !owned.has(key)), [], `${view}: no non-owned parameter is written`)
-    const state = useArchiveNavigationState(); state.view.value = view; state.currentCardId.value = 'card1'; state.currentEventId.value = '10001'
+    const state = useArchiveNavigationState(); state.view.value = view; state.currentCardId.value = 'card1'; state.currentEventId.value = '10001'; state.currentGashaId.value = '210003'
     state.currentStoryDomain.value = 'main'; state.filterQuery.value = 'q'; state.currentCharacterId.value = '001tom'; state.currentSongId.value = 'song1'
     const emitted = buildArchiveUrl('http://localhost/', state.currentArchiveRoute())
     assert.deepEqual([...emitted.searchParams.keys()].filter(key => key !== 'view' && !owned.has(key)), [], `${view}: dirty state writes only the view and its own parameters`)

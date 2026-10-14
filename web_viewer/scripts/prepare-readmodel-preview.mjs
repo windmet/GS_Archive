@@ -118,6 +118,16 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
   Cache-Control: no-cache
 /events/*
   Cache-Control: no-cache
+/gashas/*
+  Cache-Control: no-cache
+/stories/*
+  Cache-Control: no-cache
+/items/*
+  Cache-Control: no-cache
+/honors/*
+  Cache-Control: no-cache
+/photos/*
+  Cache-Control: no-cache
 `)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',
   pages_build_output_dir: './dist', compatibility_date: '2026-09-13',

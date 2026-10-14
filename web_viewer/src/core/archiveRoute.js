@@ -621,11 +621,36 @@ const PUBLIC_PATH_ROUTES = Object.freeze([
   // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.
   Object.freeze({ view: 'event_detail', prefix: 'events', param: 'event', implied: {}, pattern: /^(4[0-9]{5}|[1-9][0-9]{4})$/,
     fromPath: segment => segment.length === 5 ? `event:${segment}` : segment, toPath: id => id.replace(/^event:(?=[0-9]{5}$)/, '') }),
+  // Gashas: announcement ids (210003, 1300012, 12007210) and ticket-only pools (ticket-<16 hex>).
+  Object.freeze({ view: 'gasha_detail', prefix: 'gashas', param: 'gasha', implied: {}, pattern: /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/ }),
 ])
+
+// Section roots: a catalogue's own address is its section path (/cards/); its filters stay in the query
+// (/cards/?rarity=SSR). `implied` parameters are part of the identity, as for the detail paths.
+const SECTION_PATH_ROUTES = Object.freeze([
+  Object.freeze({ view: 'idols', prefix: 'idols', implied: { category: 'idol' } }),
+  Object.freeze({ view: 'unit_catalog', prefix: 'units', implied: {} }),
+  Object.freeze({ view: 'cards', prefix: 'cards', implied: { category: 'cards' } }),
+  Object.freeze({ view: 'song_catalog', prefix: 'songs', implied: {} }),
+  Object.freeze({ view: 'event_catalog', prefix: 'events', implied: {} }),
+  Object.freeze({ view: 'gashas', prefix: 'gashas', implied: {} }),
+  Object.freeze({ view: 'story_catalog', prefix: 'stories', implied: {} }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'items', implied: { collection_kind: 'items' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'honors', implied: { collection_kind: 'honors' } }),
+  Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
+])
+export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))
 
 function locatorQuery(url) {
   const params = new URLSearchParams(url.searchParams)
   if (params.has('view')) return params
+  const root = /^\/([a-z]+)\/?$/.exec(url.pathname)
+  const section = root && SECTION_PATH_ROUTES.find(entry => entry.prefix === root[1])
+  if (section) {
+    params.set('view', section.view)
+    for (const [key, value] of Object.entries(section.implied)) params.set(key, value)
+    return params
+  }
   const match = /^\/([a-z]+)\/([^/]+)\/?$/.exec(url.pathname)
   const locator = match && PUBLIC_PATH_ROUTES.find(entry => entry.prefix === match[1] && entry.pattern.test(match[2]))
   if (!locator) return params
@@ -635,9 +660,18 @@ function locatorQuery(url) {
   return params
 }
 
-// Rewrites a query-form archive URL to its public address: a path for PUBLIC_PATH_ROUTES, `/` otherwise.
+// Rewrites a query-form archive URL to its public address: a path for PUBLIC_PATH_ROUTES and
+// SECTION_PATH_ROUTES, `/` otherwise.
 function publicArchiveUrl(url) {
   const view = url.searchParams.get('view')
+  const section = SECTION_PATH_ROUTES.find(entry => entry.view === view &&
+    Object.entries(entry.implied).every(([key, value]) => url.searchParams.get(key) === value))
+  if (section) {
+    url.pathname = `/${section.prefix}/`
+    url.searchParams.delete('view')
+    for (const key of Object.keys(section.implied)) url.searchParams.delete(key)
+    return url
+  }
   const locator = PUBLIC_PATH_ROUTES.find(entry => entry.view === view)
   const identity = locator && url.searchParams.get(locator.param)
   const id = locator?.toPath ? locator.toPath(identity || '') : identity
@@ -667,7 +701,8 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   const params = locatorQuery(url)
   // Where an event Reader or an event detail was opened from rides history state, not the URL.
   const openedFrom = params.get('view') === 'reader' ? context.reader || {}
-    : params.get('view') === 'event_detail' ? context.event || {} : {}
+    : params.get('view') === 'event_detail' ? context.event || {}
+    : params.get('view') === 'gasha_detail' ? context.gasha || {} : {}
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
@@ -691,9 +726,9 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     group: clean(params.get('group')),
     unit: clean(params.get('unit')) || openedFrom.unit || '',
     unitFilter: clean(params.get('unit_filter')),
-    storyType: params.get('story_type'),
+    storyType: params.get('story_type') ?? openedFrom.story_type ?? null,
     storyMode: params.get('story_mode'),
-    storySection: clean(params.get('story_section')),
+    storySection: clean(params.get('story_section')) || openedFrom.story_section || '',
     story: params.get('story'),
     workMode: params.get('work_mode'),
     mobileMode: params.get('mobile_mode'),
@@ -841,6 +876,9 @@ const READER_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'u
 // Where an event detail was opened from (/events/<id>/ keeps only the event). goBackFromEvent uses the parent
 // and its identity when no source is restored, so they ride the history entry instead of the address.
 const EVENT_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit', card: 'card', idol: 'idol' }
+// Where a gasha detail was opened from (/gashas/<id>/ keeps only the gasha): its parent, and the extra-story
+// collection goBackFromGasha returns to.
+const GASHA_CONTEXT_PARAMS = { parent: 'parent', story_type: 'story_type', story_section: 'story_section' }
 
 function contextFrom(value, params) {
   if (!value || typeof value !== 'object') return null
@@ -855,7 +893,8 @@ function historyNavigationContext() {
   const stored = state?.[NAVIGATION_CONTEXT_KEY]
   if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
     return { ...Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])])),
-      reader: contextFrom(stored.reader, READER_CONTEXT_PARAMS), event: contextFrom(stored.event, EVENT_CONTEXT_PARAMS) }
+      reader: contextFrom(stored.reader, READER_CONTEXT_PARAMS), event: contextFrom(stored.event, EVENT_CONTEXT_PARAMS),
+      gasha: contextFrom(stored.gasha, GASHA_CONTEXT_PARAMS) }
   }
   return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
@@ -877,14 +916,15 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
     }
     if (Object.keys(reader).length) context.reader = reader
   }
-  if (url.searchParams.get('view') === 'event_detail') {
-    const event = {}
-    for (const [key, param] of Object.entries(EVENT_CONTEXT_PARAMS)) {
+  for (const [view, key, params] of [['event_detail', 'event', EVENT_CONTEXT_PARAMS], ['gasha_detail', 'gasha', GASHA_CONTEXT_PARAMS]]) {
+    if (url.searchParams.get('view') !== view) continue
+    const openedFrom = {}
+    for (const [field, param] of Object.entries(params)) {
       const value = url.searchParams.get(param)
-      if (value) event[key] = value
+      if (value) openedFrom[field] = value
       url.searchParams.delete(param)
     }
-    if (Object.keys(event).length) context.event = event
+    if (Object.keys(openedFrom).length) context[key] = openedFrom
   }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
