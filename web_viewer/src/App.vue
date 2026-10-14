@@ -1526,6 +1526,8 @@ const archiveTabEntityName = computed(() => {
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || ''
   // Song titles have no translation overlay; they are shown in the source everywhere.
   if (view.value === 'song_detail') return currentSong.value?.title || ''
+  // Event titles are shown in the source on the event page as well.
+  if (view.value === 'event_detail') return currentEventProjection.value?.identity?.title || ''
   if (!idolNamesSettled.value) return ''
   if (view.value === 'idol_detail') return currentIdolDisplayName.value
   if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''

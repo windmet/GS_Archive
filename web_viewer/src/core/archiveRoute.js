@@ -616,6 +616,11 @@ const PUBLIC_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'card_detail', prefix: 'cards', param: 'card', implied: {}, pattern: /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/ }),
   // Songs are addressed by their six-character song_code (brndnf, drv999), primaries and variants alike.
   Object.freeze({ view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: /^[a-z0-9]{6}$/ }),
+  // Events keep their read-model id: theater and tour events are 4 + event code (410001, 430001), every
+  // other event is `event:<code>` (event:10019, event:20001). The path drops that prefix, so both forms map
+  // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.
+  Object.freeze({ view: 'event_detail', prefix: 'events', param: 'event', implied: {}, pattern: /^(4[0-9]{5}|[1-9][0-9]{4})$/,
+    fromPath: segment => segment.length === 5 ? `event:${segment}` : segment, toPath: id => id.replace(/^event:(?=[0-9]{5}$)/, '') }),
 ])
 
 function locatorQuery(url) {
@@ -625,7 +630,7 @@ function locatorQuery(url) {
   const locator = match && PUBLIC_PATH_ROUTES.find(entry => entry.prefix === match[1] && entry.pattern.test(match[2]))
   if (!locator) return params
   params.set('view', locator.view)
-  params.set(locator.param, match[2])
+  params.set(locator.param, locator.fromPath ? locator.fromPath(match[2]) : match[2])
   for (const [key, value] of Object.entries(locator.implied)) params.set(key, value)
   return params
 }
@@ -634,7 +639,8 @@ function locatorQuery(url) {
 function publicArchiveUrl(url) {
   const view = url.searchParams.get('view')
   const locator = PUBLIC_PATH_ROUTES.find(entry => entry.view === view)
-  const id = locator && url.searchParams.get(locator.param)
+  const identity = locator && url.searchParams.get(locator.param)
+  const id = locator?.toPath ? locator.toPath(identity || '') : identity
   const implied = locator && Object.entries(locator.implied).every(([key, value]) => url.searchParams.get(key) === value)
   if (!locator || !implied || !locator.pattern.test(id || '')) {
     url.pathname = '/'
@@ -659,8 +665,9 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
   const params = locatorQuery(url)
-  // An event Reader's return placement (where the event was opened from) rides history state, not the URL.
-  const readerContext = params.get('view') === 'reader' ? context.reader || {} : {}
+  // Where an event Reader or an event detail was opened from rides history state, not the URL.
+  const openedFrom = params.get('view') === 'reader' ? context.reader || {}
+    : params.get('view') === 'event_detail' ? context.event || {} : {}
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
@@ -679,10 +686,10 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
-    category: clean(params.get('category')) || readerContext.category || '',
-    idol: clean(params.get('idol')),
+    category: clean(params.get('category')) || openedFrom.category || '',
+    idol: clean(params.get('idol')) || openedFrom.idol || '',
     group: clean(params.get('group')),
-    unit: clean(params.get('unit')) || readerContext.unit || '',
+    unit: clean(params.get('unit')) || openedFrom.unit || '',
     unitFilter: clean(params.get('unit_filter')),
     storyType: params.get('story_type'),
     storyMode: params.get('story_mode'),
@@ -695,7 +702,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     availability: params.get('availability'),
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
-    card: clean(params.get('card')),
+    card: clean(params.get('card')) || openedFrom.card || '',
     song: clean(params.get('song')),
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
@@ -717,7 +724,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     endStep: params.get('end_step'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
-    parentView: clean(params.get('parent')) || readerContext.parent || '',
+    parentView: clean(params.get('parent')) || openedFrom.parent || '',
   })
 }
 
@@ -831,11 +838,14 @@ function localQuery(value) {
 
 // Fields an event Reader carries so that leaving it lands where the event was opened from.
 const READER_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit' }
+// Where an event detail was opened from (/events/<id>/ keeps only the event). goBackFromEvent uses the parent
+// and its identity when no source is restored, so they ride the history entry instead of the address.
+const EVENT_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit', card: 'card', idol: 'idol' }
 
-function readerContextFrom(value) {
+function contextFrom(value, params) {
   if (!value || typeof value !== 'object') return null
   const out = {}
-  for (const key of Object.keys(READER_CONTEXT_PARAMS)) if (typeof value[key] === 'string' && value[key] && value[key].length <= 120) out[key] = value[key]
+  for (const key of Object.keys(params)) if (typeof value[key] === 'string' && value[key] && value[key].length <= 120) out[key] = value[key]
   return Object.keys(out).length ? out : null
 }
 
@@ -845,7 +855,7 @@ function historyNavigationContext() {
   const stored = state?.[NAVIGATION_CONTEXT_KEY]
   if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
     return { ...Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])])),
-      reader: readerContextFrom(stored.reader) }
+      reader: contextFrom(stored.reader, READER_CONTEXT_PARAMS), event: contextFrom(stored.event, EVENT_CONTEXT_PARAMS) }
   }
   return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
@@ -866,6 +876,15 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
       url.searchParams.delete(param)
     }
     if (Object.keys(reader).length) context.reader = reader
+  }
+  if (url.searchParams.get('view') === 'event_detail') {
+    const event = {}
+    for (const [key, param] of Object.entries(EVENT_CONTEXT_PARAMS)) {
+      const value = url.searchParams.get(param)
+      if (value) event[key] = value
+      url.searchParams.delete(param)
+    }
+    if (Object.keys(event).length) context.event = event
   }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'

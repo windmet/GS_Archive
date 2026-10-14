@@ -50,7 +50,7 @@ const copy = async (source, file, destination) => {
 for (const file of codeFiles) await copy(bundle, file, dist)
 for (const file of modelFiles) await copy(path.join(models, 'pages'), file, dist)
 await copyPreviewTranslations(root, dist)
-// Idol, unit, card and song head shells (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md): rendered from this package's
+// Idol, unit, card, song and event head shells (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_L2_20261013.md): rendered from this package's
 // final index.html, which already carries the inline bootstrap, so they boot exactly like the root page.
 const entitySources = loadEntitySources(root)
 assert(entitySources.release === boot.release, 'Entity head shells must come from the same read-model release')
@@ -115,6 +115,8 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
 /cards/*
   Cache-Control: no-cache
 /songs/*
+  Cache-Control: no-cache
+/events/*
   Cache-Control: no-cache
 `)
 await fs.writeFile(path.join(packageRoot, 'wrangler.jsonc'), JSON.stringify({ name: 'gs-archive-preview',

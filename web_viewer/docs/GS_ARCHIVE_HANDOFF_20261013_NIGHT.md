@@ -66,7 +66,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
    - 是否放开整站的 `X-Robots-Tag: noindex, nofollow`：不影响分享卡片，影响搜索收录。
    - 是否把正式站迁到 `gs-archive.com`。
 2. **正式站发布**：用本分支重建 read-model 候选，按发布清单打包（`prepare-readmodel-preview` / `assemble_pages` 都要生成外壳），部署需用户授权。正式站目前还是 10-12 的 `?view=` 版本，**正式站发布前不要对外推广路径链接**。
-3. **扩展路径地址**：偶像、Unit、卡片（`/cards/<resource_id>/`）和歌曲（`/songs/<song_code>/`）已有路径，见第十节。下一批是活动 `/events/<id>/`。
+3. **扩展路径地址**：偶像、Unit、卡片（`/cards/<resource_id>/`）、歌曲（`/songs/<song_code>/`）和活动（`/events/<id>/`）都已有路径，见第十节。原计划的路径批次到此完成。
    - 每扩一类，先把该视图加入 `ENFORCED_ROUTE_VIEWS`（路由 schema 审计的批次 F/G）。
    - 再在 `archiveRoute.js` 加路径读写，在 `verify-archive-path-locator.mjs` 里全量往返，在 `generate-entity-head-shells.mjs` 里加外壳。
    - Reader、Player、Home 按原计划不改格式。批次 E（Reader 链接默认不带 `reading_rev`）仍未做。
@@ -204,7 +204,6 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 - 未做：
   - 远端部署上的卡片旅程（本分支未部署）。
   - 卡片分享卡在 X、Discord、LINE 里的实际效果。
-  - 活动的路径。
 
 ### 歌曲路径 `/songs/<song_code>/`
 
@@ -226,7 +225,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
     - `/songs/*` 设为 no-cache。
 - 有意改变的旧契约：
   - 从歌曲详情进谱面工具时，来源帧只剩歌曲本身。目录的筛选和搜索词仍在目录自己那一帧里，返回链路不变（`verify-archive-experiments`）。
-  - 从卡片、歌曲详情打开门户再关闭，回到的也是只含身份的地址（加上来源）。`verify-portal-navigation` 在卡片那批提交后其实已经失败：它不在 `verify:source-batch` 里，所以没被发现。这次一并改成新契约。
+  - 从卡片、歌曲详情打开门户再关闭，回到的也是只含身份的地址（加上来源）。`verify-portal-navigation` 在卡片那批提交后其实已经失败：CI 的 source gate 单独跑它（`npm run verify:portal-navigation`），但它不在本地跑的 `verify:source-batch` 里，所以卡片那批的本地验证没发现。这次一并改成新契约。
 - 验证：
   - 已通过：
     - `verify-archive-path-locator`（含全部 61 首往返与新的反例）；
@@ -243,3 +242,42 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
   - 远端部署上的歌曲旅程（本分支未部署）。
   - 歌曲分享卡的实际效果。
   - 从歌曲进 2D 舞台、谱面工具再返回：只有单元测试，没有走浏览器。
+
+### 活动路径 `/events/<id>/`
+
+- 地址用读模型的活动 id，去掉 `event:` 前缀：
+  - THEATER、TOUR 共 36 个，id 是 `4` + 活动编号，路径保持 6 位，如 `/events/410018/`、`/events/430001/`。
+  - 其余 23 个（复刻、315 CARNIVAL、情人节、白色情人节）的 id 是 `event:<编号>`，路径用 5 位编号，如 `/events/10019/`、`/events/20001/`。
+  - 路径和 id 一一对应，读写都不用查目录：6 位就是 id 本身，5 位补回 `event:`。
+  - 没有统一用 5 位编号，是因为编号换回 id 要查目录（`10019` 是 `event:10019`，`10018` 却是 `410018`），路由读取是同步的。
+- 活动清单：59 个，来自 `event_supplement_index.json`，旧 id 取自 `archive_manifest.json` 的 `unit_event_relations`，与 `domain_expansion.mjs` 的规则相同。已核对与候选 `b3c1f13a` 一致：id、标题、形式、开始时间、横幅都相同。
+- 打开来源移到历史记录：
+  - `goBackFromEvent` 在没有来源时，按打开来源返回（`f7551adc`：Unit、卡片、偶像）。这些字段原来在地址里（`parent`、`unit`、`card`、`idol`、`category`）。
+  - 现在 `writeArchiveRoute` 把它们存进 history state 的 `sidemArchiveNav.event`，做法同活动 Reader 的 `reader` 上下文。地址里只留活动。
+  - 刷新、前进后退都能恢复。复制出去的链接不带来源。
+  - 内部的 query 形式（来源帧、播放器地址）仍保留这些字段，所以从播放器回到活动、再返回，行为不变（P31）。
+  - 旧链接里的这些参数照常读取，下一次写入时移进 state（P30）。
+  - `event_detail` 进入 `ENFORCED_ROUTE_VIEWS`，自有参数为 `event`、`parent`、`category`、`unit`、`card`、`idol`。列表筛选（`q`、`story_type` 等）不再写入。
+- 冷开（没有来源、也没有打开来源）返回的去处不变，仍是剧情目录（P26）。活动现在是独立栏目，改成回活动目录更自然；这属于产品选择，未改。
+- 标签页标题为「活动名 · GS Archive」，与页内标题一样用原文。17 个 315 CARNIVAL 活动同名，标签页无法区分；外壳描述里写了开始日期。
+- 外壳从 952 个增加到 1011 个（再加 59 个）：
+  - 描述如「THEATER活动「GROWING SIGN@L -Not Alone-」，2021年10月10日开始：…」。
+  - 图片用活动横幅；两个白色情人节活动没有横幅，改用 logo。preview 上抽查横幅和 logo 均为 200（WebP）。
+  - `/events/*` 设为 no-cache。
+- 验证：
+  - 已通过：
+    - `verify-archive-path-locator`（含全部 59 个往返、history state 读写、反例）；
+    - `verify-route-schema`、`verify-entity-head-shells`（含 `--dist`，1011 个外壳）；
+    - `verify-event-navigation`、`verify-portal-navigation`、`verify-portal-directory-navigation`；
+    - `verify:source-batch` 133/133、`build:check`。
+  - 浏览器旅程（5177）36/36，新增 7 项：
+    - P25：冷开活动路径，标题与页内标题一致。
+    - P26：冷开后返回，仍到剧情目录。
+    - P27：`/events/20001/`（`event:` 形式）冷开。
+    - P28：从筛选过的活动目录进出，浏览器前进、后退正确。
+    - P29：Unit → 活动 → 刷新 → 页内返回，回到 `/units/01jup/`。
+    - P30：带 `parent`、`unit`、`q` 的旧活动链接原地改写，打开来源进入 state，返回到 Unit。
+    - P31：Unit → 活动 → 播放剧情 → 关闭播放器回到活动路径 → 返回到 Unit。
+- 未做：
+  - 远端部署上的旅程（本分支未部署）。
+  - 活动分享卡的实际效果。

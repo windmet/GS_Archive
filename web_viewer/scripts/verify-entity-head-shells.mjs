@@ -1,4 +1,4 @@
-// Entity head shells: one shell per bootstrap idol, unit, published card and song, each with exactly one title/description/canonical/OG
+// Entity head shells: one shell per bootstrap idol, unit, published card, song and event, each with exactly one title/description/canonical/OG
 // set pointing at its path locator, escaped text, and a body byte-identical to index.html.
 //   node scripts/verify-entity-head-shells.mjs              pure checks against a synthetic template (CI)
 //   node scripts/verify-entity-head-shells.mjs --dist=DIR   also checks the shells written into a built DIR
@@ -7,7 +7,7 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { DEFAULT_ORIGIN, escapeHtml, loadEntitySources, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
+import { DEFAULT_ORIGIN, escapeHtml, eventPathSegment, loadEntitySources, publishedEvents, renderEntityHeadShells } from './generate-entity-head-shells.mjs'
 import { ARCHIVE_SITE_TITLE, archiveCardName, archiveDocumentTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -27,9 +27,10 @@ const body = html => html.slice(html.indexOf('</head>'))
 const count = (html, pattern) => (html.match(pattern) || []).length
 const attr = (html, selector) => html.match(new RegExp(`<${selector} content="([^"]*)"`))?.[1]
 
-function checkShells(shells, { idols, cards = [], songs = [], origin, sourceTemplate }) {
+function checkShells(shells, { idols, cards = [], songs = [], events = [], origin, sourceTemplate }) {
   const unitCodes = [...new Set(idols.map(idol => idol.unitCode).filter(Boolean))]
-  assert.equal(shells.length, idols.length + unitCodes.length + cards.length + songs.length, 'one shell per idol, unit, card and song')
+  assert.equal(shells.length, idols.length + unitCodes.length + cards.length + songs.length + events.length, 'one shell per idol, unit, card, song and event')
+  assert.deepEqual(shells.filter(s => s.kind === 'event').map(s => s.path).sort(), events.map(e => `events/${eventPathSegment(e.id)}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'song').map(s => s.path).sort(), songs.map(s => `songs/${s.song_code}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'card').map(s => s.path).sort(), cards.map(c => `cards/${c.resource_id}/index.html`).sort())
   assert.deepEqual(shells.filter(s => s.kind === 'idol').map(s => s.path).sort(), idols.map(i => `idols/${i.id}/index.html`).sort())
@@ -111,6 +112,33 @@ function checkShells(shells, { idols, cards = [], songs = [], origin, sourceTemp
   assert.ok(songShells.find(s => s.id === 'x00000').html.includes('content="歌曲「Unknown」：'), 'no performer, no empty parentheses')
   assert.throws(() => renderEntityHeadShells({ template, idols, songs: [{ ...songs[0], song_code: 'BRNDNF' }] }), /Unexpected song code/)
   assert.throws(() => renderEntityHeadShells({ template, idols, songs: [{ ...songs[0], jacket_url: '' }] }), /has no jacket/)
+
+  // Events: the path drops the event: prefix; the kind and start date tell same-titled events apart.
+  const events = publishedEvents(
+    { entries: [
+      { id: 10001, eventCode: '10001', name: 'GROWING SIGN@L', eventKind: 'theater', term: { openAt: 1633845600 } },
+      { id: 20001, eventCode: '20001', name: '315カーニバル <1>', eventKind: 'collection', term: { openAt: 1636000000 } },
+      { id: 50001, eventCode: '50001', name: 'Happy Whiteday 2022', eventKind: 'whiteday', term: { openAt: 1647216000 } },
+    ] },
+    { entries: {
+      'event:10001': { banner: { status: 'verified-local-file', url: '/assets/domain-images/event/theater/10001/permanent/image_event_banner_10001.png' } },
+      'event:20001': { banner: { status: 'verified-local-file', url: '/assets/domain-images/event/collection/20001/permanent/image_event_banner_20001.png' } },
+      'event:50001': { banner: { status: 'file-not-found' }, logo: { status: 'verified-local-file', url: '/assets/domain-images/event/whiteday/50001/permanent/image_event_logo_50001.png' } },
+    } },
+    { unit_event_relations: [{ event_id: 410001, event_code: '10001' }] })
+  assert.deepEqual(events.map(e => e.id), ['410001', 'event:20001', 'event:50001'], 'legacy ids from the manifest, event:<code> otherwise')
+  const eventShells = renderEntityHeadShells({ template, idols, events, origin: 'https://example.test' })
+  checkShells(eventShells, { idols, events, origin: 'https://example.test', sourceTemplate: template })
+  const theater = eventShells.find(s => s.id === '410001')
+  assert.equal(theater.path, 'events/410001/index.html')
+  assert.ok(theater.html.includes('<title>GROWING SIGN@L · GS Archive</title>'))
+  assert.ok(theater.html.includes('THEATER活动「GROWING SIGN@L」，2021年10月10日开始：'))
+  const carnival = eventShells.find(s => s.id === 'event:20001')
+  assert.equal(carnival.path, 'events/20001/index.html')
+  assert.ok(carnival.html.includes('<title>315カーニバル &lt;1&gt; · GS Archive</title>'), 'event titles are escaped')
+  assert.ok(eventShells.find(s => s.id === 'event:50001').html.includes('image_event_logo_50001.png'), 'no banner: the logo')
+  assert.throws(() => renderEntityHeadShells({ template, idols, events: [{ ...events[0], id: '10001' }] }), /Unexpected event id/)
+  assert.throws(() => renderEntityHeadShells({ template, idols, events: [{ ...events[0], image: '' }] }), /has no image/)
 }
 
 // The app's tab title matches the shell title for the same entity, and other pages keep the site title.
@@ -119,6 +147,7 @@ function checkShells(shells, { idols, cards = [], songs = [], origin, sourceTemp
   assert.equal(archiveDocumentTitle('unit_detail', 'W'), 'W · GS Archive')
   assert.equal(archiveDocumentTitle('card_detail', archiveCardName('起跑线', '天濑冬马')), '【起跑线】天濑冬马 · GS Archive')
   assert.equal(archiveDocumentTitle('song_detail', 'BRAND NEW FIELD'), 'BRAND NEW FIELD · GS Archive')
+  assert.equal(archiveDocumentTitle('event_detail', '315カーニバル'), '315カーニバル · GS Archive')
   assert.equal(archiveCardName('起跑线', ''), '', 'a card without its idol name has no title yet')
   assert.equal(archiveDocumentTitle('idol_detail', ''), null, 'no name yet keeps the current (shell) title')
   assert.equal(archiveDocumentTitle('cards', 'x'), ARCHIVE_SITE_TITLE)
@@ -132,7 +161,7 @@ const sources = loadEntitySources(root)
   const missing = sources.idols.filter(idol => !sources.idolNames[idol.id]).map(idol => idol.id)
   assert.deepEqual(missing, [], 'every bootstrap idol has a zh-CN display name')
   const shells = renderEntityHeadShells({ template, ...sources })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, origin: DEFAULT_ORIGIN, sourceTemplate: template })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, origin: DEFAULT_ORIGIN, sourceTemplate: template })
   assert.equal(sources.cards.length, 826, 'the published card catalog: 836 index rows less 10 tutorial copies')
   const untitled = sources.cards.filter(card => !sources.cardTitles[card.title]).map(card => card.resource_id)
   assert.deepEqual(untitled, [], 'every card title has a zh-CN translation')
@@ -141,6 +170,10 @@ const sources = loadEntitySources(root)
   assert.equal(sources.songs.filter(song => song.variant_kind === 'primary').length, sources.primarySongs, 'primaries match the bound release')
   assert.deepEqual(sources.songs.filter(song => song.variant_kind !== 'primary').map(song => song.song_code), ['drv999'])
   for (const song of sources.songs) assert.ok(existsSync(path.join(root, 'public', song.jacket_url)), `${song.song_code}: jacket exists`)
+  // Every event in the read model (checked against candidate b3c1f13a): 36 theater/tour legacy ids, 23 event:<code>.
+  assert.equal(sources.events.length, 59)
+  assert.equal(sources.events.filter(event => /^4[0-9]{5}$/.test(event.id)).length, 36)
+  assert.ok(sources.events.every(event => event.image), 'every event has a banner or a logo')
 }
 
 // Built output: the written shells match a fresh render of that build's index.html.
@@ -151,7 +184,7 @@ if (distOption) {
   const dist = path.resolve(root, distOption)
   const builtTemplate = readFileSync(path.join(dist, 'index.html'), 'utf8')
   const shells = renderEntityHeadShells({ template: builtTemplate, ...sources, origin: distOrigin })
-  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, origin: distOrigin, sourceTemplate: builtTemplate })
+  checkShells(shells, { idols: sources.idols, cards: sources.cards, songs: sources.songs, events: sources.events, origin: distOrigin, sourceTemplate: builtTemplate })
   for (const shell of shells) {
     const file = path.join(dist, shell.path)
     assert.ok(existsSync(file), `${shell.path} exists in ${distOption}`)
@@ -162,4 +195,4 @@ if (distOption) {
 }
 
 const units = new Set(sources.idols.map(idol => idol.unitCode).filter(Boolean)).size
-console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units + ${sources.cards.length} cards + ${sources.songs.length} songs, one escaped title/description/canonical/OG set each, body unchanged${built}`)
+console.log(`Entity head shells: ${sources.idols.length} idols + ${units} units + ${sources.cards.length} cards + ${sources.songs.length} songs + ${sources.events.length} events, one escaped title/description/canonical/OG set each, body unchanged${built}`)

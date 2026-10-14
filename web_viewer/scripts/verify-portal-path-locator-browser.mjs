@@ -1,5 +1,6 @@
 // Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
-// /songs/<song_code>/): plan section 3.6, P1-P15, the card steps P16-P19 and the song steps P20-P24.
+// /songs/<song_code>/, /events/<id>/): plan section 3.6, P1-P15, the card steps P16-P19, the song steps P20-P24
+// and the event steps P25-P31.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -150,7 +151,7 @@ try {
   check('P11 Home preference keeps the path', (await loc()) === '/idols/001tom/' && await ev(`/冬[马馬]/.test(document.body.innerText)`), await loc())
   await usePreferences('portal')
   // P12: nothing is requested relative to the path, and no same-origin request fails.
-  const relative = requests.filter(r => /^\/(idols|units|cards|songs)\/[^/]+\/.+/.test(new URL(r.url).pathname))
+  const relative = requests.filter(r => /^\/(idols|units|cards|songs|events)\/[^/]+\/.+/.test(new URL(r.url).pathname))
   const broken = requests.filter(r => r.status >= 400 && new URL(r.url).origin === new URL(base).origin)
   check('P12 no path-relative or failing same-origin requests', relative.length === 0 && broken.length === 0, `requests=${requests.length} relative=${relative.length} failing=${broken.map(r => r.status + ' ' + r.url).join(', ') || 0}`)
   // P14: unit codes with digits (W is 05w00) publish a path too.
@@ -228,6 +229,60 @@ try {
   await open('/?view=song_detail&song=brndnf&song_scope=unit&parent=unit_detail&unit=01jup', songReady)
   const songLegacy = await loc(); const songAfter = await ev('history.length')
   check('P24 legacy song link becomes its path in place', songLegacy === '/songs/brndnf/' && songAfter === songBefore + 1, `shown=${songLegacy}; history ${songBefore}->${songAfter}`)
+  // P25: an event path opens cold, keeps its address and titles the tab with the event.
+  const eventReady = `!!document.querySelector('.event-detail .event-identity h2')`
+  await open('/events/410018/', eventReady); await waitFor(`/ · GS Archive$/.test(document.title) && !document.title.startsWith('GS Archive')`); await shot('p25-event')
+  const eventHeading = await ev(`document.querySelector('.event-detail .event-identity h2')?.textContent.trim()`)
+  check('P25 event path opens cold with its title', (await loc()) === '/events/410018/' && (await ev('document.title')) === `${eventHeading} · GS Archive` && errors.length === 0,
+    `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
+  // P26: with no source and no placement, page back keeps its old fallback, the story catalogue.
+  await pageBack(); await waitFor(`location.search.includes('view=story_catalog')`)
+  check('P26 cold event back keeps the story catalogue fallback', (await loc()).startsWith('/?view=story_catalog'), await loc())
+  // P27: an event:<code> id publishes the five-digit path and opens cold.
+  await open('/events/20001/', eventReady)
+  check('P27 a 315 CARNIVAL event opens at its code', (await loc()) === '/events/20001/' && errors.length === 0, `${await loc()} errors=${errors.join(' | ') || 0}`)
+  // P28: a filtered catalogue -> event -> page back returns to the same filter; browser history agrees.
+  await open('/?view=event_catalog&event_kind=collection', `!!document.querySelector('.event-item')`)
+  const eventList = await loc()
+  await clickTo('.event-item'); await waitFor(eventReady)
+  const eventPath = await loc()
+  await pageBack(); await waitFor(`location.search.includes('view=event_catalog')`)
+  const eventListBack = await loc()
+  await historyStep('back'); const historyEvent = await loc()
+  await historyStep('back'); const historyEventList = await loc()
+  check('P28 event from a filtered catalogue and back', /^\/events\/[0-9]{5,6}\/$/.test(eventPath) && eventListBack === eventList && historyEvent === eventPath && historyEventList === eventList,
+    `${eventList} -> ${eventPath} -> ${eventListBack}; history back ${historyEvent} -> ${historyEventList}`)
+  // P29: unit -> event -> refresh -> page back returns to the unit path (placement and source ride history state).
+  await open('/units/01jup/', `!!document.querySelector('.relation-row.kind-event')`)
+  await clickTo('.relation-row.kind-event'); await waitFor(eventReady)
+  const unitEvent = await loc(); const placement = await ev('JSON.stringify(history.state?.sidemArchiveNav?.event || null)')
+  await send('Page.reload', { ignoreCache: true }); await waitFor(eventReady); await settle()
+  const eventReloaded = await loc()
+  await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`)
+  check('P29 unit event refresh and back', /^\/events\/[0-9]{5,6}\/$/.test(unitEvent) && eventReloaded === unitEvent && (await loc()) === '/units/01jup/' && /unit_detail/.test(placement),
+    `${unitEvent} (placement ${placement}) -> reload ${eventReloaded} -> ${await loc()}`)
+  // P30: an old event link with list filters and a placement is rewritten in place; the placement moves to state.
+  await open('/?view=about', `document.body.innerText.trim().length > 40`)
+  const eventBefore = await ev('history.length')
+  await open('/?view=event_detail&event=410018&parent=unit_detail&unit=01jup&category=idol&q=x&story_type=event', eventReady)
+  const eventLegacy = await loc(); const eventAfter = await ev('history.length')
+  const movedPlacement = await ev('JSON.stringify(history.state?.sidemArchiveNav?.event || null)')
+  await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`)
+  check('P30 legacy event link becomes its path in place', eventLegacy === '/events/410018/' && eventAfter === eventBefore + 1 && /01jup/.test(movedPlacement) && (await loc()) === '/units/01jup/',
+    `shown=${eventLegacy}; history ${eventBefore}->${eventAfter}; placement ${movedPlacement}; back ${await loc()}`)
+  // P31: unit -> event -> play an episode -> close the player -> the event path -> page back to the unit.
+  // The player keeps its own query address; leaving it moves the placement back into state.
+  await open('/units/01jup/', `!!document.querySelector('.relation-row.kind-event')`)
+  await clickTo('.relation-row.kind-event'); await waitFor(eventReady)
+  const playedEvent = await loc()
+  await clickTo('.episode-play:not([disabled])'); await waitFor(`location.search.includes('view=player')`)
+  const playerUrl = await loc()
+  await waitFor(`!!document.querySelector('.player-top-bar button')`)
+  await clickTo('.player-top-bar button'); await waitFor(eventReady)
+  const afterPlayer = await loc()
+  await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`)
+  check('P31 event player round trip', playerUrl.includes('view=player') && afterPlayer === playedEvent && (await loc()) === '/units/01jup/',
+    `${playedEvent} -> ${playerUrl.slice(0, 80)} -> ${afterPlayer} -> ${await loc()}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

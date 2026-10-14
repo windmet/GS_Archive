@@ -1,17 +1,20 @@
 // Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html), unit
-// (/units/<code>/index.html), card (/cards/<resource_id>/index.html) and song (/songs/<song_code>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
+// (/units/<code>/index.html), card (/cards/<resource_id>/index.html), song (/songs/<song_code>/index.html) and event
+// (/events/<410001 | 10019>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
 // tags. The body and scripts are untouched, so the SPA boots as usual and reads the path locator. Link
 // previews (X, Discord, LINE) and crawlers that do not run JavaScript see the entity instead of the generic page.
 //   node scripts/generate-entity-head-shells.mjs [--dist=.analysis/build-check] [--origin=https://…] [--check]
 // Static HTML is zh-CN (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md §0.1). Names come from the same
 // sources the app uses: bootstrap idols for identity and units, zh-CN entity translations for display names,
-// the card index and the zh-CN card title overlay for cards, the song catalog for songs (song titles are not
+// the card index and the zh-CN card title overlay for cards, the song catalog for songs, and the event supplement
+// index, event media and the archive manifest's legacy event ids for events (song and event titles are not
 // translated anywhere in the app).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { archiveCardName, archiveEntityTitle } from '../src/presentation/ArchiveDocumentTitle.js'
 import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
+import { eventKindLabels, historicalDate } from '../src/presentation/DomainPresentation.mjs'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
@@ -19,6 +22,9 @@ const IDOL_ID = /^[0-9]{3}[a-z]{3}$/
 const UNIT_CODE = /^[0-9]{2}[a-z0-9]{3}$/  // W is 05w00
 const CARD_ID = /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/
 const SONG_CODE = /^[a-z0-9]{6}$/
+// Read-model event ids and their path segment (archiveRoute.js PUBLIC_PATH_ROUTES).
+const EVENT_ID = /^(4[0-9]{5}|event:[1-9][0-9]{4})$/
+export const eventPathSegment = id => id.replace(/^event:/, '')
 
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
@@ -50,8 +56,9 @@ function withHead(template, tags) {
 
 // idols: bootstrap `idols[]` ({ id, name, kana, unitCode, unitName }); idolNames: { [id]: zh-CN display name };
 // cards: card index rows ({ resource_id, character_id, rarity, title }); cardTitles: { [source title]: zh-CN };
-// songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping }).
-export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], origin = DEFAULT_ORIGIN }) {
+// songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping });
+// events: publishedEvents() rows ({ id, code, title, kind, openAt, image }).
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], events = [], origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
@@ -133,7 +140,41 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       })),
     })
   }
+  for (const event of events) {
+    if (!EVENT_ID.test(event.id)) throw new Error(`Unexpected event id ${event.id}`)
+    if (!event.title) throw new Error(`Event ${event.id} has no title`)
+    if (!/^\/assets\/domain-images\/event\/[a-z0-9_/]+\.png$/.test(event.image || '')) throw new Error(`Event ${event.id} has no image`)
+    const location = `/events/${eventPathSegment(event.id)}/`
+    shells.push({
+      path: `events/${eventPathSegment(event.id)}/index.html`,
+      kind: 'event', id: event.id, url: base + location,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(event.title),
+        // Seventeen 315 CARNIVAL events share one title; the start date tells them apart. Reprints say 復刻 in the title.
+        description: `${eventKindLabels[event.kind] || ''}活动「${event.title}」，${historicalDate(event.openAt)}开始：活动剧情、报酬卡与参加偶像。`,
+        url: base + location,
+        image: base + event.image,
+        type: 'website',
+      })),
+    })
+  }
   return shells
+}
+
+// The event catalogue the read model publishes (readmodels/lib/domain_expansion.mjs): one row per supplement
+// entry; theater and tour events keep their legacy id from the archive manifest, the rest are event:<code>.
+// The banner is the image; the two Whiteday events have none and use their logo.
+export function publishedEvents(supplementIndex, eventMedia, manifest) {
+  const legacy = new Map((manifest.unit_event_relations || []).map(row => [String(row.event_code), String(row.event_id)]))
+  const verified = image => image?.status === 'verified-local-file' ? image.url : ''
+  const events = supplementIndex.entries.map(event => {
+    const media = eventMedia.entries[`event:${event.id}`]
+    return { id: legacy.get(event.eventCode) || `event:${event.eventCode}`, code: event.eventCode, title: event.name, kind: event.eventKind,
+      openAt: event.term?.openAt || 0,
+      image: verified(media?.banner) || verified(media?.logo) }
+  })
+  if (new Set(events.map(event => event.id)).size !== events.length) throw new Error('Duplicate event id')
+  return events
 }
 
 // The published card catalog leaves out the tutorial copies (card_id 9xxxxxx), which reuse a real card's
@@ -153,7 +194,9 @@ export function loadEntitySources(root) {
   // Every song with a read-model detail page: the primaries listed in the catalogue and their variants.
   const songs = Object.values(JSON.parse(readFileSync(path.join(root, 'public/data/song_catalog.json'), 'utf8')).songs)
     .sort((a, b) => a.song_code.localeCompare(b.song_code))
-  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, release: bootstrap.release }
+  const json = file => JSON.parse(readFileSync(path.join(root, 'public/data', file), 'utf8'))
+  const events = publishedEvents(json('masterdata/domains/event_supplement_index.json'), json('masterdata/domains/event_media.json'), json('archive_manifest.json'))
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, events, release: bootstrap.release }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -175,5 +218,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs + ${count('event')} events in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

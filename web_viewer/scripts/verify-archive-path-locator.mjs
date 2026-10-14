@@ -1,16 +1,19 @@
-// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/ and /songs/<song_code>/ read as their detail routes, the address bar writes
+// Public path locators: /idols/<id>/, /units/<code>/, /cards/<resource_id>/, /songs/<song_code>/ and /events/<id>/ read as their detail routes, the address bar writes
 // them, and every internal query form (buildArchiveUrl, source frames, restoration keys) is unchanged.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { VALID_VIEWS, buildArchiveUrl, buildPublicArchiveUrl, readArchiveRoute } from '../src/core/archiveRoute.js'
 import { isBareArchiveEntry, resolveArchiveStartup } from '../src/core/archiveStartup.js'
 import { buildArchiveViewContext } from '../src/core/archiveViewRestoration.js'
+import { loadEntitySources } from './generate-entity-head-shells.mjs'
+import { fileURLToPath } from 'node:url'
 
 const read = href => readArchiveRoute(href, { history: false })
 const idol = { view: 'idol_detail', idol: '001tom' }
 const unit = { view: 'unit_detail', unit: '01jup' }
 const card = { view: 'card_detail', card: '001tom_ssr01' }
 const song = { view: 'song_detail', song: 'brndnf' }
+const event = { view: 'event_detail', event: '410018' }
 const same = (a, b, message) => assert.equal(buildArchiveUrl('http://localhost/', a).search, buildArchiveUrl('http://localhost/', b).search, message)
 
 // U1–U4: path and legacy query forms read as the same route.
@@ -33,6 +36,13 @@ for (const href of ['http://x/songs/brndnf/', 'http://x/songs/brndnf', 'http://x
   'http://x/?view=song_detail&category=idol&idol=001tom&song=brndnf&song_scope=unit&parent=unit_detail&unit=01jup']) {
   const route = read(href)
   assert.equal(route.view, 'song_detail', href); assert.equal(route.song, 'brndnf', href)
+}
+// Events: theater and tour events keep their six-digit id, the rest drop the event: prefix of their id.
+for (const [href, id] of [['http://x/events/410018/', '410018'], ['http://x/events/430001', '430001'], ['http://x/events/10019/', 'event:10019'],
+  ['http://x/?view=event_detail&event=event%3A10019', 'event:10019'],
+  ['http://x/?view=event_detail&event=410018&parent=card_detail&card=001tom_ssr01&category=cards&idol=001tom&unit=01jup&q=q&story_type=event', '410018']]) {
+  const route = read(href)
+  assert.equal(route.view, 'event_detail', href); assert.equal(route.event, id, href)
 }
 // Every real idol and unit publishes a path and reads back (unit codes are not all letters: W is 05w00).
 {
@@ -62,6 +72,14 @@ for (const href of ['http://x/songs/brndnf/', 'http://x/songs/brndnf', 'http://x
     assert.equal(buildPublicArchiveUrl('http://x/', { view: 'song_detail', song: code }).pathname, `/songs/${code}/`, code)
     assert.equal(read(`http://x/songs/${code}/`).song, code, code)
   }
+  // Every event in the read model, both id forms.
+  const { events } = loadEntitySources(fileURLToPath(new URL('..', import.meta.url)))
+  assert.equal(events.length, 59)
+  for (const { id } of events) {
+    const segment = id.replace(/^event:/, '')
+    assert.equal(buildPublicArchiveUrl('http://x/', { view: 'event_detail', event: id }).pathname, `/events/${segment}/`, id)
+    assert.equal(read(`http://x/events/${segment}/`).event, id, id)
+  }
 }
 // U5: a query view wins over the path (old links, relative ?view=… links followed from a path page).
 {
@@ -70,6 +88,7 @@ for (const href of ['http://x/songs/brndnf/', 'http://x/songs/brndnf', 'http://x
 }
 // U6: anything that is not an exact locator reads like the bare entry, without throwing.
 for (const href of ['http://x/idols/xyz/', 'http://x/idols/001tom/extra/', 'http://x/units/1/', 'http://x/songs/brnd/', 'http://x/songs/BRNDNF/', 'http://x/songs/brndnf1/',
+  'http://x/events/event:10019/', 'http://x/events/510001/', 'http://x/events/1001/', 'http://x/events/01001/', 'http://x/events/4100181/',
   'http://x/cards/1101001/', 'http://x/cards/001tom/', 'http://x/cards/001TOM_n01/', 'http://x/idols/', 'http://x/IDOLS/001tom/']) {
   same(read(href), read('http://x/'), href)
 }
@@ -83,6 +102,10 @@ assert.equal(buildPublicArchiveUrl('http://x/?view=portal', card).href, 'http://
 // The list filters and parent event of a card opened from a filtered list or an event stay out of its address.
 assert.equal(buildPublicArchiveUrl('http://x/', { ...card, category: 'cards', idol: '001tom', event: '10011', portalQuery: 'q' }).href, 'http://x/cards/001tom_ssr01/')
 assert.equal(buildPublicArchiveUrl('http://x/?view=portal', song).href, 'http://x/songs/brndnf/')
+assert.equal(buildPublicArchiveUrl('http://x/?view=portal', event).href, 'http://x/events/410018/')
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'event_detail', event: 'event:20001' }).href, 'http://x/events/20001/')
+// An id outside both forms stays a query address instead of publishing a path that reads back differently.
+assert.equal(buildPublicArchiveUrl('http://x/', { view: 'event_detail', event: 'event:x' }).pathname, '/')
 // Nor do the catalogue scope or the idol / unit page a song was opened from.
 assert.equal(buildPublicArchiveUrl('http://x/', { ...song, category: 'idol', idol: '001tom', songScope: 'unit', parentView: 'unit_detail', unit: '01jup', query: 'q' }).href, 'http://x/songs/brndnf/')
 {
@@ -96,7 +119,7 @@ assert.equal(buildPublicArchiveUrl('http://x/', { view: 'idol_detail', idol: 'id
 // U9: for every view, the public address reads back as the same route as the internal query form.
 const sample = {
   idol_detail: idol, unit_detail: unit, idols: { view: 'idols', unitFilter: '1' }, cards: { view: 'cards', idol: '001tom', rarity: 'SSR' },
-  card_detail: card, event_detail: { view: 'event_detail', event: '410018' },
+  card_detail: card, event_detail: event,
   song_detail: song, gasha_detail: { view: 'gasha_detail', gasha: '1' },
   reader: { view: 'reader', reading: 'doc1' }, player: { view: 'player', scenario: 'a.json' }, home: { view: 'home', homeIdol: '001tom' },
 }
@@ -107,11 +130,14 @@ for (const view of VALID_VIEWS) {
   same(published, internal, `${view} reads the same through its public address`)
 }
 
-// U10: the internal query form of the four detail views is exactly the post-L0 identity query.
+// U10: the internal query form of the five detail views is exactly the post-L0 identity query.
 assert.equal(buildArchiveUrl('http://x/idols/002sht/', idol).search, '?view=idol_detail&category=idol&idol=001tom')
 assert.equal(buildArchiveUrl('http://x/', unit).search, '?view=unit_detail&unit=01jup')
 assert.equal(buildArchiveUrl('http://x/', card).search, '?view=card_detail&card=001tom_ssr01')
 assert.equal(buildArchiveUrl('http://x/', song).search, '?view=song_detail&song=brndnf')
+assert.equal(buildArchiveUrl('http://x/', event).search, '?view=event_detail&event=410018')
+// The internal form of an event keeps where it was opened from (source frames, the player); only the address drops it.
+assert.equal(buildArchiveUrl('http://x/', { ...event, parentView: 'card_detail', card: '001tom_ssr01', query: 'q' }).search, '?view=event_detail&card=001tom_ssr01&event=410018&parent=card_detail')
 // Restoration keys do not depend on which address form the page was opened with.
 assert.equal(buildArchiveViewContext('http://x/idols/001tom/').routeKey, buildArchiveViewContext('http://x/?view=idol_detail&idol=001tom').routeKey)
 
@@ -141,7 +167,20 @@ assert.equal(isBareArchiveEntry('http://x/'), true)
   assert.equal(new URL(entries.at(-1).url).pathname, '/')
   writeArchiveRoute(unit, { replace: true })
   assert.equal(entries.at(-1).url, 'http://x/units/01jup/'); assert.equal(entries.at(-1).replace, true)
+  // An event's address is its id; where it was opened from rides history state, so refresh keeps the cold return.
+  writeArchiveRoute({ ...event, parentView: 'card_detail', card: '001tom_ssr01', category: 'cards', sourceRoute: '?view=portal' })
+  assert.equal(entries.at(-1).url, 'http://x/events/410018/')
+  assert.deepEqual(entries.at(-1).state.sidemArchiveNav.event, { parent: 'card_detail', category: 'cards', card: '001tom_ssr01' })
+  const live = readArchiveRoute()
+  assert.deepEqual([live.view, live.event, live.parentView, live.card, live.category, live.sourceRoute], ['event_detail', '410018', 'card_detail', '001tom_ssr01', 'cards', '?view=portal'])
+  assert.equal(readArchiveRoute(href).parentView, '', 'a copied event link carries no placement')
+  writeArchiveRoute({ view: 'event_detail', event: 'event:10019', parentView: 'unit_detail', unit: '01jup' })
+  assert.equal(entries.at(-1).url, 'http://x/events/10019/')
+  assert.deepEqual([readArchiveRoute().event, readArchiveRoute().parentView, readArchiveRoute().unit], ['event:10019', 'unit_detail', '01jup'])
+  // Other pages never read an event placement.
+  writeArchiveRoute(card)
+  assert.equal(entries.at(-1).state.sidemArchiveNav, undefined); assert.equal(readArchiveRoute().parentView, '')
   delete globalThis.window
 }
 
-console.log('Archive path locators: /idols/, /units/, /cards/ and /songs/ read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')
+console.log('Archive path locators: /idols/, /units/, /cards/, /songs/ and /events/ read, publish and round-trip; legacy queries, query priority, startup and restoration keys unchanged')

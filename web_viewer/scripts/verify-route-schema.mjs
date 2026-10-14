@@ -82,6 +82,11 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     const oldSong = readArchiveRoute('http://localhost/?view=song_detail&song=brndnf&song_scope=unit&parent=unit_detail&unit=01jup&idol=001tom', { history: false })
     assert.equal(oldSong.view, 'song_detail'); assert.equal(oldSong.song, 'brndnf')
     assert.equal(buildArchiveUrl('http://localhost/', oldSong).search, '?view=song_detail&song=brndnf', 'an old song link is shortened on write')
+    // An event keeps only its opened-from fields (moved to history state on write), never list filters.
+    state.currentEventId.value = '410018'; state.eventParentView.value = 'card_detail'; state.currentCardId.value = '001tom_ssr01'; state.view.value = 'event_detail'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=event_detail&category=idol&idol=001tom&card=001tom_ssr01&event=410018&parent=card_detail')
+    const oldEvent = readArchiveRoute('http://localhost/?view=event_detail&event=410018&q=x&story_type=event&rarity=SSR&parent=card_detail&card=001tom_ssr01', { history: false })
+    assert.equal(buildArchiveUrl('http://localhost/', oldEvent).search, '?view=event_detail&card=001tom_ssr01&event=410018&parent=card_detail', 'an old event link drops its list filters on write')
     const old = readArchiveRoute('http://localhost/?view=idol_detail&idol=001tom&unit_filter=1&q=x&card=c&story_type=main', { history: false })
     assert.equal(old.view, 'idol_detail'); assert.equal(old.idol, '001tom')
     assert.equal(buildArchiveUrl('http://localhost/', old).search, '?view=idol_detail&category=idol&idol=001tom', 'an old idol link is shortened on write')
