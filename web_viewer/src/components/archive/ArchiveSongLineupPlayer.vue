@@ -119,8 +119,9 @@ const stageLineup = ref([])
 const loadingTimeline = ref(false)
 // Nothing downloads until the reader picks an idol in this visit (or asks to load a remembered lineup).
 const armed = ref(false)
-defineExpose({ pause: () => session.pause(), assignStagePosition, nextEmptyStagePosition, stageLineup })
+defineExpose({ pause: () => session.pause(), assignStagePosition, nextEmptyStagePosition, addIdol, stageLineup })
 let loadGeneration = 0
+let arrangementsLoad = Promise.resolve()
 let disposed = false
 
 const soloEntries = computed(() => Object.values(props.audioExperiment?.solo_tracks || {}))
@@ -231,6 +232,15 @@ async function arm() {
   await syncLineup()
 }
 
+// From the song page's idol list: wait for the remembered lineup, then fill the first empty position.
+// Returns that position, or 0 when all five are taken.
+async function addIdol(idolCode) {
+  await arrangementsLoad
+  const position = nextEmptyStagePosition(0)
+  if (position) assignStagePosition(position, idolCode)
+  return position
+}
+
 function initializeLineup() {
   stageLineup.value = rememberedLineup()
   armed.value = false
@@ -306,8 +316,8 @@ function openStageWithLineup() {
 }
 
 
-watch(() => props.audioExperiment, loadArrangements)
-onMounted(loadArrangements)
+watch(() => props.audioExperiment, () => { arrangementsLoad = loadArrangements() })
+onMounted(() => { arrangementsLoad = loadArrangements() })
 onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 </script>
 

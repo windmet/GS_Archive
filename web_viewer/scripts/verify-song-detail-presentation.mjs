@@ -95,7 +95,7 @@ const IdolReference = await compileComponent('src/components/archive/ArchiveIdol
 })
 const SongDetail = await compileComponent('src/components/archive/ArchiveSongDetail.vue', {
   vue: Vue,
-  '@lucide/vue': { ChevronRight: emptyComponent, ExternalLink: emptyComponent },
+  '@lucide/vue': { ChevronRight: emptyComponent, ExternalLink: emptyComponent, Play: emptyComponent },
   './ArchiveTechnicalDetails.vue': { default: emptyComponent },
   './ArchiveIdolReference.vue': { default: IdolReference },
   './ArchiveSongExperimentalPlayer.vue': { default: emptyComponent },
@@ -115,7 +115,7 @@ class MemoryStorage {
   setItem(key, value) { this.values.set(key, String(value)) }
 }
 const audioArchive = root => all(root).find(item => item.type === 'details' &&
-  item.children.some(child => child.type === 'summary' && text(child) === '声部与音频归档'))
+  item.children.some(child => child.type === 'summary' && /^(演出语音|个人声部|收录组合|按组合查看)/.test(text(child))))
 const keiCard = root => referenceCards(root).find(card => cardLabel(card) === '都筑圭')
 function fixture(code, { transform = song => song, keyed = true, presentation = {} } = {}) {
   const song = transform(buildSongPresentation(catalog.songs[code], dictionary, { manifest, ...presentation }))
@@ -471,6 +471,23 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
   list.emit('select', list.props.items[1])
   assert.equal(JSON.stringify(t.events), JSON.stringify([{ event_id: 'event:10019' }]))
   t.app.unmount()
+}
+{
+  // Stem songs list every collected vocal with Solo and lineup actions; full-mix-only songs have no 音源收录.
+  const t = fixture('drvalv', { presentation: { audioExperiment: experiments.songs.drvalv } }); await flush()
+  const sources = all(t.root).find(item => hasClass(item, 'song-sources'))
+  assert.ok(sources)
+  assert.deepEqual(all(sources).filter(item => item.type === 'dt').map(text), ['完整混音', '组合版', '个人声部', '伴奏'])
+  assert.deepEqual(all(sources).filter(item => item.type === 'dd').map(text), ['已收录', '16 组', '49 位', '已收录'])
+  const archive = await openAudioArchive(t)
+  assert.equal(referenceCards(archive).length, 49)
+  const actions = all(archive).filter(item => hasClass(item, 'source-action')).map(text)
+  assert.equal(actions.filter(label => label.includes('Solo')).length, 49)
+  assert.equal(actions.filter(label => label === '＋编成').length, 49)
+  t.app.unmount()
+  const plain = fixture('anwhre'); await flush()
+  assert.equal(all(plain.root).some(item => hasClass(item, 'song-sources')), false)
+  plain.app.unmount()
 }
 console.log('Song relations: main-story unlock link and chapter payload, premiere note, premiere-first event rows with dates and event payload passed.')
 console.log('Song detail: actual SFC compact hero metadata/form uniqueness, four source attributes, real full-mix/experiment/unavailable projections, source dates and special-version parent passed. Labeled unknown-attribute/date omissions passed. Existing language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. ResizeObserver lifecycle, viewport-versus-content height, fit/growth/resize and unmount guards passed in the real template; the measured tall-lyrics/40441px archive dimensions are labeled host fixtures. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; decoded audio, native events, Browser/layout/focus visibility and App routing acceptance are separate.')

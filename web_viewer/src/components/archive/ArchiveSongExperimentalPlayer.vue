@@ -89,7 +89,7 @@
         <label>组合<select v-model="soloUnit"><option value="">全部组合</option><option v-for="unit in soloUnits" :key="unit.id" :value="unit.id">{{ unit.name }}</option></select></label>
       </div>
       <p role="status">{{ filteredSoloEntries.length }} 位偶像 · {{ pickerTarget ? '选择后自动跳到下一个空位' : '选择后回到播放条' }}</p>
-      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="pickerTarget ? lineupPositionsOf(entry.idol_code).includes(pickerTarget) : mode === 'solo' && selectedIdolCode === entry.idol_code" @click="pickerTarget ? selectForSlot(entry.idol_code) : selectSolo(entry.idol_code)"><strong>{{ soloDisplayName(entry) }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}<template v-if="pickerTarget && lineupPositionsOf(entry.idol_code).length"> · 已在位置 {{ lineupPositionsOf(entry.idol_code).join('/') }}</template></small></button></div>
+      <div class="solo-list"><button v-for="entry in filteredSoloEntries" :key="entry.idol_code" type="button" :aria-pressed="pickerTarget ? lineupPositionsOf(entry.idol_code).includes(pickerTarget) : mode === 'solo' && selectedIdolCode === entry.idol_code" @click="pickerTarget ? selectForSlot(entry.idol_code) : selectSolo(entry.idol_code)"><strong>{{ soloDisplayName(entry) }}</strong><small>{{ soloDirectory.get(entry.idol_code)?.unitName }}{{ lineupPositionNote(entry) }}</small></button></div>
       <p v-if="!filteredSoloEntries.length">没有匹配的偶像，请调整搜索或组合。</p>
     </ArchiveTerminalDialog>
   </section>
@@ -117,7 +117,22 @@ const emit = defineEmits(['open-stage', 'request-play'])
 const lineupPlayer = ref(null)
 // How the audition is decoded and clocked is a maintainer note, not reader copy.
 const maintainer = isMaintainerMode()
-defineExpose({ pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() } })
+defineExpose({
+  pause: () => { singleAudio.value?.pause(); isPlaying.value = false; soloSession.pause(); lineupPlayer.value?.pause() },
+  // Entry points for the song page's 音源收录 list.
+  playSolo: id => selectSolo(id),
+  playUnit(unitCode) {
+    if (!hasVocalSetting('unit') || !unitOptions.value.some(option => option.key === `unit:${unitCode}`)) return
+    selectedUnitKey.value = `unit:${unitCode}`
+    mode.value = 'unit'
+  },
+  async addToLineup(id) {
+    if (!hasVocalSetting('formation') || !props.audioExperiment?.solo_tracks?.[id]) return 0
+    mode.value = 'lineup'
+    await nextTick()
+    return lineupPlayer.value?.addIdol(id) ?? 0
+  },
+})
 
 const mode = ref('single')
 const soloOpen = ref(false), soloQuery = ref(''), soloUnit = ref('')
@@ -175,6 +190,10 @@ function closePicker() {
 function lineupPositionsOf(id) {
   const lineup = lineupPlayer.value?.stageLineup || []
   return lineup.flatMap((code, index) => (code === id ? [index + 1] : []))
+}
+function lineupPositionNote(entry) {
+  const positions = pickerTarget.value ? lineupPositionsOf(entry.idol_code) : []
+  return positions.length ? ` · 已在位置 ${positions.join('/')}` : ''
 }
 async function selectForSlot(id) {
   const player = lineupPlayer.value
