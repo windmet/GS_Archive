@@ -260,7 +260,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'seasonal-ledger': { records:[{id:'all',summary:{name:'季节企划'},
       view:{ledger:buildSeasonalLedger(data.seasonalCampaign,data.readingManifest.entries)}}] },
   };
-  const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
+  const { materialContexts, songEvents } = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
   // Each reading document's canonical parent comes from the owner records above, so the locator names exactly
   // the page the Reader's own entry points would have opened (see reading_parent_projection.mjs).
@@ -271,6 +271,20 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   });
   extraDomains['reading-docs'] = { sharded:true,
     records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries, parentFor) };
+  // Song relations: the events that premiered or reprinted it, and the main-story chapter that unlocks it.
+  const collectionIds = new Set(extraDomains.collections.records.map(record => record.id));
+  for (const [code, view] of Object.entries(songViews)) {
+    const song = data.songCatalog.songs[code], condition = song.gameplay?.releaseCondition, section = condition?.storySectionId;
+    let unlockStory = null;
+    if (section) {
+      const chapter = String(Math.floor(section / 100)), episode = section % 100;
+      assert(condition.raw?.['2'] === section && collectionIds.has(`main:${chapter}`), `Unresolved song unlock chapter: ${code}`);
+      unlockStory = { domain:'main', section:chapter, storySectionId:section, label:condition.label,
+        chapterLabel:`第${Number(chapter) - 100}章 第${episode}話` };
+    }
+    view.relatedEvents = songEvents[code] || [];
+    view.unlockStory = unlockStory;
+  }
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
   }

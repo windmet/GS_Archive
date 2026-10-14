@@ -51,6 +51,30 @@ export function projectCardLimitbreakMaterials(cards, items, collectionMedia, ca
   return { materialContexts, usageCardsByItem };
 }
 
+/** An event's BGM resource names its song (`bgm_<song_code>_inst`); a reprint reuses the original's.
+ * Returns each event's songs and, per song, its events (premiere first, then reprints by start). */
+export function projectEventSongs(eventRecords, songs) {
+  assert(Array.isArray(eventRecords) && songs && typeof songs === 'object', 'Missing event/song projection inputs');
+  const eventSongs = {}, songEvents = {};
+  for (const record of eventRecords) {
+    const view = record.view, match = /^bgm_([a-z0-9]{6})_inst$/.exec(view.media?.bgm?.resourceId || '');
+    const song = match ? songs[match[1]] : null;
+    assert(!match || song, `Event BGM names an unknown song: ${view.media.bgm.resourceId}`);
+    eventSongs[record.id] = song ? [{ song_code:song.song_code, title:song.title, jacket_url:song.jacket_url || '',
+      unit_name:song.performance_mapping?.confirmed_unit?.unit_name || '' }] : [];
+    if (song) (songEvents[song.song_code] ||= []).push({ event_id:record.id, event_code:view.identity.eventCode,
+      title:view.identity.title, kind:view.identity.kind, isReprint:!!view.identity.isReprint,
+      startAt:view.period?.startAt ?? null, banner:view.media.banner ? pick(view.media.banner, ['url','status']) : null });
+  }
+  for (const [code, events] of Object.entries(songEvents)) {
+    events.sort((a, b) => a.isReprint - b.isReprint || (a.startAt ?? 0) - (b.startAt ?? 0));
+    assert(events.filter(event => !event.isReprint).length === 1, `Song ${code} needs exactly one premiere event`);
+  }
+  for (const song of Object.values(songs)) if (song.gameplay?.history?.historicalKind === 'event')
+    assert(songEvents[song.song_code], `Event-premiered song has no event BGM: ${song.song_code}`);
+  return { eventSongs, songEvents };
+}
+
 export function validateMediaPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
     payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB &&
@@ -174,6 +198,8 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       provenance:{eventId:event.id,detailTable:source.sourceTable,coverage:source.coverage,storyChapterRelations:event.storyChapterRelations} } };
   }));
   assert(legacy.every(record => domains.events.records.some(next => next.id === record.id)), 'Lost existing event routes');
+  const { eventSongs, songEvents } = projectEventSongs(domains.events.records, data.songCatalog.songs);
+  for (const record of domains.events.records) record.view.songs = eventSongs[record.id];
 
   const materialRelations = projectCardLimitbreakMaterials(data.domainCards,
     validateDomainPayload(data.domainItems, 'gs-item-catalog').entries, collectionMedia, eventMedia.cardImages);
@@ -242,5 +268,5 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(!chocolate.some(honor=>ranking.some(row=>row.key===honor.key)),'A chocolate honor cannot also be a ranking honor');
     idol.view.honors=[...own,...ranking,...chocolate];
   }
-  return materialRelations.materialContexts;
+  return { materialContexts: materialRelations.materialContexts, songEvents };
 }

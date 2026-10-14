@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readCheckout } from '../lib/checkout_adapter.mjs';
-import { validateDomainPayload, validateMediaPayload, validatePhotoCostumes, REVIEWED_DOMAIN_PB,domainProductTarget } from '../lib/domain_expansion.mjs';
+import { validateDomainPayload, validateMediaPayload, validatePhotoCostumes, REVIEWED_DOMAIN_PB,domainProductTarget,projectEventSongs } from '../lib/domain_expansion.mjs';
 import { sha256 } from '../lib/common.mjs';
 
 test('[local-corpus] costume leaves reject stale dictionaries, omissions, duplicate and wrong model identities', async () => {
@@ -56,6 +56,21 @@ test('Reward targets require exact canonical cards and typed photo identities',(
   assert.throws(()=>domainProductTarget(product,[card,card],materials),/Ambiguous/);
 });
 
+test('Event songs come from the BGM resource; each song has one premiere and its reprints', () => {
+  const event = (id, bgm, isReprint, startAt) => ({ id, view:{ identity:{ eventCode:id, title:`E${id}`, kind:'theater', isReprint },
+    period:{ startAt }, media:{ bgm:{ resourceId:bgm }, banner:{ url:`/assets/domain-images/${id}.png`, status:'verified-local-file', sha256:'x' } } } });
+  const songs = { abcdef:{ song_code:'abcdef', title:'Song', jacket_url:'/j.png', performance_mapping:{ confirmed_unit:{ unit_name:'Unit' } },
+    gameplay:{ history:{ historicalKind:'event' } } } };
+  const { eventSongs, songEvents } = projectEventSongs([event('2', 'bgm_abcdef_inst', true, 20), event('1', 'bgm_abcdef_inst', false, 10), event('3', 'event_vd', false, 5)], songs);
+  assert.deepEqual(eventSongs['1'], [{ song_code:'abcdef', title:'Song', jacket_url:'/j.png', unit_name:'Unit' }]);
+  assert.deepEqual(eventSongs['3'], []);
+  assert.deepEqual(songEvents.abcdef.map(e => [e.event_id, e.isReprint]), [['1', false], ['2', true]]);
+  assert.deepEqual(songEvents.abcdef[0].banner, { url:'/assets/domain-images/1.png', status:'verified-local-file' });
+  assert.throws(() => projectEventSongs([event('1', 'bgm_zzzzzz_inst', false, 1)], songs), /unknown song/);
+  assert.throws(() => projectEventSongs([event('1', 'bgm_abcdef_inst', false, 1), event('2', 'bgm_abcdef_inst', false, 2)], songs), /exactly one premiere/);
+  assert.throws(() => projectEventSongs([event('3', 'event_vd', false, 5)], songs), /has no event BGM/);
+});
+
 test('Domain gate rejects mixed snapshots and generator versions', () => {
   const source = {decodedPbSha256:REVIEWED_DOMAIN_PB,generatorVersion:'gs-archive-domains-v1'};
   const value = {schemaVersion:1,kind:'gs-item-catalog',source};
@@ -93,6 +108,13 @@ test('[local-corpus] domain projection preserves story identities, typed rewards
     assert.equal(projected.view.story.entry.file,event.file);
     assert.equal(String(projected.view.identity.eventCode),String(event.event_code));
   }
+  // Event ↔ song through the event BGM, and the three main-story unlocks.
+  assert.equal(domains.events.records.filter(r => r.view.songs.length).length, 38);
+  assert.equal(Object.values(product.songViews).filter(view => view.relatedEvents.length).length, 36);
+  assert.deepEqual(product.songViews.ntalon.relatedEvents.map(e => [e.event_id, e.isReprint]), [['410001', false], ['event:10019', true]]);
+  assert.deepEqual(domains.events.records.find(r => r.id === 'event:10019').view.songs.map(song => song.song_code), ['ntalon']);
+  assert.deepEqual(Object.entries(product.songViews).filter(([, view]) => view.unlockStory).map(([code, view]) => [code, view.unlockStory.section, view.unlockStory.chapterLabel]).sort(),
+    [['gofrit', '102', '第2章 第10話'], ['grwsml', '101', '第1章 第1話'], ['trhorz', '101', '第1章 第10話']]);
   const original = domains.events.records.find(r => r.id === '410001');
   const reprint = domains.events.records.find(r => r.id === 'event:10019');
   assert.notEqual(original.id,reprint.id);
