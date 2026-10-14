@@ -20,6 +20,8 @@ const manifestPath = path.join(outputRoot, 'r2-manifest.json')
 const mode = process.argv[2]
 if (!['--audit', '--export', '--baseline', '--inventory'].includes(mode)) throw new Error('Use --audit, --export, --baseline or --inventory')
 const allowMissing = process.argv.includes('--allow-missing')
+// A domain worktree links the shared corpus folders (bg, cards, voice, …) to the main checkout; opt in to read through them.
+const followJunctions = process.argv.includes('--follow-junctions')
 const argument = name => process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : ''
 
 function safeKey(url) {
@@ -73,6 +75,7 @@ async function walk(dir, prefix) {
       if (terminalMenusPresent && key.startsWith('assets/terminal/') && !terminalAssetKeys.has(key)) continue
       await add(`/${key.replaceAll('\\', '/')}`, absolute, 'public')
     }
+    else if (followJunctions && entry.isSymbolicLink() && (await fs.stat(absolute)).isDirectory()) await walk(await fs.realpath(absolute), key)
     else throw new Error(`Unexpected link or special file in public corpus: ${absolute}`)
   }
 }
