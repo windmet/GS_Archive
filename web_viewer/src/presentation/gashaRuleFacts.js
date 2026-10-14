@@ -4,7 +4,7 @@ const GROUPS = [
   ['draw', '抽取方式'],
   ['guarantee', '保底'],
   ['rate', '提供割合'],
-  ['exchange', '交换与记忆之星'],
+  ['exchange', '记忆之星'],
   ['note', '其他说明'],
 ]
 
