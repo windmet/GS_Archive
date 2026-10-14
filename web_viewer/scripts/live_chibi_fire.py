@@ -1,6 +1,7 @@
 """Bounded native K.now O.nly masked flame flipbook inputs; sparks stay deferred."""
 from pathlib import Path
 import importlib.util
+from live_chibi_native_particle_mask import require_native_particle_mask
 
 spec=importlib.util.spec_from_file_location('fire_floor',Path(__file__).with_name('prepare-live-chibi-floor.py'))
 floor=importlib.util.module_from_spec(spec);spec.loader.exec_module(floor)
@@ -39,6 +40,7 @@ def fire_system(p):
             'Unimplemented flame projection transform')
     require(len(r['materials'])==1,'Multiple flame materials')
     mat=r['materials'][0];tex={t['property']:t for t in mat['textures']}
+    require_native_particle_mask(mat)
     require(mat['shader']['name']=='Alpha Masked/Unlit Alpha Masked - World Coords'
             and mat['shader']['status']=='resolved_dependency' and int(mat['shader']['pathId'])==SHADER_ID
             and mat['floats']['_UseAlphaChannel']==1 and mat['floats']['_Enabled']==1

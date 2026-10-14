@@ -1,5 +1,7 @@
 # Growing / Drive 灯光接线与 FLASH LIGHT 镜像修正
 
+**原版链路复查纠正（2026-10-14）**：本记录中的固定透明度、编号灯明暗/旋转规则和按 value102 做旧悬灯两秒退场，不能作为原版语义。已找到原版方法及资源绑定，其中 `_5` 实为 HSV 色相循环，基础悬灯退出固定 0.2 秒。详见 [DRIVE 原版灯光链路复查](NATIVE_DRIVE_LIGHT_CHAIN_RECHECK_20261014.md)。下面保留当时截图校准记录，不代表这些规则已获原版源码验证。
+
 输入 HEAD `7efd97e5`，分支 `codex/chibi-stage-reconstruction-20261002`。本批按用户的 Growing Smiles、DRIVE A LIVE、FLASH LIGHT 对照图以及绿灯四张顺序截图推进；首张原片时间约 0:16。原片播放器时间与脚本时钟不能直接认定相同。
 
 ## 已修接线与影响范围

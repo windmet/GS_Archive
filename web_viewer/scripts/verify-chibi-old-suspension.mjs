@@ -1,89 +1,139 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { oldSuspensionlightsAt,oldSuspensionlightLayout } from '../src/core/chibiOldSuspensionlights.js'
-const json=name=>JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`,import.meta.url)))
-const events=json('chibi-old-suspension-events.json'),model=json('chibi-old-suspension-model.json')
-const at=t=>oldSuspensionlightsAt(events,t,model)
-assert.equal(events.length,224)
-assert.equal(at(0).length,8,'Base sidelight commands share the native sprite/curve interface')
-const early=at(6000),later=at(6300)
-assert.equal(early.length,18)
-assert.equal(early.find(s=>s.key==='Suspensionlight_2:301').angle,later.find(s=>s.key==='Suspensionlight_2:301').angle,'A huge-period fade lamp must not inherit a looping rotation curve')
-assert.deepEqual(at(6000),early,'Backward seek resets all later generations')
-assert.deepEqual(at(6300),later,'Paused frame is deterministic')
-assert.ok(!at(20000).some(s=>s.key==='Suspensionlight_2:301'),'Distant erase flags remove the building beam')
-const beam=early.find(s=>s.key==='Suspensionlight_2:301')
-const wide=oldSuspensionlightLayout(beam,1280,720),small=oldSuspensionlightLayout(beam,640,360)
-assert.equal(wide.x,small.x*2);assert.equal(wide.y,small.y*2)
-assert.equal(wide.scaleY,1,'The earlier Moon extent calibration remains separate')
-assert.equal(wide.y,384,'Building beam is behind the platform, rather than at its front edge')
-const ceiling=at(20000).filter(s=>s.key.startsWith('Suspensionlight_3:') && s.y===1600)
-assert.ok(ceiling.every(s=>!s.moving),'Huge rotation periods keep ceiling lamps still while brightness offsets pulse')
-const cycle=[0,500,1000,1500].flatMap(dt=>at(20000+dt).filter(s=>s.key==='Suspensionlight_3:3').map(s=>s.angle))
-assert.ok(cycle.every(a=>a===0),'Brightness animation must not force a held lamp to rotate')
-const pair=at(105100).filter(s=>['Suspensionlight_5:201','Suspensionlight_5:202'].includes(s.key))
-assert.equal(pair.length,2)
-const rotations=pair.map(s=>oldSuspensionlightLayout(s,1280,720).rotation)
-assert.ok(rotations.every(r=>Math.cos(r)<0),'Floor-mounted beams rise from their sources')
-assert.ok(Math.sin(rotations[0])*Math.sin(rotations[1])<0,'Complementary mounting angles and mirrored excursions fan toward opposite sides')
-const bad=structuredClone(events);bad.find(e=>`${e.command}:${e.id}`===early[0].key).values[4]='unknown'
-assert.ok(!oldSuspensionlightsAt(bad,6000,model).some(s=>s.key===early[0].key))
-if(process.argv.includes('--published-assets')) {
- const index=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))
- assert.deepEqual(index.oldSuspensionlight,model)
- assert.equal(Object.keys(index.oldSuspensionlightSongs).length,105)
- const enabled=Object.entries(index.oldSuspensionlightSongs).filter(([,s])=>s.previewEnabled).map(([id])=>id)
- assert.equal(enabled.length,42)
- assert.ok(enabled.every(id=>id==='montns_live_effect'||id.startsWith('grwsml_live_effect')||id.startsWith('drvalv_live_effect')))
- assert.equal(index.oldSuspensionlightSongs.montns_live_effect.eventCount,1840)
- const drive=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/old-suspension/drvalv_live_effect.json',import.meta.url))).events
- const registration=index.oldSuspensionlightSongs.drvalv_live_effect
- const opening=oldSuspensionlightsAt(drive,8000,model,registration)
- assert.equal(opening.length,10)
- assert.ok(opening.every(s=>s.angle===0 && !s.moving),'Opening blue lamps are vertical, with no Animator excursion')
- for (const time of [0,1000,5000,8100,12000,16000]) {
-   const frame=oldSuspensionlightsAt(drive,time,model,registration).filter(s=>s.key.startsWith('Suspensionlight:'))
-   assert.equal(frame.length,10)
-   assert.ok(frame.every(s=>s.angle===0 && !s.moving))
-   assert.deepEqual(frame.map(s=>[s.x,s.y]),opening.map(s=>[s.x,s.y]),'Fixed blue sources remain stationary')
- }
- const sides=oldSuspensionlightsAt(drive,12500,model,registration).filter(s=>s.key.startsWith('Suspensionlight_2:'))
- assert.equal(sides.length,8)
- const yellow=t=>oldSuspensionlightsAt(drive,t,model,registration).filter(s=>s.key.startsWith('Suspensionlight_2:'))
- for (const time of [10700,11700,12700]) {
-   assert.deepEqual(yellow(time).map(s=>[s.x,s.y,s.angle]),sides.map(s=>[s.x,s.y,s.angle]))
-   assert.ok(yellow(time).every(s=>Math.abs(s.alpha-(time===11700 ? 0 : .55))<1e-10),'Yellow fades on/off/on without changing its angle')
- }
- const green=t=>oldSuspensionlightsAt(drive,t,model,registration).filter(s=>['Suspensionlight:1','Suspensionlight:2','Suspensionlight:5','Suspensionlight:6'].includes(s.key))
- const mRig=green(18000)
- assert.equal(mRig.length,4)
- for (const time of [17100,18000,18200,19900,20000]) assert.deepEqual(green(time).map(s=>[s.key,s.x,s.y,s.angle]),mRig.map(s=>[s.key,s.x,s.y,s.angle]))
- const turning=green(21500)
- assert.ok(turning.every(s=>s.moving))
- assert.deepEqual(turning.map(s=>[s.x,s.y]),mRig.map(s=>[s.x,s.y]),'Rotation leaves every emitter fixed')
- assert.notDeepEqual(turning.map(s=>s.angle),mRig.map(s=>s.angle))
- assert.equal(green(27000).length,4,'Rotation period is not a lifetime; the explicit erase owns visibility')
- const tlMoving=turning.find(s=>s.key==='Suspensionlight:2'),flMoving=turning.find(s=>s.key==='Suspensionlight:6')
- assert.ok(tlMoving.angle<40 && flMoving.angle<-200,'Top turns towards vertical while lower lamps turn towards horizontal')
- assert.notEqual(40-tlMoving.angle,-200-flMoving.angle,'6000 / 5000 periods advance the upper and lower lights independently')
- const exitState=green(29185).find(s=>s.key==='Suspensionlight:1')
- assert.equal(exitState.alpha,.275,'value102=2000 fades the outgoing lamp over two seconds')
- assert.ok(!green(30185).some(s=>s.key==='Suspensionlight:1'))
- const segment=key=>{
-   const s=mRig.find(s=>s.key===key),p=oldSuspensionlightLayout(s,1280,720)
-   return { ...p,dx:-Math.sin(p.rotation),dy:Math.cos(p.rotation) }
- }
- const tl=segment('Suspensionlight:2'),tr=segment('Suspensionlight:1')
- const fl=segment('Suspensionlight:6'),fr=segment('Suspensionlight:5')
- assert.ok(tl.dy>0&&tl.dx>0&&tr.dy>0&&tr.dx<0,'Inner M segments descend towards the centre')
- assert.ok(fl.dy<0&&fl.dx>0&&fr.dy<0&&fr.dx<0,'Outer M segments rise towards the upper left/right vertices')
- const xAtY=(p,y)=>p.x+(y-p.y)/p.dy*p.dx
- assert.ok(tl.y<0 && tr.y<0 && fl.x<60 && fr.x>1220,'Native M vertices remain above the frame and outer sources at its edges')
- assert.ok(Math.abs(xAtY(fl,tl.y)-tl.x)<44 && Math.abs(xAtY(fr,tr.y)-tr.x)<44,'Outer segments meet the native upper mounting vertices')
- assert.ok(Math.abs(xAtY(tl,fl.y)-640)<10 && Math.abs(xAtY(tr,fr.y)-640)<10,'Inner segments meet at the stage centre')
- for (const id of enabled.filter(id=>id.startsWith('drvalv_live_effect'))) {
-   const track=JSON.parse(fs.readFileSync(new URL(`../public/assets/live-chibi/${index.oldSuspensionlightSongs[id].file}`,import.meta.url))).events
-   assert.ok(oldSuspensionlightsAt(track,8000,model,index.oldSuspensionlightSongs[id]).filter(s=>s.key.startsWith('Suspensionlight:')).every(s=>s.angle===0))
+import { nativeLightCameraAt,nativeLightScreenLayout,nativeLightLocalLayout } from '../src/core/chibiNativeLightProjection.js'
+const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`,import.meta.url)))
+const model=read('chibi-old-suspension-model.json'),moon=read('chibi-old-suspension-events.json')
+const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`)
+const row=(time,command='Suspensionlight',changes={})=>({time,command,id:1,erase:false,
+ values:['1','1','1','2000','right','1000','30','10','360','#33f170','1650','3000','0','0','0'].map((v,i)=>changes[i+1]??v),extraValues:{}})
+const at=(events,time,tempo=140)=>oldSuspensionlightsAt(events,time,model,{referenceProjection:'stage-rig-v1',tempo})
+const basic=[row(0)]
+close(at(basic,600)[0].nativeAngle,38.88)
+close(at(basic,600)[0].angle,128.88)
+assert.equal(at(basic,600)[0].alpha,1)
+assert.equal(at(basic,600)[0].mirrorY,false)
+// A mid-flight speed change preserves Animator phase; inactive reactivation resets it.
+const changed=[...basic,row(500,'Suspensionlight',{4:'4000'})]
+close(at(changed,500)[0].phase,.5)
+close(at(changed,1000)[0].phase,.75)
+assert.notEqual(at(changed,1000)[0].phase,.25)
+const erase={...row(1000),erase:true,extraValues:{value101:'1',value102:'2000'}}
+const exiting=[...basic,erase]
+close(at(exiting,1100)[0].alpha,.25)
+assert.equal(at(exiting,1200).length,0) // Fixed native 0.2s, not generic value102.
+close(at([...exiting,row(1300)],1400)[0].phase,.1)
+close(at([...exiting,row(1100)],1200)[0].phase,1.2) // Cancelled exit keeps the active instance.
+// value2/3 are not native Animator gates. Huge periods are slow, not frozen.
+const slow=[row(0,'Suspensionlight',{2:'',3:'',4:'9999999'})]
+assert.equal(at(slow,1000).length,1)
+assert.ok(at(slow,1000)[0].phase>0)
+// _5's hue direction does not stop rotation, and hue delay never delays Animator.
+const chroma=[row(0,'Suspensionlight_5',{4:'5000',7:'120',5:'left'})]
+const half=at(chroma,1500)[0]
+assert.equal(half.color,'#f133b4')
+assert.equal(half.alpha,1)
+close(half.phase,.6)
+close(half.nativeAngle,38.88)
+close(half.angle,21.12)
+assert.equal(half.mirrorY,true)
+const hueDelay=[row(0,'Suspensionlight_5',{4:'5000',13:'1000'})]
+assert.equal(at(hueDelay,500)[0].color,'#33f170')
+assert.ok(at(hueDelay,500)[0].nativeAngle>0)
+// _2 samples BPM at Show, then cycles three colors on each completed beat.
+const pulse=[row(0,'Suspensionlight_2',{12:'1',13:'#ff0000',14:'#0000ff'})]
+close(at(pulse,60000/140/2)[0].alpha,.25)
+assert.equal(at(pulse,60000/140+10)[0].color,'#ff0000')
+assert.equal(at(pulse,2*60000/140+10)[0].color,'#0000ff')
+assert.equal(at(pulse,3*60000/140+10)[0].color,'#33f170')
+assert.equal(at(pulse,100,null)[0].unresolved,'tempo_unavailable')
+assert.equal(at(pulse,100,null)[0].alpha,0)
+const waitingPulse=[row(0,'Suspensionlight_2',{12:'0',15:'1'})]
+assert.equal(at(waitingPulse,100)[0].alpha,0)
+close(at(waitingPulse,2*60000/140+60000/140/2)[0].alpha,.25)
+const delayedPulse=[row(0,'Suspensionlight_3',{12:'1000',13:'500',14:'500'})]
+assert.equal(at(delayedPulse,400)[0].alpha,0)
+close(at(delayedPulse,750)[0].alpha,.5)
+close(at(delayedPulse,1250)[0].alpha,.5)
+assert.equal(at(delayedPulse,1750)[0].alpha,0)
+assert.deepEqual(at(changed,600),at(changed,600))
+// Independent matrix oracle: root Rz * LeftRightBase Rx * fixed Rz60 *
+// Animator Rz(a), with texture/screen Y reflection. Check corners, not angles
+// alone, so a wrong reflection cannot pass by matching a beam's centre ray.
+const rotate=(x,y,a)=>[x*Math.cos(a)-y*Math.sin(a),x*Math.sin(a)+y*Math.cos(a)]
+for(const side of ['left','right'])for(const angle of [-120,0,73,300])for(const t of [0,300,600,1700]){
+ const s=at([row(0,'Suspensionlight',{5:side,7:String(angle)})],t)[0]
+ const layout=oldSuspensionlightLayout(s,1280,720)
+ for(const [x,y] of [[-1,0],[1,0],[-1,3],[1,3]]){
+  let p=rotate(x,-y,(60+s.nativeAngle)*Math.PI/180)
+  if(side==='left')p[1]=-p[1]
+  p=rotate(...p,angle*Math.PI/180);p[1]=-p[1]
+  const actual=rotate(x*layout.scaleX,y*layout.scaleY,layout.rotation)
+  close(actual[0],p[0]);close(actual[1],p[1])
  }
 }
-console.log('PASS old sidelight generations, native curves, erase, seek/pause, responsive projection and Moon/Growing/Drive activation guard')
+const beam=at(basic,600)[0],large=oldSuspensionlightLayout(beam,1280,720),small=oldSuspensionlightLayout(beam,640,360)
+close(large.x,small.x*2);close(large.y,small.y*2);close(large.scaleY,small.scaleY*2)
+const cameraRow=(time,changes={})=>({time,zoom:1000,zoomDuration:0,x:0,y:360,moveDuration:0,rotation:0,rotationDuration:0,focusSlot:0,...changes})
+const lens={cameraEvents:[cameraRow(0,{zoom:2000,zoomDuration:1000,x:100,y:460,moveDuration:1000,rotation:90,rotationDuration:1000})]}
+const midpoint=nativeLightCameraAt(lens,500)
+close(midpoint.orthoSize,3.125);close(midpoint.zoom,1.6);close(midpoint.x,75);close(midpoint.rotation,67.5)
+const interruptedLens={cameraEvents:[...lens.cameraEvents,cameraRow(500)]}
+close(nativeLightCameraAt(interruptedLens,500).zoom,1)
+const focusSong={cameraEvents:[cameraRow(0,{focusSlot:1,zoomDuration:1000,moveDuration:100})],
+ positionEvents:[{time:0,position:1,x:100,y:180},{time:700,position:1,x:200,y:220}]}
+close(nativeLightCameraAt(focusSong,500).x,100)
+close(nativeLightCameraAt(focusSong,1000).x,200)
+close(nativeLightCameraAt(focusSong,1000).y,370)
+assert.equal(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1})]},10).verified,false)
+assert.equal(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1100,x:100})]},10).focusSlot,0)
+close(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1100,x:100})]},10).x,100)
+// Matrix oracle includes LiveStage's Prepare scale, camera inverse and screen
+// Y conversion. This checks the sign of camera rotation independently.
+for(const rotation of [-90,0,30])for(const zoom of [1,2]){
+ const cam={x:20,y:400,rotation,zoom}
+ const projected=nativeLightScreenLayout(beam,1280,720,1,cam)
+ const stageScale=1000/720,world=[beam.x*.01*stageScale,(beam.y-360)*.01*stageScale]
+ const cameraWorld=[cam.x*stageScale/100,(cam.y-360)*stageScale/100]
+ const view=rotate(world[0]-cameraWorld[0],world[1]-cameraWorld[1],-rotation*Math.PI/180)
+ close(projected.x,640+view[0]*720/(10/zoom));close(projected.y,360-view[1]*720/(10/zoom))
+ // The reference parent is intentionally different. Its .82 zoom, pivot and
+ // rotation must cancel exactly rather than being applied a second time.
+ const a=.82*Math.cos(.3),b=.82*Math.sin(.3),parent={a,b,c:-b,d:a,tx:83,ty:-41}
+ const local=nativeLightLocalLayout(projected,parent)
+ close(a*local.x-b*local.y+parent.tx,projected.x)
+ close(b*local.x+a*local.y+parent.ty,projected.y)
+ close(Math.cos(local.rotation+.3),Math.cos(projected.rotation))
+ close(Math.sin(local.rotation+.3),Math.sin(projected.rotation))
+ close(local.scaleX*.82,projected.scaleX)
+}
+for(const t of [0,6000,20000,105100])for(const s of at(moon,t))for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
+if(process.argv.includes('--published-assets')){
+ const base=new URL('../public/assets/live-chibi/',import.meta.url)
+ const index=JSON.parse(fs.readFileSync(new URL('stage-effects/index.json',base)))
+ assert.equal(Object.keys(index.oldSuspensionlightSongs).length,105)
+ let count=0,driveVariants=0
+ for(const [id,descriptor] of Object.entries(index.oldSuspensionlightSongs)){
+  const events=JSON.parse(fs.readFileSync(new URL(descriptor.file,base))).events;count+=events.length
+  if(id.startsWith('drvalv_live_effect')){
+   driveVariants++
+   const state=t=>at(events,t)
+   assert.equal(state(19000).find(s=>s.key==='Suspensionlight_5:1').color,'#f133b4')
+   close(state(19000).find(s=>s.key==='Suspensionlight_5:1').phase,.6)
+   assert.ok(!state(28385).some(s=>s.key==='Suspensionlight:1'))
+   const before=state(19999).find(s=>s.key==='Suspensionlight:1'),after=state(20000).find(s=>s.key==='Suspensionlight:1')
+   assert.ok(after.phase>=before.phase && after.phase-before.phase<.000001)
+  }
+  for(const t of [6000,19000,28385,112900])for(const s of at(events,t))for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
+ }
+ const choreography=JSON.parse(fs.readFileSync(new URL('choreography/index.json',base)))
+ for(const song of choreography.songs)for(const event of song.cameraEvents||[]){
+  for(const t of [event.time,event.time+50,event.time+1000]){
+   const camera=nativeLightCameraAt(song,t)
+   assert.equal(camera.verified,true,`${song.id} unresolved focus ${t}`)
+   for(const field of ['zoom','orthoSize','x','y','rotation'])assert.ok(Number.isFinite(camera[field]),`${song.id} ${field} ${t}`)
+  }
+ }
+ assert.equal(count,88647);assert.equal(driveVariants,20)
+}
+console.log('PASS old suspension: native hue/BPM/linear pulse, fixed erase, active phase continuity, slow periods, independent hierarchy matrix, seek and corpus')

@@ -36,8 +36,8 @@ def logo_model(source):
             'streamSha256':evidence['sha256'],'layers':[{'asset':sprite['name']}],
             'previewSongs':['tkstp1','tkstp2','drvalv'],'previewMovie':'live_backmonitor_movie_trhorz_01',
             'previewMovies':{'drvalv':'live_backmonitor_movie_cool_01_2'},
-            # Recording-backed logo-only fade candidate; never movie opacity.
-            'fadeControls':{'drvalv':'raw-value7-ms'}}
+            # Native PlayMovie -> RotateSprite.FadeAlpha: fixed 500ms, target 0.8.
+            'fadeControls':{'drvalv':'native-fixed-500ms'}}
 
 def extract_logo_source(environment):
     objects={o.path_id:o for o in environment.objects if o.assets_file.name=='resources.assets'}

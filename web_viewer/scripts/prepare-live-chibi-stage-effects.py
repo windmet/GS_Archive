@@ -23,6 +23,7 @@ from live_chibi_turnlaser import extract_turnlaser_model
 from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_old_suspension import old_suspension_model
 from live_chibi_backmonitor_logo import logo_model, extract_logo_source
+from live_chibi_backmonitor_layers import extract_backmonitor_layers
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -139,6 +140,8 @@ def main() -> None:
                      'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
     old_suspension = old_suspension_model(old_roots, old_animation)
     backmonitor_logo = logo_model(extract_logo_source(environment))
+    backmonitor_layers, backmonitor_assets = extract_backmonitor_layers(environment, output_root)
+    assets.update(backmonitor_assets)
     particle_spec = importlib.util.spec_from_file_location(
         'laser_particle_audit', PROJECT_ROOT / 'scripts/audit-live-chibi-stage-objects.py')
     particle_audit = importlib.util.module_from_spec(particle_spec)
@@ -199,7 +202,7 @@ def main() -> None:
             if script.m_Name in suspension_songs:
                 raise ValueError('Ambiguous new-suspension track: ' + script.m_Name)
             track = {'events': events,
-                'status': 'partial_reference_normal_show_unknown_controls_retained',
+                'status': 'partial_native_show_rotate_scale_fade_reference_projection',
                 'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
                            'serializedFile': obj.assets_file.name, 'pathId': str(obj.path_id),
                            'sha256': hashlib.sha256(payload).hexdigest()}}
@@ -210,7 +213,9 @@ def main() -> None:
             suspension_songs[script.m_Name] = {'file': f'stage-effects/{relative}',
                 'eventCount': len(events), 'source': track['source'], 'status': track['status'],
                 'unimplementedCommands': sum(e['command'] not in {
-                    'NewSuspensionlight_create', 'NewSuspensionlight_normal_show'} for e in events)}
+                    'NewSuspensionlight_create', 'NewSuspensionlight_normal_show',
+                    'NewSuspensionlight_rotateanim', 'NewSuspensionlight_scaleanim',
+                    'NewSuspensionlight_fade'} for e in events)}
         scripts = [obj for obj in bundle_environment.objects
                    if obj.type.name == 'TextAsset' and obj.read().m_Name == f'{code}_live_effect']
         if not scripts: continue
@@ -253,6 +258,7 @@ def main() -> None:
         "newSuspensionlightSongs": suspension_songs,
         "oldSuspensionlight": old_suspension,
         "backmonitorLogo": backmonitor_logo,
+        "backmonitorLayers": backmonitor_layers,
         "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

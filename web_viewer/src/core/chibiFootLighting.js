@@ -1,7 +1,6 @@
-// Native Skeleton-Gradient uses local mesh Y, not whole-Spine multiplication.
-// ChangeFootColor's CSV rate -> runtime uniforms is still unresolved. Sample
-// the authored rate, but keep height zero until a verified mapping is supplied.
-// Never turn that unknown rate into a cutoff or full-strength replacement.
+// Legacy diagnostic/filter API. The stage now uses chibiNativeFootColors
+// and the per-attachment native character material. localHeightRow remains
+// the shared affine conversion; this old helper must not drive the renderer.
 const clamp = x => Math.max(0, Math.min(1, x))
 export function footLightingAt(events = [], time = 0) {
   let state = { rgb: [0, 0, 0], height: 0, rate: 0 }, track = null

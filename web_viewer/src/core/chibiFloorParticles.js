@@ -1,5 +1,6 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { CHIBI_FIRE_PROFILE, attachChibiFire, sampleFireSystem } from './chibiFireFlipbook.js'
+import { bindNativeParticleMask,configureNativeParticleTexture } from './chibiNativeParticleMask.js'
 
 export const CHIBI_FLOOR_PROFILE = 'take-masked-nebula-reference-v1'
 export const CHIBI_BOX_FLOOR_PROFILE = 'continuous-masked-box-floor-v1'
@@ -167,6 +168,13 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
     throw results.find(r => r.status === 'rejected').reason
   }
   const textures = results.map(r => r.value), byId = new Map(ids.map((id,i)=>[id,textures[i]]))
+  // These bases are privately owned by this floor runtime. Native materials
+  // sample straight RGBA; PMA filtering cannot be undone after interpolation.
+  const nativeMask=animation.nativeMaskMaterial==='alpha-per-particle-v1' && ids.every(id=>{
+    const s=animation.textures[id].nativeSampling
+    return s && [0,1].includes(s.wrap) && s.filter===1 && Number.isInteger(s.mipCount) && s.mipCount>0
+  })
+  if(nativeMask)for(const [id,texture] of byId)configureNativeParticleTexture(texture,animation.textures[id].nativeSampling)
   const container = new PIXI.Container(), content = new PIXI.Container(), frameTextures = []
   try {
     content.sortableChildren = true
@@ -179,10 +187,13 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
       const mask = new PIXI.Sprite(byId.get(model.texture))
       mask.anchor.set(.5); mask.position.set(model.x,model.y)
       mask.width=model.width; mask.height=model.height
-      container.addChild(mask); group.mask=mask;groups.set(model.texture,group)
+      container.addChild(mask)
+      if(nativeMask)mask.renderable=false
+      else group.mask=mask // Older indexes retain their bounded legacy renderer.
+      groups.set(model.texture,{group,context:{sprite:mask,kind:animation.profile===CHIBI_FIRE_PROFILE?'normal':'add'}})
     }
     const emitters = animation.systems.map(system => {
-      const emitterContent=groups.get(system.maskTexture || animation.mask.texture)
+      const {group:emitterContent,context}=groups.get(system.maskTexture || animation.mask.texture)
       let texture = byId.get(system.texture)
       if (animation.profile === CHIBI_FIRE_PROFILE) {
         const metadata=animation.textures[system.texture], w=metadata.width/system.tilesX,h=metadata.height/system.tilesY
@@ -191,6 +202,7 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
           frameTextures.push(frame);return frame
         })
         const sprite=new PIXI.Sprite(frames[0]);sprite.anchor.set(.5);sprite.zIndex=system.sortingOrder
+        if(nativeMask)bindNativeParticleMask(sprite,context)
         sprite.blendMode=PIXI.BLEND_MODES.NORMAL;sprite.visible=false;emitterContent.addChild(sprite)
         return {system,sprites:[sprite],fireFrames:frames}
       }
@@ -209,11 +221,12 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
       }
       const sprites=Array.from({length:system.capacity},()=>{
         const s=new PIXI.Sprite(texture); s.anchor.set(.5); s.blendMode=PIXI.BLEND_MODES.ADD
+        if(nativeMask)bindNativeParticleMask(s,context)
         s.zIndex=system.sortingOrder; s.visible=false; emitterContent.addChild(s);return s
       })
       return {system,sprites,atlasFrames}
     })
-    return {container,textures,frameTextures,floorEmitters:emitters,floorSignature:'',destroyed:false}
+    return {container,textures,frameTextures,floorEmitters:emitters,floorSignature:'',nativeParticleMask:nativeMask,destroyed:false}
   } catch(error) {
     container.destroy({children:true})
     for(const t of frameTextures)t.destroy(false)

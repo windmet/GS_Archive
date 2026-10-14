@@ -10,11 +10,18 @@ export function chibiGroundRegistration() {
 
 // Independent position commands own formation and off-stage visibility.
 // Motion rows retain legacy x/y fields, but cannot overwrite a formation.
+export function chibiPositionStateAt(events, performerSlot, milliseconds) {
+  return (events || []).findLast(event => event.position === performerSlot && event.time <= milliseconds) || null
+}
+
 export function resolveChibiPlacement(positionState, motionEvent, fallbackX) {
   return {
     x: Number(positionState?.x ?? motionEvent?.x ?? fallbackX),
     y: Number(positionState?.y ?? motionEvent?.y ?? 180),
-    scale: Number(positionState?.scale ?? 1700),
+    // SetPosition (0x221bea0) writes value4 to baseSortOrder, not scale.
+    // Existing resource indexes used the wrong name; accept those bytes until
+    // their next source export without changing character size or corpus.
+    sortingOrder: Number(positionState?.sortingOrder ?? positionState?.scale ?? 1700),
     positionState,
   }
 }

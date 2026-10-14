@@ -7,6 +7,7 @@ modules are reported, not replaced by Take's parameters or a static texture.
 import importlib.util
 import json
 from pathlib import Path
+from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 from live_chibi_fire import ASSET as FIRE_ASSET, PROFILE as FIRE_PROFILE, SHADER_ID, fire_model
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -50,6 +51,7 @@ def system(p):
         require(u['tilesX']==u['tilesY']==4 and u['frameOverTime']['minMaxState']==0
                 and u['frameOverTime']['scalar']==0 and u['startFrame']['minMaxState']==0,'Animated/random atlas unsupported')
     mat=p['renderer']['materials'][0];tex={t['property']:t for t in mat['textures']}
+    require_native_particle_mask(mat)
     require(len(p['renderer']['materials'])==1 and mat['shader']['name']=='Alpha Masked/Particles/Additive'
             and mat['shader']['status']=='resolved_dependency' and mat['floats']['_UseAlphaChannel']==1
             and set(tex)=={'_AlphaTex','_MainTex'},'Mask shader/material unsupported')
@@ -201,8 +203,9 @@ def main():
                 tex=obj.read();image=tex.image.convert('RGBA');filename=f'{asset}-{identity}.png'
                 target=out/filename;image.save(target)
                 textures[identity]={**audit.source_ref(obj),'file':f'floor-particles/{filename}',
+                                    'nativeSampling':native_particle_texture_sampling(tex),
                                     'width':image.width,'height':image.height,'pngSha256':audit.file_hash(target)}
-            models[asset]={'profile':profile,'asset':asset,'bundle':bundle,'bundleSha256':audit.file_hash(path),
+            models[asset]={'profile':profile,'asset':asset,'bundle':bundle,'bundleSha256':audit.file_hash(path),'nativeMaskMaterial':'alpha-per-particle-v1',
                            'keeper':native['keeper'],'particleCount':len(native['particles']),'systems':systems,'mask':mask,'textures':textures,
                            'status':'native_inputs_reference_projection_rng_not_unity_equivalent'}
             if len(masks)>1:models[asset]['maskGroups']=masks

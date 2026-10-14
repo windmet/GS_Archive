@@ -43,6 +43,8 @@ def old_suspension_model(prefabs, controllers):
         machine = tree['m_Controller']['m_StateMachineArray'][0]['data']
         require(len(tree['m_Controller']['m_StateMachineArray'])==len(tree['m_Controller']['m_LayerArray'])==1
                 and len(machine['m_StateConstantArray'])==2 and not machine['m_AnyStateTransitionConstantArray']
+                and machine['m_DefaultState']==0
+                and controller['clips'][0]['typetree']['m_Name']=='angle60'
                 and not tree['m_StateMachineBehaviours'],'Changed sidelight state machine')
         for index,state in enumerate(machine['m_StateConstantArray']):
             state=state['data'];nodes=state['m_BlendTreeConstantArray']
@@ -54,6 +56,9 @@ def old_suspension_model(prefabs, controllers):
                     'Changed sidelight clip selection/transition')
         clips = {}
         for source in controller['clips']:
+            bindings=source['typetree']['m_ClipBindingConstant']['genericBindings']
+            require(len(bindings)==1 and bindings[0]['path']==0 and bindings[0]['typeID']==4
+                    and bindings[0]['attribute']==4,'Changed sidelight Animator target')
             clip = streamed.decode_clip(source)
             require(clip['duration']==2 and clip['loop'] and clip['name'] in ('angle30','angle60')
                     and clip['validation']['sampledRanges']['eulerDegrees.x']=={'min':0,'max':0}

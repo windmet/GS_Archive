@@ -29,10 +29,9 @@ def main():
             parser.error('Preserve unrelated index; choose a component-specific output directory')
     background_path = sources.published_path('assets/live-chibi/stage-backgrounds/index.json')
     backgrounds = json.loads(background_path.read_text(encoding='utf-8'))
-    choreography = json.loads(sources.published_path('assets/live-chibi/choreography/index.json').read_text(encoding='utf-8'))
-    # All statically composited components in Image_color songs are kept separate.
-    # Songs whose images already use Image_layer require no duplicate resources.
-    codes = {song['songCode'] for song in choreography['songs'] if song.get('imageColorEvents')}
+    # Keep all indexed static components separate for global renderer sorting.
+    # Unknown suffixes retain legacy order until their renderer is recovered.
+    codes = set(backgrounds['songs'])
     assets, songs = {}, {}
     output.mkdir(parents=True, exist_ok=True)
     for code in sorted(codes & backgrounds['songs'].keys()):
@@ -71,6 +70,7 @@ def main():
             image.save(target, format='PNG', optimize=True)
             assets[asset] = {'file': 'image-components/' + target.name,
                 'width': image.width, 'height': image.height, 'pngSha256': sha256_file(target),
+                'sortingOrder': {'01':1100,'02':1300,'03':1500}.get(asset.rsplit('_',1)[-1]),
                 'pivot': {'x': pivot.x, 'y': pivot.y}, 'pixelsToUnits': sprite.m_PixelsToUnits,
                 'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
                     'serializedFile': obj.assets_file.name, 'spritePathId': str(obj.path_id),
