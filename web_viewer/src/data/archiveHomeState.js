@@ -9,12 +9,29 @@ function resolveCharacterCards(cardsByCharacter, idolCode) {
     })
 }
 
-function normalizeHomeCue(card, cue) {
+// SystemScenarioData as the native decider reads it; Param1 is the draw weight, Param2 marks awakening.
+function homeCondition(row) {
+  if (!row) return null
+  return {
+    id: row.id,
+    openMonth: row.open_month,
+    closeMonth: row.close_month,
+    openTime: row.open_time,
+    closeTime: row.close_time,
+    weight: row.param1,
+    awakenedOnly: Boolean(row.param2),
+    overrideId: row.override_idol_system_scenario_id || 0,
+  }
+}
+
+function normalizeHomeCue(card, cue, conditions) {
   const preview = cue?.preview
   const previewStep = preview?.preview_step
   if (!preview || !previewStep?.state || !preview.voice) return null
   return {
     id: `${card.resource_id}:${cue.cue}`,
+    source: 'card',
+    condition: homeCondition(conditions?.get(`${card.card_id}:${cue.cue}`)),
     cue: cue.cue,
     voice: preview.voice,
     scenarioId: preview.scenario_id || cue.scenario_base || '',
@@ -28,6 +45,37 @@ function normalizeHomeCue(card, cue) {
     compiledFile: preview.compiled_file || cue.compiled_file || '',
     previewStep,
   }
+}
+
+// An idol's general HomeStand voice: no card, played from its script's jump point.
+function normalizeIdolCue(row) {
+  const previewStep = row?.preview_step
+  if (!previewStep?.state || !row.voice) return null
+  return {
+    id: `idol:${row.script_label}`,
+    source: 'idol',
+    condition: homeCondition(row),
+    cue: row.script_label,
+    voice: row.voice,
+    scenarioId: row.scenario_id || row.script_name || '',
+    speaker: row.speaker || previewStep.dialogue?.speaker || '',
+    text: row.text || previewStep.dialogue?.text || '',
+    background: previewStep.state.bg || '',
+    modelId: previewStep.state.spines?.[0]?.model || '',
+    cardId: '',
+    cardTitle: '',
+    rarity: '',
+    compiledFile: row.compiled_file || '',
+    previewStep,
+  }
+}
+
+function homeVoiceSources(systemVoiceData) {
+  const idolCues = new Map((systemVoiceData?.idols || []).map(idol => [idol.idol_code,
+    (idol.scenarios || []).map(normalizeIdolCue).filter(Boolean)]))
+  const cardConditions = new Map(Object.values(systemVoiceData?.card_home_stand || {}).flat()
+    .map(row => [`${row.card_id}:${row.script_label}`, row]))
+  return { idolCues, cardConditions }
 }
 
 function buildCostumesByIdol(costumeDictionaryData) {
@@ -50,7 +98,7 @@ function buildCostumesByIdol(costumeDictionaryData) {
   return result
 }
 
-export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManifestData, costumeDictionaryData = null) {
+export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManifestData, costumeDictionaryData = null, systemVoiceData = null) {
   if (!idolUnitData?.by_idol_code || !cardIndexData?.by_character) return []
   const cardsByCharacter = new Map()
   for (const card of cardIndexData.cards || []) {
@@ -60,6 +108,7 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
   const memberships = archiveManifestData?.unit_membership_by_idol || {}
   const costumesByIdol = buildCostumesByIdol(costumeDictionaryData)
   const costumeModels = costumeDictionaryData?.by_model_resource_id
+  const { idolCues, cardConditions } = homeVoiceSources(systemVoiceData)
 
   return Object.keys(cardIndexData.by_character)
     .map(idolCode => {
@@ -69,9 +118,10 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
       const cards = resolveCharacterCards(cardsByCharacter, idolCode)
       // 源表里不同记录 ID 可指向同一 cue，按 card+cue 身份去重（不按文本）。
       const seenCueIds = new Set()
-      const cues = cards.flatMap(card => (card.home_voice_cues || [])
-        .map(cue => normalizeHomeCue(card, cue))
-        .filter(Boolean))
+      // The idol's general pool leads; each card's touch voices follow in card order.
+      const cues = [...(idolCues.get(idolCode) || []), ...cards.flatMap(card => (card.home_voice_cues || [])
+        .map(cue => normalizeHomeCue(card, cue, cardConditions))
+        .filter(Boolean))]
         .filter(cue => !seenCueIds.has(cue.id) && seenCueIds.add(cue.id))
       if (!cues.length) return null
       const costumes = [...(costumesByIdol.get(idolCode) || [])]
@@ -115,6 +165,8 @@ export function archiveHomeStateStats(idols) {
   return {
     idols: idols.length,
     cues: cues.length,
+    cardCues: cues.filter(cue => cue.source === 'card').length,
+    idolCues: cues.filter(cue => cue.source === 'idol').length,
     backgrounds: new Set(cues.map(cue => cue.background).filter(Boolean)).size,
     models: new Set(cues.map(cue => cue.modelId).filter(Boolean)).size,
     playable: cues.filter(cue => cue.voice && cue.compiledFile).length,

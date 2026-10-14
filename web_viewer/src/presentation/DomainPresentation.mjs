@@ -37,9 +37,12 @@ export const rewardCondition=row=>rewardConditions(row).join(' · ');
 export const rewardProductName=product=>product?.presentation?.name || product?.nameJa || product?.typeNameJa || `未解析奖励 ${product?.productId ?? ''}`;
 export const rewardRelationLabel=row=>rewardScopeLabels[row.scope] || (row.relation==='card-awakening-cost'?'觉醒消耗':row.relation==='event-material'?'活动材料':sourceDomainLabels[row.sourceTable] || '其他客户端来源');
 export function rewardProductLabel(product) {
+  if (product?.kind==='scalar' && product.currencyKey) return '货币';
   return ({item:'道具',honor:'称号',card:'卡片',cardFragment:'卡片碎片',photoFilter:'摄影滤镜',photoSticker:'摄影贴纸',photoSpot:'摄影地点',photoScene:'摄影场景',photoFrame:'摄影相框'})[product?.kind] || product?.typeNameJa || '种类待确认';
 }
-export const rewardCollectionKey=product=>product?.referenceStatus==='resolved-entity' &&
+// A product-type reward (Star Gems, Money) opens its currency entry; items and honors open their own.
+export const rewardCollectionKey=product=>product?.kind==='scalar' ? (/^currency:[a-z]+(?:-[a-z]+)*$/.test(product.currencyKey || '') ? product.currencyKey : '') :
+  product?.referenceStatus==='resolved-entity' &&
   ['item','honor'].includes(product.kind) && new RegExp(`^${product.kind}:\\d+$`).test(product.entityKey || '') ? product.entityKey : '';
 // Editorial navigation labels reviewed against source descriptions; not official enums.
 export const itemBrowseGroups=[

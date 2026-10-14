@@ -77,11 +77,16 @@
       <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
+    <section v-if="songRelationItems.length" class="detail-section event-songs" aria-labelledby="event-songs-title">
+      <div class="section-heading"><h3 id="event-songs-title">活动曲</h3></div>
+      <ArchiveRelationList :items="songRelationItems" @select="emit('open-song',$event.payload)" />
+    </section>
+
     <section class="detail-section reward-section" aria-labelledby="event-rewards-title">
       <div class="section-heading">
         <div>
           <h3 id="event-rewards-title">活动报酬卡</h3>
-          <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
+          <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : rewardWikiNote?.text.includes('任务') ? '通过阅读剧情、累计活动点数或完成活动任务获得的报酬卡。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
         </div>
         <small class="section-count">{{ rewardCards.length + (exchangeRewards?.cards.length || 0) }} 张</small>
       </div>
@@ -94,6 +99,7 @@
             <ul>
               <li v-for="method in card.methods" :key="method.key">
                 <BookOpen v-if="method.kind === 'story'" :size="13" />
+                <Flag v-else-if="method.kind === 'mission'" :size="13" />
                 <Gauge v-else :size="13" />
                 <span>{{ rewardMethodLabel(card,method) }}</span>
               </li>
@@ -102,6 +108,7 @@
           </button>
         </div>
       </div>
+      <p v-if="rewardWikiNote" class="exchange-source">{{ rewardWikiNote.text }}<template v-for="source in rewardWikiNote.sources" :key="source.url"> <ArchiveSourceLink :url="source.url" :label="source.label" /></template></p>
       <div v-if="exchangeRewards" class="exchange-rewards">
         <p class="exchange-source">兑换归属与数量据 Wikiwiki 补录，卡片身份与资源对应客户端资料。</p>
         <div class="reward-grid">
@@ -126,10 +133,27 @@
       <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
-    <section v-if="castReferences.length||units.length" class="detail-section" aria-labelledby="event-cast-title">
-      <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
-      <div class="cast-layout">
-        <!-- Cast as small avatars, the same as a story's cast list (half-body art is visual density only). -->
+    <!-- Cast in the unit page's idiom: hairline rows on the paper, units first since they
+         decide what the event belongs to, then the idols as small avatars. -->
+    <section v-if="castReferences.length||units.length" class="detail-section event-cast" aria-labelledby="event-cast-title">
+      <div class="section-heading">
+        <h3 id="event-cast-title">出演与归属</h3>
+        <small class="section-count">{{ castCountLabel }}</small>
+      </div>
+      <div v-if="units.length" class="cast-group">
+        <h4>{{ units.length > 1 ? '出演组合' : '所属组合' }}</h4>
+        <ul class="unit-list">
+          <li v-for="unit in units" :key="unit.unit_id">
+            <button type="button" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">
+              <img :src="getUnitLogoUrl(unit.unit_code)" alt="" />
+              <span>{{ unit.unit_name }}</span>
+              <ChevronRight :size="16" aria-hidden="true" />
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div v-if="castReferences.length" class="cast-group">
+        <h4>出演偶像</h4>
         <div class="idol-list">
           <ArchiveIdolReference
             v-for="entry in castReferences"
@@ -138,12 +162,6 @@
             density="compact"
             @open="emit('open-idol', entry.idol)"
           />
-        </div>
-        <div class="unit-list">
-          <button v-for="unit in units" :key="unit.unit_id" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">
-            <img :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-            <span>{{ unit.unit_name }}</span>
-          </button>
         </div>
       </div>
     </section>
@@ -167,7 +185,7 @@
 <script setup>
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
-import { BookOpen, ExternalLink, Gauge, Play } from '@lucide/vue'
+import { BookOpen, ChevronRight, ExternalLink, Flag, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
@@ -184,10 +202,11 @@ import { useStorySynopsis } from './useStorySynopsis.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { flowForLocale } from '../../../shared/reading/ReadingTypography.js'
 import {rewardConditions} from './DomainPresentation.mjs'
+import {collectionKindForEntity} from '../../core/CollectionRouteState.js'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
 const quickEntity=ref('')
-function openQuick(key){if(/^(item|honor):\d+$/.test(key))quickEntity.value=key}
+function openQuick(key){if(collectionKindForEntity(key))quickEntity.value=key}
 const props = defineProps({
   displayIdolName:{type:Function,default:()=>''},
   client: Object,
@@ -197,7 +216,7 @@ const props = defineProps({
   readingError: { type: String, default: '' },
   loadReadingDocument: { type: Function, default: null },
 })
-const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-song','open-target','open-seasonal'])
 const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
@@ -217,6 +236,7 @@ const event=computed(()=>props.view?.story.entry)
 const story=computed(()=>props.view?.story)
 const episodes=computed(()=>props.view?.episodes || [])
 const units=computed(()=>props.view?.units || [])
+const castCountLabel=computed(()=>[castReferences.value.length&&`${castReferences.value.length} 位`,units.value.length>1&&`${units.value.length} 个组合`].filter(Boolean).join(' · '))
 const resources=computed(()=>eventResources(props.view?.identity))
 const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
 const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
@@ -239,8 +259,21 @@ const rewardEpisodesById=computed(()=>{
   for(const episode of episodes.value) entries.set(String(episode.id),entries.has(String(episode.id))?null:episode)
   return entries
 })
+// The reward table was checked against Wikiwiki's 限定報酬 list; mission cards come from the event page itself.
+const rewardWikiNote=computed(()=>{
+  const check=props.view?.rewards.wikiCheck
+  if(!check||!rewardCards.value.length)return null
+  const missions=rewardCards.value.flatMap(card=>card.methods.filter(method=>method.kind==='mission'))
+  return {text:missions.length?`报酬卡已与 Wikiwiki 活动限定報酬核对；${missions.length} 张活动任务报酬卡据活动页补录。`:'报酬卡已与 Wikiwiki 活动限定報酬核对。',
+    sources:[{url:check.source.url,label:'过往活动一览'},...missions.slice(0,1).map(method=>({url:method.source.url,label:'活动页任务'}))]}
+})
 const rewardCardIds = computed(() => new Set(rewardCards.value.map(card => card.card_resource_id)))
 const derivedOnlyCards = computed(() => (props.view?.cards || []).filter(card => !rewardCardIds.value.has(card.card_resource_id)))
+// The event's BGM song; a reprint plays the original event's song.
+const songRelationItems = computed(() => (props.view?.songs || []).map(song => ({
+  id: `song:${song.song_code}`, kind: 'song', label: props.view.identity.isReprint ? '原活动曲' : '', title: song.title,
+  meta: song.unit_name ? `演唱 · ${song.unit_name}` : '', imageUrl: song.jacket_url || '', imageAlt: `${song.title} 封面`, payload: song.song_code,
+})))
 const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => ({
   id: `event-derived-card:${props.view.identity.id}:${card.card_resource_id}`,
   kind: 'card',
@@ -396,18 +429,20 @@ button.episode-main { cursor: pointer; }
 .event-related-history .domain-link { min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 
 /* Cast. */
-.cast-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--gs-space-6); }
-/* Small avatars, as on a story's cast list; names wrap rather than truncate. */
-.idol-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--gs-space-3); min-width: 0; }
-.idol-list :deep(.archive-idol-reference) { gap: var(--gs-space-4); padding: var(--gs-space-3); border-radius: var(--gs-radius-panel); }
-.idol-list :deep(.idol-reference-copy) { gap: var(--gs-space-2); }
-.idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.4; }
+.cast-group + .cast-group { margin-top: var(--gs-space-6); }
+.cast-group h4 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+/* Hairline rows like the unit page's members; names wrap rather than truncate. */
+.idol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 0 var(--gs-space-7); min-width: 0; }
+.idol-list :deep(.archive-idol-reference) { border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
+.idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
 .idol-list :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-list :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.unit-list { display: grid; align-content: start; gap: var(--gs-space-3); min-width: 180px; }
-.unit-list button { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 52px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.unit-list img { flex: 0 0 auto; width: 70px; height: 38px; object-fit: contain; }
+.unit-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 var(--gs-space-7); margin: 0; padding: 0; list-style: none; }
+.unit-list li { min-width: 0; }
+.unit-list button { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.unit-list img { width: 70px; height: 38px; object-fit: contain; }
 .unit-list span { min-width: 0; font-size: var(--gs-text-body); overflow-wrap: anywhere; }
+.unit-list svg { color: var(--gs-mint-ink); }
 
 .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link) { gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .event-summary :deep(.archive-source-link small), .wiki-exchange-table :deep(.archive-source-link small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
@@ -456,11 +491,11 @@ button.episode-main { cursor: pointer; }
 }
 @media (hover: hover) and (pointer: fine) {
   button.episode-main:hover strong, .episode-play:hover:not(:disabled),
-  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover,
+  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover span,
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
 }
 @media (hover: none), (pointer: coarse) {
-  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: var(--gs-paper); }
+  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: none; }
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
   .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }
@@ -478,8 +513,6 @@ button.episode-main { cursor: pointer; }
 }
 @container event-detail (max-width: 800px) {
   .event-identity { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
-  .cast-layout { grid-template-columns: minmax(0, 1fr); }
-  .unit-list { min-width: 0; }
   .episode-list { grid-template-columns: minmax(0, 1fr); }
 }
 @container event-detail (max-width: 560px) {

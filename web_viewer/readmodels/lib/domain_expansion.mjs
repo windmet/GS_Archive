@@ -1,4 +1,5 @@
 import { assert, pick } from './common.mjs';
+import { wikiSource, wikiEventRewards, eventMissionLabel } from './wiki_acquisition.mjs';
 import { idolHonorIdentity, idolHonorBelongsTo, idolHonorOrder, chocolateHonorIdentity, chocolateHonorBelongsTo } from '../../src/presentation/HonorIdentity.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
@@ -51,6 +52,30 @@ export function projectCardLimitbreakMaterials(cards, items, collectionMedia, ca
   return { materialContexts, usageCardsByItem };
 }
 
+/** An event's BGM resource names its song (`bgm_<song_code>_inst`); a reprint reuses the original's.
+ * Returns each event's songs and, per song, its events (premiere first, then reprints by start). */
+export function projectEventSongs(eventRecords, songs) {
+  assert(Array.isArray(eventRecords) && songs && typeof songs === 'object', 'Missing event/song projection inputs');
+  const eventSongs = {}, songEvents = {};
+  for (const record of eventRecords) {
+    const view = record.view, match = /^bgm_([a-z0-9]{6})_inst$/.exec(view.media?.bgm?.resourceId || '');
+    const song = match ? songs[match[1]] : null;
+    assert(!match || song, `Event BGM names an unknown song: ${view.media.bgm.resourceId}`);
+    eventSongs[record.id] = song ? [{ song_code:song.song_code, title:song.title, jacket_url:song.jacket_url || '',
+      unit_name:song.performance_mapping?.confirmed_unit?.unit_name || '' }] : [];
+    if (song) (songEvents[song.song_code] ||= []).push({ event_id:record.id, event_code:view.identity.eventCode,
+      title:view.identity.title, kind:view.identity.kind, isReprint:!!view.identity.isReprint,
+      startAt:view.period?.startAt ?? null, banner:view.media.banner ? pick(view.media.banner, ['url','status']) : null });
+  }
+  for (const [code, events] of Object.entries(songEvents)) {
+    events.sort((a, b) => a.isReprint - b.isReprint || (a.startAt ?? 0) - (b.startAt ?? 0));
+    assert(events.filter(event => !event.isReprint).length === 1, `Song ${code} needs exactly one premiere event`);
+  }
+  for (const song of Object.values(songs)) if (song.gameplay?.history?.historicalKind === 'event')
+    assert(songEvents[song.song_code], `Event-premiered song has no event BGM: ${song.song_code}`);
+  return { eventSongs, songEvents };
+}
+
 export function validateMediaPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
     payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB &&
@@ -64,6 +89,37 @@ export function validateMediaPayload(payload, kind) {
     }
   };
   inspect(payload);
+  return payload;
+}
+
+const safeMediaUrl = url => typeof url === 'string' && /^\/assets\/domain-images\/image\/(image_item|image_costume_icon)\/[a-z0-9_./-]+\.png$/i.test(url) && !url.split('/').includes('..');
+const imageBinding = image => image?.status === 'verified-local-file'
+  ? (assert(safeMediaUrl(image.url) && /^[a-f0-9]{64}$/.test(image.sha256), 'Unsafe collection image binding'), pick(image, ['url','status','sha256','bytes','width','height','runtimeVerified']))
+  : { status: image?.status || 'file-not-found', runtimeVerified: false };
+
+/** Currencies and resources (config/currency-catalog.v1.json): product types and the two memory items. */
+export function validateCurrencyCatalog(payload) {
+  assert(payload?.schemaVersion === 1 && payload.kind === 'gs-currency-catalog' &&
+    payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB && payload.source?.generatorVersion === 'gs-currency-catalog-v1',
+    'Currency catalog source contract');
+  const entries = payload.entries;
+  assert(Array.isArray(entries) && entries.length > 0 && new Set(entries.map(e => e.key)).size === entries.length &&
+    entries.every(e => /^[a-z-]+$/.test(e.id) && e.key === `currency:${e.id}` && (Number.isInteger(e.productType) !== /^item:\d+$/.test(e.itemKey || '')) &&
+      typeof e.nameJa === 'string' && e.nameJa && Array.isArray(e.acquisition) && Array.isArray(e.usage)), 'Currency catalog identity');
+  assert(new Set(entries.filter(e => e.productType).map(e => e.productType)).size === entries.filter(e => e.productType).length, 'Duplicate currency product type');
+  return payload;
+}
+
+/** One costume model per entry, with the cards that wear it (scripts/generate-costume-catalog.py). */
+export function validateCostumeCatalog(payload) {
+  assert(payload?.schemaVersion === 1 && payload.kind === 'gs-costume-catalog' && payload.source?.generatorVersion === 'gs-costume-catalog-v1',
+    'Costume catalog source contract');
+  const entries = payload.entries;
+  // idolCode is the wearer the StoryCostumes/LiveCostumes row names. It usually matches the model's prefix, but the
+  // Aoi twins' story rows swap models (012yus wears 013kys_004_00 and back), so only the shape is checked here.
+  assert(Array.isArray(entries) && entries.length > 0 && new Set(entries.map(e => e.key)).size === entries.length &&
+    entries.every(e => /^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/.test(e.id) && e.key === `costume:${e.id}` && /^[0-9]{3}[a-z]{3}$/.test(e.idolCode) &&
+      Array.isArray(e.cards) && Array.isArray(e.uses) && e.uses.length > 0), 'Costume catalog identity');
   return payload;
 }
 
@@ -113,6 +169,9 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
   const photoMedia=validateMediaPayload(data.domainPhotoMedia,'gs-photo-media').entries;
   const eventMedia=validateMediaPayload(data.domainEventMedia,'gs-event-media');
   const loginCampaigns=validateDomainPayload(data.domainLogin,'gs-login-campaign-catalog').entries;
+  const currencies=validateCurrencyCatalog(data.domainCurrencies).entries;
+  // A reward that is only a product type (Star Gems, Money) is shown as its currency entry.
+  const currencyByType=new Map(currencies.filter(entry=>entry.productType).map(entry=>[entry.productType,entry]));
   const events = validateDomainPayload(data.domainEvents, 'gs-event-supplement-index').entries;
   assert(Array.isArray(events) && new Set(events.map(e => e.eventCode)).size === events.length, 'Duplicate event codes');
   const legacy = domains.events.records;
@@ -125,6 +184,9 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(event, `Unresolved historical event: ${id}`);
     return { event_id: String(routeId(event)), event_code: event.eventCode, title: event.name };
   };
+  const wikiRewards = wikiEventRewards(data.wikiAcquisition, data.eventExchange);
+  const eventAcquisitions = {};
+  const acquire = (resourceId, entry) => (eventAcquisitions[resourceId] ||= []).push(entry);
   domains.events.records = await Promise.all(events.map(async event => {
     const source = validateDomainPayload(await readSource(`data/masterdata/domains/event_details/${event.detailKey}.json`), 'gs-event-detail-supplement');
     assert(String(source.eventId) === String(event.id), 'Event supplement identity mismatch');
@@ -144,8 +206,11 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     const rewards=source.rewards.map(row=>{
       const target=domainProductTarget(row.product,data.domainCards,data.domainPhotoMaterials);
       const card=target?.view==='card_detail'?data.domainCards.find(card=>card.resource_id===target.card):null;
-      const image=collectionMedia[row.product.entityKey]?.image || (target?.photoEntity?photoMedia[target.photoEntity]?.image:null) || (card?eventMedia.cardImages[card.resource_id]:null);
-      return {...row,product:{...row.product,target,presentation:{name:row.product.nameJa || card?.title || row.product.typeNameJa,image:image?pick(image,['url','status','sha256']):null,target:target || (['item','honor'].includes(row.product.kind)&&row.product.referenceStatus==='resolved-entity'?{view:'collection_catalog',entity:row.product.entityKey}:null)}}};
+      const currency=row.product.kind==='scalar'?currencyByType.get(row.product.typeCode):null;
+      const image=collectionMedia[row.product.entityKey]?.image || (target?.photoEntity?photoMedia[target.photoEntity]?.image:null) || (card?eventMedia.cardImages[card.resource_id]:null) ||
+        (currency?.image.status==='verified-local-file'?currency.image:null);
+      return {...row,product:{...row.product,target,...(currency?{currencyKey:currency.key}:{}),presentation:{name:row.product.nameJa || card?.title || row.product.typeNameJa,image:image?pick(image,['url','status','sha256']):null,target:target || (['item','honor'].includes(row.product.kind)&&row.product.referenceStatus==='resolved-entity'?{view:'collection_catalog',entity:row.product.entityKey}:null) ||
+        (currency?{view:'collection_catalog',entity:currency.key}:null)}}};
     });
     const rewardCards=new Map();
     for(const row of rewards.filter(row=>row.product.kind==='card'&&row.product.target)){
@@ -157,6 +222,26 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       const fragments=rewards.filter(row=>row.product.kind==='cardFragment'&&row.product.target?.card===card.card_resource_id);
       if(fragments.length)card.methods.push({key:`fragments-${card.card_resource_id}`,kind:'point',label:`${fragments[0].totalPoint?.toLocaleString('zh-CN')} PT 起，共 ${fragments.length} 次碎片报酬`});
     }
+    // Wikiwiki's 限定報酬 list: the reward table must be part of it; the rest are mission or exchange cards.
+    const wiki=wikiRewards.get(event.eventCode);
+    let wikiCheck=null;
+    if(wiki){
+      const listed=new Set(wiki.row.cards.map(card=>card.resource_id));
+      assert([...rewardCards.keys()].every(id=>listed.has(id)),`Reward table outside the wiki listing: ${event.eventCode}`);
+      wikiCheck={source:wikiSource(data.wikiAcquisition,'past_events'),listedCards:listed.size};
+      for(const entry of wiki.row.cards.filter(card=>card.mission)){
+        const card=data.domainCards.find(card=>card.resource_id===entry.resource_id);
+        assert(card&&!rewardCards.has(card.resource_id),`Unresolved wiki mission card: ${entry.resource_id}`);
+        rewardCards.set(card.resource_id,{card_resource_id:card.resource_id,card_title:card.title,character_id:card.character_id,character_name:data.idolUnit.by_idol_code[card.character_id]?.display_name,rarity:card.rarity,
+          image:eventMedia.cardImages[card.resource_id]?pick(eventMedia.cardImages[card.resource_id],['url','status','sha256']):null,
+          methods:[{key:`wiki-mission:${card.resource_id}`,kind:'mission',label:eventMissionLabel(entry.mission.condition),condition:entry.mission.condition,term:entry.mission.term,source:wikiSource(data.wikiAcquisition,entry.source)}]});
+      }
+    }
+    for(const card of rewardCards.values())acquire(card.card_resource_id,{event_id:id,event_code:event.eventCode,title:event.name,kind:event.eventKind,release_at:event.term?.openAt||0,
+      methods:card.methods.map(method=>({kind:method.kind,label:method.kind==='story'?'活动剧情阅读报酬':method.label})),
+      basis:card.methods.some(method=>method.kind==='mission')?'wiki':'masterdata',source:wikiCheck?.source||null});
+    for(const card of wiki?.exchange?.cards||[])acquire(card.resourceId,{event_id:id,event_code:event.eventCode,title:event.name,kind:event.eventKind,release_at:event.term?.openAt||0,
+      methods:[{kind:'exchange',label:`${card.cost.nameJa} × ${card.cost.amount} 兑换（限 ${card.exchangeLimit} 次）`}],basis:'wiki',source:pick(wiki.exchange.source,['title','url','checkedAt'])});
     const media=eventMedia.entries[`event:${event.id}`];assert(media,'Missing event media identity');
     const cast=base?.view.idols || [];
     return { id, summary:{ event_id:id, event_code:event.eventCode, title:event.name,
@@ -170,10 +255,12 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       castReferences:base?.view.castReferences || [],
       relatedEvents:related.map(other => eventLink(other.id)),
         seasonalCampaign:seasonal.length?{id:seasonal[0].id,title:seasonal[0].view.campaign.name}:null,
-      rewards:{cards:[...rewardCards.values()],general:rewards,materials:source.items.map(link=>({...link,nameJa:data.domainItems.entries.find(item=>item.id===link.itemId)?.nameJa || String(link.itemId),image:pick(collectionMedia[`item:${link.itemId}`]?.image || {},['url','status'])}))},
+      rewards:{cards:[...rewardCards.values()],wikiCheck,general:rewards,materials:source.items.map(link=>({...link,nameJa:data.domainItems.entries.find(item=>item.id===link.itemId)?.nameJa || String(link.itemId),image:pick(collectionMedia[`item:${link.itemId}`]?.image || {},['url','status'])}))},
       provenance:{eventId:event.id,detailTable:source.sourceTable,coverage:source.coverage,storyChapterRelations:event.storyChapterRelations} } };
   }));
   assert(legacy.every(record => domains.events.records.some(next => next.id === record.id)), 'Lost existing event routes');
+  const { eventSongs, songEvents } = projectEventSongs(domains.events.records, data.songCatalog.songs);
+  for (const record of domains.events.records) record.view.songs = eventSongs[record.id];
 
   const materialRelations = projectCardLimitbreakMaterials(data.domainCards,
     validateDomainPayload(data.domainItems, 'gs-item-catalog').entries, collectionMedia, eventMedia.cardImages);
@@ -204,6 +291,31 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     }));
     domains[domain] = { searchable:true, packed:true, records };
   }
+  const gashaLink=row=>({...pick(row,['gashaId','titleJa','url']),target:{view:'gasha_detail',gasha:row.gashaId}});
+  domains.currencies = { searchable:true, packed:true, records:currencies.map(entry=>{
+    const image=imageBinding(entry.image);
+    if(entry.itemKey)assert(domains.items.records.some(record=>record.view.entry.key===entry.itemKey),`Currency names a missing item: ${entry.itemKey}`);
+    return { id:entry.id, summary:{nameJa:entry.nameJa,resourceId:entry.resourceId,productType:entry.productType ?? null,itemKey:entry.itemKey ?? null,rewardCount:entry.rewardCount,image:pick(image,['url','status'])},
+      view:{ entry:{key:entry.key,id:entry.id,nameJa:entry.nameJa,descriptionJa:entry.descriptionJa,resourceId:entry.resourceId,productType:entry.productType ?? null,itemKey:entry.itemKey ?? null},
+        media:{image}, rewardCount:entry.rewardCount,
+        acquisition:entry.acquisition.map(group=>({...pick(group,['source','count','totalAmount','levelRange']),
+          ...(group.events?{events:group.events.map(row=>({...eventLink(row.eventId),count:row.count,totalAmount:row.totalAmount}))}:{})})),
+        gashaSources:entry.gashaSources.map(group=>({...group,...(group.gashas?{gashas:group.gashas.map(gashaLink)}:{})})),
+        usage:entry.usage.map(line=>({...line,...(line.gashas?{gashas:line.gashas.map(row=>({...gashaLink(row),...pick(row,['prices','steps','paidOnlyOffers','exchanges'])}))}:{})})),
+        sourceCoverage:'client-masterdata-rewards-and-wiki-gasha-pages' } };
+  }) };
+  const costumeCatalog=validateCostumeCatalog(data.domainCostumes).entries;
+  const cardsByResource=new Map(data.domainCards.map(card=>[card.resource_id,card]));
+  domains.costumes = { searchable:true, packed:true, records:costumeCatalog.map(entry=>{
+    const image=imageBinding(entry.image);
+    // Tutorial copies share their resource id with the real card and are not published.
+    const cards=entry.cards.filter(row=>cardsByResource.has(row.resourceId)).map(row=>{
+      const card=cardsByResource.get(row.resourceId),art=eventMedia.cardImages[card.resource_id];
+      return {...pick(card,['resource_id','card_id','character_id','rarity','title']),slots:row.slots,image:art?pick(art,['url','status']):null,target:{view:'card_detail',card:card.resource_id}};
+    });
+    return { id:entry.id, summary:{nameJa:entry.nameJa,idolCode:entry.idolCode,uses:entry.uses,cardCount:cards.length,releaseAt:entry.releaseAt ?? null,image:pick(image,['url','status'])},
+      view:{ entry:pick(entry,['key','id','idolCode','idolId','nameJa','descriptionJa','releaseAt','costumeIds','uses','spineAvailable']), media:{image}, cards } };
+  }) };
   validateDomainPayload(data.domainPhotoIndex, 'gs-photo-index');
   const materials = validateDomainPayload(data.domainPhotoMaterials, 'gs-photo-materials');
   const idolsById = new Map(Object.entries(data.idolUnit.by_idol_code).map(([code, idol]) => [idol.idol_id,{code,...idol}]));
@@ -242,5 +354,5 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(!chocolate.some(honor=>ranking.some(row=>row.key===honor.key)),'A chocolate honor cannot also be a ranking honor');
     idol.view.honors=[...own,...ranking,...chocolate];
   }
-  return materialRelations.materialContexts;
+  return { materialContexts: materialRelations.materialContexts, songEvents, eventAcquisitions };
 }

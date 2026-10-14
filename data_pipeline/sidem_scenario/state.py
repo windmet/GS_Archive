@@ -28,9 +28,14 @@ class ScenarioState:
         self.screen_effects: list[dict] = []       # one-shot screen/effect flashes
         # Audio extras
         self.bgm_volume: int = 100
-        self.bgm_stop_fade: Optional[float] = None  # fade duration for bgm_stop
+        self.bgm_stop_fade: Optional[float] = None  # legacy; no longer written (vals[0] is a delay)
         self.environmental_volume: Optional[float] = None  # 0.0-1.0 volume for ambient
-        self.environmental_duck_target: Optional[float] = None  # duck target volume
+        self.environmental_duck_target: Optional[float] = None  # legacy; no longer written
+        # One-shot waits from the cut start (client StoryView.WaitSound), seconds
+        self.bgm_delay: Optional[float] = None
+        self.bgm_stop_delay: Optional[float] = None
+        self.environmental_stop_delay: Optional[float] = None
+        self.environmental_ducking_delay: Optional[float] = None
         # Visual filters (memory/flashback effects)
         self.camera_filter: Optional[str] = None   # e.g. "gray" from camera_color
         self.bg_color: Optional[str] = None        # hex color overlay e.g. "#AAAAAA"
@@ -83,6 +88,8 @@ class ScenarioState:
             pos_x = existing.get("pos_x")
             pos_y = existing.get("pos_y")
             idol_priority = existing.get("idol_priority")
+            existing.pop("anim_track_time", None)
+            existing.pop("anim_no_back", None)
             existing.update(entry)
             if pos_x is not None:
                 existing["pos_x"] = pos_x
@@ -105,10 +112,14 @@ class ScenarioState:
                 spine["blush_flag"] = face_flags.get("blush_flag", "")
                 spine["sweat_flag"] = face_flags.get("sweat_flag", "")
 
-    def update_spine_anim(self, idol_id: str, anim: str):
+    def update_spine_anim(self, idol_id: str, anim: str, track_time: float = 0):
         spine = self.find_spine(idol_id)
         if spine:
             spine["anim"] = anim
+            if track_time:
+                spine["anim_track_time"] = track_time
+            else:
+                spine.pop("anim_track_time", None)
             spine.pop("anim_no_back", None)
 
     def update_spine_neck_anim(self, idol_id: str, anim: Optional[str]):
@@ -160,3 +171,12 @@ class ScenarioState:
         self.bgm_stop_fade = None
         self.environmental_volume = None
         self.environmental_duck_target = None
+        self.clear_audio_delays()
+
+    def clear_audio_delays(self):
+        if self.environmental:
+            self.environmental.pop("delay", None)
+        self.bgm_delay = None
+        self.bgm_stop_delay = None
+        self.environmental_stop_delay = None
+        self.environmental_ducking_delay = None

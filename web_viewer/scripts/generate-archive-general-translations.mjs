@@ -9,6 +9,7 @@ import {photoStickerDraft, photoUnitNames, backgroundVariantNames} from '../tran
 import {costumeNameDraft} from '../translation/studio/general/costume-names.mjs';
 import {itemTicketDraft} from '../translation/studio/general/item-ticket-drafts.mjs';
 import {itemGiftNameDraft} from '../translation/studio/general/item-gift-drafts.mjs';
+import {currencyNames, currencyDescriptions} from '../translation/studio/general/currency-drafts.mjs';
 
 const root = process.cwd();
 const read = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
@@ -62,6 +63,8 @@ for (const row of corpus) {
     translation = centerSkillDraft(row.source, row.field);
   } else if (row.kind === 'item') {
     translation = (row.field === 'name' ? itemNames[row.source] || itemGiftNameDraft(row.source,source=>compactNames.get(source.replace(/\s/g,''))) : itemDescriptions[row.source] || itemExtraDescriptions[row.source] || itemMaterialDescriptionDraft(row.source)) || itemTicketDraft(row.source,row.field);
+  } else if (row.kind === 'currency') {
+    translation = (row.field === 'name' ? currencyNames : currencyDescriptions)[row.source];
   } else if (row.kind === 'honor') {
     if (row.field === 'description') translation = row.source === 'プロデューサーのプロフィールに\n設定できる称号。' ? '可设置在制作人个人资料中的称号。' : honorNameDraft(row.source, source => compactNames.get(source.replace(/\s/g,'')));
     else if (row.source.endsWith('担当') && compactNames.has(row.source.slice(0, -2))) translation = `${compactNames.get(row.source.slice(0, -2))}担当`;
@@ -74,6 +77,11 @@ for (const row of corpus) {
 // Regeneration cannot silently erase imported Gemini revisions.
 const revisions = loadGeneralRevisions(root,sourceUnits(root));
 for (const revision of revisions.values()) ((entries[revision.kind] ||= {})[revision.field] ||= {})[revision.source] = revision.translation;
+// The memory items are both an item and a currency entry; the currency reads the item's final text.
+for (const row of missing.filter(row => row.kind === 'currency')) {
+  const translation = entries.item?.[row.field]?.[row.source];
+  if (translation) { ((entries.currency ||= {})[row.field] ||= {})[row.source] = translation; missing.splice(missing.indexOf(row), 1); }
+}
 const rootEntries = rootOverlayEntries(entries);
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',

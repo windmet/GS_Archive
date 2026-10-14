@@ -12,6 +12,7 @@ import {
   getRawBgmProbeId,
 } from '../utils/AssetResolver.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
+import { sampleUnityCurve } from './story-runtime/storyAmbienceCurves.js'
 
 export const NON_WAVEFORM_SE_CUES = Object.freeze([
   '00_action_volume_default_sebgm',
@@ -128,10 +129,11 @@ export class AudioManager {
    * @param {number} [fadeTime=0.5] — crossfade duration in seconds
    * @param {number} [volume] — volume level 0.0-1.0; if omitted, uses default 0.4
    */
-  async playAmbient(cueName, fadeTime = 0.5, volume = null) {
+  async playAmbient(cueName, fadeTime = 0.5, volume = null, { curve = null } = {}) {
     if (!cueName || this._audioSession.disabled || cueName === this._currentAmbientCue) return
     this.ensureContext()
     const generation = ++this._ambientGeneration
+    this._pendingAmbientCurve = curve
 
     // Fade out current ambient
     if (this._ambientSource) {
@@ -145,6 +147,11 @@ export class AudioManager {
         oldGain.disconnect()
         oldRelease?.()
       }, fadeTime * 1000 + 200)
+      // The outgoing source is owned by its cleanup now; level curves must not
+      // cancel its fade-out while the next cue loads.
+      this._ambientSource = null
+      this._ambientGain = null
+      this._ambientRelease = null
     }
 
     this._currentAmbientCue = cueName
@@ -179,6 +186,9 @@ export class AudioManager {
       this._ambientSource = source
       this._ambientGain = gain
       this._ambientRelease = release
+      const pending = this._pendingAmbientCurve
+      this._pendingAmbientCurve = null
+      if (pending) this.setAmbientCurve(pending)
     } catch (_) {
       if (generation === this._ambientGeneration) this._currentAmbientCue = null
     }
@@ -194,6 +204,24 @@ export class AudioManager {
         this._ctx.currentTime + 0.3
       )
     }
+  }
+
+  /**
+   * Drive the ambience level along a Unity AnimationCurve (client StoryView ambience
+   * ducking/restore). Without a live source the curve's end level becomes the start
+   * level of the next playAmbient that omits `volume`.
+   */
+  setAmbientCurve(keys, delaySeconds = 0) {
+    const { values, duration } = sampleUnityCurve(keys)
+    this._currentAmbientVolume = values[values.length - 1]
+    if (!this._ambientGain || !this._ctx) {
+      if (this._currentAmbientCue) this._pendingAmbientCurve = keys
+      return
+    }
+    const at = this._ctx.currentTime + Math.max(0, Number(delaySeconds) || 0)
+    const gain = this._ambientGain.gain
+    gain.cancelScheduledValues(at)
+    gain.setValueCurveAtTime(values, at, Math.max(duration, 0.001))
   }
 
   /** Stop ambient with optional fade. */

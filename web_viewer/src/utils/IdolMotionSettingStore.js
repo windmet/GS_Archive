@@ -6,3 +6,9 @@ export function getCachedMotionSetting(idolId, modelId, animName) {
   const entries = store.peek()
   return animName ? entries?.[modelId]?.[animName] || entries?.[idolId]?.[animName] || null : null
 }
+
+/** The model's whole IdolMotionSetting table ({motion: {pose, back}}), or null. */
+export function getCachedMotionTable(idolId, modelId) {
+  const entries = store.peek()
+  return entries?.[modelId] || entries?.[idolId] || null
+}

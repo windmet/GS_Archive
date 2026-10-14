@@ -202,7 +202,7 @@ export async function verifySongLandingBehavior({ appComponent, catalogComponent
     [catalogComponent,'open','brndnf',{ song: catalog.songs.brndnf }],
     [idolDetailComponent,'open-song','brndnf',{ entry: { song: catalog.songs.brndnf } }],
     [unitDetailComponent,'open-song','brndnf',{ song: catalog.songs.brndnf }],
-    [detailComponent,'open-unit','01jup',{ song: { unit: { id: '01jup' } }, entry: { id: '01jup' } }],
+    [detailComponent,'open-unit','01jup',{ song: { unit: { id: '01jup' } }, entry: { id: '01jup' }, unit: { entry: { id: '01jup' } } }],
     [detailComponent,'open-idol','001tom',{ $event: '001tom' }],
     [detailComponent,'open-related-story',catalog.songs.drv999.related_entities[0],{ entry: { payload: catalog.songs.drv999.related_entities[0] } }],
   ]) {

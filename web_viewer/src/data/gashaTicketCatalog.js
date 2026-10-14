@@ -1,4 +1,5 @@
 import evidence from '../../public/data/editorial/gasha-ticket-evidence.json' with {type:'json'}
+import {gashaPoolArt} from './gashaPoolDetails.js'
 
 const bySource=new Map(evidence.rows.map(row=>[row.source_name,row]))
 const byId=new Map(evidence.rows.flatMap(row=>row.matched_ids.map(id=>[id,row])))
@@ -23,11 +24,15 @@ export function attachGashaTickets(gasha) {
  return {...gasha,ticket_evidence:row,tickets:row.tickets,ticket_link_ambiguous:row.matched_ids.length>1}
 }
 export function supplementGashaCatalog(rows,summary={}) {
- const additions=evidence.rows.filter(row=>!row.matched_ids.length).map(row=>({
-  id:row.id,code:row.id,logical_id:row.id,display_name:row.source_name,title:row.source_name,
-  category:'ticket_named',phase:'ticket_record',source_type:'item-masterdata',
-  start_at:null,end_at:null,banner_url:null,derived_pickup_cards:[],related_pickup_count:0,
-  ticket_evidence:row,tickets:row.tickets,
- }))
+ const additions=evidence.rows.filter(row=>!row.matched_ids.length).map(row=>{
+  // Wiki-listed runs date the pool and name the cards it introduced; other groups stay undated.
+  const runs=row.wiki_pools||[],cards=[...new Map(runs.flatMap(run=>run.cards).map(card=>[card.card_resource_id,card])).values()]
+  return {
+   id:row.id,code:row.id,logical_id:row.id,display_name:row.source_name,title:row.source_name,
+   category:'ticket_named',phase:'ticket_record',source_type:'item-masterdata',
+   start_at:runs[0]?.start_at??null,end_at:runs[0]?.end_at??null,banner_url:null,pool_art:gashaPoolArt(row.id),derived_pickup_cards:cards,related_pickup_count:0,
+   wiki_pools:runs,ticket_evidence:row,tickets:row.tickets,
+  }
+ })
  return {rows:[...rows.map(attachGashaTickets),...additions],summary:{...summary,ticket_supplement_count:additions.length,ticket_count:evidence.summary.tickets,category_counts:{...summary.category_counts,ticket_named:additions.length}}}
 }

@@ -64,7 +64,9 @@ def build_idol_unit_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[
                 "f14": row.get("14"),
                 "kana": row.get("15"),
             },
+            # Field 16 is the internal numeric age; field 17 is what the game shows (it can be a placeholder such as ？？).
             "age": row.get("16"),
+            "display_age": row.get("17"),
             "height": row.get("18"),
             "weight": row.get("19"),
             "birthplace": row.get("20"),
@@ -86,6 +88,7 @@ def build_idol_unit_dictionary(tables: dict[int, list[dict[str, Any]]]) -> dict[
                 "display_name": 12,
                 "kana": 15,
                 "age": 16,
+                "display_age": 17,
                 "height": 18,
                 "weight": 19,
                 "birthplace": 20,

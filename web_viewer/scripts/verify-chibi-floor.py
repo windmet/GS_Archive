@@ -9,6 +9,8 @@ e=json.loads((base/'fixtures/chibi-floor-inputs.json').read_text(encoding='utf8'
 m=json.loads((base/'fixtures/chibi-floor-model.json').read_text(encoding='utf8'))
 assert [floor.floor_system(p) for p in e['object']['particles']]==m['systems']
 for mutate in [lambda p:p['renderer'].update(alignment=0),
+               lambda p:p['renderer']['materials'][0]['floats'].update(_ClampHoriz=1),
+               lambda p:p['renderer']['materials'][0]['colors'].update(_TintColor={'r':1,'g':1,'b':1,'a':1}),
                lambda p:p['modules'].update(VelocityModule={'enabled':True}),
                lambda p:p['modules']['InitialModule']['startLifetime'].update(minMaxState=2),
                lambda p:p['renderer']['materials'][0]['textures'][0].update(pathId='wrong')]:

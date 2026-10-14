@@ -38,7 +38,13 @@ class Rectangle {constructor(...v){this.v=v}}
 const pixi={Container,Sprite,Texture,Rectangle,BLEND_MODES:{ADD:'add',NORMAL:'normal'}}
 const runtime=await loadChibiFloor(pixi,model,async()=>({baseTexture:{},destroy(){}}))
 assert.equal(runtime.floorEmitters.reduce((n,e)=>n+e.sprites.length,0),244)
-assert.ok(runtime.container.children[0].mask)
+assert.equal(runtime.container.children[0].mask,undefined)
+assert.ok(runtime.floorEmitters.every(e=>e.sprites.every(s=>s.nativeParticleMask.sprite===runtime.container.children[1])))
+assert.equal(runtime.nativeParticleMask,true)
+const legacyModel=structuredClone(model);delete legacyModel.nativeMaskMaterial
+const legacyRt=await loadChibiFloor(pixi,legacyModel,async()=>({baseTexture:{},destroy(){}}))
+assert.equal(legacyRt.nativeParticleMask,false)
+assert.ok(legacyRt.container.children[0].mask,'older indexes preserve legacy rendering')
 assert.deepEqual(runtime.container.children[1].position.v,[model.mask.x,model.mask.y])
 assert.deepEqual(runtime.frameTextures.map(t=>t.rect.v),[[512,256,256,256],[256,0,256,256]])
 updateChibiFloor(runtime,5000,-2000);const signature=runtime.floorSignature
@@ -137,7 +143,8 @@ assert.equal(later.x,birth.x,'Directed box beam rises vertically from the native
 assert.ok(birth.y-later.y>=20 && birth.y-later.y<=30.00001,'Native speed range 2..3 advances upward by 20..30 design pixels in 100 ms')
 const driveRt=await loadChibiFloor(pixi,drive,async()=>({baseTexture:{},destroy(){}}))
 assert.equal(driveRt.container.children[0].children.length,2,'Left/right particle groups retain separate clipping containers')
-assert.ok(driveRt.container.children[0].children.every(g=>g.mask))
+assert.ok(driveRt.container.children[0].children.every(g=>!g.mask))
+assert.equal(new Set(driveRt.floorEmitters.flatMap(e=>e.sprites.map(s=>s.nativeParticleMask.sprite))).size,2)
 assert.equal(driveRt.floorEmitters.reduce((n,e)=>n+e.sprites.length,0),400)
 const invalid=structuredClone(drive);invalid.systems[0].maskTexture='wrong'
 assert.ok(!attachChibiFloor(indexed,{schemaVersion:2,assets:{[drive.asset]:invalid}}).assets[drive.asset].floorAnimation)

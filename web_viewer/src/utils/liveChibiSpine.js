@@ -407,10 +407,28 @@ export function playLiveChibiMotion(runtime, animationNames, {
   reset = false,
   mode = 2,
   mixDuration = 0.12,
+  nativeCommand = false,
+  skip = false,
 } = {}) {
   if (!animationNames?.length) return
-  const mainName = animationNames.find(name => name.includes('_3dance')) || animationNames[0]
-  const loopName = animationNames.find(name => name.includes('_4loop')) || animationNames[1]
+  // PlayMotion has separate isLoop and skip arguments. Its normal callback
+  // (0x1bbe040) plays dance, or before -> after, then queues loop for mode 2.
+  // Only mode 3 / SkipEffect takes the immediate branch in 0x221c094.
+  const immediate = nativeCommand && (skip || Number(mode) === 3)
+  const wantsLoop = Number(mode) === 2 || Number(mode) === 3
+  const directLoop = immediate && wantsLoop
+  const danceName = animationNames.find(name => name.includes('_3dance'))
+  const afterName = animationNames.find(name => name.includes('_2after'))
+  const mainName = nativeCommand
+    ? directLoop ? animationNames.find(name => name.includes('_4loop'))
+      : danceName || (immediate ? afterName : animationNames.find(name => name.includes('_1before')))
+    : danceName || animationNames[0]
+  const loopName = animationNames.find(name => name.includes('_4loop')) || (!nativeCommand ? animationNames[1] : null)
+  const needsAfter = nativeCommand && !immediate && !danceName
+  const queueLoop = !directLoop && (nativeCommand ? wantsLoop : Boolean(loopName))
+  if (!mainName || needsAfter && !afterName || queueLoop && !loopName) {
+    throw new Error(`Live motion has no native fragment for mode ${mode}`)
+  }
   const state = runtime.spine.state
   const skeleton = runtime.spine.skeleton
   const shouldReset = reset || mode === 3 || !state.getCurrent(0)
@@ -426,9 +444,9 @@ export function playLiveChibiMotion(runtime, animationNames, {
   }
   skeleton.updateWorldTransform()
 
-  const mainEntry = state.setAnimation(0, mainName, false)
+  const mainEntry = state.setAnimation(0, mainName, directLoop)
   if (!shouldReset && mainEntry.mixingFrom) {
-    mainEntry.mixDuration = mixDuration
+    mainEntry.mixDuration = nativeCommand && !immediate ? 0.15 : mixDuration
     mainEntry.mixingFrom.attachmentThreshold = 0
     mainEntry.mixingFrom.drawOrderThreshold = 0
   } else {
@@ -436,19 +454,24 @@ export function playLiveChibiMotion(runtime, animationNames, {
   }
 
   let loopEntry = null
-  if (loopName) {
+  if (needsAfter) state.addAnimation(0, afterName, false, 0)
+  if (queueLoop) {
     const mainAnimation = runtime.skeletonData.findAnimation(mainName)
-    // A positive delay is measured from the previous entry's start. Passing
-    // the full duration avoids Spine's delay=0 shortcut, which otherwise
-    // begins the loop early by the default mix duration.
-    loopEntry = state.addAnimation(0, loopName, true, mainAnimation?.duration || 0)
-    loopEntry.mixDuration = Math.min(0.08, mixDuration)
+    // Native AddAnimationByPrefix passes delay=0 (0x2080aa4), letting Spine
+    // account for the queued entry's mix. Preview deliberately demonstrates
+    // the full main duration before handing off to loop.
+    loopEntry = state.addAnimation(0, loopName, true, nativeCommand ? 0 : mainAnimation?.duration || 0)
+    if (!nativeCommand) loopEntry.mixDuration = Math.min(0.08, mixDuration)
   }
   runtime.spine.state.timeScale = paused ? 0 : 1
   runtime.spine.update(0)
   runtime.currentTrackEntry = mainEntry
   runtime.currentMotionPlayback = {
     mainName,
+    policy: nativeCommand ? 'native-command' : 'preview-main-loop',
+    loop: directLoop,
+    skip: immediate,
+    sequence: [mainName, ...(needsAfter ? [afterName] : []), ...(queueLoop ? [loopName] : [])],
     loopName: loopEntry?.animation?.name || null,
     mode,
     reset: shouldReset,

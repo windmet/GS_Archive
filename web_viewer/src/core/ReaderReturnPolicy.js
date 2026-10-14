@@ -4,7 +4,7 @@ import { readArchiveSourceRoute } from './archiveRoute.js'
 // history); branch order is user-visible and must stay as is.
 //   { action: 'restore-source' } | { action: 'catalog' } | { action: 'route', route }
 export function readerReturnDecision({
-  detailSourceRoute, storyDomain, characterId, storyFile, workMode, storySection, eventId, eventParentView, categoryId, unitCode,
+  detailSourceRoute, storyDomain, characterId, storyFile, workMode, storySection, episodeId, eventId, eventParentView, categoryId, unitCode,
   parent = null,
 }) {
   // Legacy event Reader URLs stored the event's parent; newer URLs store the event itself.
@@ -16,6 +16,10 @@ export function readerReturnDecision({
   }
   if (storyDomain === 'seasonal_campaign') {
     return { action: 'route', route: { view: 'seasonal_campaign', storyType: 'seasonal_campaign', storySection, idol: characterId } }
+  }
+  // An idol story is not a story collection; its page is addressed by idol, section and episode.
+  if (storyDomain === 'idol_story' && characterId) {
+    return { action: 'route', route: { view: 'idol_story_archive', storyType: 'idol_story', idol: characterId, storySection, episode: episodeId } }
   }
   if (eventId) {
     return { action: 'route', route: { view: 'event_detail', event: eventId, parentView: eventParentView, category: categoryId,

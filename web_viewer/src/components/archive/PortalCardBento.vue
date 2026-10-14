@@ -1,28 +1,33 @@
 <template>
-  <div v-if="lead" class="card-bento" :class="{'is-global':global}">
+  <div v-if="lead" ref="root" class="card-bento" :class="{'is-global':global}">
     <button class="bento-lead" type="button" :data-archive-focus-id="`portal-card-art:${lead.id}`" :style="{'--card-art':`url(${(lead.landscape || lead.image).url})`}" :aria-label="`打开卡片 ${lead.title}`" @click="emit('open',lead)">
-      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="lead.image.url" /><img :src="(lead.landscape || lead.image).url" :alt="lead.title" decoding="async" /></picture>
+      <picture><source v-if="lead.image?.url" media="(max-width:760px)" :srcset="near ? lead.image.url : undefined" /><img :src="near ? (lead.landscape || lead.image).url : undefined" :alt="lead.title" decoding="async" /></picture>
       <span class="bento-caption"><small>{{ lead.rarity }} · {{ lead.idolName }}</small><strong>{{ lead.title }}</strong><ArrowUpRight :size="16" /></span>
     </button>
     <template v-if="!global">
-      <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="secondary.image.url" :alt="secondary.title" /><span class="bento-tile-caption">{{ secondary.title }}</span></button>
-      <button v-if="third" class="bento-note" type="button" :data-archive-focus-id="`portal-card-art:${third.id}`" @click="emit('open',third)"><img :src="third.image.url" alt="" /><span><small>{{ third.rarity }} · 精选档案</small><strong>{{ third.title }}</strong></span><ArrowUpRight :size="16" /></button>
+      <button v-if="secondary" class="bento-portrait" type="button" :data-archive-focus-id="`portal-card-art:${secondary.id}`" :aria-label="`打开卡片 ${secondary.title}`" @click="emit('open',secondary)"><img :src="near ? secondary.image.url : undefined" :alt="secondary.title" decoding="async" /><span class="bento-tile-caption">{{ secondary.title }}</span></button>
+      <button v-if="third" class="bento-note" type="button" :data-archive-focus-id="`portal-card-art:${third.id}`" @click="emit('open',third)"><img :src="near ? third.image.url : undefined" alt="" decoding="async" /><span><small>{{ third.rarity }} · 精选档案</small><strong>{{ third.title }}</strong></span><ArrowUpRight :size="16" /></button>
       <button class="bento-directory" type="button" @click="emit('filter',{})"><Layers :size="21" /><strong>{{ counts?.total ?? cards.length }} 张卡片</strong><small>已展出 {{ displayed }} 张 · 完整图鉴</small><ArrowUpRight :size="17" /></button>
     </template>
     <template v-else>
-      <div class="bento-encounter"><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="encounter.image.url" alt="" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button></div>
-      <button v-if="encounterNext" class="encounter-next" type="button" :data-archive-focus-id="`portal-card:${encounterNext.id}`" :aria-label="`打开卡片 ${encounterNext.title}`" @click="emit('open',encounterNext)"><img :src="encounterNext.image.url" alt="" /><strong>{{ encounterNext.idolName }}</strong></button>
-      <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
+      <div class="bento-encounter"><button v-if="encounter" class="encounter-card" type="button" :data-archive-focus-id="`portal-card:${encounter.id}`" @click="emit('open',encounter)"><img :src="near ? encounter.image.url : undefined" alt="" decoding="async" /><span :data-idol="encounter.idolName"><small>{{ encounter.idolName }} · {{ encounter.rarity }}</small><strong>{{ encounter.title }}</strong></span><ArrowUpRight :size="15" /></button></div>
+      <button v-if="encounterNext" class="encounter-next" type="button" :data-archive-focus-id="`portal-card:${encounterNext.id}`" :aria-label="`打开卡片 ${encounterNext.title}`" @click="emit('open',encounterNext)"><img :src="near ? encounterNext.image.url : undefined" alt="" decoding="async" /><strong>{{ encounterNext.idolName }}</strong></button>
+      <div class="bento-filters"><span>按属性探索</span><div class="attribute-links"><button v-for="attribute in attributes" :key="attribute.id" type="button" :disabled="!attributeAvailable" :title="attributeAvailable ? '' : '属性索引暂不可用'" :style="{'--attribute':attribute.color,'--attribute-icon':attribute.icon}" @click="emit('filter',{attribute:attribute.id})">{{ attribute.label }} <small>{{ attributeAvailable ? counts?.attribute?.[attribute.id] ?? cards.filter(row=>row.attribute===attribute.id).length : '—' }}</small></button></div><div class="rarity-links"><button v-for="rarity in rarities" :key="rarity" type="button" @click="emit('filter',{rarity})">{{ rarity }} <small>{{ counts?.rarity?.[rarity] ?? cards.filter(row=>row.rarity===rarity).length }}</small></button></div></div>
     </template>
   </div>
   <p v-else class="bento-empty">暂无可展示的卡面。</p>
 </template>
 <script setup>
-import {computed} from 'vue'
+import {computed,ref} from 'vue'
 import {ArrowUpRight,Layers} from '@lucide/vue'
 import {portalDailyCard} from '../../presentation/PortalBento.js'
+import {useNearViewport} from './useNearViewport.js'
 const props=defineProps({cards:{type:Array,default:()=>[]},counts:Object,global:Boolean,offset:{type:Number,default:0}})
 const emit=defineEmits(['open','filter'])
+// Card art is the Portal's heaviest download (three 640×800 portraits ≈1.6 MB) and sits below the fold on phones;
+// in the wider layout the bento is on the first screen and may be the LCP, so it loads at once as before.
+const root=ref(null)
+const near=useNearViewport(root,{eagerMedia:'(min-width:761px)'})
 const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Tokyo'}).format(new Date())
 const lead=computed(()=>{const pool=props.cards.filter(row=>row.landscape?.url);return props.global ? portalDailyCard(pool,date,props.offset) : pool[0] || props.cards.find(row=>row.image?.url)})
 const secondary=computed(()=>props.cards.find(row=>row.id!==lead.value?.id && row.image?.url))
@@ -35,7 +40,7 @@ const encounter=computed(()=>portalDailyCard(props.cards.filter(row=>row.id!==le
 const encounterNext=computed(()=>{const next=portalDailyCard(props.cards.filter(row=>row.id!==encounter.value?.id && row.id!==lead.value?.id),date,props.offset);return next?.image?.url ? next : null})
 const rarities=['SSR','SR','R','N']
 const attributeAvailable=computed(()=>Boolean(props.counts?.attribute && Object.keys(props.counts.attribute).length === 3) || (props.cards.length>0 && props.cards.every(row=>row.attribute)))
-const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)'}]
+const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)',icon:'var(--gs-attr-icon-physical)'},{id:'Intelligence',label:'Intelli',color:'var(--gs-attr-intelli)',icon:'var(--gs-attr-icon-intelli)'},{id:'Mental',label:'Mental',color:'var(--gs-attr-mental)',icon:'var(--gs-attr-icon-mental)'}]
 </script>
 <style scoped>
 /* Featured cards: pictures whose frames hug the art (media radius, cover, no blurred fill), and the
@@ -46,6 +51,7 @@ const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)
 .bento-lead, .bento-portrait, .encounter-next, .bento-encounter { position:relative;overflow:hidden;border-radius:var(--gs-radius-media);background:var(--gs-line); }
 .bento-lead { grid-column:span 2; }
 .bento-lead picture { display:block;width:100%;height:100%; }
+.card-bento img:not([src]) { visibility:hidden; }
 .bento-lead picture > img, .bento-portrait img, .encounter-card img, .encounter-next img { display:block;width:100%;height:100%;object-fit:cover;object-position:top; }
 /* Captions on art: the only place text sits on a picture, over a chrome fade. */
 .bento-caption, .encounter-card > span, .encounter-next strong { position:absolute;inset:auto 0 0;padding:var(--gs-space-7) var(--gs-space-5) var(--gs-space-4);background:linear-gradient(transparent,color-mix(in srgb,var(--gs-chrome) 84%,transparent));color:var(--gs-surface); }
@@ -83,7 +89,8 @@ const attributes=[{id:'Physical',label:'Physical',color:'var(--gs-attr-physical)
 .bento-filters > span { display:none; }
 .attribute-links, .rarity-links { display:grid;grid-auto-columns:1fr;grid-auto-flow:column;gap:var(--gs-space-2); }
 .card-bento .attribute-links button, .card-bento .rarity-links button { min-height:var(--gs-control-normal);border:1px solid var(--gs-line);border-radius:var(--gs-radius-pill);background:var(--gs-surface);color:var(--gs-ink-2);font-size:var(--gs-text-meta);text-align:center;white-space:nowrap; }
-.card-bento .attribute-links button { color:var(--attribute);font-weight:var(--gs-weight-semibold); }
+.card-bento .attribute-links button { display:inline-flex;align-items:center;justify-content:center;gap:4px;color:var(--attribute);font-weight:var(--gs-weight-semibold); }
+.card-bento .attribute-links button::before { content:"";flex:none;width:15px;height:15px;background:var(--attribute-icon) center / contain no-repeat; }
 .attribute-links small, .rarity-links small { margin-left:2px;color:var(--gs-ink-3);font-weight:var(--gs-weight-regular); }
 .bento-empty { color:var(--gs-ink-3); }
 

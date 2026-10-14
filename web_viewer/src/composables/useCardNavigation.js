@@ -58,6 +58,12 @@ export function useCardNavigation({
   const currentCardLimitbreakMaterial = computed(() => cardReadModelDetail.value?.id === currentCardId.value
     ? cardReadModelDetail.value.limitbreakMaterial || null : null)
 
+  const currentCardAcquisition = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+    ? cardReadModelDetail.value.acquisition || null : null)
+
+  const currentCardSkillMovie = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+    ? cardReadModelDetail.value.skillMovie || null : null)
+
   const currentCardIndex = computed(() => currentCards.value.findIndex(card => card.resource_id === currentCardId.value))
 
   const previousCard = computed(() => currentCardIndex.value > 0
@@ -116,7 +122,10 @@ export function useCardNavigation({
       currentCardId.value = ''
       return restoreDetailSource(() => commitView('cards'))
     }
+    // A card opened directly (a shared /cards/<id>/ link) has no source: go back to its idol's cards.
+    const owner = currentCard.value?.character_id || ''
     currentCardId.value = ''
+    if (owner) currentCharacterId.value = owner
     commitView('cards')
   }
 
@@ -300,7 +309,7 @@ export function useCardNavigation({
     openCardScenario, openCardEvent, openCardGasha, currentCards,
     cardRarityTabs, filteredCards, filteredCardRows, currentCard,
     currentCardOwnerReference, currentCardAssetStatus, currentCardEventRelation, currentCardGashaRelation,
-    currentCardLimitbreakMaterial, currentCardIndex, previousCard, nextCard,
+    currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardAcquisition, currentCardIndex, previousCard, nextCard,
     currentSeriesCards, currentCardCharacterName, prepareCardRoute, invalidateCardNavigation,
   }
 }

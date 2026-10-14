@@ -63,6 +63,14 @@ def verify():
     assert result['meta']['missing_resource_count'] == 1
     assert 'dialogue_count' not in result['idols'][0]['scene_lines'][0]
     assert result['idols'][1]['idol_code'] is None
+    # JobData 6 is SortOrder and 10 IdolType; real rows hold equal values, so this fixture splits them.
+    ordered_tables = {**tables, 53: [{'1': 1, '2': 'Late', '3': 10, '4': 20, '6': 2, '9': {'1': 5, '2': 9}, '10': 1},
+                                     {'1': 2, '2': 'Early', '3': 11, '4': 21, '6': 1, '10': 3}]}
+    ordered = build_work_story_index(ordered_tables, stems, summaries, idols, backgrounds, {'scene.json': payload})
+    assert [row['name'] for row in ordered['work_types']] == ['Early', 'Late']
+    assert [row['idol_type'] for row in ordered['work_types']] == [3, 1]
+    assert ordered['work_types'][1]['term'] == {'start_at': 5, 'end_at': 9} and ordered['work_types'][0]['term'] is None
+    assert result['idols'][0]['short_stories'][0]['term'] is None
     unnamed = build_work_story_index(tables, stems, summaries, idols, {}, {'scene.json': payload})
     assert unnamed['idols'][0]['short_stories'][0]['background_name_source'] == 'compiled_resource_only'
     assert unnamed['idols'][0]['short_stories'][0]['background_name_resolution'] == 'unknown'

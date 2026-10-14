@@ -32,7 +32,8 @@
       <div class="song-record-column">
       <section v-if="song.gameplay" class="song-block song-gameplay">
         <div class="song-block-heading"><h3>难度与解锁</h3></div>
-        <p class="song-block-note">{{ releaseConditionLabel }}</p>
+        <p class="song-block-note">解锁条件：<button v-if="song.unlockStory" type="button" class="song-unlock-link" :data-archive-focus-id="`song-unlock:${song.id}`" @click="openUnlockStory">{{ song.unlockStory.label }}</button><template v-else>{{ releaseConditionLabel }}</template></p>
+        <p v-if="premiereEvent" class="song-block-note">首发：活动「{{ premiereEvent.title }}」先行<template v-if="song.gameplay.history?.permanentOn">，{{ song.gameplay.history.permanentOn }} 加入普通歌曲</template>。</p>
         <details class="song-history"><summary>实装与解锁历史</summary>
           <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">历史来源</a></p>
           <p class="song-block-note">{{ song.gameplay.history.historicalUnlock }}</p>
@@ -43,6 +44,10 @@
         </details>
         <table class="song-difficulties"><caption>谱面难度与最大 Combo</caption><thead><tr><th scope="col">难度</th><th scope="col">等级</th><th scope="col">最大 Combo</th></tr></thead><tbody><tr v-for="d in song.gameplay.difficulties" :key="d.id"><th scope="row">{{ d.label }}</th><td>{{ d.levelLabel }}</td><td>{{ d.maxCombo }}</td></tr></tbody></table>
         <button class="stage-open-button" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart">打开谱面预览 ↗</button>
+      </section>
+      <section v-if="eventRelationItems.length" class="song-block song-events">
+        <div class="song-block-heading"><h3>关联活动</h3></div>
+        <ArchiveRelationList :items="eventRelationItems" @select="emit('open-event', $event.payload)" />
       </section>
       <section class="song-block">
         <div class="song-block-heading"><h3>演唱者</h3></div>
@@ -57,16 +62,49 @@
           <ul class="performer-list"><li v-for="entry in song.performers" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" density="portrait" :data-archive-focus-id="performerFocusId(entry)" @open="emit('open-idol', $event)" /></li></ul>
         </div>
       </section>
-      <details class="song-block" :open="audioArchiveOpen" @toggle="audioArchiveOpen = $event.target.open">
-        <summary>声部与音频归档</summary>
-        <div v-if="audioArchiveOpen">
-        <p class="song-block-note">完整混音：{{ song.fullMixCollected ? '已收录' : '未收录' }}。{{ song.playbackLabel.replace(' · 实验混音', '') }}。</p>
-        <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
-          <h4>{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
-          <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="audioFocusId(group, entry)" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
-          <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" :data-archive-focus-id="audioFocusId(group, entry)" @open="emit('open-idol', $event)" /></li></ul>
-        </div>
-        </div></details>
+      <section v-if="song.playback.experiment" class="song-block song-sources">
+        <div class="song-block-heading"><h3>音源收录</h3></div>
+        <dl class="source-summary">
+          <div><dt>完整混音</dt><dd>{{ song.fullMixCollected ? '已收录' : '未收录' }}</dd></div>
+          <div v-if="experimentUnitCount"><dt>组合版</dt><dd>{{ experimentUnitCount }} 组</dd></div>
+          <div><dt>个人声部</dt><dd>{{ experimentSoloCount }} 位</dd></div>
+          <div><dt>伴奏</dt><dd>{{ song.playback.experiment.backing?.url ? '已收录' : '未收录' }}</dd></div>
+        </dl>
+        <p class="song-block-note">「Solo」单独试听该偶像的声部<template v-if="canAddToLineup">；「＋编成」把偶像放进上方五槽编成的下一个空位</template>。</p>
+        <details class="song-subsection source-units" :open="audioArchiveOpen" @toggle="audioArchiveOpen = $event.target.open">
+          <summary>按组合查看（{{ sourceUnits.length }} 组 · {{ experimentSoloCount }} 位）</summary>
+          <div v-if="audioArchiveOpen">
+            <section v-for="unit in sourceUnits" :key="unit.key" class="source-unit">
+              <div class="source-unit-heading">
+                <h4>{{ unit.name }}</h4>
+                <button v-if="unit.hasTrack" type="button" class="source-action" @click="playUnit(unit.code)"><Play :size="12" aria-hidden="true" /> 组合版</button>
+                <button v-if="unit.entry?.actionable" type="button" class="source-unit-link" :data-archive-focus-id="audioFocusId(unitAudioGroup, unit.entry)" @click="emit('open-unit', unit.entry.id)">组合档案 <ChevronRight :size="14" aria-hidden="true" /></button>
+              </div>
+              <ul class="source-idols"><li v-for="entry in unit.idols" :key="entry.id">
+                <ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" :data-archive-focus-id="audioFocusId(vocalAudioGroup, entry)" @open="emit('open-idol', $event)" />
+                <span class="source-actions">
+                  <button type="button" class="source-action" :aria-label="`试听 ${sourceIdolName(entry)} 的 Solo 声部`" @click="playSolo(entry.id)"><Play :size="12" aria-hidden="true" /> Solo</button>
+                  <button v-if="canAddToLineup" type="button" class="source-action" :aria-label="`把 ${sourceIdolName(entry)} 加入五槽编成`" @click="addToLineup(entry)">＋编成</button>
+                </span>
+              </li></ul>
+            </section>
+          </div>
+        </details>
+        <p v-if="sourceStatus" class="song-block-note source-status" role="status">{{ sourceStatus }}</p>
+      </section>
+      <section v-else-if="song.audioGroups.length" class="song-block song-sources">
+        <div class="song-block-heading"><h3>音源收录</h3></div>
+        <details class="song-subsection" :open="audioArchiveOpen" @toggle="audioArchiveOpen = $event.target.open">
+          <summary>{{ song.audioGroups.map(group => `${group.title}（${group.entries.length}）`).join(' · ') }}</summary>
+          <div v-if="audioArchiveOpen">
+          <div v-for="group in song.audioGroups" :key="group.title" class="song-subsection">
+            <h4 v-if="song.audioGroups.length > 1">{{ group.title }}（{{ group.entries.length }}）</h4><p v-if="group.note" class="song-block-note">{{ group.note }}</p>
+            <ul v-if="group.kind === 'unit'" class="chip-list"><li v-for="entry in group.entries" :key="entry.id"><button :disabled="!entry.actionable" :data-archive-focus-id="audioFocusId(group, entry)" @click="emit('open-unit', entry.id)">查看组合 · {{ entry.displayName }} <ChevronRight :size="14" aria-hidden="true" /></button></li></ul>
+            <ul v-else class="audio-idol-list"><li v-for="entry in group.entries" :key="entry.id"><ArchiveIdolReference :reference="performerReference(entry.reference)" :show-image="false" :data-archive-focus-id="audioFocusId(group, entry)" @open="emit('open-idol', $event)" /></li></ul>
+          </div>
+          </div>
+        </details>
+      </section>
       <section v-if="song.variants.length" class="song-block">
         <div class="song-block-heading"><h3>关联演出版本</h3></div>
         <div class="variant-list"><button v-for="variant in song.variants" :key="variant.id" :data-archive-focus-id="`song-variant:${variant.id}`" @click="emit('open-song', variant.id)"><strong>{{ variant.title }}</strong><ChevronRight :size="16" /></button></div>
@@ -75,13 +113,31 @@
         <div class="song-block-heading"><h3>关联档案</h3></div>
         <div class="variant-list"><button v-for="(entry, index) in song.related" :key="index" :data-archive-focus-id="`song-related:${song.id}:${index}`" @click="emit('open-related-story', entry.payload)"><strong>{{ entry.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
-      <section v-if="song.movies.length" class="song-block">
+      <section v-if="officialVideos.length || song.movies.length" class="song-block song-videos">
         <div class="song-block-heading"><h3>影像资料</h3></div>
-        <ul class="movie-list"><li v-for="movie in song.movies" :key="movie.id"><strong>{{ movie.title }}</strong><span>{{ movie.status }}</span></li></ul>
+        <figure v-for="video in officialVideos" :key="video.youtubeId" class="official-video">
+          <div class="video-frame">
+            <iframe v-if="playingVideo === video.youtubeId" :src="`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`" :title="video.title" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <button v-else type="button" class="video-poster" :style="song.jacketUrl ? { backgroundImage: `url(${song.jacketUrl})` } : null" :aria-label="`播放 ${video.label}（YouTube）`" @click="playingVideo = video.youtubeId">
+              <img :src="`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`" alt="" loading="lazy" referrerpolicy="no-referrer" @error="$event.target.hidden = true" />
+              <span class="video-play" aria-hidden="true"><Play :size="22" /></span>
+            </button>
+          </div>
+          <figcaption>
+            <strong>{{ video.label }}</strong>
+            <span>{{ video.note }}</span>
+            <a :href="`https://www.youtube.com/watch?v=${video.youtubeId}`" target="_blank" rel="noopener noreferrer external">在 YouTube 打开 <ExternalLink :size="14" /></a>
+          </figcaption>
+        </figure>
+        <ul v-if="unlistedMovies.length" class="movie-list"><li v-for="movie in unlistedMovies" :key="movie.id"><strong>{{ movie.title }}</strong><span>游戏内收录，暂无官方公开视频</span></li></ul>
       </section>
-      <section v-if="song.links.length" class="song-block">
-        <div class="song-block-heading"><h3>专辑链接</h3></div>
-        <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
+      <section v-if="albums.length" class="song-block song-albums">
+        <div class="song-block-heading"><h3>收录专辑</h3></div>
+        <ul class="album-list"><li v-for="album in albums" :key="album.url"><a :href="album.url" target="_blank" rel="noopener noreferrer external">
+          <span class="album-copy"><strong>{{ album.displayTitle }}</strong><small>{{ album.catalogNumber ? `${album.catalogNumber} · Lantis` : 'Lantis 专辑页面' }}</small></span>
+          <ExternalLink :size="16" aria-hidden="true" />
+        </a></li></ul>
+        <p class="song-block-note">链接打开 Lantis 的专辑页面，可选择各音乐平台试听或购买。</p>
       </section>
       <section v-if="song.credits.length" class="song-block song-credit-section">
         <div class="song-block-heading"><h3>制作信息</h3></div>
@@ -95,15 +151,17 @@
 </template>
 
 <script setup>
-import { ChevronRight, ExternalLink } from '@lucide/vue'
+import { ChevronRight, ExternalLink, Play } from '@lucide/vue'
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
+import { eventKindLabels, historicalDate } from '../../presentation/DomainPresentation.mjs'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
-const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart', 'ready'])
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-event', 'open-stage', 'open-chart', 'ready'])
 const implementationDateLabel = computed(() => {
   const implementedOn = props.song.gameplay?.history?.firstImplementedOn
   if (implementedOn) return `${implementedOn} 实装`
@@ -116,6 +174,18 @@ const releaseConditionLabel = computed(() => {
   const condition = props.song.gameplay?.releaseCondition
   return condition?.storySectionId ? condition.label : '无需解锁'
 })
+// The main-story chapter whose reading unlocks this song opens as that chapter's story collection.
+function openUnlockStory() {
+  const unlock = props.song.unlockStory
+  if (unlock) emit('open-related-story', { entity_type: 'story_collection', story_type: unlock.domain, story_section: unlock.section })
+}
+const premiereEvent = computed(() => (props.song.relatedEvents || []).find(event => !event.isReprint) || null)
+// Events whose BGM is this song: the premiere first, then reprints.
+const eventRelationItems = computed(() => (props.song.relatedEvents || []).map(event => ({
+  id: `event:${event.event_id}`, kind: 'event', label: event.isReprint ? '复刻活动' : '首发活动', title: event.title,
+  meta: `${eventKindLabels[event.kind] || '活动'} · ${historicalDate(event.startAt)} 开始`,
+  imageUrl: event.banner?.url || '', imageAlt: event.title, payload: { event_id: event.event_id },
+})))
 const songPlayer = ref(null)
 const songScrollContainer = ref(null), songListenColumn = ref(null)
 const listeningColumnFits = ref(false)
@@ -143,6 +213,70 @@ function observeListeningColumnFit() {
   listeningResizeObserver.observe(songScrollContainer.value)
   listeningResizeObserver.observe(songListenColumn.value)
   updateListeningColumnFit()
+}
+// 音源收录 for stem songs: idols grouped by unit, each with a Solo and a lineup action into the player above.
+const experimentSoloCount = computed(() => Object.keys(props.song.playback.experiment?.solo_tracks || {}).length)
+const experimentUnitCount = computed(() => (props.song.playback.experiment?.unit_tracks || []).length)
+const canAddToLineup = computed(() => (props.song.playback.experiment?.vocal_settings?.modes || []).some(mode => mode.id === 'formation'))
+const unitAudioGroup = computed(() => props.song.audioGroups.find(group => group.kind === 'unit') || { title: '', kind: 'unit', entries: [] })
+const vocalAudioGroup = computed(() => props.song.audioGroups.find(group => group.title === '个人声部') || { title: '', kind: 'idol', entries: [] })
+const sourceUnits = computed(() => {
+  const experiment = props.song.playback.experiment
+  if (!experiment) return []
+  const directory = new Map(props.idolDirectory.map(idol => [idol.id, idol]))
+  const unitTracks = new Set((experiment.unit_tracks || []).map(track => track.unit_code))
+  const unitEntries = new Map(unitAudioGroup.value.entries.map(entry => [entry.id, entry]))
+  const vocalEntries = new Map(vocalAudioGroup.value.entries.map(entry => [entry.id, entry]))
+  const groups = new Map()
+  for (const code of Object.keys(experiment.solo_tracks || {})) {
+    const idol = directory.get(code)
+    const key = idol?.unitCode || 'other'
+    if (!groups.has(key)) groups.set(key, {
+      key, code: idol?.unitCode || '', name: idol?.unitName || unitEntries.get(key)?.displayName || '其他',
+      hasTrack: unitTracks.has(key), entry: unitEntries.get(key) || null, idols: [],
+    })
+    const entry = vocalEntries.get(code)
+    groups.get(key).idols.push(entry || { id: code, displayName: experiment.solo_tracks[code].displayName || code, reference: { displayName: experiment.solo_tracks[code].displayName || code, actionable: false } })
+  }
+  return [...groups.values()]
+})
+// Official 3D live uploads load only on request; the poster is YouTube's own thumbnail.
+const playingVideo = ref('')
+const officialVideos = computed(() => (props.song.officialVideos || []).map(video => ({
+  ...video,
+  label: video.source === 'growing_stars' ? '3D 演出 · GROWING STARS' : '3D 演出 · 原作《偶像大师 SideM》',
+  note: video.source === 'growing_stars' ? 'アイドルマスターチャンネル 官方上传，画质高于游戏内 3DMV。' : '原作 SideM（非 GROWING STARS）的 3D 演出，アイドルマスターチャンネル 官方上传。',
+})))
+// MV LIVE and any 3DMV without a public upload still show as collected in the client.
+const unlistedMovies = computed(() => officialVideos.value.length ? [] : props.song.movies)
+const albums = computed(() => (props.song.albums || props.song.links.map(url => ({ url, title: '', catalogNumber: '' })))
+  .map(album => ({ ...album, displayTitle: album.title.replace(/^THE IDOLM@STER SideM\s+/, '') || '专辑页面' })))
+const sourceStatus = ref('')
+const sourceIdolName = entry => props.idolName(entry.id, entry.displayName) || entry.displayName
+// The player sits above this list on phones; bring it into view when an action changes what it plays.
+function revealPlayer() {
+  const column = songListenColumn.value
+  if (!column) return
+  const rect = column.getBoundingClientRect()
+  if (rect.bottom < 80 || rect.top > (globalThis.innerHeight || 0) - 80) column.scrollIntoView({ block: 'start', behavior: 'smooth' })
+}
+function playSolo(code) {
+  songPlayer.value?.playSolo?.(code)
+  sourceStatus.value = ''
+  revealPlayer()
+}
+function playUnit(code) {
+  songPlayer.value?.playUnit?.(code)
+  sourceStatus.value = ''
+  revealPlayer()
+}
+// Adding stays in the list, so several idols can be added in a row; the status line reports each one.
+async function addToLineup(entry) {
+  if (!songPlayer.value?.addToLineup) return
+  const position = await songPlayer.value.addToLineup(entry.id)
+  sourceStatus.value = position
+    ? `已把 ${sourceIdolName(entry)} 放进五槽编成的位置 ${position}。`
+    : '五个位置都已选满；先在上方清空一个位置再加入。'
 }
 function performerFocusId(entry) {
   return entry.reference?.actionable ? `song-performer:${props.song.id}:${entry.id}` : undefined
@@ -172,6 +306,8 @@ watch(() => props.song.id, () => {
   prepareRevision += 1
   performersOpen.value = false
   audioArchiveOpen.value = false
+  sourceStatus.value = ''
+  playingVideo.value = ''
   announceReady()
 })
 onBeforeUnmount(() => {
@@ -207,10 +343,12 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .song-detail-badges { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); min-width: 0; }
 .badge { color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); }
 .badge-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); font-weight: var(--gs-weight-semibold); }
-.badge-attribute::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.badge-attribute[data-song-attribute="Physical"] { color: var(--gs-attr-physical); }
-.badge-attribute[data-song-attribute="Intelli"] { color: var(--gs-attr-intelli); }
-.badge-attribute[data-song-attribute="Mental"] { color: var(--gs-attr-mental); }
+.badge-attribute::before { content: none; flex: none; width: 18px; height: 18px; background: var(--attr-icon) center / contain no-repeat; }
+.badge-attribute[data-song-attribute="Physical"] { --attr-icon: var(--gs-attr-icon-physical); color: var(--gs-attr-physical); }
+.badge-attribute[data-song-attribute="Intelli"] { --attr-icon: var(--gs-attr-icon-intelli); color: var(--gs-attr-intelli); }
+.badge-attribute[data-song-attribute="Mental"] { --attr-icon: var(--gs-attr-icon-mental); color: var(--gs-attr-mental); }
+.badge-attribute[data-song-attribute="ALL"] { --attr-icon: var(--gs-attr-icon-all); }
+.badge-attribute[data-song-attribute="Physical"]::before, .badge-attribute[data-song-attribute="Intelli"]::before, .badge-attribute[data-song-attribute="Mental"]::before, .badge-attribute[data-song-attribute="ALL"]::before { content: ""; }
 .song-detail-date { margin-left: auto; color: var(--gs-ink-3); font-size: var(--gs-text-ui); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-parent-link { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .song-parent-link:hover { text-decoration: underline; }
@@ -234,6 +372,8 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .song-difficulties tbody th { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); letter-spacing: .02em; }
 .song-difficulties td { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); }
 .song-gameplay a, .song-history a { color: var(--gs-mint-ink); }
+.song-unlock-link { display: inline; padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; cursor: pointer; }
+@media (hover: hover) { .song-unlock-link:hover { text-decoration: underline; } }
 .song-history a { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .stage-open-button { min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .performance-scope-card { margin-top: var(--gs-space-4); padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }
@@ -253,6 +393,42 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .variant-list button { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-4); width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); font: inherit; text-align: left; cursor: pointer; }
 .variant-list strong { min-width: 0; font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.6; overflow-wrap: anywhere; }
 .variant-list svg, .chip-list svg, .link-list svg { flex: none; color: var(--gs-ink-3); }
+.source-summary { display: flex; flex-wrap: wrap; gap: var(--gs-space-3) var(--gs-space-6); margin: var(--gs-space-4) 0 0; }
+.source-summary div { display: grid; gap: var(--gs-space-1); }
+.source-summary dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.source-summary dd { margin: 0; font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); font-variant-numeric: tabular-nums; }
+.source-units > summary { color: var(--gs-ink); font-size: var(--gs-text-ui); }
+.source-unit { margin-top: var(--gs-space-5); }
+.source-unit-heading { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-3); padding-bottom: var(--gs-space-2); border-bottom: 1px solid var(--gs-rule); }
+.source-unit-heading h4 { margin: 0 auto 0 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
+.source-unit-link { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-ink-3); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
+.source-idols { margin: 0; padding: 0; list-style: none; }
+.source-idols li { display: flex; align-items: center; gap: var(--gs-space-3); min-width: 0; border-bottom: 1px solid var(--gs-line); }
+.source-idols li > :first-child { flex: 1 1 auto; min-width: 0; }
+/* The unit heading already names the unit; the reference's unit subtitle would repeat it on every row. */
+.source-idols :deep(.idol-reference-copy small) { display: none; }
+.source-actions { display: inline-flex; flex: none; gap: var(--gs-space-2); }
+.source-action { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); white-space: nowrap; cursor: pointer; }
+.source-action svg { color: var(--gs-mint-ink); }
+.source-status { color: var(--gs-mint-ink); }
+.official-video { margin: var(--gs-space-4) 0 0; }
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--gs-radius-panel); background: var(--gs-media-bg); }
+.video-frame iframe, .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-poster { display: block; padding: 0; background: var(--gs-media-bg) center / contain no-repeat; cursor: pointer; }
+/* Without YouTube reachable the thumbnail fails; the song jacket stays as the poster. */
+.video-poster img { width: 100%; height: 100%; object-fit: cover; }
+.video-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: var(--gs-media-scrim); color: var(--gs-media-ink); }
+.video-play svg { margin-left: 3px; fill: currentColor; }
+.official-video figcaption { display: grid; gap: var(--gs-space-1); margin-top: var(--gs-space-3); }
+.official-video figcaption strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.official-video figcaption span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.official-video figcaption a { display: inline-flex; align-items: center; gap: var(--gs-space-2); justify-self: start; min-height: var(--gs-control-compact); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
+.album-list { display: grid; margin: var(--gs-space-2) 0 0; padding: 0; list-style: none; }
+.album-list a { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-4); min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink); text-decoration: none; }
+.album-copy { display: grid; gap: var(--gs-space-1); min-width: 0; }
+.album-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
+.album-copy small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
+.album-list svg { flex: none; color: var(--gs-ink-3); }
 .movie-list, .link-list, .credit-list { display: grid; gap: var(--gs-space-3); margin: var(--gs-space-4) 0 0; padding: 0; list-style: none; }
 .movie-list li { display: flex; align-items: baseline; gap: var(--gs-space-4); font-size: var(--gs-text-body); }
 .movie-list strong { font-weight: var(--gs-weight-semibold); }
@@ -263,6 +439,11 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .variant-list button:hover strong { color: var(--gs-mint-ink); }
   .chip-list button:hover:not(:disabled) { border-color: var(--gs-ink-3); }
   .link-list a:hover { text-decoration: underline; }
+  .source-action:hover { border-color: var(--gs-ink-3); }
+  .album-list a:hover strong { color: var(--gs-mint-ink); }
+  .official-video figcaption a:hover { text-decoration: underline; }
+  .video-poster:hover .video-play { background: var(--gs-mint-ink); }
+  .source-unit-link:hover { color: var(--gs-mint-ink); }
 }
 .song-detail button:focus-visible, .song-detail a:focus-visible, .song-detail summary:focus-visible,
 .song-record-column :deep(button.archive-idol-reference:focus-visible) { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
@@ -280,11 +461,10 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .song-record-column { grid-column: 1; grid-row: 2; }
   .song-listen-column { grid-column: 2; grid-row: 1 / 3; top: var(--gs-space-5); }
   .song-listen-column.is-sticky-fit { position: sticky; }
-  .song-listen-column :deep(.performer-lineup) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .song-detail { padding: var(--gs-space-5); }
   .song-detail-title h2 { font-size: var(--gs-text-section); }
-  .song-parent-link, .link-list a, .song-history a, .stage-open-button, .chip-list button { min-height: var(--gs-control-touch); }
+  .song-parent-link, .link-list a, .song-history a, .stage-open-button, .chip-list button, .source-action, .source-unit-link { min-height: var(--gs-control-touch); }
 }
 </style>

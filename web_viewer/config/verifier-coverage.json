@@ -1,7 +1,13 @@
 {
   "about": "Every scripts/verify-* file is either reached by the Web Viewer Source Gate or listed under localOnly with its reason. 'batch' runs in CI through npm run verify:source-batch; checked by scripts/verify-verifier-coverage.mjs.",
   "batch": [
+    "verify-spine-client-motion.mjs",
+    "verify-spine-track-time.mjs",
+    "verify-story-track-time.py",
     "verify-route-schema.mjs",
+    "verify-archive-path-locator.mjs",
+    "verify-entity-head-shells.mjs",
+    "verify-portal-loading-layout.mjs",
     "verify-archive-motion.mjs",
     "verify-unit-navigation.mjs",
     "verify-idol-honor-identity.mjs",
@@ -125,7 +131,8 @@
     "verify-ui-recovery.mjs",
     "verify-upload-storage-budget.mjs",
     "verify-voice-load-recovery.mjs",
-    "verify-work-story-index.mjs"
+    "verify-work-story-index.mjs",
+    "verify-chibi-stage-layer-order.mjs"
   ],
   "localOnly": {
     "corpus": {
@@ -135,6 +142,7 @@
         "verify-archive-inline-presentation.mjs",
         "verify-archive.mjs",
         "verify-chibi-native-pose-samples.mjs",
+        "verify-chibi-native-motion-chain.mjs",
         "verify-chibi-panel-presentation.mjs",
         "verify-chibi-song-library.mjs",
         "verify-chibi-song-picker.mjs",
@@ -169,15 +177,28 @@
         "verify-studio-composition.mjs",
         "verify-studio-preset-labels.mjs",
         "verify-terminal-idol-localization.mjs",
-        "verify-translation-strict-v2.mjs"
+        "verify-translation-strict-v2.mjs",
+        "verify-chibi-backmonitor-layers.py",
+        "verify-chibi-character-layers.mjs",
+        "verify-chibi-native-body-paint.mjs",
+        "verify-chibi-native-foot-colors.mjs",
+        "verify-chibi-native-particle-masks.py",
+        "verify-chibi-object-renderer-planes.mjs",
+        "verify-live-chibi-foot-controls.py",
+        "verify-live-chibi-spotlight-order.py",
+        "verify-spine-close-eye.mjs",
+        "verify-spine-neck-back.mjs"
       ]
     },
     "external": {
       "reason": "Needs an HTTPS origin, a read-model root, a manifest/audit argument or Playwright; run against a deployment or candidate.",
       "scripts": [
+        "verify-archive-detail-identity-browser.mjs",
         "verify-home-lipsync-http.mjs",
         "verify-portal-bento.mjs",
         "verify-portal-directory-navigation.mjs",
+        "verify-portal-image-budget-browser.mjs",
+        "verify-portal-path-locator-browser.mjs",
         "verify-portal-projections.mjs",
         "verify-preview-data-http.mjs",
         "verify-preview-http.mjs",

@@ -6,7 +6,7 @@ export function createPortalRepository({bootstrap, client}) {
       if (!descriptor?.sha256 || descriptor.kind !== 'portal.scope') throw Error('Portal scope descriptor missing')
       return client.load({...descriptor,expectedId:id}, {...options, validate(data) {
         if (data.id !== id || data.overview?.scopeId !== (id === 'all' ? '' : id) ||
-          data.overview?.projectionVersion !== 1 || data.overview.footprints?.length !== 4)
+          data.overview?.projectionVersion !== 2 || data.overview.footprints?.length !== 4)
           throw Error('Portal scope identity or shape mismatch')
       }})
     },

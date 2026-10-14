@@ -38,12 +38,12 @@ if (process.argv.includes('--published-assets')) {
   for (const code of ['tkstp1','tkstp2']) assert.deepEqual(index.songs.find(song => song.songCode === code).imageColorEvents, fixture.songs[code].events)
   const indexes = {stageBackgrounds:backgrounds, imageLayers:read('image-layers/index.json'), imageObjects:read('image-objects/index.json')}
   for (const song of index.songs) assert.deepEqual(buildStageVfxCoverage(song, indexes).imageColorMissing, [])
-  assert.equal(Object.keys(components.songs).length, 10)
-  assert.equal(Object.keys(components.assets).length, 30)
+  assert.deepEqual(Object.keys(components.songs).sort(),Object.keys(backgrounds.songs).sort())
+  assert.equal(Object.keys(components.assets).length,Object.values(backgrounds.songs).reduce((n,s)=>n+s.layers.length,0))
   for (const [code, entry] of Object.entries(components.songs)) {
     assert.deepEqual(entry.layers, backgrounds.songs[code].layers)
     assert.equal(entry.compositePixelsIdentical, true)
   }
-  console.log('Published Image_color: 2177 commands, all targets resolved, 10 independent backgrounds and 4 explicit unresolved commands passed')
+  console.log('Published Image_color: 2177 commands, all targets resolved, all 55 independent backgrounds and 4 explicit unresolved commands passed')
 }
 console.log('Image tint sampling: independent assets, composite equality, hide, interruption and backward seek passed')

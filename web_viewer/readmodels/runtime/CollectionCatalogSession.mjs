@@ -1,3 +1,13 @@
+// Each collection domain's entity key: `<type>:<id>` with the id shape its catalog publishes.
+export const COLLECTION_IDENTITIES=Object.freeze({
+  items:{type:'item',id:/^\d+$/}, honors:{type:'honor',id:/^\d+$/},
+  currencies:{type:'currency',id:/^[a-z]+(?:-[a-z]+)*$/}, costumes:{type:'costume',id:/^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/},
+});
+export function collectionEntityDomain(key){
+  const [type,...rest]=String(key||'').split(':'),id=rest.join(':');
+  const match=Object.entries(COLLECTION_IDENTITIES).find(([,identity])=>identity.type===type&&identity.id.test(id));
+  return match?match[0]:'';
+}
 /** One live directory per mounted collection page; detail requests never hide it. */
 export function createCollectionCatalogSession(repository, onChange) {
   let revision=0, controller=null, disposed=false, catalogDomain='';
@@ -13,7 +23,7 @@ export function createCollectionCatalogSession(repository, onChange) {
     publish({domain,rows:cached?state.rows:[],detail:null,selectedId:'',catalogBusy:!cached,detailBusy:cached,error:'',errorScope:''});
     let phase='catalog';
     try {
-      if(!['items','honors'].includes(domain))throw Error('Invalid collection domain');
+      if(!COLLECTION_IDENTITIES[domain])throw Error('Invalid collection domain');
       if(!cached) {
         const rows=await repository.catalog(domain,options);
         if(!current())return false;
@@ -21,8 +31,8 @@ export function createCollectionCatalogSession(repository, onChange) {
         publish({rows,catalogBusy:false,detailBusy:true});
       }
       phase='detail';
-      const type=domain==='items'?'item':'honor';
-      const match=key?new RegExp(`^${type}:(\\d+)$`).exec(key):null;
+      const {type}=COLLECTION_IDENTITIES[domain];
+      const match=key && collectionEntityDomain(key)===domain ? [key,key.slice(type.length+1)] : null;
       if(key && !match)throw Error('Invalid collection identity');
       if(!key && !selectDefault){publish({detailBusy:false});return true}
       const selected=key?state.rows.find(row=>String(row.id)===match[1]):state.rows[0];

@@ -28,25 +28,43 @@ for (const id of ids) {
   for(const entry of result[3]) assert.equal(entry.song,data.songs.songs[entry.song.song_code], 'new metadata stays on the source object')
   // So does the standing order (performance_mapping.performer_slot_*), which only the chibi stage reads.
   const legacyMapping = mapping => mapping && Object.fromEntries(Object.entries(mapping).filter(([key]) => !['performer_slot_idol_codes','performer_slot_basis'].includes(key)))
-  const legacyProjection = [...result.slice(0,3),result[3].map(entry=>({...entry,song:Object.fromEntries(Object.entries(entry.song).filter(([key])=>!['attribute','gameplay'].includes(key)).map(([key,value])=>[key,key==='performance_mapping'?legacyMapping(value):value]))}))]
+  // The personal-story breakdown (sections, Episode, Small Talk) is additive to the total.
+  const legacyStats = Object.fromEntries(Object.entries(result[1]).filter(([key]) => !['storySections','storyEpisodes','storySmallTalks'].includes(key)))
+  if (result[1].stories !== null) assert.equal(result[1].storyEpisodes + result[1].storySmallTalks, result[1].stories, id)
+  const legacyProjection = [result[0],legacyStats,result[2],result[3].map(entry=>({...entry,song:Object.fromEntries(Object.entries(entry.song).filter(([key])=>!['attribute','gameplay'].includes(key)).map(([key,value])=>[key,key==='performance_mapping'?legacyMapping(value):value]))}))]
   digest.update(JSON.stringify([id, legacyProjection]))
 }
 const hash = digest.digest('hex')
-if (!baseline) assert.equal(hash, '0a961f02253cf9f55c142bb3912f0314cc6f5109c64fed9772f47e8b10974642')
+if (!baseline) assert.equal(hash, '37168ab873eece6d327877d728888a2f9d168ca8257c26be98b506a27f1f6fa0')
 delete data.cardMap
 assert.equal(JSON.stringify(data), before)
 assert.equal(buildIdolProfile('missing'), null)
-assert.deepEqual(buildIdolStats('missing'), { cards: 0, stories: null, chats: null, phones: null })
+assert.deepEqual(buildIdolStats('missing'), { cards: 0, stories: null, storySections: null, storyEpisodes: null, storySmallTalks: null, chats: null, phones: null })
+// 神谷幸広: 第1話 five Episodes; 第2話 five Small Talk plus five Episodes.
+const yukihiro = buildIdolStats('027yuk', data)
+assert.deepEqual([yukihiro.storySections, yukihiro.storyEpisodes, yukihiro.storySmallTalks], [2, 10, 5])
 assert.deepEqual(eventsForIdol('missing'), [])
 assert.deepEqual(songsForIdol('missing'), [])
 const profile = { unit_name: 'fallback', unit_id: 7 }
 assert.equal(buildIdolProfile('id', { by_idol_code: { id: profile } }, { unit_membership_by_idol: { id: { unit_name: 'override' } } }).unit_name, 'override')
 assert.equal(profile.unit_name, 'fallback')
 const mobile = { scenarios: [{ id: 'talk', kind: 'idol_talk' }, { id: 'phone', kind: 'idol_phone' }], by_idol_code: { id: ['missing', 'talk', 'phone'] } }
-assert.deepEqual(buildIdolStats('id', { mobile }), { cards: 0, stories: null, chats: 1, phones: 1 })
+assert.deepEqual(buildIdolStats('id', { mobile }), { cards: 0, stories: null, storySections: null, storyEpisodes: null, storySmallTalks: null, chats: 1, phones: 1 })
 assert.deepEqual(buildIdolStats('id', { episodes: { by_idol_code: {} }, mobile: { scenarios: [], by_idol_code: {} } }),
-  { cards: 0, stories: 0, chats: 0, phones: 0 })
+  { cards: 0, stories: 0, storySections: 0, storyEpisodes: 0, storySmallTalks: 0, chats: 0, phones: 0 })
 const song = { song_id: 1, performance_mapping: { performer_idol_codes: ['id'], performer_basis: 'table46_explicit' } }
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].song, song)
 assert.equal(songsForIdol('id', { songs: { one: song } })[0].evidenceLabel, '表 46 明确演唱／参演')
 console.log(`Idol page: ${ids.length} identities including missing ID; hash ${hash}; profile precedence, missing communication, evidence labels and input preservation passed`)
+
+// The game's display age owns the age line; the internal numeric age is never shown.
+{
+  const { formatIdolAge } = await import('../src/data/idolPage.js')
+  assert.equal(formatIdolAge('17'), '17岁'); assert.equal(formatIdolAge('？？'), '？？'); assert.equal(formatIdolAge(' 9 '), '9岁')
+  assert.equal(formatIdolAge(undefined), ''); assert.equal(formatIdolAge(null), ''); assert.equal(formatIdolAge({}), '')
+  const dictionary = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../public/data/masterdata/idol_unit_dictionary.json', import.meta.url), 'utf8'))
+  assert.equal(dictionary.idols.length, 49)
+  assert.ok(dictionary.idols.every(idol => typeof idol.display_age === 'string' && idol.display_age), 'every idol has a display age')
+  assert.equal(dictionary.by_idol_code['007kei'].display_age, '？？', 'the placeholder is kept, not replaced by the internal number')
+  assert.equal(formatIdolAge(dictionary.by_idol_code['007kei'].display_age), '？？')
+}

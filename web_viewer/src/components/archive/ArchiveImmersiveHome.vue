@@ -200,7 +200,7 @@
       <header>
         <div>
           <h3 id="cue-index-title">台词目录</h3>
-          <p>{{ activeIdolName }} · {{ activeIdol.cues.length }} 句触摸语音 · 点选即播放</p>
+          <p>{{ activeIdolName }} · {{ cueSummary }} · 点选即播放</p>
         </div>
         <button type="button" aria-label="关闭台词目录" title="关闭" @click="closeCueIndex">
           <X :size="21" />
@@ -211,19 +211,24 @@
           <Search :size="15" aria-hidden="true" />
           <input v-model="cueQuery" type="search" placeholder="按台词或卡名查找" aria-label="查找台词" />
         </label>
-        <div v-if="cueRarities.length > 1" class="background-variants" role="group" aria-label="按稀有度筛选">
+        <div v-if="cueSourceCounts.idol && cueSourceCounts.card" class="background-variants" role="group" aria-label="按语音来源筛选">
+          <button type="button" :aria-pressed="!cueSource" @click="cueSource = ''">全部</button>
+          <button type="button" :aria-pressed="cueSource === 'idol'" @click="cueSource = 'idol'">通用 {{ cueSourceCounts.idol }}</button>
+          <button type="button" :aria-pressed="cueSource === 'card'" @click="cueSource = 'card'">卡面 {{ cueSourceCounts.card }}</button>
+        </div>
+        <div v-if="cueRarities.length > 1 && cueSource !== 'idol'" class="background-variants" role="group" aria-label="按稀有度筛选">
           <button type="button" :aria-pressed="!cueRarity" @click="cueRarity = ''">全部</button>
           <button v-for="rarity in cueRarities" :key="rarity" type="button" :aria-pressed="cueRarity === rarity" @click="cueRarity = rarity">{{ rarity }}</button>
         </div>
       </div>
       <div ref="cueIndexBody" class="settings-body cue-index-body">
-        <section v-for="group in cueGroups" :key="group.cardId" class="cue-index-card">
-          <h4><span>{{ group.rarity }}</span>{{ group.title }}</h4>
+        <section v-for="group in cueGroups" :key="group.key" class="cue-index-card">
+          <h4><span>{{ group.rarity || '通用' }}</span>{{ group.title }}</h4>
           <ol>
             <li v-for="row in group.rows" :key="row.cue.cue">
               <button type="button" :data-cue-index="row.index" :aria-current="row.cue.cue === activeCue.cue ? 'true' : undefined" @click="chooseCue(row.cue)">
                 <span class="cue-index-number">{{ row.index + 1 }}</span>
-                <span class="cue-index-line gs-flow" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}</span>
+                <span class="cue-index-line gs-flow" :lang="row.line.lang" :class="{ 'is-pending': row.line.pending }">{{ row.line.text }}<small v-if="row.condition" class="cue-index-condition">{{ row.condition }}</small></span>
                 <span v-if="row.cue.cue === activeCue.cue" class="cue-index-now" :class="{ 'is-playing': playing }" aria-hidden="true"><i></i><i></i><i></i></span>
               </button>
             </li>
@@ -354,6 +359,7 @@ import {
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ArchiveCardHomeStage from './ArchiveCardHomeStage.vue'
 import { resolveHomeCard } from '../../data/archiveHomePreferences.js'
+import { homeVoiceConditionKind, homeVoiceConditionLabel } from '../../data/homeVoiceDecider.js'
 import { loadTerminalManifest, resolveHomeBackground } from '../../data/terminal/terminalMedia.js'
 import { archiveLineText, archiveNamedBackground, archiveNamedBackgroundSearch, loadArchiveNames } from './useArchiveNamedText.js'
 import { useVoicePlayer } from '../../core/useVoicePlayer.js'
@@ -416,7 +422,7 @@ function closeSettings() {
 // Line directory: grouped in source order (rarity, then card), filtered by rarity and by the shown
 // or source text / card title. Choosing a line jumps there and plays it.
 const cueIndexOpen = ref(false), cueIndexRef = ref(null), cueIndexBody = ref(null)
-const cueQuery = ref(''), cueRarity = ref('')
+const cueQuery = ref(''), cueRarity = ref(''), cueSource = ref('')
 let cueIndexReturnFocus = null
 function closeCueIndex() {
   cueIndexRef.value?.close()
@@ -446,22 +452,40 @@ const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'te
 const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({
   cue, index,
   line: archiveLineText('card-lines', [['card-touch', 'text']], cue.text),
-  title: cardText('card', cue.cardTitle, 'title'),
+  title: cue.source === 'idol' ? '' : cardText('card', cue.cardTitle, 'title'),
+  condition: homeVoiceConditionLabel(cue.condition),
 })))
-const cueCardLabel = computed(() => [activeCue.value?.rarity, cardText('card', activeCue.value?.cardTitle, 'title')].filter(Boolean).join(' · '))
+const cueCardLabel = computed(() => activeCue.value?.source === 'idol'
+  ? ['通用语音', homeVoiceConditionLabel(activeCue.value.condition)].filter(Boolean).join(' · ')
+  : [activeCue.value?.rarity, cardText('card', activeCue.value?.cardTitle, 'title')].filter(Boolean).join(' · '))
+const cueSourceCounts = computed(() => (activeIdol.value?.cues || []).reduce((counts, cue) => {
+  counts[cue.source === 'idol' ? 'idol' : 'card']++
+  return counts
+}, { idol: 0, card: 0 }))
+// The general pool and the card voices are counted apart; together they are one directory.
+const cueSummary = computed(() => [cueSourceCounts.value.idol && `${cueSourceCounts.value.idol} 句通用`,
+  cueSourceCounts.value.card && `${cueSourceCounts.value.card} 句卡面`].filter(Boolean).join(' · ') || '暂无语音')
 const cueRarities = computed(() => [...new Set(cueRows.value.map(row => row.cue.rarity).filter(Boolean))])
+const GENERAL_GROUP_TITLES = { always: '全天', time: '时段', season: '季节' }
 const compactText = text => String(text || '').replace(/\s+/g, '').toLocaleLowerCase()
 const cueGroups = computed(() => {
   const query = compactText(cueQuery.value)
   const groups = []
   for (const row of cueRows.value) {
-    if (cueRarity.value && row.cue.rarity !== cueRarity.value) continue
-    if (query && ![row.line.text, row.cue.text, row.title, row.cue.cardTitle].some(text => compactText(text).includes(query))) continue
-    let group = groups.at(-1)
-    if (group?.cardId !== row.cue.cardId) groups.push(group = { cardId: row.cue.cardId, rarity: row.cue.rarity, title: row.title, rows: [] })
+    const source = row.cue.source === 'idol' ? 'idol' : 'card'
+    if (cueSource.value && source !== cueSource.value) continue
+    if (cueRarity.value && source === 'card' && row.cue.rarity !== cueRarity.value) continue
+    if (cueRarity.value && source === 'idol' && cueSource.value !== 'idol') continue
+    if (query && ![row.line.text, row.cue.text, row.title, row.cue.cardTitle, row.condition].some(text => compactText(text).includes(query))) continue
+    // General voices group by authored condition; card voices by card, in source order.
+    const key = source === 'idol' ? `idol:${homeVoiceConditionKind(row.cue.condition)}` : `card:${row.cue.cardId}`
+    let group = groups.find(entry => entry.key === key)
+    if (!group) groups.push(group = { key, rarity: row.cue.rarity, rows: [],
+      title: source === 'idol' ? GENERAL_GROUP_TITLES[homeVoiceConditionKind(row.cue.condition)] : row.title })
     group.rows.push(row)
   }
-  return groups
+  const order = key => key.startsWith('idol:') ? Object.keys(GENERAL_GROUP_TITLES).indexOf(key.slice(5)) : 99
+  return groups.sort((left, right) => order(left.key) - order(right.key))
 })
 const activeCostume = computed(() => activeIdol.value?.costumes?.find(costume => costume.modelId === props.selectedCostume) ||
   activeIdol.value?.costumes?.find(costume => costume.modelId === activeCue.value?.modelId) ||
@@ -662,7 +686,7 @@ async function openCueIndex() {
   cueIndexReturnFocus = document.activeElement
   costumePickerOpen.value = false
   closeSettings()
-  cueQuery.value = ''; cueRarity.value = ''
+  cueQuery.value = ''; cueRarity.value = ''; cueSource.value = ''
   cueIndexOpen.value = true
   await nextTick()
   if (homeDisposed || !cueIndexOpen.value) return
@@ -904,6 +928,7 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .cue-index-number { flex:none;min-width:24px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;line-height:1.65; }
 .cue-index-line { flex:1;min-width:0;font-size:var(--gs-text-ui);line-height:1.65;white-space:pre-line; }
 .cue-index-line.is-pending { visibility:hidden; }
+.cue-index-condition { display:block;margin-top:2px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);font-variant-numeric:tabular-nums;white-space:normal; }
 .cue-index-empty { margin:0;color:var(--gs-ink-3);font-size:var(--gs-text-ui); }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }

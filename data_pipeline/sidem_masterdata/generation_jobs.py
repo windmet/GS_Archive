@@ -27,6 +27,7 @@ from .diagnostics import build_table_scan, build_validation_report, build_archiv
 from .adapters import build_work_story_index, build_background_catalog
 from .wire import extract_table_rows
 from .archive_domain_job import generate_archive_domains
+from .home_system_voice import build_home_system_voice_index
 
 
 def generate_birthday_semantic(inputs: GenerationInputs) -> dict[str, Any]:
@@ -127,6 +128,14 @@ def generate_work_story(inputs: GenerationInputs) -> dict[str, Any]:
     )
     filename = "work_story_index.json"
     return {filename: work_story_index}
+
+
+def generate_home_system_voice(inputs: GenerationInputs) -> dict[str, Any]:
+    tables = extract_table_rows(inputs.records, {2, 24, 90, 91})
+    index = build_home_system_voice_index(
+        tables, inputs.compiled_dir, inputs.compiled_stems, build_idol_unit_dictionary(tables)
+    )
+    return {"home_system_voice_index.json": index}
 
 
 def generate_full(inputs: GenerationInputs) -> dict[str, Any]:
@@ -267,5 +276,6 @@ SELECTED_JOBS = {
     'idol_communication': generate_idol_communication,
     'seasonal_campaign': generate_seasonal_campaign,
     'work_story': generate_work_story,
+    'home_system_voice': generate_home_system_voice,
     'archive_domains': generate_archive_domains,
 }

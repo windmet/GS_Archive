@@ -17,6 +17,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { watch } from 'vue'
 import { bindGashaNavigation, createGashaFixtureTransport, deferredGasha } from './lib/gasha-navigation-harness.mjs'
+const ticketEvidence = JSON.parse(readFileSync(new URL('../public/data/editorial/gasha-ticket-evidence.json', import.meta.url), 'utf8'))
 
 const app = readFileSync(new URL('../src/App.vue', import.meta.url), 'utf8')
 const script = parseSfc(app).descriptor.scriptSetup.content
@@ -208,7 +209,10 @@ for (const kind of ['detail', 'catalog']) {
   assert.notEqual(t.ticket.translation, t.ticket.source_name, 'fixture exercises a translated search term')
   t.c.currentGashaCategory.value = 'all'; t.c.filterQuery.value = t.ticket.translation
   assert.ok(t.c.filteredGashas.value.some(row => String(row.id) === t.ids[0]), 'translated gasha names remain searchable')
-  t.c.filterQuery.value = 'idol:001tom'; equal(t.c.filteredGashas.value.map(row => String(row.id)), t.ids)
+  // Wiki-dated ticket pools list their own cards, so an idol filter reaches them too.
+  const ticketPools = ticketEvidence.rows.filter(row => !row.matched_ids.length && row.wiki_pools?.some(run => run.cards.some(card => card.character_id === '001tom'))).map(row => row.id)
+  assert.equal(ticketPools.length, 3)
+  t.c.filterQuery.value = 'idol:001tom'; equal(t.c.filteredGashas.value.map(row => String(row.id)), [...t.ids, ...ticketPools])
 }
 {
   const job = deferredGasha(), card = { resource_id: 'card', character_id: '001tom' }; let loads = 0

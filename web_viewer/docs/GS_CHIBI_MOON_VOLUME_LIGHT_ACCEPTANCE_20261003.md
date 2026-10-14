@@ -1,5 +1,7 @@
 # Moon 原生贴图、体积粒子及后方灯束
 
+**原版链路复查纠正（2026-10-14）**：旧悬灯的周期、片段选择、镜像、明暗及退场规则已有新的原版方法体依据，见 [DRIVE 共用灯光链路复查](NATIVE_DRIVE_LIGHT_CHAIN_RECHECK_20261014.md)。下文有关旧悬灯的截图校准结论须按该记录重新验证；Sprite/Animator 资源存在不代表导演行为一致。
+
 输入 HEAD：`d060e47e`（共享 checkout 在执行中有其他窗口提交）；分支 `codex/chibi-stage-reconstruction-20261002`。
 
 ## 本批结果

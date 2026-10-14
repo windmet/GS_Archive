@@ -254,7 +254,7 @@ assert.deepEqual(
   ['社区中文剧情'],
   'story portal must expose the dedicated navigation',
 )
-assert.match(storyCatalogComponent, /import \{storyGateways,storyGatewayCount\} from '\.\.\/\.\.\/presentation\/StoryGateways\.js'/, 'story portal renders the shared gateway list')
+assert.match(storyCatalogComponent, /import \{storyGateways,storyGatewayCount(?:,storyGatewayNote)?\} from '\.\.\/\.\.\/presentation\/StoryGateways\.js'/, 'story portal renders the shared gateway list')
 assert.match(storyCatalogComponent, /open-external-resources/, 'story portal gateway must emit a navigation action')
 assert.match(
   appComponent,

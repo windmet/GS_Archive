@@ -8,6 +8,7 @@ import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_lo
 import { buildReadingParents } from './reading_parent_projection.mjs';
 import { applyDomainExpansion } from './domain_expansion.mjs';
 import { buildSeasonalLedger } from './seasonal_ledger.mjs';
+import { confirmGashaPickups, missionAcquisitions } from './wiki_acquisition.mjs';
 
 export const INPUTS = {
  domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
@@ -15,7 +16,9 @@ export const INPUTS = {
  domainPhotoMaterials:'data/masterdata/domains/photo_materials.json',
  domainLogin:'data/masterdata/domains/login_campaign_catalog.json',
  domainCollectionMedia:'data/masterdata/domains/collection_media.json', domainPhotoMedia:'data/masterdata/domains/photo_media.json',
+ domainCurrencies:'data/masterdata/domains/currency_catalog.json', domainCostumes:'data/masterdata/domains/costume_catalog.json',
  domainEventMedia:'data/masterdata/domains/event_media.json',
+ homeSystemVoice: 'data/masterdata/home_system_voice_index.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',
  idolUnit: 'data/masterdata/idol_unit_dictionary.json', costumeDictionary: 'data/masterdata/costume_dictionary.json',
  archiveManifest: 'data/archive_manifest.json', uiAssetCatalog: 'data/assets/ui_asset_catalog.json',
@@ -23,7 +26,10 @@ export const INPUTS = {
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
- gashaIndex: 'data/masterdata/gasha_index.json',
+ songExternalMedia: 'data/song_external_media.json', cardSkillMovies: 'data/card_skill_movies.json',
+ gashaIndex: 'data/masterdata/gasha_index.json', gashaTickets: 'data/editorial/gasha-ticket-evidence.json',
+ wikiAcquisition: 'data/editorial/wiki-acquisition-evidence.json', eventExchange: 'data/editorial/event-exchange-evidence.json',
+ movieAnnounce: 'data/masterdata/movie_announce_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
@@ -83,23 +89,34 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     modules[key] = await import(pathToFileURL(path.join(viewer, relative)).href);
   }
   for (const [key, value] of Object.entries(data)) modules.contracts.validateArchivePayload(key, value);
+  // The numeric age is internal master-data; the game's own display_age (which can be a placeholder) is what readers see.
+  for (const row of [...data.idolUnit.idols, ...Object.values(data.idolUnit.by_idol_code), ...Object.values(data.idolUnit.by_numeric_id)]) delete row.age;
   // Imported by the portal's pure event selectors; bind its bytes to this release too.
   await readSource('data/editorial/event-resource-graph.json');
   assert(data.songTimelines.schemaVersion === 1 && data.songTimelines.timeUnit === 'ms' &&
     data.songTimelines.songs && typeof data.songTimelines.songs === 'object', 'Song timeline manifest contract mismatch');
-  const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary);
+  const homes = modules.home.buildArchiveHomeState(data.idolUnit, data.cardIndex, data.archiveManifest, data.costumeDictionary, data.homeSystemVoice);
   const homeStats = [
     { label: '剧情文件', value: data.archiveVerification.scenarios?.parsed_files ?? data.archiveManifest.counts?.indexed_scenarios ?? 0 },
     { label: '偶像', value: data.archiveManifest.counts?.idols ?? Object.keys(data.idolUnit.by_idol_code || {}).length },
     { label: '卡片', value: data.archiveManifest.counts?.cards ?? data.cardIndex.meta?.card_count ?? data.cardIndex.cards.length },
     { label: '卡池', value: data.gashaIndex.meta?.logical_gasha_count ?? data.archiveManifest.counts?.gashas ?? 0 },
-    { label: '首页语音', value: data.archiveManifest.counts?.home_voice_cues ?? data.cardIndex.meta?.home_voice_cue_count ?? 0 },
+    { label: '首页语音', value: homes.reduce((sum, home) => sum + home.cues.length, 0) },
   ];
   const homeHighlights = modules.home.buildArchiveHomeHighlights(data.archiveManifest, data.uiAssetCatalog);
   const cards = [...modules.cards.buildCardMap(data.cardIndex).values()].map(card => modules.cards.mergeCardDetail(card, data.cardDetailIndex));
   // Move the actual App.vue event decoration into the producer, rather than losing it during data splitting.
   const eventByFile = new Map((data.archiveManifest.unit_event_relations || []).map(e => [e.file, e]));
+  const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
+  const birthdayLabels = modules.domainIdentity.birthdayStoryFileLabels(birthdayDomain);
   const stories = modules.stories.buildStoryCatalog(data.storyCatalog, data.storyPresentation).map(entry => {
+    // Birthday files say which year and whose birthday; a shared Small Talk stays in its personal
+    // story and is findable from the birthday side.
+    const birthday = birthdayLabels.get(entry.file);
+    if (birthday && entry.domain === 'birthday') entry = { ...entry, episodeLabel: entry.episodeLabel || birthday.label,
+      searchText: `${entry.searchText} ${birthday.label}`.toLowerCase() };
+    else if (birthday) entry = { ...entry, domainAliases: ['生日剧情', birthday.label],
+      searchText: `${entry.searchText} 生日剧情 ${birthday.label}`.toLowerCase() };
     if (entry.domain !== 'event') return entry;
     const relation = eventByFile.get(entry.file);
     if (!relation) return { ...entry, eventScope: 'unclassified', eventScopeLabel: '活动' };
@@ -115,7 +132,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   for (const gasha of Object.values(data.gashaIndex.by_id || {})) {
     if (!gashaMap.has(String(gasha.id))) gashaMap.set(String(gasha.id), modules.gashas.resolveGashaRelatedCards(gasha,data.gashaIndex));
   }
-  const gashas = [...gashaMap.values()];
+  const gashas = [...gashaMap.values()].map(gasha => modules.gashas.withGashaAnnounceMovie(gasha, data.movieAnnounce));
+  const gashaConfirmation = confirmGashaPickups(gashas, data.gashaIndex, data.wikiAcquisition, data.gashaTickets);
   const cardMap = new Map(cards.map(c => [c.resource_id,c]));
   const originalCardMap = modules.cards.buildCardMap(data.cardIndex);
   const storyGroups = new Map();
@@ -137,7 +155,6 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     return [story.id,{ related, castReferences, promotedVisualUrl,
       readingEntries:readingEntriesForFiles(data.readingManifest.entries,[story.file],{includeChildrenOf:[story.file]}) }];
   }));
-  const birthdayDomain = modules.domainIdentity.buildBirthdayStoryDomainIdentity(data.storyCatalog,data.idolUnit,data.speakerDictionary,data.birthdayStorySemantic);
   const extraDomain = modules.domainIdentity.buildExtraStoryDomainIdentity(data.storyCatalog,data.gashaIndex,data.extraStoryVisualIndex);
   const mainDomain = modules.domainIdentity.buildMainStoryDomainIdentity(data.storyCatalog);
   const collections = modules.collections.buildStoryCollections(data.storyCatalog,stories,{birthdayDomain,extraDomain,idolEpisodes:data.idolEpisode});
@@ -157,7 +174,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const gashaBanners = new Map((data.gashaIndex.gashas || []).map(gasha => [String(gasha.id), gasha.banner_url || null]));
   const gashaRelation = card => {
     const relation = data.gashaIndex.relations_by_card?.[card.resource_id];
-    return relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null;
+    return gashaConfirmation.relationFor(card.resource_id,
+      relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null);
   };
   const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
     ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
@@ -205,6 +223,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
         stats:modules.idolPage.buildIdolStats(id,{cardIndex:data.cardIndex,cardMap:originalCardMap,episodes:data.idolEpisode,mobile:data.mobileArchive}),
         events:modules.idolPage.eventsForIdol(id,data.archiveManifest),
         songs:modules.idolPage.songsForIdol(id,data.songCatalog),
+        selfIntroduction:modules.idolPage.idolSelfIntroduction(id,data.homeSystemVoice),
       }})) },
     units: { records:unitCatalog.map(entry=>projectUnitRecord(entry,
       modules.unitPage.storiesForUnit(entry.unit,stories),modules.unitPage.songsForUnit(entry.unit,data.songCatalog))) },
@@ -248,7 +267,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'seasonal-ledger': { records:[{id:'all',summary:{name:'季节企划'},
       view:{ledger:buildSeasonalLedger(data.seasonalCampaign,data.readingManifest.entries)}}] },
   };
-  const materialContexts = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
+  const { materialContexts, songEvents, eventAcquisitions } = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
   // Each reading document's canonical parent comes from the owner records above, so the locator names exactly
   // the page the Reader's own entry points would have opened (see reading_parent_projection.mjs).
@@ -259,13 +278,57 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   });
   extraDomains['reading-docs'] = { sharded:true,
     records:buildReadingLocatorRecords(data.readingManifest, modules.readingDirectory.readingDirectoryEntries, parentFor) };
+  // Song relations: the events that premiered or reprinted it, and the main-story chapter that unlocks it.
+  const collectionIds = new Set(extraDomains.collections.records.map(record => record.id));
+  for (const [code, view] of Object.entries(songViews)) {
+    const song = data.songCatalog.songs[code], condition = song.gameplay?.releaseCondition, section = condition?.storySectionId;
+    let unlockStory = null;
+    if (section) {
+      const chapter = String(Math.floor(section / 100)), episode = section % 100;
+      assert(condition.raw?.['2'] === section && collectionIds.has(`main:${chapter}`), `Unresolved song unlock chapter: ${code}`);
+      unlockStory = { domain:'main', section:chapter, storySectionId:section, label:condition.label,
+        chapterLabel:`第${Number(chapter) - 100}章 第${episode}話` };
+    }
+    view.relatedEvents = songEvents[code] || [];
+    view.unlockStory = unlockStory;
+    // Curated, dated lookups: album pages behind the master-data links, and the official 3D live uploads.
+    view.albums = (song.links || []).map(url => {
+      const album = data.songExternalMedia.albums[url];
+      assert(album?.title && album.catalog_number && album.song_codes.includes(code), `Uncurated album link for ${code}: ${url}`);
+      return { url, title: album.title, catalogNumber: album.catalog_number };
+    });
+    view.officialVideos = (data.songExternalMedia.official_videos[code] || []).map(video => {
+      assert(/^[\w-]{11}$/.test(video.youtube_id) && ['growing_stars', 'sidem'].includes(video.source), `Invalid official video for ${code}`);
+      return { youtubeId: video.youtube_id, source: video.source, title: video.title };
+    });
+  }
+  for (const code of Object.keys(data.songExternalMedia.official_videos)) assert(songViews[code], `Official video for unknown song: ${code}`);
+  for (const album of Object.values(data.songExternalMedia.albums)) for (const code of album.song_codes)
+    assert((data.songCatalog.songs[code]?.links || []).length, `Album lists a song without links: ${code}`);
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
+  }
+  // Confirmed acquisition: event reward tables, wiki-listed event missions and carnival exchanges, campaign missions.
+  const missions = missionAcquisitions(data.wikiAcquisition);
+  for (const [resourceId, context] of Object.entries(cardContext)) {
+    const events = eventAcquisitions[resourceId] || [], mission = missions.get(resourceId) || null;
+    if (events.length || mission) context.acquisition = { events, mission };
+  }
+  for (const id of [...missions.keys(), ...Object.keys(eventAcquisitions)]) assert(cardContext[id], `Acquisition for unknown card: ${id}`);
+  // The SSR skill cut-in, decrypted from its USM and re-encoded for the web (scripts/prepare-card-skill-movies.py).
+  for (const [resourceId, movie] of Object.entries(data.cardSkillMovies.movies)) {
+    assert(cardContext[resourceId], `Skill movie for unknown card: ${resourceId}`);
+    assert(movie.url === `/assets/card-skill-movies/${resourceId}.mp4` && movie.bytes > 0 && movie.duration_ms > 0, `Invalid skill movie: ${resourceId}`);
+    cardContext[resourceId].skillMovie = { url:movie.url, poster:movie.poster, bytes:movie.bytes,
+      width:movie.width, height:movie.height, durationMs:movie.duration_ms };
   }
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
     storyCatalogView: { mainDomain, extraDomain, birthdayDomain,
-      seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length },
+      seasonalCount: data.seasonalCampaign.campaigns.length, workCount: data.workStory.idols.length,
+      // Logical birthday records; the shared ones are personal-story Small Talk files, published once.
+      birthdayCount: birthdayDomain.meta.logicalEntryCount,
+      birthdaySharedCount: birthdayDomain.logicalEntries.filter(entry => entry.domainMemberships.length > 1).length },
     portalPortraits:data.rawCharacterImagePromotions, portalStageManifest:data.songTimelines,
     gashaCatalogIds:gashaCatalog.map(g=>String(g.id)),
     gashaSummary:pick(data.gashaIndex.meta,['gasha_count','logical_gasha_count','derived_pickup_count','category_counts']),

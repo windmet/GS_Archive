@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import * as Vue from 'vue'
 import { parse, compileScript } from '@vue/compiler-sfc'
 import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
+import * as DomainPresentation from '../src/presentation/DomainPresentation.mjs'
 import {
   buildArchiveViewContext,
   captureArchiveViewState,
@@ -71,6 +72,7 @@ const renderer = Vue.createRenderer({
   nextSibling: item => item.parent?.children[item.parent.children.indexOf(item) + 1] || null,
 })
 const context = vm.createContext({ console })
+const relationLists = []
 const emptyComponent = { render: () => null }
 async function compileComponent(path, imports) {
   const { descriptor } = parse(read(path))
@@ -93,11 +95,14 @@ const IdolReference = await compileComponent('src/components/archive/ArchiveIdol
 })
 const SongDetail = await compileComponent('src/components/archive/ArchiveSongDetail.vue', {
   vue: Vue,
-  '@lucide/vue': { ChevronRight: emptyComponent, ExternalLink: emptyComponent },
+  '@lucide/vue': { ChevronRight: emptyComponent, ExternalLink: emptyComponent, Play: emptyComponent },
   './ArchiveTechnicalDetails.vue': { default: emptyComponent },
   './ArchiveIdolReference.vue': { default: IdolReference },
   './ArchiveSongExperimentalPlayer.vue': { default: emptyComponent },
   './ArchiveSongSinglePlayer.vue': { default: emptyComponent },
+  './ArchiveRelationList.vue': { default: { props: { items: Array }, emits: ['select'],
+    setup(props, { emit }) { relationLists.push({ props, emit }); return () => null } } },
+  '../../presentation/DomainPresentation.mjs': DomainPresentation,
 })
 const flush = async () => { await Vue.nextTick(); await Vue.nextTick() }
 const nameJa = (code, fallback) => fallback
@@ -110,12 +115,12 @@ class MemoryStorage {
   setItem(key, value) { this.values.set(key, String(value)) }
 }
 const audioArchive = root => all(root).find(item => item.type === 'details' &&
-  item.children.some(child => child.type === 'summary' && text(child) === '声部与音频归档'))
+  item.children.some(child => child.type === 'summary' && /^(演出语音|个人声部|收录组合|按组合查看)/.test(text(child))))
 const keiCard = root => referenceCards(root).find(card => cardLabel(card) === '都筑圭')
 function fixture(code, { transform = song => song, keyed = true, presentation = {} } = {}) {
   const song = transform(buildSongPresentation(catalog.songs[code], dictionary, { manifest, ...presentation }))
   const original = JSON.stringify(song)
-  const root = node('root'), opened = [], units = [], ready = [], component = Vue.ref(null)
+  const root = node('root'), opened = [], units = [], ready = [], related = [], events = [], component = Vue.ref(null)
   root.focusCalls = []
   root.activeElement = null
   const state = Vue.shallowReactive({ song, idolName: nameZh })
@@ -123,6 +128,7 @@ function fixture(code, { transform = song => song, keyed = true, presentation = 
     ...state, key: keyed ? state.song.id : undefined, ref: component, idolSearch: () => '',
     onOpenIdol: code => opened.push(code), onOpenUnit: code => units.push(code),
     onReady: value => ready.push(value.songId),
+    onOpenRelatedStory: value => related.push(value), onOpenEvent: value => events.push(value),
   }) })
   app.config.warnHandler = message => assert.fail(message)
   app.mount(root)
@@ -137,7 +143,7 @@ function fixture(code, { transform = song => song, keyed = true, presentation = 
       return all(root).filter(item => item.props['data-archive-focus-id'])
     },
   }
-  return { root, state, opened, units, ready, component, song, original, app, document,
+  return { root, state, opened, units, ready, related, events, component, song, original, app, document,
     prepare: (focusId, songId = state.song.id, isCurrent = () => true) =>
       component.value.prepareRestoreFocus({ focusId, songId, isCurrent }),
   }
@@ -433,4 +439,55 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
     delete context.getComputedStyle
   }
 }
+// Relations from the read model: the main-story unlock opens its chapter; the premiere event is named
+// beside the unlock condition and the events list leads with it.
+{
+  const unlockStory = { domain: 'main', section: '101', storySectionId: 10101, label: '阅读主线 第1章 第1話（至 EPISODE10）', chapterLabel: '第1章 第1話' }
+  const t = fixture('grwsml', { transform: song => ({ ...song, unlockStory, relatedEvents: [] }) }); await flush()
+  const link = all(t.root).find(item => hasClass(item, 'song-unlock-link'))
+  assert.equal(text(link), unlockStory.label)
+  assert.equal(text(link.parent), `解锁条件：${unlockStory.label}`)
+  link.props.onClick()
+  assert.equal(JSON.stringify(t.related), JSON.stringify([{ entity_type: 'story_collection', story_type: 'main', story_section: '101' }]))
+  assert.equal(all(t.root).filter(item => hasClass(item, 'song-events')).length, 0, 'no events list without related events')
+  t.app.unmount()
+}
+{
+  relationLists.length = 0
+  const banner = url => ({ url, status: 'verified-local-file' })
+  const relatedEvents = [
+    { event_id: '410001', event_code: '10001', title: 'GROWING SIGN@L -Not Alone-', kind: 'theater', isReprint: false, startAt: 1633845600, banner: banner('/a.png') },
+    { event_id: 'event:10019', event_code: '10019', title: '復刻 GROWING SIGN@L -Not Alone-', kind: 'theater', isReprint: true, startAt: 1680674400, banner: banner('/b.png') },
+  ]
+  const t = fixture('ntalon', { transform: song => ({ ...song, unlockStory: null, relatedEvents }) }); await flush()
+  assert.equal(all(t.root).filter(item => hasClass(item, 'song-unlock-link')).length, 0)
+  const note = all(t.root).find(item => hasClass(item, 'song-block-note') && text(item).startsWith('首发：'))
+  assert.match(text(note), /^首发：活动「GROWING SIGN@L -Not Alone-」先行(，\d{4}-\d{2}-\d{2} 加入普通歌曲)?。$/)
+  const list = relationLists.at(-1)
+  assert.equal(JSON.stringify(list.props.items.map(item => [item.label, item.title, item.meta, item.imageUrl])), JSON.stringify([
+    ['首发活动', 'GROWING SIGN@L -Not Alone-', 'THEATER · 2021年10月10日 开始', '/a.png'],
+    ['复刻活动', '復刻 GROWING SIGN@L -Not Alone-', 'THEATER · 2023年4月5日 开始', '/b.png'],
+  ]))
+  list.emit('select', list.props.items[1])
+  assert.equal(JSON.stringify(t.events), JSON.stringify([{ event_id: 'event:10019' }]))
+  t.app.unmount()
+}
+{
+  // Stem songs list every collected vocal with Solo and lineup actions; full-mix-only songs have no 音源收录.
+  const t = fixture('drvalv', { presentation: { audioExperiment: experiments.songs.drvalv } }); await flush()
+  const sources = all(t.root).find(item => hasClass(item, 'song-sources'))
+  assert.ok(sources)
+  assert.deepEqual(all(sources).filter(item => item.type === 'dt').map(text), ['完整混音', '组合版', '个人声部', '伴奏'])
+  assert.deepEqual(all(sources).filter(item => item.type === 'dd').map(text), ['已收录', '16 组', '49 位', '已收录'])
+  const archive = await openAudioArchive(t)
+  assert.equal(referenceCards(archive).length, 49)
+  const actions = all(archive).filter(item => hasClass(item, 'source-action')).map(text)
+  assert.equal(actions.filter(label => label.includes('Solo')).length, 49)
+  assert.equal(actions.filter(label => label === '＋编成').length, 49)
+  t.app.unmount()
+  const plain = fixture('anwhre'); await flush()
+  assert.equal(all(plain.root).some(item => hasClass(item, 'song-sources')), false)
+  plain.app.unmount()
+}
+console.log('Song relations: main-story unlock link and chapter payload, premiere note, premiere-first event rows with dates and event payload passed.')
 console.log('Song detail: actual SFC compact hero metadata/form uniqueness, four source attributes, real full-mix/experiment/unavailable projections, source dates and special-version parent passed. Labeled unknown-attribute/date omissions passed. Existing language/identity parity, 4-versus-49 scope, immutable evidence, lazy initial mount, unique performer/idol/unit audio targets, native-open and mount-before-shared-restore, preserved scroll, main-list isolation, wrong/stale/cancelled targets and song-change/unmount guards passed. ResizeObserver lifecycle, viewport-versus-content height, fit/growth/resize and unmount guards passed in the real template; the measured tall-lyrics/40441px archive dimensions are labeled host fixtures. Labeled synthetic multi-group IDs also passed. Memory-renderer evidence; decoded audio, native events, Browser/layout/focus visibility and App routing acceptance are separate.')

@@ -26,7 +26,7 @@
             <span class="story-row-thumb"><img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" /></span>
             <span class="story-row-copy">
               <strong>{{ gashaText(collection.gasha.display_name) }}</strong>
-              <small>关联卡池 · {{ collection.gasha.derived_pickup_cards?.length || 0 }} 张推定关联卡</small>
+              <small>关联卡池 · {{ collection.gasha.derived_pickup_cards?.length || 0 }} 张新卡</small>
             </span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>

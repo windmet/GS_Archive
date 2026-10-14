@@ -12,6 +12,9 @@ assert parse_backmonitor_row(['Backmonitor', '', '', '', '', '', '', '', '']) is
 assert parse_backmonitor_row(['Backmonitor', 'invalid', '', '', '', '', '', '', '']) is None
 fixtures=json.loads(Path(__file__).with_name('fixtures').joinpath('chibi-backmonitor-apertures.json').read_text(encoding='utf-8'))
 for fixture in fixtures:
-    assert [parse_backmonitor_row(row) for row in fixture['rows']] == fixture['events']
+    assert [{key:parse_backmonitor_row(row)[key] for key in expected} for row,expected in zip(fixture['rows'],fixture['events'])] == fixture['events']
 assert all(e['rawValue7']==0 for e in fixtures[0]['events'])
 print('Backmonitor: zero, sorting-range values and empty controls preserved without alpha semantics')
+
+native=parse_backmonitor_row(['Backmonitor','0','movie','','0','360','1000','1','1100','1250','logo'])
+assert native['glowAlpha']==1.1 and native['sortingOrder']==1250 and native['logo']=='logo'

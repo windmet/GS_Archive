@@ -63,7 +63,7 @@ export async function writeReadModels(root, release, product, provenance = {}) {
       scenario_count: card.scenario_entries?.length || 0, home_voice_count: card.home_voice_cues?.length || 0,
       release_series_id: card.release_series?.series_id || null,
       // Consumers must use these explicit booleans, not ask for the old entire index.
-      has_event_relation: !!context.eventRelation, has_gasha_relation: !!context.gashaRelation,
+      has_event_relation: !!(context.eventRelation || context.acquisition?.events?.length), has_gasha_relation: !!context.gashaRelation,
       has_release_series: !!card.release_series, attribute:card.gameplay?.attribute?.name || '', asset_status: context.assetStatus || null, ownerReference:context.ownerReference || null, detail: descriptor };
     cardRows.push(row);
     cardSearch.push({ ...pick(row, ['id','resource_id','character_id','rarity','title','title_full','release_at','single_state','has_story','has_home_voice','scenario_count','home_voice_count','release_series_id','has_event_relation','has_gasha_relation','has_release_series','attribute','asset_status']), detail: descriptor });
@@ -73,12 +73,12 @@ export async function writeReadModels(root, release, product, provenance = {}) {
   const storyRows = [], storySearch = [];
   for (const story of product.stories) {
     const descriptor = await detail('stories', story.id, { story: stripEvidence(story), view: product.storyViews?.[story.id] || null });
-    const row = { ...pick(story, ['id','file','title','subtitle','domain','domainOrder','domainLabel','exists','releaseAt','unitId','unitName','sectionId','sectionLabel','episodeLabel','resourceId','playableStartIndex','playableStepCount','eventScope','eventScopeLabel','rewardCardIds','searchText','characters','summary','preplaySynopsis']),
+    const row = { ...pick(story, ['id','file','title','subtitle','domain','domainOrder','domainLabel','exists','releaseAt','unitId','unitName','sectionId','sectionLabel','episodeLabel','resourceId','playableStartIndex','playableStepCount','eventScope','eventScopeLabel','rewardCardIds','searchText','characters','summary','preplaySynopsis','domainAliases']),
       eventRelation: story.eventRelation ? pick(story.eventRelation, ['event_id','event_code','title','event_scope']) : null,
       masterEvent: story.masterEvent ? pick(story.masterEvent, ['name','event_type_label','start_at']) : null,
       detail: descriptor };
     storyRows.push(row);
-    storySearch.push({ ...pick(row, ['id','file','title','subtitle','domain','exists','unitId','sectionId']),
+    storySearch.push({ ...pick(row, ['id','file','title','subtitle','domain','exists','unitId','sectionId','episodeLabel','domainAliases']),
       resourceIds: story.resourceIds || [], characters: story.characters || [], detail: descriptor });
   }
   const locatorShards = {};
@@ -91,7 +91,8 @@ export async function writeReadModels(root, release, product, provenance = {}) {
     if (value) landingDescriptors[key] = await writer.emit(`stories/landing/${key}.json`, `stories.landing.${key}`, { value: stripEvidence(value) });
   }
   await directory('stories', storyRows, { searchRows: storySearch,
-    meta: { detailLocatorShards, landing: landingDescriptors, seasonalCount: landing.seasonalCount || 0, workCount: landing.workCount || 0 } });
+    meta: { detailLocatorShards, landing: landingDescriptors, seasonalCount: landing.seasonalCount || 0, workCount: landing.workCount || 0,
+      birthdayCount: landing.birthdayCount || 0, birthdaySharedCount: landing.birthdaySharedCount || 0 } });
 
   const songRows = [];
   for (const song of product.songs) {

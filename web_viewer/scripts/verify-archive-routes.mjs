@@ -110,7 +110,8 @@ for (const route of [
   { view: 'event_catalog', query: 'Cafe', eventScope: 'fixed_unit_event' },
   { view: 'event_detail', event: '410018', parentView: 'card_detail', sourceRoute: cardsSource },
   { view: 'song_catalog', query: 'Jupiter' },
-  { view: 'song_detail', song: 'brndnf', parentView: 'unit_detail', unit: '01jup', sourceRoute: cardsSource },
+  // A song's address is its identity; the unit page it was opened from rides the source (see verify-route-schema).
+  { view: 'song_detail', song: 'brndnf', sourceRoute: cardsSource },
 ]) {
   const before = structuredClone(route)
   const currentUrl = buildArchiveUrl('http://localhost/', route)
@@ -338,7 +339,10 @@ const sourceRoute = {
 const builtUrl = buildArchiveUrl('http://localhost/?unknown=kept&file=old', sourceRoute)
 assert.equal(builtUrl.searchParams.get('unknown'), 'kept')
 assert.equal(builtUrl.searchParams.has('file'), false)
-assert.deepEqual(readArchiveRoute(builtUrl.href), normalizeArchiveRoute(sourceRoute))
+// A card's address is its identity (/cards/<resource_id>/); the list filters it was opened from ride the
+// history source, so the written URL drops them and reads back as the bare card.
+assert.equal(builtUrl.search, '?unknown=kept&view=card_detail&card=001tom_n01')
+assert.deepEqual(readArchiveRoute(builtUrl.href), normalizeArchiveRoute({ view: 'card_detail', card: '001tom_n01' }))
 
 const cardDetailContext = readArchiveRoute('http://localhost/?view=card_detail&idol=001tom&card=001tom_ssr01&rarity=SSR&q=Jupiter')
 assert.equal(cardDetailContext.query, 'Jupiter')
@@ -427,6 +431,19 @@ assert.equal(songCatalogBreadcrumbs.length, 2)
     writeArchiveRoute(readArchiveRoute(), { replace: true })
     assert.ok(!new URL(window.location).searchParams.has('from'), 'legacy URL is shortened on the next write')
     assert.equal(readArchiveRoute().sourceRoute, source, 'and its source moved into history state')
+    // An event Reader's placement (parent view, category, unit) rides history state; the URL keeps only the event identity.
+    writeArchiveRoute({ view: 'reader', reading: 'doc1', event: '10001', parentView: 'unit_detail', category: 'idol', unit: '01jup' })
+    const readerQuery = new URL(window.location).searchParams
+    assert.ok(!readerQuery.has('parent') && !readerQuery.has('category') && !readerQuery.has('unit'), 'event Reader URL carries no placement')
+    assert.equal(readerQuery.get('event'), '10001')
+    assert.deepEqual([readArchiveRoute().parentView, readArchiveRoute().category, readArchiveRoute().unit], ['unit_detail', 'idol', '01jup'], 'refresh restores the placement')
+    assert.deepEqual([readArchiveRoute(window.location.href).parentView, readArchiveRoute(window.location.href).unit], ['', ''], 'a copied link carries no placement')
+    entries[index] = { state: null, href: 'http://localhost/?view=reader&reading=doc1&event=10001&parent=unit_detail&category=idol&unit=01jup' }
+    assert.equal(readArchiveRoute().unit, '01jup', 'legacy placement parameters are still read')
+    writeArchiveRoute(readArchiveRoute(), { replace: true })
+    assert.ok(!new URL(window.location).searchParams.has('unit') && readArchiveRoute().unit === '01jup', 'and move into state on the next write')
+    writeArchiveRoute({ view: 'reader', reading: 'doc2', story_type: 'main', storyType: 'main', storySection: '101', category: 'cards' })
+    assert.equal(new URL(window.location).searchParams.get('category'), 'cards', 'non-event Readers keep their own parameters')
     // Portal / Home launcher returns ride the same versioned context.
     const portalReturn = '?view=idols&category=idol', homeReturn = '?view=portal'
     writeArchiveRoute({ view: 'portal', portalFrom: portalReturn })

@@ -1,4 +1,12 @@
+import { SPINE_TRACK, applySpineTrackTime } from './spineTracks.js'
 import { neckOverlayAnimation } from './spineNeckOverlay.js'
+import { playClientMotion } from './spineClientMotion.js'
+
+// IdolNeckExtension: held neck poses and their back animations, in lookup order.
+const NECK_BACK_ANIMATIONS = Object.freeze({
+  neck_lookup: Object.freeze(['neck_back', 'neck_back_lookup']),
+  neck_question: Object.freeze(['neck_back', 'neck_back_question']),
+})
 import * as PIXI from 'pixi.js'
 import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import { MixBlend } from '@pixi-spine/base'
@@ -181,13 +189,22 @@ export class SpineManager {
     if (parent) parent.setChildIndex(spine, parent.children.length - 1)
   }
 
-  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null) {
+  /** Returns true when a body animation was (re)started. */
+  playSpineAnim(idolId, animName, skipChain = false, noBack = false, motionSetting = null, forceRestart = false, transitionMix = null, motionTable = null, trackTime = 0) {
     const entry = this.manager.spineInstances[idolId]
-    if (!entry) return
+    if (!entry) return false
     const { spine } = entry
     try {
       const allAnims = spine.state.data.skeletonData.animations.map(a => a.name)
-      if (!forceRestart && spine._currentBodyAnim === animName) return
+      if (!forceRestart && spine._currentBodyAnim === animName && (spine._currentBodyTrackTime || 0) === (Number(trackTime) || 0)) return false
+
+      if (motionTable && !skipChain && allAnims.includes(animName)) {
+        const track = playClientMotion(spine.state, allAnims, motionTable, animName, !noBack, trackTime)
+        if (track && Number.isFinite(transitionMix)) track.mixDuration = Math.max(0, transitionMix)
+        spine._currentBodyAnim = animName
+        spine._currentBodyTrackTime = Number(trackTime) || 0
+        return true
+      }
 
       let track = null
       if (animName.endsWith('_loop')) {
@@ -208,12 +225,16 @@ export class SpineManager {
           spine.state.addAnimation(0, fallback, true, 0)
         }
       }
+      applySpineTrackTime(track, trackTime)
       if (track && Number.isFinite(transitionMix)) {
         track.mixDuration = Math.max(0, transitionMix)
       }
       spine._currentBodyAnim = animName
+      spine._currentBodyTrackTime = Number(trackTime) || 0
+      return true
     } catch (err) {
       console.warn(`[PixiStageManager] Failed to play anim "${animName}" on "${idolId}":`, err.message)
+      return false
     }
   }
 
@@ -236,7 +257,7 @@ export class SpineManager {
     }
   }
 
-  playSpineNeckAnim(idolId, animName, eventKey = '') {
+  playSpineNeckAnim(idolId, animName, eventKey = '', trackTime = 0) {
     const entry = this.manager.spineInstances[idolId]
     if (!entry?.spine) return
     const { spine } = entry
@@ -252,19 +273,17 @@ export class SpineManager {
       const playbackToken = (spine._neckPlaybackToken || 0) + 1
       spine._neckPlaybackToken = playbackToken
       spine._lastNeckEventKey = eventKey || ''
-      const track = spine.state.setAnimation(3, animName, false)
-      spine._currentNeckAnim = animName
-      if (track) {
-        // SideM neck clips contain offsets authored around the setup pose. They
-        // are an additive performance layer over the current body animation;
-        // replace blending would snap hello/angry poses back to setup at t=0.
-        track.animation = neckOverlayAnimation(track.animation, spine.state.data.skeletonData)
-        track.mixBlend = MixBlend.add
-        track.mixDuration = 0
+      // SideM neck clips contain offsets authored around the setup pose. They
+      // are an additive performance layer over the current body animation;
+      // replace blending would snap hello/angry poses back to setup at t=0.
+      const prepareNeckTrack = (neckTrack, mixDuration) => {
+        neckTrack.animation = neckOverlayAnimation(neckTrack.animation, spine.state.data.skeletonData)
+        neckTrack.mixBlend = MixBlend.add
+        neckTrack.mixDuration = mixDuration
         const previousTargets = spine._neckAdditiveTargets || { boneIndices: [], deformSlotIndices: [] }
         const boneIndices = new Set(previousTargets.boneIndices)
         const deformSlotIndices = new Set(previousTargets.deformSlotIndices)
-        for (const timeline of track.animation?.timelines || []) {
+        for (const timeline of neckTrack.animation?.timelines || []) {
           if (Number.isInteger(timeline?.boneIndex)) boneIndices.add(timeline.boneIndex)
           if (timeline instanceof DeformTimeline && Number.isInteger(timeline.slotIndex)) {
             deformSlotIndices.add(timeline.slotIndex)
@@ -274,6 +293,25 @@ export class SpineManager {
           boneIndices: [...boneIndices],
           deformSlotIndices: [...deformSlotIndices],
         }
+      }
+      // Client PlayNeckInternal: leaving a held neck pose first plays its back
+      // animation (the first one the skeleton has; mix 0.25 s), then the new neck.
+      const back = (NECK_BACK_ANIMATIONS[spine._currentNeckAnim] || []).find(name => allAnims.includes(name))
+      let track = null
+      if (back) {
+        const backTrack = spine.state.setAnimation(SPINE_TRACK.neck, back, false)
+        if (backTrack) {
+          prepareNeckTrack(backTrack, 0.25)
+          applySpineTrackTime(backTrack, trackTime)
+        }
+        track = spine.state.addAnimation(SPINE_TRACK.neck, animName, false, 0)
+      } else {
+        track = spine.state.setAnimation(SPINE_TRACK.neck, animName, false)
+        applySpineTrackTime(track, trackTime)
+      }
+      spine._currentNeckAnim = animName
+      if (track) {
+        prepareNeckTrack(track, back ? track.mixDuration : 0)
         spine._neckAdditiveCleanupPending = false
         track.listener = {
           complete: () => {
@@ -298,7 +336,7 @@ export class SpineManager {
       if (eventKey && spine._lastNeckStopEventKey === eventKey) return
       spine._lastNeckStopEventKey = eventKey || ''
       spine._neckPlaybackToken = (spine._neckPlaybackToken || 0) + 1
-      spine.state.clearTrack(3)
+      spine.state.clearTrack(SPINE_TRACK.neck)
       spine._currentNeckAnim = null
       if (spine._neckAdditiveTargets) spine._neckAdditiveCleanupPending = true
     } catch (err) {

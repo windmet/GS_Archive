@@ -34,6 +34,7 @@ from live_chibi_raw_semantics import load_raw_live_semantics
 from live_chibi_object_commands import field_map, parse_object_layer
 from live_chibi_color_commands import parse_color_layer
 from live_chibi_body_colors import body_color_events
+from live_chibi_foot_colors import foot_color_events
 from live_chibi_image_colors import image_color_events
 from live_chibi_camera_controls import camera_controls
 from live_chibi_backmonitor import parse_backmonitor_row
@@ -524,9 +525,9 @@ def read_choreography_scripts(
         lyric_events = []
         whole_screen_color_events = []
         whole_screen_color_layer_events = []
-        character_light_events = []
         spotlight_events = []
         pinspotlight_events = []
+        spotlight_command_order = []
         laserlight_events = []
         motion_group_events = []
         motion_group_changes = []
@@ -535,6 +536,7 @@ def read_choreography_scripts(
             header = next(reader)
             object_fields = field_map(header)
             body_color_rows = [header]
+            foot_color_rows = [header]
             image_color_rows = [header]
             camera_rows = [header]
             for row in reader:
@@ -562,7 +564,7 @@ def read_choreography_scripts(
                             "position": parse_number(row[2], 1),
                             "x": parse_number(row[3]),
                             "y": parse_number(row[4]),
-                            "scale": parse_number(row[5], 1000),
+                            "sortingOrder": parse_number(row[5]),
                         }
                     )
                     continue
@@ -650,19 +652,8 @@ def read_choreography_scripts(
                         }
                     )
                     continue
-                if row[0] == "Livechara_Foot_Color" and len(row) >= 6:
-                    event_time = parse_optional_number(row[1])
-                    if event_time is None:
-                        continue
-                    character_light_events.append(
-                        {
-                            "time": event_time,
-                            "color": row[2].strip() or "#ffffff",
-                            "opacity": parse_number(row[3]),
-                            "duration": parse_number(row[4], 1),
-                            "depth": parse_optional_number(row[5]),
-                        }
-                    )
+                if row[0] == "Livechara_Foot_Color":
+                    foot_color_rows.append(row)
                     continue
                 if row[0] == "Spotlight" and len(row) >= 11:
                     event_time = parse_optional_number(row[1])
@@ -684,6 +675,7 @@ def read_choreography_scripts(
                             "hide": hide,
                         }
                     )
+                    spotlight_command_order.append(("spotlight", spotlight_events[-1]))
                     continue
                 if row[0] == "Pinspotlight" and len(row) >= 13:
                     event_time = parse_optional_number(row[1])
@@ -709,6 +701,7 @@ def read_choreography_scripts(
                             "hide": hide,
                         }
                     )
+                    spotlight_command_order.append(("pinspotlight", pinspotlight_events[-1]))
                     continue
                 if row[0] == "Laserlight" and len(row) >= 14:
                     event_time = parse_optional_number(row[1])
@@ -881,9 +874,7 @@ def read_choreography_scripts(
                 ),
                 "bodyColorEvents": body_color_events(body_color_rows, stage_position_map),
                 "imageColorEvents": image_color_events(image_color_rows),
-                "characterLightEvents": sorted(
-                    character_light_events, key=lambda event: event["time"]
-                ),
+                "characterLightEvents": foot_color_events(foot_color_rows),
                 "spotlightEvents": sorted(
                     spotlight_events, key=lambda event: (event["time"], event["id"])
                 ),
@@ -901,6 +892,14 @@ def read_choreography_scripts(
                     motion_group_changes, key=lambda event: event["time"]
                 ),
             }
+        light_indices = {
+            family: {id(event): index for index, event in enumerate(song_entry[family + "Events"])}
+            for family in ("spotlight", "pinspotlight")
+        }
+        song_entry["spotlightCommandOrder"] = [
+            {"family": family, "index": light_indices[family][id(event)]}
+            for family, event in sorted(spotlight_command_order, key=lambda item: item[1]["time"])
+        ]
         if vocal_setting:
             song_entry["vocalSetting"] = vocal_setting
         songs.append(song_entry)

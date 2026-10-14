@@ -211,7 +211,7 @@ const emptyComponent = { render: () => null }
 const imports = {
   vue: Vue,
   '@lucide/vue': Object.fromEntries(['Activity', 'CheckCircle2', 'ChevronLeft', 'ChevronRight', 'CircleSlash',
-    'Expand', 'HeartPulse', 'ImageOff', 'PackageOpen', 'Shirt'].map(name => [name, emptyComponent])),
+    'Expand', 'HeartPulse', 'ImageOff', 'PackageOpen', 'Play', 'Shirt'].map(name => [name, emptyComponent])),
   '../../presentation/ArchiveText.js': { reflowArchiveText },
   '../../presentation/ProducerAddressingText.js': { presentProducerAddressingText },
   '../../presentation/CardSkillDescriptionPresenter.js': { presentCardSkillDescription },
@@ -228,7 +228,7 @@ const imports = {
   '../../localization/ui/UiLocaleStore.js': { uiLocale },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',
-    'ArchiveTechnicalDetails', 'ArchiveRelationList'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
+    'ArchiveTechnicalDetails', 'ArchiveRelationList', 'ArchiveSourceLink', 'ArchiveVideoPlayer'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveCardDetail.vue'))
 const source = compileScript(descriptor, { id: 'card-costume-contract', inlineTemplate: true }).content
@@ -293,8 +293,14 @@ for (const locale of ['zh-CN', 'ja-JP']) {
         assert.deepEqual(all(row).filter(node => hasClass(node, 'costume-condition')).map(text), item.labels,
           'individual usage/state badges retain all actual source labels')
       })
-      assert.equal(all(group).filter(item => ['button', 'select', 'input'].includes(item.type)).length, 0,
-        'static presentation adds no variant toggle or invented unlock action')
+      // The only controls are the variant rows themselves, each opening its own costume catalogue entry.
+      const controls = all(group).filter(item => ['button', 'select', 'input'].includes(item.type))
+      assert.deepEqual(controls, rows.filter(row => row.type === 'button'), 'no variant toggle or invented unlock action')
+      rows.forEach((row, index) => {
+        const model = expected[i].costumes[index].model_resource_id
+        if (row.type !== 'button') return assert.ok(!/^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/.test(model || ''))
+        row.props.onClick(); assert.equal(openedEntities.at(-1), `costume:${model}`, 'a variant opens its own costume entry')
+      })
     }
     assert.equal(JSON.stringify(state.card), before, 'the real SFC does not mutate card data')
   }

@@ -1,4 +1,4 @@
-import { normalizeCollectionRoute } from './CollectionRouteState.js'
+import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
 const ROUTE_QUERY_KEYS = [
@@ -174,6 +174,8 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'events', label: '活动' },
   { id: 'collections', label: '道具' },
   { id: 'honors', label: '称号' },
+  { id: 'currencies', label: '货币' },
+  { id: 'costumes', label: '服装' },
   { id: 'photos', label: '摄影资源' },
   { id: 'live', label: 'LIVE' },
   { id: 'studio', label: '摄影工作台' },
@@ -421,7 +423,7 @@ export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
   // Items and honors share one catalogue page but are separate destinations in the navigation.
-  if (section === 'collections') return normalized.collection?.kind === 'honors' ? 'honors' : 'collections'
+  if (section === 'collections') return ({ honors:'honors', currencies:'currencies', costumes:'costumes' })[normalized.collection?.kind] || 'collections'
   if (section !== 'category') return section
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
@@ -470,7 +472,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   const home = { label: '资料馆', route: { view: 'portal' } }
   if(route.view==='picture_studio')return [home,{label:'摄影资源',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? collectionKindLabel(route.collection?.kind) : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
@@ -604,6 +606,95 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
   return [home, current(fallbackDomains[route.view] || '资料')]
 }
 
+// Public path locators: a detail page whose address is only its identity is published as a path
+// (/idols/001tom/) instead of ?view=…. Internally every route stays in query form (buildArchiveUrl, source
+// frames, restoration keys); only the address bar and shareable hrefs use the path. A query `view` always
+// wins, so older links and relative ?view=… links followed from a path page keep working. Add a view here
+// only after it is in ENFORCED_ROUTE_VIEWS (see docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md).
+const PUBLIC_PATH_ROUTES = Object.freeze([
+  Object.freeze({ view: 'idol_detail', prefix: 'idols', param: 'idol', implied: { category: 'idol' }, pattern: /^[0-9]{3}[a-z]{3}$/ }),
+  Object.freeze({ view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z0-9]{3}$/ }),
+  // Cards are addressed by resource_id (001tom_n01), the id every card link and read-model row carries.
+  Object.freeze({ view: 'card_detail', prefix: 'cards', param: 'card', implied: {}, pattern: /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/ }),
+  // Songs are addressed by their six-character song_code (brndnf, drv999), primaries and variants alike.
+  Object.freeze({ view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: /^[a-z0-9]{6}$/ }),
+  // Events keep their read-model id: theater and tour events are 4 + event code (410001, 430001), every
+  // other event is `event:<code>` (event:10019, event:20001). The path drops that prefix, so both forms map
+  // to a path and back without the catalogue: six digits are the legacy id, five digits are a code.
+  Object.freeze({ view: 'event_detail', prefix: 'events', param: 'event', implied: {}, pattern: /^(4[0-9]{5}|[1-9][0-9]{4})$/,
+    fromPath: segment => segment.length === 5 ? `event:${segment}` : segment, toPath: id => id.replace(/^event:(?=[0-9]{5}$)/, '') }),
+  // Gashas: announcement ids (210003, 1300012, 12007210) and ticket-only pools (ticket-<16 hex>).
+  Object.freeze({ view: 'gasha_detail', prefix: 'gashas', param: 'gasha', implied: {}, pattern: /^([0-9]{6,8}|ticket-[0-9a-f]{16})$/ }),
+])
+
+// Section roots: a catalogue's own address is its section path (/cards/); its filters stay in the query
+// (/cards/?rarity=SSR). `implied` parameters are part of the identity, as for the detail paths.
+const SECTION_PATH_ROUTES = Object.freeze([
+  Object.freeze({ view: 'idols', prefix: 'idols', implied: { category: 'idol' } }),
+  Object.freeze({ view: 'unit_catalog', prefix: 'units', implied: {} }),
+  Object.freeze({ view: 'cards', prefix: 'cards', implied: { category: 'cards' } }),
+  Object.freeze({ view: 'song_catalog', prefix: 'songs', implied: {} }),
+  Object.freeze({ view: 'event_catalog', prefix: 'events', implied: {} }),
+  Object.freeze({ view: 'gashas', prefix: 'gashas', implied: {} }),
+  Object.freeze({ view: 'story_catalog', prefix: 'stories', implied: {} }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'items', implied: { collection_kind: 'items' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'honors', implied: { collection_kind: 'honors' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'currencies', implied: { collection_kind: 'currencies' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'costumes', implied: { collection_kind: 'costumes' } }),
+  Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
+])
+export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))
+
+function locatorQuery(url) {
+  const params = new URLSearchParams(url.searchParams)
+  if (params.has('view')) return params
+  const root = /^\/([a-z]+)\/?$/.exec(url.pathname)
+  const section = root && SECTION_PATH_ROUTES.find(entry => entry.prefix === root[1])
+  if (section) {
+    params.set('view', section.view)
+    for (const [key, value] of Object.entries(section.implied)) params.set(key, value)
+    return params
+  }
+  const match = /^\/([a-z]+)\/([^/]+)\/?$/.exec(url.pathname)
+  const locator = match && PUBLIC_PATH_ROUTES.find(entry => entry.prefix === match[1] && entry.pattern.test(match[2]))
+  if (!locator) return params
+  params.set('view', locator.view)
+  params.set(locator.param, locator.fromPath ? locator.fromPath(match[2]) : match[2])
+  for (const [key, value] of Object.entries(locator.implied)) params.set(key, value)
+  return params
+}
+
+// Rewrites a query-form archive URL to its public address: a path for PUBLIC_PATH_ROUTES and
+// SECTION_PATH_ROUTES, `/` otherwise.
+function publicArchiveUrl(url) {
+  const view = url.searchParams.get('view')
+  const section = SECTION_PATH_ROUTES.find(entry => entry.view === view &&
+    Object.entries(entry.implied).every(([key, value]) => url.searchParams.get(key) === value))
+  if (section) {
+    url.pathname = `/${section.prefix}/`
+    url.searchParams.delete('view')
+    for (const key of Object.keys(section.implied)) url.searchParams.delete(key)
+    return url
+  }
+  const locator = PUBLIC_PATH_ROUTES.find(entry => entry.view === view)
+  const identity = locator && url.searchParams.get(locator.param)
+  const id = locator?.toPath ? locator.toPath(identity || '') : identity
+  const implied = locator && Object.entries(locator.implied).every(([key, value]) => url.searchParams.get(key) === value)
+  if (!locator || !implied || !locator.pattern.test(id || '')) {
+    url.pathname = '/'
+    return url
+  }
+  url.pathname = `/${locator.prefix}/${id}/`
+  url.searchParams.delete('view')
+  url.searchParams.delete(locator.param)
+  for (const key of Object.keys(locator.implied)) url.searchParams.delete(key)
+  return url
+}
+
+export function buildPublicArchiveUrl(input, route) {
+  return publicArchiveUrl(buildArchiveUrl(input, route))
+}
+
 // `history` merges the current history entry's source: implied for the live location, opt-in for an
 // explicitly passed current URL; independent links never inherit one.
 export function readArchiveRoute(input = null, { history = !input } = {}) {
@@ -611,7 +702,11 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
   const base = typeof window === 'undefined' ? 'http://localhost/' : window.location.origin
   const current = input || (typeof window === 'undefined' ? base : window.location.href)
   const url = new URL(current, base)
-  const params = url.searchParams
+  const params = locatorQuery(url)
+  // Where an event Reader or an event detail was opened from rides history state, not the URL.
+  const openedFrom = params.get('view') === 'reader' ? context.reader || {}
+    : params.get('view') === 'event_detail' ? context.event || {}
+    : params.get('view') === 'gasha_detail' ? context.gasha || {} : {}
   return normalizeArchiveRoute({
     view: params.get('view'),
     pickTarget: params.get('pick'),
@@ -630,14 +725,14 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     homeIdol: clean(params.get('home_idol')),
     homeCue: clean(params.get('home_cue')),
     homeCostume: clean(params.get('home_costume')),
-    category: clean(params.get('category')),
-    idol: clean(params.get('idol')),
+    category: clean(params.get('category')) || openedFrom.category || '',
+    idol: clean(params.get('idol')) || openedFrom.idol || '',
     group: clean(params.get('group')),
-    unit: clean(params.get('unit')),
+    unit: clean(params.get('unit')) || openedFrom.unit || '',
     unitFilter: clean(params.get('unit_filter')),
-    storyType: params.get('story_type'),
+    storyType: params.get('story_type') ?? openedFrom.story_type ?? null,
     storyMode: params.get('story_mode'),
-    storySection: clean(params.get('story_section')),
+    storySection: clean(params.get('story_section')) || openedFrom.story_section || '',
     story: params.get('story'),
     workMode: params.get('work_mode'),
     mobileMode: params.get('mobile_mode'),
@@ -646,7 +741,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     availability: params.get('availability'),
     sort: params.get('sort'),
     episode: clean(params.get('episode')),
-    card: clean(params.get('card')),
+    card: clean(params.get('card')) || openedFrom.card || '',
     song: clean(params.get('song')),
     stageId: params.get('stage'),
     songScope: params.get('song_scope'),
@@ -668,7 +763,7 @@ export function readArchiveRoute(input = null, { history = !input } = {}) {
     endStep: params.get('end_step'),
     voice: clean(params.get('voice')),
     returnView: clean(params.get('return')),
-    parentView: clean(params.get('parent')),
+    parentView: clean(params.get('parent')) || openedFrom.parent || '',
   })
 }
 
@@ -780,12 +875,30 @@ function localQuery(value) {
   return typeof value === 'string' && value.startsWith('?') ? value : null
 }
 
+// Fields an event Reader carries so that leaving it lands where the event was opened from.
+const READER_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit' }
+// Where an event detail was opened from (/events/<id>/ keeps only the event). goBackFromEvent uses the parent
+// and its identity when no source is restored, so they ride the history entry instead of the address.
+const EVENT_CONTEXT_PARAMS = { parent: 'parent', category: 'category', unit: 'unit', card: 'card', idol: 'idol' }
+// Where a gasha detail was opened from (/gashas/<id>/ keeps only the gasha): its parent, and the extra-story
+// collection goBackFromGasha returns to.
+const GASHA_CONTEXT_PARAMS = { parent: 'parent', story_type: 'story_type', story_section: 'story_section' }
+
+function contextFrom(value, params) {
+  if (!value || typeof value !== 'object') return null
+  const out = {}
+  for (const key of Object.keys(params)) if (typeof value[key] === 'string' && value[key] && value[key].length <= 120) out[key] = value[key]
+  return Object.keys(out).length ? out : null
+}
+
 function historyNavigationContext() {
   if (typeof window === 'undefined') return {}
   const state = window.history.state
   const stored = state?.[NAVIGATION_CONTEXT_KEY]
   if (stored?.v === NAVIGATION_CONTEXT_VERSION) {
-    return Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])]))
+    return { ...Object.fromEntries(Object.keys(NAVIGATION_CONTEXT_PARAMS).map(key => [key, localQuery(stored[key])])),
+      reader: contextFrom(stored.reader, READER_CONTEXT_PARAMS), event: contextFrom(stored.event, EVENT_CONTEXT_PARAMS),
+      gasha: contextFrom(stored.gasha, GASHA_CONTEXT_PARAMS) }
   }
   return { source: localQuery(state?.[LEGACY_SOURCE_KEY]) }
 }
@@ -798,6 +911,25 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
     if (value) context[key] = value
     url.searchParams.delete(param)
   }
+  if (url.searchParams.get('view') === 'reader' && url.searchParams.get('event')) {
+    const reader = {}
+    for (const [key, param] of Object.entries(READER_CONTEXT_PARAMS)) {
+      const value = url.searchParams.get(param)
+      if (value) reader[key] = value
+      url.searchParams.delete(param)
+    }
+    if (Object.keys(reader).length) context.reader = reader
+  }
+  for (const [view, key, params] of [['event_detail', 'event', EVENT_CONTEXT_PARAMS], ['gasha_detail', 'gasha', GASHA_CONTEXT_PARAMS]]) {
+    if (url.searchParams.get('view') !== view) continue
+    const openedFrom = {}
+    for (const [field, param] of Object.entries(params)) {
+      const value = url.searchParams.get(param)
+      if (value) openedFrom[field] = value
+      url.searchParams.delete(param)
+    }
+    if (Object.keys(openedFrom).length) context[key] = openedFrom
+  }
   const existingEntryId = window.history.state?.sidemArchiveEntryId
   const entryId = replace && typeof existingEntryId === 'string'
     ? existingEntryId
@@ -806,7 +938,7 @@ export function writeArchiveRoute(route, { replace = false } = {}) {
   delete state[LEGACY_SOURCE_KEY]
   if (Object.keys(context).length > 1) state[NAVIGATION_CONTEXT_KEY] = context
   else delete state[NAVIGATION_CONTEXT_KEY]
-  window.history[replace ? 'replaceState' : 'pushState'](state, '', url)
+  window.history[replace ? 'replaceState' : 'pushState'](state, '', publicArchiveUrl(url))
 }
 
 export function onArchivePopState(handler) {

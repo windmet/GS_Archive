@@ -11,11 +11,11 @@ import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/ar
 const maintainerGroups = buildNavigationGroups(true)
 const readerGroups = buildNavigationGroups(false)
 assert.deepEqual(readerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台'])
-assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 3, 1, 1])
+assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 5, 1, 1])
 assert.deepEqual(maintainerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台', '资源'])
 assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
 assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 3, 1, 1], 'default module export is the reader view')
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 5, 1, 1], 'default module export is the reader view')
 assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
@@ -32,7 +32,10 @@ for (const query of [
   nav.portalFrom.value = buildPortalReturnQuery(source)
   const portal = readArchiveRoute(buildArchiveUrl('http://localhost/?runtimeDebug=1&scenario=stale.json', nav.currentArchiveRoute()))
   assert.equal(portal.view, 'portal')
-  assert.deepEqual(readPortalReturnRoute(portal.portalFrom), source, `return must retain ${query}`)
+  // Detail pages published at a path (card, song) return as their identity; their own source rides along.
+  const returned = readPortalReturnRoute(portal.portalFrom)
+  assert.deepEqual(returned, readArchiveRoute(buildArchiveUrl('http://localhost/', source)), `return must retain ${query}`)
+  for (const key of ['card', 'song']) if (source[key]) assert.equal(returned[key], source[key], `return keeps the ${key}`)
   const url = buildArchiveUrl('http://localhost/', portal)
   assert.equal(url.searchParams.has('scenario'), false)
   assert.deepEqual(readArchiveRoute(url), portal, 'refresh/share retains return context')
@@ -45,7 +48,7 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
 assert.deepEqual(ARCHIVE_NAVIGATION.map(item=>item.id),
-  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','photos','live','studio','resources'],
+  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','currencies','costumes','photos','live','studio','resources'],
   'desktop taxonomy includes the published event, collection, photo resource, LIVE and photo studio destinations')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {

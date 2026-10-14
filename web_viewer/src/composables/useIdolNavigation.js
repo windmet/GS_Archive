@@ -123,7 +123,9 @@ export function useIdolNavigation({
   }
 
   async function prepareIdolRoute(route, { isCurrent }) {
-    if (route.view === 'idol_detail' && route.idol) {
+    // The self-introduction plays from the profile; a cold player URL restores the profile it returns to.
+    const returnsToProfile = route.view === 'player' && route.returnView === 'idol_detail'
+    if ((route.view === 'idol_detail' || returnsToProfile) && route.idol) {
       if (!archiveBootstrap.idols.some(idol => idol.id === route.idol)) {
         route = { view: 'idol_picker', pickTarget: 'profile' }
       } else {

@@ -16,6 +16,8 @@ export function useArchiveNavigationState() {
   const readingRowId = ref('')
   const readingMode = ref(storyContentMode.value)
   const readingRevision = ref('')
+  // A Reader link names the latest text by default; only a link that arrived with reading_rev pins that version.
+  const readingRevisionPinned = ref(false)
   const readingScope = ref(''), playMode = ref('')
   const currentScenarioInitialStep = ref(null)
   const returnViewAfterPlayer = ref('files')
@@ -76,7 +78,7 @@ export function useArchiveNavigationState() {
     if (view.value === 'reader' || (view.value === 'player' && returnViewAfterPlayer.value === 'reader')) {
       return {
         view: view.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-        readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevision.value, ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
+        readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevisionPinned.value ? readingRevision.value : '', ...(readingScope.value === 'chapter' ? { readingScope:'chapter' } : {}),
         category: currentEventId.value ? currentCategoryId.value : '',
         unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
         storyType: currentStoryDomain.value, storySection: currentStorySection.value, story: currentStoryFile.value,
@@ -191,7 +193,7 @@ export function useArchiveNavigationState() {
     readingDocumentId,
     readingRowId,
     readingMode,
-    readingRevision, readingScope, playMode,
+    readingRevision, readingRevisionPinned, readingScope, playMode,
     currentScenarioInitialStep,
     returnViewAfterPlayer,
     storyCollectionParentView,

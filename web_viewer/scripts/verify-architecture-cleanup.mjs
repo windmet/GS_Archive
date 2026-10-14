@@ -60,7 +60,7 @@ let cases=0
 }
 {
   const calls=[],index={scopes:{all:{sha256:'hash',kind:'portal.scope'}}}
-  const data={id:'all',overview:{projectionVersion:1,scopeId:'',footprints:[1,2,3,4],units:[],collections:{cards:[],songs:[],stories:[],events:[]},cardCounts:{total:826}}}
+  const data={id:'all',overview:{projectionVersion:2,scopeId:'',footprints:[1,2,3,4],units:[],collections:{cards:[],songs:[],stories:[],events:[]},cardCounts:{total:826}}}
   const repository=createPortalRepository({bootstrap:{domains:{portal:{kind:'portal.index'}}},client:{load:async(descriptor,options)=>{calls.push(descriptor.kind);const result=descriptor.kind==='portal.index'?index:data;options.validate?.(result);return result}}})
   assert.equal(portalDisplayOverview((await repository.loadScope()).overview).cardCounts.total,826)
   assert.deepEqual(calls,['portal.index','portal.scope']);data.id='wrong';await assert.rejects(repository.loadScope(),/identity/);cases++

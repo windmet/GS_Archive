@@ -7,13 +7,20 @@ const CARD_COSTUME_SLOTS = new Set([
   'story_initial', 'story_awakened', 'story_limitbreak',
 ])
 
+const COSTUME_MODEL = /^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/
+// A model is a costume catalogue entry (costume:<model>) with the client icon image_costume_icon_<model>.
+export function costumeLink(model) {
+  if (!COSTUME_MODEL.test(model || '')) return { entityKey: '', iconUrl: '' }
+  return { entityKey: `costume:${model}`, iconUrl: `/assets/domain-images/image/image_costume_icon/image_costume_icon_${model}.png` }
+}
+
 export function presentCardCostumeRelations(relations = []) {
   const byModel = new Map()
   for (const relation of relations) {
     if (!CARD_COSTUME_SLOTS.has(relation.slot)) continue
     const key = relation.model_resource_id || relation.costume_key
     if (!key) continue
-    const current = byModel.get(key) || { ...relation, key, labels: [] }
+    const current = byModel.get(key) || { ...relation, key, labels: [], ...costumeLink(relation.model_resource_id) }
     if (relation.label && !current.labels.includes(relation.label)) current.labels.push(relation.label)
     byModel.set(key, current)
   }

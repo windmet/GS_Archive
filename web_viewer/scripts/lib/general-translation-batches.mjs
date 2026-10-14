@@ -9,7 +9,7 @@ import {validateProducerAddressingOverlay,PRODUCER_NAME_WITH_P_TOKEN} from '../.
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
-export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k),'card-lines':k=>CARD_LINE_KINDS.includes(k),chats:k=>CHAT_KINDS.includes(k)}
+export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item'||k==='currency',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k),'card-lines':k=>CARD_LINE_KINDS.includes(k),chats:k=>CHAT_KINDS.includes(k)}
 // Character lines: lazily loaded, never in the bundled root overlay, batched by speaker.
 export const CARD_LINE_KINDS = ['card-line','card-touch','call-title']
 // Chat lines and the producer's reply choices: conversation by conversation.

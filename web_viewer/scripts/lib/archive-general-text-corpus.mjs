@@ -44,6 +44,10 @@ export function archiveGeneralTextCorpus(root) {
     add(kind, row.id, 'name', row.nameJa);
     add(kind, row.id, 'description', row.descriptionText?.plain);
   }
+  for (const row of load('domains/currency_catalog.json').entries) {
+    add('currency', row.id, 'name', row.nameJa);
+    add('currency', row.id, 'description', row.descriptionJa);
+  }
   for (const [id, row] of Object.entries(load('card_detail_index.json').skills_by_id)) {
     add('skill', id, 'name', row.name);
     add('skill-category', row.category?.id || id, 'name', row.category?.name);

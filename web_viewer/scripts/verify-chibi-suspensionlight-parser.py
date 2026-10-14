@@ -16,12 +16,14 @@ row('NewSuspensionlight_create', 100, {1: 17, 2: 'new_suspension_light_sample'})
 row('NewSuspensionlight_create', 200, {1: 17, 101: 1, 102: 1})
 row('NewSuspensionlight_unknown_variant', 300, {1: 17, 2: 'raw argument'})
 row('#NewSuspensionlight_create', 0, {1: 999})
+row('NewSuspensionlight_create', 400, {1: 18, 102: 1})
 events = suspensionlight_events(buffer.getvalue().encode())
-assert [e['sourceRow'] for e in events] == [3, 2, 4, 5]
+assert [e['sourceRow'] for e in events] == [3, 2, 4, 5, 7]
 assert events[2]['erase'] and not events[0]['erase']
 assert events[3]['command'] == 'NewSuspensionlight_unknown_variant'
 assert events[3]['values'][1] == 'raw argument'
 assert events[2]['extraValues'] == {'value101': '1', 'value102': '1'}
+assert not events[4]['erase']  # Duration alone never sets the erase switch.
 prefab = json.loads(Path(__file__).with_name('fixtures').joinpath('chibi-new-suspension-prefab.json').read_text(encoding='utf-8'))
 model = suspensionlight_model(prefab)
 assert model['layers'][0]['rendererPathId'] == '55421'

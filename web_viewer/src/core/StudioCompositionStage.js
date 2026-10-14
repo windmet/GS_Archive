@@ -1,3 +1,4 @@
+import { SPINE_TRACK } from './spineTracks.js';
 import * as PIXI from "pixi.js";
 import {
   Spine,
@@ -344,7 +345,7 @@ export class StudioCompositionStage {
       body.mixDuration = 0;
       if (!this.playing && !plan.motion.endsWith("_loop"))
         body.trackTime = body.animation.duration;
-      const expression = spine.state.setAnimation(1, plan.face, true);
+      const expression = spine.state.setAnimation(SPINE_TRACK.face, plan.face, true);
       expression.mixDuration = 0;
       const command =
         face.commands.find((c) => c.type === "idol_face") ||
@@ -356,7 +357,7 @@ export class StudioCompositionStage {
       model.neckBones = [];
       model.neckSlots = [];
       if (plan.neck) {
-        const neck = spine.state.setAnimation(3, plan.neck, false);
+        const neck = spine.state.setAnimation(SPINE_TRACK.neck, plan.neck, false);
         neck.animation = neckOverlayAnimation(
           neck.animation,
           spine.skeleton.data,
@@ -398,7 +399,7 @@ export class StudioCompositionStage {
   applyFrame(model) {
     if (this.playing) return;
     const body = model.spine.state.getCurrent(0),
-      face = model.spine.state.getCurrent(1);
+      face = model.spine.state.getCurrent(SPINE_TRACK.face);
     if (body)
       body.trackTime =
         model.row.poseTime ?? (body.loop ? 0 : body.animation.duration);

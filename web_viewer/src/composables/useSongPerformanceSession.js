@@ -65,10 +65,16 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
   const singerEvents = ref([])
   const loadedIdolCodes = ref([])
   const outputPeak = ref(0)
+  // url -> 'loading' | 'ready' | 'error' for every decoded track this session holds.
+  const bufferStates = ref({})
 
   let context = null
   let backingBuffer = null
   let vocalBuffers = new Map()
+  // Decoded tracks outlive configure()/release(), so changing one slot of a lineup fetches only the
+  // new idol. Callers bound it with retainBuffers(); dispose() drops all of it.
+  const bufferCache = new Map()
+  let retainedUrls = new Set()
   let backingBus = null
   let vocalBus = null
   let activeSources = []
@@ -188,6 +194,55 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     return ensureContext().decodeAudioData(bytes)
   }
 
+  function setBufferState(url, state) {
+    const next = { ...bufferStates.value }
+    if (state) next[url] = state
+    else delete next[url]
+    bufferStates.value = next
+  }
+
+  function loadBuffer(url) {
+    const cached = bufferCache.get(url)
+    if (cached) return cached.promise
+    const entry = { controller: new AbortController(), buffer: null, promise: null }
+    entry.promise = fetchAndDecode(url, entry.controller.signal).then(buffer => {
+      entry.buffer = buffer
+      if (bufferCache.get(url) === entry) setBufferState(url, 'ready')
+      return buffer
+    }, cause => {
+      if (bufferCache.get(url) === entry) {
+        bufferCache.delete(url)
+        setBufferState(url, cause?.name === 'AbortError' ? '' : 'error')
+      }
+      throw cause
+    })
+    bufferCache.set(url, entry)
+    setBufferState(url, 'loading')
+    return entry.promise
+  }
+
+  // Starts fetching and decoding ahead of configure(); failures surface when configure() needs them.
+  function prefetch(urls = []) {
+    if (disposed) return
+    for (const url of urls.filter(Boolean)) loadBuffer(url).catch(() => {})
+  }
+
+  // Keeps only these tracks (plus whatever the configured graph uses) and aborts the rest.
+  function retainBuffers(urls = []) {
+    retainedUrls = new Set(urls.filter(Boolean))
+    evictBuffers()
+  }
+
+  function evictBuffers(inUse = []) {
+    const keep = new Set([...retainedUrls, ...inUse])
+    for (const [url, entry] of bufferCache) {
+      if (keep.has(url)) continue
+      entry.controller.abort()
+      bufferCache.delete(url)
+      setBufferState(url, '')
+    }
+  }
+
   async function configure({ experiment, events, performerLineup, continuous = false }) {
     if (disposed) return
     const resumeAt = logicalOffset
@@ -212,11 +267,12 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
         if (!url) throw new Error(`${idolCode} 缺少当前歌曲声部`)
         return [idolCode, url]
       })
+      evictBuffers([experiment.backing.url, ...vocalUrls.map(([, url]) => url)])
       const [decodedBacking, ...decodedVocals] = await Promise.all([
-        fetchAndDecode(experiment.backing.url, abortController.signal),
-        ...vocalUrls.map(([, url]) => fetchAndDecode(url, abortController.signal)),
+        loadBuffer(experiment.backing.url),
+        ...vocalUrls.map(([, url]) => loadBuffer(url)),
       ])
-      if (sequence !== loadSequence) return
+      if (sequence !== loadSequence || abortController.signal.aborted) return
       backingBuffer = decodedBacking
       vocalBuffers = new Map(vocalUrls.map(([idolCode], index) => [idolCode, decodedVocals[index]]))
       loadedIdolCodes.value = [...vocalBuffers.keys()]
@@ -411,6 +467,8 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     if (disposed) return
     disposed = true
     release()
+    retainedUrls = new Set()
+    evictBuffers()
     try { backingBus?.disconnect() } catch (_) {}
     try { vocalBus?.disconnect() } catch (_) {}
     try { analyser?.disconnect() } catch (_) {}
@@ -430,7 +488,8 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     const bytes = buffer => buffer ? buffer.length * buffer.numberOfChannels * 4 : 0
     return { disposed, ready: ready.value, starting: starting.value, playing: playing.value,
       activeSources: activeSources.length, runningFrames: animationFrame ? 1 : 0,
-      decodedPcmBytes: bytes(backingBuffer) + [...vocalBuffers.values()].reduce((sum,buffer)=>sum+bytes(buffer),0),
+      decodedPcmBytes: [...new Set([backingBuffer, ...vocalBuffers.values(), ...[...bufferCache.values()].map(entry => entry.buffer)])].reduce((sum,buffer)=>sum+bytes(buffer),0),
+      cachedTracks: bufferCache.size,
       pendingLoad: Boolean(loadAbortController), pendingResume: Boolean(resumeController), closePending, closeError }
   }
 
@@ -438,6 +497,7 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     activeIdolCodes,
     activePerformerSlots,
     backingGain,
+    bufferStates,
     configure,
     dispose,
     inspect,
@@ -449,6 +509,8 @@ export function useSongPerformanceSession({ contextFactory = createAudioContext,
     outputPeak,
     pause,
     play,
+    prefetch,
+    retainBuffers,
     unlock,
     playbackRate,
     playing,

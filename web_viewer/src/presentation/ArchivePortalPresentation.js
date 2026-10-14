@@ -3,6 +3,16 @@ import { getCardIconUrl, getCardLandscapeUrl, getCardLargeImageUrl, getCardPortr
 import { getCharaIconUrl } from '../utils/AssetResolver.js'
 import { eventKindLabels, historicalDate } from './DomainPresentation.mjs'
 
+
+// The Portal footprint line: one count per domain, worded for the whole archive or for one idol. Exported so the
+// overview can hold the same four slots while the counts load (no layout shift when they arrive).
+export const PORTAL_FOOTPRINT_IDS = Object.freeze(['cards', 'songs', 'stories', 'events'])
+export function portalFootprintLabel(id, preferred = false) {
+  return (preferred
+    ? { cards: '卡片', songs: '相关歌曲', stories: '出场故事', events: '活动足迹' }
+    : { cards: '卡片', songs: '歌曲', stories: '可读故事', events: '活动记录' })[id] || id
+}
+
 export const PORTAL_SEARCH_DOMAINS = Object.freeze(['cards', 'stories', 'songs', 'idols'])
 const IDOL_CODE = /^\d{3}[a-z0-9]{3}$/i
 const CARD_CODE = /^\d{3}[a-z0-9]{3}_[a-z0-9_]+$/i
@@ -256,7 +266,8 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       relationLabel: preferredId && (row.performance?.performers || []).some(person => person.id === preferredId) ? '演唱成员' : preferredId ? '组合歌曲' : '',
       isPreferredRelated: relatedSong(row), stageTarget: songStageTarget(row, stageManifest, text(preferred?.unitCode)) })),
     stories: previewStories.map(row => ({ id: row.id, domain: row.domain, title: sourceText(storyTitle, text(row.title)),
-      subtitle: [text(row.domainLabel) || storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '),
+      subtitle: [text(row.domainLabel) || storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle),
+        Array.isArray(row.domainAliases) && row.domainAliases.length ? '生日共享' : ''].filter(Boolean).join(' · '),
       summary: sourceText(storySummary, text(row.preplaySynopsis?.text)),
       cast: [...new Set(row.characters || [])].filter(id => directory.has(id))
         .map(id => ({ id, name: idolDisplay(id, directory, idolName), accentColor: directory.get(id).color || '' })),
@@ -270,8 +281,8 @@ export function buildPortalDesktopOverview({ bootstrap, cards = [], songs = [], 
       image: boundImage(row.resources?.hero, 'event_banner') || boundImage(row.image, 'event_banner'),
       target: { domain: 'events', view: 'event_detail', eventId: row.id } })),
   }
-  const footprints = [['cards', '卡片', cards], ['songs', '相关歌曲', songs], ['stories', '出场故事', readableStories], ['events', '活动足迹', events]]
-    .map(([id, label, rows]) => ({ id, label: preferredId ? label : { songs: '歌曲', stories: '可读故事', events: '活动记录' }[id] || label,
+  const footprints = [['cards', cards], ['songs', songs], ['stories', readableStories], ['events', events]]
+    .map(([id, rows]) => ({ id, label: portalFootprintLabel(id, Boolean(preferredId)),
       value: loading || available[id] === false || (id === 'events' && preferredId && !preferredDetail) ? null : collections[id].length,
       total: loading || available[id] === false ? null : rows.length }))
   return {
@@ -343,9 +354,10 @@ export function buildPortalSearchResults({ query = '', rowsByDomain = {}, bootst
       } else {
         if (row.exists !== true) continue
         result = { key: `stories:${row.id}`, domain, label: text(row.title),
-          subtitle: [storyLabels[row.domain], text(row.subtitle)].filter(Boolean).join(' · '), image: null,
+          subtitle: [storyLabels[row.domain], text(row.episodeLabel) || text(row.subtitle)].filter(Boolean).join(' · '), image: null,
           target: storyTarget(row) }
-        searchable = [row.title, row.subtitle, storyLabels[row.domain], row.id, row.file,
+        searchable = [row.title, row.subtitle, row.episodeLabel, storyLabels[row.domain], row.id, row.file,
+          ...(Array.isArray(row.domainAliases) ? row.domainAliases : []),
           ...(Array.isArray(row.characters) ? row.characters.flatMap(id => directory.has(id)
             ? [idolDisplay(id, directory, idolName), text(directory.get(id).name), sourceText(idolSearch, id, text(directory.get(id).name))] : []) : [])]
       }

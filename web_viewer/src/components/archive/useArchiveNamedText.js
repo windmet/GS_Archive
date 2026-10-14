@@ -33,6 +33,8 @@ export function loadArchiveNames(domain) {
   }
   return pending.get(domain);
 }
+// Settled once a domain's overlay has loaded or failed: titles wait for it instead of flashing the source text.
+export const archiveNamesSettled=domain=>['ready','failed'].includes(status.value[domain]);
 export const archiveNamedText=(kind,source,field='name')=>archiveGeneralText(entries.value,kind,source,field,uiLocale.value);
 export const archiveNamedSearchText=(kind,source,field='name')=>`${source || ''} ${archiveGeneralText(entries.value,kind,source,field,'zh-CN')}`;
 export const archiveNamedBackground=source=>archiveBackgroundLabel(entries.value,source,uiLocale.value);

@@ -1,10 +1,14 @@
 <template>
   <section v-if="gasha" class="gasha-detail" data-archive-scroll-container>
-    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'}">
-      <div class="gasha-banner">
-        <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
-        <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
-      </div>
+    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'&&!poolArt}">
+      <figure class="gasha-hero">
+        <div class="gasha-banner">
+          <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
+          <ArchiveGashaArt v-else-if="poolArt" :art="poolArt" :alt="gashaText(gasha.display_name)" loading="eager" />
+          <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
+        </div>
+        <figcaption v-if="!gasha.banner_url && artRecord?.primary">游戏内卡池素材 · {{ artRecord.primary.basis_text }}</figcaption>
+      </figure>
       <div class="gasha-summary">
         <h2>{{ gashaText(gasha.display_name) }}</h2>
         <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
@@ -20,7 +24,7 @@
     <section v-if="gasha.tickets?.length" class="detail-section">
       <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
       <p v-if="gasha.ticket_link_ambiguous" class="gasha-note">这些券对应同名卡池，现有道具记录无法区分两次 STAGE 公告。</p>
-      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">道具名称证明了此招募记录；开放时间和卡片范围尚未收录。</p>
+      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">{{ wikiRuns.length ? '道具名称证明了此招募记录；开放时间与新卡据 Wikiwiki 过往公告补录。' : '道具名称证明了此招募记录；开放时间和卡片范围尚未收录。' }}</p>
       <ul class="ticket-list">
         <li v-for="ticket in gasha.tickets" :key="ticket.id">
           <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">
@@ -38,7 +42,18 @@
       </ul>
     </section>
 
-    <section v-if="gasha.source_type!=='item-masterdata'" class="detail-section">
+    <section v-if="wikiRuns.length" class="detail-section">
+      <div class="section-heading"><h3>开放记录</h3><span>{{ wikiRuns.length }} 次</span></div>
+      <ul class="run-list">
+        <li v-for="run in wikiRuns" :key="run.start_at">
+          <strong lang="ja">{{ run.title }}</strong>
+          <span>{{ formatDateTime(run.start_at) }} – {{ formatDateTime(run.end_at) }}<template v-if="run.series"> · {{ run.series.rerun ? '再次开放' : `收录 ${run.series.count} 种 SR 以上卡片` }}</template><template v-else-if="run.cards.length"> · 新卡 {{ run.cards.length }} 张</template></span>
+          <ArchiveSourceLink :url="run.source.url" :label="`Wikiwiki · ${run.source.title}`" />
+        </li>
+      </ul>
+    </section>
+
+    <section v-if="gasha.source_type!=='item-masterdata' || pickupCards.length" class="detail-section">
       <div class="section-heading">
         <div>
           <h3>关联卡片</h3>
@@ -51,16 +66,51 @@
         :items="pickupRelationItems"
         @select="emit('open-card', $event.payload)"
       />
+      <p v-if="gasha.wiki_confirmation" class="gasha-source"><ArchiveSourceLink :url="gasha.wiki_confirmation.source.url" :label="`Wikiwiki · ${gasha.wiki_confirmation.source.title}`" /></p>
+    </section>
+
+    <ArchiveGashaRules v-if="detail?.pages.length" :pages="detail.pages" :idol-name="idolName" :pickup-ids="pickupCards.map(card => card.card_resource_id)" @open-card="emit('open-card',$event)" />
+
+    <section v-if="artRecord && (artRecord.variants.length || artRecord.unresolved)" class="detail-section">
+      <div class="section-heading">
+        <div>
+          <h3>游戏内横幅</h3>
+          <p v-if="artRecord.unresolved">{{ artRecord.unresolved.reason_zh }}</p>
+          <p v-else>同名卡池的其他横幅，与本卡池共用名称，开放时间与卡片可能不同。</p>
+        </div>
+        <span class="relation-count">{{ artRecord.unresolved ? '无法区分' : `${artRecord.variants.length} 张` }}</span>
+      </div>
+      <ul class="art-strip">
+        <li v-for="item in artStrip" :key="item.gasha_id">
+          <span class="art-frame"><ArchiveGashaArt :art="item" alt="" /></span>
+          <strong v-if="item.label">{{ item.label }}</strong>
+          <strong v-else-if="item.banner_text" lang="ja">{{ item.banner_text }}</strong>
+        </li>
+      </ul>
+    </section>
+
+    <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
+    <section v-if="gasha.announce_movie" class="detail-section">
+      <div class="section-heading">
+        <div>
+          <h3>告知视频</h3>
+          <p>视频记录的资源编号与本卡池编号一致，开放时间与公告开始时间一致；原版卡池指向视频的字段未保存在客户端数据中。</p>
+        </div>
+        <span class="relation-count">推定关联</span>
+      </div>
+      <p class="gasha-note">已收录原始视频 {{ gasha.announce_movie.raw_file }}，尚未转为浏览器可播放的格式。</p>
     </section>
 
     <ArchiveTechnicalDetails :key="gasha.code" :evidence="gasha">
       <dl class="evidence-grid">
         <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'游戏内主数据' }}</dd></div>
-        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
+        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'&&!pickupCards.length?'未确认':relationEvidence }}</dd></div>
         <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
         <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>{{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
-        <div><dt>服务端卡池信息</dt><dd>关服后未能保存</dd></div>
+        <div v-if="artRecord?.primary"><dt>横幅对应</dt><dd>按横幅文字「{{ artRecord.primary.banner_text }}」对应游戏内卡池编号 {{ artRecord.primary.gasha_id }}</dd></div>
+        <div v-if="detail?.pages.length"><dt>卡池规则</dt><dd>Wikiwiki 卡池页（{{ detail.pages[0].checked_at }} 核对）</dd></div>
+        <div><dt>服务端卡池信息</dt><dd>关服后未能保存（提供割合、卡池说明、阶梯与保底设定均由服务器下发）</dd></div>
       </dl>
     </ArchiveTechnicalDetails>
   </section>
@@ -72,6 +122,9 @@ import { ChevronRight, Ticket } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveGashaArt from './ArchiveGashaArt.vue'
+import ArchiveGashaRules from './ArchiveGashaRules.vue'
+import { gashaPoolArt, loadGashaPoolDetail } from '../../data/gashaPoolDetails.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {gashaText} from './useArchiveGashaText.js'
 import {archiveText} from './useArchiveCollectionText.js'
@@ -94,6 +147,18 @@ const CATEGORY_LABELS = {
 const failedTickets = shallowRef(new Set())
 watch(() => props.gasha?.id, () => { failedTickets.value = new Set() })
 
+// Rules and art load with the gasha; a reply for a gasha that is no longer open is dropped.
+const detail = shallowRef(null)
+watch(() => props.gasha?.id, id => {
+  detail.value = null
+  if (id == null) return
+  loadGashaPoolDetail(id).then(value => { if (props.gasha?.id === id) detail.value = value }).catch(error => console.warn(error))
+}, { immediate: true })
+const artRecord = computed(() => detail.value?.art || null)
+// The index carries the hero art, so it shows before the detail file arrives.
+const poolArt = computed(() => props.gasha?.banner_url ? null : (props.gasha?.pool_art || gashaPoolArt(props.gasha?.id)))
+const artStrip = computed(() => artRecord.value?.unresolved?.candidates || artRecord.value?.variants || [])
+
 const pickupCards = computed(() => {
   const direct = props.gasha?.derived_pickup_cards || []
   return direct.length ? direct : (props.gasha?.related_pickup_cards || [])
@@ -104,17 +169,27 @@ const usesRelatedCards = computed(() =>
 const isReprintRelation = computed(() =>
   usesRelatedCards.value && props.gasha?.related_pickup_source === 'reprint',
 )
+// Wikiwiki's notice for the pool lists the same cards the master data implied, or the pool is a ticket-only
+// record whose cards come from that notice alone.
+const wikiRuns = computed(() => props.gasha?.wiki_pools || [])
+const wikiConfirmed = computed(() => Boolean(props.gasha?.wiki_confirmation) || wikiRuns.value.some(run => run.cards.length))
 const relationBadge = computed(() => {
+  if (wikiConfirmed.value && !usesRelatedCards.value) return '已核对'
   if (isReprintRelation.value) return '复刻卡片'
   return usesRelatedCards.value ? '同期卡片' : '推定关联'
 })
 const relationDescription = computed(() => {
+  const confirmation = props.gasha?.wiki_confirmation
+  if (confirmation?.kind === 'series') return `Wikiwiki 卡池公告记载收录 ${confirmation.cardCount} 种 SR 以上卡片，与同系列卡片数一致。`
+  if (confirmation && !usesRelatedCards.value) return 'Wikiwiki 卡池公告列出的新卡，与突破素材和开放时间的推定一致。'
+  if (wikiRuns.value.length) return 'Wikiwiki 卡池公告列出的新卡。'
   if (isReprintRelation.value) return '已确认对应原卡池的复刻内容'
   return usesRelatedCards.value
     ? '同一卡池其他公告中收录的关联卡片'
     : '根据突破素材与开放时间推定的关联，尚未确认实际招募内容。'
 })
 const relationEvidence = computed(() => {
+  if (wikiConfirmed.value && !usesRelatedCards.value) return 'Wikiwiki 卡池公告'
   if (isReprintRelation.value) return `外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
   return usesRelatedCards.value
     ? `同一卡池主公告 ${props.gasha?.primary_code || ''} 收录`
@@ -126,8 +201,8 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   label: usesRelatedCards.value ? relationBadge.value : '',
   title: cardText('card',card.card_title,'title') || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
-  evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
-  evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
+  evidenceLabel: isReprintRelation.value || (wikiConfirmed.value && !usesRelatedCards.value) ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
+  evidenceTone: isReprintRelation.value || (wikiConfirmed.value && !usesRelatedCards.value) ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
   evidence: relationEvidence.value,
   resource: card.card_resource_id,
   imageUrl: getCardIconUrl(card.card_resource_id, true),
@@ -162,6 +237,19 @@ function formatDateTime(timestamp) {
 .gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
 .gasha-original { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
 .gasha-note { color:var(--gs-color-muted);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
+.gasha-source { margin:var(--gs-space-4) 0 0; }
+.run-list { list-style:none;margin:0;padding:0;border-top:1px solid var(--gs-rule); }
+.run-list li { display:grid;gap:var(--gs-space-1);padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-rule); }
+.run-list strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);overflow-wrap:anywhere; }
+.run-list span { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.run-list .archive-source-link { justify-self:start; }
+.gasha-hero { display:grid;gap:var(--gs-space-3);margin:0;align-self:start;min-width:0; }
+.gasha-hero figcaption { color:var(--gs-ink-3);font-size:var(--gs-text-caption);line-height:1.6;overflow-wrap:anywhere; }
+.art-strip { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:var(--gs-space-6); }
+.art-strip li { display:grid;gap:var(--gs-space-2);min-width:0; }
+.art-frame { display:block;aspect-ratio:940 / 510;overflow:hidden;border:1px solid var(--gs-line);border-radius:var(--gs-radius-media); }
+.art-strip strong { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.art-strip small { color:var(--gs-ink-3);font-size:var(--gs-text-caption);line-height:1.6;overflow-wrap:anywhere; }
 .ticket-banner-label { display:grid;min-height:120px;place-items:center;color:var(--gs-ink-3); }
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }

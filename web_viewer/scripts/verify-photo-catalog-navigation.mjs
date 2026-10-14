@@ -7,6 +7,7 @@ import { DomainRepository } from '../readmodels/runtime/DomainRepository.mjs'
 import { studioPresetPresentation } from '../src/presentation/studio-preset-labels.mjs'
 import * as photoStickerGroups from '../src/presentation/photoStickerGroups.js'
 import * as photoSpotScenes from '../src/presentation/photoSpotScenes.js'
+import * as nearViewport from '../src/components/archive/useNearViewport.js'
 import { buildArchiveUrl, readArchiveRoute, buildArchiveSourceQuery, readArchiveSourceRoute, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { useArchiveNavigationState } from '../src/core/useArchiveNavigationState.js'
 import { usePhotoCatalogNavigation } from '../src/composables/usePhotoCatalogNavigation.js'
@@ -115,6 +116,7 @@ const modules = {
   '../../presentation/studio-preset-labels.mjs': { studioPresetPresentation },
   '../../presentation/photoStickerGroups.js': { ...photoStickerGroups },
   '../../presentation/photoSpotScenes.js': { ...photoSpotScenes },
+  './useNearViewport.js': { ...nearViewport },
   '../../presentation/ArchiveGeneralTextCore.mjs': { isArchiveResourceDescription: () => false },
   '../../../readmodels/runtime/DomainRepository.mjs': { DomainRepository },
   '../../styles/archive-domains.css': {},

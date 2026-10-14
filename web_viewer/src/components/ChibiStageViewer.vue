@@ -56,8 +56,8 @@
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
-    data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
-    data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
+    data-old-suspensionlight-status="native-channels-hierarchy-stage-projection"
+    data-new-suspensionlight-status="native-show-rotate-scale-fade-stage-projection"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
@@ -92,9 +92,10 @@
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
-    data-foot-light-status="command-uniform-mapping-unresolved"
-    :data-foot-light-height="currentFootLighting.height"
-    :data-foot-light-rate="currentFootLighting.rate"
+    data-foot-light-status="native-local-material"
+    :data-foot-light-height="currentFootLighting.rgba[3] > 0 ? 1 / currentFootLighting.rcpHeight : 0"
+    :data-foot-light-rcp-height="currentFootLighting.rcpHeight"
+    :data-foot-light-opacity="currentFootLighting.rgba[3]"
     :data-body-colors="appliedBodyColors"
     :data-image-colors="appliedImageColors"
     :data-background-component-count="backgroundComponentCount"
@@ -175,7 +176,11 @@
             :data-runtime-ready="Boolean(runtimeForPosition(position))"
             :data-motion="slotByPosition(position)?.currentMotion || ''"
             :data-motion-source="slotByPosition(position)?.currentMotionSource || ''"
-            :data-position-scale="positionDebugState(position).scale"
+            :data-motion-fragment="runtimes.get(position)?.spine?.state?.getCurrent(0)?.animation?.name || ''"
+            :data-motion-sequence="runtimes.get(position)?.currentMotionPlayback?.sequence?.join(' → ') || ''"
+            :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
+            :data-position-sort-order="positionDebugState(position).sortingOrder"
+            :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
             :data-position-tween-progress="positionDebugState(position).progress"
             :data-position-x="positionDebugState(position).x"
             :data-position-y="positionDebugState(position).y"
@@ -345,7 +350,7 @@
               <div><dt>当前演唱</dt><dd>{{ isSpecialSingle ? '社长' : currentSingerLabel }}</dd></div>
               <div><dt>动作预载</dt><dd>{{ isSpecialSingle ? '2D 对象按需载入' : (preloading ? `${preloadProgress}%` : (songMotionsReady ? '已完成' : '播放时载入')) }}</dd></div>
               <div><dt>音频时钟</dt><dd>{{ stageVocalEnabled ? (stageVocalReady ? '实验伴奏' : '实验声部加载中') : (audioReady ? '官方混音' : '等待加载') }}</dd></div>
-              <div v-if="!isSpecialSingle"><dt>位置过渡</dt><dd>{{ POSITION_TWEEN_MS }}ms 平滑插值</dd></div>
+              <div v-if="!isSpecialSingle"><dt>位置切换</dt><dd>按原脚本即时设置</dd></div>
               <div><dt>动作组补位</dt><dd>{{ derivedGroupEventCount }} 处</dd></div>
               <div><dt>当前镜头</dt><dd>{{ currentCameraLabel }}</dd></div>
               <div><dt>舞台屏幕</dt><dd>{{ currentBackmonitorLabel }}</dd></div>
@@ -376,7 +381,7 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放和渐隐，<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条颜色／节拍控制仍待接入。</template><template v-else>颜色／节拍控制待核对。</template>当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
               <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
@@ -460,7 +465,7 @@ import { archiveText } from './archive/useArchiveCostumeText.js'
 import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
-import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
+import { bodyUniformsAt } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
@@ -509,16 +514,25 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
-import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
-import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
+import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
+import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
+import { createBackmonitorLayer, setBackmonitorLayerAlpha, destroyBackmonitorLayer } from '../core/chibiBackmonitorMaterials.js'
+import { createFlatStageLayers, backmonitorDepths } from '../core/chibiFlatStageLayers.js'
+import { createObjectRendererPlanes, syncObjectRendererPlanes, releaseObjectRendererPlanes } from '../core/chibiObjectRendererPlanes.js'
+import { registerNativeParticleMaskRenderer } from '../core/chibiNativeParticleMask.js'
+import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
+import { footUniformsAt } from '../core/chibiNativeFootColors.js'
+import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
+import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
-import { chibiGroundRegistration, projectChibiGround, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
+import { chibiGroundRegistration, projectChibiGround, chibiPositionStateAt, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
@@ -641,7 +655,7 @@ const visiblePinspotlightCount = ref(0)
 const visiblePinspotlightIds = ref([])
 const stageBackgroundReady = ref(false)
 const allPositions = [1, 2, 3, 4, 5]
-const POSITION_TWEEN_MS = 350
+const POSITION_TWEEN_MS = 0
 // Authored Camera zoom is the baseline; do not add a presentation magnification.
 const STAGE_BASE_ZOOM = 1
 // Debug multiplier for the complete camera container. Unlike environmentScale,
@@ -650,8 +664,6 @@ const stageViewScale = ref(1)
 // Stage art, monitor movies and fixed effects share an unexpanded environment
 // plane. Keep the optional inspection control separate from source camera zoom.
 const environmentScale = ref(1)
-const CHARACTER_DEPTH_BASE = 2000
-const CHARACTER_DEPTH_Y_FACTOR = 0.5
 const CHARACTER_STAGE_SCALE = 0.58
 
 let app = null
@@ -707,7 +719,7 @@ const stagelightSprites = createSpotlightSpriteStore({
 let stagelightSongId = ''
 const visibleSuspensionlightIds = ref([])
 let suspensionTrackKey = ''
-let suspensionTrack = null
+const suspensionTrack = shallowRef(null)
 let suspensionAbort = null
 const suspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -721,24 +733,54 @@ const suspensionSprites = createSpotlightSpriteStore({
   },
   destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncSuspensionlights(),
+  onReady: () => { syncSuspensionlights(); requestPausedSuspensionRender() },
   onError: error => console.warn('[ChibiStage] suspension texture load failed', error),
 })
 const spotlightBackgroundAlpha = ref(0)
 const visibleOldSuspensionlightIds = ref([])
 const backmonitorLogoAngle = ref('')
 const backmonitorLogoAlpha = ref(0)
+let pausedBackmonitorRenderPending = false
+function requestPausedBackmonitorRender() {
+  const owner = app
+  if (!owner || playing.value || pausedBackmonitorRenderPending) return
+  pausedBackmonitorRenderPending = true
+  queueMicrotask(()=> {
+    pausedBackmonitorRenderPending = false
+    if (stageDisposed || owner !== app || playing.value) return
+    applyCameraTransform()
+    owner.render()
+  })
+}
+const backmonitorLayerSprites = createSpotlightSpriteStore({
+  layerCount: null,
+  loadTexture: file=>loadImageLayerTexture(file),
+  createRuntime: (id,layers,textures)=> {
+    const sprites = layers.map((layer,i)=> {
+      const sprite=markRaw(createBackmonitorLayer(PIXI,app.renderer,layer,textures[i]))
+      sprite.visible=false
+      backmonitorContainer.addChild(sprite)
+      return sprite
+    })
+    return markRaw({layers,sprites})
+  },
+  destroyRuntime: runtime=>runtime.sprites.forEach(destroyBackmonitorLayer),
+  destroyTexture: texture=>texture.destroy(true),
+  onReady: ()=>{syncBackmonitor(true);requestPausedBackmonitorRender()},
+  onError: error=>console.warn('[ChibiStage] backmonitor native layers unavailable',error),
+})
 const backmonitorLogoSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
   createRuntime: (id, layers, textures) => markRaw(createBackmonitorLogoMesh(PIXI,backmonitorContainer,textures[0])),
   destroyRuntime: destroyBackmonitorLogoMesh,
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncBackmonitor(true),
+  onReady: () => {syncBackmonitor(true);requestPausedBackmonitorRender()},
   onError: error => console.warn('[ChibiStage] backmonitor logo texture load failed',error),
 })
 let oldSuspensionTrackKey = ''
 let oldSuspensionTrack = null
+let oldSuspensionTempo = null
 let oldSuspensionAbort = null
 const oldSuspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -752,7 +794,7 @@ const oldSuspensionSprites = createSpotlightSpriteStore({
   },
   destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncOldSuspensionlights(),
+  onReady: () => { syncOldSuspensionlights(); requestPausedSuspensionRender() },
   onError: error => console.warn('[ChibiStage] old sidelight texture load failed', error),
 })
 const pinspotlightMaskCount = ref(0)
@@ -806,11 +848,13 @@ const pinspotlightSprites = createSpotlightSpriteStore({
 const pinspotlightRuntimes = pinspotlightSprites.runtimes
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
+let stageBackgroundPendingKey = ''
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
 const stageBackgroundParts = new Map()
 const appliedImageColors = ref('')
 const backgroundComponentCount = ref(0)
+const stageBackgroundNativeLayers = ref(false)
 const backgroundTintConflict = ref(false)
 let wholeScreenColorOverlay = null
 const colorPlaneOverlays = new Map()
@@ -837,6 +881,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   imageObjects: imageObjectIndex.value,
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
+  newSuspensionlightTrack: suspensionTrack.value,
   stageBackgrounds: stageBackgroundIndex.value,
 }))
 const stageVfxApproximateCount = computed(() => {
@@ -986,8 +1031,8 @@ const currentWholeScreenColor = frameValue(() => wholeScreenColorAt(stageTime.va
 const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
-const currentFootLighting = frameValue(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
-const currentBodyColors = frameValue(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const currentFootLighting = frameValue(() => footUniformsAt(selectedSong.value?.characterLightEvents,stageTime.value))
+const currentBodyColors = frameValue(() => bodyUniformsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
 const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
@@ -1065,7 +1110,7 @@ onMounted(async () => {
       [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
       [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
       [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
-      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting()}],
+      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting();syncBackmonitor(true);requestPausedBackmonitorRender()}],
     ].map(async ([target,load,sync])=> {
       try {install(target,await load(optionalOptions),sync)}
       catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
@@ -1139,6 +1184,8 @@ function initializeLineup() {
 }
 
 function createPixiApp() {
+  registerNativeBodyRenderer(PIXI)
+  registerNativeParticleMaskRenderer(PIXI)
   const host = canvasRef.value
   if (!host) return
   app = markRaw(new PIXI.Application({
@@ -1153,13 +1200,7 @@ function createPixiApp() {
   app.stage.sortableChildren = true
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
-  backmonitorContainer = markRaw(new PIXI.Container())
-  backmonitorContainer.sortableChildren = true
-  // Backmonitor movies are projected through transparent cut-outs in the
-  // authored stage art.  Keep the video below the static stage composite so
-  // the opaque clockwork/floor pixels act as the original Unity mask.
-  backmonitorContainer.zIndex = -30000
-  cameraContainer.addChild(backmonitorContainer)
+  backmonitorContainer = markRaw(createFlatStageLayers(cameraContainer))
   app.stage.addChild(cameraContainer)
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
@@ -1465,6 +1506,7 @@ async function attachStageShadow(runtime) {
 }
 
 function destroyStageRuntime(runtime) {
+  releaseNativeBodyColor(runtime)
   releaseFootLighting(runtime)
   runtime?.releaseShadowFollower?.()
   runtime?.groundShadow?.removeFromParent()
@@ -1605,25 +1647,7 @@ function weightedGroupMotion(group, milliseconds, position) {
 
 function positionStateForStage(position, milliseconds) {
   const sourceSlot = sourceSlotForStagePosition(position)
-  const events = (selectedSong.value?.positionEvents || [])
-    .filter(event => event.position === sourceSlot)
-  if (!events.length) return null
-  const currentIndex = Math.max(0, events.findLastIndex(event => event.time <= milliseconds))
-  const current = events[currentIndex]
-  const previous = events[currentIndex - 1]
-  if (!previous || milliseconds >= Number(current.time) + POSITION_TWEEN_MS) {
-    return { ...current, tweenProgress: 1 }
-  }
-  const rawProgress = Math.max(0, Math.min(1, (milliseconds - Number(current.time)) / POSITION_TWEEN_MS))
-  const progress = rawProgress * rawProgress * (3 - 2 * rawProgress)
-  const interpolate = key => Number(previous[key]) + (Number(current[key]) - Number(previous[key])) * progress
-  return {
-    ...current,
-    x: interpolate('x'),
-    y: interpolate('y'),
-    scale: interpolate('scale'),
-    tweenProgress: rawProgress,
-  }
+  return chibiPositionStateAt(selectedSong.value?.positionEvents, sourceSlot, milliseconds)
 }
 
 function positionDebugState(position) {
@@ -1632,8 +1656,8 @@ function positionDebugState(position) {
   return {
     x: coordinates.x,
     y: coordinates.y,
-    scale: state ? Number(state.scale).toFixed(2) : '',
-    progress: state ? Number(state.tweenProgress ?? 1).toFixed(3) : '',
+    sortingOrder: coordinates.sortingOrder,
+    progress: state ? '1.000' : '',
   }
 }
 
@@ -1646,96 +1670,15 @@ function layoutCoordinatesForStage(position, milliseconds, motionEvent = null) {
   return resolveChibiPlacement(positionState, event, fallbackX)
 }
 
-function sampleCameraTween(tween, milliseconds) {
-  if (!tween) return 0
-  if (tween.duration <= 1 || milliseconds >= tween.start + tween.duration) return tween.to
-  const raw = Math.max(0, Math.min(1, (milliseconds - tween.start) / tween.duration))
-  const eased = 1 - ((1 - raw) ** 3)
-  return tween.from + (tween.to - tween.from) * eased
-}
-
 function cameraStateAt(milliseconds) {
-  const state = {
-    zoom: 1,
-    x: 0,
-    y: 360,
-    rotation: 0,
-    focusSlot: null,
-    stagePosition: null,
-    eventTime: '',
-  }
-  let zoomTween = null
-  let xTween = null
-  let yTween = null
-  let rotationTween = null
-
-  for (const event of (selectedSong.value?.cameraEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    state.zoom = zoomTween ? sampleCameraTween(zoomTween, eventTime) : state.zoom
-    state.x = xTween ? sampleCameraTween(xTween, eventTime) : state.x
-    state.y = yTween ? sampleCameraTween(yTween, eventTime) : state.y
-    state.rotation = rotationTween ? sampleCameraTween(rotationTween, eventTime) : state.rotation
-
-    if (event.reset) {
-      // Camera's authored erase command restores the wide shot. Cancel the
-      // previous focus/tweens so later shots start from this reset, even on seek.
-      const duration = Math.max(0, Number(event.resetDuration) || 0)
-      zoomTween = { from: state.zoom, to: 1, start: eventTime, duration }
-      xTween = { from: state.x, to: 0, start: eventTime, duration }
-      yTween = { from: state.y, to: 360, start: eventTime, duration }
-      rotationTween = { from: state.rotation, to: 0, start: eventTime, duration }
-      state.focusSlot = null
-      state.stagePosition = null
-      state.eventTime = eventTime
-      continue
-    }
-
-    if (event.focusSlot !== null && event.focusSlot !== undefined) {
-      state.focusSlot = Number(event.focusSlot) > 0 ? Number(event.focusSlot) : null
-      state.stagePosition = state.focusSlot
-        ? (event.stagePosition || selectedSong.value?.stagePositionMap
-          ?.find(item => item.performerSlot === state.focusSlot)?.stagePosition || null)
-        : null
-    }
-    if (event.zoom !== null && event.zoom !== undefined) {
-      zoomTween = {
-        from: state.zoom,
-        to: Number(event.zoom) / 1000,
-        start: eventTime,
-        duration: Math.max(0, Number(event.zoomDuration) || 0),
-      }
-    }
-    if (event.x !== null || event.y !== null || event.focusSlot !== null) {
-      const focusX = state.stagePosition
-        ? layoutCoordinatesForStage(state.stagePosition, eventTime).x
-        : 0
-      const targetX = state.stagePosition
-        ? focusX + Number(event.x ?? 0)
-        : Number(event.x ?? state.x)
-      // The source uses a character-root coordinate system when focusSlot is set;
-      // its Y=0 and free-camera Y=360 both represent the visual stage centre.
-      const targetY = state.stagePosition ? 360 : Number(event.y ?? state.y)
-      const duration = Math.max(0, Number(event.moveDuration) || 0)
-      xTween = { from: state.x, to: targetX, start: eventTime, duration }
-      yTween = { from: state.y, to: targetY, start: eventTime, duration }
-    }
-    if (event.rotation !== null && event.rotation !== undefined) {
-      rotationTween = {
-        from: state.rotation,
-        to: Number(event.rotation),
-        start: eventTime,
-        duration: Math.max(0, Number(event.rotationDuration) || 0),
-      }
-    }
-    state.eventTime = eventTime
-  }
-
-  state.zoom = zoomTween ? sampleCameraTween(zoomTween, milliseconds) : state.zoom
-  state.x = xTween ? sampleCameraTween(xTween, milliseconds) : state.x
-  state.y = yTween ? sampleCameraTween(yTween, milliseconds) : state.y
-  state.rotation = rotationTween ? sampleCameraTween(rotationTween, milliseconds) : state.rotation
-  return state
+  const song = selectedSong.value
+  const camera = nativeLightCameraAt(song, milliseconds)
+  const event = song?.cameraEvents?.findLast(event => event.time <= milliseconds)
+  const focusSlot = camera.focusSlot || null
+  return { ...camera, focusSlot,
+    stagePosition: focusSlot ? (event?.stagePosition || song?.stagePositionMap
+      ?.find(item => item.performerSlot === focusSlot)?.stagePosition || focusSlot) : null,
+    eventTime: event?.time ?? '' }
 }
 
 function backmonitorStateAt(milliseconds) {
@@ -1821,11 +1764,7 @@ function layoutStageBackground() {
   for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
 }
 
-function releaseStageBackground() {
-  spotlightBackgroundSprites.release()
-  spotlightBackgroundAlpha.value = 0
-  pinspotlightMaskCount.value = 0
-  stageBackgroundSequence += 1
+function clearStageBackgroundArt() {
   stageBackgroundSprite?.removeFromParent()
   stageBackgroundSprite?.destroy()
   stageBackgroundTexture?.destroy(true)
@@ -1838,58 +1777,80 @@ function releaseStageBackground() {
   }
   stageBackgroundParts.clear()
   backgroundComponentCount.value = 0
+  stageBackgroundNativeLayers.value = false
   backgroundTintConflict.value = false
-  stageBackgroundSongId.value = ''
   stageBackgroundReady.value = false
+}
+
+function releaseStageBackground() {
+  spotlightBackgroundSprites.release()
+  spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
+  stageBackgroundSequence += 1
+  stageBackgroundPendingKey = ''
+  clearStageBackgroundArt()
+  stageBackgroundSongId.value = ''
 }
 
 async function syncStageBackground() {
   if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
   const songCode = selectedSong.value.songCode
-  if (stageBackgroundSongId.value === songCode && (stageBackgroundSprite || stageBackgroundParts.size)) {
-    layoutStageBackground()
-    return
-  }
-  releaseStageBackground()
-  stageBackgroundSongId.value = songCode
   const entry = stageBackgroundIndex.value.songs?.[songCode]
   if (!entry) return
-  const sequence = stageBackgroundSequence
   const components = stageBackgroundIndex.value.components
   const componentLayers = components?.songs?.[songCode]?.layers
-  if (componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
-      && componentLayers.every(asset => components.assets?.[asset])) {
+  const useComponents = Boolean(componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
+    && componentLayers.every(asset=>components.assets?.[asset]))
+  const key = useComponents ? `parts:${componentLayers.join(',')}` : `composite:${entry.file}`
+  const sameSong = stageBackgroundSongId.value === songCode
+  if (sameSong && stageBackgroundPendingKey === key) return
+  if (sameSong && (useComponents ? stageBackgroundParts.size === componentLayers.length : stageBackgroundSprite)) {
+    layoutStageBackground(); return
+  }
+  if (!sameSong) releaseStageBackground()
+  stageBackgroundSongId.value = songCode
+  const sequence = ++stageBackgroundSequence
+  const owner = cameraContainer
+  stageBackgroundPendingKey = key
+  try {
+  if (useComponents) {
     const results = await Promise.allSettled(componentLayers.map(async asset => ({
       asset, texture: await loadImageLayerTexture(components.assets[asset].file),
     })))
     const loaded = results.filter(result => result.status === 'fulfilled').map(result => result.value)
-    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode || cameraContainer !== owner) {
       for (const part of loaded) part.texture.destroy(true)
       return
     }
     if (loaded.length === componentLayers.length) {
+      const verified = loaded.every(part=>Number.isFinite(components.assets[part.asset].sortingOrder))
+      clearStageBackgroundArt()
       for (const [index, part] of loaded.entries()) {
         const sprite = markRaw(new PIXI.Sprite(part.texture))
         sprite.anchor.set(0.5)
-        sprite.zIndex = -20000 + index
+        sprite.zIndex = verified ? components.assets[part.asset].sortingOrder : -20000 + index
         sprite.visible = staticStageEnabled.value
         cameraContainer.addChild(sprite)
         stageBackgroundParts.set(part.asset, { texture: part.texture, sprite })
       }
+      stageBackgroundNativeLayers.value = verified
       backgroundComponentCount.value = loaded.length
       stageBackgroundReady.value = true
       layoutStageBackground()
       applyImageColors()
+      layoutBackmonitor(currentBackmonitorState.value)
       return
     }
     for (const part of loaded) part.texture.destroy(true)
-    console.warn('[ChibiStage] background component load failed; using original composite')
+    console.warn('[ChibiStage] background component load failed; retaining available composite')
+    if (stageBackgroundSprite || stageBackgroundParts.size) return
   }
   const texture = await loadImageLayerTexture(entry.file)
-  if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+  if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode || cameraContainer !== owner) {
     texture.destroy(true)
     return
   }
+  clearStageBackgroundArt()
   stageBackgroundTexture = texture
   stageBackgroundSprite = markRaw(new PIXI.Sprite(texture))
   stageBackgroundSprite.anchor.set(0.5)
@@ -1899,6 +1860,7 @@ async function syncStageBackground() {
   stageBackgroundReady.value = true
   layoutStageBackground()
   applyImageColors()
+  } finally { if (sequence === stageBackgroundSequence) stageBackgroundPendingKey = '' }
 }
 
 function applyImageColors() {
@@ -1935,7 +1897,19 @@ function ensureWholeScreenColorOverlay() {
   layoutStageBackground()
 }
 
+function syncCharacterLayers() {
+  const offsets = lightingEnabled.value
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value, selectedSong.value?.spotlightCommandOrder)
+    : new Map()
+  for (const [position, runtime] of runtimes) {
+    const base = layoutCoordinatesForStage(position, stageTime.value).sortingOrder
+    runtime.spine.zIndex = base + (offsets.get(position) || 0)
+    syncCharacterShadow(runtime)
+  }
+}
+
 function applyStageLighting() {
+  syncCharacterLayers()
   syncStagelights()
   syncSuspensionlights()
   syncOldSuspensionlights()
@@ -1969,7 +1943,7 @@ function applyStageLighting() {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
     for (const runtime of runtimes.values()) {
       runtime.spine.tint = 0xffffff
-      syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
+      syncNativeBodyColor(PIXI,runtime,null,false)
     }
     if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
     return
@@ -1981,58 +1955,18 @@ function applyStageLighting() {
     wholeScreenColorOverlay.zIndex = screen.depth
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
-  // Foot_Color is a local height replacement gradient. It must never dim
-  // the entire face/body; body tint remains a separate addressed command.
-  const character = { color: 0xffffff }
+  // Foot_Color uses the authored local cutoff, including intentionally huge
+  // full-height commands. Native material applies Body then Foot per part.
   const foot = currentFootLighting.value
-  const spotlightStates = [...spotlightStatesAt(stageTime.value).values()]
-    .filter(state => state.alpha > 0.001 && state.beamColor)
-  const spotlightPositions = new Set(
-    spotlightStates
-      .filter(state => state.stagePosition)
-      .map(state => Number(state.stagePosition)),
-  )
-  const spotlightEnvironment = spotlightStates.findLast?.(state => state.environmentColor)
-    || [...spotlightStates].reverse().find(state => state.environmentColor)
-  const spotlightDim = spotlightEnvironment
-    ? Math.max(0, Math.min(1, Number(spotlightEnvironment.environmentOpacity || 0) / 1000))
-    : 0
-  const spotlightDimColor = parseHexColor(spotlightEnvironment?.environmentColor, 0x221d23)
-  const pinspotlightStates = [...pinspotlightStatesAt(stageTime.value).values()]
-    .filter(state => state.alpha > 0.001 && state.asset)
-  const pinspotlightPositions = new Set(pinspotlightStates
-    .filter(state => state.stagePosition)
-    .map(state => Number(state.stagePosition)))
-  const pinspotlightEnvironment = pinspotlightStates.findLast?.(state => state.environmentColor)
-    || [...pinspotlightStates].reverse().find(state => state.environmentColor)
-  const pinspotlightDim = pinspotlightEnvironment
-    ? Math.max(0, Math.min(1, Number(pinspotlightEnvironment.environmentOpacity || 0) / 1000))
-    : 0
-  const pinspotlightDimColor = parseHexColor(
-    pinspotlightEnvironment?.environmentColor,
-    0x221d23,
-  )
   for (const [position, runtime] of runtimes) {
-    // A targeted performer is lit independently from the environment wash.
-    // Mixing back toward white reproduces that separation without making the
-    // Spine itself translucent beneath the foreground beam sprite.
-    if (pinspotlightPositions.size > 0) {
-      runtime.spine.tint = pinspotlightPositions.has(position)
-        ? mixRgb(character.color, 0xffffff, 0.5)
-        : mixRgb(character.color, pinspotlightDimColor, pinspotlightDim)
-    } else {
-      runtime.spine.tint = spotlightPositions.has(position)
-        ? mixRgb(character.color, 0xffffff, 0.5)
-        : spotlightPositions.size > 0
-          ? mixRgb(character.color, spotlightDimColor, spotlightDim)
-          : character.color
-    }
-    runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
-    syncFootLighting(PIXI,runtime,foot,true)
+    // Environment dimming belongs to SpotlightBackground's composited plane.
+    // Applying it to Spine as well doubled the wash and bypassed Pin masks.
+    runtime.spine.tint = 0xffffff
+    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true,foot)
   }
   if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
-    `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
+    `${position}:rgba(${(currentBodyColors.value.get(position) || [1,1,1,0]).map(v=>v.toFixed(3)).join(',')})`).join(',')
 }
 
 function syncSpotlightBackground() {
@@ -2042,8 +1976,9 @@ function syncSpotlightBackground() {
   if (existing) existing.sprite.visible = false
   if (!app || !cameraContainer) return
   const pins = pinspotlightStatesAt(stageTime.value)
-  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value), pins, lightingEnabled.value)
+  const state = spotlightBackgroundAt(selectedSong.value, stageTime.value, lightingEnabled.value)
   if (!state || state.alpha <= 0.001) return
+  const backgroundOrder = spotlightBackgroundOrderAt(selectedSong.value, stageTime.value)
   const activePins = [...pins.values()].filter(pin => pin.alpha > 0.001 && pin.asset)
   const filters = []
   const model = stageEffectIndex.value?.pinspotlight
@@ -2053,8 +1988,7 @@ function syncSpotlightBackground() {
     if (!desired) return
     const mask = pinspotlightRuntimes.get(`${pin.id}:${desired.layers[0].asset}`)
     if (!mask?.maskSprite.visible) return
-    const order = stageEffectIndex.value?.spotlightBackground?.layers[0]?.sortingOrder ?? 1900
-    if (order >= model.sortingInterval[0] && order <= model.sortingInterval[1]) filters.push(mask.filter)
+    if (backgroundOrder >= model.sortingInterval[0] && backgroundOrder <= model.sortingInterval[1]) filters.push(mask.filter)
   }
   const runtime = spotlightBackgroundSprites.ensure('background',
     stageEffectIndex.value?.spotlightBackground, stageEffectIndex.value?.assets)
@@ -2064,6 +1998,7 @@ function syncSpotlightBackground() {
   const fit = Math.min(width / 1280, height / 720) * environmentScale.value
   runtime.sprite.position.set(width * 0.5, height * 0.5)
   runtime.sprite.scale.set(runtime.layer.scaleX * fit, runtime.layer.scaleY * fit)
+  runtime.sprite.zIndex = backgroundOrder
   runtime.sprite.tint = parseHexColor(state.color, 0x221d23)
   runtime.sprite.alpha = state.alpha
   runtime.sprite.filters = filters.length ? filters : null
@@ -2153,7 +2088,7 @@ function syncSpotlights() {
     const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
     runtime.container.position.set(targetX, targetY)
     runtime.container.scale.set(viewportScale)
-    runtime.container.zIndex = Number(state.depth) || 1800
+    runtime.container.zIndex = (state.depth ?? 1800) + 1
     runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
     runtime.container.visible = true
     visibleSpotlightIds.value.push(state.id)
@@ -2202,6 +2137,20 @@ function syncStagelights() {
   appliedStagelightColors.value = colors.join(',')
 }
 
+let suspensionRenderQueued = false
+function requestPausedSuspensionRender() {
+  if (!app || playing.value || stageDisposed || suspensionRenderQueued) return
+  suspensionRenderQueued = true
+  const owner = app
+  queueMicrotask(() => {
+    suspensionRenderQueued = false
+    if (app === owner && !stageDisposed && !playing.value) {
+      applyCameraTransform()
+      owner.render()
+    }
+  })
+}
+
 function syncSuspensionlights() {
   if (!app || !cameraContainer) return
   const songId = selectedSong.value?.id || ''
@@ -2210,7 +2159,7 @@ function syncSuspensionlights() {
   if (suspensionTrackKey !== key) {
     suspensionSprites.release()
     suspensionAbort?.abort()
-    suspensionTrack = null
+    suspensionTrack.value = null
     suspensionTrackKey = key
     if (descriptor?.file) {
       const abort = new AbortController()
@@ -2221,8 +2170,9 @@ function syncSuspensionlights() {
           return response.json()
         }).then(track => {
           if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
-          suspensionTrack = track
+          suspensionTrack.value = track
           syncSuspensionlights()
+          requestPausedSuspensionRender()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
         })
@@ -2231,7 +2181,7 @@ function syncSuspensionlights() {
   visibleSuspensionlightIds.value = []
   for (const runtime of suspensionSprites.runtimes.values()) runtime.sprite.visible = false
   if (!beamEffectsEnabled.value) return
-  const track = suspensionTrack
+  const track = suspensionTrack.value
   const model = stageEffectIndex.value?.newSuspensionlight
   if (!track || !model) return
   const width = app.renderer.width / app.renderer.resolution
@@ -2262,18 +2212,37 @@ function syncOldSuspensionlights() {
     oldSuspensionSprites.release()
     oldSuspensionAbort?.abort()
     oldSuspensionTrack = null
+    oldSuspensionTempo = null
     oldSuspensionTrackKey = key
     if (descriptor?.previewEnabled && descriptor.file) {
       const abort = new AbortController()
       oldSuspensionAbort = abort
-      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+      const songCode = selectedSong.value.songCode
+      const tempoRequest = fetch(`/data/song_charts/${encodeURIComponent(songCode)}-1.json`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Stage tempo HTTP ${response.status}`)
+          return response.json()
+        }).then(chart => {
+          validateSongChart(chart, songCode, 1)
+          // SetNoteObj starts at the first conductor tempo. Constant-tempo
+          // tracks do not depend on the still-unverified offset conversion.
+          const tempos = new Set(chart.tempos.map(t => t.tempo))
+          return tempos.size === 1 ? chart.tempos[0].tempo : null
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight tempo unavailable', error)
+          return null
+        })
+      const trackRequest = fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
         .then(response => {
           if (!response.ok) throw new Error(`Old sidelight track HTTP ${response.status}`)
           return response.json()
-        }).then(track => {
+        })
+      Promise.all([trackRequest, tempoRequest]).then(([track, tempo]) => {
           if (stageDisposed || abort.signal.aborted || oldSuspensionTrackKey !== key) return
           oldSuspensionTrack = track
+          oldSuspensionTempo = tempo
           syncOldSuspensionlights()
+          requestPausedSuspensionRender()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight track load failed', error)
         })
@@ -2285,11 +2254,11 @@ function syncOldSuspensionlights() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
-    stageEffectIndex.value?.oldSuspensionlight,descriptor)) {
+    stageEffectIndex.value?.oldSuspensionlight,{...descriptor,tempo:oldSuspensionTempo})) {
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue
-    const layout = oldSuspensionlightLayout(state,width,height,environmentScale.value)
+    const layout = oldSuspensionlightLayout(state, width, height, environmentScale.value)
     runtime.sprite.position.set(layout.x,layout.y)
     runtime.sprite.scale.set(layout.scaleX,layout.scaleY)
     runtime.sprite.rotation = layout.rotation
@@ -2598,7 +2567,7 @@ async function syncPinspotlights() {
       sprite.position.set(x, y)
       sprite.scale.set(scale)
       sprite.alpha = Math.max(0, Math.min(1, state.alpha))
-      sprite.zIndex = (Number(state.depth) || 1850) + 1
+      sprite.zIndex = (state.depth ?? 1850) + 1
     }
     // Missing colour keeps the serialized flash default; masks stay black.
     runtime.sprite.tint = parseHexColor(state.beamColor, model.layers[1].initialColor)
@@ -2888,6 +2857,7 @@ async function loadObjectLayerRuntime(entry) {
 function destroyObjectLayerRuntime(runtime) {
   if (!runtime || runtime.destroyed) return
   runtime.destroyed = true
+  releaseObjectRendererPlanes(runtime)
   runtime?.container?.removeFromParent()
   runtime?.container?.destroy({ children: true })
   for (const texture of (runtime?.frameTextures || [])) texture.destroy(false)
@@ -2901,7 +2871,11 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const [asset, runtime] of objectLayerRuntimes) {
     const state = states.get(asset)
-    if (!state) continue
+    if (!state) {
+      runtime.container.visible=false
+      syncObjectRendererPlanes(runtime)
+      continue
+    }
     runtime.container.position.set(
       width * 0.5 + Number(state.x) * viewportScale * environmentScale.value,
       height * 0.5 + (360 - Number(state.y)) * viewportScale * environmentScale.value,
@@ -2914,6 +2888,7 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
+    syncObjectRendererPlanes(runtime)
   }
   if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
@@ -2963,6 +2938,7 @@ async function syncObjectLayers() {
   for (const [asset, runtime] of objectLayerRuntimes) {
     const state = states.get(asset)
     runtime.container.visible = objectLayersEnabled.value && Boolean(state && state.alpha > 0.001)
+    syncObjectRendererPlanes(runtime)
   }
 
   await Promise.all(supportedStates.map(async state => {
@@ -2989,6 +2965,7 @@ async function syncObjectLayers() {
       if (!objectLayerRuntimes.has(state.asset)) {
         objectLayerRuntimes.set(state.asset, runtime)
         cameraContainer.addChild(runtime.container)
+        createObjectRendererPlanes(PIXI,runtime,cameraContainer)
       } else if (ownsLoad) {
         destroyObjectLayerRuntime(runtime)
       }
@@ -3009,11 +2986,17 @@ function ensureBackmonitor() {
     if (backmonitorVideo !== video) return
     backmonitorReady.value = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   video.addEventListener('error', () => {
     if (backmonitorVideo !== video || !backmonitorMovie || !video.getAttribute('src')) return
     backmonitorReady.value = false
     console.warn('[ChibiStage] backmonitor video failed', backmonitorMovie)
+  })
+  for(const event of ['loadeddata','seeked'])video.addEventListener(event,()=> {
+    if(backmonitorVideo!==video)return
+    backmonitorTexture?.baseTexture.update()
+    requestPausedBackmonitorRender()
   })
   backmonitorVideo = video
   const resource = markRaw(new PIXI.VideoResource(video, { autoPlay: false }))
@@ -3038,11 +3021,13 @@ function ensureBackmonitorTransition() {
     if (backmonitorTransitionVideo !== colorVideo) return
     backmonitorTransitionColorReady = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   alphaVideo.addEventListener('loadedmetadata', () => {
     if (backmonitorTransitionAlphaVideo !== alphaVideo) return
     backmonitorTransitionAlphaReady = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   const handleError = () => {
     if (
@@ -3056,6 +3041,12 @@ function ensureBackmonitorTransition() {
   }
   colorVideo.addEventListener('error', handleError)
   alphaVideo.addEventListener('error', handleError)
+  for(const video of [colorVideo,alphaVideo])for(const event of ['loadeddata','seeked'])video.addEventListener(event,()=> {
+    if(video!==backmonitorTransitionVideo && video!==backmonitorTransitionAlphaVideo)return
+    backmonitorTransitionTexture?.baseTexture.update()
+    backmonitorTransitionAlphaTexture?.baseTexture.update()
+    requestPausedBackmonitorRender()
+  })
   backmonitorTransitionVideo = colorVideo
   backmonitorTransitionAlphaVideo = alphaVideo
   const colorResource = markRaw(new PIXI.VideoResource(colorVideo, { autoPlay: false }))
@@ -3087,18 +3078,39 @@ function layoutBackmonitor(state) {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
+  const depths = backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  backmonitorSprite.zIndex = depths.movie
   backmonitorSprite.position.set(projected.x, projected.y)
   backmonitorSprite.scale.set(projected.scale)
   backmonitorSprite.rotation = 0
   backmonitorSprite.alpha = 1
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
+    backmonitorTransitionSprite.zIndex = depths.movie
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
     backmonitorTransitionSprite.scale.copyFrom(backmonitorSprite.scale)
     backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
     backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
   }
   syncBackmonitorLogo(state,projected)
+  syncBackmonitorLayers(state,projected)
+}
+
+function syncBackmonitorLayers(state,projected) {
+  for(const runtime of backmonitorLayerSprites.runtimes.values())for(const sprite of runtime.sprites)sprite.visible=false
+  const model=stageEffectIndex.value?.backmonitorLayers
+  if(!model || !backmonitorContainer)return
+  const runtime=backmonitorLayerSprites.ensure('native-layers',model,stageEffectIndex.value.assets)
+  if(!runtime)return
+  const depths=backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  runtime.sprites.forEach((sprite,i)=> {
+    const layer=runtime.layers[i],scale=projected.scale/2
+    sprite.position.set(projected.x+layer.x*100*scale,projected.y-layer.y*100*scale)
+    sprite.scale.set(scale*layer.scaleX,scale*layer.scaleY)
+    sprite.zIndex=depths[layer.role]
+    setBackmonitorLayerAlpha(sprite,layer.role==='glow'?state.glowAlpha:layer.alpha)
+    sprite.visible=backmonitorEnabled.value && Boolean(state.movie) && state.y<4000
+  })
 }
 
 function syncBackmonitorLogo(state,projected) {
@@ -3112,6 +3124,7 @@ function syncBackmonitorLogo(state,projected) {
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
   const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
   if (!runtime) return
+  runtime.mesh.zIndex = backmonitorDepths(state,stageBackgroundNativeLayers.value).logo
   updateBackmonitorLogoMesh(runtime,model,sample,projected)
   backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }
@@ -3166,6 +3179,7 @@ function syncBackmonitor(forceSeek = false) {
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
     backmonitorLogoAngle.value = ''
     for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
+    for (const runtime of backmonitorLayerSprites.runtimes.values())for(const sprite of runtime.sprites)sprite.visible=false
     if (backmonitorSprite) backmonitorSprite.visible = false
     pauseBackmonitorTransition()
     return
@@ -3193,6 +3207,7 @@ function syncBackmonitor(forceSeek = false) {
 
 function releaseBackmonitor() {
   backmonitorLogoSprites.release()
+  backmonitorLayerSprites.release()
   backmonitorLogoAngle.value = ''
   backmonitorVideo?.pause()
   pauseBackmonitorTransition()
@@ -3252,7 +3267,7 @@ function applyCameraTransform() {
     height * 0.5 - (camera.y - 360) * viewportScale,
   )
   cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value)
-  cameraContainer.rotation = -camera.rotation * Math.PI / 180
+  cameraContainer.rotation = camera.rotation * Math.PI / 180
 }
 
 function applyLayerDebugVisibility() {
@@ -3287,7 +3302,7 @@ function syncCharacterShadow(runtime) {
   if (!layout) return
   shadow.position.set(layout.x, layout.y)
   shadow.scale.set(layout.scaleX, layout.scaleY)
-  shadow.zIndex = runtime.spine.zIndex - 1
+  shadow.zIndex = runtime.spine.zIndex - 10
   // Spine evaluates its pose during Pixi's transform pass, after the earlier
   // shadow sibling. Refresh that sibling before rendering to avoid frame lag.
   if (shadow.parent) shadow.updateTransform()
@@ -3299,8 +3314,7 @@ function layoutRuntime(position, motionEvent = null) {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const coordinates = layoutCoordinatesForStage(position, stageTime.value, motionEvent)
-  const { x, y, scale: sourceScale, positionState } = coordinates
-  const viewportScale = Math.min(width / 1280, height / 720)
+  const { y, sortingOrder } = coordinates
   const character = characters.value.find(item => item.id === runtime.characterId)
   const characterScale = Number(character?.previewScale) || 0.28
   const viewportFit = Math.min(1, height / 620)
@@ -3314,18 +3328,16 @@ function layoutRuntime(position, motionEvent = null) {
   // lives. Formation coordinates and the authored camera provide the framing;
   // scaling characters by active member count made three-person stages about
   // 24% larger than the already calibrated five-person reference.
-  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit * sourceScale / 1700)
+  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit)
   runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
-  // Unity reserves the 1200-1900 band for environment washes, beams and
-  // image/object layers. Characters occupy their own band around 2000; Y only
-  // orders performers against one another. The previous x10 mapping pushed a
-  // rear-platform performer down to z=900, causing authored light planes at
-  // z=1500 to cut across the body.
-  runtime.spine.zIndex = CHARACTER_DEPTH_BASE
-    + Math.round((360 - y) * CHARACTER_DEPTH_Y_FACTOR)
-    + position
+  // Authored baseSortOrder plus native Spotlight offset, including late
+  // motion loads. Y and performer index never replace this base.
+  const offset = lightingEnabled.value
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value, selectedSong.value?.spotlightCommandOrder).get(position) || 0
+    : 0
+  runtime.spine.zIndex = sortingOrder + offset
   syncCharacterShadow(runtime)
-  runtime.positionTweenProgress = positionState?.tweenProgress ?? 1
+  runtime.positionTweenProgress = 1
 }
 
 function resizeStage() {
@@ -3607,7 +3619,7 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   const speedScale = (Number(event.speed) || 1000) / 1000
   runtime.currentMotionEvent = event
   runtime.motionSpeedScale = speedScale
-  playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset })
+  playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset, nativeCommand: true })
   if (seekTime !== null && seekTime > event.time) {
     seekLiveChibiMotion(runtime, (seekTime - event.time) / 1000 * speedScale)
   }
@@ -3627,11 +3639,14 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
   const loadSequence = slot.loadSequence
   // A paused seek inside a cross-fade needs the outgoing pose too. Rebuild
   // only the recent mixing chain and its predecessor, not the whole song.
-  const mixMilliseconds = Math.max(0, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
+  const mixMilliseconds = Math.max(0.15, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
   let start = index
-  if (reset) {
-    while (start > 0 && events[start].mode !== 3
-      && events[start].time > milliseconds - mixMilliseconds) start -= 1
+  if (reset && start > 0 && events[start].mode !== 3 && events[start].time > milliseconds - mixMilliseconds) {
+    // A previous command can still be mixing when a second handoff interrupts
+    // it. Include the connected handoff chain, not just timestamps within the
+    // current frame's lookback window, then its settled predecessor.
+    do { start -= 1 } while (start > 0 && events[start].mode !== 3
+      && events[start + 1].time - events[start].time < mixMilliseconds)
   }
   for (let cursor = start; cursor <= index; cursor += 1) {
     if (stageIntent.revision() !== revision || slot.loadSequence !== loadSequence

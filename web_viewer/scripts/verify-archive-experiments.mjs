@@ -20,8 +20,18 @@ assert.equal(lab.song, 'drvalv')
 const source = readArchiveSourceRoute(lab.sourceRoute)
 assert.equal(source.view, 'song_detail')
 assert.equal(source.song, 'drvalv')
-assert.equal(source.query, 'DRIVE')
-assert.equal(source.songScope, 'layered')
+// A song detail frame is its identity (/songs/<code>/): the catalogue query and scope stay in the catalogue's own frame.
+assert.equal(source.query, '')
+assert.equal(source.songScope, 'all')
+{
+  const catalog = { view: 'song_catalog', songScope: 'layered', query: 'DRIVE' }
+  const detail = { view: 'song_detail', song: 'drvalv', sourceRoute: buildArchiveSourceQuery(catalog) }
+  const labFromCatalog = readArchiveRoute(buildArchiveUrl(origin, { view: 'chart_lab', song: 'drvalv', sourceRoute: buildArchiveSourceQuery(detail) }))
+  const back = readArchiveSourceRoute(labFromCatalog.sourceRoute)
+  assert.equal(back.view, 'song_detail')
+  const catalogBack = readArchiveSourceRoute(back.sourceRoute)
+  assert.equal(catalogBack.view, 'song_catalog'); assert.equal(catalogBack.query, 'DRIVE'); assert.equal(catalogBack.songScope, 'layered')
+}
 // The tools entry opens the chart tool itself; it picks its song inside, never via the song catalogue.
 assert.equal(normalizeArchiveRoute({ view: 'chart_lab' }).view, 'chart_lab')
 assert.equal(normalizeArchiveRoute({ view: 'chart_lab' }).song || '', '')

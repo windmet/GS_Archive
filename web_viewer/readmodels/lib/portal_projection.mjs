@@ -30,7 +30,8 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
     units: rows.units, cardFacets: facets, portraits: product.portalPortraits,
     stageManifest: product.portalStageManifest, storyCollections: rows.collections,
     gatewayCounts: {seasonalCount:product.storyCatalogView.seasonalCount,
-      workCount:product.storyCatalogView.workCount,idolStoryCount:bootstrap.idols.length} });
+      workCount:product.storyCatalogView.workCount,idolStoryCount:bootstrap.idols.length,
+      birthdayCount:product.storyCatalogView.birthdayCount,birthdaySharedCount:product.storyCatalogView.birthdaySharedCount} });
   const full = source.collections;
   const storyCounts = {all:full.stories.length};
   for (const row of full.stories) storyCounts[group(row)] = (storyCounts[group(row)] || 0) + 1;
@@ -47,8 +48,12 @@ export function portalProjection({ bootstrap, rows, product, preferredIdol = nul
   const cards = preferredIdol ? full.cards.slice(0,4) : bootstrap.idols.filter((_,i) => i % 3 === 0)
     .map(idol => full.cards.find(row => row.idolCode === idol.id && row.landscape)).filter(Boolean);
   const {cards:unusedCards,songs:unusedSongs,stories:unusedStories,events:unusedEvents,...metadata} = source;
+  // Home voices of the scoped idol: the general pool and the card voices, counted apart.
+  const homeCues = preferredIdol ? product.home.find(row => row.id === preferredIdol.id)?.cues || [] : [];
+  const homeVoiceCounts = preferredIdol ? {idol:homeCues.filter(cue => cue.source === 'idol').length,
+    card:homeCues.filter(cue => cue.source === 'card').length} : null;
   return {...metadata, collections:{cards,songs,stories,events:preferredIdol ? full.events : portalTimeline(full.events)},
-    storyCounts, songCounts, gatewayCountsByAction,
+    storyCounts, songCounts, gatewayCountsByAction, homeVoiceCounts,
     cardCounts:{total:full.cards.length,rarity:counts(full.cards,'rarity'),attribute:counts(full.cards,'attribute')},
-    units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:1};
+    units:preferredIdol ? [] : source.units, eventYears:[], scopeId:preferredIdol?.id || '', projectionVersion:2};
 }

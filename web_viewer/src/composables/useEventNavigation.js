@@ -8,8 +8,10 @@ export function useEventNavigation({
   currentCharacterId, cardReadModelCatalog, currentCard, currentArchiveUnit,
   externalStoryResourcesData, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
-  openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
+  openStoryCatalog, openEventCatalog = openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
   openCard, openIdolReadModel, openArchiveUnit,
+  applyArchiveRoute = null, prepareReturnRoute = async route => route,
+  currentCardId = null, currentArchiveUnitCode = null, currentCategoryId = null,
 }) {
   const currentEventProjection = computed(() => eventReadModelDetail.value?.id === currentEventId.value
     ? eventReadModelDetail.value.view : null)
@@ -55,6 +57,10 @@ export function useEventNavigation({
       eventParentView.value = ''
       return restoreDetailSource(openStoryCatalog)
     }
+    // Identity of the page the event was opened from; its data may not be loaded (refresh or a shared link).
+    const category = currentCategoryId?.value || ''
+    const coldTarget = parent === 'unit_detail' && currentArchiveUnitCode?.value ? { view: 'unit_detail', category, unit: currentArchiveUnitCode.value }
+      : parent === 'card_detail' && currentCardId?.value ? { view: 'card_detail', category, card: currentCardId.value } : null
     currentEventId.value = ''
     eventParentView.value = ''
     if (parent === 'home') commitView('home')
@@ -62,7 +68,15 @@ export function useEventNavigation({
     else if (parent === 'card_detail' && currentCard.value) commitView('card_detail')
     else if (parent === 'unit_detail' && currentArchiveUnit.value) commitView('unit_detail')
     else if (parent === 'idol_detail' && archiveBootstrap.idols.some(idol => idol.id === currentCharacterId.value)) commitView('idol_detail')
-    else return openStoryCatalog()
+    else if (coldTarget && applyArchiveRoute) {
+      const entryRevision = navigation.getRevision()
+      return prepareReturnRoute(coldTarget, () => navigation.getRevision() === entryRevision).then(route => {
+        if (route && navigation.getRevision() === entryRevision) return applyArchiveRoute(route, { restoring: false })
+      })
+    }
+    // Events are their own section: a cold link or a lost opener returns to the event catalog.
+    else if (parent === 'story_catalog') return openStoryCatalog()
+    else return openEventCatalog()
   }
 
   function playCurrentEvent() {

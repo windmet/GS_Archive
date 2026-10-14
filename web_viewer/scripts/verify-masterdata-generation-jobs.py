@@ -52,7 +52,7 @@ def verify():
         assert isinstance(result, dict) and result
         assert inputs.records == saved
     assert set(SELECTED_JOBS) == {'birthday_semantic', 'movie_announce', 'card_skill_movie',
-        'song_movie', 'music_catalog', 'idol_communication', 'seasonal_campaign', 'work_story', 'archive_domains'}
+        'song_movie', 'music_catalog', 'idol_communication', 'seasonal_campaign', 'work_story', 'home_system_voice', 'archive_domains'}
 
 
 def main():

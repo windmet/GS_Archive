@@ -56,6 +56,7 @@
       <section v-if="relationItems.length || card.release_series" class="card-detail-section card-relations">
         <h4>关联资料</h4>
         <ArchiveRelationList v-if="relationItems.length" :items="relationItems" @select="openRelation" />
+        <p v-if="acquisitionSources.length" class="relation-sources">获得方式核对：<ArchiveSourceLink v-for="source in acquisitionSources" :key="source.url" :url="source.url" :label="source.title" /></p>
         <div v-if="card.release_series" class="release-series">
           <div class="release-series-cards" :aria-label="`${card.release_series.title} 系列卡片`">
             <button
@@ -154,6 +155,19 @@
         </div>
       </section>
 
+      <section v-if="skillMovie" class="card-detail-section card-skill-movie">
+        <h4>技能演出</h4>
+        <div class="skill-movie-layout">
+          <ArchiveVideoPlayer class="skill-movie-player" :src="skillMovie.url" :poster="skillMovie.poster" :width="skillMovie.width" :height="skillMovie.height" label="技能演出" :size-label="`约 ${skillMovieMegabytes} MB`" />
+          <dl class="skill-movie-facts">
+            <div><dt>时长</dt><dd>{{ (skillMovie.durationMs / 1000).toFixed(1) }} 秒</dd></div>
+            <div><dt>大小</dt><dd>约 {{ skillMovieMegabytes }} MB · 点击后才加载</dd></div>
+            <div><dt>画面</dt><dd>{{ skillMovie.width }} × {{ skillMovie.height }} · 无声</dd></div>
+          </dl>
+        </div>
+        <p class="skill-movie-note">游戏内发动技能时的过场动画。可以慢放、逐帧查看，或用大屏、全屏播放。</p>
+      </section>
+
       <section v-if="visibleCostumes.length" class="card-detail-section">
         <h4>关联衣装</h4>
         <div class="costume-list">
@@ -167,12 +181,20 @@
               <span class="authored-text">{{ group.flavor.authoredBody }}</span><span class="reflowed-text">{{ group.flavor.reflowedBody }}</span>
             </blockquote>
             <div class="costume-variants" aria-label="款式用途与状态">
-              <div v-for="costume in group.costumes" :key="costume.key" class="costume-row" role="group" :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'">
-                <strong class="costume-variant-name">{{ group.costumes.length > 1 ? (costume.model_resource_id.endsWith('_01') ? '突破版（+）' : '通常版') : '用途' }}</strong>
-                <div class="costume-conditions">
-                  <span v-for="label in costume.labels" :key="label" class="costume-condition">{{ label }}</span>
-                </div>
-              </div>
+              <component :is="costume.entityKey ? 'button' : 'div'" v-for="costume in group.costumes" :key="costume.key" class="costume-row"
+                :type="costume.entityKey ? 'button' : undefined" :role="costume.entityKey ? undefined : 'group'"
+                :data-archive-focus-id="costume.entityKey ? `card-costume:${card.resource_id}:${costume.model_resource_id}` : undefined"
+                :title="costume.name" :aria-label="archiveText('costume', costume.name) || '衣装名称待确认'"
+                @click="costume.entityKey && emit('open-entity', costume.entityKey)">
+                <span class="costume-thumb" aria-hidden="true"><img v-if="costume.iconUrl && !failedCostumeIcons.has(costume.iconUrl)" :src="costume.iconUrl" alt="" loading="lazy" decoding="async" @error="failedCostumeIcons = new Set([...failedCostumeIcons, costume.iconUrl])" /><Shirt v-else :size="22" /></span>
+                <span class="costume-row-copy">
+                  <strong class="costume-variant-name">{{ group.costumes.length > 1 ? (costume.model_resource_id.endsWith('_01') ? '突破版（+）' : '通常版') : '用途' }}</strong>
+                  <span class="costume-conditions">
+                    <span v-for="label in costume.labels" :key="label" class="costume-condition">{{ label }}</span>
+                  </span>
+                </span>
+                <ChevronRight v-if="costume.entityKey" class="costume-row-go" :size="18" aria-hidden="true" />
+              </component>
             </div>
           </div>
         </div>
@@ -295,11 +317,13 @@ const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines',
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
 import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
+import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
 import {archiveText} from './useArchiveCardText.js'
 import {gashaText} from './useArchiveGashaText.js'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
 const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardCommunicationLabel, cardScenarioTitle } from '../../presentation/CardPresentation.js'
@@ -327,7 +351,10 @@ const props = defineProps({
   seriesCards: { type: Array, default: () => [] },
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
+  // Confirmed acquisition: event reward tables, wiki-listed missions and exchanges, campaign missions.
+  acquisition: { type: Object, default: null },
   limitbreakMaterial: { type: Object, default: null },
+  skillMovie: { type: Object, default: null },
   // A touch voice the reader came for (from the home dialogue): scrolled to and marked.
   focusVoice: { type: String, default: '' },
 })
@@ -403,6 +430,7 @@ watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   detailRoot.value?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)?.scrollIntoView({ block: 'center' })
 }, { immediate: true, flush: 'post' })
 
+const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
 watch(() => props.card?.resource_id, () => {
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
   heroState.value = props.card?.single_state ? 'awakened' : 'normal'
@@ -423,6 +451,8 @@ const parameterRows = computed(() => {
   ]
 })
 
+// Costume icons are client files for 660 of 690 models; a missing one falls back to the shirt glyph.
+const failedCostumeIcons = ref(new Set())
 const visibleCostumes = computed(() => presentCardCostumeGroups(props.card?.costume_relations,
   costume => archiveText('costume', costume.description, 'description')).map(group => ({
     ...group, flavor: presentCardCostumeFlavor(group.description, group.sourceDescription),
@@ -510,9 +540,55 @@ function eventScopeLabel(event) {
   return '跨组合团活关联卡'
 }
 
+const ACQUISITION_LABELS = { mission: '活动任务报酬', exchange: '活动兑换报酬' }
+const acquisitionEvidence = entry => entry.basis === 'wiki'
+  ? 'Wikiwiki 活动限定報酬'
+  : entry.source ? '活动报酬表，已与 Wikiwiki 限定報酬核对' : '活动报酬表'
+const acquisitionSources = computed(() => {
+  const sources = [...(props.acquisition?.events || []).map(entry => entry.source), props.acquisition?.mission?.source,
+    props.gashaRelation?.evidence_level === 'curated' ? props.gashaRelation.source : null]
+  return [...new Map(sources.filter(source => source?.url).map(source => [source.url,
+    { url: source.url, title: source.title.includes('Wikiwiki') ? source.title : `Wikiwiki · ${source.title}` }])).values()]
+})
+
 const relationItems = computed(() => {
   const items = []
-  if (props.eventRelation) {
+  const acquired = props.acquisition?.events || []
+  for (const entry of acquired) {
+    items.push({
+      id: `event-${entry.event_id}`,
+      kind: 'event',
+      label: ACQUISITION_LABELS[entry.methods[0]?.kind] || '活动报酬',
+      title: entry.title,
+      meta: entry.methods.map(method => method.label).join(' · '),
+      evidenceLabel: 'Confirmed',
+      evidenceTone: 'confirmed',
+      evidence: acquisitionEvidence(entry),
+      statusLabel: '已建档',
+      statusTone: 'available',
+      imageUrl: eventBannerUrl(entry),
+      imageAlt: entry.title,
+      payload: { event_id: entry.event_id, event_code: entry.event_code, title: entry.title },
+    })
+  }
+  if (props.acquisition?.mission) {
+    const mission = props.acquisition.mission
+    items.push({
+      id: `mission-${mission.startAt}`,
+      kind: 'mission',
+      label: '限时任务报酬',
+      title: mission.title,
+      meta: `${formatDate(mission.startAt)} 起 · ${mission.label}`,
+      evidenceLabel: 'Confirmed',
+      evidenceTone: 'confirmed',
+      evidence: 'Wikiwiki 过往公告',
+      statusLabel: '参考关系',
+      statusTone: 'reference',
+      actionable: false,
+    })
+  }
+  // The release-time relation stays only when no reward record names the same event.
+  if (props.eventRelation && !acquired.some(entry => String(entry.event_code) === String(props.eventRelation.event_code))) {
     items.push({
       id: `event-${props.eventRelation.event_id}`,
       kind: 'event',
@@ -536,10 +612,10 @@ const relationItems = computed(() => {
       kind: 'gasha',
       label: '卡池 Pickup',
       title: gashaText(props.gashaRelation.title) || '卡池名称待确认',
-      meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '已核对关联' : '推定关联，获得方式待确认'}`,
+      meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '卡池公告列出的新卡' : '推定关联，获得方式待确认'}`,
       evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
       evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
-      evidence: props.gashaRelation.relation_type,
+      evidence: props.gashaRelation.evidence_level === 'curated' ? 'Wikiwiki 卡池公告' : props.gashaRelation.relation_type,
       statusLabel: '已建档',
       statusTone: 'available',
       imageUrl: props.gashaRelation.banner_url || '',
@@ -611,14 +687,16 @@ function openRelation(item) {
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.card-attribute::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.card-attribute[data-attribute="physical"] { color: var(--gs-attr-physical); }
-.card-attribute[data-attribute="intelli"] { color: var(--gs-attr-intelli); }
-.card-attribute[data-attribute="mental"] { color: var(--gs-attr-mental); }
+.card-attribute::before { content: none; flex: none; width: 18px; height: 18px; background: var(--attr-icon) center / contain no-repeat; }
+.card-attribute[data-attribute="physical"] { --attr-icon: var(--gs-attr-icon-physical); color: var(--gs-attr-physical); }
+.card-attribute[data-attribute="intelli"] { --attr-icon: var(--gs-attr-icon-intelli); color: var(--gs-attr-intelli); }
+.card-attribute[data-attribute="mental"] { --attr-icon: var(--gs-attr-icon-mental); color: var(--gs-attr-mental); }
+.card-attribute:is([data-attribute="physical"], [data-attribute="intelli"], [data-attribute="mental"])::before { content: ""; }
 .card-raw-candidate { color: var(--gs-critical); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
 .card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); }
 .card-identity :deep(.card-owner) { padding: var(--gs-space-4) 0; border: 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
+.relation-sources { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-5); margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-metaline { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-6); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .card-metaline b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .card-stepper { display: flex; gap: var(--gs-space-3); }
@@ -628,6 +706,18 @@ function openRelation(item) {
 
 /* Sections */
 .card-detail-section { display: grid; gap: var(--gs-space-5); min-width: 0; }
+.skill-movie-layout { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); align-items: start; gap: var(--gs-space-5) var(--gs-space-7); }
+.skill-movie-facts { display: grid; gap: var(--gs-space-3); margin: 0; }
+.skill-movie-facts div { display: grid; grid-template-columns: 4em minmax(0, 1fr); gap: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); }
+.skill-movie-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.skill-movie-facts dd { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.skill-movie-note { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.card-skill-movie { container-type: inline-size; }
+@container (max-width: 820px) {
+  .skill-movie-layout { grid-template-columns: minmax(0, 560px); gap: var(--gs-space-3); }
+  .skill-movie-facts { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); }
+  .skill-movie-facts div { display: flex; gap: var(--gs-space-2); padding: 0; border: 0; }
+}
 .card-detail-section h4 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .release-series-cards { display: flex; gap: var(--gs-space-3); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
@@ -687,9 +777,17 @@ function openRelation(item) {
 .costume-flavor { margin: var(--gs-space-4) 0; padding: var(--gs-space-1) 0 var(--gs-space-1) var(--gs-space-5); border-left: 2px solid var(--gs-mint); white-space: pre-wrap; color: var(--gs-ink-2); font-size: var(--gs-text-body); line-height: 1.8; overflow-wrap: anywhere; }
 .costume-setting-heading { display: block; margin-bottom: var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .costume-variants { display: grid; gap: var(--gs-space-2); margin-top: var(--gs-space-3); }
-.costume-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); min-width: 0; }
+.costume-variants { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: var(--gs-space-3); }
+.costume-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-2) var(--gs-space-3) var(--gs-space-2) var(--gs-space-2); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-panel); background: transparent; color: inherit; font: inherit; text-align: left; }
+button.costume-row { cursor: pointer; }
+.costume-thumb { display: grid; place-items: center; width: 64px; height: 64px; overflow: hidden; border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-mint-ink); }
+.costume-thumb img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.costume-row-copy { display: grid; gap: var(--gs-space-1); min-width: 0; }
+.costume-row-go { color: var(--gs-mint-ink); }
+button.costume-row:focus-visible { outline: var(--gs-focus-ring) solid var(--gs-mint); outline-offset: var(--gs-focus-offset); }
+@media (hover: hover) and (pointer: fine) { button.costume-row:hover { border-color: var(--gs-mint); background: var(--gs-mint-wash); } }
 .costume-variant-name { color: var(--gs-ink-2); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-medium); }
-.costume-conditions { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-4); min-width: 0; }
+.costume-conditions { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-3); min-width: 0; }
 .costume-condition { color: var(--gs-ink-3); font-size: var(--gs-text-meta); overflow-wrap: anywhere; }
 
 /* Card lines, voices and stories */

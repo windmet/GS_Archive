@@ -153,6 +153,7 @@
         :idol="currentIdolProfile"
         :idol-name="idolDisplayName"
         :stats="currentIdolStats" :photo="currentIdolDetail?.photo" :honors="currentIdolDetail?.honors || []"
+        :self-introduction="currentIdolDetail?.selfIntroduction || null"
         :events="currentIdolEvents"
         :songs="currentIdolSongs"
         :idols="bootstrapIdolSwitcher"
@@ -161,6 +162,7 @@
         @open-unit="openUnitFromIdol"
         @open-event="openIdolEvent"
         @open-song="openSong"
+        @play-introduction="file => loadScenario(file, 'idol_detail')"
         @select-idol="selectPrimaryIdol"
       />
 
@@ -171,6 +173,8 @@
         :owner-reference="currentCardOwnerReference"
         :asset-status="currentCardAssetStatus"
         :limitbreak-material="currentCardLimitbreakMaterial"
+        :skill-movie="currentCardSkillMovie"
+        :acquisition="currentCardAcquisition"
         :art-mode="cardArtMode"
         :previous-card="previousCard"
         :next-card="nextCard"
@@ -243,6 +247,7 @@
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
         @open-related-story="openSongRelatedStory"
+        @open-event="openEventDetail($event, 'song_detail')"
         @open-stage="openSongStage"
         @ready="restoreSongDetailView"
       />
@@ -262,6 +267,7 @@
         @open-unit="openEventUnit"
         @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
         @open-event="openEventDetail($event, 'event_detail')"
+        @open-song="openSong"
       />
 
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"
@@ -341,6 +347,8 @@
         :filtered-total="filteredStoryCatalog.length"
         :seasonal-count="storyCatalogIndex?.seasonalCount ?? 0"
         :work-count="storyCatalogIndex?.workCount ?? 0"
+        :birthday-count="storyCatalogIndex?.birthdayCount ?? 0"
+        :birthday-shared-count="storyCatalogIndex?.birthdaySharedCount ?? 0"
         :idol-story-count="archiveBootstrap.idols.length"
         :external-resource-count="externalStoryNavigationEntries.length"
         :main-domain="mainStoryDomain"
@@ -613,7 +621,7 @@ import { withLoadDeadline } from './core/AsyncLoadBoundary.js'
 import { isMaintainerMode } from './core/maintainerMode.js'
 import { tracePlayer, playerTraceSnapshot } from './core/PlayerTrace.js'
 import { EXTERNAL_STORY_RESOURCES_ENABLED } from '../shared/deploy/ExternalStoryResourcePolicy.js'
-import {loadArchiveNames,archiveNamedText,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
+import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearchText,archiveNamedTranslation} from './components/archive/useArchiveNamedText.js'
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
@@ -640,6 +648,7 @@ import {
   saveArchiveUserPreferences,
 } from './data/archiveUserPreferences.js'
 import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveStartup.js'
+import { archiveCardName, archiveDocumentTitle, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
 import {
@@ -653,6 +662,7 @@ import {
   readArchiveRoute,
   writeArchiveRoute,
 } from './core/archiveRoute.js'
+import { COLLECTION_KINDS, collectionKindForEntity } from './core/CollectionRouteState.js'
 import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
 import {
   buildArchiveViewContext,
@@ -836,7 +846,7 @@ const {
   readingDocumentId,
   readingRowId,
   readingMode,
-  readingRevision, readingScope, playMode,
+  readingRevision, readingRevisionPinned, readingScope, playMode,
   currentScenarioInitialStep,
   returnViewAfterPlayer,
   storyCollectionParentView,
@@ -903,6 +913,8 @@ async function copyPlayerDiagnostics() {
 }
 const externalStoryResourcesData = ref(null)
 const idolEntityTranslationRevision = ref(0)
+// The first idol name overlay has loaded or failed; tab titles wait for it (see archiveTabEntityName).
+const idolNamesSettled = ref(false)
 const initialUserPreferences = loadArchiveUserPreferences()
 const archiveBootstrap = readBootstrap()
 const readModelClient = new ReadModelClient({ release: archiveBootstrap.release, observe: event => tracePlayer('read-model', event) })
@@ -1345,7 +1357,7 @@ const {
   openCardScenario, openCardEvent, openCardGasha, currentCards,
   cardRarityTabs, filteredCards, filteredCardRows, currentCard,
   currentCardOwnerReference, currentCardAssetStatus, currentCardEventRelation, currentCardGashaRelation,
-  currentCardLimitbreakMaterial, currentCardIndex, previousCard, nextCard,
+  currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardAcquisition, currentCardIndex, previousCard, nextCard,
   currentSeriesCards, currentCardCharacterName, prepareCardRoute, invalidateCardNavigation,
 } = useCardNavigation({
   cardReadModelCatalog, cardReadModelDetail, cardReadModelStatus, currentCharacterId,
@@ -1391,8 +1403,9 @@ const {
   currentCharacterId, cardReadModelCatalog, currentCard, currentArchiveUnit,
   externalStoryResourcesData, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
-  openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
+  openStoryCatalog, openEventCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
   openCard, openIdolReadModel, openArchiveUnit,
+  applyArchiveRoute, prepareReturnRoute: prepareRouteData, currentCardId, currentArchiveUnitCode, currentCategoryId,
 })
 
 const {
@@ -1403,7 +1416,7 @@ const {
   openReaderPlayback, updateReadingMode, locateReadingRow, resolveReaderContinuationSource,
   applyReaderRoute, loadReaderQueue,
 } = useReaderNavigation({
-  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingScope,
+  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingRevisionPinned, readingScope,
   currentStoryDomain, currentStorySection, currentEpisodeId, currentStoryFile, currentWorkMode, currentCharacterId,
   currentEventId, eventParentView, currentCategoryId, currentArchiveUnitCode, detailSourceRoute, currentScenarioFile,
   loading, loadingPurpose, collectionReadModelDetail, storyReadModelDetail, eventReadModelDetail,
@@ -1463,7 +1476,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'studio') return '摄影工作台'
   if (view.value === 'about') return '关于本站'
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
+  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
   if (view.value === 'photo_catalog') return '摄影资源'
   if (view.value === 'picture_studio') return '摄影工作台'
   if (view.value === 'event_catalog') return '活动一览'
@@ -1511,6 +1524,27 @@ const archiveSearchPlaceholder = computed(() => {
 })
 
 const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.value) : (view.value !== 'portal' || Boolean(portalFrom.value)))
+
+// Names wait for their translation overlay, so a slow first visit keeps the head shell's title instead of
+// switching to the Japanese source name and back.
+const archiveTabEntityName = computed(() => {
+  if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || ''
+  // Song titles have no translation overlay; they are shown in the source everywhere.
+  if (view.value === 'song_detail') return currentSong.value?.title || ''
+  // Event titles are shown in the source on the event page as well.
+  if (view.value === 'event_detail') return currentEventProjection.value?.identity?.title || ''
+  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value?.kind)
+  // Same zh-CN pool name as the gasha's head shell; empty until the catalogue functions load.
+  if (view.value === 'gasha_detail') return gashaCatalogFunctions.value?.translatedGashaName(currentGasha.value?.display_name, uiLocale.value) || ''
+  if (!idolNamesSettled.value) return ''
+  if (view.value === 'idol_detail') return currentIdolDisplayName.value
+  if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''
+  return archiveCardName(archiveNamedText('card', currentCard.value.title, 'title'), idolDisplayName(currentCard.value.character_id))
+})
+
+watch(() => archiveDocumentTitle(view.value, archiveTabEntityName.value), title => {
+  if (title) document.title = title
+}, { immediate: true })
 
 const archiveBreadcrumbs = computed(() => {
   const route = currentArchiveRoute()
@@ -2008,7 +2042,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','live','studio','about'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2025,20 +2059,22 @@ function navigateArchiveSection(section) {
   else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'resources') openArchiveStatus()
-  else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
+  else if (['events','collections','honors','currencies','costumes','photos'].includes(section)) openDomainCatalog(section)
 }
 
 function openDomainCatalog(section, { idolCode = '' } = {}) {
   currentEventBrowseState.value=normalizeEventBrowseState()
-  currentCollectionState.value={kind:section==='honors'?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}
+  currentCollectionState.value={kind:COLLECTION_KINDS[section]?section:'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
-  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',photos:'photo_catalog'})[section])
+  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',currencies:'collection_catalog',costumes:'collection_catalog',photos:'photo_catalog'})[section])
 }
+function openEventCatalog() { return openDomainCatalog('events') }
 function openCollectionEntity(key) {
   if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
-  if (!/^(item|honor):\d+$/.test(key || '')) return
-  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value='';currentCollectionState.value={kind:key.startsWith('honor:')?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}}
+  const kind=collectionKindForEntity(key)
+  if (!kind) return
+  if (view.value !== 'collection_catalog' || currentCollectionState.value.kind !== kind) {if (view.value !== 'collection_catalog') captureDetailSource();filterQuery.value='';currentCollectionState.value={kind,category:'',idol:'',unit:'',attribute:'',page:0}}
   currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
   commitView('collection_catalog')
 }
@@ -2499,7 +2535,7 @@ function isBootstrapRoute(route) {
     (route.view === 'player' && route.returnView === 'mobile_archive') ||
     (route.view === 'player' && ['story_catalog', 'story_collection', 'story_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['event_detail', 'seasonal_campaign', 'work_archive', 'idol_story_archive'].includes(route.returnView)) ||
-    (route.view === 'player' && ['unit_detail', 'card_detail'].includes(route.returnView)) ||
+    (route.view === 'player' && ['unit_detail', 'card_detail', 'idol_detail'].includes(route.returnView)) ||
     (route.view === 'player' && ['files', 'episodes', 'episode_zero_units', 'groups'].includes(route.returnView)) ||
     route.view === 'idols'
 }
@@ -2579,7 +2615,7 @@ onMounted(async () => {
   cardArtMode.value = localStorageValue('sidem-archive-card-art-mode') === 'framed' ? 'framed' : 'clean'
   loadIdolEntityTranslations().catch(error => {
     console.error('[EntityTranslations] Failed to load idols:', error)
-  })
+  }).finally(() => { idolNamesSettled.value = true })
   archiveRouteReady = true
   // Listen before restoration: a newer history entry may finish before the
   // initial route's assets. Only its completion may finalize startup.

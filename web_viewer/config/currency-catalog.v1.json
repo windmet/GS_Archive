@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "note": "Currencies and resources shown as their own collection group. Names and descriptions are the client's ProductResources/Items rows; usage lines quote client UI strings (global-metadata string literals) or the Wikiwiki gasha pages, and say which. Shop and exchange lineups are server-delivered (Shop*ExchangeListReply) and are not in the client data.",
+  "entries": [
+    {
+      "id": "paid-gem",
+      "productType": 1,
+      "usage": [
+        {"kind": "gasha", "basis": "wiki-gasha-pages", "currency": "paid"},
+        {"kind": "client-ui", "textZh": "购买的星钻。限定一次、每日折扣等卡池只能使用付费星钻。", "quoteJa": "期間中お一人様1回限り、有償スタージェムでのみご利用いただけます。", "basis": "wiki-gasha-pages"},
+        {"kind": "client-ui", "textZh": "可以消耗星钻恢复体力（ST）。", "quoteJa": "スタージェム{0}個で <emoji>stamina</emoji> が{1}回復します。"},
+        {"kind": "client-ui", "textZh": "演出中生命值耗尽时，可以消耗星钻全回复后继续。", "quoteJa": "スタージェムが不足しているため、 ライフを全回復できません。"}
+      ]
+    },
+    {
+      "id": "free-gem",
+      "productType": 2,
+      "usage": [
+        {"kind": "gasha", "basis": "wiki-gasha-pages", "currency": "any"},
+        {"kind": "client-ui", "textZh": "可以消耗星钻恢复体力（ST）。", "quoteJa": "スタージェム{0}個で <emoji>stamina</emoji> が{1}回復します。"},
+        {"kind": "client-ui", "textZh": "演出中生命值耗尽时，可以消耗星钻全回复后继续。", "quoteJa": "スタージェムが不足しているため、 ライフを全回復できません。"}
+      ]
+    },
+    {
+      "id": "money",
+      "productType": 3,
+      "usage": [
+        {"kind": "client-ui", "textZh": "在商店的「金币兑换」中使用。兑换商品由服务端下发，未保存在客户端资料中。", "quoteJa": "マニー交換"}
+      ]
+    },
+    {
+      "id": "stamina",
+      "productType": 5,
+      "usage": [
+        {"kind": "description", "textZh": "进行 LIVE 和工作时消耗。"}
+      ]
+    },
+    {
+      "id": "producer-exp",
+      "productType": 14,
+      "usage": [
+        {"kind": "description", "textZh": "累积后提升制作人等级。"}
+      ]
+    },
+    {
+      "id": "memory-star",
+      "itemId": 11401,
+      "usage": [
+        {"kind": "gasha-exchange", "basis": "wiki-gasha-pages", "currency": "メモリースター"},
+        {"kind": "wiki", "textZh": "卡池期间结束后，未使用的记忆之星会自动转换为记忆碎片。", "quoteJa": "期間中に入手したメモリースターは期間終了後にメモリーピースに変換されます", "basis": "wiki-gasha-pages"}
+      ]
+    },
+    {
+      "id": "memory-piece",
+      "itemId": 11402,
+      "usage": [
+        {"kind": "client-ui", "textZh": "在商店的「记忆碎片兑换」中使用。兑换商品由服务端下发，未保存在客户端资料中。", "quoteJa": "メモリーピース交換"}
+      ]
+    }
+  ]
+}
