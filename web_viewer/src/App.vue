@@ -245,6 +245,7 @@
         @open-unit="openSongUnit"
         @open-idol="openSongIdol"
         @open-related-story="openSongRelatedStory"
+        @open-event="openEventDetail($event, 'song_detail')"
         @open-stage="openSongStage"
         @ready="restoreSongDetailView"
       />
@@ -264,6 +265,7 @@
         @open-unit="openEventUnit"
         @open-entity="openCollectionEntity" @open-target="openDomainTarget" @open-seasonal="openSeasonalCampaign"
         @open-event="openEventDetail($event, 'event_detail')"
+        @open-song="openSong"
       />
 
       <ArchiveEventCatalog v-if="view==='event_catalog'" :client="readModelClient" :bootstrap="archiveBootstrap" :query="filterQuery"

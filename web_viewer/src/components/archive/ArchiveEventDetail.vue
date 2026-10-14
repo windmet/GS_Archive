@@ -77,6 +77,11 @@
       <p v-if="readingError" role="status">{{ readingError }} <button @click="emit('retry-reading')">重试阅读目录</button></p>
     </section>
 
+    <section v-if="songRelationItems.length" class="detail-section event-songs" aria-labelledby="event-songs-title">
+      <div class="section-heading"><h3 id="event-songs-title">活动曲</h3></div>
+      <ArchiveRelationList :items="songRelationItems" @select="emit('open-song',$event.payload)" />
+    </section>
+
     <section class="detail-section reward-section" aria-labelledby="event-rewards-title">
       <div class="section-heading">
         <div>
@@ -197,7 +202,7 @@ const props = defineProps({
   readingError: { type: String, default: '' },
   loadReadingDocument: { type: Function, default: null },
 })
-const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-target','open-seasonal'])
+const emit = defineEmits(['read', 'retry-reading', 'play', 'play-episode', 'open-card', 'open-collection-card', 'open-idol', 'open-unit','open-entity','open-event','open-song','open-target','open-seasonal'])
 const bannerFailed=ref(false)
 watch(()=>props.view?.identity.eventCode,()=>{bannerFailed.value=false;quickEntity.value=''})
 const readingByFile = computed(() => new Map((props.view?.readingEntries || []).filter(entry => entry.status === 'ready').map(entry => [entry.source_file, entry])))
@@ -241,6 +246,11 @@ const rewardEpisodesById=computed(()=>{
 })
 const rewardCardIds = computed(() => new Set(rewardCards.value.map(card => card.card_resource_id)))
 const derivedOnlyCards = computed(() => (props.view?.cards || []).filter(card => !rewardCardIds.value.has(card.card_resource_id)))
+// The event's BGM song; a reprint plays the original event's song.
+const songRelationItems = computed(() => (props.view?.songs || []).map(song => ({
+  id: `song:${song.song_code}`, kind: 'song', label: props.view.identity.isReprint ? '原活动曲' : '', title: song.title,
+  meta: song.unit_name ? `演唱 · ${song.unit_name}` : '', imageUrl: song.jacket_url || '', imageAlt: `${song.title} 封面`, payload: song.song_code,
+})))
 const derivedRelationItems = computed(() => derivedOnlyCards.value.map(card => ({
   id: `event-derived-card:${props.view.identity.id}:${card.card_resource_id}`,
   kind: 'card',

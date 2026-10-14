@@ -1,6 +1,6 @@
 // Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
 // /songs/<song_code>/, /events/<id>/): plan section 3.6, P1-P15, the card steps P16-P19, the song steps P20-P24
-// and the event steps P25-P31.
+// the event steps P25-P31 and the song/event/main-story relation steps P32-P34.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -283,6 +283,32 @@ try {
   await pageBack(); await waitFor(`location.pathname.startsWith('/units/')`)
   check('P31 event player round trip', playerUrl.includes('view=player') && afterPlayer === playedEvent && (await loc()) === '/units/01jup/',
     `${playedEvent} -> ${playerUrl.slice(0, 80)} -> ${afterPlayer} -> ${await loc()}`)
+  // P32: a song lists its premiere and reprint events; the premiere opens and page back returns to the song.
+  await open('/songs/ntalon/', `!!document.querySelector('.song-events .relation-row')`); await ev(`document.querySelector('.song-events')?.scrollIntoView({block:'center'})`); await sleep(400); await shot('p32-song-events')
+  const premiereNote = await ev(`[...document.querySelectorAll('.song-gameplay .song-block-note')].find(n => n.textContent.startsWith('首发：'))?.textContent.trim() || ''`)
+  const songEventLabels = await ev(`[...document.querySelectorAll('.song-events .relation-labels strong')].map(n => n.textContent.trim()).join('|')`)
+  await clickTo('.song-events .relation-row'); await waitFor(eventReady)
+  const premierePath = await loc(), premiereSong = await ev(`document.querySelector('.event-songs .relation-copy b')?.textContent.trim()`)
+  await ev(`document.querySelector('.event-songs')?.scrollIntoView({block:'center'})`); await sleep(400); await shot('p32-event-song')
+  await pageBack(); await waitFor(songReady)
+  check('P32 song to its premiere event and back', premiereNote.startsWith('首发：活动「GROWING SIGN@L -Not Alone-」先行') && songEventLabels === '首发活动|复刻活动' && premierePath === '/events/410001/' && premiereSong === 'Not Alone' && (await loc()) === '/songs/ntalon/',
+    `"${premiereNote}" labels=${songEventLabels} -> ${premierePath} song=${premiereSong} -> ${await loc()}`)
+  // P33: a reprint event shows the original event song; it opens the song and page back returns to the event.
+  await open('/events/10019/', `!!document.querySelector('.event-songs .relation-row')`)
+  const reprintLabel = await ev(`document.querySelector('.event-songs .relation-labels strong')?.textContent.trim()`)
+  await clickTo('.event-songs .relation-row'); await waitFor(songReady)
+  const reprintSong = await loc()
+  await pageBack(); await waitFor(eventReady)
+  check('P33 reprint event to its song and back', reprintLabel === '原活动曲' && reprintSong === '/songs/ntalon/' && (await loc()) === '/events/10019/',
+    `label=${reprintLabel} -> ${reprintSong} -> ${await loc()}`)
+  // P34: a main-story unlock names its chapter and opens that chapter; page back returns to the song.
+  await open('/songs/grwsml/', `!!document.querySelector('.song-unlock-link')`); await ev(`document.querySelector('.song-gameplay')?.scrollIntoView({block:'center'})`); await sleep(400); await shot('p34-song-unlock')
+  const unlockText = await ev(`document.querySelector('.song-unlock-link').closest('p').textContent.trim()`)
+  await clickTo('.song-unlock-link'); await waitFor(`location.search.includes('view=story_collection')`)
+  const unlockRoute = await loc()
+  await pageBack(); await waitFor(songReady)
+  check('P34 main-story unlock opens the chapter and back', unlockText === '解锁条件：阅读主线 第1章 第1話（至 EPISODE10）' && unlockRoute.includes('story_type=main') && unlockRoute.includes('story_section=101') && (await loc()) === '/songs/grwsml/',
+    `"${unlockText}" -> ${unlockRoute} -> ${await loc()}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

@@ -32,7 +32,8 @@
       <div class="song-record-column">
       <section v-if="song.gameplay" class="song-block song-gameplay">
         <div class="song-block-heading"><h3>难度与解锁</h3></div>
-        <p class="song-block-note">{{ releaseConditionLabel }}</p>
+        <p class="song-block-note">解锁条件：<button v-if="song.unlockStory" type="button" class="song-unlock-link" :data-archive-focus-id="`song-unlock:${song.id}`" @click="openUnlockStory">{{ song.unlockStory.label }}</button><template v-else>{{ releaseConditionLabel }}</template></p>
+        <p v-if="premiereEvent" class="song-block-note">首发：活动「{{ premiereEvent.title }}」先行<template v-if="song.gameplay.history?.permanentOn">，{{ song.gameplay.history.permanentOn }} 加入普通歌曲</template>。</p>
         <details class="song-history"><summary>实装与解锁历史</summary>
           <p class="song-block-note">首次实装：{{ song.gameplay.history.firstImplementedOn }} · <a :href="song.gameplay.history.sourceUrl" target="_blank" rel="noopener noreferrer">历史来源</a></p>
           <p class="song-block-note">{{ song.gameplay.history.historicalUnlock }}</p>
@@ -43,6 +44,10 @@
         </details>
         <table class="song-difficulties"><caption>谱面难度与最大 Combo</caption><thead><tr><th scope="col">难度</th><th scope="col">等级</th><th scope="col">最大 Combo</th></tr></thead><tbody><tr v-for="d in song.gameplay.difficulties" :key="d.id"><th scope="row">{{ d.label }}</th><td>{{ d.levelLabel }}</td><td>{{ d.maxCombo }}</td></tr></tbody></table>
         <button class="stage-open-button" type="button" :data-archive-focus-id="`song-chart:${song.id}`" @click="openChart">打开谱面预览 ↗</button>
+      </section>
+      <section v-if="eventRelationItems.length" class="song-block song-events">
+        <div class="song-block-heading"><h3>关联活动</h3></div>
+        <ArchiveRelationList :items="eventRelationItems" @select="emit('open-event', $event.payload)" />
       </section>
       <section class="song-block">
         <div class="song-block-heading"><h3>演唱者</h3></div>
@@ -99,11 +104,13 @@ import { ChevronRight, ExternalLink } from '@lucide/vue'
 import { computed, ref, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
+import ArchiveRelationList from './ArchiveRelationList.vue'
+import { eventKindLabels, historicalDate } from '../../presentation/DomainPresentation.mjs'
 import ArchiveSongExperimentalPlayer from './ArchiveSongExperimentalPlayer.vue'
 import ArchiveSongSinglePlayer from './ArchiveSongSinglePlayer.vue'
 const props = defineProps({ song: { type: Object, required: true }, idolDirectory: { type: Array, default: () => [] },
   idolName: { type: Function, default: () => '' }, idolSearch: { type: Function, default: () => '' } })
-const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-stage', 'open-chart', 'ready'])
+const emit = defineEmits(['open-song', 'open-unit', 'open-idol', 'open-related-story', 'open-event', 'open-stage', 'open-chart', 'ready'])
 const implementationDateLabel = computed(() => {
   const implementedOn = props.song.gameplay?.history?.firstImplementedOn
   if (implementedOn) return `${implementedOn} 实装`
@@ -116,6 +123,18 @@ const releaseConditionLabel = computed(() => {
   const condition = props.song.gameplay?.releaseCondition
   return condition?.storySectionId ? condition.label : '无需解锁'
 })
+// The main-story chapter whose reading unlocks this song opens as that chapter's story collection.
+function openUnlockStory() {
+  const unlock = props.song.unlockStory
+  if (unlock) emit('open-related-story', { entity_type: 'story_collection', story_type: unlock.domain, story_section: unlock.section })
+}
+const premiereEvent = computed(() => (props.song.relatedEvents || []).find(event => !event.isReprint) || null)
+// Events whose BGM is this song: the premiere first, then reprints.
+const eventRelationItems = computed(() => (props.song.relatedEvents || []).map(event => ({
+  id: `event:${event.event_id}`, kind: 'event', label: event.isReprint ? '复刻活动' : '首发活动', title: event.title,
+  meta: `${eventKindLabels[event.kind] || '活动'} · ${historicalDate(event.startAt)} 开始`,
+  imageUrl: event.banner?.url || '', imageAlt: event.title, payload: { event_id: event.event_id },
+})))
 const songPlayer = ref(null)
 const songScrollContainer = ref(null), songListenColumn = ref(null)
 const listeningColumnFits = ref(false)
@@ -234,6 +253,8 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .song-difficulties tbody th { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); letter-spacing: .02em; }
 .song-difficulties td { font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); }
 .song-gameplay a, .song-history a { color: var(--gs-mint-ink); }
+.song-unlock-link { display: inline; padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; cursor: pointer; }
+@media (hover: hover) { .song-unlock-link:hover { text-decoration: underline; } }
 .song-history a { display: inline-flex; align-items: center; min-height: var(--gs-control-compact); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .stage-open-button { min-height: var(--gs-control-normal); margin-top: var(--gs-space-5); padding: 0 var(--gs-space-5); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .performance-scope-card { margin-top: var(--gs-space-4); padding-left: var(--gs-space-5); border-left: 2px solid var(--gs-mint); }

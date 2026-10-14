@@ -18,6 +18,8 @@ read-model 候选：`E:/Web_build/GS_Archive_Domain_Work/rm-native-relations-int
 
 Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面的候选>` 启动。
 
+**2026-10-14 更新（`claude/short-link-paths-20261013`）**：新候选 `E:/Web_build/GS_Archive_Domain_Work/rm-song-event-relations-20261014`，release `108e2f1552a3c8cf4c64eed93674ebdfd0b67035b7f577ad325889bb97db0717`，由 `9142b37b` 生成，加入活动↔歌曲、歌曲↔主线解锁关联。该分支的四个绑定文件已改到这个 release。本地预览改用新候选启动。详见第十节「活动、歌曲与主线解锁的关联」。
+
 ## 二、称号贴图「消失」排查
 
 **结论：只发生在新 worktree 的本地预览（5177）上，代码、读模型与线上都正常。**
@@ -284,3 +286,36 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 - 未做：
   - 远端部署上的旅程（本分支未部署）。
   - 活动分享卡的实际效果。
+
+### 活动、歌曲与主线解锁的关联
+
+- 数据来源都是结构化字段，没有用标题匹配：
+  - 活动 → 歌曲：活动的 BGM 资源名为 `bgm_<歌曲码>_inst`。共 38 个活动，对应 36 首歌；其中 2 个是复刻活动（Not Alone、Plus 1 Good Day!），沿用原活动的歌曲。315カーニバル、情人节、白色情人节 21 个活动的 BGM 是通用曲（`event_collection`、`event_vd`、`event_wd`），没有活动曲。
+  - 歌曲 → 主线：解锁条件中的 `storySectionId`，例如 `10101` 表示主线第 1 章第 1 话，对应故事集 `main:101`。共 3 首：Growing Smiles！、True Horizon、GO FOR IT!!。
+  - 用解锁说明的文字去匹配会漏掉一首（いとをかし 的写法不同），所以只作对照，不作数据源。
+- 读模型（`readmodels/lib/domain_expansion.mjs` 的 `projectEventSongs`，在 `checkout_adapter.mjs` 中挂到歌曲上）：
+  - 活动详情增加 `songs`：歌曲码、标题、封面、演唱组合。
+  - 歌曲详情增加：
+    - `relatedEvents`：首发在前，复刻按开始时间排在后面，带横幅。
+    - `unlockStory`：`main` 故事集、章节号和原文条件。
+  - 生成时会检查：BGM 指向的歌曲必须存在；每首歌只能有一个首发活动；实装历史标为活动首发的歌曲必须找得到对应的活动 BGM；主线解锁的故事集必须存在。
+  - 新候选与 `b3c1f13a` 相比，只有活动详情（59）和歌曲详情（61）有变化；其余目录在忽略描述符哈希后完全一致。
+- 页面：
+  - 歌曲页「难度与解锁」：
+    - 解锁条件是主线时，显示为链接，点击打开对应章节。
+    - 首发自活动的歌曲，多一行「首发：活动「…」先行，<日期> 加入普通歌曲。」。
+  - 歌曲页新增「关联活动」，用站内通用的关联行（横幅、首发/复刻、形式与开始日期），点击进入活动。
+  - 活动页在剧情与报酬卡之间新增「活动曲」；复刻活动标「原活动曲」，点击进入歌曲。
+  - 主线剧情页按用户决定不加反向入口。
+- 验证：
+  - 读模型：`npm test` 64/64，含新增的合成用例和本地语料断言（38/36/3、Not Alone 首发与复刻顺序）；`verify_artifacts` 通过。
+  - `verify-song-detail-presentation` 新增关联渲染：解锁链接及其载荷、首发说明、关联活动行与点击载荷。
+  - `verify:source-batch` 133/133、`build:check`、`verify:build-audit`（progress）、`verify:portal-navigation` 通过。
+  - 浏览器旅程（5177，新候选）39/39，新增 3 项：
+    - P32：歌曲 → 首发活动 → 返回。
+    - P33：复刻活动 → 原活动曲 → 返回。
+    - P34：歌曲 → 主线第 1 章 → 返回。
+  - 390px 手机宽度截图核对三处新区块，没有横向滚动，没有控制台错误。
+- 未做：
+  - 远端部署（preview 仍是 `b3c1f13a`）。
+  - 从活动进入的歌曲、从歌曲进入的活动，在冷开或刷新后返回的去处：依赖来源帧，没有另设回退。
