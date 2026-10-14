@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path
 from functools import lru_cache
+from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
 ROOT = Path(__file__).resolve().parents[1]
 @lru_cache(maxsize=1)
@@ -39,6 +40,7 @@ def floor_system(p):
     require(m['ShapeModule']['type']==5 and not i['size3D'] and not i['rotation3D'], 'Unsupported floor shape')
     require(i['startColor']['minMaxState']==4 and m['ColorModule']['gradient']['minMaxState']==1, 'Unexpected floor gradients')
     mat=r['materials'][0]; tex={t['property']:t for t in mat['textures']}
+    require_native_particle_mask(mat)
     require(len(r['materials'])==1 and mat['shader']['name']=='Alpha Masked/Particles/Additive'
             and mat['shader']['status']=='resolved_dependency' and mat['floats']['_UseAlphaChannel']==1, 'Unresolved floor mask material')
     require(set(tex)=={'_AlphaTex','_MainTex'} and tex['_AlphaTex']['pathId']=='8211287001986913246', 'Floor mask identity changed')
@@ -107,8 +109,10 @@ def main():
         require('/' not in name and '\\' not in name,'Unsafe texture name')
         target=out/f'{name}.png';image.save(target)
         textures[identity]={**audit.source_ref(o),'file':f'floor-particles/{name}.png',
+                            'nativeSampling':native_particle_texture_sampling(tex),
                             'width':image.width,'height':image.height,'pngSha256':audit.file_hash(target)}
     model['textures']=textures
+    model['nativeMaskMaterial']='alpha-per-particle-v1'
     (out/'index.json').write_text(json.dumps(model,ensure_ascii=False,separators=(',',':')),encoding='utf8')
     args.evidence_output.parent.mkdir(parents=True,exist_ok=True)
     args.evidence_output.write_text(json.dumps(audit.stringify_path_ids(evidence),ensure_ascii=False,indent=2),encoding='utf8')

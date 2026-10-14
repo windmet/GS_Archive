@@ -12,7 +12,8 @@
 - [x] Foot_Color：五种原版SkeletonDataAsset.scale约1/300已绑定，cutoff/独立RGBA/并存tween/26条即时清除已接入单部件材质。此前整身效果禁令已纠正，超大cutoff可有意影响整个人物；见 NATIVE_FOOT_MATERIAL_BATCH_20261014.md。
 - [x] 背屏恢复全局分层、value8 排序重置、噪点/辉光原版混合及顶点颜色钳制；54首静态背景恢复原版三层，见 [NATIVE_BACKMONITOR_GLOBAL_LAYER_BATCH_20261014.md](NATIVE_BACKMONITOR_GLOBAL_LAYER_BATCH_20261014.md)。
 - [x] 已接入动态物件的逐渲染器全局排序：scriptDepth + keepOriginalOrder偏移；保留蒙版/变换及销毁归属，见 [NATIVE_OBJECT_RENDERER_PLANES_BATCH_20261014.md](NATIVE_OBJECT_RENDERER_PLANES_BATCH_20261014.md)。
-- [ ] 粒子材质内蒙版与原版混合/透明深度：当前组后置蒙版存在重叠半透明合成差异，需按原Shader继续接入。
+- [x] 已接入63个地面粒子系统的材质内蒙版与原版RGBA混合，移除组后置蒙版；128组含重叠的原着色器GPU对照通过，见 [NATIVE_PARTICLE_MASK_MATERIAL_BATCH_20261014.md](NATIVE_PARTICLE_MASK_MATERIAL_BATCH_20261014.md)。
+- [ ] 未蒙版UV粒子的透明通道、其他特效材质、完整透明深度/HDR及原编码mip层数据仍待核实。
 - [ ] ObjectLayer粒子生命周期：原版Play直接启动，Erase StopEmitting后延迟SetActive(false)，不同于Web统一父容器淡入淡出；不要用Sprite DOFade语义替代粒子。
 - [ ] syksai 第四层模板、背屏 RectTransform/视频有效画面几何、Passion Logo override，以及原版 HDR/深度缓冲完整链路。
 - [x] 背屏 value7 错当 Logo 渐变时长：已反查确认其为 GrowSprite alpha，限定预览 Logo 改为原版固定500ms/显示alpha0.8。

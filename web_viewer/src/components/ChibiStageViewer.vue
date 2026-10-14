@@ -519,6 +519,7 @@ import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chib
 import { createBackmonitorLayer, setBackmonitorLayerAlpha, destroyBackmonitorLayer } from '../core/chibiBackmonitorMaterials.js'
 import { createFlatStageLayers, backmonitorDepths } from '../core/chibiFlatStageLayers.js'
 import { createObjectRendererPlanes, syncObjectRendererPlanes, releaseObjectRendererPlanes } from '../core/chibiObjectRendererPlanes.js'
+import { registerNativeParticleMaskRenderer } from '../core/chibiNativeParticleMask.js'
 import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
 import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
@@ -1184,6 +1185,7 @@ function initializeLineup() {
 
 function createPixiApp() {
   registerNativeBodyRenderer(PIXI)
+  registerNativeParticleMaskRenderer(PIXI)
   const host = canvasRef.value
   if (!host) return
   app = markRaw(new PIXI.Application({
