@@ -1,3 +1,4 @@
+import { collectionKindLabel } from '../core/CollectionRouteState.js'
 // Browser tab titles. Pages published at a path locator (idol, unit, card, song, event and gasha detail) carry their entity name,
 // section roots (/cards/, /items/, …) their section name, the
 // same title the static head shell for that path ships (scripts/generate-entity-head-shells.mjs); every other
@@ -7,9 +8,9 @@ export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_de
 export const SECTION_TITLES = Object.freeze({ idols: '偶像', unit_catalog: '组合', cards: '卡片', song_catalog: '歌曲', event_catalog: '活动',
   gashas: '卡池', story_catalog: '故事', photo_catalog: '摄影资源' })
 
-// The collection catalogue is two sections, /items/ and /honors/.
+// The collection catalogue is four sections, /items/, /honors/, /currencies/ and /costumes/.
 export function archiveSectionTitle(view, collectionKind = 'items') {
-  if (view === 'collection_catalog') return collectionKind === 'honors' ? '称号' : '道具'
+  if (view === 'collection_catalog') return collectionKindLabel(collectionKind)
   return SECTION_TITLES[view] || ''
 }
 

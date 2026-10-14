@@ -4,14 +4,14 @@
     <p v-if="errorScope==='catalog'" role="alert">{{ error }}<button @click="load">重试</button></p>
     <section v-if="rows.length" class="collection-directory" aria-label="资料目录">
       <div class="collection-filters">
-        <label class="collection-search"><span>搜索</span><input type="search" aria-label="搜索藏品" :value="query" :placeholder="kind==='items'?'搜索道具名称…':'搜索称号或已知条件…'" @input="emit('query',$event.target.value)" /></label>
-        <template v-if="kind==='honors'">
+        <label class="collection-search"><span>搜索</span><input type="search" aria-label="搜索藏品" :value="query" :placeholder="placeholder" @input="emit('query',$event.target.value)" /></label>
+        <template v-if="owned">
           <label><span>偶像</span><select v-model="idol"><option value="">全部偶像</option><option v-for="entry in collectionIdols" :key="entry.id" :value="entry.id">{{ ownerName(entry) }}</option></select></label>
           <label><span>组合</span><select v-model="unit"><option value="">全部组合</option><option v-for="entry in units" :key="entry.id" :value="entry.id">{{ entry.name }}</option></select></label>
         </template>
         <span class="collection-count">{{ filtered.length }} 件</span>
       </div>
-      <nav class="collection-chips" :aria-label="kind==='items'?'道具用途':'称号分类'">
+      <nav v-if="groups.length" class="collection-chips" :aria-label="({items:'道具用途',honors:'称号分类',costumes:'衣装用途'})[kind]">
         <button type="button" :aria-pressed="!category" @click="setCategory('')">全部 <small>{{ rows.length }}</small></button>
         <button v-for="group in groups" :key="group.key" type="button" :aria-pressed="category===group.key" @click="setCategory(group.key)">{{ group.label }}</button>
       </nav>
@@ -19,8 +19,8 @@
       <div class="collection-cards" :class="{'is-honors':kind==='honors'}">
         <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :title="entryName(row)" :aria-describedby="tooltipRow===row?tooltipId:undefined" :aria-pressed="detailOpen&&String(row.id)===selectedId" @pointerenter="showTooltip(row,$event)" @pointerleave="hideTooltip" @focus="showTooltip(row,$event)" @blur="hideTooltip" @keydown.esc="hideTooltip" @click="select(row)">
           <span v-if="kind==='items' && collectionItemVariant(row.nameJa)" class="collection-variant">{{ collectionItemVariant(row.nameJa) }}</span>
-          <span class="collection-card-art"><img v-if="row.image?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="kind==='honors'?Medal:Box" v-else :size="25" /></span>
-          <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small v-if="honorSourceLabel(row,bootstrap.release)">{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ ownerName(honorIdol(row)) || honorLabels[honorGroup(row)] }}</span></template></span>
+          <span class="collection-card-art"><img v-if="row.image?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="({honors:Medal,currencies:Coins,costumes:Shirt})[kind]||Box" v-else :size="25" /></span>
+          <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small v-if="honorSourceLabel(row,bootstrap.release)">{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ ownerName(honorIdol(row)) || honorLabels[honorGroup(row)] }}</span></template><template v-else-if="kind==='costumes'"><small v-if="!row.nameJa">{{ row.id }}</small><span class="collection-badge">{{ ownerName(costumeOwner(row)) }}</span></template></span>
 
         </button>
       </div>
@@ -35,7 +35,7 @@
 </template>
 <script setup>
 import {computed,getCurrentInstance,nextTick,onBeforeUnmount,ref,shallowRef,watch} from 'vue'
-import {Box,Medal} from '@lucide/vue'
+import {Box,Coins,Medal,Shirt} from '@lucide/vue'
 import {collectionItemVariant} from '../../presentation/CollectionItemVariant.mjs'
 import {itemBrowseGroups,itemBrowseGroup} from './DomainPresentation.mjs'
 import {collectionIdols,collectionSummary,honorIdol,honorGroup,honorSourceLabel,itemAttribute} from '../../presentation/CollectionBrowse.js'
@@ -44,6 +44,9 @@ import CollectionDetailPanel from './CollectionDetailPanel.vue'
 import ArchiveFloatingTooltip from './ArchiveFloatingTooltip.vue'
 import {archiveText,archiveSearchText} from './useArchiveCollectionText.js'
 import {honorTitle} from './useHonorTitle.js'
+import {archiveSearchText as costumeSearchText} from './useArchiveCostumeText.js'
+import {costumeCategory,costumeName} from '../../presentation/CostumeCollection.js'
+import {COLLECTION_KINDS,collectionKindForEntity} from '../../core/CollectionRouteState.js'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {createCollectionCatalogSession} from '../../../readmodels/runtime/CollectionCatalogSession.mjs'
 import '../../styles/archive-domains.css'
@@ -65,30 +68,39 @@ async function showTooltip(row,event){
 }
 watch(()=>[props.query,category.value,idol.value,unit.value,attribute.value,page.value,kind.value,detailOpen.value],hideTooltip)
 const honorLabels={idol:'偶像称号',event:'活动称号',normal:'普通称号',other:'其他称号'}
-const groups=computed(()=>kind.value==='items'?itemBrowseGroups:Object.entries(honorLabels).map(([key,label])=>({key,label})))
+const costumeLabels={live:'Live 与剧情衣装','story-only':'仅剧情衣装'}
+const groups=computed(()=>kind.value==='items'?itemBrowseGroups:Object.entries(({honors:honorLabels,costumes:costumeLabels})[kind.value] || {}).map(([key,label])=>({key,label})))
+const owned=computed(()=>['honors','costumes'].includes(kind.value))
+const placeholder=computed(()=>({items:'搜索道具名称…',honors:'搜索称号或已知条件…',currencies:'搜索货币或资源…',costumes:'搜索衣装名称或模型编号…'})[kind.value])
+const costumeOwner=row=>collectionIdols.find(entry=>entry.id===row.idolCode) || null
+const entityType=computed(()=>COLLECTION_KINDS[kind.value]?.type || 'item')
 const units=Object.entries(UNIT_CODE_TO_NAME).map(([id,name])=>({id,name}))
 const attributes=[{id:'',label:'全部'},{id:'physical',label:'Physical'},{id:'intelligent',label:'Intelli'},{id:'mental',label:'Mental'}]
 const summary=row=>collectionSummary(row,kind.value,props.bootstrap.release)
-const entryName=row=>kind.value==='honors' ? honorTitle(row,props.displayIdolName) : archiveText('item',row.nameJa||row.name)
+const entryName=row=>kind.value==='honors' ? honorTitle(row,props.displayIdolName) : kind.value==='costumes' ? costumeName(row) :
+  archiveText(kind.value==='currencies'?'currency':'item',row.nameJa||row.name)
 const ownerName=owner=>owner ? (props.displayIdolName(owner.id)||owner.name) : ''
 const filtered=computed(()=>{
  const q=props.query.trim().toLowerCase()
  return rows.value.filter(row=>{
-  const owner=kind.value==='honors'?honorIdol(row):null
-  const search=`${archiveSearchText(kind.value==='honors'?'honor':'item',row.nameJa)} ${kind.value==='honors'?honorTitle(row,props.displayIdolName):''} ${row.id} ${kind.value==='honors'?honorSourceLabel(row,props.bootstrap.release):''}`.toLowerCase()
-  return (!q||search.includes(q))&&(!category.value||(kind.value==='items'?itemBrowseGroup(row.itemType).key:honorGroup(row))===category.value)&&(!attribute.value||itemAttribute(row)===attribute.value)&&(!idol.value||owner?.id===idol.value)&&(!unit.value||owner?.unit===unit.value)
+  const owner=kind.value==='honors'?honorIdol(row):kind.value==='costumes'?costumeOwner(row):null
+  const search=(kind.value==='costumes' ? `${costumeSearchText('costume',row.nameJa||'')} ${costumeName(row)} ${row.id} ${ownerName(owner)}` :
+    kind.value==='currencies' ? `${archiveSearchText('currency',row.nameJa)} ${row.id}` :
+    `${archiveSearchText(kind.value==='honors'?'honor':'item',row.nameJa)} ${kind.value==='honors'?honorTitle(row,props.displayIdolName):''} ${row.id} ${kind.value==='honors'?honorSourceLabel(row,props.bootstrap.release):''}`).toLowerCase()
+  const group=kind.value==='items'?itemBrowseGroup(row.itemType).key:kind.value==='honors'?honorGroup(row):kind.value==='costumes'?costumeCategory(row):''
+  return (!q||search.includes(q))&&(!category.value||group===category.value)&&(!attribute.value||itemAttribute(row)===attribute.value)&&(!idol.value||owner?.id===idol.value)&&(!unit.value||owner?.unit===unit.value)
  })
 })
-const perPage=computed(()=>kind.value==='items'?72:36),pages=computed(()=>Math.ceil(filtered.value.length/perPage.value)),visible=computed(()=>filtered.value.slice(page.value*perPage.value,(page.value+1)*perPage.value))
+const perPage=computed(()=>kind.value==='honors'?36:72),pages=computed(()=>Math.ceil(filtered.value.length/perPage.value)),visible=computed(()=>filtered.value.slice(page.value*perPage.value,(page.value+1)*perPage.value))
 const session=createCollectionCatalogSession(repository,state=>{rows.value=state.rows;detail.value=state.detail;selectedId.value=state.selectedId;catalogBusy.value=state.catalogBusy;detailBusy.value=state.detailBusy;error.value=state.error;errorScope.value=state.errorScope})
 onBeforeUnmount(()=>session.dispose())
 async function load(){
- const requestedKind=kind.value,type=requestedKind==='honors'?'honor':'item',key=props.entity.startsWith(`${type}:`)?props.entity:''
+ const requestedKind=kind.value,key=collectionKindForEntity(props.entity)===requestedKind?props.entity:''
  await session.open(requestedKind,key,{selectDefault:false})
 }
 // Attribute only narrows the awakening materials, so leaving that category clears it.
 function setCategory(key){emit('browse',{...props.browseState,category:key,attribute:key==='card-materials'?props.browseState.attribute||'':'',page:0})}
-function select(row){hideTooltip();const key=`${kind.value==='honors'?'honor':'item'}:${row.id}`;if(key===props.entity)void load();else emit('entity',key)}
+function select(row){hideTooltip();const key=`${entityType.value}:${row.id}`;if(key===props.entity)void load();else emit('entity',key)}
 watch(()=>[props.entity,kind.value],()=>{void load()},{immediate:true})
 watch(pages,total=>{if(total>0&&page.value>=total)page.value=total-1})
 </script>

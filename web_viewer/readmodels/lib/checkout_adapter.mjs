@@ -16,6 +16,7 @@ export const INPUTS = {
  domainPhotoMaterials:'data/masterdata/domains/photo_materials.json',
  domainLogin:'data/masterdata/domains/login_campaign_catalog.json',
  domainCollectionMedia:'data/masterdata/domains/collection_media.json', domainPhotoMedia:'data/masterdata/domains/photo_media.json',
+ domainCurrencies:'data/masterdata/domains/currency_catalog.json', domainCostumes:'data/masterdata/domains/costume_catalog.json',
  domainEventMedia:'data/masterdata/domains/event_media.json',
  homeSystemVoice: 'data/masterdata/home_system_voice_index.json',
  cardIndex: 'data/masterdata/card_index.json', cardDetailIndex: 'data/masterdata/card_detail_index.json',

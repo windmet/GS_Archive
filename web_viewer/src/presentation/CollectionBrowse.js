@@ -6,6 +6,7 @@ import {idolHonorIdentity} from './HonorIdentity.mjs'
 import {rewardCondition,rewardRelationLabel} from './DomainPresentation.mjs'
 export const collectionIdols=Object.entries(IDOL_ID_TO_NAME).filter(([id])=>/^0\d{2}[a-z]{3}$/.test(id)&&Number(id.slice(0,3))<=49).map(([id,name])=>({id,name,unit:getUnitCodeByCharaId(id)}))
 export function collectionSummary(row,kind,release) {
+  if(!['items','honors'].includes(kind))return null
   const entry=index.entries[`${kind==='honors'?'honor':'item'}:${row.id}`]
   return release===index.release && entry?.nameJa===row.nameJa && entry?.resourceId===row.resourceId ? entry : null
 }

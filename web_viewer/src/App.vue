@@ -662,6 +662,7 @@ import {
   readArchiveRoute,
   writeArchiveRoute,
 } from './core/archiveRoute.js'
+import { COLLECTION_KINDS, collectionKindForEntity } from './core/CollectionRouteState.js'
 import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
 import {
   buildArchiveViewContext,
@@ -1475,7 +1476,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'studio') return '摄影工作台'
   if (view.value === 'about') return '关于本站'
   if (view.value === 'archive_status') return '数据状态'
-  if (view.value === 'collection_catalog') return currentCollectionState.value.kind === 'honors' ? '称号' : '道具'
+  if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
   if (view.value === 'photo_catalog') return '摄影资源'
   if (view.value === 'picture_studio') return '摄影工作台'
   if (view.value === 'event_catalog') return '活动一览'
@@ -2041,7 +2042,7 @@ function navigateArchiveSection(section) {
     loading.value = false
     return openArchivePortal()
   }
-  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','photos','live','studio','about'].includes(section)) return
+  if (!['home', 'stories', 'songs', 'idols', 'gashas', 'cards', 'resources', 'interactions','events','collections','honors','currencies','costumes','photos','live','studio','about'].includes(section)) return
   if (section !== 'portal' && section !== 'home') {
     detailSourceRoute.value = view.value === 'portal' ? buildArchiveSourceQuery(currentArchiveRoute()) : ''
   }
@@ -2058,21 +2059,22 @@ function navigateArchiveSection(section) {
   else if (section === 'live' || section === 'studio') { filterQuery.value = ''; commitView(section) }
   else if (section === 'about') { filterQuery.value = ''; commitView('about') }
   else if (section === 'resources') openArchiveStatus()
-  else if (['events','collections','honors','photos'].includes(section)) openDomainCatalog(section)
+  else if (['events','collections','honors','currencies','costumes','photos'].includes(section)) openDomainCatalog(section)
 }
 
 function openDomainCatalog(section, { idolCode = '' } = {}) {
   currentEventBrowseState.value=normalizeEventBrowseState()
-  currentCollectionState.value={kind:section==='honors'?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}
+  currentCollectionState.value={kind:COLLECTION_KINDS[section]?section:'items',category:'',idol:'',unit:'',attribute:'',page:0}
   filterQuery.value = ''; currentEntityKey.value = ''; currentPhotoIdol.value = ''; currentPhotoEntity.value = ''
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
-  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',photos:'photo_catalog'})[section])
+  commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',currencies:'collection_catalog',costumes:'collection_catalog',photos:'photo_catalog'})[section])
 }
 function openEventCatalog() { return openDomainCatalog('events') }
 function openCollectionEntity(key) {
   if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
-  if (!/^(item|honor):\d+$/.test(key || '')) return
-  if (view.value !== 'collection_catalog') {captureDetailSource();filterQuery.value='';currentCollectionState.value={kind:key.startsWith('honor:')?'honors':'items',category:'',idol:'',unit:'',attribute:'',page:0}}
+  const kind=collectionKindForEntity(key)
+  if (!kind) return
+  if (view.value !== 'collection_catalog' || currentCollectionState.value.kind !== kind) {if (view.value !== 'collection_catalog') captureDetailSource();filterQuery.value='';currentCollectionState.value={kind,category:'',idol:'',unit:'',attribute:'',page:0}}
   currentEntityKey.value=key; currentEventId.value=''; currentCharacterId.value=''; currentCategoryId.value=''
   commitView('collection_catalog')
 }

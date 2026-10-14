@@ -126,6 +126,10 @@ await fs.writeFile(path.join(dist, '_headers'), `/*
   Cache-Control: no-cache
 /honors/*
   Cache-Control: no-cache
+/currencies/*
+  Cache-Control: no-cache
+/costumes/*
+  Cache-Control: no-cache
 /photos/*
   Cache-Control: no-cache
 `)

@@ -107,6 +107,10 @@ for (const [route, href] of [
   [{ view: 'story_catalog' }, 'http://x/stories/'], [{ view: 'photo_catalog' }, 'http://x/photos/'],
   [{ view: 'collection_catalog', collection: { kind: 'items' } }, 'http://x/items/'],
   [{ view: 'collection_catalog', collection: { kind: 'honors' } }, 'http://x/honors/'],
+  [{ view: 'collection_catalog', collection: { kind: 'currencies' } }, 'http://x/currencies/'],
+  [{ view: 'collection_catalog', collection: { kind: 'costumes' } }, 'http://x/costumes/'],
+  [{ view: 'collection_catalog', entity: 'currency:free-gem' }, 'http://x/currencies/?entity=currency%3Afree-gem'],
+  [{ view: 'collection_catalog', entity: 'costume:001tom_002_00' }, 'http://x/costumes/?entity=costume%3A001tom_002_00'],
   [{ view: 'collection_catalog', entity: 'item:10501' }, 'http://x/items/?entity=item%3A10501'],
 ]) {
   assert.equal(buildPublicArchiveUrl('http://x/', route).href, href, href)

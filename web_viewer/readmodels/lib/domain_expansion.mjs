@@ -92,6 +92,37 @@ export function validateMediaPayload(payload, kind) {
   return payload;
 }
 
+const safeMediaUrl = url => typeof url === 'string' && /^\/assets\/domain-images\/image\/(image_item|image_costume_icon)\/[a-z0-9_./-]+\.png$/i.test(url) && !url.split('/').includes('..');
+const imageBinding = image => image?.status === 'verified-local-file'
+  ? (assert(safeMediaUrl(image.url) && /^[a-f0-9]{64}$/.test(image.sha256), 'Unsafe collection image binding'), pick(image, ['url','status','sha256','bytes','width','height','runtimeVerified']))
+  : { status: image?.status || 'file-not-found', runtimeVerified: false };
+
+/** Currencies and resources (config/currency-catalog.v1.json): product types and the two memory items. */
+export function validateCurrencyCatalog(payload) {
+  assert(payload?.schemaVersion === 1 && payload.kind === 'gs-currency-catalog' &&
+    payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB && payload.source?.generatorVersion === 'gs-currency-catalog-v1',
+    'Currency catalog source contract');
+  const entries = payload.entries;
+  assert(Array.isArray(entries) && entries.length > 0 && new Set(entries.map(e => e.key)).size === entries.length &&
+    entries.every(e => /^[a-z-]+$/.test(e.id) && e.key === `currency:${e.id}` && (Number.isInteger(e.productType) !== /^item:\d+$/.test(e.itemKey || '')) &&
+      typeof e.nameJa === 'string' && e.nameJa && Array.isArray(e.acquisition) && Array.isArray(e.usage)), 'Currency catalog identity');
+  assert(new Set(entries.filter(e => e.productType).map(e => e.productType)).size === entries.filter(e => e.productType).length, 'Duplicate currency product type');
+  return payload;
+}
+
+/** One costume model per entry, with the cards that wear it (scripts/generate-costume-catalog.py). */
+export function validateCostumeCatalog(payload) {
+  assert(payload?.schemaVersion === 1 && payload.kind === 'gs-costume-catalog' && payload.source?.generatorVersion === 'gs-costume-catalog-v1',
+    'Costume catalog source contract');
+  const entries = payload.entries;
+  // idolCode is the wearer the StoryCostumes/LiveCostumes row names. It usually matches the model's prefix, but the
+  // Aoi twins' story rows swap models (012yus wears 013kys_004_00 and back), so only the shape is checked here.
+  assert(Array.isArray(entries) && entries.length > 0 && new Set(entries.map(e => e.key)).size === entries.length &&
+    entries.every(e => /^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/.test(e.id) && e.key === `costume:${e.id}` && /^[0-9]{3}[a-z]{3}$/.test(e.idolCode) &&
+      Array.isArray(e.cards) && Array.isArray(e.uses) && e.uses.length > 0), 'Costume catalog identity');
+  return payload;
+}
+
 export function validateDomainPayload(payload, kind) {
   assert(payload?.schemaVersion === 1 && payload.kind === kind &&
     payload.source?.decodedPbSha256 === REVIEWED_DOMAIN_PB &&
@@ -138,6 +169,9 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
   const photoMedia=validateMediaPayload(data.domainPhotoMedia,'gs-photo-media').entries;
   const eventMedia=validateMediaPayload(data.domainEventMedia,'gs-event-media');
   const loginCampaigns=validateDomainPayload(data.domainLogin,'gs-login-campaign-catalog').entries;
+  const currencies=validateCurrencyCatalog(data.domainCurrencies).entries;
+  // A reward that is only a product type (Star Gems, Money) is shown as its currency entry.
+  const currencyByType=new Map(currencies.filter(entry=>entry.productType).map(entry=>[entry.productType,entry]));
   const events = validateDomainPayload(data.domainEvents, 'gs-event-supplement-index').entries;
   assert(Array.isArray(events) && new Set(events.map(e => e.eventCode)).size === events.length, 'Duplicate event codes');
   const legacy = domains.events.records;
@@ -172,8 +206,11 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     const rewards=source.rewards.map(row=>{
       const target=domainProductTarget(row.product,data.domainCards,data.domainPhotoMaterials);
       const card=target?.view==='card_detail'?data.domainCards.find(card=>card.resource_id===target.card):null;
-      const image=collectionMedia[row.product.entityKey]?.image || (target?.photoEntity?photoMedia[target.photoEntity]?.image:null) || (card?eventMedia.cardImages[card.resource_id]:null);
-      return {...row,product:{...row.product,target,presentation:{name:row.product.nameJa || card?.title || row.product.typeNameJa,image:image?pick(image,['url','status','sha256']):null,target:target || (['item','honor'].includes(row.product.kind)&&row.product.referenceStatus==='resolved-entity'?{view:'collection_catalog',entity:row.product.entityKey}:null)}}};
+      const currency=row.product.kind==='scalar'?currencyByType.get(row.product.typeCode):null;
+      const image=collectionMedia[row.product.entityKey]?.image || (target?.photoEntity?photoMedia[target.photoEntity]?.image:null) || (card?eventMedia.cardImages[card.resource_id]:null) ||
+        (currency?.image.status==='verified-local-file'?currency.image:null);
+      return {...row,product:{...row.product,target,...(currency?{currencyKey:currency.key}:{}),presentation:{name:row.product.nameJa || card?.title || row.product.typeNameJa,image:image?pick(image,['url','status','sha256']):null,target:target || (['item','honor'].includes(row.product.kind)&&row.product.referenceStatus==='resolved-entity'?{view:'collection_catalog',entity:row.product.entityKey}:null) ||
+        (currency?{view:'collection_catalog',entity:currency.key}:null)}}};
     });
     const rewardCards=new Map();
     for(const row of rewards.filter(row=>row.product.kind==='card'&&row.product.target)){
@@ -254,6 +291,31 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     }));
     domains[domain] = { searchable:true, packed:true, records };
   }
+  const gashaLink=row=>({...pick(row,['gashaId','titleJa','url']),target:{view:'gasha_detail',gasha:row.gashaId}});
+  domains.currencies = { searchable:true, packed:true, records:currencies.map(entry=>{
+    const image=imageBinding(entry.image);
+    if(entry.itemKey)assert(domains.items.records.some(record=>record.view.entry.key===entry.itemKey),`Currency names a missing item: ${entry.itemKey}`);
+    return { id:entry.id, summary:{nameJa:entry.nameJa,resourceId:entry.resourceId,productType:entry.productType ?? null,itemKey:entry.itemKey ?? null,rewardCount:entry.rewardCount,image:pick(image,['url','status'])},
+      view:{ entry:{key:entry.key,id:entry.id,nameJa:entry.nameJa,descriptionJa:entry.descriptionJa,resourceId:entry.resourceId,productType:entry.productType ?? null,itemKey:entry.itemKey ?? null},
+        media:{image}, rewardCount:entry.rewardCount,
+        acquisition:entry.acquisition.map(group=>({...pick(group,['source','count','totalAmount','levelRange']),
+          ...(group.events?{events:group.events.map(row=>({...eventLink(row.eventId),count:row.count,totalAmount:row.totalAmount}))}:{})})),
+        gashaSources:entry.gashaSources.map(group=>({...group,...(group.gashas?{gashas:group.gashas.map(gashaLink)}:{})})),
+        usage:entry.usage.map(line=>({...line,...(line.gashas?{gashas:line.gashas.map(row=>({...gashaLink(row),...pick(row,['prices','steps','paidOnlyOffers','exchanges'])}))}:{})})),
+        sourceCoverage:'client-masterdata-rewards-and-wiki-gasha-pages' } };
+  }) };
+  const costumeCatalog=validateCostumeCatalog(data.domainCostumes).entries;
+  const cardsByResource=new Map(data.domainCards.map(card=>[card.resource_id,card]));
+  domains.costumes = { searchable:true, packed:true, records:costumeCatalog.map(entry=>{
+    const image=imageBinding(entry.image);
+    // Tutorial copies share their resource id with the real card and are not published.
+    const cards=entry.cards.filter(row=>cardsByResource.has(row.resourceId)).map(row=>{
+      const card=cardsByResource.get(row.resourceId),art=eventMedia.cardImages[card.resource_id];
+      return {...pick(card,['resource_id','card_id','character_id','rarity','title']),slots:row.slots,image:art?pick(art,['url','status']):null,target:{view:'card_detail',card:card.resource_id}};
+    });
+    return { id:entry.id, summary:{nameJa:entry.nameJa,idolCode:entry.idolCode,uses:entry.uses,cardCount:cards.length,releaseAt:entry.releaseAt ?? null,image:pick(image,['url','status'])},
+      view:{ entry:pick(entry,['key','id','idolCode','idolId','nameJa','descriptionJa','releaseAt','costumeIds','uses','spineAvailable']), media:{image}, cards } };
+  }) };
   validateDomainPayload(data.domainPhotoIndex, 'gs-photo-index');
   const materials = validateDomainPayload(data.domainPhotoMaterials, 'gs-photo-materials');
   const idolsById = new Map(Object.entries(data.idolUnit.by_idol_code).map(([code, idol]) => [idol.idol_id,{code,...idol}]));

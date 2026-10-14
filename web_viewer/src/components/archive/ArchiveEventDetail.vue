@@ -202,10 +202,11 @@ import { useStorySynopsis } from './useStorySynopsis.js'
 import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import { flowForLocale } from '../../../shared/reading/ReadingTypography.js'
 import {rewardConditions} from './DomainPresentation.mjs'
+import {collectionKindForEntity} from '../../core/CollectionRouteState.js'
 
 const CollectionQuickView=defineAsyncComponent(()=>import('./CollectionQuickView.vue'))
 const quickEntity=ref('')
-function openQuick(key){if(/^(item|honor):\d+$/.test(key))quickEntity.value=key}
+function openQuick(key){if(collectionKindForEntity(key))quickEntity.value=key}
 const props = defineProps({
   displayIdolName:{type:Function,default:()=>''},
   client: Object,

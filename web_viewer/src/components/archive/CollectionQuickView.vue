@@ -7,7 +7,7 @@
         <p v-else-if="state.error" role="alert" class="domain-error">{{ state.error }}<button type="button" @click="preview.open(entityKey)">重试</button></p>
         <template v-else-if="state.detail">
           <CollectionEntryDetails :detail="state.detail" :kind="state.domain" :display-idol-name="displayIdolName" @open-card="emit('open-card',$event)" />
-          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">在{{ state.domain === 'honors' ? '称号' : '道具' }}页查看来源与用途 <ChevronRight :size="16" /></button>
+          <button type="button" class="domain-action collection-quick-full" @click="emit('open-entity',state.key)">在{{ collectionKindLabel(state.domain) }}页查看{{ state.domain === 'costumes' ? '对应卡片' : '来源与用途' }} <ChevronRight :size="16" /></button>
         </template>
       </section>
     </div>
@@ -19,6 +19,7 @@ import {ChevronRight,X} from '@lucide/vue'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {createCollectionPreview} from '../../../readmodels/runtime/CollectionPreview.mjs'
 import CollectionEntryDetails from './CollectionEntryDetails.vue'
+import {collectionKindLabel} from '../../core/CollectionRouteState.js'
 import '../../styles/archive-domains.css'
 const props=defineProps({client:Object,bootstrap:Object,entityKey:{type:String,required:true},displayIdolName:{type:Function,default:()=>''}})
 const emit=defineEmits(['close','open-entity','open-card'])

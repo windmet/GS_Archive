@@ -1,4 +1,4 @@
-import { normalizeCollectionRoute } from './CollectionRouteState.js'
+import { normalizeCollectionRoute, collectionKindLabel } from './CollectionRouteState.js'
 import { normalizeEventBrowseState } from './EventCatalogRouteState.js'
 import { pruneToRouteSchema } from './routeSchema.js'
 const ROUTE_QUERY_KEYS = [
@@ -174,6 +174,8 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'events', label: '活动' },
   { id: 'collections', label: '道具' },
   { id: 'honors', label: '称号' },
+  { id: 'currencies', label: '货币与资源' },
+  { id: 'costumes', label: '服装' },
   { id: 'photos', label: '摄影资源' },
   { id: 'live', label: 'LIVE' },
   { id: 'studio', label: '摄影工作台' },
@@ -421,7 +423,7 @@ export function archiveSectionForRoute(route) {
   const normalized = normalizeArchiveRoute(route)
   const section = ARCHIVE_ROUTE_CONTRACTS[normalized.view]?.section || 'stories'
   // Items and honors share one catalogue page but are separate destinations in the navigation.
-  if (section === 'collections') return normalized.collection?.kind === 'honors' ? 'honors' : 'collections'
+  if (section === 'collections') return ({ honors:'honors', currencies:'currencies', costumes:'costumes' })[normalized.collection?.kind] || 'collections'
   if (section !== 'category') return section
   if (normalized.category === 'cards') return 'cards'
   if (['idol_chat', 'idol_phone'].includes(normalized.category)) return 'interactions'
@@ -470,7 +472,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   const home = { label: '资料馆', route: { view: 'portal' } }
   if(route.view==='picture_studio')return [home,{label:'摄影资源',route:{view:'photo_catalog',photoIdol:route.photoIdol,photoEntity:route.photoEntity}},{label:'摄影工作台'}]
-  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? (route.collection?.kind==='honors' ? '称号' : '道具') : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
+  if (['event_catalog','collection_catalog','photo_catalog'].includes(route.view)) return [home,{label:route.view==='collection_catalog' ? collectionKindLabel(route.collection?.kind) : ({event_catalog:'活动一览',photo_catalog:'摄影资源'})[route.view]}]
   const current = (fallback, id = '') => ({
     label: breadcrumbTitle({ title: entity.title, id: entity.id || id }, fallback),
   })
@@ -637,6 +639,8 @@ const SECTION_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'story_catalog', prefix: 'stories', implied: {} }),
   Object.freeze({ view: 'collection_catalog', prefix: 'items', implied: { collection_kind: 'items' } }),
   Object.freeze({ view: 'collection_catalog', prefix: 'honors', implied: { collection_kind: 'honors' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'currencies', implied: { collection_kind: 'currencies' } }),
+  Object.freeze({ view: 'collection_catalog', prefix: 'costumes', implied: { collection_kind: 'costumes' } }),
   Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
 ])
 export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))

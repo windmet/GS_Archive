@@ -1,13 +1,15 @@
+import { COLLECTION_IDENTITIES, collectionEntityDomain } from './CollectionCatalogSession.mjs';
+
 /** Look up the exact source-bound collection record through the pinned client. */
 export async function lookupCollectionEntry(repository, key, options = {}) {
-  const match = /^(item|honor):(\d+)$/.exec(key || '');
-  if (!match) throw Error('Invalid collection identity');
-  const domain = match[1] === 'item' ? 'items' : 'honors';
+  const domain = collectionEntityDomain(key);
+  if (!domain) throw Error('Invalid collection identity');
+  const id = key.slice(COLLECTION_IDENTITIES[domain].type.length + 1);
   const catalog = await repository.catalog(domain, options);
-  const row = catalog.find(entry => String(entry.id) === match[2]);
+  const row = catalog.find(entry => String(entry.id) === id);
   if (!row) throw Error('Unavailable collection identity');
   const detail = await repository.detail(domain, row, options);
-  if (String(detail.entry?.id) !== match[2] || detail.entry?.key !== key)
+  if (String(detail.entry?.id) !== id || detail.entry?.key !== key)
     throw Error('Collection preview identity mismatch');
   return { key, domain, detail };
 }
