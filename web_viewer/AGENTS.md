@@ -13,6 +13,6 @@ Read [BUILD_ACCEPTANCE_POLICY.md](docs/BUILD_ACCEPTANCE_POLICY.md) before buildi
 Read [CURRENT_STATE.md](docs/CURRENT_STATE.md) first, then [GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md).
 
 - Never push to `master`; enter it only by PR with a merge commit (no squash/rebase).
-- Work on the lane branch for the task: `portal/<date>-<topic>` or `stage/<date>-<topic>`, both cut from the latest `master`; `fix/` and `exp/` for small fixes and local experiments. Do not name branches after the agent.
+- Work on the lane branch for the task: `portal/<date>-<topic>`, `stage/<date>-<topic>` or `i18n/<date>-<topic>` (translation), each cut from the latest `master`; `fix/` and `exp/` for small fixes and local experiments; `release/` for R2 uploads, read-model binds and deploy records. Do not name branches after the agent.
 - Keep a lane current with `git merge origin/master`; never rebase or force-push a pushed branch.
 - Merging to `master` is not a deploy. Production deploys need explicit user authorization.
