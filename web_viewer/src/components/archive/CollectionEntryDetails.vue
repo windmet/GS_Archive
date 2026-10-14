@@ -25,6 +25,7 @@
             <strong>{{ cardTitle(card.title) }}</strong>
             <span v-if="card.slots?.length" class="collection-usage-slots">{{ card.slots.map(slot => costumeSlotLabels[slot] || slot).join(' · ') }}</span>
             </span>
+            <ChevronRight class="collection-usage-go" :size="18" aria-hidden="true" />
           </button>
         </li>
       </ul>
@@ -67,7 +68,7 @@ const costumeIdol=computed(()=>{
 })
 const ownerIdol=computed(()=>honorIdol.value || costumeIdol.value)
 const kindLabel=computed(()=>props.kind==='honors' ? (honorIdol.value ? honorKindLabel.value : '称号') :
-  props.kind==='currencies' ? '货币与资源' : props.kind==='costumes' ? costumeUseLabel(props.detail.entry) : itemBrowseGroup(props.detail.entry.itemType).label)
+  props.kind==='currencies' ? '货币' : props.kind==='costumes' ? costumeUseLabel(props.detail.entry) : itemBrowseGroup(props.detail.entry.itemType).label)
 const releaseDate=computed(()=>{const value=historicalDate(props.detail.entry.releaseAt);return ['未记录','配置占位日期'].includes(value) ? '' : value})
 const usageCards=computed(()=>{
   const cards=props.kind==='items' ? props.detail.usageCards : props.kind==='costumes' ? props.detail.cards : null
@@ -91,13 +92,14 @@ function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '
 .collection-usage-note { margin:var(--gs-space-3,8px) 0 var(--gs-space-4,12px); color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.6; }
 .collection-usage-list { display:grid; gap:var(--gs-space-3,8px); margin:0; padding:0; list-style:none; }
 .collection-usage-list > li { display:block; min-width:0; padding-bottom:var(--gs-space-3,8px); border-bottom:1px solid var(--gs-line); }
-.collection-usage-card { display:grid; grid-template-columns:44px minmax(0,1fr); align-items:center; gap:var(--gs-space-2,4px); width:100%; min-width:0; min-height:var(--gs-control-touch,44px); padding:var(--gs-space-2,4px) 0; border:0; border-radius:var(--gs-radius-field,8px); background:transparent; color:var(--gs-ink); font-family:inherit; text-align:left; cursor:pointer; }
+.collection-usage-card { display:grid; grid-template-columns:56px minmax(0,1fr) auto; align-items:center; gap:var(--gs-space-4,12px); width:100%; min-width:0; min-height:var(--gs-control-touch,44px); padding:var(--gs-space-2,4px) 0; border:0; border-radius:var(--gs-radius-field,8px); background:transparent; color:var(--gs-ink); font-family:inherit; text-align:left; cursor:pointer; }
 .collection-usage-copy { display:grid; gap:4px; min-width:0; }
-.collection-usage-image { display:grid; place-items:center; width:44px; height:44px; color:var(--gs-ink-3); }
+.collection-usage-image { display:grid; place-items:center; width:56px; height:56px; overflow:hidden; border-radius:var(--gs-radius-field); color:var(--gs-ink-3); }
 .collection-usage-image img { display:block; width:100%; height:100%; object-fit:contain; }
 .collection-usage-card strong { font-size:var(--gs-text-body,14px); font-weight:var(--gs-weight-semibold,600); line-height:1.6; overflow-wrap:anywhere; }
-.collection-usage-identity { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-3,8px); font-size:var(--gs-text-meta,12px); line-height:1.5; overflow-wrap:anywhere; }
-.collection-usage-slots { color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.5; }
+.collection-usage-identity { display:flex; flex-wrap:wrap; align-items:center; gap:var(--gs-space-1,2px) var(--gs-space-3,8px); min-width:0; font-size:var(--gs-text-meta,12px); line-height:1.5; overflow-wrap:anywhere; }
+.collection-usage-slots { color:var(--gs-ink-3); font-size:var(--gs-text-meta,12px); line-height:1.5; overflow-wrap:anywhere; }
+.collection-usage-go { color:var(--gs-mint-ink); }
 .collection-usage-identity small { padding:var(--gs-space-1,2px) var(--gs-space-2,4px); border-radius:4px; background:var(--gs-mint-wash); color:var(--gs-mint-ink); font-size:inherit; font-weight:var(--gs-weight-semibold,600); }
 .collection-idol-link { display:inline-flex; align-items:center; gap:var(--gs-space-2,4px); min-height:var(--gs-control-compact,32px); padding:0; border:0; background:none; color:var(--gs-mint-ink); font:inherit; font-weight:var(--gs-weight-semibold,600); cursor:pointer; }
 .collection-idol-link:focus-visible { outline:var(--gs-focus-ring,3px) solid var(--gs-mint); outline-offset:var(--gs-focus-offset,2px); }

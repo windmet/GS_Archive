@@ -174,7 +174,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'events', label: '活动' },
   { id: 'collections', label: '道具' },
   { id: 'honors', label: '称号' },
-  { id: 'currencies', label: '货币与资源' },
+  { id: 'currencies', label: '货币' },
   { id: 'costumes', label: '服装' },
   { id: 'photos', label: '摄影资源' },
   { id: 'live', label: 'LIVE' },

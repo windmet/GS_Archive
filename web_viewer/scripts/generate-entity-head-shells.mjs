@@ -40,7 +40,7 @@ export const SECTION_SHELLS = Object.freeze({
   stories: { view: 'story_catalog', description: 'SideM GROWING STARS 剧情一览：主线、活动、个人故事、生日与季节企划。' },
   items: { view: 'collection_catalog', kind: 'items', description: 'SideM GROWING STARS 道具图鉴：用途、获得来源与相关卡片。' },
   honors: { view: 'collection_catalog', kind: 'honors', description: 'SideM GROWING STARS 称号图鉴：获得条件与相关偶像、组合。' },
-  currencies: { view: 'collection_catalog', kind: 'currencies', description: 'SideM GROWING STARS 货币与资源：星钻、金币、记忆之星等的获得来源与用途。' },
+  currencies: { view: 'collection_catalog', kind: 'currencies', description: 'SideM GROWING STARS 货币：星钻、金币、记忆之星等的获得来源与用途。' },
   costumes: { view: 'collection_catalog', kind: 'costumes', description: 'SideM GROWING STARS 服装图鉴：全部衣装缩略图、所属偶像与穿着的卡片。' },
   photos: { view: 'photo_catalog', description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
 })

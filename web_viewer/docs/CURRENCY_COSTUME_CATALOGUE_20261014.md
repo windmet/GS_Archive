@@ -1,10 +1,10 @@
-# 货币与资源、服装图鉴（2026-10-14）
+# 货币、服装图鉴（2026-10-14）
 
-收藏下新增两个板块，结构照搬道具/称号：目录页在板块根路径，详情是同一路径加 `?entity=`。
+收藏下新增两个板块（板块名原为「货币与资源」，已缩短为「货币」），结构照搬道具/称号：目录页在板块根路径，详情是同一路径加 `?entity=`。
 
 | 板块 | 目录 | 详情示例 |
 |---|---|---|
-| 货币与资源 | `/currencies/` | `/currencies/?entity=currency:free-gem` |
+| 货币 | `/currencies/` | `/currencies/?entity=currency:free-gem` |
 | 服装 | `/costumes/` | `/costumes/?entity=costume:001tom_101_00` |
 
 旧式 `?view=collection_catalog&collection_kind=costumes&entity=…` 会读成同一路由，并改写为上面的短链接。身份不匹配的 entity（例如 `/costumes/?entity=item:1`）会被丢弃，只打开目录。
@@ -56,7 +56,7 @@
 ## 读模型
 
 - 新增 `domains.currencies`、`domains.costumes`（packed + searchable）。
-- 只有类型的奖励会带上对应货币的 `currencyKey`、图标和 `collection_catalog` 目标，在活动页显示为「免费星钻 · 货币与资源」，有图标，点开是快捷查看。
+- 只有类型的奖励会带上对应货币的 `currencyKey`、图标和 `collection_catalog` 目标，在活动页显示为「免费星钻 · 货币」，有图标，点开是快捷查看。
 - 候选：`rm-currency-costume-20261014`，release `c3d99382115805a25a997a5b10f9911b51fac2beb1830aa4254d0d717fa87c8e`，`verify_artifacts` 通过。
 - 已在四个文件中绑定，见提交 `06fc9496`。
 
@@ -72,7 +72,31 @@
   - マニー → 金币
   - 有償スタージェム / スタージェム → 付费星钻 / 免费星钻
   - 两个记忆道具沿用道具的译文
-  - 审计标签为「货币与资源」
+  - 审计标签为「货币」
+
+## 卡片与服装的交叉关联
+
+- 卡片页「关联衣装」：每个款式（通常版 / 突破版（+））是一块可点击的条目，包含：
+  - 64px 客户端衣装图标；缺图的 30 个模型显示衣装图标占位；
+  - 款式名与槽位标签；
+  - 箭头。
+  点开进入 `/costumes/?entity=costume:<模型>`，带 `card=` 返回上下文。图标地址和服装目录一致，由 `CardDetailSemantics.costumeLink` 按模型编号生成。苍井兄弟互换的模型按模型本身关联。
+- 服装详情「穿着此衣装的卡片」：卡面缩略图放大到 56px，间距加大，加上箭头；槽位行可换行。点卡片回到卡片页。
+- 每个服装模型最多只关联 1 张卡片。
+- 1280、1024、820、390 宽的 Chromium 测量中都没有元素越出面板。这次是加固排版，没有找到可以复现的溢出。
+- 资料馆入口：手机端「资料馆」目录给货币、服装补上图标（Coins / Shirt），桌面侧栏同样适用。
+
+## 正比图
+
+客户端没有静态的正比衣装图。衣装相关的静态图片只有：
+- `image_costume_icon`：Q 版小人衣装图标，服装目录和卡片页用的就是它；
+- `livecharacter/atlas`：Live Q 版图集。
+
+正比只有剧情 Spine：`/assets/spines/<模型>/comu.atlas` 和 `comu.skel`，690 个模型都有。要在服装页显示正比，有两种做法：
+- 在详情里按需挂载 SpineStage 实时渲染：需要 WebGL 舞台和资源释放管理；
+- 离线渲染每个模型的正比静帧，再上传 R2：需要用户授权上传。
+
+尚未实施。
 
 ## 验证
 
@@ -96,4 +120,5 @@
 - 新增缩略图（`image/image_costume_icon/`、货币图标）还没有上传到 R2。上传和部署都需要用户授权。
 - 商店与兑换所的商品只能从 wiki 整理，下一步做；歌曲、任务、生日奖励同样从 wiki 补。PremiumPacks 只做记录。
 - 30 个没有缩略图的服装模型以后可以考虑用 Spine 渲染。
-- 修复 `verify-design-tokens` 和 `verify-card-costume-presentation` 两项既有失败。
+- `verify-card-costume-presentation` 已修复：补上 ArchiveSourceLink 桩；契约改为「只有款式条目本身可以点，点开各自的服装」。
+- `verify-design-tokens` 仍未通过：ArchiveCardDetail、ArchiveSongDetail 视频区的 `#000`/`#fff`，ArchiveSongLineupPlayer 的两个原始字号。修复需要新增媒体色 token。

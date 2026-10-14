@@ -9,7 +9,7 @@ const costumeCategories = new Set(['live','story-only'])
 export const COLLECTION_KINDS = Object.freeze({
   items: { type:'item', id:/^\d+$/, categories:itemCategories, label:'道具' },
   honors: { type:'honor', id:/^\d+$/, categories:honorCategories, label:'称号' },
-  currencies: { type:'currency', id:/^[a-z]+(?:-[a-z]+)*$/, categories:new Set(), label:'货币与资源' },
+  currencies: { type:'currency', id:/^[a-z]+(?:-[a-z]+)*$/, categories:new Set(), label:'货币' },
   costumes: { type:'costume', id:/^[0-9]{3}[a-z]{3}_[0-9]{3}_[0-9]{2}$/, categories:costumeCategories, label:'服装' },
 })
 export function collectionKindForEntity(key) {
