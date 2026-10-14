@@ -1398,7 +1398,7 @@ const {
   currentCharacterId, cardReadModelCatalog, currentCard, currentArchiveUnit,
   externalStoryResourcesData, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
-  openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
+  openStoryCatalog, openEventCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
   openCard, openIdolReadModel, openArchiveUnit,
   applyArchiveRoute, prepareReturnRoute: prepareRouteData, currentCardId, currentArchiveUnitCode, currentCategoryId,
 })
@@ -2061,6 +2061,7 @@ function openDomainCatalog(section, { idolCode = '' } = {}) {
   currentEventId.value = ''; currentCategoryId.value = ''; currentCharacterId.value = idolCode
   commitView(({events:'event_catalog',collections:'collection_catalog',honors:'collection_catalog',photos:'photo_catalog'})[section])
 }
+function openEventCatalog() { return openDomainCatalog('events') }
 function openCollectionEntity(key) {
   if (!key && view.value==='collection_catalog') {currentEntityKey.value='';syncArchiveRoute({replace:true});return}
   if (!/^(item|honor):\d+$/.test(key || '')) return

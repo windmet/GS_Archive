@@ -8,7 +8,7 @@ export function useEventNavigation({
   currentCharacterId, cardReadModelCatalog, currentCard, currentArchiveUnit,
   externalStoryResourcesData, navigation, archiveBootstrap, readModelClient,
   prepareArchivePage, captureDetailSource, commitView, restoreDetailSource,
-  openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
+  openStoryCatalog, openEventCatalog = openStoryCatalog, startEpisodeQueue, loadScenario, loadCardCatalog,
   openCard, openIdolReadModel, openArchiveUnit,
   applyArchiveRoute = null, prepareReturnRoute = async route => route,
   currentCardId = null, currentArchiveUnitCode = null, currentCategoryId = null,
@@ -74,7 +74,9 @@ export function useEventNavigation({
         if (route && navigation.getRevision() === entryRevision) return applyArchiveRoute(route, { restoring: false })
       })
     }
-    else return openStoryCatalog()
+    // Events are their own section: a cold link or a lost opener returns to the event catalog.
+    else if (parent === 'story_catalog') return openStoryCatalog()
+    else return openEventCatalog()
   }
 
   function playCurrentEvent() {

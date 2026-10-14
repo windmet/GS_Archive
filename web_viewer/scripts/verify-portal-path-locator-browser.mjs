@@ -235,9 +235,9 @@ try {
   const eventHeading = await ev(`document.querySelector('.event-detail .event-identity h2')?.textContent.trim()`)
   check('P25 event path opens cold with its title', (await loc()) === '/events/410018/' && (await ev('document.title')) === `${eventHeading} · GS Archive` && errors.length === 0,
     `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
-  // P26: with no source and no placement, page back keeps its old fallback, the story catalogue.
-  await pageBack(); await waitFor(`location.search.includes('view=story_catalog')`)
-  check('P26 cold event back keeps the story catalogue fallback', (await loc()).startsWith('/?view=story_catalog'), await loc())
+  // P26: with no source and no placement, page back returns to the event catalogue, the event's own section.
+  await pageBack(); await waitFor(`location.search.includes('view=event_catalog')`)
+  check('P26 cold event back returns to the event catalogue', (await loc()).startsWith('/?view=event_catalog'), await loc())
   // P27: an event:<code> id publishes the five-digit path and opens cold.
   await open('/events/20001/', eventReady)
   check('P27 a 315 CARNIVAL event opens at its code', (await loc()) === '/events/20001/' && errors.length === 0, `${await loc()} errors=${errors.join(' | ') || 0}`)

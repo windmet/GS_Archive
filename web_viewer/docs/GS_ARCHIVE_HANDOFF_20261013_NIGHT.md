@@ -258,7 +258,10 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
   - 内部的 query 形式（来源帧、播放器地址）仍保留这些字段，所以从播放器回到活动、再返回，行为不变（P31）。
   - 旧链接里的这些参数照常读取，下一次写入时移进 state（P30）。
   - `event_detail` 进入 `ENFORCED_ROUTE_VIEWS`，自有参数为 `event`、`parent`、`category`、`unit`、`card`、`idol`。列表筛选（`q`、`story_type` 等）不再写入。
-- 冷开（没有来源、也没有打开来源）返回的去处不变，仍是剧情目录（P26）。活动现在是独立栏目，改成回活动目录更自然；这属于产品选择，未改。
+- 冷开（没有来源、也没有打开来源）返回活动目录（P26）。原来回剧情目录；按用户决定改为回活动目录，因为活动现在是独立栏目。
+  - 只有明确从剧情目录打开（`parent=story_catalog`）且来源帧丢失时，才回剧情目录。
+  - 未知或缺失的 `parent` 也回活动目录。
+  - `goBackFromEvent` 改用新参数 `openEventCatalog`（App 中为 `openDomainCatalog('events')`）。`verify-event-navigation` 已覆盖这三种情况。
 - 标签页标题为「活动名 · GS Archive」，与页内标题一样用原文。17 个 315 CARNIVAL 活动同名，标签页无法区分；外壳描述里写了开始日期。
 - 外壳从 952 个增加到 1011 个（再加 59 个）：
   - 描述如「THEATER活动「GROWING SIGN@L -Not Alone-」，2021年10月10日开始：…」。
@@ -272,7 +275,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
     - `verify:source-batch` 133/133、`build:check`。
   - 浏览器旅程（5177）36/36，新增 7 项：
     - P25：冷开活动路径，标题与页内标题一致。
-    - P26：冷开后返回，仍到剧情目录。
+    - P26：冷开后返回，到活动目录。
     - P27：`/events/20001/`（`event:` 形式）冷开。
     - P28：从筛选过的活动目录进出，浏览器前进、后退正确。
     - P29：Unit → 活动 → 刷新 → 页内返回，回到 `/units/01jup/`。

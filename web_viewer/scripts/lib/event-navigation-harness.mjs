@@ -25,7 +25,7 @@ export function bindEventNavigation(app, context = {}) {
   for (const name of ['eventReadModelCatalog', 'eventReadModelDetail', 'cardReadModelCatalog',
     'currentCard', 'currentArchiveUnit', 'externalStoryResourcesData']) defaults[name] = ref(null)
   for (const name of ['prepareArchivePage', 'captureDetailSource', 'commitView', 'restoreDetailSource',
-    'openStoryCatalog', 'startEpisodeQueue', 'loadScenario', 'loadCardCatalog', 'openCard',
+    'openStoryCatalog', 'openEventCatalog', 'startEpisodeQueue', 'loadScenario', 'loadCardCatalog', 'openCard',
     'openIdolReadModel', 'openArchiveUnit']) defaults[name] = unexpected(name)
   Object.assign(context, { ...defaults, ...context, useEventNavigation })
   for (const property of binding.init.arguments[0].properties) {
