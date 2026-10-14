@@ -4,10 +4,14 @@
 
 当前优先：反查图层排序、遮光层与人物的关系，以及灯光叠加与人物自身着色的边界。
 
-- [ ] 原版 LiveObjectIdol baseSortOrder + offsetSortOrder；聚光灯 Show 时目标 +250，换目标/Hide 时恢复，影子随人物排序 -10。
-- [ ] SpotlightBackground 的共享排序、颜色、显隐计数和渐变，与 pinspotlight 掩模的关系。
-- [ ] 去除没有原版依据的整个人物环境染色，区分 Body_Color、Foot_Color 和实际前景叠加。
+- [x] 原版 LiveObjectIdol baseSortOrder + offsetSortOrder；聚光灯 Show 时目标 +250，换目标/Hide 时恢复，影子随人物排序 -10。
+- [x] SpotlightBackground 共享脚本排序、聚光灯 depth+1、pinspotlight 掩模排序区间；保留脚本显式 0。
+- [ ] SpotlightBackground 共享颜色、显隐计数和渐变；现有按活动灯选颜色/透明度的采样仍需单独反查。
+- [x] 去除没有原版依据的整个人物环境染色，避免与遮光平面重复叠加、绕过 pinspotlight 掩模。
+- [ ] Body_Color 材质替色及 Foot_Color 高度映射，不能把本批去重染色视作人物 shader 已完全还原。
 - [ ] 反查 monitor、嵌套特效容器及透明材质的排序/深度状态；不将所有灯束一律移到人物后面。
 - [ ] 后续处理用户暂无法描述的灯光差异，保留待办，不宣称全部灯光还原完成。
 
 验证边界：反编译、源资源、浏览器合成各自提供证据；源码构建不代表原版视频或真机视觉一致。
+
+第一批证据与验证见 [NATIVE_CHARACTER_LAYER_BATCH_20261014.md](NATIVE_CHARACTER_LAYER_BATCH_20261014.md)。背屏已定位到原版 value8 / SetSortOrder（0x2218938），分层偏移为 -5、+1、+5、+110；当前 Web 容器 -30000、图像 -10000/-9999，尚未恢复这些脚本层级。需先厘清解析字段与容器归属再改，不能只替换一个 zIndex。

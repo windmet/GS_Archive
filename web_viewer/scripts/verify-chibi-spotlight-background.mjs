@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import { spotlightBackgroundOrderAt } from '../src/core/chibiCharacterLayers.js'
 import { sampleSpotlightBackground } from '../src/core/chibiSpotlightBackground.js'
 import { createSpotlightSpriteStore } from '../src/core/chibiSpotlightSprites.js'
 
@@ -31,14 +32,14 @@ const effects = { value: { spotlightBackground: native, pinspotlight: pinModel }
 const sync = new Function('spotlightBackgroundAlpha', 'spotlightBackgroundSprites', 'app', 'cameraContainer',
   'pinspotlightMaskCount', 'pinspotlightModelForAsset', 'pinspotlightRuntimes', 'PIXI',
   'sampleSpotlightBackground', 'spotlightStatesAt', 'pinspotlightStatesAt', 'stageTime', 'lightingEnabled',
-  'stageEffectIndex', 'environmentScale', 'parseHexColor',
+  'stageEffectIndex', 'environmentScale', 'parseHexColor', 'spotlightBackgroundOrderAt', 'selectedSong',
   source.slice(source.indexOf('function syncSpotlightBackground('), source.indexOf('function spotlightStatesAt('))
     + '\nreturn syncSpotlightBackground')(alpha, store,
   { renderer: { width: 1280, height: 720, resolution: 1 } }, {}, maskCount,
   (model, assets, asset) => ({ layers: [{ asset }] }), pinRuntimes,
   {Rectangle: class { constructor(x,y,width,height) { Object.assign(this,{x,y,width,height}) } }}, sampleSpotlightBackground, sample,
   () => pins, time, lighting, effects, environment,
-  value => parseInt(value.slice(1), 16))
+  value => parseInt(value.slice(1), 16), spotlightBackgroundOrderAt, song)
 sync()
 store.runtimes.set('background', { sprite })
 assert.equal(alpha.value, 0.5)
@@ -62,9 +63,9 @@ assert.deepEqual({...sprite.filterArea}, { x: 0, y: 0, width: 1280, height: 720 
 maskRuntime.maskSprite.visible = false
 sync(); assert.equal(sprite.visible, false, 'Hidden masks must not be reused on backward seeks')
 maskRuntime.maskSprite.visible = true
-effects.value.spotlightBackground = { ...native, layers: [{ ...native.layers[0], sortingOrder: 3001 }] }
+song.value.pinspotlightEvents = [{ time: 32500, depth: 3001 }]
 sync(); assert.equal(sprite.filters, null); assert.equal(maskCount.value, 0, 'Outside native sorting interval is unmasked')
-effects.value.spotlightBackground = native
+song.value.pinspotlightEvents = []
 pins.clear(); sync(); assert.equal(sprite.filters, null); assert.equal(maskCount.value, 0, 'Switch back to Spotlight detaches Pin filters')
 
 let resolve, destroyed = 0, ready = 0

@@ -464,7 +464,7 @@ import { archiveText } from './archive/useArchiveCostumeText.js'
 import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
-import { bodyColorsAt, multiplyBodyTint } from '../core/chibiBodyColors.js'
+import { bodyColorsAt } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
@@ -514,6 +514,7 @@ import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
 import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
@@ -1842,7 +1843,19 @@ function ensureWholeScreenColorOverlay() {
   layoutStageBackground()
 }
 
+function syncCharacterLayers() {
+  const offsets = lightingEnabled.value
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value)
+    : new Map()
+  for (const [position, runtime] of runtimes) {
+    const base = layoutCoordinatesForStage(position, stageTime.value).sortingOrder
+    runtime.spine.zIndex = base + (offsets.get(position) || 0)
+    syncCharacterShadow(runtime)
+  }
+}
+
 function applyStageLighting() {
+  syncCharacterLayers()
   syncStagelights()
   syncSuspensionlights()
   syncOldSuspensionlights()
@@ -1890,51 +1903,11 @@ function applyStageLighting() {
   }
   // Foot_Color is a local height replacement gradient. It must never dim
   // the entire face/body; body tint remains a separate addressed command.
-  const character = { color: 0xffffff }
   const foot = currentFootLighting.value
-  const spotlightStates = [...spotlightStatesAt(stageTime.value).values()]
-    .filter(state => state.alpha > 0.001 && state.beamColor)
-  const spotlightPositions = new Set(
-    spotlightStates
-      .filter(state => state.stagePosition)
-      .map(state => Number(state.stagePosition)),
-  )
-  const spotlightEnvironment = spotlightStates.findLast?.(state => state.environmentColor)
-    || [...spotlightStates].reverse().find(state => state.environmentColor)
-  const spotlightDim = spotlightEnvironment
-    ? Math.max(0, Math.min(1, Number(spotlightEnvironment.environmentOpacity || 0) / 1000))
-    : 0
-  const spotlightDimColor = parseHexColor(spotlightEnvironment?.environmentColor, 0x221d23)
-  const pinspotlightStates = [...pinspotlightStatesAt(stageTime.value).values()]
-    .filter(state => state.alpha > 0.001 && state.asset)
-  const pinspotlightPositions = new Set(pinspotlightStates
-    .filter(state => state.stagePosition)
-    .map(state => Number(state.stagePosition)))
-  const pinspotlightEnvironment = pinspotlightStates.findLast?.(state => state.environmentColor)
-    || [...pinspotlightStates].reverse().find(state => state.environmentColor)
-  const pinspotlightDim = pinspotlightEnvironment
-    ? Math.max(0, Math.min(1, Number(pinspotlightEnvironment.environmentOpacity || 0) / 1000))
-    : 0
-  const pinspotlightDimColor = parseHexColor(
-    pinspotlightEnvironment?.environmentColor,
-    0x221d23,
-  )
   for (const [position, runtime] of runtimes) {
-    // A targeted performer is lit independently from the environment wash.
-    // Mixing back toward white reproduces that separation without making the
-    // Spine itself translucent beneath the foreground beam sprite.
-    if (pinspotlightPositions.size > 0) {
-      runtime.spine.tint = pinspotlightPositions.has(position)
-        ? mixRgb(character.color, 0xffffff, 0.5)
-        : mixRgb(character.color, pinspotlightDimColor, pinspotlightDim)
-    } else {
-      runtime.spine.tint = spotlightPositions.has(position)
-        ? mixRgb(character.color, 0xffffff, 0.5)
-        : spotlightPositions.size > 0
-          ? mixRgb(character.color, spotlightDimColor, spotlightDim)
-          : character.color
-    }
-    runtime.spine.tint = multiplyBodyTint(runtime.spine.tint, currentBodyColors.value.get(position))
+    // Environment dimming belongs to SpotlightBackground's composited plane.
+    // Applying it to Spine as well doubled the wash and bypassed Pin masks.
+    runtime.spine.tint = currentBodyColors.value.get(position) ?? 0xffffff
     syncFootLighting(PIXI,runtime,foot,true)
   }
   if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
@@ -1951,6 +1924,7 @@ function syncSpotlightBackground() {
   const pins = pinspotlightStatesAt(stageTime.value)
   const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value), pins, lightingEnabled.value)
   if (!state || state.alpha <= 0.001) return
+  const backgroundOrder = spotlightBackgroundOrderAt(selectedSong.value, stageTime.value)
   const activePins = [...pins.values()].filter(pin => pin.alpha > 0.001 && pin.asset)
   const filters = []
   const model = stageEffectIndex.value?.pinspotlight
@@ -1960,8 +1934,7 @@ function syncSpotlightBackground() {
     if (!desired) return
     const mask = pinspotlightRuntimes.get(`${pin.id}:${desired.layers[0].asset}`)
     if (!mask?.maskSprite.visible) return
-    const order = stageEffectIndex.value?.spotlightBackground?.layers[0]?.sortingOrder ?? 1900
-    if (order >= model.sortingInterval[0] && order <= model.sortingInterval[1]) filters.push(mask.filter)
+    if (backgroundOrder >= model.sortingInterval[0] && backgroundOrder <= model.sortingInterval[1]) filters.push(mask.filter)
   }
   const runtime = spotlightBackgroundSprites.ensure('background',
     stageEffectIndex.value?.spotlightBackground, stageEffectIndex.value?.assets)
@@ -1971,6 +1944,7 @@ function syncSpotlightBackground() {
   const fit = Math.min(width / 1280, height / 720) * environmentScale.value
   runtime.sprite.position.set(width * 0.5, height * 0.5)
   runtime.sprite.scale.set(runtime.layer.scaleX * fit, runtime.layer.scaleY * fit)
+  runtime.sprite.zIndex = backgroundOrder
   runtime.sprite.tint = parseHexColor(state.color, 0x221d23)
   runtime.sprite.alpha = state.alpha
   runtime.sprite.filters = filters.length ? filters : null
@@ -2060,7 +2034,7 @@ function syncSpotlights() {
     const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
     runtime.container.position.set(targetX, targetY)
     runtime.container.scale.set(viewportScale)
-    runtime.container.zIndex = Number(state.depth) || 1800
+    runtime.container.zIndex = (state.depth ?? 1800) + 1
     runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
     runtime.container.visible = true
     visibleSpotlightIds.value.push(state.id)
@@ -2539,7 +2513,7 @@ async function syncPinspotlights() {
       sprite.position.set(x, y)
       sprite.scale.set(scale)
       sprite.alpha = Math.max(0, Math.min(1, state.alpha))
-      sprite.zIndex = (Number(state.depth) || 1850) + 1
+      sprite.zIndex = (state.depth ?? 1850) + 1
     }
     // Missing colour keeps the serialized flash default; masks stay black.
     runtime.sprite.tint = parseHexColor(state.beamColor, model.layers[1].initialColor)
@@ -3256,9 +3230,12 @@ function layoutRuntime(position, motionEvent = null) {
   // 24% larger than the already calibrated five-person reference.
   runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit)
   runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
-  // LiveObjectIdol uses the authored baseSortOrder; neither Y nor a performer
-  // index may override it. Equal orders retain the scene's stable child order.
-  runtime.spine.zIndex = sortingOrder
+  // Authored baseSortOrder plus native Spotlight offset, including late
+  // motion loads. Y and performer index never replace this base.
+  const offset = lightingEnabled.value
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value).get(position) || 0
+    : 0
+  runtime.spine.zIndex = sortingOrder + offset
   syncCharacterShadow(runtime)
   runtime.positionTweenProgress = 1
 }

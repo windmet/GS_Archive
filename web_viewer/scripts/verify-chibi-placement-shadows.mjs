@@ -1,3 +1,4 @@
+import { spotlightSortOffsetsAt } from '../src/core/chibiCharacterLayers.js'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { chibiPositionStateAt, resolveChibiPlacement, projectChibiGround } from '../src/core/chibiStageCoordinates.js'
@@ -53,16 +54,18 @@ const layoutSong={...witnesses.psblts_live_effect,positionEvents:[
   {time:1800,position:3,x:350,y:230,sortingOrder:2600},
 ]}
 const layout=new Function('runtimes','app','canvasRef','stageTime','layoutCoordinatesForStage','characters','selectedSong',
-  'projectChibiGround','CHARACTER_STAGE_SCALE','charactersEnabled','activePositions','syncCharacterShadow',
+  'projectChibiGround','CHARACTER_STAGE_SCALE','charactersEnabled','activePositions','syncCharacterShadow','lightingEnabled','spotlightSortOffsetsAt',
   sfc.match(/function layoutRuntime\([^]*?\n\}/)[0]+';return layoutRuntime')(
   new Map([[4,actor]]),{renderer:{width:1280,height:720,resolution:1}},{value:{}},stageTime,sampler(layoutSong),
-  {value:[{id:'test',previewScale:.3}]},{value:layoutSong},projectChibiGround,.58,{value:true},{value:[4]},()=>{})
+  {value:[{id:'test',previewScale:.3}]},{value:layoutSong},projectChibiGround,.58,{value:true},{value:[4]},()=>{},{value:true},spotlightSortOffsetsAt)
 layout(4);const initialSize=actor.spine.scale.x
 assert.equal(actor.spine.zIndex,1700)
 stageTime.value=1800;layout(4)
 assert.equal(actor.spine.zIndex,2600);assert.equal(actor.spine.scale.x,initialSize)
 assert.equal(actor.spine.x,990);assert.equal(actor.spine.y,490)
 stageTime.value=1799;layout(4);assert.equal(actor.spine.zIndex,1700)
+layoutSong.spotlightEvents=[{time:1799,id:1,stagePosition:4}];layout(4);assert.equal(actor.spine.zIndex,1950,'Late motion layout must preserve the active Spotlight offset')
+layoutSong.spotlightEvents=[]
 const profile=read('chibi-character-shadow-model')
 const bone={worldX:25,worldY:38};const spine={x:300,y:500,scale:{x:.2,y:.2},skeleton:{findBone:name=>name==='shadow'?bone:null}}
 const firstShadow=characterShadowLayout(spine,profile)
@@ -79,7 +82,7 @@ spine.update(10);assert.deepEqual(calls,['pose',627]);release();assert.equal(spi
 assert(sfc.includes('return resolveChibiPlacement(positionState, event, fallbackX)'))
 assert(sfc.includes('installCharacterShadowFollower(runtime.spine'))
 assert(sfc.includes('syncCharacterShadow(runtime)'))
-assert(sfc.includes('runtime.spine.zIndex = sortingOrder'))
+assert(sfc.includes('runtime.spine.zIndex = sortingOrder + offset'))
 assert(sfc.includes('shadow.zIndex = runtime.spine.zIndex - 10'))
 assert(!sfc.includes('sourceScale / 1700'))
 if (process.argv.includes('--published-assets')) {
