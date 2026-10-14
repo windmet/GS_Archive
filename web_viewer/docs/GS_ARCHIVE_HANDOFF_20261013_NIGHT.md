@@ -71,7 +71,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 3. **扩展路径地址**：偶像、Unit、卡片（`/cards/<resource_id>/`）、歌曲（`/songs/<song_code>/`）和活动（`/events/<id>/`）都已有路径，见第十节。原计划的路径批次到此完成。
    - 每扩一类，先把该视图加入 `ENFORCED_ROUTE_VIEWS`（路由 schema 审计的批次 F/G）。
    - 再在 `archiveRoute.js` 加路径读写，在 `verify-archive-path-locator.mjs` 里全量往返，在 `generate-entity-head-shells.mjs` 里加外壳。
-   - Reader、Player、Home 按原计划不改格式。批次 E（Reader 链接默认不带 `reading_rev`）仍未做。
+   - Reader、Player、Home 按原计划不改格式。批次 E（Reader 链接默认不带 `reading_rev`）已完成，见第十节末。
 4. **大图分享卡**：现在 148px 头像只够 `summary` 小卡；要 `summary_large_image`，需要另备 1200×630 图。
 5. **L5 ③ 缩短串行链**：在入口脚本里更早发起 read-model 请求，预计省 0.5–1 s，需要完整导航回归。
 6. **缓存**：迁到自定义域名后，用 zone 的 Cache Rules 缓存 `/assets/voice/*`、`/assets/spines/*`、`/data/*`。这些 URL 不带数据版本，换 R2 快照时要清缓存。zone 浏览器 TTL 建议改为 “Respect Existing Headers”。这两项都需要控制台权限。
@@ -318,4 +318,26 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
   - 390px 手机宽度截图核对三处新区块，没有横向滚动，没有控制台错误。
 - 未做：
   - 远端部署（preview 仍是 `b3c1f13a`）。
-  - 从活动进入的歌曲、从歌曲进入的活动，在冷开或刷新后返回的去处：依赖来源帧，没有另设回退。
+- 更正（同日稍后）：上面原写「刷新后返回依赖来源帧，没有另设回退」，容易被理解为刷新后回不去。实测来源帧本身存在 history state 里，刷新后仍在。
+  - 新增浏览器步骤 P35（歌曲 → 活动 → 刷新 → 返回歌曲）、P36（活动 → 歌曲 → 刷新 → 返回活动），都不改代码即通过。
+  - 只有复制出去的链接冷开时没有来源：活动回活动目录，歌曲回歌曲目录，这是设计如此。
+
+### 批次 E：Reader 链接默认指向最新正文
+
+- 按[路由 schema 审计](GS_ARCHIVE_ROUTE_SCHEMA_AUDIT_20261011.md) §4 实现：
+  - Reader 和 Reader 演出地址默认不再带 `reading_rev`（原来每个链接都带 64 位哈希）。
+  - 只有打开时地址里就带 `reading_rev` 的链接，才锁定该版本；锁定状态在内存中为 `readingRevisionPinned`。
+  - 锁定后，在同一篇里定位、演出、从播放器返回，都保留锁定。切到另一篇、点「重新载入正文」、或打开不带版本的链接，就解除锁定。
+- 未锁定时，会话仍在内存里记住当前显示正文的版本（`readingRevision`），用于本会话的演出校验。这个值不写进地址。
+- 刷新或冷开不带版本的演出链接时，用当前 manifest 的 `entry.sha256` 校验。来源字节摘要校验（`readingPlaybackTarget`）不变。
+- 锁定的旧版本链接遇到正文已更新：仍提示「阅读版本已变化」，不会播放。
+- 改动在 `useArchiveNavigationState.js`（写入）、`useReaderNavigation.js`（锁定、回退与内存版本）和 `App.vue`（接线）。
+- 未做：在 Reader 菜单里加「复制永久链接（锁定当前版本）」。审计里把它列为日后菜单项。
+- 验证：
+  - `verify-reading-playback` 改为新契约：默认链接不带版本，内存仍持有已验证版本；新增锁定、返回后保持锁定、解除锁定后不写版本等断言。
+  - `verify-reader-navigation`、`verify-reading-navigation`、`verify-story-interaction`、`verify-reader-viewport`、`verify-route-schema` 通过。
+  - `verify:source-batch` 133/133、`build:check`、`verify:portal-navigation` 通过。
+  - 浏览器旅程 42/42，新增 P37：
+    - 从活动进入 Reader，Reader 地址和演出地址都不带 `reading_rev`；
+    - 刷新演出地址后照常播放，没有错误提示；
+    - 手动带上当前版本打开，地址保留 `reading_rev`。

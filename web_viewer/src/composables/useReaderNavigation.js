@@ -15,7 +15,7 @@ import { playbackPreferencesForReadingMode } from '../core/ReaderPlaybackPrefere
 import { saveStoryContentMode, setStoryLanguagePreferences, storyContentMode } from '../utils/LanguageStore.js'
 
 export function useReaderNavigation({
-  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingScope,
+  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingRevisionPinned = ref(false), readingScope,
   currentStoryDomain, currentStorySection, currentEpisodeId, currentStoryFile, currentWorkMode, currentCharacterId,
   currentEventId, eventParentView, currentCategoryId, currentArchiveUnitCode, detailSourceRoute, currentScenarioFile,
   loading, loadingPurpose, collectionReadModelDetail, storyReadModelDetail, eventReadModelDetail,
@@ -128,6 +128,8 @@ export function useReaderNavigation({
   function selectReaderDocument(documentId) {
     const segment = readingScope.value === 'chapter' && chapterReadingState.value?.segments.find(item => item.documentId === documentId)
     if (!segment) return openStoryReader(documentId)
+    // A pinned version belongs to the document it was linked with.
+    if (documentId !== readingDocumentId.value) readingRevisionPinned.value = false
     readingDocumentId.value = documentId; readingRowId.value = ''; readingRevision.value = segment.entry?.sha256 || ''
     readingState.value = { status:segment.status, document:segment.document, entries:chapterReadingState.value.segments.map(item=>item.entry).filter(Boolean), error:segment.error, parent:chapterReadingState.value.parent || null }
     syncArchiveRoute({ replace:true })
@@ -187,7 +189,7 @@ export function useReaderNavigation({
 
   function returnToReader() {
     const route = { ...currentArchiveRoute(), view: 'reader', story: currentStoryFile.value, reading: readingDocumentId.value, readingRow: readingRowId.value,
-      readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevision.value, readingScope:readingScope.value,
+      readingMode: readingMode.value === storyContentMode.value ? '' : readingMode.value, readingRev: readingRevisionPinned.value ? readingRevision.value : '', readingScope:readingScope.value,
       category: currentEventId.value ? currentCategoryId.value : '',
       unit: currentEventId.value && eventParentView.value === 'unit_detail' ? currentArchiveUnitCode.value : '',
       parentView: currentEventId.value ? eventParentView.value : '',
@@ -227,7 +229,8 @@ export function useReaderNavigation({
       readingPlaybackNotice.value = ''
       try {
         const entry = readingState.value.entries.find(e => e.document_id === readingDocumentId.value)
-        const revision = route ? route.readingRev : (readingRevision.value || entry?.sha256)
+        // A link without reading_rev plays the current text; a pinned one must still match it.
+        const revision = route ? (route.readingRev || entry?.sha256) : (readingRevision.value || entry?.sha256)
         // An initial index of 1 denotes the full episode; row remains the return location.
         let target
         if (route && ['segment','chapter'].includes(route.playMode) &&
@@ -325,6 +328,7 @@ export function useReaderNavigation({
     readingRowId.value = route.readingRow || ''
     readingMode.value = route.readingMode || storyContentMode.value
     readingRevision.value = route.readingRev || ''
+    readingRevisionPinned.value = Boolean(route.readingRev)
     readingScope.value = route.readingScope || ''
     chapterReadingSession.close()
     if (route.readingScope !== 'chapter' || !reusableDirectory) chapterReadingState.value = null
@@ -382,6 +386,8 @@ export function useReaderNavigation({
       await directory
     }
     if (!intent.isCurrent()) return
+    // Unpinned, the session remembers the version it is showing (for playback proof), not the address.
+    if (!readingRevisionPinned.value) readingRevision.value = readingState.value.entries.find(e => e.document_id === route.reading)?.sha256 || ''
     if (route.view === 'player') await openReaderPlayback(route.readingRow, { intent, route })
     else if (readingRevision.value && readingRevision.value !== readingState.value.entries.find(e => e.document_id === route.reading)?.sha256) {
       readingPlaybackNotice.value = '阅读版本已变化。请重新选择本篇分段，确认最新正文后再演出。'

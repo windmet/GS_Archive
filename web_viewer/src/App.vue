@@ -843,7 +843,7 @@ const {
   readingDocumentId,
   readingRowId,
   readingMode,
-  readingRevision, readingScope, playMode,
+  readingRevision, readingRevisionPinned, readingScope, playMode,
   currentScenarioInitialStep,
   returnViewAfterPlayer,
   storyCollectionParentView,
@@ -1413,7 +1413,7 @@ const {
   openReaderPlayback, updateReadingMode, locateReadingRow, resolveReaderContinuationSource,
   applyReaderRoute, loadReaderQueue,
 } = useReaderNavigation({
-  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingScope,
+  view, readingDocumentId, readingRowId, readingMode, readingRevision, readingRevisionPinned, readingScope,
   currentStoryDomain, currentStorySection, currentEpisodeId, currentStoryFile, currentWorkMode, currentCharacterId,
   currentEventId, eventParentView, currentCategoryId, currentArchiveUnitCode, detailSourceRoute, currentScenarioFile,
   loading, loadingPurpose, collectionReadModelDetail, storyReadModelDetail, eventReadModelDetail,

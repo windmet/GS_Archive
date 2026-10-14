@@ -1,6 +1,6 @@
 // Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
 // /songs/<song_code>/, /events/<id>/): plan section 3.6, P1-P15, the card steps P16-P19, the song steps P20-P24
-// the event steps P25-P31 and the song/event/main-story relation steps P32-P34.
+// the event steps P25-P31 and the song/event/main-story relation steps P32-P36 and the Reader revision step P37.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -309,6 +309,39 @@ try {
   await pageBack(); await waitFor(songReady)
   check('P34 main-story unlock opens the chapter and back', unlockText === '解锁条件：阅读主线 第1章 第1話（至 EPISODE10）' && unlockRoute.includes('story_type=main') && unlockRoute.includes('story_section=101') && (await loc()) === '/songs/grwsml/',
     `"${unlockText}" -> ${unlockRoute} -> ${await loc()}`)
+  // P35: song -> its event -> reload -> page back returns to the song (the opener survives in history state).
+  await open('/songs/ntalon/', `!!document.querySelector('.song-events .relation-row')`)
+  await clickTo('.song-events .relation-row'); await waitFor(eventReady)
+  const songEventPath = await loc(), songEventState = await ev('JSON.stringify(history.state?.sidemArchiveNav?.event || null)')
+  await send('Page.reload', { ignoreCache: true }); await waitFor(eventReady); await settle()
+  await pageBack(); await waitFor(songReady)
+  check('P35 song event refresh and back', songEventPath === '/events/410001/' && (await loc()) === '/songs/ntalon/',
+    `${songEventPath} (placement ${songEventState}) -> reload -> ${await loc()}`)
+  // P36: event -> its song -> reload -> page back returns to the event.
+  await open('/events/410001/', `!!document.querySelector('.event-songs .relation-row')`)
+  await clickTo('.event-songs .relation-row'); await waitFor(songReady)
+  const eventSongPath = await loc(), eventSongState = await ev('JSON.stringify(history.state?.sidemArchiveNav?.song || null)')
+  await send('Page.reload', { ignoreCache: true }); await waitFor(songReady); await settle()
+  await pageBack(); await waitFor(eventReady)
+  check('P36 event song refresh and back', eventSongPath === '/songs/ntalon/' && (await loc()) === '/events/410001/',
+    `${eventSongPath} (placement ${eventSongState}) -> reload -> ${await loc()}`)
+  // P37: Reader and Reader playback links name the latest text by default (no reading_rev); a reloaded
+  // playback link still verifies against the current text and plays; an explicit reading_rev stays pinned.
+  const readerReady = `location.search.includes('view=reader') && !!document.querySelector('.chapter-reading-segment header button:not([disabled])')`
+  await open('/events/410001/', eventReady)
+  await clickTo('.event-story .story-action.primary'); await waitFor(readerReady); await settle()
+  const readerUrl = await loc()
+  const revision = await ev(`document.querySelector('.chapter-reading-segment')?.dataset.revision || ''`)
+  await clickTo('.chapter-reading-segment header button'); await waitFor(`location.search.includes('view=player')`)
+  const playerUrl37 = await loc()
+  await send('Page.reload', { ignoreCache: true }); await waitFor(`location.search.includes('view=player') && !!document.querySelector('.player-top-bar button')`); await settle()
+  const reloadedPlayer = await loc()
+  const pinnedUrl = readerUrl + '&reading_rev=' + encodeURIComponent(revision || 'sha256:missing')
+  await open(pinnedUrl, readerReady)
+  const pinnedLoc = await loc()
+  check('P37 Reader links default to the latest text', !readerUrl.includes('reading_rev') && playerUrl37.includes('view=player') && !playerUrl37.includes('reading_rev') &&
+    reloadedPlayer.includes('view=player') && (await ev(`!document.querySelector('[role=alert]')`)) !== false && pinnedLoc.includes('reading_rev=') && errors.length === 0,
+    `${readerUrl.slice(0, 70)} -> ${playerUrl37.slice(0, 70)} -> reload ${reloadedPlayer.slice(0, 40)}; pinned keeps rev=${pinnedLoc.includes('reading_rev=')} errors=${errors.join(' | ') || 0}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {
