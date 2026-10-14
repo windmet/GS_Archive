@@ -228,7 +228,7 @@ const imports = {
   '../../localization/ui/UiLocaleStore.js': { uiLocale },
   '../../presentation/AttributeLabel.js': { ...AttributeLabel },
   ...Object.fromEntries(['ArchiveVoiceRow', 'ArchiveImageLightbox', 'ArchiveListHeader', 'ArchiveIdolReference',
-    'ArchiveTechnicalDetails', 'ArchiveRelationList', 'ArchiveSourceLink'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
+    'ArchiveTechnicalDetails', 'ArchiveRelationList', 'ArchiveSourceLink', 'ArchiveVideoPlayer'].map(name => [`./${name}.vue`, { default: emptyComponent }])),
 }
 const { descriptor } = parse(read('src/components/archive/ArchiveCardDetail.vue'))
 const source = compileScript(descriptor, { id: 'card-costume-contract', inlineTemplate: true }).content

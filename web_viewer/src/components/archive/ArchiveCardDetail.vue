@@ -157,14 +157,15 @@
 
       <section v-if="skillMovie" class="card-detail-section card-skill-movie">
         <h4>技能演出</h4>
-        <div class="skill-movie-frame" :style="{ aspectRatio: `${skillMovie.width} / ${skillMovie.height}` }">
-          <video v-if="skillMoviePlaying" :key="skillMovie.url" :src="skillMovie.url" :poster="skillMovie.poster" autoplay playsinline controls muted preload="auto" aria-label="技能演出动画"></video>
-          <button v-else type="button" class="skill-movie-poster" :aria-label="`播放技能演出（约 ${skillMovieMegabytes} MB）`" @click="skillMoviePlaying = true">
-            <img :src="skillMovie.poster" alt="" loading="lazy" />
-            <span class="skill-movie-play" aria-hidden="true"><Play :size="22" /></span>
-          </button>
+        <div class="skill-movie-layout">
+          <ArchiveVideoPlayer class="skill-movie-player" :src="skillMovie.url" :poster="skillMovie.poster" :width="skillMovie.width" :height="skillMovie.height" label="技能演出" :size-label="`约 ${skillMovieMegabytes} MB`" />
+          <dl class="skill-movie-facts">
+            <div><dt>时长</dt><dd>{{ (skillMovie.durationMs / 1000).toFixed(1) }} 秒</dd></div>
+            <div><dt>大小</dt><dd>约 {{ skillMovieMegabytes }} MB · 点击后才加载</dd></div>
+            <div><dt>画面</dt><dd>{{ skillMovie.width }} × {{ skillMovie.height }} · 无声</dd></div>
+          </dl>
         </div>
-        <p class="skill-movie-note">游戏内发动技能时的过场动画 · {{ (skillMovie.durationMs / 1000).toFixed(1) }} 秒 · 约 {{ skillMovieMegabytes }} MB，点击后才加载</p>
+        <p class="skill-movie-note">游戏内发动技能时的过场动画。可以慢放、逐帧查看，或用大屏、全屏播放。</p>
       </section>
 
       <section v-if="visibleCostumes.length" class="card-detail-section">
@@ -314,8 +315,9 @@ void loadArchiveNames('card-lines').catch(() => {})
 const lineView = ({ text, lang, pending }) => ({ text, attrs: { lang, ...(pending ? { class: 'is-pending' } : {}) } })
 const cardLine = (kind, field, source) => lineView(archiveLineText('card-lines', [[kind, field]], source))
 const operationalLine = source => lineView(archiveLineText('card-lines', ANY_CARD_LINE, source))
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Play, Shirt } from '@lucide/vue'
+import { CheckCircle2, ChevronLeft, ChevronRight, CircleSlash, Expand, ImageOff, PackageOpen, Shirt } from '@lucide/vue'
 import ArchiveImageLightbox from './ArchiveImageLightbox.vue'
+import ArchiveVideoPlayer from './ArchiveVideoPlayer.vue'
 import ArchiveListHeader from './ArchiveListHeader.vue'
 import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
@@ -428,11 +430,8 @@ watch(() => [props.card?.resource_id, props.focusVoice], async ([, voice]) => {
   detailRoot.value?.querySelector(`[data-voice-cue="${CSS.escape(voice)}"]`)?.scrollIntoView({ block: 'center' })
 }, { immediate: true, flush: 'post' })
 
-// The skill cut-in loads only on request; switching cards returns to the poster.
-const skillMoviePlaying = ref(false)
 const skillMovieMegabytes = computed(() => ((props.skillMovie?.bytes || 0) / 1e6).toFixed(1))
 watch(() => props.card?.resource_id, () => {
-  skillMoviePlaying.value = false
   selectedSkillLevel.value = props.card?.gameplay?.skill?.levels?.[0]?.level || 1
   heroState.value = props.card?.single_state ? 'awakened' : 'normal'
   heroFrame.value = 'landscape'
@@ -707,14 +706,18 @@ function openRelation(item) {
 
 /* Sections */
 .card-detail-section { display: grid; gap: var(--gs-space-5); min-width: 0; }
-.skill-movie-frame { position: relative; overflow: hidden; border-radius: var(--gs-radius-panel); background: #000; }
-.skill-movie-frame video, .skill-movie-poster { display: block; width: 100%; height: 100%; }
-.skill-movie-poster { position: relative; padding: 0; border: 0; background: #000; cursor: pointer; }
-.skill-movie-poster img { width: 100%; height: 100%; object-fit: cover; }
-.skill-movie-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(0 0 0 / .62); color: #fff; }
-.skill-movie-play svg { margin-left: 3px; fill: currentColor; }
-@media (hover: hover) { .skill-movie-poster:hover .skill-movie-play { background: var(--gs-mint-ink); } }
-.skill-movie-note { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.skill-movie-layout { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); align-items: start; gap: var(--gs-space-5) var(--gs-space-7); }
+.skill-movie-facts { display: grid; gap: var(--gs-space-3); margin: 0; }
+.skill-movie-facts div { display: grid; grid-template-columns: 4em minmax(0, 1fr); gap: var(--gs-space-3); padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-line); }
+.skill-movie-facts dt { color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.skill-movie-facts dd { margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
+.skill-movie-note { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
+.card-skill-movie { container-type: inline-size; }
+@container (max-width: 820px) {
+  .skill-movie-layout { grid-template-columns: minmax(0, 560px); gap: var(--gs-space-3); }
+  .skill-movie-facts { display: flex; flex-wrap: wrap; gap: var(--gs-space-1) var(--gs-space-4); }
+  .skill-movie-facts div { display: flex; gap: var(--gs-space-2); padding: 0; border: 0; }
+}
 .card-detail-section h4 { margin: 0; padding-bottom: var(--gs-space-3); border-bottom: 1px solid var(--gs-rule); font-size: var(--gs-text-section); font-weight: var(--gs-weight-bold); }
 .release-series-cards { display: flex; gap: var(--gs-space-3); padding-bottom: var(--gs-space-2); overflow-x: auto; overscroll-behavior-inline: contain; }
 .release-series-cards button { flex: 0 0 74px; min-width: 0; padding: var(--gs-space-2); border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
