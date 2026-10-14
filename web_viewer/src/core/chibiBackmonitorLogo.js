@@ -1,33 +1,36 @@
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 
 // Native sprite/curve/shader inputs, bounded to the two recording-checked
-// Take endings and Drive's recorded opening. Activation and geometry remain
+// Take endings and Drive's recorded opening. Alpha follows native FadeAlpha;
+// rotation phase and geometry remain
 // reference-calibrated until the director/RotateSprite bodies are recovered.
 export function logoFadeAt(events, milliseconds) {
-  let alpha=0, target=0, origin=0, movie=null, duration=0, tween=null
-  const sample=time=>tween ? tween.from+(tween.to-tween.from)*Math.max(0,Math.min(1,(time-tween.time)/tween.duration)) : alpha
+  let alpha=0, target=0, origin=0, movie=null, tween=null
+  const sample=time=>{
+    if(!tween)return alpha
+    const t=Math.max(0,Math.min(1,(time-tween.time)/500))
+    return tween.from+(tween.to-tween.from)*(1-(1-t)**2)
+  }
   for(const event of events || []) {
     const time=Number(event.time)
     if(time>milliseconds)break
     alpha=sample(time)
-    const control=event.rawValue6 ?? event.rotation
-    const rawDuration=event.rawValue7 ?? event.opacity
-    if(rawDuration!=null)duration=Math.max(0,Number(rawDuration)||0)
-    if(event.movie && event.movie!==movie) {movie=event.movie;origin=time;alpha=0;tween=null;target=0}
-    if(control==null)continue
-    const next=Number(control)===1 ? 1 : 0
-    if(next===target)continue
-    if(next)origin=time
+    const control=event.rawValue6 ?? event.rotation ?? 0
+    const movieChanged=Boolean(event.movie && event.movie!==movie)
+    if(movieChanged) {movie=event.movie;origin=time}
+    const next=Number(control)===1 ? .8 : 0
+    if(next && (!target || movieChanged))origin=time
     target=next
-    tween=duration>0 ? {from:alpha,to:target,time,duration} : null
-    if(!tween)alpha=target
+    // PlayMovie calls FadeAlpha on every command. Neither movie changes nor
+    // repeated show/hide commands may reset the current material opacity.
+    tween={from:alpha,to:target,time}
   }
   return {alpha:sample(milliseconds),movieTime:origin,movie}
 }
 
 export function sampleBackmonitorLogo(songCode, state, milliseconds, model, events) {
-  const fade=model?.fadeControls?.[songCode]==='raw-value7-ms' && events
-    ? logoFadeAt(events,milliseconds) : {alpha:state.rawValue6===1 ? 1 : 0,movieTime:state.movieTime}
+  const fade=events
+    ? logoFadeAt(events,milliseconds) : {alpha:state.rawValue6===1 ? .8 : 0,movieTime:state.movieTime}
   if (!model?.previewSongs?.includes(songCode) || state.movie !== (model.previewMovies?.[songCode] || model.previewMovie)
       || fade.alpha <= .00001 || state.y >= 4000 || milliseconds < fade.movieTime) return null
   const seconds = (milliseconds - fade.movieTime) / 1000 % model.duration

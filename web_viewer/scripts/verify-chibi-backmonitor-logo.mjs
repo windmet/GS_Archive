@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { sampleBackmonitorLogo,logoProjectiveQuad,logoFadeAt,updateBackmonitorLogoMesh } from '../src/core/chibiBackmonitorLogo.js'
+const close=(a,b)=>assert(Math.abs(a-b)<1e-9, `${a} != ${b}`)
 const source=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-backmonitor-logo-native.json',import.meta.url)))
 const model={width:1200,height:800,localScale:source.transform.scale.x,perspectiveAngle:10,duration:2,
  curve:{index:0,initialValue:0,keys:[{time:0,coefficients:[0,0,180,0]},{time:2,coefficients:[0,0,0,360]}]},
  previewSongs:['tkstp1','tkstp2','drvalv'],previewMovie:'live_backmonitor_movie_trhorz_01',
- previewMovies:{drvalv:'live_backmonitor_movie_cool_01_2'},fadeControls:{drvalv:'raw-value7-ms'}}
+ previewMovies:{drvalv:'live_backmonitor_movie_cool_01_2'},fadeControls:{drvalv:'native-fixed-500ms'}}
 const state={movie:model.previewMovie,movieTime:95850,rawValue6:1,x:-7,y:340,scale:920}
 const sample=t=>sampleBackmonitorLogo('tkstp1',state,t,model)
 assert.equal(sample(95849),null);assert.equal(sample(95850).angle,0)
@@ -21,20 +22,22 @@ assert.equal(sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0},16200,model),
 const fadeEvents=[{time:15700,movie:drive.movie,rawValue6:1,opacity:1000},
  {time:29600,movie:drive.movie,rawValue6:0,opacity:1000}]
 assert.equal(logoFadeAt(fadeEvents,15700).alpha,0)
-assert.equal(logoFadeAt(fadeEvents,16200).alpha,.5)
-assert.equal(logoFadeAt(fadeEvents,29600).alpha,1)
-assert.equal(logoFadeAt(fadeEvents,30100).alpha,.5)
+assert.equal(logoFadeAt(fadeEvents,16200).alpha,.8)
+assert.equal(logoFadeAt(fadeEvents,29600).alpha,.8)
+close(logoFadeAt(fadeEvents,29850).alpha,.2)
 assert.equal(logoFadeAt(fadeEvents,30600).alpha,0)
-const fading=sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0,movieTime:29600},30100,model,fadeEvents)
-assert.equal(fading.alpha,.5)
-assert.equal(fading.angle,(30100-15700)/1000%2*180,'Fade continues the original rotation rather than resetting it')
+const fading=sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0,movieTime:29600},29850,model,fadeEvents)
+close(fading.alpha,.2)
+assert.equal(fading.angle,(29850-15700)/1000%2*180,'Fade continues the original rotation rather than resetting it')
 assert.equal(sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0},30600,model,fadeEvents),null)
-assert.equal(logoFadeAt(fadeEvents,16200).alpha,.5,'Backward seek reconstructs alpha without residual fade state')
+assert.equal(logoFadeAt(fadeEvents,16200).alpha,.8,'Backward seek reconstructs alpha without residual fade state')
+assert.deepEqual(logoFadeAt(fadeEvents.map(e=>({...e,opacity:0,rawValue7:0})),16000),logoFadeAt(fadeEvents,16000),'GrowSprite alpha never controls logo fade duration')
+close(logoFadeAt([fadeEvents[0],{...fadeEvents[0],time:15900}],16150).alpha,.728)
 const interrupted=[fadeEvents[0],{...fadeEvents[1],time:15900}]
-assert.ok(Math.abs(logoFadeAt(interrupted,16400).alpha-.1)<1e-10,'A quick hide fades from the partially shown opacity')
+assert.ok(Math.abs(logoFadeAt(interrupted,16150).alpha-.128)<1e-10,'A quick hide fades from the partially shown opacity')
 const mock={shader:{uniforms:{}},geometry:{getBuffer:()=>({update(){}})},mesh:{position:{set(){}},scale:{set(){}}}}
 updateBackmonitorLogoMesh(mock,model,fading,{x:0,y:0,scale:1})
-assert.equal(mock.shader.uniforms.uLogoAlpha,.5,'Custom projective shader receives the opacity uniform')
+close(mock.shader.uniforms.uLogoAlpha,.2)
 const face=logoProjectiveQuad(model,0),edge=logoProjectiveQuad(model,90),back=logoProjectiveQuad(model,180)
 assert.ok(Math.abs(face.vertices[2]-face.vertices[0]-420)<.001)
 assert.ok(Math.abs(edge.vertices[2]-edge.vertices[0])<1e-5)
@@ -72,7 +75,7 @@ if(process.argv.includes('--published-assets')) {
  const driveSongs=songs.filter(s=>s.songCode==='drvalv')
  assert.equal(driveSongs.length,20)
  assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===15700&&e.movie===model.previewMovies.drvalv&&e.rawValue6===1)))
- assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===29600&&e.rawValue6===0&&e.opacity===1000)))
+ assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===29600&&e.rawValue6===0&&(e.rawValue7??e.opacity)===1000)))
  assert.deepEqual(index.backmonitorLogo.fadeControls,model.fadeControls)
 }
 console.log('PASS native logo phase, activation guard, rewind/pause and perspective mesh instead of flat scale')
