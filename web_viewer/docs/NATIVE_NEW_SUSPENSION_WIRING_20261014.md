@@ -1,5 +1,7 @@
 # 新悬灯显示、旋转、缩放与渐隐接线
 
+后续共用旧悬灯实现见 [Drive 执行通道批次](NATIVE_DRIVE_LIGHT_CHANNELS_BATCH_20261014.md)。
+
 2026-10-14；输入 HEAD `76eccb83`；分支 `codex/stage-chibi-wiring-20261013`。本批补齐已有 RAW sidecar 的消费者，不重写 public 语料。用户进一步指定重点反查 DRIVE A LIVE，旧悬灯复查见 [原版链路记录](NATIVE_DRIVE_LIGHT_CHAIN_RECHECK_20261014.md)；旧悬灯消费者尚未替换。
 
 ## 改动及来源

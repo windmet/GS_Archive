@@ -56,7 +56,7 @@
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
-    data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
+    data-old-suspensionlight-status="native-channels-hierarchy-reference-projection"
     data-new-suspensionlight-status="native-show-rotate-scale-fade-reference-projection"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
@@ -518,6 +518,7 @@ import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/c
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
@@ -741,6 +742,7 @@ const backmonitorLogoSprites = createSpotlightSpriteStore({
 })
 let oldSuspensionTrackKey = ''
 let oldSuspensionTrack = null
+let oldSuspensionTempo = null
 let oldSuspensionAbort = null
 const oldSuspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -2247,17 +2249,35 @@ function syncOldSuspensionlights() {
     oldSuspensionSprites.release()
     oldSuspensionAbort?.abort()
     oldSuspensionTrack = null
+    oldSuspensionTempo = null
     oldSuspensionTrackKey = key
     if (descriptor?.previewEnabled && descriptor.file) {
       const abort = new AbortController()
       oldSuspensionAbort = abort
-      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+      const songCode = selectedSong.value.songCode
+      const tempoRequest = fetch(`/data/song_charts/${encodeURIComponent(songCode)}-1.json`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Stage tempo HTTP ${response.status}`)
+          return response.json()
+        }).then(chart => {
+          validateSongChart(chart, songCode, 1)
+          // SetNoteObj starts at the first conductor tempo. Constant-tempo
+          // tracks do not depend on the still-unverified offset conversion.
+          const tempos = new Set(chart.tempos.map(t => t.tempo))
+          return tempos.size === 1 ? chart.tempos[0].tempo : null
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight tempo unavailable', error)
+          return null
+        })
+      const trackRequest = fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
         .then(response => {
           if (!response.ok) throw new Error(`Old sidelight track HTTP ${response.status}`)
           return response.json()
-        }).then(track => {
+        })
+      Promise.all([trackRequest, tempoRequest]).then(([track, tempo]) => {
           if (stageDisposed || abort.signal.aborted || oldSuspensionTrackKey !== key) return
           oldSuspensionTrack = track
+          oldSuspensionTempo = tempo
           syncOldSuspensionlights()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight track load failed', error)
@@ -2270,7 +2290,7 @@ function syncOldSuspensionlights() {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
-    stageEffectIndex.value?.oldSuspensionlight,descriptor)) {
+    stageEffectIndex.value?.oldSuspensionlight,{...descriptor,tempo:oldSuspensionTempo})) {
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue

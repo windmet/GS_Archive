@@ -5,7 +5,7 @@ p=Path(__file__).with_name('fixtures')
 source=json.loads((p/'chibi-old-suspension-native.json').read_text())
 expected=json.loads((p/'chibi-old-suspension-model.json').read_text())
 assert old_suspension_model(source['prefabs'],source['controllers'])==expected
-for mutation in ('pointer','pivot','rotation','duration'):
+for mutation in ('pointer','pivot','rotation','duration','default_state','animation_target'):
     bad=copy.deepcopy(source)
     root=bad['prefabs'][0]
     if mutation=='pointer':
@@ -13,6 +13,10 @@ for mutation in ('pointer','pivot','rotation','duration'):
         c['rawHex']='00'+c['rawHex'][2:-2]+'01'
     elif mutation=='duration':
         next(iter(bad['controllers'].values()))['clips'][0]['typetree']['m_MuscleClip']['m_StopTime']=3
+    elif mutation=='default_state':
+        next(iter(bad['controllers'].values()))['typetree']['m_Controller']['m_StateMachineArray'][0]['data']['m_DefaultState']=1
+    elif mutation=='animation_target':
+        next(iter(bad['controllers'].values()))['clips'][0]['typetree']['m_ClipBindingConstant']['genericBindings'][0]['path']=123
     else:
         c=root['children'][0]['children'][0]['children'][0]['components']
         if mutation=='pivot':next(x for x in c if x['type']=='SpriteRenderer')['sprite']['pivot']['y']=.5

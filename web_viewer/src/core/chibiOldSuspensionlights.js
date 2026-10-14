@@ -1,89 +1,104 @@
-// Native sidelight sprite and rotation curves. CSV timing, clip selection and
-// the legacy director plane are reference-guided, not recovered IL2CPP.
+// Native old-suspension channels. Screen registration remains separate from
+// the recovered local hierarchy and command/Animator lifecycle.
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 const n = (v,i,d=0) => v[i] === '' || v[i] == null ? d : Number(v[i])
+const clamp = x => Math.max(0,Math.min(1,x))
+const outQuad = x => 1-(1-clamp(x))**2
+const mod = (x,p) => ((x%p)+p)%p
+function rgba(text) {
+  if (!/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(text || '')) return null
+  return {r:parseInt(text.slice(1,3),16)/255,g:parseInt(text.slice(3,5),16)/255,
+    b:parseInt(text.slice(5,7),16)/255,a:text.length===9 ? parseInt(text.slice(7,9),16)/255 : 1}
+}
+function hue(color,shift) {
+  const {r,g,b}=color,max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min
+  let h=delta===0 ? 0 : max===r ? (g-b)/delta : max===g ? (b-r)/delta+2 : (r-g)/delta+4
+  h=mod(h/6+shift,1)*6
+  const chroma=delta,x=chroma*(1-Math.abs(h%2-1)),m=min
+  const rgb=h<1?[chroma,x,0]:h<2?[x,chroma,0]:h<3?[0,chroma,x]:h<4?[0,x,chroma]:h<5?[x,0,chroma]:[chroma,0,x]
+  return {...Object.fromEntries(['r','g','b'].map((key,i)=>[key,rgb[i]+m])),a:1}
+}
+const hex = c => '#'+[c.r,c.g,c.b].map(x=>Math.round(clamp(x)*255).toString(16).padStart(2,'0')).join('')
+function phaseAt(s,time) {return s.phase + (time-s.phaseTime)/s.period*2}
+function channelsAt(s,time) {
+  const v=s.event.values,age=Math.max(0,time-s.event.time)
+  let color=s.color,alpha=color.a,unresolved=null
+  if (s.event.command==='Suspensionlight') alpha=color.a+(1-color.a)*outQuad(age/200)
+  if (s.event.command==='Suspensionlight_2') {
+    if (!(s.tempo>0)) unresolved='tempo_unavailable'
+    else {
+      const beat=60000/s.tempo,wait=n(v,14)===0?0:beat+Math.max(beat*n(v,14),0)
+      const period=beat+wait,cycle=Math.floor(age/period),t=age%period,fadeOut=wait>0 || n(v,11)!==0
+      const colors=[s.color,rgba(v[12]),rgba(v[13])].filter(Boolean)
+      color=colors[cycle%colors.length]
+      if (!fadeOut) alpha=outQuad(t/beat)
+      else if (n(v,11)!==0) alpha=t<beat?1-outQuad(t/beat):0
+      // SwitchColor explicitly writes alpha=0 (ARM64 fmov s3,wzr),
+      // including the initial wait before a fixed 1 -> 0 FadeOut.
+      else alpha=t<wait?0:1-outQuad((t-wait)/beat)
+    }
+  }
+  if (s.event.command==='Suspensionlight_3') {
+    const delay=n(v,12),period=n(v,11),wait=n(v,13),elapsed=age-delay
+    if (elapsed<0) alpha=0
+    else if (period>0) {
+      const t=mod(elapsed,period+wait)
+      alpha=t<period/2?t/(period/2):t<period?2-t/(period/2):0
+    } else unresolved='invalid_show_period'
+  }
+  if (s.event.command==='Suspensionlight_5') {
+    const delay=n(v,12),period=n(v,11)
+    if (age>=delay && period>0) {
+      const t=mod(age-delay,period)/period
+      color=hue(s.color,n(v,13)===0?t:1-t)
+      alpha=1
+    } else if (!(period>0)) unresolved='invalid_hue_period'
+  }
+  if (s.exit) {alpha=s.exit.alpha*(1-outQuad((time-s.exit.time)/200));color=s.exit.color}
+  return {alpha:unresolved?0:clamp(alpha),color,unresolved}
+}
 export function oldSuspensionlightsAt(events, time, model, registration = {}) {
-  const instances = new Map()
-  for (const e of events) {
-    if (e.time > time) break
-    const key = `${e.command}:${e.id}`
-    if (e.erase || !e.values[1]) {
-      const previous=instances.get(key),duration=Number(e.extraValues?.value102)||0
-      if(previous && duration>0) instances.set(key,{...previous,fadeStart:e.time,fadeDuration:duration})
-      else instances.delete(key)
+  const instances=new Map()
+  for (const event of events) {
+    if(event.time>time)break
+    const key=`${event.command}:${event.id}`,v=event.values
+    let previous=instances.get(key)
+    if(previous?.exit && event.time>=previous.exit.time+200) {instances.delete(key);previous=null}
+    const erase=event.extraValues?.value101!=null?event.extraValues.value101==='1':event.erase
+    if(erase) {
+      if(previous) {
+        const now=channelsAt(previous,event.time)
+        previous.exit={time:event.time,alpha:now.alpha,color:now.color}
+      }
       continue
     }
-    instances.set(key,e)
+    const period=n(v,3),color=rgba(v[9])||previous?.color
+    if(!(period>0) || !color)continue
+    // ApplyData changes speed without Animator.Play/Rebind. Only an inactive
+    // generation starts the controller's default state at phase zero.
+    const tempo=typeof registration.tempoAt==='function'?registration.tempoAt(event.time):registration.tempo
+    instances.set(key,{key,event,color,period,tempo,phase:previous?phaseAt(previous,event.time):0,phaseTime:event.time})
   }
-  const states=[]
-  for (const [key,e] of instances) {
-    const m=model?.styles?.[e.command],v=e.values
-    if (!m || v[1]!=='1' || v[2]!=='1' || !['left','right'].includes(v[4])) continue
-    const age=time-e.time, rotationPeriod=n(v,3), beamScale=n(v,5)/1000, angle=n(v,6)
-    if (!(rotationPeriod>0 && beamScale>0 && age>=0) || v.slice(1,11).some(x=>x==='' || x==null)) continue
-    const selected=e.command==='Suspensionlight' || n(v,11) ? 'angle60' : 'angle30'
-    const clip=m.clips?.[selected]
-    if (!clip) continue
-    // value6 controls beam extent in the reference. Reusing it as Animator
-    // speed both moved fixed lamps and dropped their authored length.
-    const offset=e.command==='Suspensionlight_3' || e.command==='Suspensionlight_5' ? n(v,12) : 0
-    const stageRig=registration.referenceProjection==='stage-rig-v1'
-    // Drive holds its M rig with 99999999, then reissues the same points
-    // with 6000 / 5000 before the later explicit erase. This is a rotation
-    // period, not a lifetime. Each point advances at its own authored period.
-    const phase=(((e.command==='Suspensionlight' ? 0 : .5)+(age-offset)/rotationPeriod*clip.duration)%clip.duration+clip.duration)%clip.duration
-    // A bound Animator is not permission to play it. The authored period
-    // and numbered variants' separate switches decide whether it advances.
-    // These switches are recording-guided until ApplyData is recovered.
-    const moving=rotationPeriod<999999 && (e.command==='Suspensionlight'
-      || e.command==='Suspensionlight_3'
-      || (e.command==='Suspensionlight_2' && n(v,14)===1)
-      || (e.command==='Suspensionlight_5' && n(v,13)===1))
-    const nativeAngle=moving ? sampleStreamedCurve(clip.curve,phase) : 0
-    let alpha=.55
-    if (e.command==='Suspensionlight_2' && n(v,11)===1) {
-      // Single-colour fade-out/fade-in: time changes intensity, not angle.
-      const fade=1000
-      alpha=.55*(.5+.5*Math.cos(age/fade*Math.PI))
-    }
-    if (e.command==='Suspensionlight_3' || e.command==='Suspensionlight_5') {
-      const period=n(v,11), delay=n(v,12)
-      if (!(period>0)) continue
-      const elapsed=age-delay
-      alpha=elapsed<0 ? 0 : .55*(.5-.5*Math.cos(elapsed/period*Math.PI*2))
-    }
-    if(e.fadeStart!=null) {
-      alpha*=Math.max(0,1-(time-e.fadeStart)/e.fadeDuration)
-      if(time>=e.fadeStart+e.fadeDuration)continue
-    }
-    // Unsupported multi-color strings stay suppressed. Moon's single-color
-    // rows do not require the still-unrecovered SwitchColor/HSV tween bodies.
-    if (!/^#[0-9a-f]{6}$/i.test(v[9])) continue
-    if (e.command==='Suspensionlight_2' && v[12]
-      && v[12].toLowerCase()!==v[9].toLowerCase()) continue
-    const extent=Number(selected.slice(5))
-    const excursion=moving ? nativeAngle-(e.command==='Suspensionlight' ? 0 : extent/2) : 0
-    // The child +60 degree base and LeftRightBase reflection are independent
-    // of position. A Y threshold changes the same lamp's angle by 30 degrees
-    // and destroys the four authored segments of Drive's M-shaped rig.
-    const mount=stageRig || n(v,8)>360 ? (v[4]==='right' ? 300 : 240) : 270
-    // The validated stage rig and the offstage side overlay are separate
-    // reference registrations. Keep Moon's earlier plane until remeasured.
-    const sideOverlay=Math.abs(n(v,7))>=1000 && n(v,8)<0
-    const coordinateScale=stageRig && !sideOverlay ? 1 : .5
-    const size=stageRig ? beamScale : 1
-    states.push({key,model:m,alpha,color:v[9],depth:n(v,10),x:n(v,7),y:n(v,8),
-      scaleX:n(v,1)*size,scaleY:n(v,2)*size,coordinateScale,moving,mirror:v[4]==='right',
-      angle:angle-mount+(v[4]==='right' ? excursion : -excursion)})
+  const result=[]
+  for (const s of instances.values()) {
+    if(s.exit && time>=s.exit.time+200)continue
+    const v=s.event.values,m=model?.styles?.[s.event.command],clip=m?.clips?.angle60
+    if(!clip)continue
+    const channels=channelsAt(s,time),phase=mod(phaseAt(s,time),clip.duration)
+    const nativeAngle=sampleStreamedCurve(clip.curve,phase),right=v[4]==='right'
+    const scale=n(v,5)/1000
+    // Rz(root) * Rx(left/right) * Rz(60) * Rz(Animator), with the
+    // Unity-to-screen Y reflection applied at both ends of the local matrix.
+    result.push({key:s.key,model:m,alpha:channels.alpha,color:hex(channels.color),unresolved:channels.unresolved,
+      depth:n(v,10),x:n(v,7),y:n(v,8),scaleX:scale,scaleY:scale,
+      coordinateScale:registration.referenceProjection==='stage-rig-v1'?1:.5,
+      mirrorY:!right,moving:true,phase,nativeAngle,angle:right?n(v,6)+60+nativeAngle:n(v,6)-60-nativeAngle})
   }
-  return states
+  return result
 }
 export function oldSuspensionlightLayout(s,width,height,environmentScale=1) {
   const fit=Math.min(width/1280,height/720)*environmentScale
-  const coordinateFit=fit*(s.coordinateScale ?? .5)
+  const coordinateFit=fit*(s.coordinateScale??.5)
   return {x:width/2+s.x*coordinateFit,y:height/2+(360-s.y)*coordinateFit,
-    // The old director coordinates share the native sprite plane. Halving
-    // only positions compressed the M rig and brought offstage lamps inside.
-    scaleX:(s.mirror ? -1 : 1)*s.scaleX*fit,scaleY:s.scaleY*fit,
-    rotation:-s.angle*Math.PI/180}
+    scaleX:s.scaleX*fit,scaleY:(s.mirrorY?-1:1)*s.scaleY*fit,rotation:-s.angle*Math.PI/180}
 }
