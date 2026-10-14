@@ -131,10 +131,27 @@
       <div v-if="view.relatedEvents?.length" class="event-related-history"><h3>关联活动</h3><button v-for="related in view.relatedEvents" :key="related.event_id" type="button" class="domain-link" @click="emit('open-event',related)">{{ related.title }}</button></div>
     </section>
 
-    <section v-if="castReferences.length||units.length" class="detail-section" aria-labelledby="event-cast-title">
-      <div class="section-heading"><h3 id="event-cast-title">出演与归属</h3></div>
-      <div class="cast-layout">
-        <!-- Cast as small avatars, the same as a story's cast list (half-body art is visual density only). -->
+    <!-- Cast in the unit page's idiom: hairline rows on the paper, units first since they
+         decide what the event belongs to, then the idols as small avatars. -->
+    <section v-if="castReferences.length||units.length" class="detail-section event-cast" aria-labelledby="event-cast-title">
+      <div class="section-heading">
+        <h3 id="event-cast-title">出演与归属</h3>
+        <small class="section-count">{{ castCountLabel }}</small>
+      </div>
+      <div v-if="units.length" class="cast-group">
+        <h4>{{ units.length > 1 ? '出演组合' : '所属组合' }}</h4>
+        <ul class="unit-list">
+          <li v-for="unit in units" :key="unit.unit_id">
+            <button type="button" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">
+              <img :src="getUnitLogoUrl(unit.unit_code)" alt="" />
+              <span>{{ unit.unit_name }}</span>
+              <ChevronRight :size="16" aria-hidden="true" />
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div v-if="castReferences.length" class="cast-group">
+        <h4>出演偶像</h4>
         <div class="idol-list">
           <ArchiveIdolReference
             v-for="entry in castReferences"
@@ -143,12 +160,6 @@
             density="compact"
             @open="emit('open-idol', entry.idol)"
           />
-        </div>
-        <div class="unit-list">
-          <button v-for="unit in units" :key="unit.unit_id" :data-archive-focus-id="`event-unit:${view.identity.id}:${unit.unit_id}`" @click="emit('open-unit', unit)">
-            <img :src="getUnitLogoUrl(unit.unit_code)" alt="" />
-            <span>{{ unit.unit_name }}</span>
-          </button>
         </div>
       </div>
     </section>
@@ -172,7 +183,7 @@
 <script setup>
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
-import { BookOpen, ExternalLink, Gauge, Play } from '@lucide/vue'
+import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
@@ -222,6 +233,7 @@ const event=computed(()=>props.view?.story.entry)
 const story=computed(()=>props.view?.story)
 const episodes=computed(()=>props.view?.episodes || [])
 const units=computed(()=>props.view?.units || [])
+const castCountLabel=computed(()=>[castReferences.value.length&&`${castReferences.value.length} 位`,units.value.length>1&&`${units.value.length} 个组合`].filter(Boolean).join(' · '))
 const resources=computed(()=>eventResources(props.view?.identity))
 const exchangeRewards=computed(()=>resources.value?.exchangeRewards)
 const bannerBinding=computed(()=>resources.value?.hero || props.view?.media.background || props.view?.media.logo)
@@ -406,18 +418,20 @@ button.episode-main { cursor: pointer; }
 .event-related-history .domain-link { min-height: var(--gs-control-normal); padding: var(--gs-space-2) 0; font-size: var(--gs-text-ui); overflow-wrap: anywhere; }
 
 /* Cast. */
-.cast-layout { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--gs-space-6); }
-/* Small avatars, as on a story's cast list; names wrap rather than truncate. */
-.idol-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: var(--gs-space-3); min-width: 0; }
-.idol-list :deep(.archive-idol-reference) { gap: var(--gs-space-4); padding: var(--gs-space-3); border-radius: var(--gs-radius-panel); }
-.idol-list :deep(.idol-reference-copy) { gap: var(--gs-space-2); }
-.idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; line-height: 1.4; }
+.cast-group + .cast-group { margin-top: var(--gs-space-6); }
+.cast-group h4 { margin: 0 0 var(--gs-space-2); color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
+/* Hairline rows like the unit page's members; names wrap rather than truncate. */
+.idol-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 0 var(--gs-space-7); min-width: 0; }
+.idol-list :deep(.archive-idol-reference) { border: 0; border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
+.idol-list :deep(.idol-reference-copy strong), .idol-list :deep(.idol-reference-copy small) { white-space: normal; text-overflow: clip; overflow-wrap: anywhere; }
 .idol-list :deep(.idol-reference-copy strong) { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
 .idol-list :deep(.idol-reference-copy small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
-.unit-list { display: grid; align-content: start; gap: var(--gs-space-3); min-width: 180px; }
-.unit-list button { display: flex; align-items: center; gap: var(--gs-space-4); min-width: 0; min-height: 52px; padding: var(--gs-space-3) var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-control); background: var(--gs-surface); color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
-.unit-list img { flex: 0 0 auto; width: 70px; height: 38px; object-fit: contain; }
+.unit-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 0 var(--gs-space-7); margin: 0; padding: 0; list-style: none; }
+.unit-list li { min-width: 0; }
+.unit-list button { display: grid; grid-template-columns: 70px minmax(0, 1fr) auto; align-items: center; gap: var(--gs-space-4); width: 100%; min-width: 0; min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border: 0; border-bottom: 1px solid var(--gs-line); background: none; color: var(--gs-ink); cursor: pointer; font: inherit; font-weight: var(--gs-weight-semibold); text-align: left; }
+.unit-list img { width: 70px; height: 38px; object-fit: contain; }
 .unit-list span { min-width: 0; font-size: var(--gs-text-body); overflow-wrap: anywhere; }
+.unit-list svg { color: var(--gs-mint-ink); }
 
 .event-summary :deep(.archive-source-link), .wiki-exchange-table :deep(.archive-source-link) { gap: var(--gs-space-3); min-height: var(--gs-control-normal); max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
 .event-summary :deep(.archive-source-link small), .wiki-exchange-table :deep(.archive-source-link small) { font-size: var(--gs-text-meta); font-weight: var(--gs-weight-regular); }
@@ -466,11 +480,11 @@ button.episode-main { cursor: pointer; }
 }
 @media (hover: hover) and (pointer: fine) {
   button.episode-main:hover strong, .episode-play:hover:not(:disabled),
-  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover,
+  .event-reward-open:hover, .event-material > button:hover, .unit-list button:hover span,
   .story-action:hover:not(:disabled):not(.primary) { color: var(--gs-mint-ink); }
 }
 @media (hover: none), (pointer: coarse) {
-  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: var(--gs-paper); }
+  .idol-list :deep(button.archive-idol-reference:hover) { border-color: var(--gs-line); background: none; }
   .detail-section :deep(.relation-row:hover) { border-color: var(--gs-line); background: var(--gs-surface); }
   .detail-section :deep(button.domain-reward-name:hover) { background: transparent; color: inherit; }
 }
@@ -488,8 +502,6 @@ button.episode-main { cursor: pointer; }
 }
 @container event-detail (max-width: 800px) {
   .event-identity { grid-template-columns: minmax(0, 1fr); gap: var(--gs-space-6); }
-  .cast-layout { grid-template-columns: minmax(0, 1fr); }
-  .unit-list { min-width: 0; }
   .episode-list { grid-template-columns: minmax(0, 1fr); }
 }
 @container event-detail (max-width: 560px) {
