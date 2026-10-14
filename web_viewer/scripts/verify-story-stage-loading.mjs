@@ -57,7 +57,7 @@ function setup() {
     VISUAL_HEIGHT_REFERENCE: 0, VISUAL_HEIGHT_STRENGTH: 0,
     positionSpine: noop, applyCharaOverrides: noop, syncBoundsSnapshot: noop,
     scheduleStageDebugPublish: noop, computeVisualRootY: () => 0,
-    computeVisualRootYUtil: () => 0,
+    computeVisualRootYUtil: () => 0, applyStateBodyMotion: noop,
     getSpineAtlasUrl: id => id, getSpineSkelUrl: id => id,
     Spine: {}, SkeletonBinary: {}, AtlasAttachmentLoader: {}, TextureAtlas: {},
     loadAndCreateSpine: ({ signal }) => {
