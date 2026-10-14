@@ -58,6 +58,9 @@ export function useCardNavigation({
   const currentCardLimitbreakMaterial = computed(() => cardReadModelDetail.value?.id === currentCardId.value
     ? cardReadModelDetail.value.limitbreakMaterial || null : null)
 
+  const currentCardAcquisition = computed(() => cardReadModelDetail.value?.id === currentCardId.value
+    ? cardReadModelDetail.value.acquisition || null : null)
+
   const currentCardSkillMovie = computed(() => cardReadModelDetail.value?.id === currentCardId.value
     ? cardReadModelDetail.value.skillMovie || null : null)
 
@@ -306,7 +309,7 @@ export function useCardNavigation({
     openCardScenario, openCardEvent, openCardGasha, currentCards,
     cardRarityTabs, filteredCards, filteredCardRows, currentCard,
     currentCardOwnerReference, currentCardAssetStatus, currentCardEventRelation, currentCardGashaRelation,
-    currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardIndex, previousCard, nextCard,
+    currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardAcquisition, currentCardIndex, previousCard, nextCard,
     currentSeriesCards, currentCardCharacterName, prepareCardRoute, invalidateCardNavigation,
   }
 }

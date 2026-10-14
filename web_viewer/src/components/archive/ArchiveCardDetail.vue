@@ -56,6 +56,7 @@
       <section v-if="relationItems.length || card.release_series" class="card-detail-section card-relations">
         <h4>关联资料</h4>
         <ArchiveRelationList v-if="relationItems.length" :items="relationItems" @select="openRelation" />
+        <p v-if="acquisitionSources.length" class="relation-sources">获得方式核对：<ArchiveSourceLink v-for="source in acquisitionSources" :key="source.url" :url="source.url" :label="source.title" /></p>
         <div v-if="card.release_series" class="release-series">
           <div class="release-series-cards" :aria-label="`${card.release_series.title} 系列卡片`">
             <button
@@ -312,6 +313,7 @@ import ArchiveIdolReference from './ArchiveIdolReference.vue'
 import { presentCardSkillDescription as formatCardSkillDescription } from '../../presentation/CardSkillDescriptionPresenter.js'
 import {archiveText} from './useArchiveCardText.js'
 import {gashaText} from './useArchiveGashaText.js'
+import ArchiveSourceLink from './ArchiveSourceLink.vue'
 const presentCardSkillDescription = source => formatCardSkillDescription(archiveText('skill', source, 'description'))
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import { cardCommunicationLabel, cardScenarioTitle } from '../../presentation/CardPresentation.js'
@@ -339,6 +341,8 @@ const props = defineProps({
   seriesCards: { type: Array, default: () => [] },
   eventRelation: { type: Object, default: null },
   gashaRelation: { type: Object, default: null },
+  // Confirmed acquisition: event reward tables, wiki-listed missions and exchanges, campaign missions.
+  acquisition: { type: Object, default: null },
   limitbreakMaterial: { type: Object, default: null },
   skillMovie: { type: Object, default: null },
   // A touch voice the reader came for (from the home dialogue): scrolled to and marked.
@@ -527,9 +531,55 @@ function eventScopeLabel(event) {
   return '跨组合团活关联卡'
 }
 
+const ACQUISITION_LABELS = { mission: '活动任务报酬', exchange: '活动兑换报酬' }
+const acquisitionEvidence = entry => entry.basis === 'wiki'
+  ? 'Wikiwiki 活动限定報酬'
+  : entry.source ? '活动报酬表，已与 Wikiwiki 限定報酬核对' : '活动报酬表'
+const acquisitionSources = computed(() => {
+  const sources = [...(props.acquisition?.events || []).map(entry => entry.source), props.acquisition?.mission?.source,
+    props.gashaRelation?.evidence_level === 'curated' ? props.gashaRelation.source : null]
+  return [...new Map(sources.filter(source => source?.url).map(source => [source.url,
+    { url: source.url, title: source.title.includes('Wikiwiki') ? source.title : `Wikiwiki · ${source.title}` }])).values()]
+})
+
 const relationItems = computed(() => {
   const items = []
-  if (props.eventRelation) {
+  const acquired = props.acquisition?.events || []
+  for (const entry of acquired) {
+    items.push({
+      id: `event-${entry.event_id}`,
+      kind: 'event',
+      label: ACQUISITION_LABELS[entry.methods[0]?.kind] || '活动报酬',
+      title: entry.title,
+      meta: entry.methods.map(method => method.label).join(' · '),
+      evidenceLabel: 'Confirmed',
+      evidenceTone: 'confirmed',
+      evidence: acquisitionEvidence(entry),
+      statusLabel: '已建档',
+      statusTone: 'available',
+      imageUrl: eventBannerUrl(entry),
+      imageAlt: entry.title,
+      payload: { event_id: entry.event_id, event_code: entry.event_code, title: entry.title },
+    })
+  }
+  if (props.acquisition?.mission) {
+    const mission = props.acquisition.mission
+    items.push({
+      id: `mission-${mission.startAt}`,
+      kind: 'mission',
+      label: '限时任务报酬',
+      title: mission.title,
+      meta: `${formatDate(mission.startAt)} 起 · ${mission.label}`,
+      evidenceLabel: 'Confirmed',
+      evidenceTone: 'confirmed',
+      evidence: 'Wikiwiki 过往公告',
+      statusLabel: '参考关系',
+      statusTone: 'reference',
+      actionable: false,
+    })
+  }
+  // The release-time relation stays only when no reward record names the same event.
+  if (props.eventRelation && !acquired.some(entry => String(entry.event_code) === String(props.eventRelation.event_code))) {
     items.push({
       id: `event-${props.eventRelation.event_id}`,
       kind: 'event',
@@ -553,10 +603,10 @@ const relationItems = computed(() => {
       kind: 'gasha',
       label: '卡池 Pickup',
       title: gashaText(props.gashaRelation.title) || '卡池名称待确认',
-      meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '已核对关联' : '推定关联，获得方式待确认'}`,
+      meta: `${formatDate(props.gashaRelation.start_at)} · ${props.gashaRelation.evidence_level === 'curated' ? '卡池公告列出的新卡' : '推定关联，获得方式待确认'}`,
       evidenceLabel: props.gashaRelation.evidence_level === 'curated' ? 'Confirmed' : 'Derived',
       evidenceTone: props.gashaRelation.evidence_level === 'curated' ? 'confirmed' : 'derived',
-      evidence: props.gashaRelation.relation_type,
+      evidence: props.gashaRelation.evidence_level === 'curated' ? 'Wikiwiki 卡池公告' : props.gashaRelation.relation_type,
       statusLabel: '已建档',
       statusTone: 'available',
       imageUrl: props.gashaRelation.banner_url || '',
@@ -637,6 +687,7 @@ function openRelation(item) {
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
 .card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); }
 .card-identity :deep(.card-owner) { padding: var(--gs-space-4) 0; border: 0; border-top: 1px solid var(--gs-line); border-bottom: 1px solid var(--gs-line); border-radius: 0; background: none; }
+.relation-sources { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gs-space-2) var(--gs-space-5); margin: var(--gs-space-4) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); }
 .card-metaline { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-6); margin: 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .card-metaline b { margin-right: var(--gs-space-2); color: var(--gs-ink); font-family: var(--gs-font-stage); font-size: var(--gs-text-subtitle); font-weight: var(--gs-weight-semibold); }
 .card-stepper { display: flex; gap: var(--gs-space-3); }

@@ -174,6 +174,7 @@
         :asset-status="currentCardAssetStatus"
         :limitbreak-material="currentCardLimitbreakMaterial"
         :skill-movie="currentCardSkillMovie"
+        :acquisition="currentCardAcquisition"
         :art-mode="cardArtMode"
         :previous-card="previousCard"
         :next-card="nextCard"
@@ -1355,7 +1356,7 @@ const {
   openCardScenario, openCardEvent, openCardGasha, currentCards,
   cardRarityTabs, filteredCards, filteredCardRows, currentCard,
   currentCardOwnerReference, currentCardAssetStatus, currentCardEventRelation, currentCardGashaRelation,
-  currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardIndex, previousCard, nextCard,
+  currentCardLimitbreakMaterial, currentCardSkillMovie, currentCardAcquisition, currentCardIndex, previousCard, nextCard,
   currentSeriesCards, currentCardCharacterName, prepareCardRoute, invalidateCardNavigation,
 } = useCardNavigation({
   cardReadModelCatalog, cardReadModelDetail, cardReadModelStatus, currentCharacterId,

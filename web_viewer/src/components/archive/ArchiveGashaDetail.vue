@@ -20,7 +20,7 @@
     <section v-if="gasha.tickets?.length" class="detail-section">
       <div class="section-heading"><h3>对应抽取道具</h3><span>{{ gasha.tickets.length }} 种</span></div>
       <p v-if="gasha.ticket_link_ambiguous" class="gasha-note">这些券对应同名卡池，现有道具记录无法区分两次 STAGE 公告。</p>
-      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">道具名称证明了此招募记录；开放时间和卡片范围尚未收录。</p>
+      <p v-if="gasha.source_type==='item-masterdata'" class="gasha-note">{{ wikiRuns.length ? '道具名称证明了此招募记录；开放时间与新卡据 Wikiwiki 过往公告补录。' : '道具名称证明了此招募记录；开放时间和卡片范围尚未收录。' }}</p>
       <ul class="ticket-list">
         <li v-for="ticket in gasha.tickets" :key="ticket.id">
           <button type="button" class="ticket-open" :data-archive-focus-id="`gasha-ticket:${ticket.key}`" @click="emit('open-item',ticket.key)">
@@ -38,7 +38,18 @@
       </ul>
     </section>
 
-    <section v-if="gasha.source_type!=='item-masterdata'" class="detail-section">
+    <section v-if="wikiRuns.length" class="detail-section">
+      <div class="section-heading"><h3>开放记录</h3><span>{{ wikiRuns.length }} 次</span></div>
+      <ul class="run-list">
+        <li v-for="run in wikiRuns" :key="run.start_at">
+          <strong lang="ja">{{ run.title }}</strong>
+          <span>{{ formatDateTime(run.start_at) }} – {{ formatDateTime(run.end_at) }}<template v-if="run.series"> · {{ run.series.rerun ? '再次开放' : `收录 ${run.series.count} 种 SR 以上卡片` }}</template><template v-else-if="run.cards.length"> · 新卡 {{ run.cards.length }} 张</template></span>
+          <ArchiveSourceLink :url="run.source.url" :label="`Wikiwiki · ${run.source.title}`" />
+        </li>
+      </ul>
+    </section>
+
+    <section v-if="gasha.source_type!=='item-masterdata' || pickupCards.length" class="detail-section">
       <div class="section-heading">
         <div>
           <h3>关联卡片</h3>
@@ -51,6 +62,7 @@
         :items="pickupRelationItems"
         @select="emit('open-card', $event.payload)"
       />
+      <p v-if="gasha.wiki_confirmation" class="gasha-source"><ArchiveSourceLink :url="gasha.wiki_confirmation.source.url" :label="`Wikiwiki · ${gasha.wiki_confirmation.source.title}`" /></p>
     </section>
 
     <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
@@ -69,7 +81,7 @@
       <dl class="evidence-grid">
         <div v-if="gasha.phase!=='ticket_record'"><dt>公告阶段</dt><dd>{{ phaseLabel(gasha.phase) }}</dd></div>
         <div><dt>公告</dt><dd>{{ gasha.source_type==='item-masterdata'?'未收录公告，仅有道具记录':'游戏内主数据' }}</dd></div>
-        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'?'未确认':relationEvidence }}</dd></div>
+        <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'&&!pickupCards.length?'未确认':relationEvidence }}</dd></div>
         <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
         <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>{{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
         <div><dt>服务端卡池信息</dt><dd>关服后未能保存</dd></div>
@@ -116,17 +128,27 @@ const usesRelatedCards = computed(() =>
 const isReprintRelation = computed(() =>
   usesRelatedCards.value && props.gasha?.related_pickup_source === 'reprint',
 )
+// Wikiwiki's notice for the pool lists the same cards the master data implied, or the pool is a ticket-only
+// record whose cards come from that notice alone.
+const wikiRuns = computed(() => props.gasha?.wiki_pools || [])
+const wikiConfirmed = computed(() => Boolean(props.gasha?.wiki_confirmation) || wikiRuns.value.some(run => run.cards.length))
 const relationBadge = computed(() => {
+  if (wikiConfirmed.value && !usesRelatedCards.value) return '已核对'
   if (isReprintRelation.value) return '复刻卡片'
   return usesRelatedCards.value ? '同期卡片' : '推定关联'
 })
 const relationDescription = computed(() => {
+  const confirmation = props.gasha?.wiki_confirmation
+  if (confirmation?.kind === 'series') return `Wikiwiki 卡池公告记载收录 ${confirmation.cardCount} 种 SR 以上卡片，与同系列卡片数一致。`
+  if (confirmation && !usesRelatedCards.value) return 'Wikiwiki 卡池公告列出的新卡，与突破素材和开放时间的推定一致。'
+  if (wikiRuns.value.length) return 'Wikiwiki 卡池公告列出的新卡。'
   if (isReprintRelation.value) return '已确认对应原卡池的复刻内容'
   return usesRelatedCards.value
     ? '同一卡池其他公告中收录的关联卡片'
     : '根据突破素材与开放时间推定的关联，尚未确认实际招募内容。'
 })
 const relationEvidence = computed(() => {
+  if (wikiConfirmed.value && !usesRelatedCards.value) return 'Wikiwiki 卡池公告'
   if (isReprintRelation.value) return `外部公告确认复刻自 ${props.gasha?.reprint_of || ''}`
   return usesRelatedCards.value
     ? `同一卡池主公告 ${props.gasha?.primary_code || ''} 收录`
@@ -138,8 +160,8 @@ const pickupRelationItems = computed(() => pickupCards.value.map(card => ({
   label: usesRelatedCards.value ? relationBadge.value : '',
   title: cardText('card',card.card_title,'title') || '卡名待确认',
   meta: `${props.idolName(card.character_id)} · ${card.rarity}`,
-  evidenceLabel: isReprintRelation.value ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
-  evidenceTone: isReprintRelation.value ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
+  evidenceLabel: isReprintRelation.value || (wikiConfirmed.value && !usesRelatedCards.value) ? 'Confirmed' : (usesRelatedCards.value ? 'Grouped' : 'Derived'),
+  evidenceTone: isReprintRelation.value || (wikiConfirmed.value && !usesRelatedCards.value) ? 'confirmed' : (usesRelatedCards.value ? 'grouped' : 'derived'),
   evidence: relationEvidence.value,
   resource: card.card_resource_id,
   imageUrl: getCardIconUrl(card.card_resource_id, true),
@@ -174,6 +196,12 @@ function formatDateTime(timestamp) {
 .gasha-summary h2 { margin: var(--gs-space-3) 0 var(--gs-space-6); font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.45; text-wrap: balance; overflow-wrap: anywhere; }
 .gasha-original { color:var(--gs-ink-3);font-size:var(--gs-text-meta);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
 .gasha-note { color:var(--gs-color-muted);font-size:var(--gs-text-body);font-weight:var(--gs-weight-regular);line-height:1.7;overflow-wrap:anywhere; }
+.gasha-source { margin:var(--gs-space-4) 0 0; }
+.run-list { list-style:none;margin:0;padding:0;border-top:1px solid var(--gs-rule); }
+.run-list li { display:grid;gap:var(--gs-space-1);padding:var(--gs-space-4) 0;border-bottom:1px solid var(--gs-rule); }
+.run-list strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);overflow-wrap:anywhere; }
+.run-list span { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
+.run-list .archive-source-link { justify-self:start; }
 .ticket-banner-label { display:grid;min-height:120px;place-items:center;color:var(--gs-ink-3); }
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }

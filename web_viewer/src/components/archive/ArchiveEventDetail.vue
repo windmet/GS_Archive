@@ -86,7 +86,7 @@
       <div class="section-heading">
         <div>
           <h3 id="event-rewards-title">活动报酬卡</h3>
-          <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
+          <p>{{ view.identity.kind==='collection' ? '收集活动道具后，在活动商店兑换卡片。' : rewardWikiNote?.text.includes('任务') ? '通过阅读剧情、累计活动点数或完成活动任务获得的报酬卡。' : '通过阅读剧情或累计活动点数获得的报酬卡。' }}</p>
         </div>
         <small class="section-count">{{ rewardCards.length + (exchangeRewards?.cards.length || 0) }} 张</small>
       </div>
@@ -99,6 +99,7 @@
             <ul>
               <li v-for="method in card.methods" :key="method.key">
                 <BookOpen v-if="method.kind === 'story'" :size="13" />
+                <Flag v-else-if="method.kind === 'mission'" :size="13" />
                 <Gauge v-else :size="13" />
                 <span>{{ rewardMethodLabel(card,method) }}</span>
               </li>
@@ -107,6 +108,7 @@
           </button>
         </div>
       </div>
+      <p v-if="rewardWikiNote" class="exchange-source">{{ rewardWikiNote.text }}<template v-for="source in rewardWikiNote.sources" :key="source.url"> <ArchiveSourceLink :url="source.url" :label="source.label" /></template></p>
       <div v-if="exchangeRewards" class="exchange-rewards">
         <p class="exchange-source">兑换归属与数量据 Wikiwiki 补录，卡片身份与资源对应客户端资料。</p>
         <div class="reward-grid">
@@ -183,7 +185,7 @@
 <script setup>
 import { presentIdolEpisodeLabel } from '../../presentation/idolEpisodeLabel.js'
 import { computed,ref,watch,defineAsyncComponent } from 'vue'
-import { BookOpen, ChevronRight, ExternalLink, Gauge, Play } from '@lucide/vue'
+import { BookOpen, ChevronRight, ExternalLink, Flag, Gauge, Play } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
@@ -255,6 +257,14 @@ const rewardEpisodesById=computed(()=>{
   const entries=new Map()
   for(const episode of episodes.value) entries.set(String(episode.id),entries.has(String(episode.id))?null:episode)
   return entries
+})
+// The reward table was checked against Wikiwiki's 限定報酬 list; mission cards come from the event page itself.
+const rewardWikiNote=computed(()=>{
+  const check=props.view?.rewards.wikiCheck
+  if(!check||!rewardCards.value.length)return null
+  const missions=rewardCards.value.flatMap(card=>card.methods.filter(method=>method.kind==='mission'))
+  return {text:missions.length?`报酬卡已与 Wikiwiki 活动限定報酬核对；${missions.length} 张活动任务报酬卡据活动页补录。`:'报酬卡已与 Wikiwiki 活动限定報酬核对。',
+    sources:[{url:check.source.url,label:'过往活动一览'},...missions.slice(0,1).map(method=>({url:method.source.url,label:'活动页任务'}))]}
 })
 const rewardCardIds = computed(() => new Set(rewardCards.value.map(card => card.card_resource_id)))
 const derivedOnlyCards = computed(() => (props.view?.cards || []).filter(card => !rewardCardIds.value.has(card.card_resource_id)))
