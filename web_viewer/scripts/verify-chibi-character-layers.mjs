@@ -18,6 +18,8 @@ assert.equal(at(40).get(3), 0, 'Hide resets immediately, even while fading or an
 assert.equal(at(50).get(3), 0)
 assert.equal(at(50).has(0), false, 'Free targets must never lift an unrelated actor')
 assert.equal(at(10).get(2), 250, 'Backward seek rebuilds offsets')
+const tied=[{time:0,id:1,stagePosition:2},{time:0,id:1,hide:true}]
+assert.equal(spotlightSortOffsetsAt(tied,0,[{family:'spotlight',index:1},{family:'spotlight',index:0}]).get(2),250,'RAW same-time order overrides catalog ID order')
 
 // Execute the actual renderer consumer, including base-order changes, shadow
 // follow and the lighting toggle. Pinspotlight intentionally does not lift idols.

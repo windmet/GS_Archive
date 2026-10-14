@@ -513,7 +513,7 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
-import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
+import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
 import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
@@ -1845,7 +1845,7 @@ function ensureWholeScreenColorOverlay() {
 
 function syncCharacterLayers() {
   const offsets = lightingEnabled.value
-    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value)
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value, selectedSong.value?.spotlightCommandOrder)
     : new Map()
   for (const [position, runtime] of runtimes) {
     const base = layoutCoordinatesForStage(position, stageTime.value).sortingOrder
@@ -1922,7 +1922,7 @@ function syncSpotlightBackground() {
   if (existing) existing.sprite.visible = false
   if (!app || !cameraContainer) return
   const pins = pinspotlightStatesAt(stageTime.value)
-  const state = sampleSpotlightBackground(spotlightStatesAt(stageTime.value), pins, lightingEnabled.value)
+  const state = spotlightBackgroundAt(selectedSong.value, stageTime.value, lightingEnabled.value)
   if (!state || state.alpha <= 0.001) return
   const backgroundOrder = spotlightBackgroundOrderAt(selectedSong.value, stageTime.value)
   const activePins = [...pins.values()].filter(pin => pin.alpha > 0.001 && pin.asset)
@@ -3233,7 +3233,7 @@ function layoutRuntime(position, motionEvent = null) {
   // Authored baseSortOrder plus native Spotlight offset, including late
   // motion loads. Y and performer index never replace this base.
   const offset = lightingEnabled.value
-    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value).get(position) || 0
+    ? spotlightSortOffsetsAt(selectedSong.value?.spotlightEvents, stageTime.value, selectedSong.value?.spotlightCommandOrder).get(position) || 0
     : 0
   runtime.spine.zIndex = sortingOrder + offset
   syncCharacterShadow(runtime)

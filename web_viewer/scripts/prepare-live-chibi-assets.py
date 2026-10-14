@@ -527,6 +527,7 @@ def read_choreography_scripts(
         character_light_events = []
         spotlight_events = []
         pinspotlight_events = []
+        spotlight_command_order = []
         laserlight_events = []
         motion_group_events = []
         motion_group_changes = []
@@ -684,6 +685,7 @@ def read_choreography_scripts(
                             "hide": hide,
                         }
                     )
+                    spotlight_command_order.append(("spotlight", spotlight_events[-1]))
                     continue
                 if row[0] == "Pinspotlight" and len(row) >= 13:
                     event_time = parse_optional_number(row[1])
@@ -709,6 +711,7 @@ def read_choreography_scripts(
                             "hide": hide,
                         }
                     )
+                    spotlight_command_order.append(("pinspotlight", pinspotlight_events[-1]))
                     continue
                 if row[0] == "Laserlight" and len(row) >= 14:
                     event_time = parse_optional_number(row[1])
@@ -901,6 +904,14 @@ def read_choreography_scripts(
                     motion_group_changes, key=lambda event: event["time"]
                 ),
             }
+        light_indices = {
+            family: {id(event): index for index, event in enumerate(song_entry[family + "Events"])}
+            for family in ("spotlight", "pinspotlight")
+        }
+        song_entry["spotlightCommandOrder"] = [
+            {"family": family, "index": light_indices[family][id(event)]}
+            for family, event in sorted(spotlight_command_order, key=lambda item: item[1]["time"])
+        ]
         if vocal_setting:
             song_entry["vocalSetting"] = vocal_setting
         songs.append(song_entry)

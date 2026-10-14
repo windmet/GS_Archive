@@ -6,7 +6,7 @@
 
 - [x] 原版 LiveObjectIdol baseSortOrder + offsetSortOrder；聚光灯 Show 时目标 +250，换目标/Hide 时恢复，影子随人物排序 -10。
 - [x] SpotlightBackground 共享脚本排序、聚光灯 depth+1、pinspotlight 掩模排序区间；保留脚本显式 0。
-- [ ] SpotlightBackground 共享颜色、显隐计数和渐变；现有按活动灯选颜色/透明度的采样仍需单独反查。
+- [x] SpotlightBackground 共享颜色、visible 计数和渐变；已改为独立命令回放，保留 RAW 跨家族指令顺序，见 NATIVE_SHARED_BACKGROUND_BATCH_20261014.md。
 - [x] 去除没有原版依据的整个人物环境染色，避免与遮光平面重复叠加、绕过 pinspotlight 掩模。
 - [ ] Body_Color 材质替色及 Foot_Color 高度映射，不能把本批去重染色视作人物 shader 已完全还原。
 - [ ] 反查 monitor、嵌套特效容器及透明材质的排序/深度状态；不将所有灯束一律移到人物后面。
