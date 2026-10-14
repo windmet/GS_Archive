@@ -24,7 +24,7 @@ export const INPUTS = {
  storyCatalog: 'data/masterdata/story_catalog.json', storyPresentation: 'data/masterdata/story_presentation_index.json',
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
- songExternalMedia: 'data/song_external_media.json',
+ songExternalMedia: 'data/song_external_media.json', cardSkillMovies: 'data/card_skill_movies.json',
  gashaIndex: 'data/masterdata/gasha_index.json', movieAnnounce: 'data/masterdata/movie_announce_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
@@ -301,6 +301,13 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     assert((data.songCatalog.songs[code]?.links || []).length, `Album lists a song without links: ${code}`);
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
+  }
+  // The SSR skill cut-in, decrypted from its USM and re-encoded for the web (scripts/prepare-card-skill-movies.py).
+  for (const [resourceId, movie] of Object.entries(data.cardSkillMovies.movies)) {
+    assert(cardContext[resourceId], `Skill movie for unknown card: ${resourceId}`);
+    assert(movie.url === `/assets/card-skill-movies/${resourceId}.mp4` && movie.bytes > 0 && movie.duration_ms > 0, `Invalid skill movie: ${resourceId}`);
+    cardContext[resourceId].skillMovie = { url:movie.url, poster:movie.poster, bytes:movie.bytes,
+      width:movie.width, height:movie.height, durationMs:movie.duration_ms };
   }
   return { product: { home: homes, homeStats, homeHighlights, identities, cards, stories, gashas,
     songs: Object.values(data.songCatalog.songs), songViews, songSummary: data.songCatalog.summary, cardContext, storyViews,
