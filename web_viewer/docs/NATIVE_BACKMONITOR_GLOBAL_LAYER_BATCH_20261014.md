@@ -22,7 +22,7 @@
 - `npm run build:check` 通过，26.56秒，固定 `.analysis/build-check`，未复制public。仅有既有chunk大小提示。
 - 5212 Edge/SwiftShader 实际 Browser：DRIVE A LIVE 16.4s 的背屏1000和舞台1100/1300/1500；LEADING YOUR DREAM 0s 的背屏1250、噪点1255、辉光1360，均直接挂共享camera。390×844截图已查看。故意阻塞Noise PNG，暂停后释放，未强制render便观察到补画和画面变化。高级设置关闭/恢复背景屏幕不会隐藏静态舞台；播放、暂停、倒退到0后排序仍正确。
 - 30组GPU对照：使用重新提取的原片元程序及原混合因子，对照当前材质的原始8位 framebuffer RGBA，包含透明/半透明/不透明纹理和alpha0/.5/.8/1/1.1，最大通道差0。不能据此推定Unity HDR framebuffer或真机一致。
-- Browser记录3条 SongReadModel/StageReadModel `Expected JSON, possibly received SPA fallback`，属于当前歌曲读模型路径不可用，未计作舞台层级通过；本批没有其余页面错误。Spine既有deprecated tint/update和ReadPixels性能提示仍存在。
+- Browser当时记录3条 SongReadModel/StageReadModel `Expected JSON, possibly received SPA fallback`，未计作舞台层级通过。后续已确认是本批重启5212时丢失SIDEM_READMODEL_CANDIDATE造成，不能归为既有错误；已恢复原路径，见 [启动配置修复记录](STAGE_SONG_CATALOG_RESTORE_20261014.md)。Spine既有deprecated tint/update和ReadPixels性能提示仍存在。
 
 截图/小型receipt位于 `C:/Users/windm/.codex/visualizations/2026/10/13/01a13599-5517-7113-9331-e6ac3c22279e/backmonitor-global-*`。构建/Browser日志位于当前checkout `.analysis/native-chibi-wiring-audit/`。
 

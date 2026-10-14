@@ -19,7 +19,7 @@
 - `npm run build:check`通过，19.07秒，仍为固定`.analysis/build-check`且不复制public。
 - 5212复用已核验归属的PID3064。Edge/SwiftShader Browser检查K.now O.nly、Flash Light、Take、Unite Mankind，分别观察1701/1702、1600、1651、1571，所有平面均为共享camera直接子节点；播放/暂停/倒退的粒子采样签名一致，390×844布局完成截图验证。
 - GPU验证4组非重叠区域的软蒙版：alpha1/.5、scale1/.7，拆分前后RGBA最大差0。这验证独立区域的mask几何/透明度保持，不能推定重叠区域或Unity原材质一致。
-- 页面记录既有SongReadModel/StageReadModel缺JSON路径错误；本批没有其他页面错误。该错误未列为歌曲读模型验收通过。
+- 页面当时记录SongReadModel/StageReadModel缺JSON路径错误，未列为歌曲读模型验收通过；随后已确认是此前重启5212漏带候选读模型环境配置造成，并非既有问题，见 [启动配置修复记录](STAGE_SONG_CATALOG_RESTORE_20261014.md)。
 
 Browser小型receipt/截图在`C:/Users/windm/.codex/visualizations/2026/10/13/01a13599-5517-7113-9331-e6ac3c22279e/object-*`；日志在checkout `.analysis/native-chibi-wiring-audit/object-renderer-planes-*`。没有新增/复制媒体语料。
 
