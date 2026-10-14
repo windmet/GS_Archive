@@ -8,6 +8,7 @@ import { buildReadingLocatorRecords, readingEntriesForFiles } from './reading_lo
 import { buildReadingParents } from './reading_parent_projection.mjs';
 import { applyDomainExpansion } from './domain_expansion.mjs';
 import { buildSeasonalLedger } from './seasonal_ledger.mjs';
+import { confirmGashaPickups, missionAcquisitions } from './wiki_acquisition.mjs';
 
 export const INPUTS = {
  domainItems:'data/masterdata/domains/item_catalog.json', domainHonors:'data/masterdata/domains/honor_catalog.json',
@@ -25,7 +26,9 @@ export const INPUTS = {
  songCatalog: 'data/song_catalog.json', songPlaybackAudio: 'data/song_playback_audio.json',
  songExperimentalAudio: 'data/song_experimental_audio.json', songTimelines: 'data/song_timelines/manifest.json',
  songExternalMedia: 'data/song_external_media.json', cardSkillMovies: 'data/card_skill_movies.json',
- gashaIndex: 'data/masterdata/gasha_index.json', movieAnnounce: 'data/masterdata/movie_announce_index.json',
+ gashaIndex: 'data/masterdata/gasha_index.json', gashaTickets: 'data/editorial/gasha-ticket-evidence.json',
+ wikiAcquisition: 'data/editorial/wiki-acquisition-evidence.json', eventExchange: 'data/editorial/event-exchange-evidence.json',
+ movieAnnounce: 'data/masterdata/movie_announce_index.json',
  eventIndex: 'data/masterdata/event_index.json', idolEpisode: 'data/masterdata/idol_episode_index.json',
  workStory: 'data/masterdata/work_story_index.json', archiveVerification: 'data/archive_verification.json',
  mobileArchive: 'data/masterdata/mobile_archive_index.json',
@@ -129,6 +132,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     if (!gashaMap.has(String(gasha.id))) gashaMap.set(String(gasha.id), modules.gashas.resolveGashaRelatedCards(gasha,data.gashaIndex));
   }
   const gashas = [...gashaMap.values()].map(gasha => modules.gashas.withGashaAnnounceMovie(gasha, data.movieAnnounce));
+  const gashaConfirmation = confirmGashaPickups(gashas, data.gashaIndex, data.wikiAcquisition, data.gashaTickets);
   const cardMap = new Map(cards.map(c => [c.resource_id,c]));
   const originalCardMap = modules.cards.buildCardMap(data.cardIndex);
   const storyGroups = new Map();
@@ -169,7 +173,8 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   const gashaBanners = new Map((data.gashaIndex.gashas || []).map(gasha => [String(gasha.id), gasha.banner_url || null]));
   const gashaRelation = card => {
     const relation = data.gashaIndex.relations_by_card?.[card.resource_id];
-    return relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null;
+    return gashaConfirmation.relationFor(card.resource_id,
+      relation ? { ...relation, banner_url: gashaBanners.get(String(relation.announcement_id)) || null } : null);
   };
   const cardContext = Object.fromEntries(cards.map(card => [card.resource_id,{
     ownerReference:modules.idolReference.buildIdolReference(card.character_id,data.idolUnit,data.archiveManifest,`card:${card.resource_id}`),
@@ -261,7 +266,7 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
     'seasonal-ledger': { records:[{id:'all',summary:{name:'季节企划'},
       view:{ledger:buildSeasonalLedger(data.seasonalCampaign,data.readingManifest.entries)}}] },
   };
-  const { materialContexts, songEvents } = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
+  const { materialContexts, songEvents, eventAcquisitions } = await applyDomainExpansion(extraDomains, {...data,domainCards:cards}, readSource,
     { costumeDictionarySha256: sources[INPUTS.costumeDictionary].sha256 });
   // Each reading document's canonical parent comes from the owner records above, so the locator names exactly
   // the page the Reader's own entry points would have opened (see reading_parent_projection.mjs).
@@ -302,6 +307,13 @@ export async function readCheckout(viewer, { dataRevision, mediaEpoch }) {
   for (const [resourceId, material] of Object.entries(materialContexts || {})) {
     if (cardContext[resourceId]) cardContext[resourceId].limitbreakMaterial = material;
   }
+  // Confirmed acquisition: event reward tables, wiki-listed event missions and carnival exchanges, campaign missions.
+  const missions = missionAcquisitions(data.wikiAcquisition);
+  for (const [resourceId, context] of Object.entries(cardContext)) {
+    const events = eventAcquisitions[resourceId] || [], mission = missions.get(resourceId) || null;
+    if (events.length || mission) context.acquisition = { events, mission };
+  }
+  for (const id of [...missions.keys(), ...Object.keys(eventAcquisitions)]) assert(cardContext[id], `Acquisition for unknown card: ${id}`);
   // The SSR skill cut-in, decrypted from its USM and re-encoded for the web (scripts/prepare-card-skill-movies.py).
   for (const [resourceId, movie] of Object.entries(data.cardSkillMovies.movies)) {
     assert(cardContext[resourceId], `Skill movie for unknown card: ${resourceId}`);

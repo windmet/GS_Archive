@@ -1,4 +1,5 @@
 import { assert, pick } from './common.mjs';
+import { wikiSource, wikiEventRewards, eventMissionLabel } from './wiki_acquisition.mjs';
 import { idolHonorIdentity, idolHonorBelongsTo, idolHonorOrder, chocolateHonorIdentity, chocolateHonorBelongsTo } from '../../src/presentation/HonorIdentity.mjs';
 
 export const REVIEWED_DOMAIN_PB = '25d48a557c50ac2429f0f55e5d0b766b490b37711eece4baa720cf47570f0ea1';
@@ -149,6 +150,9 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(event, `Unresolved historical event: ${id}`);
     return { event_id: String(routeId(event)), event_code: event.eventCode, title: event.name };
   };
+  const wikiRewards = wikiEventRewards(data.wikiAcquisition, data.eventExchange);
+  const eventAcquisitions = {};
+  const acquire = (resourceId, entry) => (eventAcquisitions[resourceId] ||= []).push(entry);
   domains.events.records = await Promise.all(events.map(async event => {
     const source = validateDomainPayload(await readSource(`data/masterdata/domains/event_details/${event.detailKey}.json`), 'gs-event-detail-supplement');
     assert(String(source.eventId) === String(event.id), 'Event supplement identity mismatch');
@@ -181,6 +185,26 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       const fragments=rewards.filter(row=>row.product.kind==='cardFragment'&&row.product.target?.card===card.card_resource_id);
       if(fragments.length)card.methods.push({key:`fragments-${card.card_resource_id}`,kind:'point',label:`${fragments[0].totalPoint?.toLocaleString('zh-CN')} PT 起，共 ${fragments.length} 次碎片报酬`});
     }
+    // Wikiwiki's 限定報酬 list: the reward table must be part of it; the rest are mission or exchange cards.
+    const wiki=wikiRewards.get(event.eventCode);
+    let wikiCheck=null;
+    if(wiki){
+      const listed=new Set(wiki.row.cards.map(card=>card.resource_id));
+      assert([...rewardCards.keys()].every(id=>listed.has(id)),`Reward table outside the wiki listing: ${event.eventCode}`);
+      wikiCheck={source:wikiSource(data.wikiAcquisition,'past_events'),listedCards:listed.size};
+      for(const entry of wiki.row.cards.filter(card=>card.mission)){
+        const card=data.domainCards.find(card=>card.resource_id===entry.resource_id);
+        assert(card&&!rewardCards.has(card.resource_id),`Unresolved wiki mission card: ${entry.resource_id}`);
+        rewardCards.set(card.resource_id,{card_resource_id:card.resource_id,card_title:card.title,character_id:card.character_id,character_name:data.idolUnit.by_idol_code[card.character_id]?.display_name,rarity:card.rarity,
+          image:eventMedia.cardImages[card.resource_id]?pick(eventMedia.cardImages[card.resource_id],['url','status','sha256']):null,
+          methods:[{key:`wiki-mission:${card.resource_id}`,kind:'mission',label:eventMissionLabel(entry.mission.condition),condition:entry.mission.condition,term:entry.mission.term,source:wikiSource(data.wikiAcquisition,entry.source)}]});
+      }
+    }
+    for(const card of rewardCards.values())acquire(card.card_resource_id,{event_id:id,event_code:event.eventCode,title:event.name,kind:event.eventKind,release_at:event.term?.openAt||0,
+      methods:card.methods.map(method=>({kind:method.kind,label:method.kind==='story'?'活动剧情阅读报酬':method.label})),
+      basis:card.methods.some(method=>method.kind==='mission')?'wiki':'masterdata',source:wikiCheck?.source||null});
+    for(const card of wiki?.exchange?.cards||[])acquire(card.resourceId,{event_id:id,event_code:event.eventCode,title:event.name,kind:event.eventKind,release_at:event.term?.openAt||0,
+      methods:[{kind:'exchange',label:`${card.cost.nameJa} × ${card.cost.amount} 兑换（限 ${card.exchangeLimit} 次）`}],basis:'wiki',source:pick(wiki.exchange.source,['title','url','checkedAt'])});
     const media=eventMedia.entries[`event:${event.id}`];assert(media,'Missing event media identity');
     const cast=base?.view.idols || [];
     return { id, summary:{ event_id:id, event_code:event.eventCode, title:event.name,
@@ -194,7 +218,7 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
       castReferences:base?.view.castReferences || [],
       relatedEvents:related.map(other => eventLink(other.id)),
         seasonalCampaign:seasonal.length?{id:seasonal[0].id,title:seasonal[0].view.campaign.name}:null,
-      rewards:{cards:[...rewardCards.values()],general:rewards,materials:source.items.map(link=>({...link,nameJa:data.domainItems.entries.find(item=>item.id===link.itemId)?.nameJa || String(link.itemId),image:pick(collectionMedia[`item:${link.itemId}`]?.image || {},['url','status'])}))},
+      rewards:{cards:[...rewardCards.values()],wikiCheck,general:rewards,materials:source.items.map(link=>({...link,nameJa:data.domainItems.entries.find(item=>item.id===link.itemId)?.nameJa || String(link.itemId),image:pick(collectionMedia[`item:${link.itemId}`]?.image || {},['url','status'])}))},
       provenance:{eventId:event.id,detailTable:source.sourceTable,coverage:source.coverage,storyChapterRelations:event.storyChapterRelations} } };
   }));
   assert(legacy.every(record => domains.events.records.some(next => next.id === record.id)), 'Lost existing event routes');
@@ -268,5 +292,5 @@ export async function applyDomainExpansion(domains, data, readSource, { costumeD
     assert(!chocolate.some(honor=>ranking.some(row=>row.key===honor.key)),'A chocolate honor cannot also be a ranking honor');
     idol.view.honors=[...own,...ranking,...chocolate];
   }
-  return { materialContexts: materialRelations.materialContexts, songEvents };
+  return { materialContexts: materialRelations.materialContexts, songEvents, eventAcquisitions };
 }

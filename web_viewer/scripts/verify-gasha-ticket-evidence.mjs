@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import {buildGashaTicketEvidence,applyGashaTicketReview,ticketGashaName,sourceHash,normalizeGashaName} from './lib/gasha-ticket-evidence.mjs'
+import {buildGashaTicketEvidence,applyGashaTicketReview,attachWikiPools,ticketGashaName,sourceHash,normalizeGashaName} from './lib/gasha-ticket-evidence.mjs'
 import {supplementGashaCatalog,attachGashaTickets,gashaTicketLinks,translatedGashaName,gashaTicketPeriodLabel} from '../src/data/gashaTicketCatalog.js'
 import {filterGashaCatalog,buildGashaCategoryOptions} from '../src/data/gashaCatalog.js'
 import {validateItemIdolNames} from './lib/item-idol-name-policy.mjs'
@@ -8,7 +8,7 @@ import {sourceUnits,loadGeneralRevisions,protectedTokens} from './lib/general-tr
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'))
 const items=read('public/data/masterdata/domains/item_catalog.json').entries,index=read('public/data/masterdata/gasha_index.json'),overlay=read('public/data/editorial/gasha-ticket-evidence.json'),translations=read('public/translations/zh-CN/archive-general/items.json').entries
 const revisions=loadGeneralRevisions(process.cwd(),sourceUnits(process.cwd()))
-assert.deepEqual(overlay,applyGashaTicketReview(buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json'),read('public/data/masterdata/domains/collection_media.json').entries),revisions),'Regenerate stale ticket evidence')
+assert.deepEqual(overlay,attachWikiPools(applyGashaTicketReview(buildGashaTicketEvidence(items,index,translations,read('config/gasha-ticket-name-aliases.json'),read('public/data/masterdata/domains/collection_media.json').entries),revisions),read('public/data/editorial/wiki-acquisition-evidence.json'),read('public/data/masterdata/card_index.json')),'Regenerate stale ticket evidence')
 assert.equal(overlay.unresolved.length,0)
 const before=JSON.stringify(index),base=index.gashas.filter(g=>g.phase==='primary'),catalog=supplementGashaCatalog(base,index.meta)
 assert.equal(catalog.rows.length,82);assert.equal(new Set(catalog.rows.map(r=>r.id)).size,82)
@@ -33,9 +33,14 @@ for(const row of overlay.rows){
  }
  assert.equal(translatedGashaName(row.source_name,'zh-CN'),row.translation)
  assert.equal(translatedGashaName(row.source_name,'ja-JP'),row.source_name)
- if(!row.matched_ids.length){const pool=catalog.rows.find(p=>p.id===row.id);assert.equal(pool.start_at,null);assert.equal(pool.end_at,null);assert.deepEqual(pool.derived_pickup_cards,[]);assert.equal(pool.banner_url,null)}
+ if(!row.matched_ids.length){const pool=catalog.rows.find(p=>p.id===row.id);assert.equal(pool.banner_url,null)
+  // Wiki-dated groups open at their first listed run; the rest stay undated, never guessed.
+  if(row.wiki_pools){assert.equal(pool.start_at,row.wiki_pools[0].start_at);assert.equal(pool.derived_pickup_cards.length,new Set(row.wiki_pools.flatMap(p=>p.cards.map(c=>c.card_resource_id))).size)}
+  else{assert.equal(pool.start_at,null);assert.equal(pool.end_at,null);assert.deepEqual(pool.derived_pickup_cards,[])}}
 }
 assert.equal(covered.size,273)
+assert.equal(overlay.summary.wiki_period_groups,19)
+assert.equal(catalog.rows.filter(r=>r.source_type==='item-masterdata'&&r.derived_pickup_cards.length).reduce((n,r)=>n+r.derived_pickup_cards.length,0),15+147)
 assert.equal(overlay.excluded_tickets.length,2)
 assert.equal(ticketGashaName('スタンプガシャセレクションチケット'),null)
 const bonus=items.find(item=>item.nameJa.startsWith('彩光の欠片 SSR付き！'))
@@ -67,4 +72,4 @@ for(const row of audit){
  assert(evidence&&row.status===evidence.status&&row.references.length&&row.sourceHash===sourceHash(row.source))
  if(row.status==='reviewed')assert.equal(revisions.get(`metadata:v1:item:name:${sourceHash(evidence.tickets.find(ticket=>ticket.id===evidence.translation_item_id).source_name)}`).status,'reviewed')
 }
-console.log('PASS: 857 item fields, fixed idol names, 273 tickets with verified icons, 81 pool names / 82 catalog records, 25 supplements; exact source and hashes, unresolved STAGE identity, no fabricated dates/cards, bilingual search and bidirectional reachable links.')
+console.log('PASS: 857 item fields, fixed idol names, 273 tickets with verified icons, 81 pool names / 82 catalog records, 25 supplements; exact source and hashes, unresolved STAGE identity, dates and cards only from wiki-listed runs, bilingual search and bidirectional reachable links.')

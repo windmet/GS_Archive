@@ -31,8 +31,11 @@ test('[local-corpus] card gasha relations carry their gasha banner', async () =>
   const { product } = await readCheckout(viewer, { dataRevision: 'test', mediaEpoch: 'test' })
   const gashaIndex = JSON.parse(await fs.readFile(new URL('../../public/data/masterdata/gasha_index.json', import.meta.url), 'utf8'))
   const banners = new Map(gashaIndex.gashas.map(gasha => [String(gasha.id), gasha.banner_url]))
-  const relations = Object.values(product.cardContext).map(context => context.gashaRelation).filter(Boolean)
+  const all = Object.values(product.cardContext).map(context => context.gashaRelation).filter(Boolean)
+  // Ticket-only pools (wiki-listed cards) have no announcement and no banner.
+  const relations = all.filter(relation => !String(relation.announcement_id).startsWith('ticket-'))
   assert.equal(relations.length, Object.keys(gashaIndex.relations_by_card).length)
+  assert.ok(all.filter(relation => !relations.includes(relation)).every(relation => relation.banner_url === null))
   for (const relation of relations) {
     assert.equal(relation.banner_url, banners.get(String(relation.announcement_id)), `${relation.card_resource_id}: the related gasha's own banner`)
     assert.match(relation.banner_url, /^\/assets\/gasha\//)

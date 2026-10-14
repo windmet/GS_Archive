@@ -66,3 +66,23 @@ export function applyGashaTicketReview(evidence,revisions){
  }
  return evidence
 }
+
+// Ticket-only pools get their open periods and new cards from the Wikiwiki notices
+// (public/data/editorial/wiki-acquisition-evidence.json); a rerun repeats its first run's cards.
+export function attachWikiPools(evidence,wiki,cardIndex){
+ const cards=new Map(cardIndex.cards.map(card=>[card.resource_id,card])),rows=new Map(evidence.rows.map(row=>[row.id,row]))
+ for(const row of evidence.rows)delete row.wiki_pools
+ for(const pool of wiki.gasha_pools)for(const id of pool.ticket_group_ids){
+  const row=rows.get(id),source=wiki.sources[pool.source]
+  if(!row||row.matched_ids.length||!source)throw new Error(`Wiki pool ${pool.title} does not name a ticket-only group`)
+  const ids=pool.series?.rerun?[]:pool.series?pool.series.cards.map(resource_id=>({resource_id,limited:false})):pool.cards
+  ;(row.wiki_pools||=[]).push({title:pool.title,start_at:pool.start_at,end_at:pool.end_at,is_reprint:pool.is_reprint,
+   series:pool.series?{title:pool.series.series_title||pool.series.title,count:pool.series.count,rerun:pool.series.rerun}:null,
+   source:{title:source.title,url:source.url,checked_at:wiki.checked_at},
+   cards:ids.map(({resource_id,limited})=>{const card=cards.get(resource_id);if(!card)throw new Error(`Unknown wiki card ${resource_id}`)
+    return {card_resource_id:card.resource_id,card_title:card.title,character_id:card.character_id,rarity:card.rarity,limited:!!limited}})})
+ }
+ for(const row of evidence.rows)row.wiki_pools?.sort((a,b)=>a.start_at-b.start_at)
+ evidence.summary.wiki_period_groups=evidence.rows.filter(row=>row.wiki_pools).length
+ return evidence
+}
