@@ -63,6 +63,7 @@ assert.equal(newSuspensionlightsAt(cancelledErase,2000).length,1)
 assert.equal(newSuspensionlightsAt([create,rotate],500)[0].alpha,0) // Rotate does not activate.
 const wide = suspensionlightLayout(at(111000)[1],1280,720)
 const narrow = suspensionlightLayout(at(111000)[1],640,360)
+assert.equal(suspensionlightLayout({x:0,y:360,scaleX:1,scaleY:1,angle:0},1280,720).y,360)
 assert.equal(narrow.x,wide.x/2)
 assert.equal(narrow.y,wide.y/2)
 assert.equal(narrow.scaleY,wide.scaleY/2)

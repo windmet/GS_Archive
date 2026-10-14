@@ -1,6 +1,7 @@
 // Native old-suspension channels. Screen registration remains separate from
 // the recovered local hierarchy and command/Animator lifecycle.
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
+import { nativeLightScreenLayout } from './chibiNativeLightProjection.js'
 const n = (v,i,d=0) => v[i] === '' || v[i] == null ? d : Number(v[i])
 const clamp = x => Math.max(0,Math.min(1,x))
 const outQuad = x => 1-(1-clamp(x))**2
@@ -91,14 +92,10 @@ export function oldSuspensionlightsAt(events, time, model, registration = {}) {
     // Unity-to-screen Y reflection applied at both ends of the local matrix.
     result.push({key:s.key,model:m,alpha:channels.alpha,color:hex(channels.color),unresolved:channels.unresolved,
       depth:n(v,10),x:n(v,7),y:n(v,8),scaleX:scale,scaleY:scale,
-      coordinateScale:registration.referenceProjection==='stage-rig-v1'?1:.5,
       mirrorY:!right,moving:true,phase,nativeAngle,angle:right?n(v,6)+60+nativeAngle:n(v,6)-60-nativeAngle})
   }
   return result
 }
 export function oldSuspensionlightLayout(s,width,height,environmentScale=1) {
-  const fit=Math.min(width/1280,height/720)*environmentScale
-  const coordinateFit=fit*(s.coordinateScale??.5)
-  return {x:width/2+s.x*coordinateFit,y:height/2+(360-s.y)*coordinateFit,
-    scaleX:s.scaleX*fit,scaleY:(s.mirrorY?-1:1)*s.scaleY*fit,rotation:-s.angle*Math.PI/180}
+  return nativeLightScreenLayout(s,width,height,environmentScale)
 }

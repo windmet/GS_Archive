@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { oldSuspensionlightsAt,oldSuspensionlightLayout } from '../src/core/chibiOldSuspensionlights.js'
+import { nativeLightCameraAt,nativeLightScreenLayout,nativeLightLocalLayout } from '../src/core/chibiNativeLightProjection.js'
 const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`,import.meta.url)))
 const model=read('chibi-old-suspension-model.json'),moon=read('chibi-old-suspension-events.json')
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`)
@@ -73,6 +74,39 @@ for(const side of ['left','right'])for(const angle of [-120,0,73,300])for(const 
 }
 const beam=at(basic,600)[0],large=oldSuspensionlightLayout(beam,1280,720),small=oldSuspensionlightLayout(beam,640,360)
 close(large.x,small.x*2);close(large.y,small.y*2);close(large.scaleY,small.scaleY*2)
+const cameraRow=(time,changes={})=>({time,zoom:1000,zoomDuration:0,x:0,y:360,moveDuration:0,rotation:0,rotationDuration:0,focusSlot:0,...changes})
+const lens={cameraEvents:[cameraRow(0,{zoom:2000,zoomDuration:1000,x:100,y:460,moveDuration:1000,rotation:90,rotationDuration:1000})]}
+const midpoint=nativeLightCameraAt(lens,500)
+close(midpoint.orthoSize,3.125);close(midpoint.zoom,1.6);close(midpoint.x,75);close(midpoint.rotation,67.5)
+const interruptedLens={cameraEvents:[...lens.cameraEvents,cameraRow(500)]}
+close(nativeLightCameraAt(interruptedLens,500).zoom,1)
+const focusSong={cameraEvents:[cameraRow(0,{focusSlot:1,zoomDuration:1000,moveDuration:100})],
+ positionEvents:[{time:0,position:1,x:100,y:180},{time:700,position:1,x:200,y:220}]}
+close(nativeLightCameraAt(focusSong,500).x,100)
+close(nativeLightCameraAt(focusSong,1000).x,200)
+close(nativeLightCameraAt(focusSong,1000).y,370)
+assert.equal(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1})]},10).verified,false)
+assert.equal(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1100,x:100})]},10).focusSlot,0)
+close(nativeLightCameraAt({cameraEvents:[cameraRow(0,{focusSlot:1100,x:100})]},10).x,100)
+// Matrix oracle includes LiveStage's Prepare scale, camera inverse and screen
+// Y conversion. This checks the sign of camera rotation independently.
+for(const rotation of [-90,0,30])for(const zoom of [1,2]){
+ const cam={x:20,y:400,rotation,zoom}
+ const projected=nativeLightScreenLayout(beam,1280,720,1,cam)
+ const stageScale=1000/720,world=[beam.x*.01*stageScale,(beam.y-360)*.01*stageScale]
+ const cameraWorld=[cam.x*stageScale/100,(cam.y-360)*stageScale/100]
+ const view=rotate(world[0]-cameraWorld[0],world[1]-cameraWorld[1],-rotation*Math.PI/180)
+ close(projected.x,640+view[0]*720/(10/zoom));close(projected.y,360-view[1]*720/(10/zoom))
+ // The reference parent is intentionally different. Its .82 zoom, pivot and
+ // rotation must cancel exactly rather than being applied a second time.
+ const a=.82*Math.cos(.3),b=.82*Math.sin(.3),parent={a,b,c:-b,d:a,tx:83,ty:-41}
+ const local=nativeLightLocalLayout(projected,parent)
+ close(a*local.x-b*local.y+parent.tx,projected.x)
+ close(b*local.x+a*local.y+parent.ty,projected.y)
+ close(Math.cos(local.rotation+.3),Math.cos(projected.rotation))
+ close(Math.sin(local.rotation+.3),Math.sin(projected.rotation))
+ close(local.scaleX*.82,projected.scaleX)
+}
 for(const t of [0,6000,20000,105100])for(const s of at(moon,t))for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
 if(process.argv.includes('--published-assets')){
  const base=new URL('../public/assets/live-chibi/',import.meta.url)
@@ -91,6 +125,14 @@ if(process.argv.includes('--published-assets')){
    assert.ok(after.phase>=before.phase && after.phase-before.phase<.000001)
   }
   for(const t of [6000,19000,28385,112900])for(const s of at(events,t))for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
+ }
+ const choreography=JSON.parse(fs.readFileSync(new URL('choreography/index.json',base)))
+ for(const song of choreography.songs)for(const event of song.cameraEvents||[]){
+  for(const t of [event.time,event.time+50,event.time+1000]){
+   const camera=nativeLightCameraAt(song,t)
+   assert.equal(camera.verified,true,`${song.id} unresolved focus ${t}`)
+   for(const field of ['zoom','orthoSize','x','y','rotation'])assert.ok(Number.isFinite(camera[field]),`${song.id} ${field} ${t}`)
+  }
  }
  assert.equal(count,88647);assert.equal(driveVariants,20)
 }

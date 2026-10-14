@@ -1,5 +1,7 @@
 # Drive 共用旧悬灯：执行通道与层级修正
 
+后续：[原版灯光投影与暂停补绘](NATIVE_LIGHT_PROJECTION_BATCH_20261014.md) 已替换新旧悬灯的参考平面；其他层的镜头统一仍未完成。
+
 2026-10-14；分支 `codex/stage-chibi-wiring-20261013`，输入 HEAD `fc0a99bb`。承接 [原版链路复查](NATIVE_DRIVE_LIGHT_CHAIN_RECHECK_20261014.md)，本批开始替换消费者中的截图猜测规则；没有将局部执行语义的恢复称为完整舞台复刻。
 
 ## 实现

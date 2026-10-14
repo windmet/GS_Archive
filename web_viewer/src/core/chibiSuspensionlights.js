@@ -1,4 +1,5 @@
-// Native command channels; the 2D projection remains recording-calibrated.
+import { nativeLightScreenLayout } from './chibiNativeLightProjection.js'
+// Native command channels and LiveStage's design-plane registration.
 const clamp = x => Math.max(0, Math.min(1, x))
 const number = (values, i, fallback = 0) => values[i] === '' || values[i] == null ? fallback : Number(values[i])
 const outQuad = x => 1 - (1 - x) ** 2
@@ -114,8 +115,5 @@ export function newSuspensionlightsAt(events = [], time = 0) {
 }
 
 export function suspensionlightLayout(state, width, height, environmentScale = 1) {
-  const fit = Math.min(width / 1280, height / 720) * environmentScale
-  return { x: width / 2 + state.x * fit, y: height / 2 + (250 - state.y) * fit,
-    scaleX: state.scaleX * fit, scaleY: state.scaleY * fit,
-    rotation: -state.angle * Math.PI / 180 }
+  return nativeLightScreenLayout(state, width, height, environmentScale)
 }

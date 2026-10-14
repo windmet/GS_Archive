@@ -56,8 +56,8 @@
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
-    data-old-suspensionlight-status="native-channels-hierarchy-reference-projection"
-    data-new-suspensionlight-status="native-show-rotate-scale-fade-reference-projection"
+    data-old-suspensionlight-status="native-channels-hierarchy-stage-projection"
+    data-new-suspensionlight-status="native-show-rotate-scale-fade-stage-projection"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
@@ -516,8 +516,9 @@ import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
-import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
-import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { newSuspensionlightsAt } from '../core/chibiSuspensionlights.js'
+import { oldSuspensionlightsAt } from '../core/chibiOldSuspensionlights.js'
+import { nativeLightCameraAt, nativeLightScreenLayout, nativeLightLocalLayout } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
@@ -724,7 +725,7 @@ const suspensionSprites = createSpotlightSpriteStore({
   },
   destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncSuspensionlights(),
+  onReady: () => { syncSuspensionlights(); requestPausedSuspensionRender() },
   onError: error => console.warn('[ChibiStage] suspension texture load failed', error),
 })
 const spotlightBackgroundAlpha = ref(0)
@@ -756,7 +757,7 @@ const oldSuspensionSprites = createSpotlightSpriteStore({
   },
   destroyRuntime: runtime => { runtime.sprite.removeFromParent(); runtime.sprite.destroy() },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncOldSuspensionlights(),
+  onReady: () => { syncOldSuspensionlights(); requestPausedSuspensionRender() },
   onError: error => console.warn('[ChibiStage] old sidelight texture load failed', error),
 })
 const pinspotlightMaskCount = ref(0)
@@ -2189,6 +2190,32 @@ function syncStagelights() {
   appliedStagelightColors.value = colors.join(',')
 }
 
+let suspensionRenderQueued = false
+function requestPausedSuspensionRender() {
+  if (!app || playing.value || stageDisposed || suspensionRenderQueued) return
+  suspensionRenderQueued = true
+  const owner = app
+  queueMicrotask(() => {
+    suspensionRenderQueued = false
+    if (app === owner && !stageDisposed && !playing.value) owner.render()
+  })
+}
+
+function nativeSuspensionProjection(width, height) {
+  // Seek can enter lighting before its final camera sync. Refresh the parent
+  // local matrix now; using last frame's worldTransform creates a one-frame jump.
+  applyCameraTransform()
+  cameraContainer.transform.updateLocalTransform()
+  return { parent: cameraContainer.localTransform.clone(),
+    camera: cameraEnabled.value ? nativeLightCameraAt(selectedSong.value, stageTime.value)
+      : { x: 0, y: 360, zoom: 1, rotation: 0, verified: true }, width, height }
+}
+
+function nativeSuspensionLayout(state, context) {
+  return nativeLightLocalLayout(nativeLightScreenLayout(state, context.width, context.height,
+    environmentScale.value, context.camera, stageViewScale.value), context.parent)
+}
+
 function syncSuspensionlights() {
   if (!app || !cameraContainer) return
   const songId = selectedSong.value?.id || ''
@@ -2210,6 +2237,7 @@ function syncSuspensionlights() {
           if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
           suspensionTrack.value = track
           syncSuspensionlights()
+          requestPausedSuspensionRender()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
         })
@@ -2223,11 +2251,13 @@ function syncSuspensionlights() {
   if (!track || !model) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
+  const projection = nativeSuspensionProjection(width, height)
+  if (!projection.camera.verified) return
   for (const state of newSuspensionlightsAt(track.events, stageTime.value)) {
     if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
     const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue
-    const layout = suspensionlightLayout(state, width, height, environmentScale.value)
+    const layout = nativeSuspensionLayout(state, projection)
     runtime.sprite.position.set(layout.x, layout.y)
     runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
     runtime.sprite.rotation = layout.rotation
@@ -2279,6 +2309,7 @@ function syncOldSuspensionlights() {
           oldSuspensionTrack = track
           oldSuspensionTempo = tempo
           syncOldSuspensionlights()
+          requestPausedSuspensionRender()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] old sidelight track load failed', error)
         })
@@ -2289,12 +2320,14 @@ function syncOldSuspensionlights() {
   if (!beamEffectsEnabled.value || !oldSuspensionTrack) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
+  const projection = nativeSuspensionProjection(width, height)
+  if (!projection.camera.verified) return
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
     stageEffectIndex.value?.oldSuspensionlight,{...descriptor,tempo:oldSuspensionTempo})) {
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue
-    const layout = oldSuspensionlightLayout(state,width,height,environmentScale.value)
+    const layout = nativeSuspensionLayout(state, projection)
     runtime.sprite.position.set(layout.x,layout.y)
     runtime.sprite.scale.set(layout.scaleX,layout.scaleY)
     runtime.sprite.rotation = layout.rotation
