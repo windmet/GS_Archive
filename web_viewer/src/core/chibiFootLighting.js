@@ -1,7 +1,8 @@
 // Native Skeleton-Gradient uses local mesh Y, not whole-Spine multiplication.
-// ChangeFootColor's CSV rate -> runtime uniforms is still unresolved. Sample
-// the authored rate, but keep height zero until a verified mapping is supplied.
-// Never turn that unknown rate into a cutoff or full-strength replacement.
+// Native cutoff uniform is 1000 / CSV value4 (currently stored as depth).
+// Its Unity-local mesh units still need a verified Web skeleton conversion.
+// Keep height zero until that bridge and the independent RGBA are wired.
+// Do not substitute CSV opacity for the geometric cutoff or enable full replacement.
 const clamp = x => Math.max(0, Math.min(1, x))
 export function footLightingAt(events = [], time = 0) {
   let state = { rgb: [0, 0, 0], height: 0, rate: 0 }, track = null

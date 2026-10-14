@@ -8,7 +8,8 @@
 - [x] SpotlightBackground 共享脚本排序、聚光灯 depth+1、pinspotlight 掩模排序区间；保留脚本显式 0。
 - [x] SpotlightBackground 共享颜色、visible 计数和渐变；已改为独立命令回放，保留 RAW 跨家族指令顺序，见 NATIVE_SHARED_BACKGROUND_BATCH_20261014.md。
 - [x] 去除没有原版依据的整个人物环境染色，避免与遮光平面重复叠加、绕过 pinspotlight 掩模。
-- [ ] Body_Color 材质替色及 Foot_Color 高度映射，不能把本批去重染色视作人物 shader 已完全还原。
+- [x] Body_Color 原版RGBA替色，接到单个Spine绘制部件并保留槽位颜色、透明度及批渲染；见 NATIVE_BODY_MATERIAL_BATCH_20261014.md。
+- [ ] Foot_Color 高度映射：已确认 value4 为cutoff字段，native rate=1000/value4；仍需Unity局部骨骼单位到Web单位的映射，height0保护保留。
 - [ ] 反查 monitor、嵌套特效容器及透明材质的排序/深度状态；不将所有灯束一律移到人物后面。
 - [x] 背屏 value7 错当 Logo 渐变时长：已反查确认其为 GrowSprite alpha，限定预览 Logo 改为原版固定500ms/显示alpha0.8。
 - [ ] 后续处理用户暂无法描述的灯光差异，保留待办，不宣称全部灯光还原完成。

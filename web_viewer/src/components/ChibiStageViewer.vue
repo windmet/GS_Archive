@@ -464,7 +464,7 @@ import { archiveText } from './archive/useArchiveCostumeText.js'
 import { usePlayerImmersiveMode } from '../composables/usePlayerImmersiveMode.js'
 import { createPlaybackIntent } from '../core/PlaybackIntent.js'
 import { colorLayersAt } from '../core/chibiColorLayers.js'
-import { bodyColorsAt } from '../core/chibiBodyColors.js'
+import { bodyUniformsAt } from '../core/chibiBodyColors.js'
 import { imageColorsAt, compositeImageTint } from '../core/chibiImageColors.js'
 import GsLoadingIndicator from './GsLoadingIndicator.vue'
 import { computed, customRef, markRaw, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, shallowReactive, useId, watch } from 'vue'
@@ -515,6 +515,7 @@ import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
+import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
 import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
@@ -994,7 +995,7 @@ const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wh
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
 const currentFootLighting = frameValue(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
-const currentBodyColors = frameValue(() => bodyColorsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
+const currentBodyColors = frameValue(() => bodyUniformsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
 const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
 const currentCameraLabel = computed(() => {
@@ -1146,6 +1147,7 @@ function initializeLineup() {
 }
 
 function createPixiApp() {
+  registerNativeBodyRenderer(PIXI)
   const host = canvasRef.value
   if (!host) return
   app = markRaw(new PIXI.Application({
@@ -1472,6 +1474,7 @@ async function attachStageShadow(runtime) {
 }
 
 function destroyStageRuntime(runtime) {
+  releaseNativeBodyColor(runtime)
   releaseFootLighting(runtime)
   runtime?.releaseShadowFollower?.()
   runtime?.groundShadow?.removeFromParent()
@@ -1889,6 +1892,7 @@ function applyStageLighting() {
     if (wholeScreenColorOverlay) wholeScreenColorOverlay.visible = false
     for (const runtime of runtimes.values()) {
       runtime.spine.tint = 0xffffff
+      syncNativeBodyColor(PIXI,runtime,null,false)
       syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
     }
     if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
@@ -1907,12 +1911,13 @@ function applyStageLighting() {
   for (const [position, runtime] of runtimes) {
     // Environment dimming belongs to SpotlightBackground's composited plane.
     // Applying it to Spine as well doubled the wash and bypassed Pin masks.
-    runtime.spine.tint = currentBodyColors.value.get(position) ?? 0xffffff
+    runtime.spine.tint = 0xffffff
+    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true)
     syncFootLighting(PIXI,runtime,foot,true)
   }
   if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>
-    `${position}:#${runtime.spine.tint.toString(16).padStart(6, '0')}`).join(',')
+    `${position}:rgba(${(currentBodyColors.value.get(position) || [1,1,1,0]).map(v=>v.toFixed(3)).join(',')})`).join(',')
 }
 
 function syncSpotlightBackground() {

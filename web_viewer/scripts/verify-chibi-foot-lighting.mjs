@@ -43,11 +43,11 @@ const ref=value=>({value})
 const bodyRuntimes=new Map([[2,{spine:{}}],[3,{spine:{}}]])
 let spots=[],pins=[],gradientCalls=0
 const tintControls=ref(new Map())
-const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions','playing','inspectorOpen',`return () => {${bodyBranch}\n}`)(
+const applyBody=new Function('currentFootLighting','spotlightStatesAt','pinspotlightStatesAt','stageTime','parseHexColor','runtimes','mixRgb','currentBodyColors','multiplyBodyTint','syncFootLighting','PIXI','appliedBodyColors','activePositions','playing','inspectorOpen','syncNativeBodyColor',`return () => {${bodyBranch}\n}`)(
  ref(state),()=>new Map(spots.map((s,i)=>[i,s])),()=>new Map(pins.map((s,i)=>[i,s])),ref(5200),
  c=>c?parseInt(c.slice(1),16):0x221d23,bodyRuntimes,
  (a,b,f)=>f===0?a:f===1?b:0x808080,tintControls,(a,b)=>b??a,
- ()=>{gradientCalls++},{},ref(''),ref([2,3]),ref(false),ref(false))
+ ()=>{gradientCalls++},{},ref(''),ref([2,3]),ref(false),ref(false),(_pixi,r,rgba)=>{r.appliedBody=rgba})
 const environment={alpha:1,beamColor:'#ffffff',asset:'Pinspotlight',environmentColor:'#000000',environmentOpacity:1000}
 spots=[environment];pins=[environment];applyBody()
 assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Free/offstage environment does not black out the face')
@@ -58,8 +58,9 @@ assert.equal(bodyRuntimes.get(3).spine.tint,0xffffff,'Pin dimming comes from the
 pins=[];spots=[{...environment,stagePosition:3}];applyBody()
 assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Spotlight dimming comes from the sorted background plane')
 assert.notEqual(bodyRuntimes.get(3).spine.tint,0)
-spots=[];tintControls.value=new Map([[2,0x123456]]);applyBody()
-assert.equal(bodyRuntimes.get(2).spine.tint,0x123456,'Explicit Body_Color remains independent')
+spots=[];tintControls.value=new Map([[2,[.1,.2,.3,.6]]]);applyBody()
+assert.deepEqual(bodyRuntimes.get(2).appliedBody,[.1,.2,.3,.6],'Explicit Body_Color is passed as native RGBA')
+assert.equal(bodyRuntimes.get(2).spine.tint,0xffffff,'Native replacement must not also multiply the Spine')
 assert.equal(bodyRuntimes.get(3).spine.tint,0xffffff,'Rewind/song change leaves no stale lamp dimming')
 assert.equal(gradientCalls,8,'Foot gradient is wired to every performer independently of body tint')
 if (process.argv.includes('--published-assets')) {
