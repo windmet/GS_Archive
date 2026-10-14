@@ -35,11 +35,11 @@
         >
           <span class="slot-position"><span class="slot-word">位置 </span>{{ stagePosition }}<span v-if="stagePosition === 3" class="slot-center"> · 中心</span></span>
           <img v-if="idolForStagePosition(stagePosition)" class="slot-avatar" :src="getCharaIconUrl(idolForStagePosition(stagePosition))" alt="" loading="lazy" />
-          <span v-else class="slot-avatar slot-empty" aria-hidden="true">+</span>
+          <span v-else class="slot-avatar slot-empty" aria-hidden="true"><Plus :size="22" /></span>
           <strong>{{ idolForStagePosition(stagePosition) ? slotName(stagePosition) : '选择偶像' }}</strong>
           <small>{{ slotStatusLabel(stagePosition) }}</small>
         </button>
-        <button v-if="idolForStagePosition(stagePosition)" type="button" class="slot-clear" :aria-label="`清空位置 ${stagePosition}`" @click="assignStagePosition(stagePosition, '')">×</button>
+        <button v-if="idolForStagePosition(stagePosition)" type="button" class="slot-clear" :aria-label="`清空位置 ${stagePosition}`" @click="assignStagePosition(stagePosition, '')"><X :size="18" aria-hidden="true" /></button>
       </div>
     </fieldset>
 
@@ -90,6 +90,7 @@
 </template>
 
 <script setup>
+import { Plus, X } from '@lucide/vue'
 import ArchiveMediaTransport from './ArchiveMediaTransport.vue'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ArchiveErrorNote from './ArchiveErrorNote.vue'
@@ -335,14 +336,14 @@ onBeforeUnmount(() => { disposed = true; loadGeneration += 1 })
 .slot-pick { display: grid; justify-items: center; gap: var(--gs-space-1); width: 100%; min-width: 0; padding: var(--gs-space-3) var(--gs-space-1) var(--gs-space-2); border: 0; background: none; color: var(--gs-ink); font: inherit; text-align: center; cursor: pointer; }
 .slot-position { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
 .slot-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background: var(--gs-rule); }
-.slot-empty { display: grid; place-items: center; box-sizing: border-box; border: 1.5px dashed var(--gs-ink-3); background: none; color: var(--gs-ink-3); font-size: 22px; line-height: 1; }
+.slot-empty { display: grid; place-items: center; box-sizing: border-box; border: 1.5px dashed var(--gs-ink-3); background: none; color: var(--gs-ink-3); }
 .slot-pick strong { max-width: 100%; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); overflow-wrap: anywhere; }
 .performer-slot:not(.filled) .slot-pick strong { color: var(--gs-mint-ink); }
 .slot-pick small { color: var(--gs-ink-3); font-size: var(--gs-text-caption); }
 .performer-slot.active .slot-pick small, .performer-slot[data-slot-state=ready] .slot-pick small { color: var(--gs-mint-ink); }
 .performer-slot[data-slot-state=error] .slot-pick small { color: var(--gs-critical); }
 .performer-slot[data-slot-state=loading] .slot-avatar { opacity: .55; }
-.slot-clear { position: absolute; top: var(--gs-space-1); right: 0; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--gs-ink-3); font: inherit; font-size: 18px; line-height: 1; cursor: pointer; }
+.slot-clear { position: absolute; top: var(--gs-space-1); right: 0; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--gs-ink-3); cursor: pointer; }
 .lineup-progress { margin: var(--gs-space-3) 0 0; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
 .lineup-load { margin-left: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 0; border-radius: var(--gs-radius-control); background: var(--gs-action-bg); color: var(--gs-action-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .current-singers { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3); margin-top: var(--gs-space-4); padding-left: var(--gs-space-4); border-left: 2px solid var(--gs-mint); }

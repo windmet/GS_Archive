@@ -412,12 +412,12 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .source-action svg { color: var(--gs-mint-ink); }
 .source-status { color: var(--gs-mint-ink); }
 .official-video { margin: var(--gs-space-4) 0 0; }
-.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--gs-radius-panel); background: #000; }
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--gs-radius-panel); background: var(--gs-media-bg); }
 .video-frame iframe, .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.video-poster { display: block; padding: 0; background: #000 center / contain no-repeat; cursor: pointer; }
+.video-poster { display: block; padding: 0; background: var(--gs-media-bg) center / contain no-repeat; cursor: pointer; }
 /* Without YouTube reachable the thumbnail fails; the song jacket stays as the poster. */
 .video-poster img { width: 100%; height: 100%; object-fit: cover; }
-.video-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(0 0 0 / .62); color: #fff; }
+.video-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: var(--gs-media-scrim); color: var(--gs-media-ink); }
 .video-play svg { margin-left: 3px; fill: currentColor; }
 .official-video figcaption { display: grid; gap: var(--gs-space-1); margin-top: var(--gs-space-3); }
 .official-video figcaption strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
