@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 import vm from 'node:vm'
 import {customRef,isRef,unref} from 'vue'
+import {constantSuspensionTempo} from '../src/core/chibiSuspensionlights.js'
 const source=await readFile(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
 const ref=value=>({value})
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject}}
@@ -75,4 +76,31 @@ for(const mode of ['success','cancel','failure']){
   assert.match(source,/onReady: \(\) => \{ syncOldSuspensionlights\(\); requestPausedSuspensionRender\(\) \}/)
   cases++
 }
-console.log(`Stage resource ownership: ${cases} actual SFC delayed shadow/texture, retry, bounded motion, paused repaint and sibling failure cases passed; no GPU/device claim`)
+for(const mode of ['late-tempo','failed-tempo','switch','dispose']){
+  const requests=new Map();let repaints=0
+  const context={AbortController,console:{warn(){}},stageDisposed:false,app:{},cameraContainer:{},
+    selectedSong:ref({id:'first',songCode:'first'}),stageEffectIndex:ref({newSuspensionlightSongs:{first:{file:'first.json'},second:{file:'second.json'}}}),
+    suspensionTrackKey:'',suspensionTrack:ref(null),suspensionTempo:ref(null),suspensionAbort:null,
+    suspensionSprites:{runtimes:new Map(),release(){}},visibleSuspensionlightIds:ref([]),beamEffectsEnabled:ref(false),
+    LIVE_CHIBI_BASE:'/live',constantSuspensionTempo,validateSongChart(){},requestPausedSuspensionRender(){repaints++},
+    fetch(url){const gate=deferred();requests.set(url,gate);return gate.promise}}
+  install(context,['syncSuspensionlights']);context.syncSuspensionlights()
+  const track=requests.get('/live/first.json'),tempo=requests.get('/data/song_charts/first-1.json')
+  if(mode==='switch'){
+    context.selectedSong.value={id:'second',songCode:'second'};context.syncSuspensionlights()
+  }
+  if(mode==='dispose')context.stageDisposed=true
+  track.resolve({ok:true,json:async()=>({events:[],identity:'first'})});await flush()
+  if(mode==='switch'||mode==='dispose')assert.equal(context.suspensionTrack.value,null,'Late track cannot attach after song switch/unmount')
+  else assert.equal(context.suspensionTrack.value.identity,'first','A pending chart cannot block normal/color lamps')
+  assert.equal(context.suspensionTempo.value,null)
+  if(mode==='failed-tempo')tempo.reject(Error('missing chart'))
+  else tempo.resolve({ok:true,json:async()=>({tempos:[{tempo:120}]})})
+  await flush()
+  assert.equal(context.suspensionTempo.value,mode==='late-tempo'?120:null,'Late tempo is scoped to its song and lifetime')
+  if(mode==='failed-tempo')assert.equal(context.suspensionTrack.value.identity,'first','Chart failure preserves the loaded track')
+  if(mode==='switch'||mode==='dispose')assert.equal(repaints,0)
+  else assert.equal(repaints,2,'Both completions request a paused repaint')
+  cases++
+}
+console.log(`Stage resource ownership: ${cases} actual SFC delayed shadow/texture, retry, bounded motion, independent lamp/tempo loading, stale completion and paused repaint cases passed; no GPU/device claim`)

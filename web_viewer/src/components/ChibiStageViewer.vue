@@ -381,7 +381,7 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放和渐隐，<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条颜色／节拍控制仍待接入。</template><template v-else>颜色／节拍控制待核对。</template>当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放、渐隐及颜色／节拍控制。<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条未知指令；<template v-if="stageVfxCoverage.newSuspensionlightTempoPending">{{ stageVfxCoverage.newSuspensionlightTempoPending }} 条节拍指令缺少已验证 BPM；</template></template><template v-else>指令轨道加载中；</template>当前可见 {{ visibleSuspensionlightIds.length }} 束，投影仍待原片核对。</p>
               <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
@@ -524,7 +524,7 @@ import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer
 import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
-import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
+import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
@@ -720,6 +720,7 @@ let stagelightSongId = ''
 const visibleSuspensionlightIds = ref([])
 let suspensionTrackKey = ''
 const suspensionTrack = shallowRef(null)
+const suspensionTempo = ref(null)
 let suspensionAbort = null
 const suspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -882,6 +883,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
   newSuspensionlightTrack: suspensionTrack.value,
+  newSuspensionlightTempo: suspensionTempo.value,
   stageBackgrounds: stageBackgroundIndex.value,
 }))
 const stageVfxApproximateCount = computed(() => {
@@ -2160,15 +2162,31 @@ function syncSuspensionlights() {
     suspensionSprites.release()
     suspensionAbort?.abort()
     suspensionTrack.value = null
+    suspensionTempo.value = null
     suspensionTrackKey = key
     if (descriptor?.file) {
       const abort = new AbortController()
       suspensionAbort = abort
-      fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
+      const trackRequest = fetch(`${LIVE_CHIBI_BASE}/${descriptor.file}`, { signal: abort.signal })
         .then(response => {
           if (!response.ok) throw new Error(`Suspension track HTTP ${response.status}`)
           return response.json()
-        }).then(track => {
+        })
+      const songCode = selectedSong.value.songCode
+      const tempoRequest = fetch(`/data/song_charts/${encodeURIComponent(songCode)}-1.json`, { signal: abort.signal })
+        .then(response => {
+          if (!response.ok) throw new Error(`Suspension tempo HTTP ${response.status}`)
+          return response.json()
+        }).then(chart => {
+          validateSongChart(chart, songCode, 1)
+          return constantSuspensionTempo(chart)
+        }).catch(error => {
+          if (!abort.signal.aborted) console.warn('[ChibiStage] suspension tempo unavailable', error)
+          return null
+        })
+      // Color/normal channels do not depend on the chart request. A missing
+      // or slow BPM must leave only BeatShow pending, not hide every light.
+      trackRequest.then(track => {
           if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
           suspensionTrack.value = track
           syncSuspensionlights()
@@ -2176,6 +2194,12 @@ function syncSuspensionlights() {
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
         })
+      tempoRequest.then(tempo => {
+        if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
+        suspensionTempo.value = tempo
+        syncSuspensionlights()
+        requestPausedSuspensionRender()
+      })
     }
   }
   visibleSuspensionlightIds.value = []
@@ -2186,7 +2210,7 @@ function syncSuspensionlights() {
   if (!track || !model) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  for (const state of newSuspensionlightsAt(track.events, stageTime.value)) {
+  for (const state of newSuspensionlightsAt(track.events, stageTime.value, { tempo: suspensionTempo.value })) {
     if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
     const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue

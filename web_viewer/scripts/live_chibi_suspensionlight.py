@@ -1,7 +1,7 @@
 """Native new-suspension bindings and ordered command arguments.
 
 Commands retain ordered RAW arguments for independent runtime channels.
-Projection and unsupported color/beat controls remain partial.
+Projection remains reference-based; BeatShow requires validated tempo inputs.
 """
 import csv
 import hashlib

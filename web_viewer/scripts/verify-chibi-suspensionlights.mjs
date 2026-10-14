@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { newSuspensionlightsAt, suspensionlightLayout } from '../src/core/chibiSuspensionlights.js'
+import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../src/core/chibiSuspensionlights.js'
 import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
 
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-suspensionlight-ending.json', import.meta.url)))
@@ -20,7 +20,7 @@ assert.equal(at(118000)[0].alpha, 0) // value6=99999 is the OFF wait, not a repe
 close(at(217999)[0].alpha, .6) // Infinite repeat includes the full OFF wait.
 const event = (time, command, values, erase = false) => ({time,command,id:10047,values,erase})
 const base = fixture.events.filter(e => e.id === 10047)
-const withUnknown = [...base,event(111100,'NewSuspensionlight_coloranim',[])]
+const withUnknown = [...base,event(111100,'NewSuspensionlight_unknown_variant',[])]
 assert.equal(newSuspensionlightsAt(withUnknown,111100)[0].alpha,0)
 assert.equal(newSuspensionlightsAt([...base,event(111100,'NewSuspensionlight_create',[],true)],111100).length,0)
 const recreated = [...withUnknown,event(111200,'NewSuspensionlight_create',base[0].values)]
@@ -73,6 +73,63 @@ assert.equal(status.sourceEvents.newSuspensionlight,3)
 assert.equal(status.newSuspensionlightUnimplementedCommands,1)
 assert.equal(status.backmonitorLogoRequests,1)
 assert.equal(status.status,'partial')
+// Native ColorAnim/BeatShow method bodies, not parser-derived expectations:
+// directed HSV, OutQuad virtual tweens, half-duration outward/return legs,
+// palette advancement at SHOW completion (including waits), captured BPM.
+const red = {...create, values:[...create.values]}
+red.values[8] = '#ff0000'
+const color = (time, mode, target, duration, direction=1, rest=[]) =>
+  event(time,'NewSuspensionlight_coloranim',['10047',String(mode),target,String(duration),String(direction),...rest])
+const colors = (events,t,tempo=120) => newSuspensionlightsAt(events,t,{tempo})[0]
+assert.equal(colors([red,show,color(0,2,'#0000ff',1000)],500).color,'#00ffff')
+assert.equal(colors([red,show,color(0,2,'#0000ff',1000,0)],500).color,'#8000ff')
+assert.equal(colors([red,show,color(0,2,'#0000ff',1000)],1000).color,'#0000ff')
+assert.equal(colors([red,show,color(0,1,'',1000)],500).color,'#8000ff')
+assert.equal(colors([red,show,color(0,1,'',1000)],1000).color,'#ff0000')
+const pingpong = [red,show,color(0,3,'#0000ff',2000)]
+assert.equal(colors(pingpong,1000).color,'#0000ff')
+assert.equal(colors(pingpong,1500).color,'#ff0080')
+assert.equal(colors(pingpong,2000).color,'#ff0000')
+const overlap = [red,show,color(0,2,'#0000ff',1000),color(500,2,'#ff0000',1000)]
+assert.equal(colors(overlap,500).color,'#00ffff')
+assert.equal(colors(overlap,1500).color,'#ff0000')
+const pulse = event(0,'NewSuspensionlight_normal_show',['10047','0','100','100','100','100'])
+const palette = color(0,4,'#00ff00',0,0,['','#0000ff',''])
+const stepping = [red,pulse,palette]
+assert.equal(colors(stepping,399).color,'#ff0000')
+assert.equal(colors(stepping,400).color,'#00ff00')
+assert.equal(colors(stepping,800).color,'#0000ff')
+assert.equal(colors(stepping,1200).color,'#ff0000')
+assert.equal(colors(stepping,1000000).color,'#00ff00') // seek skips thousands of callbacks
+assert.equal(colors([red,pulse,{...palette,time:450}],799).color,'#ff0000')
+assert.equal(colors([red,pulse,{...palette,time:450}],800).color,'#00ff00')
+assert.equal(colors([...stepping,color(450,2,'#ffffff',0)],1200).color,'#ffffff')
+const beat = event(0,'NewSuspensionlight_beat_show',['10047','1','500','500'])
+const beats = [red,beat,palette]
+close(colors(beats,125).alpha,.6)
+assert.equal(colors(beats,750).alpha,0)
+close(colors(beats,1125).alpha,.6)
+assert.equal(colors(beats,1000).color,'#00ff00')
+const delayedBeat = [red,{...beat,values:['10047','0','500','500']}]
+assert.equal(colors(delayedBeat,499).alpha,0)
+close(colors(delayedBeat,625).alpha,.6)
+assert.equal(colors(beats,125,null).showUnresolved,'tempo_unavailable')
+assert.equal(colors(beats,125,null).alpha,0)
+assert.equal(colors([...beats,{...show,time:500}],750,null).alpha,.8) // a show replaces pending BPM
+const captured = newSuspensionlightsAt([red,beat],1125,{tempoAt:t=>t===0?120:60})[0]
+close(captured.alpha,.6)
+assert.deepEqual(colors(beats,125),colors(beats,125))
+const erasedBeat = [...beats,{...event(600,'NewSuspensionlight_create',[],true),extraValues:{value101:'1',value102:'100'}}]
+assert.equal(newSuspensionlightsAt(erasedBeat,700,{tempo:120}).length,0)
+assert.equal(constantSuspensionTempo({tempos:[{tempo:120},{tempo:120}]}),120)
+assert.equal(constantSuspensionTempo({tempos:[{tempo:120},{tempo:132}]}),null)
+assert.equal(constantSuspensionTempo({tempos:[{tempo:0}]}),null)
+const beatCoverage = (tempo) => buildStageVfxCoverage({id:'beat'},
+  {newSuspensionlightTrack:{events:beats},newSuspensionlightTempo:tempo})
+assert.equal(beatCoverage(null).newSuspensionlightTempoPending,1)
+assert.equal(beatCoverage(120).newSuspensionlightTempoPending,0)
+assert.equal(beatCoverage(120).newSuspensionlightUnimplementedCommands,0)
+assert.equal(buildStageVfxCoverage({id:'lazy'},{stageEffects:{newSuspensionlightSongs:{lazy:{eventCount:99,unimplementedCommands:8}}}}).newSuspensionlightUnimplementedCommands,null)
 if (process.argv.includes('--published-assets')) {
   const index = JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))
   assert.equal(Object.keys(index.newSuspensionlightSongs).length,19)
@@ -89,14 +146,25 @@ if (process.argv.includes('--published-assets')) {
   assert.equal(index.newSuspensionlight.layers[0].texturePathId,'834')
   assert.equal(index.newSuspensionlight.layers[0].anchorY,0)
   assert.equal(index.assets.new_suspension_light_sample.width,1024)
-  let corpusEvents = 0
+  let corpusEvents = 0, colorCommands = 0, beatCommands = 0
   for (const [song, descriptor] of Object.entries(index.newSuspensionlightSongs)) {
     const track = JSON.parse(fs.readFileSync(new URL(`../public/assets/live-chibi/${descriptor.file}`,import.meta.url)))
     corpusEvents += track.events.length
+    const chart = JSON.parse(fs.readFileSync(new URL(`../public/data/song_charts/${song.split('_')[0]}-1.json`,import.meta.url)))
+    const tempo = constantSuspensionTempo(chart)
+    const colorEvents = track.events.filter(e=>e.command==='NewSuspensionlight_coloranim')
+    const beatEvents = track.events.filter(e=>e.command==='NewSuspensionlight_beat_show')
+    colorCommands += colorEvents.length
+    beatCommands += beatEvents.length
+    if (beatEvents.length) assert.ok(tempo>0,`${song} BeatShow lacks constant tempo`)
+    const coverage = buildStageVfxCoverage({id:song},{newSuspensionlightTrack:track,newSuspensionlightTempo:tempo})
+    assert.equal(coverage.newSuspensionlightUnimplementedCommands,0)
+    assert.equal(coverage.newSuspensionlightTempoPending,0)
     for (const time of [0,6000,26500,112900,200000]) {
-      for (const s of newSuspensionlightsAt(track.events,time)) {
+      for (const s of newSuspensionlightsAt(track.events,time,{tempo})) {
         for (const field of ['alpha','angle','scaleX','scaleY']) assert.ok(Number.isFinite(s[field]),`${song} ${s.id} ${field}`)
         assert.ok(s.alpha>=0 && s.alpha<=1)
+        assert.match(s.color,/^#[\da-f]{6}$/i)
       }
     }
     if (song === 'gofrit_live_effect') {
@@ -112,5 +180,7 @@ if (process.argv.includes('--published-assets')) {
     }
   }
   assert.equal(corpusEvents,60358)
+  assert.equal(colorCommands,2350)
+  assert.equal(beatCommands,331)
 }
-console.log('PASS suspension: native envelopes/off waits, concurrent rotate/scale/fade, interruption, delayed show, erase/reuse, seek and coverage')
+console.log('PASS suspension: envelopes, rotate/scale/fade, directed HSV and palette, captured BPM/BeatShow, interruption, erase/reuse, seek and coverage')

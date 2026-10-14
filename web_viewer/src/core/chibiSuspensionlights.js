@@ -7,8 +7,63 @@ const linear = x => x
 const inOutSine = x => (1 - Math.cos(Math.PI * x)) / 2
 const mix = (a, b, t) => a + (b - a) * t
 
-export const NEW_SUSPENSIONLIGHT_COMMANDS = ['create', 'normal_show', 'rotateanim', 'scaleanim', 'fade']
+export const NEW_SUSPENSIONLIGHT_COMMANDS = ['create', 'normal_show', 'beat_show', 'coloranim', 'rotateanim', 'scaleanim', 'fade']
   .map(name => `NewSuspensionlight_${name}`)
+
+// ColorAnim (0x221f55c): HSV interpolation follows the authored direction,
+// including a full turn for equal hues. The return leg keeps that direction.
+function rgb(color) {
+  if (Array.isArray(color)) return color
+  let hex = String(color || '').replace(/^#/, '')
+  if (hex.length === 3 || hex.length === 4) hex = [...hex].map(c => c + c).join('')
+  if (!/^[\da-f]{6}([\da-f]{2})?$/i.test(hex)) return [0, 0, 0]
+  return [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+}
+function hsv(color) {
+  const [r, g, b] = rgb(color), max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min
+  const h = !d ? 0 : max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+  return [h / 6, max ? d / max : 0, max]
+}
+function rgbFromHsv([h, s, v]) {
+  h = ((h % 1) + 1) % 1 * 6
+  const c = v * s, x = c * (1 - Math.abs(h % 2 - 1)), m = v - c
+  const channels = [[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][Math.floor(h)]
+  return channels.map(c => clamp(c + m))
+}
+function colorAt(channel, time) {
+  const age = Math.max(0, time - channel.time), duration = channel.duration
+  let from = channel.from, to = channel.to, progress = duration > 0 ? age / duration : 1
+  if (channel.mode === 1) progress = duration > 0 ? progress % 1 : 1
+  if (channel.mode === 3 && duration > 0) {
+    const phase = (age % duration) / (duration / 2)
+    if (phase >= 1) { from = channel.to; to = channel.returnTo }
+    progress = phase % 1
+  }
+  return rgbFromHsv(from.map((value, i) => mix(value, to[i], outQuad(clamp(progress)))))
+}
+function startColor(state, event) {
+  const v = event.values, mode = number(v, 1)
+  state.colorTween = null
+  state.palette = null
+  if (mode === 4) {
+    // Native palette starts with the current color, then nonempty value3/6/7/8.
+    state.palette = { colors: [state.color, ...[2,5,6,7].map(i => v[i]).filter(Boolean)], index: 0 }
+  } else if ([1,2,3].includes(mode)) {
+    const from = hsv(state.color), to = mode === 1 ? [...from] : hsv(v[2])
+    const returnTo = [...from], direction = number(v, 4)
+    if (direction === 1) { if (to[0] <= from[0]) to[0] += 1; returnTo[0] += 1 }
+    if (direction === 0) { if (to[0] >= from[0]) to[0] -= 1; returnTo[0] -= 1 }
+    state.colorTween = { time: event.time, duration: Math.max(0, number(v, 3)), mode, from, to, returnTo }
+  }
+}
+
+// BeatShow captures curTempo at command time; later tempo changes do not
+// retime this sequence. Until offset semantics are verified, only constant
+// validated charts supply a tempo in the viewer.
+export function constantSuspensionTempo(chart) {
+  const values = chart?.tempos?.map(t => Number(t.tempo)) || []
+  return values.length && values.every(t => Number.isFinite(t) && t > 0 && t === values[0]) ? values[0] : null
+}
 
 // Durations stay in authored milliseconds. Unity Float getters divide by
 // 1000, and its tween clock uses seconds. Restart loops include both waits.
@@ -31,8 +86,20 @@ function envelopeAt(state, time) {
 function advance(state, time) {
   // FadeInner completion kills the show channel and freezes its multiplier.
   // A fade is not a show command and does not activate a light.
-  if (state.fade && !state.fade.loop && time >= state.fade.time + state.fade.rise) {
-    state.envelope = envelopeAt(state, state.fade.time + state.fade.rise)
+  const fadeComplete = state.fade && !state.fade.loop && time >= state.fade.time + state.fade.rise
+  const showTime = fadeComplete ? state.fade.time + state.fade.rise : time
+  if (state.show) {
+    const period = state.show.rise + state.show.hold + state.show.fall + state.show.wait
+    const completed = period > 0 ? Math.max(0, Math.floor((showTime - state.show.time) / period)) : 0
+    if (state.palette && completed > state.show.completed) {
+      state.palette.index = (state.palette.index + completed - state.show.completed) % state.palette.colors.length
+      state.color = state.palette.colors[state.palette.index]
+    }
+    state.show.completed = completed
+  }
+  if (state.colorTween) state.color = colorAt(state.colorTween, time)
+  if (fadeComplete) {
+    state.envelope = envelopeAt(state, showTime)
     state.show = null
     state.opacity = state.fade.to
     state.fade = null
@@ -52,7 +119,7 @@ function tween(time, from, to, rise, hold = 0, fall = 0, wait = 0, loop = false,
     fall: Math.max(0, fall), wait: Math.max(0, wait), loop, ease }
 }
 
-export function newSuspensionlightsAt(events = [], time = 0) {
+export function newSuspensionlightsAt(events = [], time = 0, registration = {}) {
   const instances = new Map()
   for (const event of events) {
     if (event.time > time) break
@@ -83,8 +150,24 @@ export function newSuspensionlightsAt(events = [], time = 0) {
     if (!state) continue
     if (event.command === 'NewSuspensionlight_normal_show') {
       state.active = true
+      state.showUnresolved = null
       state.show = tween(event.time + number(v, 1), 0, 1,
         number(v, 2), number(v, 3), number(v, 4), number(v, 5), true)
+      state.show.completed = 0
+    } else if (event.command === 'NewSuspensionlight_beat_show') {
+      const tempo = typeof registration.tempoAt === 'function' ? registration.tempoAt(event.time) : registration.tempo
+      state.active = true
+      state.envelope = 0
+      state.show = null
+      state.showUnresolved = tempo > 0 && Number.isFinite(tempo) ? null : 'tempo_unavailable'
+      if (!state.showUnresolved) {
+        const beat = 60000 / tempo, wait = beat * number(v, 3) / 1000
+        const delay = number(v, 1) === 0 ? beat / 2 + wait : 0
+        state.show = tween(event.time + delay, 0, 1, beat / 2, beat * number(v, 2) / 1000, beat / 2, wait, true)
+        state.show.completed = 0
+      }
+    } else if (event.command === 'NewSuspensionlight_coloranim') {
+      startColor(state, event)
     } else if (event.command === 'NewSuspensionlight_rotateanim') {
       const mode = number(v, 1)
       state.rotation = null // Kill only rotation, preserving the current angle.
@@ -106,12 +189,13 @@ export function newSuspensionlightsAt(events = [], time = 0) {
           number(v, 2), number(v, 3), number(v, 4), number(v, 5), mode === 2)
       }
     } else {
-      // Beat timing and HSV/continuous color commands remain unresolved.
       state.unresolved = event.command
     }
   }
   return [...instances.values()].filter(state => advance(state, time)).map(state => ({ ...state,
-    alpha: state.active && !state.unresolved ? clamp(state.envelope) * clamp(state.opacity) : 0 }))
+    // Keep floats while replaying interruptions; quantize only at PIXI's tint boundary.
+    color: '#' + rgb(state.color).map(c => Math.round(clamp(c) * 255).toString(16).padStart(2, '0')).join(''),
+    alpha: state.active && !state.unresolved && !state.showUnresolved ? clamp(state.envelope) * clamp(state.opacity) : 0 }))
 }
 
 export function suspensionlightLayout(state, width, height, environmentScale = 1) {

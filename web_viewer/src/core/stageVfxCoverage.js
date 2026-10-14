@@ -27,7 +27,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const stagelightUnimplemented = stagelightAssets.filter(asset=>!indexes.stageEffects?.stagelights?.[asset])
   const stagelightUnimplementedCommands = stagelightEvents.filter(event=>event.previewSupported===false)
   const suspensionTrack = indexes.stageEffects?.newSuspensionlightSongs?.[song.id]
-    const suspensionEvents = indexes.newSuspensionlightTrack?.events || suspensionTrack?.events || []
+  const suspensionEvents = indexes.newSuspensionlightTrack?.events || suspensionTrack?.events || []
   const suspensionCount = suspensionTrack?.eventCount ?? suspensionEvents.length
   const suspensionUnimplemented = suspensionEvents.filter(event =>
       !NEW_SUSPENSIONLIGHT_COMMANDS.includes(event.command))
@@ -76,9 +76,12 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     stagelightAssets,
     stagelightUnimplemented,
     stagelightUnimplementedCommands:stagelightUnimplementedCommands.length,
-     newSuspensionlightUnimplementedCommands: suspensionEvents.length ? suspensionUnimplemented.length : suspensionTrack?.unimplementedCommands ?? 0,
+     // Sidecar metadata may predate newly wired commands. Count the loaded
+     // RAW track rather than promoting that stale summary to runtime coverage.
+     newSuspensionlightUnimplementedCommands: suspensionEvents.length ? suspensionUnimplemented.length : null,
+     newSuspensionlightTempoPending: indexes.newSuspensionlightTempo > 0 ? 0 : suspensionEvents.filter(event => event.command === 'NewSuspensionlight_beat_show' && !event.erase).length,
      newSuspensionlightCommandsLoaded: Boolean(indexes.newSuspensionlightTrack || suspensionTrack?.events),
-     newSuspensionlightStatus: suspensionCount ? 'partial_native_show_rotate_scale_fade_reference_projection' : 'not_loaded',
+     newSuspensionlightStatus: suspensionCount ? 'native_channels_reference_projection_constant_tempo_only' : 'not_loaded',
     backmonitorLogoRequests,
     backmonitorLogoStatus: backmonitorLogoRequests ? 'unimplemented_runtime_sprite_selection_pending' : 'not_requested',
     // Resource binding / color assignment are separate from native tween parity.

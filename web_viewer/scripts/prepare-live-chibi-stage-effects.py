@@ -202,7 +202,7 @@ def main() -> None:
             if script.m_Name in suspension_songs:
                 raise ValueError('Ambiguous new-suspension track: ' + script.m_Name)
             track = {'events': events,
-                'status': 'partial_native_show_rotate_scale_fade_reference_projection',
+                'status': 'native_channels_reference_projection_constant_tempo_only',
                 'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
                            'serializedFile': obj.assets_file.name, 'pathId': str(obj.path_id),
                            'sha256': hashlib.sha256(payload).hexdigest()}}
@@ -215,7 +215,8 @@ def main() -> None:
                 'unimplementedCommands': sum(e['command'] not in {
                     'NewSuspensionlight_create', 'NewSuspensionlight_normal_show',
                     'NewSuspensionlight_rotateanim', 'NewSuspensionlight_scaleanim',
-                    'NewSuspensionlight_fade'} for e in events)}
+                    'NewSuspensionlight_fade', 'NewSuspensionlight_coloranim',
+                    'NewSuspensionlight_beat_show'} for e in events)}
         scripts = [obj for obj in bundle_environment.objects
                    if obj.type.name == 'TextAsset' and obj.read().m_Name == f'{code}_live_effect']
         if not scripts: continue
