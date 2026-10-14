@@ -21,6 +21,11 @@
 .collection-page :is(.collection-attributes button, .collection-cards>button).intelligent { --attr-wash:color-mix(in srgb, var(--gs-attr-intelli) 9%, var(--gs-surface)); }
 .collection-page :is(.collection-attributes button, .collection-cards>button).mental { --attr-wash:color-mix(in srgb, var(--gs-attr-mental) 11%, var(--gs-surface)); }
 .collection-page .collection-attributes button:is(.physical,.intelligent,.mental):not([aria-pressed=true]) { background:var(--attr-wash); }
+/* The filter chips carry the game's attribute mark; the item tiles keep only the wash. */
+.collection-page .collection-attributes button:is(.physical,.intelligent,.mental)::before { content:"";flex:none;width:15px;height:15px;background:var(--attr-icon) center / contain no-repeat; }
+.collection-page .collection-attributes button.physical { --attr-icon:var(--gs-attr-icon-physical); }
+.collection-page .collection-attributes button.intelligent { --attr-icon:var(--gs-attr-icon-intelli); }
+.collection-page .collection-attributes button.mental { --attr-icon:var(--gs-attr-icon-mental); }
 
 /* Items: icon on a quiet square, the full name beneath (long names wrap up to three lines). */
 .collection-page .collection-cards { display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:var(--gs-space-5) var(--gs-space-3);margin-top:var(--gs-space-5); }

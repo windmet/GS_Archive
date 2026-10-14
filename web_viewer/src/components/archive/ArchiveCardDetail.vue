@@ -611,10 +611,11 @@ function openRelation(item) {
 .card-marks { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gs-space-3) var(--gs-space-5); }
 .card-rarity { font-family: var(--gs-font-stage); font-size: var(--gs-text-title); font-style: italic; font-weight: var(--gs-weight-bold); line-height: 1; letter-spacing: .02em; }
 .card-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); }
-.card-attribute::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.card-attribute[data-attribute="physical"] { color: var(--gs-attr-physical); }
-.card-attribute[data-attribute="intelli"] { color: var(--gs-attr-intelli); }
-.card-attribute[data-attribute="mental"] { color: var(--gs-attr-mental); }
+.card-attribute::before { content: none; flex: none; width: 18px; height: 18px; background: var(--attr-icon) center / contain no-repeat; }
+.card-attribute[data-attribute="physical"] { --attr-icon: var(--gs-attr-icon-physical); color: var(--gs-attr-physical); }
+.card-attribute[data-attribute="intelli"] { --attr-icon: var(--gs-attr-icon-intelli); color: var(--gs-attr-intelli); }
+.card-attribute[data-attribute="mental"] { --attr-icon: var(--gs-attr-icon-mental); color: var(--gs-attr-mental); }
+.card-attribute:is([data-attribute="physical"], [data-attribute="intelli"], [data-attribute="mental"])::before { content: ""; }
 .card-raw-candidate { color: var(--gs-critical); font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); }
 .card-identity h3 { margin: 0; font-size: var(--gs-text-title); font-weight: var(--gs-weight-bold); line-height: 1.3; overflow-wrap: anywhere; text-wrap: balance; }
 .card-original-title { margin: calc(-1 * var(--gs-space-2)) 0 0; color: var(--gs-ink-3); font-size: var(--gs-text-body); }

@@ -226,10 +226,12 @@ function openChart() { songPlayer.value?.pause(); emit('open-chart') }
 .song-detail-badges { display: flex; flex-wrap: wrap; gap: var(--gs-space-2) var(--gs-space-5); min-width: 0; }
 .badge { color: var(--gs-ink-2); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-medium); }
 .badge-attribute { display: inline-flex; align-items: center; gap: var(--gs-space-2); font-weight: var(--gs-weight-semibold); }
-.badge-attribute::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.badge-attribute[data-song-attribute="Physical"] { color: var(--gs-attr-physical); }
-.badge-attribute[data-song-attribute="Intelli"] { color: var(--gs-attr-intelli); }
-.badge-attribute[data-song-attribute="Mental"] { color: var(--gs-attr-mental); }
+.badge-attribute::before { content: none; flex: none; width: 18px; height: 18px; background: var(--attr-icon) center / contain no-repeat; }
+.badge-attribute[data-song-attribute="Physical"] { --attr-icon: var(--gs-attr-icon-physical); color: var(--gs-attr-physical); }
+.badge-attribute[data-song-attribute="Intelli"] { --attr-icon: var(--gs-attr-icon-intelli); color: var(--gs-attr-intelli); }
+.badge-attribute[data-song-attribute="Mental"] { --attr-icon: var(--gs-attr-icon-mental); color: var(--gs-attr-mental); }
+.badge-attribute[data-song-attribute="ALL"] { --attr-icon: var(--gs-attr-icon-all); }
+.badge-attribute[data-song-attribute="Physical"]::before, .badge-attribute[data-song-attribute="Intelli"]::before, .badge-attribute[data-song-attribute="Mental"]::before, .badge-attribute[data-song-attribute="ALL"]::before { content: ""; }
 .song-detail-date { margin-left: auto; color: var(--gs-ink-3); font-size: var(--gs-text-ui); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .song-parent-link { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; min-height: var(--gs-control-compact); padding: 0; border: 0; background: none; color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); cursor: pointer; }
 .song-parent-link:hover { text-decoration: underline; }

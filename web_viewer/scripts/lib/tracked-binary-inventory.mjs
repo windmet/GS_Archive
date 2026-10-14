@@ -83,6 +83,14 @@ function classify(relativePath) {
     }
   }
 
+  const attributeIcon = relativePath.match(/^web_viewer\/public\/assets\/attributes\/icon_attribute_(physical|intelli|mental|all)\.png$/)
+  if (attributeIcon) return {
+    category: 'portal-asset', logical_id: `attribute-icon:${attributeIcon[1]}`,
+    consumer: ['ArchiveSongDetail', 'ArchiveCardDetail', 'PortalCardBento', 'ArchiveCollectionCatalog'],
+    reason_tracked: 'native icon_attribute_*_big Sprites from the iOS client data.unity3d, trimmed and padded to 64px squares; provenance in docs/ATTRIBUTE_ICONS_20261014.md',
+    force_add_allowed: true, owner_release: '2026-10-14-attribute-icons-001', grandfathered: false,
+  }
+
   if (relativePath.includes('/assets/brand/')) {
     return {
       category: 'portal-asset',
