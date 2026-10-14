@@ -341,3 +341,9 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
     - 从活动进入 Reader，Reader 地址和演出地址都不带 `reading_rev`；
     - 刷新演出地址后照常播放，没有错误提示；
     - 手动带上当前版本打开，地址保留 `reading_rev`。
+
+### 货币与资源、服装图鉴（2026-10-14）
+
+- 新板块 `/currencies/`、`/costumes/`，详情 `?entity=currency:<id>` / `costume:<model>`；读模型 release 绑定为 `c3d99382`（`06fc9496`）。细节、验证与待办见 [CURRENCY_COSTUME_CATALOGUE_20261014.md](CURRENCY_COSTUME_CATALOGUE_20261014.md)。
+- 5177 以候选 `rm-currency-costume-20261014` 运行，留给用户验收，未关闭。
+- `verify:source-batch` 现为 130/133，其中两项（design-tokens、card-costume-presentation）在本批开始前已失败，待修。
