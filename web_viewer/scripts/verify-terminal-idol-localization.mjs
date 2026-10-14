@@ -381,12 +381,11 @@ try {
       })
     })
     const lineup = await render(lineupSong, { song: drive, ...callbacks })
-    const selects = [...lineup.matchAll(/<select[^>]*aria-label="舞台位置 [^]*?<\/select>/g)]
-    assert.equal(selects.length, 5)
-    for (const [select] of selects) {
-      assert.deepEqual([...select.matchAll(/<option value="([^"]+)"/g)].map(match => match[1]), soloCodes)
-      assert.ok(elementText(select, 'option').includes(displayed))
-    }
+    const slots = [...lineup.matchAll(/<button[^>]*class="slot-pick"[^]*?<\/button>/g)].map(match => match[0])
+    assert.equal(slots.length, 5)
+    assert.ok(slots[0].includes(`aria-label="舞台位置 1：${displayed}"`))
+    assert.ok(elementText(slots[0], 'strong').includes(displayed))
+    assert.ok(slots.slice(1).every(slot => slot.includes('选择偶像')))
     assert.ok(lineup.includes(`${displayed}（舞台位 1）`))
     checks++
   }

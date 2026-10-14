@@ -303,7 +303,6 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .song-record-column { grid-column: 1; grid-row: 2; }
   .song-listen-column { grid-column: 2; grid-row: 1 / 3; top: var(--gs-space-5); }
   .song-listen-column.is-sticky-fit { position: sticky; }
-  .song-listen-column :deep(.performer-lineup) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
   .song-detail { padding: var(--gs-space-5); }
