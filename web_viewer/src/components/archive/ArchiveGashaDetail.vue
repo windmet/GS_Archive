@@ -1,10 +1,14 @@
 <template>
   <section v-if="gasha" class="gasha-detail" data-archive-scroll-container>
-    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'}">
-      <div class="gasha-banner">
-        <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
-        <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
-      </div>
+    <div class="gasha-identity" :class="{'ticket-only':gasha.source_type==='item-masterdata'&&!poolArt}">
+      <figure class="gasha-hero">
+        <div class="gasha-banner">
+          <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" />
+          <ArchiveGashaArt v-else-if="poolArt" :art="poolArt" :alt="gashaText(gasha.display_name)" loading="eager" />
+          <p v-else class="ticket-banner-label">名称来自抽取道具记录</p>
+        </div>
+        <figcaption v-if="!gasha.banner_url && artRecord?.primary">游戏内卡池素材（编号 {{ artRecord.primary.gasha_id }}）· {{ artRecord.primary.basis_text }}</figcaption>
+      </figure>
       <div class="gasha-summary">
         <h2>{{ gashaText(gasha.display_name) }}</h2>
         <p v-if="gashaText(gasha.display_name)!==gasha.display_name" lang="ja" class="gasha-original">{{ gasha.display_name }}</p>
@@ -65,6 +69,27 @@
       <p v-if="gasha.wiki_confirmation" class="gasha-source"><ArchiveSourceLink :url="gasha.wiki_confirmation.source.url" :label="`Wikiwiki · ${gasha.wiki_confirmation.source.title}`" /></p>
     </section>
 
+    <ArchiveGashaRules v-if="detail?.pages.length" :pages="detail.pages" :idol-name="idolName" :pickup-ids="pickupCards.map(card => card.card_resource_id)" @open-card="emit('open-card',$event)" />
+
+    <section v-if="artRecord && (artRecord.variants.length || artRecord.unresolved)" class="detail-section">
+      <div class="section-heading">
+        <div>
+          <h3>游戏内横幅</h3>
+          <p v-if="artRecord.unresolved">{{ artRecord.unresolved.reason_zh }}</p>
+          <p v-else>同名卡池的其他横幅，与本卡池共用名称，开放时间与卡片可能不同。</p>
+        </div>
+        <span class="relation-count">{{ artRecord.unresolved ? '无法区分' : `${artRecord.variants.length} 张` }}</span>
+      </div>
+      <ul class="art-strip">
+        <li v-for="item in artStrip" :key="item.gasha_id">
+          <span class="art-frame"><ArchiveGashaArt :art="item" alt="" /></span>
+          <strong>编号 {{ item.gasha_id }}</strong>
+          <small v-if="item.label">{{ item.label }}</small>
+          <small v-else-if="item.banner_text" lang="ja">{{ item.banner_text }}</small>
+        </li>
+      </ul>
+    </section>
+
     <!-- A derived relation only: the gasha's own MovieAnnounceId was a server value and is not archived. -->
     <section v-if="gasha.announce_movie" class="detail-section">
       <div class="section-heading">
@@ -84,7 +109,9 @@
         <div><dt>卡片关系</dt><dd>{{ gasha.source_type==='item-masterdata'&&!pickupCards.length?'未确认':relationEvidence }}</dd></div>
         <div><dt>名称</dt><dd>{{ gasha.source_type==='item-masterdata'?'道具主数据名称':`人工核对：${gasha.name_source?.source_label || 'Wiki 与卡池横幅'}` }}</dd></div>
         <div v-if="gasha.ticket_evidence"><dt>中文译名</dt><dd>{{ gasha.ticket_evidence.status==='reviewed' ? '已校对，非终稿' : '初译，待校对' }}</dd></div>
-        <div><dt>服务端卡池信息</dt><dd>关服后未能保存</dd></div>
+        <div v-if="artRecord?.primary"><dt>横幅对应</dt><dd>按横幅文字「{{ artRecord.primary.banner_text }}」对应游戏内卡池编号 {{ artRecord.primary.gasha_id }}</dd></div>
+        <div v-if="detail?.pages.length"><dt>卡池规则</dt><dd>Wikiwiki 卡池页（{{ detail.pages[0].checked_at }} 核对）</dd></div>
+        <div><dt>服务端卡池信息</dt><dd>关服后未能保存（提供割合、卡池说明、阶梯与保底设定均由服务器下发）</dd></div>
       </dl>
     </ArchiveTechnicalDetails>
   </section>
@@ -96,6 +123,9 @@ import { ChevronRight, Ticket } from '@lucide/vue'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import ArchiveSourceLink from './ArchiveSourceLink.vue'
 import ArchiveRelationList from './ArchiveRelationList.vue'
+import ArchiveGashaArt from './ArchiveGashaArt.vue'
+import ArchiveGashaRules from './ArchiveGashaRules.vue'
+import { gashaPoolArt, loadGashaPoolDetail } from '../../data/gashaPoolDetails.js'
 import { getCardIconUrl } from '../../utils/CardAssetResolver.js'
 import {gashaText} from './useArchiveGashaText.js'
 import {archiveText} from './useArchiveCollectionText.js'
@@ -117,6 +147,18 @@ const CATEGORY_LABELS = {
 
 const failedTickets = shallowRef(new Set())
 watch(() => props.gasha?.id, () => { failedTickets.value = new Set() })
+
+// Rules and art load with the gasha; a reply for a gasha that is no longer open is dropped.
+const detail = shallowRef(null)
+watch(() => props.gasha?.id, id => {
+  detail.value = null
+  if (id == null) return
+  loadGashaPoolDetail(id).then(value => { if (props.gasha?.id === id) detail.value = value }).catch(error => console.warn(error))
+}, { immediate: true })
+const artRecord = computed(() => detail.value?.art || null)
+// The index carries the hero art, so it shows before the detail file arrives.
+const poolArt = computed(() => props.gasha?.banner_url ? null : (props.gasha?.pool_art || gashaPoolArt(props.gasha?.id)))
+const artStrip = computed(() => artRecord.value?.unresolved?.candidates || artRecord.value?.variants || [])
 
 const pickupCards = computed(() => {
   const direct = props.gasha?.derived_pickup_cards || []
@@ -202,6 +244,13 @@ function formatDateTime(timestamp) {
 .run-list strong { font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);overflow-wrap:anywhere; }
 .run-list span { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .run-list .archive-source-link { justify-self:start; }
+.gasha-hero { display:grid;gap:var(--gs-space-3);margin:0;align-self:start;min-width:0; }
+.gasha-hero figcaption { color:var(--gs-ink-3);font-size:var(--gs-text-caption);line-height:1.6;overflow-wrap:anywhere; }
+.art-strip { list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr));gap:var(--gs-space-6); }
+.art-strip li { display:grid;gap:var(--gs-space-2);min-width:0; }
+.art-frame { display:block;aspect-ratio:940 / 510;overflow:hidden;border:1px solid var(--gs-line);border-radius:var(--gs-radius-media); }
+.art-strip strong { font-size:var(--gs-text-meta);font-weight:var(--gs-weight-semibold); }
+.art-strip small { color:var(--gs-ink-3);font-size:var(--gs-text-caption);line-height:1.6;overflow-wrap:anywhere; }
 .ticket-banner-label { display:grid;min-height:120px;place-items:center;color:var(--gs-ink-3); }
 .gasha-identity.ticket-only { grid-template-columns:1fr;gap:var(--gs-space-4); }
 .ticket-only .gasha-banner { aspect-ratio:auto; }

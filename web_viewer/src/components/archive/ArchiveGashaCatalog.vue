@@ -34,6 +34,7 @@
       >
         <span class="banner-frame">
           <img v-if="gasha.banner_url" :src="gasha.banner_url" :alt="gashaText(gasha.display_name)" loading="lazy" decoding="async" width="940" height="510" />
+          <ArchiveGashaArt v-else-if="gasha.pool_art" :art="gasha.pool_art" :alt="gashaText(gasha.display_name)" />
           <span v-else class="ticket-banner-label">抽取道具记录</span>
         </span>
         <span class="gasha-copy">
@@ -53,6 +54,7 @@
 
 <script setup>
 import { ChevronRight } from '@lucide/vue'
+import ArchiveGashaArt from './ArchiveGashaArt.vue'
 import {gashaText} from './useArchiveGashaText.js'
 
 const props = defineProps({
