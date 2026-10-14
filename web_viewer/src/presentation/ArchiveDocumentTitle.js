@@ -1,8 +1,8 @@
-// Browser tab titles. Pages published at a path locator (idol, unit and card detail) carry their entity name, the
+// Browser tab titles. Pages published at a path locator (idol, unit, card and song detail) carry their entity name, the
 // same title the static head shell for that path ships (scripts/generate-entity-head-shells.mjs); every other
 // page keeps the site title from index.html.
 export const ARCHIVE_SITE_TITLE = 'GS Archive · SideM GROWING STARS 资料馆'
-export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail']))
+export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail', 'song_detail']))
 
 export function archiveEntityTitle(name) {
   return `${name} · GS Archive`

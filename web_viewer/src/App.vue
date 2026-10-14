@@ -1524,6 +1524,8 @@ const archiveShowBack = computed(() => view.value === 'home' ? Boolean(homeFrom.
 // switching to the Japanese source name and back.
 const archiveTabEntityName = computed(() => {
   if (view.value === 'unit_detail') return currentArchiveUnit.value?.unit_name || ''
+  // Song titles have no translation overlay; they are shown in the source everywhere.
+  if (view.value === 'song_detail') return currentSong.value?.title || ''
   if (!idolNamesSettled.value) return ''
   if (view.value === 'idol_detail') return currentIdolDisplayName.value
   if (view.value !== 'card_detail' || !currentCard.value || !archiveNamesSettled('cards')) return ''

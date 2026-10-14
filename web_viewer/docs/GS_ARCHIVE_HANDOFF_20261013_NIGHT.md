@@ -66,7 +66,7 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
    - 是否放开整站的 `X-Robots-Tag: noindex, nofollow`：不影响分享卡片，影响搜索收录。
    - 是否把正式站迁到 `gs-archive.com`。
 2. **正式站发布**：用本分支重建 read-model 候选，按发布清单打包（`prepare-readmodel-preview` / `assemble_pages` 都要生成外壳），部署需用户授权。正式站目前还是 10-12 的 `?view=` 版本，**正式站发布前不要对外推广路径链接**。
-3. **扩展路径地址**：偶像、Unit 和卡片（`/cards/<resource_id>/`，见第十节）已有路径。下一批是歌曲 `/songs/<code>/`、活动 `/events/<id>/`。
+3. **扩展路径地址**：偶像、Unit、卡片（`/cards/<resource_id>/`）和歌曲（`/songs/<song_code>/`）已有路径，见第十节。下一批是活动 `/events/<id>/`。
    - 每扩一类，先把该视图加入 `ENFORCED_ROUTE_VIEWS`（路由 schema 审计的批次 F/G）。
    - 再在 `archiveRoute.js` 加路径读写，在 `verify-archive-path-locator.mjs` 里全量往返，在 `generate-entity-head-shells.mjs` 里加外壳。
    - Reader、Player、Home 按原计划不改格式。批次 E（Reader 链接默认不带 `reading_rev`）仍未做。
@@ -204,4 +204,42 @@ Codex 侧更新 5212：切到本分支，用 `SIDEM_READMODEL_CANDIDATE=<上面�
 - 未做：
   - 远端部署上的卡片旅程（本分支未部署）。
   - 卡片分享卡在 X、Discord、LINE 里的实际效果。
-  - 歌曲与活动的路径。
+  - 活动的路径。
+
+### 歌曲路径 `/songs/<song_code>/`
+
+- 地址用 6 位 `song_code`（如 `brndnf`），规则 `^[a-z0-9]{6}$`。
+- 歌曲清单：
+  - `song_catalog.json` 有 61 首：60 首主曲，加 1 首变体 `drv999`（DRIVE A LIVE パッションMAX Ver.）。变体在详情页的版本列表里能打开，所以也发路径和外壳。
+  - 已核对与候选 `b3c1f13a` 一致：目录 60 行、详情 61 个，曲名和演唱组合都相同。
+- 改动：
+  - `song_detail` 进入 `ENFORCED_ROUTE_VIEWS`，地址只保留 `song`。以下几项不再写进地址：
+    - 目录筛选 `song_scope`；
+    - 打开来源 `parent`、`unit`、`idol`。
+  - 返回仍按来源走：`openSong` 打开时已记下来源，页内返回先用历史记录里的来源。刷新后也一样（P23）。
+  - 没有来源时（直接打开分享链接），返回到歌曲目录，和以前一样。
+  - 旧链接照常打开，并原地改写成路径。
+  - 标签页标题为「曲名 · GS Archive」。曲名在站内都显示原文，没有翻译包，所以不用等翻译。
+  - 外壳从 891 个增加到 952 个（再加 61 个）：
+    - 描述写演唱组合，如「Jupiter演唱的歌曲「BRAND NEW FIELD」」；自由编成等特别编成写成「歌曲「…」（自由编成）」。
+    - 图片用封面 `assets/songs/jacket_<code>.png`。
+    - `/songs/*` 设为 no-cache。
+- 有意改变的旧契约：
+  - 从歌曲详情进谱面工具时，来源帧只剩歌曲本身。目录的筛选和搜索词仍在目录自己那一帧里，返回链路不变（`verify-archive-experiments`）。
+  - 从卡片、歌曲详情打开门户再关闭，回到的也是只含身份的地址（加上来源）。`verify-portal-navigation` 在卡片那批提交后其实已经失败：它不在 `verify:source-batch` 里，所以没被发现。这次一并改成新契约。
+- 验证：
+  - 已通过：
+    - `verify-archive-path-locator`（含全部 61 首往返与新的反例）；
+    - `verify-route-schema`、`verify-entity-head-shells`（含 `--dist`，952 个外壳）；
+    - `verify-portal-navigation`、`verify-portal-directory-navigation`（候选目录）；
+    - `verify:source-batch` 133/133、`build:check`。
+  - 浏览器旅程（5177）29/29，新增 5 项：
+    - P20：冷开歌曲路径，标题正确，无报错。
+    - P21：冷开后返回到歌曲目录。
+    - P22：从筛选过的目录进出歌曲，浏览器前进、后退正确。
+    - P23：偶像 → 歌曲 → 刷新 → 页内返回，回到 `/idols/001tom/`。
+    - P24：带 `song_scope`、`parent`、`unit` 的旧歌曲链接原地改写。
+- 未做：
+  - 远端部署上的歌曲旅程（本分支未部署）。
+  - 歌曲分享卡的实际效果。
+  - 从歌曲进 2D 舞台、谱面工具再返回：只有单元测试，没有走浏览器。

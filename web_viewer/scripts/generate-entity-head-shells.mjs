@@ -1,21 +1,24 @@
 // Entity head shells: a copy of the built index.html per idol (/idols/<id>/index.html), unit
-// (/units/<code>/index.html) and card (/cards/<resource_id>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
+// (/units/<code>/index.html), card (/cards/<resource_id>/index.html) and song (/songs/<song_code>/index.html) whose <head> carries that entity's title, description, canonical and Open Graph
 // tags. The body and scripts are untouched, so the SPA boots as usual and reads the path locator. Link
 // previews (X, Discord, LINE) and crawlers that do not run JavaScript see the entity instead of the generic page.
 //   node scripts/generate-entity-head-shells.mjs [--dist=.analysis/build-check] [--origin=https://…] [--check]
 // Static HTML is zh-CN (docs/GS_ARCHIVE_PORTAL_STATIC_ROUTE_PLAN_20261012.md §0.1). Names come from the same
 // sources the app uses: bootstrap idols for identity and units, zh-CN entity translations for display names,
-// the card index and the zh-CN card title overlay for cards.
+// the card index and the zh-CN card title overlay for cards, the song catalog for songs (song titles are not
+// translated anywhere in the app).
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { archiveCardName, archiveEntityTitle } from '../src/presentation/ArchiveDocumentTitle.js'
+import { SONG_PERFORMER_SCOPES } from '../src/presentation/SongPresentation.js'
 
 export const DEFAULT_ORIGIN = 'https://gs-archive-preview.pages.dev'
 const SITE = 'GS Archive'
 const IDOL_ID = /^[0-9]{3}[a-z]{3}$/
 const UNIT_CODE = /^[0-9]{2}[a-z0-9]{3}$/  // W is 05w00
 const CARD_ID = /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/
+const SONG_CODE = /^[a-z0-9]{6}$/
 
 export function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch])
@@ -46,8 +49,9 @@ function withHead(template, tags) {
 }
 
 // idols: bootstrap `idols[]` ({ id, name, kana, unitCode, unitName }); idolNames: { [id]: zh-CN display name };
-// cards: card index rows ({ resource_id, character_id, rarity, title }); cardTitles: { [source title]: zh-CN }.
-export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, origin = DEFAULT_ORIGIN }) {
+// cards: card index rows ({ resource_id, character_id, rarity, title }); cardTitles: { [source title]: zh-CN };
+// songs: song catalog rows ({ song_code, title, jacket_url, performance_mapping }).
+export function renderEntityHeadShells({ template, idols, idolNames = {}, cards = [], cardTitles = {}, songs = [], origin = DEFAULT_ORIGIN }) {
   const base = origin.replace(/\/$/, '')
   const display = idol => idolNames[idol.id] || idol.name
   const shells = []
@@ -108,6 +112,27 @@ export function renderEntityHeadShells({ template, idols, idolNames = {}, cards 
       })),
     })
   }
+  for (const song of songs) {
+    if (!SONG_CODE.test(song.song_code)) throw new Error(`Unexpected song code ${song.song_code}`)
+    if (!song.title) throw new Error(`Song ${song.song_code} has no title`)
+    if (!/^\/assets\/songs\/[a-z0-9_]+\.png$/.test(song.jacket_url || '')) throw new Error(`Song ${song.song_code} has no jacket`)
+    // Same performer label as the song catalogue: the confirmed unit, else the special-lineup scope.
+    const mapping = song.performance_mapping || {}
+    const unit = mapping.confirmed_unit?.unit_name || ''
+    const scope = unit ? '' : SONG_PERFORMER_SCOPES[mapping.performer_scope]?.[0] || ''
+    const location = `/songs/${song.song_code}/`
+    shells.push({
+      path: `songs/${song.song_code}/index.html`,
+      kind: 'song', id: song.song_code, url: base + location,
+      html: withHead(template, headTags({
+        title: archiveEntityTitle(song.title),
+        description: `${unit ? `${unit}演唱的` : ''}歌曲「${song.title}」${scope ? `（${scope}）` : ''}：演唱成员、试听、谱面与相关剧情。`,
+        url: base + location,
+        image: base + song.jacket_url,
+        type: 'website',
+      })),
+    })
+  }
   return shells
 }
 
@@ -125,7 +150,10 @@ export function loadEntitySources(root) {
   const idolNames = Object.fromEntries(Object.entries(translations.entries || {}).map(([id, entry]) => [id, entry?.name]).filter(([, name]) => name))
   const cards = publishedCards(JSON.parse(readFileSync(path.join(root, 'public/data/masterdata/card_index.json'), 'utf8')))
   const cardTitles = JSON.parse(readFileSync(path.join(root, 'public/translations/zh-CN/archive-general/cards.json'), 'utf8')).entries?.card?.title || {}
-  return { idols: bootstrap.idols, idolNames, cards, cardTitles, release: bootstrap.release }
+  // Every song with a read-model detail page: the primaries listed in the catalogue and their variants.
+  const songs = Object.values(JSON.parse(readFileSync(path.join(root, 'public/data/song_catalog.json'), 'utf8')).songs)
+    .sort((a, b) => a.song_code.localeCompare(b.song_code))
+  return { idols: bootstrap.idols, idolNames, cards, cardTitles, songs, primarySongs: bootstrap.counts?.primary_songs, release: bootstrap.release }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -147,5 +175,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const count = kind => shells.filter(s => s.kind === kind).length
   if (check && stale) { console.error(`${stale}/${shells.length} entity head shells are missing or stale in ${dist}`); process.exitCode = 1 }
-  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards in ${path.relative(root, dist) || dist} (origin ${origin})`)
+  else console.log(`Entity head shells ${check ? 'up to date' : 'written'}: ${count('idol')} idols + ${count('unit')} units + ${count('card')} cards + ${count('song')} songs in ${path.relative(root, dist) || dist} (origin ${origin})`)
 }

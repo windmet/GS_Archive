@@ -1,5 +1,5 @@
-// Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/): plan
-// section 3.6, P1-P15, and the card steps P16-P19.
+// Browser journey for public path locators (/idols/<id>/, /units/<code>/, /cards/<resource_id>/,
+// /songs/<song_code>/): plan section 3.6, P1-P15, the card steps P16-P19 and the song steps P20-P24.
 //   node scripts/verify-portal-path-locator-browser.mjs [base] [outDir]
 // Defaults: http://127.0.0.1:5177 and .analysis/path-locator. Needs a dev server started with
 // SIDEM_READMODEL_CANDIDATE and a cached Playwright Chromium; raw CDP like scripts/capture-gallery.mjs.
@@ -150,7 +150,7 @@ try {
   check('P11 Home preference keeps the path', (await loc()) === '/idols/001tom/' && await ev(`/冬[马馬]/.test(document.body.innerText)`), await loc())
   await usePreferences('portal')
   // P12: nothing is requested relative to the path, and no same-origin request fails.
-  const relative = requests.filter(r => /^\/(idols|units|cards)\/[^/]+\/.+/.test(new URL(r.url).pathname))
+  const relative = requests.filter(r => /^\/(idols|units|cards|songs)\/[^/]+\/.+/.test(new URL(r.url).pathname))
   const broken = requests.filter(r => r.status >= 400 && new URL(r.url).origin === new URL(base).origin)
   check('P12 no path-relative or failing same-origin requests', relative.length === 0 && broken.length === 0, `requests=${requests.length} relative=${relative.length} failing=${broken.map(r => r.status + ' ' + r.url).join(', ') || 0}`)
   // P14: unit codes with digits (W is 05w00) publish a path too.
@@ -194,6 +194,40 @@ try {
   await open('/?view=card_detail&category=cards&idol=001tom&card=001tom_n01&event=10011&q=q', cardReady)
   const legacy = await loc(); const after = await ev('history.length')
   check('P19 legacy card link becomes its path in place', legacy === '/cards/001tom_n01/' && after === before + 1, `shown=${legacy}; history ${before}->${after}`)
+  // P20: a song path opens cold, keeps its address and titles the tab with the song.
+  const songReady = `!!document.querySelector('.song-detail .song-detail-hero')`
+  await open('/songs/brndnf/', songReady); await waitFor(`document.title === 'BRAND NEW FIELD · GS Archive'`); await shot('p20-song')
+  check('P20 song path opens cold with its title', (await loc()) === '/songs/brndnf/' && (await ev('document.title')) === 'BRAND NEW FIELD · GS Archive' && errors.length === 0,
+    `${await loc()} title="${await ev('document.title')}" errors=${errors.join(' | ') || 0}`)
+  // P21: with no source, page back goes to the song catalogue.
+  await pageBack(); await waitFor(`location.search.includes('view=song_catalog')`)
+  check('P21 cold song back lists the songs', (await loc()) === '/?view=song_catalog', await loc())
+  // P22: a filtered catalogue -> song -> page back returns to the same filter; browser history agrees.
+  await open('/?view=song_catalog&song_scope=layered', `!!document.querySelector('.song-card')`)
+  const songs = await loc()
+  await clickTo('.song-card'); await waitFor(songReady)
+  const songPath = await loc()
+  await pageBack(); await waitFor(`location.search.includes('view=song_catalog')`)
+  const songsBack = await loc()
+  await historyStep('back'); const historySong = await loc()
+  await historyStep('back'); const historySongs = await loc()
+  check('P22 song from a filtered catalogue and back', /^\/songs\/[a-z0-9]{6}\/$/.test(songPath) && songsBack === songs && historySong === songPath && historySongs === songs,
+    `${songs} -> ${songPath} -> ${songsBack}; history back ${historySong} -> ${historySongs}`)
+  // P23: idol -> song -> refresh -> page back returns to the idol path (the parent rides the history source).
+  await open('/idols/001tom/', `!!document.querySelector('[data-archive-focus-id^="idol-song:001tom:"]')`)
+  await clickTo('[data-archive-focus-id^="idol-song:001tom:"]'); await waitFor(songReady)
+  const idolSong = await loc()
+  await send('Page.reload', { ignoreCache: true }); await waitFor(songReady); await settle()
+  const reloaded = await loc()
+  await pageBack(); await waitFor(`location.pathname.startsWith('/idols/')`)
+  check('P23 idol song refresh and back', /^\/songs\/[a-z0-9]{6}\/$/.test(idolSong) && reloaded === idolSong && (await loc()) === '/idols/001tom/',
+    `${idolSong} -> reload ${reloaded} -> ${await loc()}`)
+  // P24: an old song link with a scope and the unit it was opened from is rewritten in place to the song path.
+  await open('/?view=about', `document.body.innerText.trim().length > 40`)
+  const songBefore = await ev('history.length')
+  await open('/?view=song_detail&song=brndnf&song_scope=unit&parent=unit_detail&unit=01jup', songReady)
+  const songLegacy = await loc(); const songAfter = await ev('history.length')
+  check('P24 legacy song link becomes its path in place', songLegacy === '/songs/brndnf/' && songAfter === songBefore + 1, `shown=${songLegacy}; history ${songBefore}->${songAfter}`)
   // P13: phone width for P1-P3.
   await journey({ width: 390, height: 844, deviceScaleFactor: 1, mobile: true }, 'phone')
 } finally {

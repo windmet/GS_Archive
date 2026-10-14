@@ -614,6 +614,8 @@ const PUBLIC_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'unit_detail', prefix: 'units', param: 'unit', implied: {}, pattern: /^[0-9]{2}[a-z0-9]{3}$/ }),
   // Cards are addressed by resource_id (001tom_n01), the id every card link and read-model row carries.
   Object.freeze({ view: 'card_detail', prefix: 'cards', param: 'card', implied: {}, pattern: /^[0-9]{3}[a-z]{3}_[a-z]{1,3}[0-9]{2}$/ }),
+  // Songs are addressed by their six-character song_code (brndnf, drv999), primaries and variants alike.
+  Object.freeze({ view: 'song_detail', prefix: 'songs', param: 'song', implied: {}, pattern: /^[a-z0-9]{6}$/ }),
 ])
 
 function locatorQuery(url) {

@@ -58,7 +58,7 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     const keys = [...new Set([...written.searchParams.keys()])].filter(key => key !== 'view' && key !== 'from')
     assert.deepEqual(keys.filter(key => !owned.has(key)), [], `${view}: no non-owned parameter is written`)
     const state = useArchiveNavigationState(); state.view.value = view; state.currentCardId.value = 'card1'; state.currentEventId.value = '10001'
-    state.currentStoryDomain.value = 'main'; state.filterQuery.value = 'q'; state.currentCharacterId.value = '001tom'
+    state.currentStoryDomain.value = 'main'; state.filterQuery.value = 'q'; state.currentCharacterId.value = '001tom'; state.currentSongId.value = 'song1'
     const emitted = buildArchiveUrl('http://localhost/', state.currentArchiveRoute())
     assert.deepEqual([...emitted.searchParams.keys()].filter(key => key !== 'view' && !owned.has(key)), [], `${view}: dirty state writes only the view and its own parameters`)
   }
@@ -77,6 +77,11 @@ for (const [view, contract] of Object.entries(ARCHIVE_ROUTE_CONTRACTS)) {
     const oldCard = readArchiveRoute('http://localhost/?view=card_detail&category=cards&idol=001tom&card=001tom_ssr01&event=10011&q=q', { history: false })
     assert.equal(oldCard.view, 'card_detail'); assert.equal(oldCard.card, '001tom_ssr01')
     assert.equal(buildArchiveUrl('http://localhost/', oldCard).search, '?view=card_detail&card=001tom_ssr01', 'an old card link is shortened on write')
+    state.currentSongId.value = 'brndnf'; state.currentSongScope.value = 'unit'; state.songParentView.value = 'unit_detail'; state.view.value = 'song_detail'
+    assert.equal(buildArchiveUrl('http://localhost/', state.currentArchiveRoute()).search, '?view=song_detail&song=brndnf')
+    const oldSong = readArchiveRoute('http://localhost/?view=song_detail&song=brndnf&song_scope=unit&parent=unit_detail&unit=01jup&idol=001tom', { history: false })
+    assert.equal(oldSong.view, 'song_detail'); assert.equal(oldSong.song, 'brndnf')
+    assert.equal(buildArchiveUrl('http://localhost/', oldSong).search, '?view=song_detail&song=brndnf', 'an old song link is shortened on write')
     const old = readArchiveRoute('http://localhost/?view=idol_detail&idol=001tom&unit_filter=1&q=x&card=c&story_type=main', { history: false })
     assert.equal(old.view, 'idol_detail'); assert.equal(old.idol, '001tom')
     assert.equal(buildArchiveUrl('http://localhost/', old).search, '?view=idol_detail&category=idol&idol=001tom', 'an old idol link is shortened on write')

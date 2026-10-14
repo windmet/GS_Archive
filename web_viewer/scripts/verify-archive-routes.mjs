@@ -110,7 +110,8 @@ for (const route of [
   { view: 'event_catalog', query: 'Cafe', eventScope: 'fixed_unit_event' },
   { view: 'event_detail', event: '410018', parentView: 'card_detail', sourceRoute: cardsSource },
   { view: 'song_catalog', query: 'Jupiter' },
-  { view: 'song_detail', song: 'brndnf', parentView: 'unit_detail', unit: '01jup', sourceRoute: cardsSource },
+  // A song's address is its identity; the unit page it was opened from rides the source (see verify-route-schema).
+  { view: 'song_detail', song: 'brndnf', sourceRoute: cardsSource },
 ]) {
   const before = structuredClone(route)
   const currentUrl = buildArchiveUrl('http://localhost/', route)

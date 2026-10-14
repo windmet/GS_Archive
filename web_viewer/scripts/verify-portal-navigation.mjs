@@ -32,7 +32,10 @@ for (const query of [
   nav.portalFrom.value = buildPortalReturnQuery(source)
   const portal = readArchiveRoute(buildArchiveUrl('http://localhost/?runtimeDebug=1&scenario=stale.json', nav.currentArchiveRoute()))
   assert.equal(portal.view, 'portal')
-  assert.deepEqual(readPortalReturnRoute(portal.portalFrom), source, `return must retain ${query}`)
+  // Detail pages published at a path (card, song) return as their identity; their own source rides along.
+  const returned = readPortalReturnRoute(portal.portalFrom)
+  assert.deepEqual(returned, readArchiveRoute(buildArchiveUrl('http://localhost/', source)), `return must retain ${query}`)
+  for (const key of ['card', 'song']) if (source[key]) assert.equal(returned[key], source[key], `return keeps the ${key}`)
   const url = buildArchiveUrl('http://localhost/', portal)
   assert.equal(url.searchParams.has('scenario'), false)
   assert.deepEqual(readArchiveRoute(url), portal, 'refresh/share retains return context')
