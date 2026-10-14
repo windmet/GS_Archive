@@ -518,6 +518,7 @@ import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
 import { createBackmonitorLayer, setBackmonitorLayerAlpha, destroyBackmonitorLayer } from '../core/chibiBackmonitorMaterials.js'
 import { createFlatStageLayers, backmonitorDepths } from '../core/chibiFlatStageLayers.js'
+import { createObjectRendererPlanes, syncObjectRendererPlanes, releaseObjectRendererPlanes } from '../core/chibiObjectRendererPlanes.js'
 import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
 import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
@@ -2854,6 +2855,7 @@ async function loadObjectLayerRuntime(entry) {
 function destroyObjectLayerRuntime(runtime) {
   if (!runtime || runtime.destroyed) return
   runtime.destroyed = true
+  releaseObjectRendererPlanes(runtime)
   runtime?.container?.removeFromParent()
   runtime?.container?.destroy({ children: true })
   for (const texture of (runtime?.frameTextures || [])) texture.destroy(false)
@@ -2867,7 +2869,11 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const [asset, runtime] of objectLayerRuntimes) {
     const state = states.get(asset)
-    if (!state) continue
+    if (!state) {
+      runtime.container.visible=false
+      syncObjectRendererPlanes(runtime)
+      continue
+    }
     runtime.container.position.set(
       width * 0.5 + Number(state.x) * viewportScale * environmentScale.value,
       height * 0.5 + (360 - Number(state.y)) * viewportScale * environmentScale.value,
@@ -2880,6 +2886,7 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
+    syncObjectRendererPlanes(runtime)
   }
   if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
@@ -2929,6 +2936,7 @@ async function syncObjectLayers() {
   for (const [asset, runtime] of objectLayerRuntimes) {
     const state = states.get(asset)
     runtime.container.visible = objectLayersEnabled.value && Boolean(state && state.alpha > 0.001)
+    syncObjectRendererPlanes(runtime)
   }
 
   await Promise.all(supportedStates.map(async state => {
@@ -2955,6 +2963,7 @@ async function syncObjectLayers() {
       if (!objectLayerRuntimes.has(state.asset)) {
         objectLayerRuntimes.set(state.asset, runtime)
         cameraContainer.addChild(runtime.container)
+        createObjectRendererPlanes(PIXI,runtime,cameraContainer)
       } else if (ownsLoad) {
         destroyObjectLayerRuntime(runtime)
       }
