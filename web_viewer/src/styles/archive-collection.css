@@ -57,6 +57,8 @@
 .collection-page .collection-card-copy small { color:var(--gs-ink-3);font-size:var(--gs-text-meta);line-height:1.5; }
 .collection-page .collection-badge { color:var(--gs-ink-3);font-size:var(--gs-text-meta); }
 .collection-page .collection-card-copy small+.collection-badge::before { content:"·";margin-right:var(--gs-space-3); }
+.collection-page .collection-card-copy .collection-model-code { display:block;overflow-wrap:anywhere; }
+.collection-page .collection-card-copy .collection-model-code+.collection-badge::before { content:none; }
 
 .collection-page .domain-pagination { gap:var(--gs-space-5);margin-top:var(--gs-space-6); }
 .collection-page .domain-pagination button { font-size:var(--gs-text-ui); }

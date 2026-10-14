@@ -1,7 +1,7 @@
 <template>
   <section class="domain-panel currency-usage"><h3>用途</h3>
     <ul class="currency-lines">
-      <li v-for="(line,i) in textLines" :key="i"><p>{{ line.textZh }}</p><small v-if="line.quoteJa" lang="ja" class="collection-original">{{ line.kind === 'wiki' ? '攻略 Wiki' : '客户端文本' }}：{{ line.quoteJa }}</small></li>
+      <li v-for="(line,i) in textLines" :key="i"><p>{{ line.textZh }}</p><small v-if="line.quoteJa" lang="ja" class="collection-original">{{ line.kind === 'wiki' ? '攻略 Wiki' : '客户端文本' }}：{{ quoteText(line.quoteJa) }}</small></li>
     </ul>
     <details v-for="line in gashaLines" :key="line.kind+line.currency" class="currency-group">
       <summary>{{ gashaLineLabel(line) }} <small>{{ line.gashas.length }} 个卡池</small></summary>
@@ -46,6 +46,8 @@ const acquisitionLabels={'event-point':'活动累计点数奖励','event-ranking
   'event-panel':'活动面板奖励','event-story':'活动剧情奖励','event-valentine-level':'情人节活动等级奖励','event-seasonal-story':'季节剧情奖励',
   'producer-level':'制作人等级奖励','producer-rank':'制作人阶级奖励','main-story':'主线剧情奖励','idol-story':'偶像剧情奖励','episode-zero-story':'Episode 0 剧情奖励','home-story':'主页剧情奖励',
   'login-bonus':'登录奖励','campaign-login-bonus':'企划登录奖励'}
+// Client strings inline their icons as <emoji>name</emoji>; the quote names the icon instead.
+const quoteText=text=>String(text).replace(/<emoji>([a-z_]+)<\/emoji>/g,(_,name)=>name==='stamina'?'ST':`[${name}]`)
 const acquisitionLabel=source=>acquisitionLabels[source] || '其他客户端来源'
 function gashaLineLabel(line){
   if(line.kind==='gasha-exchange')return '可在这些卡池兑换卡片'
