@@ -516,6 +516,8 @@ import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
+import { createBackmonitorLayer, setBackmonitorLayerAlpha, destroyBackmonitorLayer } from '../core/chibiBackmonitorMaterials.js'
+import { createFlatStageLayers, backmonitorDepths } from '../core/chibiFlatStageLayers.js'
 import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
 import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
@@ -736,13 +738,42 @@ const spotlightBackgroundAlpha = ref(0)
 const visibleOldSuspensionlightIds = ref([])
 const backmonitorLogoAngle = ref('')
 const backmonitorLogoAlpha = ref(0)
+let pausedBackmonitorRenderPending = false
+function requestPausedBackmonitorRender() {
+  const owner = app
+  if (!owner || playing.value || pausedBackmonitorRenderPending) return
+  pausedBackmonitorRenderPending = true
+  queueMicrotask(()=> {
+    pausedBackmonitorRenderPending = false
+    if (stageDisposed || owner !== app || playing.value) return
+    applyCameraTransform()
+    owner.render()
+  })
+}
+const backmonitorLayerSprites = createSpotlightSpriteStore({
+  layerCount: null,
+  loadTexture: file=>loadImageLayerTexture(file),
+  createRuntime: (id,layers,textures)=> {
+    const sprites = layers.map((layer,i)=> {
+      const sprite=markRaw(createBackmonitorLayer(PIXI,app.renderer,layer,textures[i]))
+      sprite.visible=false
+      backmonitorContainer.addChild(sprite)
+      return sprite
+    })
+    return markRaw({layers,sprites})
+  },
+  destroyRuntime: runtime=>runtime.sprites.forEach(destroyBackmonitorLayer),
+  destroyTexture: texture=>texture.destroy(true),
+  onReady: ()=>{syncBackmonitor(true);requestPausedBackmonitorRender()},
+  onError: error=>console.warn('[ChibiStage] backmonitor native layers unavailable',error),
+})
 const backmonitorLogoSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
   createRuntime: (id, layers, textures) => markRaw(createBackmonitorLogoMesh(PIXI,backmonitorContainer,textures[0])),
   destroyRuntime: destroyBackmonitorLogoMesh,
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncBackmonitor(true),
+  onReady: () => {syncBackmonitor(true);requestPausedBackmonitorRender()},
   onError: error => console.warn('[ChibiStage] backmonitor logo texture load failed',error),
 })
 let oldSuspensionTrackKey = ''
@@ -815,11 +846,13 @@ const pinspotlightSprites = createSpotlightSpriteStore({
 const pinspotlightRuntimes = pinspotlightSprites.runtimes
 const stageBackgroundSongId = ref('')
 let stageBackgroundSequence = 0
+let stageBackgroundPendingKey = ''
 let stageBackgroundSprite = null
 let stageBackgroundTexture = null
 const stageBackgroundParts = new Map()
 const appliedImageColors = ref('')
 const backgroundComponentCount = ref(0)
+const stageBackgroundNativeLayers = ref(false)
 const backgroundTintConflict = ref(false)
 let wholeScreenColorOverlay = null
 const colorPlaneOverlays = new Map()
@@ -1075,7 +1108,7 @@ onMounted(async () => {
       [imageObjectIndex,fetchLiveChibiImageObjectIndex,syncImageLayers],
       [objectLayerIndex,options=>fetchLiveChibiObjectLayerIndex({...options,onOptional:value=>install(objectLayerIndex,value,syncObjectLayers)}),syncObjectLayers],
       [stageBackgroundIndex,options=>fetchLiveChibiStageBackgroundIndex({...options,onOptional:value=>install(stageBackgroundIndex,value,syncStageBackground)}),syncStageBackground],
-      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting()}],
+      [stageEffectIndex,fetchLiveChibiStageEffectIndex,async()=> {await Promise.allSettled([...runtimes.values()].map(attachStageShadow));applyStageLighting();syncBackmonitor(true);requestPausedBackmonitorRender()}],
     ].map(async ([target,load,sync])=> {
       try {install(target,await load(optionalOptions),sync)}
       catch(error) {if(!stageDisposed)console.warn('[ChibiStage] optional index unavailable',error)}
@@ -1164,13 +1197,7 @@ function createPixiApp() {
   app.stage.sortableChildren = true
   cameraContainer = markRaw(new PIXI.Container())
   cameraContainer.sortableChildren = true
-  backmonitorContainer = markRaw(new PIXI.Container())
-  backmonitorContainer.sortableChildren = true
-  // Backmonitor movies are projected through transparent cut-outs in the
-  // authored stage art.  Keep the video below the static stage composite so
-  // the opaque clockwork/floor pixels act as the original Unity mask.
-  backmonitorContainer.zIndex = -30000
-  cameraContainer.addChild(backmonitorContainer)
+  backmonitorContainer = markRaw(createFlatStageLayers(cameraContainer))
   app.stage.addChild(cameraContainer)
   host.appendChild(app.view)
   resizeObserver = new ResizeObserver(() => resizeStage())
@@ -1734,11 +1761,7 @@ function layoutStageBackground() {
   for (const part of stageBackgroundParts.values()) part.sprite.visible = staticStageEnabled.value
 }
 
-function releaseStageBackground() {
-  spotlightBackgroundSprites.release()
-  spotlightBackgroundAlpha.value = 0
-  pinspotlightMaskCount.value = 0
-  stageBackgroundSequence += 1
+function clearStageBackgroundArt() {
   stageBackgroundSprite?.removeFromParent()
   stageBackgroundSprite?.destroy()
   stageBackgroundTexture?.destroy(true)
@@ -1751,58 +1774,80 @@ function releaseStageBackground() {
   }
   stageBackgroundParts.clear()
   backgroundComponentCount.value = 0
+  stageBackgroundNativeLayers.value = false
   backgroundTintConflict.value = false
-  stageBackgroundSongId.value = ''
   stageBackgroundReady.value = false
+}
+
+function releaseStageBackground() {
+  spotlightBackgroundSprites.release()
+  spotlightBackgroundAlpha.value = 0
+  pinspotlightMaskCount.value = 0
+  stageBackgroundSequence += 1
+  stageBackgroundPendingKey = ''
+  clearStageBackgroundArt()
+  stageBackgroundSongId.value = ''
 }
 
 async function syncStageBackground() {
   if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
   const songCode = selectedSong.value.songCode
-  if (stageBackgroundSongId.value === songCode && (stageBackgroundSprite || stageBackgroundParts.size)) {
-    layoutStageBackground()
-    return
-  }
-  releaseStageBackground()
-  stageBackgroundSongId.value = songCode
   const entry = stageBackgroundIndex.value.songs?.[songCode]
   if (!entry) return
-  const sequence = stageBackgroundSequence
   const components = stageBackgroundIndex.value.components
   const componentLayers = components?.songs?.[songCode]?.layers
-  if (componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
-      && componentLayers.every(asset => components.assets?.[asset])) {
+  const useComponents = Boolean(componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
+    && componentLayers.every(asset=>components.assets?.[asset]))
+  const key = useComponents ? `parts:${componentLayers.join(',')}` : `composite:${entry.file}`
+  const sameSong = stageBackgroundSongId.value === songCode
+  if (sameSong && stageBackgroundPendingKey === key) return
+  if (sameSong && (useComponents ? stageBackgroundParts.size === componentLayers.length : stageBackgroundSprite)) {
+    layoutStageBackground(); return
+  }
+  if (!sameSong) releaseStageBackground()
+  stageBackgroundSongId.value = songCode
+  const sequence = ++stageBackgroundSequence
+  const owner = cameraContainer
+  stageBackgroundPendingKey = key
+  try {
+  if (useComponents) {
     const results = await Promise.allSettled(componentLayers.map(async asset => ({
       asset, texture: await loadImageLayerTexture(components.assets[asset].file),
     })))
     const loaded = results.filter(result => result.status === 'fulfilled').map(result => result.value)
-    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+    if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode || cameraContainer !== owner) {
       for (const part of loaded) part.texture.destroy(true)
       return
     }
     if (loaded.length === componentLayers.length) {
+      const verified = loaded.every(part=>Number.isFinite(components.assets[part.asset].sortingOrder))
+      clearStageBackgroundArt()
       for (const [index, part] of loaded.entries()) {
         const sprite = markRaw(new PIXI.Sprite(part.texture))
         sprite.anchor.set(0.5)
-        sprite.zIndex = -20000 + index
+        sprite.zIndex = verified ? components.assets[part.asset].sortingOrder : -20000 + index
         sprite.visible = staticStageEnabled.value
         cameraContainer.addChild(sprite)
         stageBackgroundParts.set(part.asset, { texture: part.texture, sprite })
       }
+      stageBackgroundNativeLayers.value = verified
       backgroundComponentCount.value = loaded.length
       stageBackgroundReady.value = true
       layoutStageBackground()
       applyImageColors()
+      layoutBackmonitor(currentBackmonitorState.value)
       return
     }
     for (const part of loaded) part.texture.destroy(true)
-    console.warn('[ChibiStage] background component load failed; using original composite')
+    console.warn('[ChibiStage] background component load failed; retaining available composite')
+    if (stageBackgroundSprite || stageBackgroundParts.size) return
   }
   const texture = await loadImageLayerTexture(entry.file)
-  if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode) {
+  if (sequence !== stageBackgroundSequence || selectedSong.value?.songCode !== songCode || cameraContainer !== owner) {
     texture.destroy(true)
     return
   }
+  clearStageBackgroundArt()
   stageBackgroundTexture = texture
   stageBackgroundSprite = markRaw(new PIXI.Sprite(texture))
   stageBackgroundSprite.anchor.set(0.5)
@@ -1812,6 +1857,7 @@ async function syncStageBackground() {
   stageBackgroundReady.value = true
   layoutStageBackground()
   applyImageColors()
+  } finally { if (sequence === stageBackgroundSequence) stageBackgroundPendingKey = '' }
 }
 
 function applyImageColors() {
@@ -2929,11 +2975,17 @@ function ensureBackmonitor() {
     if (backmonitorVideo !== video) return
     backmonitorReady.value = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   video.addEventListener('error', () => {
     if (backmonitorVideo !== video || !backmonitorMovie || !video.getAttribute('src')) return
     backmonitorReady.value = false
     console.warn('[ChibiStage] backmonitor video failed', backmonitorMovie)
+  })
+  for(const event of ['loadeddata','seeked'])video.addEventListener(event,()=> {
+    if(backmonitorVideo!==video)return
+    backmonitorTexture?.baseTexture.update()
+    requestPausedBackmonitorRender()
   })
   backmonitorVideo = video
   const resource = markRaw(new PIXI.VideoResource(video, { autoPlay: false }))
@@ -2958,11 +3010,13 @@ function ensureBackmonitorTransition() {
     if (backmonitorTransitionVideo !== colorVideo) return
     backmonitorTransitionColorReady = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   alphaVideo.addEventListener('loadedmetadata', () => {
     if (backmonitorTransitionAlphaVideo !== alphaVideo) return
     backmonitorTransitionAlphaReady = true
     syncBackmonitor(true)
+    requestPausedBackmonitorRender()
   })
   const handleError = () => {
     if (
@@ -2976,6 +3030,12 @@ function ensureBackmonitorTransition() {
   }
   colorVideo.addEventListener('error', handleError)
   alphaVideo.addEventListener('error', handleError)
+  for(const video of [colorVideo,alphaVideo])for(const event of ['loadeddata','seeked'])video.addEventListener(event,()=> {
+    if(video!==backmonitorTransitionVideo && video!==backmonitorTransitionAlphaVideo)return
+    backmonitorTransitionTexture?.baseTexture.update()
+    backmonitorTransitionAlphaTexture?.baseTexture.update()
+    requestPausedBackmonitorRender()
+  })
   backmonitorTransitionVideo = colorVideo
   backmonitorTransitionAlphaVideo = alphaVideo
   const colorResource = markRaw(new PIXI.VideoResource(colorVideo, { autoPlay: false }))
@@ -3007,18 +3067,39 @@ function layoutBackmonitor(state) {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
+  const depths = backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  backmonitorSprite.zIndex = depths.movie
   backmonitorSprite.position.set(projected.x, projected.y)
   backmonitorSprite.scale.set(projected.scale)
   backmonitorSprite.rotation = 0
   backmonitorSprite.alpha = 1
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
+    backmonitorTransitionSprite.zIndex = depths.movie
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
     backmonitorTransitionSprite.scale.copyFrom(backmonitorSprite.scale)
     backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
     backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
   }
   syncBackmonitorLogo(state,projected)
+  syncBackmonitorLayers(state,projected)
+}
+
+function syncBackmonitorLayers(state,projected) {
+  for(const runtime of backmonitorLayerSprites.runtimes.values())for(const sprite of runtime.sprites)sprite.visible=false
+  const model=stageEffectIndex.value?.backmonitorLayers
+  if(!model || !backmonitorContainer)return
+  const runtime=backmonitorLayerSprites.ensure('native-layers',model,stageEffectIndex.value.assets)
+  if(!runtime)return
+  const depths=backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  runtime.sprites.forEach((sprite,i)=> {
+    const layer=runtime.layers[i],scale=projected.scale/2
+    sprite.position.set(projected.x+layer.x*100*scale,projected.y-layer.y*100*scale)
+    sprite.scale.set(scale*layer.scaleX,scale*layer.scaleY)
+    sprite.zIndex=depths[layer.role]
+    setBackmonitorLayerAlpha(sprite,layer.role==='glow'?state.glowAlpha:layer.alpha)
+    sprite.visible=backmonitorEnabled.value && Boolean(state.movie) && state.y<4000
+  })
 }
 
 function syncBackmonitorLogo(state,projected) {
@@ -3032,6 +3113,7 @@ function syncBackmonitorLogo(state,projected) {
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
   const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
   if (!runtime) return
+  runtime.mesh.zIndex = backmonitorDepths(state,stageBackgroundNativeLayers.value).logo
   updateBackmonitorLogoMesh(runtime,model,sample,projected)
   backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }
@@ -3086,6 +3168,7 @@ function syncBackmonitor(forceSeek = false) {
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
     backmonitorLogoAngle.value = ''
     for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
+    for (const runtime of backmonitorLayerSprites.runtimes.values())for(const sprite of runtime.sprites)sprite.visible=false
     if (backmonitorSprite) backmonitorSprite.visible = false
     pauseBackmonitorTransition()
     return
@@ -3113,6 +3196,7 @@ function syncBackmonitor(forceSeek = false) {
 
 function releaseBackmonitor() {
   backmonitorLogoSprites.release()
+  backmonitorLayerSprites.release()
   backmonitorLogoAngle.value = ''
   backmonitorVideo?.pause()
   pauseBackmonitorTransition()

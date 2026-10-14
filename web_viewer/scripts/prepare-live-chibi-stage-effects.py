@@ -23,6 +23,7 @@ from live_chibi_turnlaser import extract_turnlaser_model
 from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_old_suspension import old_suspension_model
 from live_chibi_backmonitor_logo import logo_model, extract_logo_source
+from live_chibi_backmonitor_layers import extract_backmonitor_layers
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -139,6 +140,8 @@ def main() -> None:
                      'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
     old_suspension = old_suspension_model(old_roots, old_animation)
     backmonitor_logo = logo_model(extract_logo_source(environment))
+    backmonitor_layers, backmonitor_assets = extract_backmonitor_layers(environment, output_root)
+    assets.update(backmonitor_assets)
     particle_spec = importlib.util.spec_from_file_location(
         'laser_particle_audit', PROJECT_ROOT / 'scripts/audit-live-chibi-stage-objects.py')
     particle_audit = importlib.util.module_from_spec(particle_spec)
@@ -255,6 +258,7 @@ def main() -> None:
         "newSuspensionlightSongs": suspension_songs,
         "oldSuspensionlight": old_suspension,
         "backmonitorLogo": backmonitor_logo,
+        "backmonitorLayers": backmonitor_layers,
         "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

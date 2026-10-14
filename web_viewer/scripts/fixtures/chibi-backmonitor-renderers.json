@@ -1,0 +1,126 @@
+{
+  "unityDataSha256": "d35231c0b00a09f6941f47f7ffedde9e9b35701f5b66d6f432517da860e1a500",
+  "model": {
+    "status": "native_backmonitor_renderer_layers",
+    "stageOrders": {
+      "01": 1100,
+      "02": 1300,
+      "03": 1500
+    },
+    "layers": [
+      {
+        "role": "back",
+        "asset": "native_backmonitor_back",
+        "x": 0.0,
+        "y": 0.0,
+        "scaleX": 16.25,
+        "scaleY": 8.4375,
+        "anchorX": 0.5,
+        "anchorY": 0.5,
+        "alpha": 1.0,
+        "sortingOffset": -5,
+        "blend": "normal"
+      },
+      {
+        "role": "noise",
+        "asset": "native_backmonitor_noise",
+        "x": 0.0,
+        "y": 0.0,
+        "scaleX": 1.0,
+        "scaleY": 1.0,
+        "anchorX": 0.5,
+        "anchorY": 0.5,
+        "alpha": 0.800000011920929,
+        "sortingOffset": 5,
+        "blend": "multiply"
+      },
+      {
+        "role": "glow",
+        "asset": "native_backmonitor_glow",
+        "x": 0.0,
+        "y": 0.0,
+        "scaleX": 1.0,
+        "scaleY": 1.0,
+        "anchorX": 0.5011635763519057,
+        "anchorY": 0.5001404434992378,
+        "alpha": 1.0,
+        "sortingOffset": 110,
+        "blend": "add"
+      }
+    ]
+  },
+  "assets": {
+    "native_backmonitor_back": {
+      "file": "stage-effects/native_backmonitor_back.png",
+      "width": 32,
+      "height": 32,
+      "pngSha256": "bca39d8ba477b3fbb6962bb4a74398d18eaf1b249adc920ee300ac4e4968f832",
+      "source": {
+        "serializedFile": "resources.assets",
+        "pathId": "414",
+        "spritePathId": "1734",
+        "rendererPathId": "56739",
+        "shader": "Sprites/Default",
+        "shaderSha256": "fed27afa0e4463295dd2c35d4a90039470e52df85fd365653ecbd644de539ee1",
+        "blendFactors": [
+          1.0,
+          10.0,
+          1.0,
+          10.0
+        ]
+      }
+    },
+    "native_backmonitor_noise": {
+      "file": "stage-effects/native_backmonitor_noise.png",
+      "width": 520,
+      "height": 270,
+      "pngSha256": "b4c10e0362b26bd6eea28ff51cfd01367cc43a532a28783d2b71685925e42299",
+      "source": {
+        "serializedFile": "resources.assets",
+        "pathId": "601",
+        "spritePathId": "2121",
+        "rendererPathId": "55366",
+        "shader": "Mobile/Particles/Multiply",
+        "shaderSha256": "ec06903be7fa7d9848e0c6593c71c29df8a92b84073353d9487d6848a672a449",
+        "blendFactors": [
+          0.0,
+          3.0,
+          0.0,
+          3.0
+        ]
+      }
+    },
+    "native_backmonitor_glow": {
+      "file": "stage-effects/native_backmonitor_glow.png",
+      "width": 794,
+      "height": 542,
+      "pngSha256": "dbe7cab52060b8acd0170a50854b33c4e618d0b653af1c331a6c1a6b50000988",
+      "source": {
+        "serializedFile": "resources.assets",
+        "pathId": "872",
+        "spritePathId": "2648",
+        "rendererPathId": "55251",
+        "shader": "Mobile/Particles/Additive",
+        "shaderSha256": "7251f5c686e43bf50d0b4f470c83cc84af5774f867802d249388331ccbc4e4f5",
+        "blendFactors": [
+          5.0,
+          1.0,
+          5.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "nativePrograms": {
+    "noise": {
+      "fragmentTail": "\nmediump vec4 u_xlat16_0;\nmediump float u_xlat16_1;\nvoid main()\n{\n    u_xlat16_0 = texture2D(_MainTex, vs_TEXCOORD0.xy);\n    u_xlat16_1 = u_xlat16_0.w * vs_COLOR0.w;\n    u_xlat16_0 = u_xlat16_0 * vs_COLOR0 + vec4(-1.0, -1.0, -1.0, -1.0);\n    gl_FragColor = vec4(u_xlat16_1) * u_xlat16_0 + vec4(1.0, 1.0, 1.0, 1.0);\n    return;\n}",
+      "vertexColorClamp": true,
+      "shaderSha256": "ec06903be7fa7d9848e0c6593c71c29df8a92b84073353d9487d6848a672a449"
+    },
+    "glow": {
+      "fragmentTail": "\nmediump vec4 u_xlat16_0;\nvoid main()\n{\n    u_xlat16_0 = texture2D(_MainTex, vs_TEXCOORD0.xy);\n    gl_FragColor = u_xlat16_0 * vs_COLOR0;\n    return;\n}",
+      "vertexColorClamp": true,
+      "shaderSha256": "7251f5c686e43bf50d0b4f470c83cc84af5774f867802d249388331ccbc4e4f5"
+    }
+  }
+}

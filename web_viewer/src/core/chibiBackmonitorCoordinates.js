@@ -26,12 +26,12 @@ export function projectChibiBackmonitor(songCode, state, width, height, environm
 export function chibiBackmonitorStateAt(events, milliseconds) {
   const state = {
     movie: null, movieTime: 0, transition: null, transitionTime: 0,
-    x: 0, y: 360, scale: 1000, rawValue6: 0, rawValue7: 1000, eventTime: '',
+    x: 0, y: 360, scale: 1000, rawValue6: 0, rawValue7: 1000, sortingOrder: 1000, logo:null, glowAlpha:1, eventTime: '',
   }
   for (const event of events || []) {
     const time = Number(event.time)
     if (time > milliseconds) break
-    if (event.movie) { state.movie = event.movie; state.movieTime = time }
+    if (event.movie && event.movie !== state.movie) { state.movie = event.movie; state.movieTime = time }
     for (const key of ['x', 'y', 'scale']) {
       if (event[key] != null) state[key] = Number(event[key])
     }
@@ -41,6 +41,10 @@ export function chibiBackmonitorStateAt(events, milliseconds) {
     const value7 = event.rawValue7 ?? event.opacity
     if (value6 != null) state.rawValue6 = Number(value6)
     if (value7 != null) state.rawValue7 = Number(value7)
+    // Native SetSortOrder maps zero/blank to 1000 on every command.
+    state.glowAlpha = event.glowAlpha ?? Number(value7 || 0)/1000
+    state.sortingOrder = Number(event.sortingOrder) || 1000
+    if(event.logo)state.logo=event.logo
     state.transition = event.transition || null
     if (state.transition) state.transitionTime = time
     state.eventTime = time

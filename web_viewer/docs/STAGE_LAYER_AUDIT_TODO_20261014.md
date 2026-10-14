@@ -10,12 +10,14 @@
 - [x] 去除没有原版依据的整个人物环境染色，避免与遮光平面重复叠加、绕过 pinspotlight 掩模。
 - [x] Body_Color 原版RGBA替色，接到单个Spine绘制部件并保留槽位颜色、透明度及批渲染；见 NATIVE_BODY_MATERIAL_BATCH_20261014.md。
 - [x] Foot_Color：五种原版SkeletonDataAsset.scale约1/300已绑定，cutoff/独立RGBA/并存tween/26条即时清除已接入单部件材质。此前整身效果禁令已纠正，超大cutoff可有意影响整个人物；见 NATIVE_FOOT_MATERIAL_BATCH_20261014.md。
-- [ ] 反查 monitor、嵌套特效容器及透明材质的排序/深度状态；不将所有灯束一律移到人物后面。
+- [x] 背屏恢复全局分层、value8 排序重置、噪点/辉光原版混合及顶点颜色钳制；54首静态背景恢复原版三层，见 [NATIVE_BACKMONITOR_GLOBAL_LAYER_BATCH_20261014.md](NATIVE_BACKMONITOR_GLOBAL_LAYER_BATCH_20261014.md)。
+- [ ] 嵌套粒子/特效排序及透明材质深度状态；不将所有灯束一律移到人物后面。
+- [ ] syksai 第四层模板、背屏 RectTransform/视频有效画面几何、Passion Logo override，以及原版 HDR/深度缓冲完整链路。
 - [x] 背屏 value7 错当 Logo 渐变时长：已反查确认其为 GrowSprite alpha，限定预览 Logo 改为原版固定500ms/显示alpha0.8。
 - [ ] 后续处理用户暂无法描述的灯光差异，保留待办，不宣称全部灯光还原完成。
 
 验证边界：反编译、源资源、浏览器合成各自提供证据；源码构建不代表原版视频或真机视觉一致。
 
-第一批证据与验证见 [NATIVE_CHARACTER_LAYER_BATCH_20261014.md](NATIVE_CHARACTER_LAYER_BATCH_20261014.md)。背屏已定位到原版 value8 / SetSortOrder（0x2218938），分层偏移为 -5、+1、+5、+110；当前 Web 容器 -30000、图像 -10000/-9999，尚未恢复这些脚本层级。需先厘清解析字段与容器归属再改，不能只替换一个 zIndex。
+第一批证据与验证见 [NATIVE_CHARACTER_LAYER_BATCH_20261014.md](NATIVE_CHARACTER_LAYER_BATCH_20261014.md)。背屏 value8 / SetSortOrder（0x2218938）的 -5、+1、+5、+110 偏移现已接入全局排序；资源缺失或模板未知时保留旧层级回退，不把推测当已恢复。
 
 背屏资源绑定与 Logo 原版透明度修正见 [NATIVE_BACKMONITOR_LAYER_TRACE_20261014.md](NATIVE_BACKMONITOR_LAYER_TRACE_20261014.md)。
