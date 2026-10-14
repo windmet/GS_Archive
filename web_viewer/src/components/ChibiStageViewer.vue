@@ -92,9 +92,10 @@
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
-    data-foot-light-status="command-uniform-mapping-unresolved"
-    :data-foot-light-height="currentFootLighting.height"
-    :data-foot-light-rate="currentFootLighting.rate"
+    data-foot-light-status="native-local-material"
+    :data-foot-light-height="currentFootLighting.rgba[3] > 0 ? 1 / currentFootLighting.rcpHeight : 0"
+    :data-foot-light-rcp-height="currentFootLighting.rcpHeight"
+    :data-foot-light-opacity="currentFootLighting.rgba[3]"
     :data-body-colors="appliedBodyColors"
     :data-image-colors="appliedImageColors"
     :data-background-component-count="backgroundComponentCount"
@@ -516,7 +517,8 @@ import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
 import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer } from '../core/chibiNativeBodyPaint.js'
-import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
+import { footUniformsAt } from '../core/chibiNativeFootColors.js'
+import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
@@ -994,7 +996,7 @@ const currentWholeScreenColor = frameValue(() => wholeScreenColorAt(stageTime.va
 const currentColorPlanes = frameValue(() => colorLayersAt(selectedSong.value?.wholeScreenColorLayerEvents, stageTime.value))
 const visibleColorPlanes = computed(() => lightingEnabled.value
   ? [...currentColorPlanes.value.values()].filter(state => state.alpha > 0.001) : [])
-const currentFootLighting = frameValue(() => footLightingAt(selectedSong.value?.characterLightEvents,stageTime.value))
+const currentFootLighting = frameValue(() => footUniformsAt(selectedSong.value?.characterLightEvents,stageTime.value))
 const currentBodyColors = frameValue(() => bodyUniformsAt(selectedSong.value?.bodyColorEvents, stageTime.value))
 const currentImageColors = frameValue(() => imageColorsAt(selectedSong.value?.imageColorEvents, stageTime.value))
 const appliedBodyColors = ref('')
@@ -1893,7 +1895,6 @@ function applyStageLighting() {
     for (const runtime of runtimes.values()) {
       runtime.spine.tint = 0xffffff
       syncNativeBodyColor(PIXI,runtime,null,false)
-      syncFootLighting(PIXI,runtime,{rgb:[0,0,0],height:0},false)
     }
     if (!playing.value || inspectorOpen.value) appliedBodyColors.value = ''
     return
@@ -1905,15 +1906,14 @@ function applyStageLighting() {
     wholeScreenColorOverlay.zIndex = screen.depth
     wholeScreenColorOverlay.visible = screen.alpha > 0.001
   }
-  // Foot_Color is a local height replacement gradient. It must never dim
-  // the entire face/body; body tint remains a separate addressed command.
+  // Foot_Color uses the authored local cutoff, including intentionally huge
+  // full-height commands. Native material applies Body then Foot per part.
   const foot = currentFootLighting.value
   for (const [position, runtime] of runtimes) {
     // Environment dimming belongs to SpotlightBackground's composited plane.
     // Applying it to Spine as well doubled the wash and bypassed Pin masks.
     runtime.spine.tint = 0xffffff
-    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true)
-    syncFootLighting(PIXI,runtime,foot,true)
+    syncNativeBodyColor(PIXI,runtime,currentBodyColors.value.get(position),true,foot)
   }
   if (!playing.value || inspectorOpen.value) appliedBodyColors.value = [...runtimes].filter(([position]) => activePositions.value.includes(position))
     .map(([position, runtime]) =>

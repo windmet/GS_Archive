@@ -1,8 +1,6 @@
-// Native Skeleton-Gradient uses local mesh Y, not whole-Spine multiplication.
-// Native cutoff uniform is 1000 / CSV value4 (currently stored as depth).
-// Its Unity-local mesh units still need a verified Web skeleton conversion.
-// Keep height zero until that bridge and the independent RGBA are wired.
-// Do not substitute CSV opacity for the geometric cutoff or enable full replacement.
+// Legacy diagnostic/filter API. The stage now uses chibiNativeFootColors
+// and the per-attachment native character material. localHeightRow remains
+// the shared affine conversion; this old helper must not drive the renderer.
 const clamp = x => Math.max(0, Math.min(1, x))
 export function footLightingAt(events = [], time = 0) {
   let state = { rgb: [0, 0, 0], height: 0, rate: 0 }, track = null
