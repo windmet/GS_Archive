@@ -57,7 +57,7 @@
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
     data-old-suspensionlight-status="native-sidelight-curves-reference-director-projection"
-    data-new-suspensionlight-status="partial-native-texture-reference-normal-show"
+    data-new-suspensionlight-status="native-show-rotate-scale-fade-reference-projection"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
     :data-image-layer-count="visibleImageLayerCount"
     :data-image-layer-assets="visibleImageLayerAssets.join(',')"
@@ -380,7 +380,7 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
-              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；基础显示使用原生贴图，{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条旋转／颜色／渐变控制仍待接入。当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
+              <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放和渐隐，<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条颜色／节拍控制仍待接入。</template><template v-else>颜色／节拍控制待核对。</template>当前可见 {{ visibleSuspensionlightIds.length }} 束。</p>
               <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
@@ -709,7 +709,7 @@ const stagelightSprites = createSpotlightSpriteStore({
 let stagelightSongId = ''
 const visibleSuspensionlightIds = ref([])
 let suspensionTrackKey = ''
-let suspensionTrack = null
+const suspensionTrack = shallowRef(null)
 let suspensionAbort = null
 const suspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -839,6 +839,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   imageObjects: imageObjectIndex.value,
   objectLayers: objectLayerIndex.value,
   stageEffects: stageEffectIndex.value,
+  newSuspensionlightTrack: suspensionTrack.value,
   stageBackgrounds: stageBackgroundIndex.value,
 }))
 const stageVfxApproximateCount = computed(() => {
@@ -2194,7 +2195,7 @@ function syncSuspensionlights() {
   if (suspensionTrackKey !== key) {
     suspensionSprites.release()
     suspensionAbort?.abort()
-    suspensionTrack = null
+    suspensionTrack.value = null
     suspensionTrackKey = key
     if (descriptor?.file) {
       const abort = new AbortController()
@@ -2205,7 +2206,7 @@ function syncSuspensionlights() {
           return response.json()
         }).then(track => {
           if (stageDisposed || abort.signal.aborted || suspensionTrackKey !== key) return
-          suspensionTrack = track
+          suspensionTrack.value = track
           syncSuspensionlights()
         }).catch(error => {
           if (!abort.signal.aborted) console.warn('[ChibiStage] suspension track load failed', error)
@@ -2215,7 +2216,7 @@ function syncSuspensionlights() {
   visibleSuspensionlightIds.value = []
   for (const runtime of suspensionSprites.runtimes.values()) runtime.sprite.visible = false
   if (!beamEffectsEnabled.value) return
-  const track = suspensionTrack
+  const track = suspensionTrack.value
   const model = stageEffectIndex.value?.newSuspensionlight
   if (!track || !model) return
   const width = app.renderer.width / app.renderer.resolution

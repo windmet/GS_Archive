@@ -1,3 +1,5 @@
+import { NEW_SUSPENSIONLIGHT_COMMANDS } from './chibiSuspensionlights.js'
+
 function uniqueAssets(events, key) {
   return [...new Set((events || []).map(event => event[key]).filter(Boolean))].sort()
 }
@@ -25,10 +27,10 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const stagelightUnimplemented = stagelightAssets.filter(asset=>!indexes.stageEffects?.stagelights?.[asset])
   const stagelightUnimplementedCommands = stagelightEvents.filter(event=>event.previewSupported===false)
   const suspensionTrack = indexes.stageEffects?.newSuspensionlightSongs?.[song.id]
-  const suspensionEvents = suspensionTrack?.events || []
+    const suspensionEvents = indexes.newSuspensionlightTrack?.events || suspensionTrack?.events || []
   const suspensionCount = suspensionTrack?.eventCount ?? suspensionEvents.length
   const suspensionUnimplemented = suspensionEvents.filter(event =>
-    !['NewSuspensionlight_create', 'NewSuspensionlight_normal_show'].includes(event.command))
+      !NEW_SUSPENSIONLIGHT_COMMANDS.includes(event.command))
   const backmonitorLogoRequests = (song.backmonitorEvents || []).filter(event =>
     Number(event.rawValue6 ?? event.rotation) === 1).length
   const unresolvedColorPlanes = (song.wholeScreenColorLayerEvents || []).filter(event => event.unresolvedReason)
@@ -74,8 +76,9 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     stagelightAssets,
     stagelightUnimplemented,
     stagelightUnimplementedCommands:stagelightUnimplementedCommands.length,
-    newSuspensionlightUnimplementedCommands: suspensionTrack?.unimplementedCommands ?? suspensionUnimplemented.length,
-    newSuspensionlightStatus: suspensionCount ? 'partial_reference_normal_show' : 'not_loaded',
+     newSuspensionlightUnimplementedCommands: suspensionEvents.length ? suspensionUnimplemented.length : suspensionTrack?.unimplementedCommands ?? 0,
+     newSuspensionlightCommandsLoaded: Boolean(indexes.newSuspensionlightTrack || suspensionTrack?.events),
+     newSuspensionlightStatus: suspensionCount ? 'partial_native_show_rotate_scale_fade_reference_projection' : 'not_loaded',
     backmonitorLogoRequests,
     backmonitorLogoStatus: backmonitorLogoRequests ? 'unimplemented_runtime_sprite_selection_pending' : 'not_requested',
     // Resource binding / color assignment are separate from native tween parity.

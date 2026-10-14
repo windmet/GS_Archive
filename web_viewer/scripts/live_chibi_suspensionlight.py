@@ -1,7 +1,7 @@
 """Native new-suspension bindings and ordered command arguments.
 
-Field interpretation is a recording-guided preview, not recovered tween code.
-Unknown commands remain present and invalidate an object's preview state.
+Commands retain ordered RAW arguments for independent runtime channels.
+Projection and unsupported color/beat controls remain partial.
 """
 import csv
 import hashlib
@@ -75,5 +75,5 @@ def suspensionlight_events(payload, prefix='NewSuspensionlight_', value_count=10
                        'sourceRow': source_row, 'values': [field(f'value{i}') for i in range(1, value_count + 1)],
                        'extraValues': {name: field(name) for name in header if name.startswith('value')
                                        and int(name[5:]) > value_count and field(name)},
-                       'erase': field('value101') == '1' or field('value102') == '1'})
+                       'erase': field('value101') == '1'})
     return sorted(result, key=lambda e: (e['time'], e['sourceRow']))
