@@ -49,7 +49,7 @@ export function nativeLightScreenLayout(state,width,height,environmentScale=1,ca
     rotation:-state.angle*Math.PI/180+angle}
 }
 // Keep common stage z-order while cancelling the reference camera parent.
-// Parent inversion also avoids applying the old .82 camera factor twice.
+// Useful for consumers attached beneath a separately transformed parent.
 export function nativeLightLocalLayout(screen,parent) {
   const {a,b,c,d,tx,ty}=parent,det=a*d-b*c
   const inverse=(x,y)=>({x:(d*x-c*y)/det,y:(a*y-b*x)/det})

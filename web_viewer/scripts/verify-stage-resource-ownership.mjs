@@ -59,13 +59,14 @@ for(const mode of ['success','cancel','failure']){
   if(mode!=='success')assert.equal(started,3,'Failed/cancelled batch stops the remaining queue');cases++
 }
 {
-  let rendered=0;const queued=[]
+  let rendered=0,cameraSynced=0;const queued=[]
   const context={app:{render(){rendered++}},playing:ref(false),stageDisposed:false,suspensionRenderQueued:false,
-    queueMicrotask:callback=>queued.push(callback)}
+    queueMicrotask:callback=>queued.push(callback),applyCameraTransform(){cameraSynced++}}
   install(context,['requestPausedSuspensionRender'])
   context.requestPausedSuspensionRender();context.requestPausedSuspensionRender()
   assert.equal(queued.length,1,'Multiple late lamps coalesce into one paused render')
   queued.shift()();assert.equal(rendered,1)
+  assert.equal(cameraSynced,1,'A late paused lamp samples the current shared camera before drawing')
   context.requestPausedSuspensionRender();context.playing.value=true;queued.shift()();assert.equal(rendered,1)
   context.playing.value=false;context.requestPausedSuspensionRender();context.app={render(){rendered++}}
   queued.shift()();assert.equal(rendered,1,'A released application cannot render the new stage')

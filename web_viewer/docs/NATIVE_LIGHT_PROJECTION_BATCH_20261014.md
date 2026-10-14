@@ -11,7 +11,7 @@
 - 跟随人物时，get_targetIdolPos 经过父层级矩阵转换，并增加150 camera pixels的上偏移；镜头整个 sequence 完成后才由 Update 持续跟随。不能将所有人物焦点 Y 固定360，也不能一收到新站位就打断尚未完成的镜头移动。
 - GetTargetIdolObj（`0x1f29b84`）检查列表范围，越界返回null。实际两份 LiveStage 都绑定六个人物根。真实 jfhtmk 有四条超大 focus ID，必须走 free camera，不能因此隐藏灯束。
 
-新增 `chibiNativeLightProjection.js` 负责灯光镜头状态与屏幕矩阵。新旧悬灯共同使用它；将屏幕矩阵转回原父容器局部空间，抵消旧父容器的 .82、参考 easing、pivot 和 rotation，保留现有 sortingOrder 与层间排序。每次采样先刷新父容器 localTransform，避免使用上一帧 worldTransform 导致 seek 抖动。
+新增 `chibiNativeLightProjection.js` 负责灯光镜头状态与屏幕矩阵。新旧悬灯共同使用它；将屏幕矩阵转回原父容器局部空间，抵消当时父容器的参考 easing、pivot 和 rotation（更正：当前基础缩放已是 1，非 .82），保留现有 sortingOrder 与层间排序。每次采样先刷新父容器 localTransform，避免使用上一帧 worldTransform 导致 seek 抖动。
 
 该模型对应网页的16:9虚拟舞台，手机视口仍展示同一平面；不把它等同于原生应用竖屏布局。环境与查看缩放继续作为网页用户控制，默认值下执行原版舞台计算。
 

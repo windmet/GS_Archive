@@ -516,9 +516,9 @@ import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
 import { sampleSpotlightBackground } from '../core/chibiSpotlightBackground.js'
 import { footLightingAt, syncFootLighting, releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
-import { newSuspensionlightsAt } from '../core/chibiSuspensionlights.js'
-import { oldSuspensionlightsAt } from '../core/chibiOldSuspensionlights.js'
-import { nativeLightCameraAt, nativeLightScreenLayout, nativeLightLocalLayout } from '../core/chibiNativeLightProjection.js'
+import { newSuspensionlightsAt, suspensionlightLayout } from '../core/chibiSuspensionlights.js'
+import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
+import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
@@ -1634,96 +1634,15 @@ function layoutCoordinatesForStage(position, milliseconds, motionEvent = null) {
   return resolveChibiPlacement(positionState, event, fallbackX)
 }
 
-function sampleCameraTween(tween, milliseconds) {
-  if (!tween) return 0
-  if (tween.duration <= 1 || milliseconds >= tween.start + tween.duration) return tween.to
-  const raw = Math.max(0, Math.min(1, (milliseconds - tween.start) / tween.duration))
-  const eased = 1 - ((1 - raw) ** 3)
-  return tween.from + (tween.to - tween.from) * eased
-}
-
 function cameraStateAt(milliseconds) {
-  const state = {
-    zoom: 1,
-    x: 0,
-    y: 360,
-    rotation: 0,
-    focusSlot: null,
-    stagePosition: null,
-    eventTime: '',
-  }
-  let zoomTween = null
-  let xTween = null
-  let yTween = null
-  let rotationTween = null
-
-  for (const event of (selectedSong.value?.cameraEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    state.zoom = zoomTween ? sampleCameraTween(zoomTween, eventTime) : state.zoom
-    state.x = xTween ? sampleCameraTween(xTween, eventTime) : state.x
-    state.y = yTween ? sampleCameraTween(yTween, eventTime) : state.y
-    state.rotation = rotationTween ? sampleCameraTween(rotationTween, eventTime) : state.rotation
-
-    if (event.reset) {
-      // Camera's authored erase command restores the wide shot. Cancel the
-      // previous focus/tweens so later shots start from this reset, even on seek.
-      const duration = Math.max(0, Number(event.resetDuration) || 0)
-      zoomTween = { from: state.zoom, to: 1, start: eventTime, duration }
-      xTween = { from: state.x, to: 0, start: eventTime, duration }
-      yTween = { from: state.y, to: 360, start: eventTime, duration }
-      rotationTween = { from: state.rotation, to: 0, start: eventTime, duration }
-      state.focusSlot = null
-      state.stagePosition = null
-      state.eventTime = eventTime
-      continue
-    }
-
-    if (event.focusSlot !== null && event.focusSlot !== undefined) {
-      state.focusSlot = Number(event.focusSlot) > 0 ? Number(event.focusSlot) : null
-      state.stagePosition = state.focusSlot
-        ? (event.stagePosition || selectedSong.value?.stagePositionMap
-          ?.find(item => item.performerSlot === state.focusSlot)?.stagePosition || null)
-        : null
-    }
-    if (event.zoom !== null && event.zoom !== undefined) {
-      zoomTween = {
-        from: state.zoom,
-        to: Number(event.zoom) / 1000,
-        start: eventTime,
-        duration: Math.max(0, Number(event.zoomDuration) || 0),
-      }
-    }
-    if (event.x !== null || event.y !== null || event.focusSlot !== null) {
-      const focusX = state.stagePosition
-        ? layoutCoordinatesForStage(state.stagePosition, eventTime).x
-        : 0
-      const targetX = state.stagePosition
-        ? focusX + Number(event.x ?? 0)
-        : Number(event.x ?? state.x)
-      // The source uses a character-root coordinate system when focusSlot is set;
-      // its Y=0 and free-camera Y=360 both represent the visual stage centre.
-      const targetY = state.stagePosition ? 360 : Number(event.y ?? state.y)
-      const duration = Math.max(0, Number(event.moveDuration) || 0)
-      xTween = { from: state.x, to: targetX, start: eventTime, duration }
-      yTween = { from: state.y, to: targetY, start: eventTime, duration }
-    }
-    if (event.rotation !== null && event.rotation !== undefined) {
-      rotationTween = {
-        from: state.rotation,
-        to: Number(event.rotation),
-        start: eventTime,
-        duration: Math.max(0, Number(event.rotationDuration) || 0),
-      }
-    }
-    state.eventTime = eventTime
-  }
-
-  state.zoom = zoomTween ? sampleCameraTween(zoomTween, milliseconds) : state.zoom
-  state.x = xTween ? sampleCameraTween(xTween, milliseconds) : state.x
-  state.y = yTween ? sampleCameraTween(yTween, milliseconds) : state.y
-  state.rotation = rotationTween ? sampleCameraTween(rotationTween, milliseconds) : state.rotation
-  return state
+  const song = selectedSong.value
+  const camera = nativeLightCameraAt(song, milliseconds)
+  const event = song?.cameraEvents?.findLast(event => event.time <= milliseconds)
+  const focusSlot = camera.focusSlot || null
+  return { ...camera, focusSlot,
+    stagePosition: focusSlot ? (event?.stagePosition || song?.stagePositionMap
+      ?.find(item => item.performerSlot === focusSlot)?.stagePosition || focusSlot) : null,
+    eventTime: event?.time ?? '' }
 }
 
 function backmonitorStateAt(milliseconds) {
@@ -2197,23 +2116,11 @@ function requestPausedSuspensionRender() {
   const owner = app
   queueMicrotask(() => {
     suspensionRenderQueued = false
-    if (app === owner && !stageDisposed && !playing.value) owner.render()
+    if (app === owner && !stageDisposed && !playing.value) {
+      applyCameraTransform()
+      owner.render()
+    }
   })
-}
-
-function nativeSuspensionProjection(width, height) {
-  // Seek can enter lighting before its final camera sync. Refresh the parent
-  // local matrix now; using last frame's worldTransform creates a one-frame jump.
-  applyCameraTransform()
-  cameraContainer.transform.updateLocalTransform()
-  return { parent: cameraContainer.localTransform.clone(),
-    camera: cameraEnabled.value ? nativeLightCameraAt(selectedSong.value, stageTime.value)
-      : { x: 0, y: 360, zoom: 1, rotation: 0, verified: true }, width, height }
-}
-
-function nativeSuspensionLayout(state, context) {
-  return nativeLightLocalLayout(nativeLightScreenLayout(state, context.width, context.height,
-    environmentScale.value, context.camera, stageViewScale.value), context.parent)
 }
 
 function syncSuspensionlights() {
@@ -2251,13 +2158,11 @@ function syncSuspensionlights() {
   if (!track || !model) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const projection = nativeSuspensionProjection(width, height)
-  if (!projection.camera.verified) return
   for (const state of newSuspensionlightsAt(track.events, stageTime.value)) {
     if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
     const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue
-    const layout = nativeSuspensionLayout(state, projection)
+    const layout = suspensionlightLayout(state, width, height, environmentScale.value)
     runtime.sprite.position.set(layout.x, layout.y)
     runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
     runtime.sprite.rotation = layout.rotation
@@ -2320,14 +2225,12 @@ function syncOldSuspensionlights() {
   if (!beamEffectsEnabled.value || !oldSuspensionTrack) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const projection = nativeSuspensionProjection(width, height)
-  if (!projection.camera.verified) return
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
     stageEffectIndex.value?.oldSuspensionlight,{...descriptor,tempo:oldSuspensionTempo})) {
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue
-    const layout = nativeSuspensionLayout(state, projection)
+    const layout = oldSuspensionlightLayout(state, width, height, environmentScale.value)
     runtime.sprite.position.set(layout.x,layout.y)
     runtime.sprite.scale.set(layout.scaleX,layout.scaleY)
     runtime.sprite.rotation = layout.rotation
@@ -3290,7 +3193,7 @@ function applyCameraTransform() {
     height * 0.5 - (camera.y - 360) * viewportScale,
   )
   cameraContainer.scale.set(camera.zoom * STAGE_BASE_ZOOM * stageViewScale.value)
-  cameraContainer.rotation = -camera.rotation * Math.PI / 180
+  cameraContainer.rotation = camera.rotation * Math.PI / 180
 }
 
 function applyLayerDebugVisibility() {

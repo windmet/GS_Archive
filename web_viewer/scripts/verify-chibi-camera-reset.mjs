@@ -1,18 +1,21 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { nativeLightCameraAt } from '../src/core/chibiNativeLightProjection.js'
 
 // Execute the actual SFC camera sampler, including its tween implementation.
 // Source-only sampler/projection tests; paint still needs Browser QA.
 const source = readFileSync(new URL('../src/components/ChibiStageViewer.vue', import.meta.url), 'utf8')
-const start = source.indexOf('function sampleCameraTween(')
+const start = source.indexOf('function cameraStateAt(')
 const end = source.indexOf('function backmonitorStateAt(', start)
 assert.ok(start >= 0 && end > start)
-const makeSampler = new Function('selectedSong', 'layoutCoordinatesForStage', source.slice(start, end) + '; return cameraStateAt')
+const cameraFactory = new Function('selectedSong', 'nativeLightCameraAt', source.slice(start, end) + '; return cameraStateAt')
+const makeSampler = selectedSong => cameraFactory({value:{positionEvents:[{time:-2000,position:1,x:100,y:180}],...selectedSong.value}},nativeLightCameraAt)
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/chibi-camera-controls.json', import.meta.url), 'utf8'))
 const study = fixture.songs.steqmg.events
 const sample = makeSampler({ value: { cameraEvents: study } }, () => ({ x: 100 }))
 const reset = sample(32101)
-assert.deepEqual(reset, { zoom: 1, x: 0, y: 360, rotation: 0, focusSlot: null, stagePosition: null, eventTime: 32100 })
+assert.deepEqual(Object.fromEntries(['zoom','x','y','rotation','focusSlot','stagePosition','eventTime'].map(key=>[key,reset[key]])),
+  { zoom: 1, x: 0, y: 360, rotation: 0, focusSlot: null, stagePosition: null, eventTime: 32100 })
 assert.ok(Math.abs(sample(32099).zoom - 1.25) < 1e-8)
 assert.equal(sample(32200).zoom, 1, 'new shot starts wide instead of inheriting 1.25x')
 assert.equal(sample(32200).x, 0)
@@ -26,12 +29,14 @@ const focus = { time: 0, zoom: 2000, zoomDuration: 10000, focusSlot: 1, stagePos
 const erase = { time: 500, reset: true, resetDuration: 1000 }
 const focused = makeSampler({ value: { cameraEvents: [focus, erase] } }, () => ({ x: 100 }))
 assert.equal(focused(499).stagePosition, 3)
+assert.equal(focused(499).x,100,'Native focus ignores free-camera offsets')
+assert.equal(focused(499).y,330,'Native focus uses the character root plus 150')
 assert.equal(focused(500).stagePosition, null)
 assert.equal(focused(1500).zoom, 1)
 assert.equal(focused(1500).x, 0)
 assert.equal(focused(1500).y, 360)
 assert.equal(focused(1500).rotation, 0)
-assert.ok(focused(1000).x > 0 && focused(1000).x < 120, 'reset transition samples instead of snapping early')
+assert.ok(focused(1000).x > 0 && focused(1000).x < 100, 'reset transition samples instead of snapping early')
 const legacy = makeSampler({ value: { cameraEvents: [focus] } }, () => ({ x: 100 }))
 assert.equal(legacy(10000).zoom, 2, 'legacy entries without erase controls retain existing behavior')
 for (const code of ['tkstp1', 'tkstp2']) {
@@ -49,6 +54,18 @@ const projectionEnd = source.indexOf('function applyLayerDebugVisibility()', pro
 assert.ok(projectionStart >= 0 && projectionEnd > projectionStart)
 const project = new Function('cameraContainer', 'app', 'cameraEnabled', 'stageViewScale', 'currentCameraState', 'STAGE_BASE_ZOOM',
   source.slice(projectionStart, projectionEnd) + '; applyCameraTransform()')
+{
+  const vector=()=>({x:0,y:0,set(x,y=x){this.x=x;this.y=y}})
+  const container={position:vector(),pivot:vector(),scale:vector(),rotation:0}
+  project(container,{renderer:{width:1280,height:720,resolution:1}},{value:true},{value:1},
+    {value:{zoom:2,x:10,y:300,rotation:30}},1)
+  assert.equal(container.rotation,Math.PI/6,'Shared camera applies the inverse world view with screen-Y reflection')
+  const x=700-container.pivot.x,y=400-container.pivot.y
+  const actual={x:640+2*(Math.cos(container.rotation)*x-Math.sin(container.rotation)*y),
+    y:360+2*(Math.sin(container.rotation)*x+Math.cos(container.rotation)*y)}
+  assert.ok(Math.abs(actual.x-746.6025403784439)<1e-9)
+  assert.ok(Math.abs(actual.y-375.3589838486225)<1e-9)
+}
 const witness = JSON.parse(readFileSync(new URL('./fixtures/chibi-camera-video-registration.json', import.meta.url), 'utf8'))
 function transform(time, width, height, enabled = true, viewScale = 1, resolution = 1) {
   const vector = () => ({ x: 0, y: 0, set(x, y = x) { this.x = x; this.y = y } })
@@ -81,4 +98,4 @@ for (const [width, height, resolution] of [[1280, 720, 1], [819, 461, 2], [357, 
   assert.equal(disabled.scale.y, 1.25)
   assert.deepEqual(screenPoint(disabled, { x: width / 2, y: height / 2 }), { x: width / 2, y: height / 2 })
 }
-console.log('Actual SFC Camera: reset/seek/legacy sampler, two independent recorded pan directions across four viewports/DPRs and disabled centred overview passed; not full native projection acceptance')
+console.log('Actual SFC Camera: native sampler/focus/rotation, reset/seek, two independent recorded pan directions across four viewports/DPRs and centred overview passed; not full-song visual acceptance')

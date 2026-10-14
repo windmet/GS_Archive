@@ -5,7 +5,7 @@ import { characterShadowLayout, installCharacterShadowFollower } from '../src/co
 const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}.json`,import.meta.url)))
 const witnesses = read('chibi-placement-witness')
 const sfc = fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
-const section = sfc.slice(sfc.indexOf('function sourceSlotForStagePosition('),sfc.indexOf('function sampleCameraTween('))
+const section = sfc.slice(sfc.indexOf('function sourceSlotForStagePosition('),sfc.indexOf('function cameraStateAt('))
 function sampler(song) {
   const events = new Map()
   for (const event of song.events) {
