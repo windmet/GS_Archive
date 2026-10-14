@@ -113,13 +113,31 @@
         <div class="song-block-heading"><h3>关联档案</h3></div>
         <div class="variant-list"><button v-for="(entry, index) in song.related" :key="index" :data-archive-focus-id="`song-related:${song.id}:${index}`" @click="emit('open-related-story', entry.payload)"><strong>{{ entry.title }}</strong><ChevronRight :size="16" /></button></div>
       </section>
-      <section v-if="song.movies.length" class="song-block">
+      <section v-if="officialVideos.length || song.movies.length" class="song-block song-videos">
         <div class="song-block-heading"><h3>影像资料</h3></div>
-        <ul class="movie-list"><li v-for="movie in song.movies" :key="movie.id"><strong>{{ movie.title }}</strong><span>{{ movie.status }}</span></li></ul>
+        <figure v-for="video in officialVideos" :key="video.youtubeId" class="official-video">
+          <div class="video-frame">
+            <iframe v-if="playingVideo === video.youtubeId" :src="`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`" :title="video.title" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            <button v-else type="button" class="video-poster" :style="song.jacketUrl ? { backgroundImage: `url(${song.jacketUrl})` } : null" :aria-label="`播放 ${video.label}（YouTube）`" @click="playingVideo = video.youtubeId">
+              <img :src="`https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`" alt="" loading="lazy" referrerpolicy="no-referrer" @error="$event.target.hidden = true" />
+              <span class="video-play" aria-hidden="true"><Play :size="22" /></span>
+            </button>
+          </div>
+          <figcaption>
+            <strong>{{ video.label }}</strong>
+            <span>{{ video.note }}</span>
+            <a :href="`https://www.youtube.com/watch?v=${video.youtubeId}`" target="_blank" rel="noopener noreferrer external">在 YouTube 打开 <ExternalLink :size="14" /></a>
+          </figcaption>
+        </figure>
+        <ul v-if="unlistedMovies.length" class="movie-list"><li v-for="movie in unlistedMovies" :key="movie.id"><strong>{{ movie.title }}</strong><span>游戏内收录，暂无官方公开视频</span></li></ul>
       </section>
-      <section v-if="song.links.length" class="song-block">
-        <div class="song-block-heading"><h3>专辑链接</h3></div>
-        <ul class="link-list"><li v-for="link in song.links" :key="link"><a :href="link" target="_blank" rel="noopener noreferrer external">前往专辑页面 <ExternalLink :size="14" /></a></li></ul>
+      <section v-if="albums.length" class="song-block song-albums">
+        <div class="song-block-heading"><h3>收录专辑</h3></div>
+        <ul class="album-list"><li v-for="album in albums" :key="album.url"><a :href="album.url" target="_blank" rel="noopener noreferrer external">
+          <span class="album-copy"><strong>{{ album.displayTitle }}</strong><small>{{ album.catalogNumber ? `${album.catalogNumber} · Lantis` : 'Lantis 专辑页面' }}</small></span>
+          <ExternalLink :size="16" aria-hidden="true" />
+        </a></li></ul>
+        <p class="song-block-note">链接打开 Lantis 的专辑页面，可选择各音乐平台试听或购买。</p>
       </section>
       <section v-if="song.credits.length" class="song-block song-credit-section">
         <div class="song-block-heading"><h3>制作信息</h3></div>
@@ -222,6 +240,17 @@ const sourceUnits = computed(() => {
   }
   return [...groups.values()]
 })
+// Official 3D live uploads load only on request; the poster is YouTube's own thumbnail.
+const playingVideo = ref('')
+const officialVideos = computed(() => (props.song.officialVideos || []).map(video => ({
+  ...video,
+  label: video.source === 'growing_stars' ? '3D 演出 · GROWING STARS' : '3D 演出 · 原作《偶像大师 SideM》',
+  note: video.source === 'growing_stars' ? 'アイドルマスターチャンネル 官方上传，画质高于游戏内 3DMV。' : '原作 SideM（非 GROWING STARS）的 3D 演出，アイドルマスターチャンネル 官方上传。',
+})))
+// MV LIVE and any 3DMV without a public upload still show as collected in the client.
+const unlistedMovies = computed(() => officialVideos.value.length ? [] : props.song.movies)
+const albums = computed(() => (props.song.albums || props.song.links.map(url => ({ url, title: '', catalogNumber: '' })))
+  .map(album => ({ ...album, displayTitle: album.title.replace(/^THE IDOLM@STER SideM\s+/, '') || '专辑页面' })))
 const sourceStatus = ref('')
 const sourceIdolName = entry => props.idolName(entry.id, entry.displayName) || entry.displayName
 // The player sits above this list on phones; bring it into view when an action changes what it plays.
@@ -278,6 +307,7 @@ watch(() => props.song.id, () => {
   performersOpen.value = false
   audioArchiveOpen.value = false
   sourceStatus.value = ''
+  playingVideo.value = ''
   announceReady()
 })
 onBeforeUnmount(() => {
@@ -381,6 +411,24 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
 .source-action { display: inline-flex; align-items: center; gap: var(--gs-space-1); min-height: var(--gs-control-compact); padding: 0 var(--gs-space-3); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-meta); font-weight: var(--gs-weight-semibold); white-space: nowrap; cursor: pointer; }
 .source-action svg { color: var(--gs-mint-ink); }
 .source-status { color: var(--gs-mint-ink); }
+.official-video { margin: var(--gs-space-4) 0 0; }
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--gs-radius-panel); background: #000; }
+.video-frame iframe, .video-poster { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-poster { display: block; padding: 0; background: #000 center / contain no-repeat; cursor: pointer; }
+/* Without YouTube reachable the thumbnail fails; the song jacket stays as the poster. */
+.video-poster img { width: 100%; height: 100%; object-fit: cover; }
+.video-play { position: absolute; top: 50%; left: 50%; display: grid; place-items: center; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(0 0 0 / .62); color: #fff; }
+.video-play svg { margin-left: 3px; fill: currentColor; }
+.official-video figcaption { display: grid; gap: var(--gs-space-1); margin-top: var(--gs-space-3); }
+.official-video figcaption strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); }
+.official-video figcaption span { color: var(--gs-ink-3); font-size: var(--gs-text-meta); line-height: 1.6; }
+.official-video figcaption a { display: inline-flex; align-items: center; gap: var(--gs-space-2); justify-self: start; min-height: var(--gs-control-compact); color: var(--gs-mint-ink); font-size: var(--gs-text-ui); font-weight: var(--gs-weight-semibold); text-decoration: none; }
+.album-list { display: grid; margin: var(--gs-space-2) 0 0; padding: 0; list-style: none; }
+.album-list a { display: flex; align-items: center; justify-content: space-between; gap: var(--gs-space-4); min-height: var(--gs-control-touch); padding: var(--gs-space-3) 0; border-bottom: 1px solid var(--gs-line); color: var(--gs-ink); text-decoration: none; }
+.album-copy { display: grid; gap: var(--gs-space-1); min-width: 0; }
+.album-copy strong { font-size: var(--gs-text-body); font-weight: var(--gs-weight-semibold); line-height: 1.5; overflow-wrap: anywhere; }
+.album-copy small { color: var(--gs-ink-3); font-family: var(--gs-font-stage); font-size: var(--gs-text-meta); }
+.album-list svg { flex: none; color: var(--gs-ink-3); }
 .movie-list, .link-list, .credit-list { display: grid; gap: var(--gs-space-3); margin: var(--gs-space-4) 0 0; padding: 0; list-style: none; }
 .movie-list li { display: flex; align-items: baseline; gap: var(--gs-space-4); font-size: var(--gs-text-body); }
 .movie-list strong { font-weight: var(--gs-weight-semibold); }
@@ -392,6 +440,9 @@ summary::after { content: '⌄'; margin-left: auto; color: var(--gs-ink-3); } de
   .chip-list button:hover:not(:disabled) { border-color: var(--gs-ink-3); }
   .link-list a:hover { text-decoration: underline; }
   .source-action:hover { border-color: var(--gs-ink-3); }
+  .album-list a:hover strong { color: var(--gs-mint-ink); }
+  .official-video figcaption a:hover { text-decoration: underline; }
+  .video-poster:hover .video-play { background: var(--gs-mint-ink); }
   .source-unit-link:hover { color: var(--gs-mint-ink); }
 }
 .song-detail button:focus-visible, .song-detail a:focus-visible, .song-detail summary:focus-visible,
