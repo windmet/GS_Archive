@@ -15,11 +15,12 @@
 | 正式站 | `gs-archive-preview.pages.dev`，仍是 10-12 的 `?view=` 版本（源码 `612f7519` 一线）。发布需用户授权 |
 | 测试站 | `preview.gs-archive.com` / `gs-architecture-device-test.gs-archive-preview.pages.dev`，部署记录见 [GS_ARCHIVE_TEST_DEPLOY_20261014.md](GS_ARCHIVE_TEST_DEPLOY_20261014.md) |
 
-## 两条线
+## 各条线
 
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
 | 门户 portal | `portal/20261014-portal-polish` | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查；正式站发布与 noindex 决定 |
+| 翻译 i18n | `i18n/20261015-translation` | 新开的翻译线。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
 | 舞台 stage | `stage/20261014-native-fidelity` | 见 [STAGE_GAP_AUDIT_20261014.md](STAGE_GAP_AUDIT_20261014.md)：指令→消费者矩阵、Penlight、新悬灯色相/BeatShow、旧悬灯白名单、tempo 基准 |
 
 ## 未合入但保留的分支
