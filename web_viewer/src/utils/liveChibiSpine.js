@@ -1,3 +1,6 @@
+import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
+import { attachBloom } from '../core/chibiBloomParticles.js'
+import { validateStagelightData } from '../core/chibiStagelights.js'
 import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import * as PIXI from 'pixi.js'
 import {
@@ -123,6 +126,16 @@ export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateMotionOffsetData(JSON.parse(text),hash)
 }
+export async function fetchLiveChibiStagelights(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-stagelight-commands.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateStagelightData(JSON.parse(text),hash)
+}
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
@@ -138,6 +151,16 @@ export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
       if(!signal?.aborted && extra) {refined=attach(refined,extra); onOptional?.(refined)}
     }).catch(error=> {if(error.name!=='AbortError')console.warn('[ChibiStage] optional particle index unavailable',error)})
   }
+  void Promise.all([indexTransport.load('/data/stage-bloom-particles.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+      if(!signal?.aborted){refined=attachBloom(refined,JSON.parse(text),hash);onOptional?.(refined)}
+    }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] bloom index unavailable',error)})
+  void Promise.all([indexTransport.load('/data/stage-object-sprite-geometry.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+      if(!signal?.aborted){refined=attachObjectSpriteGeometry(refined,JSON.parse(text),hash);onOptional?.(refined)}
+    }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] object Sprite geometry unavailable',error)})
   return index
 }
 export async function fetchLiveChibiStageBackgroundIndex({signal,onOptional}={}) {

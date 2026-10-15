@@ -1,3 +1,4 @@
+import { lastParticleLoop } from './chibiObjectParticleLifecycle.js'
 // A bounded RAW profile. Other modules/shaders remain unsupported.
 export const CHIBI_PARTICLE_PROFILE = 'uv-single-burst-billboard-v1'
 
@@ -14,10 +15,12 @@ export function sampleParticleCurve(curve, time) {
     + (-2 * t3 + 3 * t2) * b.value + (t3 - t2) * span * b.inSlope) * curve.scalar
 }
 
-export function sampleChibiParticle(system, milliseconds, activatedAt) {
+export function sampleChibiParticle(system, milliseconds, activatedAt, stoppedAt=Infinity) {
   const elapsed = (milliseconds - activatedAt) / 1000 - system.delay
   if (elapsed < 0) return { visible: false, frame: 0 }
-  const age = elapsed % system.duration
+  const loop=lastParticleLoop(elapsed,(stoppedAt-activatedAt)/1000-system.delay,system.duration)
+  if(loop===null)return {visible:false,frame:0}
+  const age = elapsed-loop
   // Burst repeats on SYSTEM duration, not particle lifetime (some have a gap).
   if (age >= system.lifetime) return { visible: false, frame: 0 }
   const fraction = system.startFrame + sampleParticleCurve(system.frameOverTime, age / system.lifetime)

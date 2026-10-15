@@ -1,3 +1,4 @@
+import { lastParticleLoop } from './chibiObjectParticleLifecycle.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 
 export const CHIBI_FIRE_PROFILE = 'knwonl-masked-fire-flipbook-v1'
@@ -34,10 +35,12 @@ export function attachChibiFire(index, model) {
 
 // Burst at the start of every native one-second loop. The second emitter
 // starts 100ms later. Recompute from the clock, so seeking does not accumulate.
-export function sampleFireSystem(system, milliseconds, activatedAt) {
+export function sampleFireSystem(system, milliseconds, activatedAt, stoppedAt=Infinity) {
   const elapsed=(milliseconds-activatedAt)/1000-system.delay
   if (elapsed<0) return null
-  const age=elapsed%system.period
+  const loop=lastParticleLoop(elapsed,(stoppedAt-activatedAt)/1000-system.delay,system.period)
+  if(loop===null)return null
+  const age=elapsed-loop
   if (age>=system.lifetime) return null
   const frames=system.tilesX*system.tilesY
   const frame=Math.floor(sampleParticleCurve(system.uv,age/system.lifetime)*frames)%frames

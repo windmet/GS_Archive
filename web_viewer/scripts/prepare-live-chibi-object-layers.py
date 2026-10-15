@@ -23,6 +23,7 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
 from live_chibi_texture import sprite_image
+from live_chibi_sprite_geometry import sprite_geometry
 from live_chibi_object_transform import local_matrix, relative_matrix, decompose
 
 
@@ -154,10 +155,7 @@ def inspect_asset(
                 "id": str(sprite_id),
                 "name": sprite.m_Name,
                 "file": f"object-layers/sprites/{filename}",
-                "pivot": {
-                    "x": round(float(sprite.m_Pivot.x), 6),
-                    "y": round(1 - float(sprite.m_Pivot.y), 6),
-                },
+                **sprite_geometry(sprite,metadata["width"],metadata["height"]),
                 "pixelsPerUnit": round(float(sprite.m_PixelsToUnits), 4),
                 **metadata,
             }

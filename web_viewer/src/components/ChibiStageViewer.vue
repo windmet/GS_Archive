@@ -71,10 +71,11 @@
     :data-object-layer-unsupported="unsupportedObjectLayerAssets.join(',')"
     :data-particle-layer-frames="particleLayerFrames"
     :data-floor-particle-state="floorParticleState"
+    :data-bloom-particle-count="bloomParticleCount"
     :data-spotlight-count="visibleSpotlightCount"
     :data-stagelight-count="visibleStagelightCount"
     :data-stagelight-colors="appliedStagelightColors"
-    data-stagelight-animation="reference-preview-not-native-tween-equivalence"
+    data-stagelight-animation="native-director-channels-projection-rng-partial"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-spotlight-unresolved-ids="unresolvedSpotlightIds.join(',')"
     :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
@@ -364,7 +365,7 @@
               <div><dt>图片布景</dt><dd>{{ visibleImageLayerCount }} 层</dd></div>
               <div><dt>舞台对象</dt><dd>{{ visibleObjectLayerCount }} 组</dd></div>
               <div v-if="stageVfxCoverage?.floorParticleStatus !== 'not_loaded' && stageVfxCoverage?.floorParticleStatus"><dt>地面动态</dt><dd>原生渐变与遮罩 · 投影及随机种子仍在核对</dd></div>
-              <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位与配色，闪烁曲线仍在核对</dd></div>
+              <div v-if="stageEffectIndex?.stagelightSongs?.[selectedSong?.songCode]"><dt>固定舞台灯</dt><dd>{{ visibleStagelightCount }} 组 · 原生灯位、颜色与透明度通道；投影与随机顺序仍待对照</dd></div>
               <div v-if="stageVfxCoverage?.stagelightUnimplementedCommands"><dt>待补灯效</dt><dd>{{ stageVfxCoverage.stagelightUnimplementedCommands }} 条原始指令 · 含未解析颜色模式或指令版本</dd></div>
               <div><dt>静态舞台</dt><dd>{{ stageBackgroundReady ? '已载入' : '无/等待' }}</dd></div>
               <div><dt>当前歌词</dt><dd>{{ currentLyric?.text || '—' }}</dd></div>
@@ -529,6 +530,7 @@ import {
   fetchLiveChibiPenlights,
   fetchLiveChibiMouthFix,
   fetchLiveChibiMotionOffset,
+  fetchLiveChibiStagelights,
   fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
   fetchLiveChibiImageObjectIndex,
@@ -574,6 +576,9 @@ import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
 import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
+import { objectParticlePresentation } from '../core/chibiObjectParticleLifecycle.js'
+import { applyObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
+import { loadChibiBloom, updateChibiBloom } from '../core/chibiBloomParticles.js'
 import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
 
@@ -613,6 +618,7 @@ const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
 const mouthFixData = shallowRef(null)
 const motionOffsetData = shallowRef(null)
+const stagelightData = shallowRef(null)
 const mouthFixedPositions = ref([])
 const mouthFixedRates = ref('')
 const musicIndex = shallowRef(null)
@@ -753,6 +759,7 @@ const spotlightSprites = createSpotlightSpriteStore({
 const spotlightRuntimes = spotlightSprites.runtimes
 const visibleStagelightCount = ref(0)
 const appliedStagelightColors = ref('')
+const bloomParticleCount = ref(0)
 const stagelightSprites = createSpotlightSpriteStore({
   layerCount: null,
   loadTexture: file => loadImageLayerTexture(file),
@@ -762,7 +769,7 @@ const stagelightSprites = createSpotlightSpriteStore({
     for (const texture of runtime.frameTextures) texture.destroy(false)
   },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncStagelights(),
+  onReady: () => {syncStagelights();requestPausedSuspensionRender()},
   onError: error => console.warn('Native stage lamp textures could not be loaded', error),
 })
 let stagelightSongId = ''
@@ -948,6 +955,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   penlightCommands: penlightResources.value?.commands,
   mouthFix: mouthFixData.value,
   motionOffset: motionOffsetData.value,
+  stagelight: stagelightData.value,
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
   imageObjects: imageObjectIndex.value,
@@ -1194,6 +1202,10 @@ onMounted(async () => {
       stageVocalEnabled.value = stageVocalAvailable.value
     }
     const optionalOptions={signal:lifetime.signal}
+    void fetchLiveChibiStagelights(manifest.value.choreography.index,optionalOptions).then(value=>{
+      if(stageDisposed)return
+      stagelightData.value=value;applyStageLighting();requestPausedSuspensionRender()
+    }).catch(error=>{if(!stageDisposed)console.warn('[ChibiStage] Stagelight input unavailable',error)})
     void fetchLiveChibiMotionOffset(manifest.value.choreography.index,optionalOptions).then(async value=>{
       if(stageDisposed)return
       const signature=()=>JSON.stringify([...performanceEventsByPosition.value.values()]
@@ -2227,7 +2239,7 @@ function syncSpotlights() {
 
 function syncStagelights() {
   if (!app || !cameraContainer) return
-  const code = selectedSong.value?.songCode || ''
+  const code = selectedSong.value?.id || ''
   if (stagelightSongId !== code) {
     stagelightSprites.release()
     stagelightSongId = code
@@ -2236,15 +2248,15 @@ function syncStagelights() {
   appliedStagelightColors.value = ''
   for (const runtime of stagelightSprites.runtimes.values()) runtime.container.visible = false
   if (!lightingEnabled.value) return
-  const track = stageEffectIndex.value?.stagelightSongs?.[code]
+  const track = stagelightData.value?.songs?.[code]
   if (!track) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const fit = Math.min(width / 1280, height / 720) * environmentScale.value
   const colors = []
-  for (const state of stagelightStatesAt(track.events, stageTime.value).values()) {
-    const model = stageEffectIndex.value.stagelights?.[state.asset]
-    if (!model || state.previewSupported === false || (state.hideTime !== undefined && stageTime.value >= state.hideTime + (state.fadeDuration || 1))) continue
+  for (const state of stagelightStatesAt(track.events, stageTime.value,track.tempo.values.length===1?track.tempo.values[0]:null).values()) {
+    const model = stageEffectIndex.value?.stagelights?.[state.asset]
+    if (!model || state.previewSupported === false) continue
     // Asset belongs in the runtime key: reused lamp IDs must not reuse another prefab.
     const runtime = stagelightSprites.ensure(`${code}:${state.id}:${state.asset}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue
@@ -2253,7 +2265,7 @@ function syncStagelights() {
     runtime.container.zIndex = state.depth ?? 1600
     runtime.container.visible = true
     for (const [index, sprite] of runtime.sprites.entries()) {
-      const lamp = applyNativeLampColor(sampleStagelight(state, stageTime.value, index, runtime.sprites.length),model.layers[index])
+      const lamp = applyNativeLampColor(sampleStagelight(state, stageTime.value, index, runtime.sprites.length,model.layers[index]))
       sprite.tint = lamp.color
       sprite.alpha = lamp.alpha
     }
@@ -3005,6 +3017,8 @@ function objectLayerStatesAt(milliseconds) {
       tweenTo: event.hide ? 0 : 1,
       eventTime,
       activatedAt: event.hide ? (previous.activatedAt ?? eventTime) : eventTime,
+      particleStopAt:event.hide?eventTime:null,
+      particleRetireAt:event.hide?eventTime+Math.max(0,Number(event.duration)||0):null,
     })
   }
   for (const state of states.values()) state.alpha = sampleObjectLayerAlpha(state, milliseconds)
@@ -3012,6 +3026,7 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if (entry.bloomAnimation) return {...await loadChibiBloom(PIXI,entry.bloomAnimation,path=>loadImageLayerTexture(path,10000)),entry}
   if (entry.floorAnimation) {
     return { ...await loadChibiFloor(PIXI, entry.floorAnimation,
       path => loadImageLayerTexture(path, 10000)), entry }
@@ -3027,10 +3042,12 @@ async function loadObjectLayerRuntime(entry) {
   const textureById = new Map(textures.map(item => [item.metadata.id, item]))
   const container = markRaw(new PIXI.Container())
   container.sortableChildren = true
+  const objectSprites=[]
   for (const instance of entry.instances) {
     const item = textureById.get(instance.texture)
     if (!item) continue
     const sprite = markRaw(new PIXI.Sprite(item.texture))
+    objectSprites.push(sprite)
     sprite.name = instance.name
     sprite.anchor.set(item.metadata.pivot?.x ?? 0.5, item.metadata.pivot?.y ?? 0.5)
     sprite.position.set(Number(instance.x) || 0, Number(instance.y) || 0)
@@ -3047,7 +3064,7 @@ async function loadObjectLayerRuntime(entry) {
     sprite.zIndex = Number(instance.sortingOrder) || 0
     container.addChild(sprite)
   }
-  return { container, textures: textures.map(item => item.texture), entry }
+  return { container, textures: textures.map(item => item.texture), objectSprites, entry }
 }
 
 function destroyObjectLayerRuntime(runtime) {
@@ -3066,6 +3083,7 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const [asset, runtime] of objectLayerRuntimes) {
+    applyObjectSpriteGeometry(runtime,objectLayerIndex.value?.assets?.[asset])
     const state = states.get(asset)
     if (!state) {
       runtime.container.visible=false
@@ -3080,12 +3098,15 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
       viewportScale * environmentScale.value * Number(state.scale) / 1000,
     )
     runtime.container.zIndex = Number(state.depth) || 0
-    runtime.container.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
-    runtime.container.visible = objectLayersEnabled.value && runtime.container.alpha > 0.001
-    if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt)
-    if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt)
+    const particle=runtime.entry.kind==='particle'?objectParticlePresentation(state,stageTime.value):null
+    runtime.container.alpha = particle?particle.alpha:Math.max(0, Math.min(1, Number(state.alpha) || 0))
+    runtime.container.visible = objectLayersEnabled.value && (particle?particle.visible:runtime.container.alpha > 0.001)
+    if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
+    if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
+    if (runtime.bloomEmitters) updateChibiBloom(runtime,stageTime.value,state.activatedAt,particle?.stoppedAt)
     syncObjectRendererPlanes(runtime)
   }
+  bloomParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((sum,r)=>sum+(r.bloomParticleCount || 0),0)
   if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
   if (!playing.value || inspectorOpen.value) particleLayerFrames.value = [...objectLayerRuntimes.entries()]
@@ -3106,6 +3127,7 @@ function releaseObjectLayers() {
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
   if (!playing.value || inspectorOpen.value) particleLayerFrames.value = ''
+  bloomParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((sum,r)=>sum+(r.bloomParticleCount || 0),0)
   if (!playing.value || inspectorOpen.value) floorParticleState.value = ''
 }
 
@@ -3118,13 +3140,13 @@ async function syncObjectLayers() {
   const sequence = objectLayerSequence
   const states = objectLayerStatesAt(stageTime.value)
   const activeStates = objectLayersEnabled.value
-    ? [...states.values()].filter(state => state.alpha > 0.001)
+    ? [...states.values()].filter(state => objectLayerIndex.value.assets?.[state.asset]?.kind==='particle'?objectParticlePresentation(state,stageTime.value).visible:state.alpha > 0.001)
     : []
   const supportedStates = []
   const unsupportedStates = []
   for (const state of activeStates) {
     const entry = objectLayerIndex.value.assets?.[state.asset]
-    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation) supportedStates.push(state)
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation || entry?.bloomAnimation) supportedStates.push(state)
     else unsupportedStates.push(state)
   }
   visibleObjectLayerCount.value = supportedStates.length
@@ -3132,6 +3154,7 @@ async function syncObjectLayers() {
   unsupportedObjectLayerAssets.value = unsupportedStates.map(state => state.asset).sort()
 
   for (const [asset, runtime] of objectLayerRuntimes) {
+    applyObjectSpriteGeometry(runtime,objectLayerIndex.value?.assets?.[asset])
     const state = states.get(asset)
     runtime.container.visible = objectLayersEnabled.value && Boolean(state && state.alpha > 0.001)
     syncObjectRendererPlanes(runtime)

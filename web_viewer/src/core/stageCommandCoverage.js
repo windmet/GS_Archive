@@ -25,7 +25,7 @@ export const STAGE_COMMAND_BINDINGS = {
   Spotlight: bound('聚光', 'id/target/duration/color/background/depth/erase', 'spotlightEvents + spotlightCommandOrder', 'spotlightStatesAt + spotlightBackgroundAt', 'stage-effects spotlight', 'verify-chibi-spotlight-background.mjs'),
   Pinspotlight: bound('聚光蒙版', 'id/asset/transform/depth/erase', 'pinspotlightEvents', 'syncPinspotlights', 'stage-effects pinspotlight', 'verify-chibi-pinspotlight-sprites.mjs'),
   Laserlight: bound('激光', 'id/style/color/transform/duration/erase', 'laserlightEvents', 'laserlightStatesAt + sampleLaserParticles', 'stage-effects laserlight/spotbeam/turnlaser', 'verify-chibi-laser-particles.mjs'),
-  Stagelight: bound('固定舞台灯', 'asset/alphaMode/colorMode', 'stage-effects stagelightSongs', 'stagelightStatesAt', 'stage-effects stagelights', 'verify-chibi-stagelights.mjs'),
+  Stagelight: bound('固定舞台灯', 'asset/alphaMode/colorMode', 'stage-stagelight-commands.json: songs[id]', 'stagelightStatesAt', 'stage-effects stagelights', 'verify-chibi-stagelights.mjs'),
   Whole_screen_color: bound('舞台染色', 'color/alpha/duration/depth/erase', 'wholeScreenColorEvents', 'wholeScreenColorAt', 'PIXI Graphics plane', 'verify-chibi-color-layers.mjs'),
   Whole_screen_color_2: bound('舞台染色层', 'id/color/alpha/duration/depth/erase', 'wholeScreenColorLayerEvents', 'colorLayersAt', 'PIXI Graphics planes', 'verify-chibi-color-layers.mjs'),
   Lyric: bound('歌词', 'text/time/duration', 'lyricEvents', 'currentLyric', 'text', 'verify-live-chibi-singer-slots.mjs'),

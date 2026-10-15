@@ -26,10 +26,11 @@ export function sampleFloorGradient(keys, time, property = 'value') {
 
 // Reproducible browser seeds make backwards seeks stable. Native autoRandomSeed
 // and NoiseModule are retained in the source model but are not Unity RNG/noise.
-export function sampleFloorSystem(system, milliseconds, activatedAt) {
+export function sampleFloorSystem(system, milliseconds, activatedAt, stoppedAt=Infinity) {
   if (milliseconds < activatedAt) return []
   const elapsed = (milliseconds - activatedAt) / 1000 + (system.prewarmSeconds || 0)
-  const last = Math.floor(elapsed * system.rate), seed = seedOf(system.source.pathId)
+  const cutoff=(stoppedAt-activatedAt)/1000+(system.prewarmSeconds || 0)
+  const last = Math.floor(Math.min(elapsed,cutoff) * system.rate), seed = seedOf(system.source.pathId)
   const first = Math.max(0, last - Math.ceil(Math.max(system.lifetime.scalar, system.lifetime.minScalar) * system.rate))
   const particles = []
   for (let birth = first; birth <= last; birth++) {
@@ -235,11 +236,11 @@ export async function loadChibiFloor(PIXI, animation, loadTexture) {
   }
 }
 
-export function updateChibiFloor(runtime,milliseconds,activatedAt) {
+export function updateChibiFloor(runtime,milliseconds,activatedAt,stoppedAt=Infinity) {
   const signatures=[]
   for(const {system,sprites,fireFrames,atlasFrames} of runtime.floorEmitters) {
     if (fireFrames) {
-      const sample=sampleFireSystem(system,milliseconds,activatedAt),sprite=sprites[0]
+      const sample=sampleFireSystem(system,milliseconds,activatedAt,stoppedAt),sprite=sprites[0]
       sprite.visible=Boolean(sample && sample.alpha>.001)
       if(sample) {
         sprite.texture=fireFrames[sample.frame];sprite.position.set(sample.x,sample.y)
@@ -248,7 +249,7 @@ export function updateChibiFloor(runtime,milliseconds,activatedAt) {
       signatures.push(`fire:${sample?.frame ?? 'off'}`)
       continue
     }
-    const samples=sampleFloorSystem(system,milliseconds,activatedAt)
+    const samples=sampleFloorSystem(system,milliseconds,activatedAt,stoppedAt)
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i], sample=samples[i]; sprite.visible=Boolean(sample && sample.alpha > .001)
       if(!sample)continue

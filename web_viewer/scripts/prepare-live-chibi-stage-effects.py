@@ -228,15 +228,15 @@ def main() -> None:
         # white lamps for unrecovered rainbow/color/director modes.
         unknown = sorted({e['asset'] for e in events if not e['hide'] and e['asset'] not in stagelights})
         modes = sorted({(e['alphaMode'], e['colorMode']) for e in events if not e['hide']
-                        and (e['alphaMode'] not in (0,1) or e['colorMode'] not in (1,2,5))},key=str)
+                        and (e['alphaMode'] not in range(8))},key=str)
         if code not in ('tkstp1','tkstp2'):
             for event in events:
                 if not event['hide']:
-                    event['previewSupported'] = event['asset'] in stagelights and event['alphaMode'] in (0,1) and event['colorMode'] in (1,2,5)
+                    event['previewSupported'] = event['asset'] in stagelights and event['alphaMode'] in range(8)
         stagelight_songs[code] = {'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
             'textAsset': f'{code}_live_effect', 'sha256': hashlib.sha256(payload).hexdigest()},
             'events': events, 'unsupportedAssets':unknown, 'unsupportedModes':modes,
-            'status':'native_bindings_partial_recording_guided_envelopes'}
+            'status':'native_director_channels_partial_projection_rng'}
     for model in (spotlight, background, pinspotlight, suspension, *old_suspension['styles'].values(), *stagelights.values()):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
