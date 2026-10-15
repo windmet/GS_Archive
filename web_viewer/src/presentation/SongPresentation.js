@@ -40,7 +40,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     special: song.archive_status === 'special',
     openDate: song.archive_status === 'special' ? '特殊版本' : song.archive_status === 'initial' ? '初始收录'
       : song.open_at != null && Number.isFinite(openAt) ? new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeZone: 'Asia/Tokyo' }).format(new Date(openAt * 1000)) : '未收录',
-    formLabel: ({ layered: '分轨演唱', oneshot: '演出语音', 'single-cue': '完整混音' })[song.audio_form] || '音频资料',
+    formLabel: ({ layered: '分轨演唱', oneshot: 'Center 台词', 'single-cue': '完整混音' })[song.audio_form] || '音频资料',
     credits: (song.credits || '').split('\n').filter(Boolean),
     unit: mapping.confirmed_unit ? unit(mapping.confirmed_unit.unit_code) : null,
     scopeLabel: scope[0],
@@ -50,7 +50,7 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     variants: (song.variants || []).map(entry => ({ id: entry.song_code, title: entry.title || '版本名称待确认' })),
     audioGroups: [
       { title: '收录组合 / 关联组合', kind: 'unit', entries: (song.audio?.unit_codes || []).map(unit), note: '组合单轨试听请在上方「演唱试听」中选择「组合」；下方链接打开组合档案。' },
-      { title: '演出语音', kind: 'idol', entries: (song.audio?.oneshot_idol_codes || []).map(idol), note: '成员的简短演出语音，不是个人独唱。' },
+      { title: 'Center 台词', kind: 'idol', entries: (song.audio?.oneshot_idol_codes || []).map(idol), note: '原曲在曲中留白一句，游戏按编成 Center 卡的偶像播放其台词；舞台页可任选试听。' },
       { title: '个人声部', kind: 'idol', entries: (song.audio?.idol_vocal_codes || []).map(idol), note: '已收录的个人演唱声部。' },
     ].filter(group => group.entries.length),
     fullMixCollected: Boolean(song.audio?.has_full_mix),

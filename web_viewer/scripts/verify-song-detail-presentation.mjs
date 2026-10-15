@@ -115,7 +115,7 @@ class MemoryStorage {
   setItem(key, value) { this.values.set(key, String(value)) }
 }
 const audioArchive = root => all(root).find(item => item.type === 'details' &&
-  item.children.some(child => child.type === 'summary' && /^(演出语音|个人声部|收录组合|按组合查看)/.test(text(child))))
+  item.children.some(child => child.type === 'summary' && /^(Center 台词|个人声部|收录组合|按组合查看)/.test(text(child))))
 const keiCard = root => referenceCards(root).find(card => cardLabel(card) === '都筑圭')
 function fixture(code, { transform = song => song, keyed = true, presentation = {} } = {}) {
   const song = transform(buildSongPresentation(catalog.songs[code], dictionary, { manifest, ...presentation }))
@@ -337,14 +337,14 @@ for (const [code, attribute] of [['drvalv', 'ALL'], ['flslgt', 'Physical'], ['an
   // The current corpus has no song with multiple idol groups. Use a labeled
   // extension of real references to cover future vocal/oneshot group collisions.
   const t = fixture('drvalv', { transform: song => ({ ...song, audioGroups: [...song.audioGroups,
-    { ...song.audioGroups.find(group => group.kind === 'idol'), title: '演出语音 / 单发: 特殊' },
+    { ...song.audioGroups.find(group => group.kind === 'idol'), title: 'Center 台词 / 单发: 特殊' },
   ] }) }); await flush()
   const audio = await openAudioArchive(t)
   const repeatedKei = referenceCards(audio).filter(card => cardLabel(card) === '都筑圭')
   assert.equal(repeatedKei.length, 2)
   assert.notEqual(repeatedKei[0].dataset.archiveFocusId, repeatedKei[1].dataset.archiveFocusId,
     'the same idol in two archive groups has distinct navigation targets')
-  assert.ok(repeatedKei[1].dataset.archiveFocusId.includes(encodeURIComponent('演出语音 / 单发: 特殊')),
+  assert.ok(repeatedKei[1].dataset.archiveFocusId.includes(encodeURIComponent('Center 台词 / 单发: 特殊')),
     'group punctuation is encoded without colliding with ID separators')
   const ids = t.document.querySelectorAll('[data-archive-focus-id]').map(item => item.dataset.archiveFocusId)
   assert.equal(new Set(ids).size, ids.length)
