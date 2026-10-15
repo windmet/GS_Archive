@@ -63,4 +63,4 @@
 
 - 通用两类导出命令：`export .analysis/general-translation-batches/wave2-20261015 --domains card-lines,chats --wave 20261015 --max-rows 999 --max-chars 56000`。共 14 批、12,612 条，单批 ≤ 5.6 万字符。只导出缺译条目，已校对的卡面台词不会再出现。
 - 季节企划按 `episode_label` 分组：2022 年两季各拆两半（B036/B037 情人节、B038/B039 白色情人节），2023 年各一批（B040、B041）。单批 5.4～6.9 万字符，与 B020–B025 相当。导入同 B035。
-- 首页 LiveResult 语音（343 行）在 `home_system_voice_index.json` 里没有台词文本，未纳入；要翻需先从编译脚本取文本。
+- 首页 LiveResult 语音（主数据 343 行，指向 49 位偶像的 `3_2_NNN` 脚本，每人约 4 句）没有文字可翻：原始脚本 `scenario_3_2_NNN.json` 只有 `voice` / `voice_file` 指令，没有 `text` 指令（50 个文件全部如此），编译结果也只有演出步骤。要翻只能先听写音频（`RAW/audio/3_2_NNN.acb`）。
