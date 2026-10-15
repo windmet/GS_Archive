@@ -1,3 +1,4 @@
+import fs from 'node:fs'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
@@ -6,6 +7,7 @@ import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildBirthdayStoryDomainIdentity, buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
 import { extraStorySeriesDefinition } from '../src/data/extraStoryTaxonomy.js'
+import { storyLiveLink } from '../src/data/storyLiveLinks.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
@@ -61,6 +63,11 @@ assert.equal(aprilFools2022.chapters[1].episodes[0].file, 'episodes/5_03_000_22_
 // Both April Fools series play the same scenario, whose first part leads into the special song.
 for (const series of ['602', '610']) assert.equal(extraStorySeriesDefinition(series).song?.code, 'drv999')
 assert.equal(extraStorySeriesDefinition('604').song, null)
+// RAW part a ends with `live 2`; the Player offers the song when that part's last step completes.
+for (const id of ['5_03_000_22_a', '5_03_000_22']) assert.deepEqual(storyLiveLink(id), { afterStepId: 27, code: 'drv999', title: 'DRIVE A LIVE（パッションMAX Ver.）' })
+const partA = JSON.parse(fs.readFileSync('public/data/compiled/episodes/5_03_000_22_a.json', 'utf8'))
+assert.equal(partA.steps.at(-1).step_id, 27)
+assert.equal(storyLiveLink('5_03_000_22_b'), null)
 
 const newYear2023 = extraCollections.find(collection => collection.sectionId === '608')
 assert.equal(newYear2023.title, '謹賀新年2023')

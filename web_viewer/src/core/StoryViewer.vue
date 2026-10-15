@@ -146,6 +146,7 @@
         <p v-else-if="!nextTarget?.available && queueStatus !== 'error'">{{ nextTarget?.reason || '当前观看范围已结束' }}</p>
         <div class="complete-actions">
           <button @click="continueReview">继续回看</button>
+          <button v-if="completionLiveLink" class="primary" data-live-link @click="emit('open-song', completionLiveLink.code)">{{ uiText('player.complete.live') }}：{{ completionLiveLink.title }}</button>
           <button v-if="queueStatus === 'error'" @click="emit('retry-queue')">{{ uiText('player.queue.retry') }}</button>
           <button v-else-if="nextTarget?.available" class="primary" :disabled="transitioning" @click="requestNextEpisode()">{{ transitioning ? uiText('player.complete.loadingNext') : nextLabel }}</button>
           <button :class="{ primary: !nextTarget?.available }" @click="emit('back')">{{ returnLabel }}</button>
@@ -293,8 +294,10 @@ const props = defineProps({
   queueSnapshot: { type:Object, default:null },
   queueStatus: { type: String, default: 'ready' },
   queueError: { type: String, default: '' },
+  // A story that hands over to a song's Live ({ afterStepId, code, title }); offered when that step completes.
+  liveLink: { type: Object, default: null },
 })
-const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue', 'select-episode'])
+const emit = defineEmits(['back', 'ready', 'readiness-change', 'step-change', 'next-episode', 'update:continuous-playback', 'retry-queue', 'select-episode', 'open-song'])
 const URL_FLAGS = new URLSearchParams(window.location.search)
 const HIDE_UI = URL_FLAGS.get('stageOnly') === '1' || URL_FLAGS.get('hideUI') === '1' || URL_FLAGS.get('transparentUI') === '1'
 const START_STEP_VALUE = URL_FLAGS.get('startStep')
@@ -406,6 +409,7 @@ const skipEnabled = ref(false)
 const skipMode = ref(initialPreferences.skip_mode)
 const uiHidden = ref(initialPreferences.ui_hidden)
 const episodeFinished = ref(false)
+const completionLiveLink = computed(() => props.liveLink && currentStep.value?.step_id === props.liveLink.afterStepId ? props.liveLink : null)
 const completionDismissed = ref(false)
 let automaticNextRequested = false
 const nextLabel = computed(() => props.nextTarget ? `${props.nextTarget.kind === 'chapter' ? '下一话' : '下一段'} · ${props.formatEpisodeLabel(props.nextTarget.label)}` : '')

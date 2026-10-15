@@ -15,8 +15,10 @@ const SERIES = Object.freeze({
   },
   '603': {
     title: '2022年3月プロミ連動ストーリー',
-    description: 'プロデューサーミーティングと連動して公開された特別ストーリー。',
+    description: '「THE IDOLM@STER SideM PRODUCER MEETING 315 BE@T OF PASSION FESTIVAL!!!」（2022年3月12・13日）2日目の夜に公開。運動会を終えた16人のアイドルが、トークで一日を振り返る。',
     official: false,
+    // Not on the wiki's extra-story list; the event is confirmed by press coverage.
+    sourceUrl: 'https://www.famitsu.com/news/202203/12254425.html',
   },
   '604': {
     title: 'GROWING FES -夜陰のルミネセンス-',

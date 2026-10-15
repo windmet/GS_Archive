@@ -28,7 +28,7 @@
 没有的和暂缓的：
 - 头图：602、603、610 在 table 178（ExtraStoryChapterData）里都没有行，RAW 里也没有对应的 `image_story_extra` 包，所以没有官方头图。没有拿舞台图或 wiki 图片代替。
 - 歌曲页上的 610 关联和演唱者说明来自 `song_catalog.json`，要等下次 read model 发布后才会显示；当前候选 `rm-release-20261015` 还是旧数据。
-- 剧情 Player 里没有补 `live` 这一步，需要改剧情编译。
+- 剧情 Player：没有重新编译剧情（`live` 只在 `5_03_000_22_a` 出现，加步骤会改变步数，牵动阅读定位和文本身份）。改由 `src/data/storyLiveLinks.js` 记录「前篇第 27 步之后进入 drv999」，Player 播完前篇时在完成面板里给出「进入 Live：DRIVE A LIVE（パッションMAX Ver.）」，点击后关闭 Player 并打开歌曲页。分集文件 `5_03_000_22_a` 和合并文件 `5_03_000_22` 都用第 27 步。
 
 ## 验证
 
@@ -36,4 +36,10 @@
 - 路由类：`verify:routes`、`verify:route-schema`、`verify-portal-navigation` 通过。
 - 歌曲与剧情类：`verify-song-catalog`（需要 `SIDEM_ARCHIVE_SOURCES_CONFIG` 才能找到 RAW）、`verify-song-domain-landing`、`verify-story-collections`、`verify-extra-story-domain-landing`、`verify-story-catalog` 通过。
 - 翻译类：翻译工作流、card-line、character-line、chat 的校验都通过。
-- `scripts/terminal/verify-terminal-contracts.mjs` 在这次改动之前就失败：它预期的导航列表里缺货币和服装两项。这次没有改它。
+- `scripts/terminal/verify-terminal-contracts.mjs` 原来就失败，因为预期的导航列表里少了货币、服装两项；后来又少了未使用语音。现在已经补上这三项，40 项检查全部通过。
+
+## 603「2022年3月プロミ連動ストーリー」
+
+- 本地资料：故事 60301「運動会が終わって」，脚本 `5_04_000_22`，2022-03-13 20:30 JST 公开。只有一段群聊（talk），16 位偶像谈运动会后的感想，BGM `growingsmiles_energy`。table 178 没有这一行，RAW 也没有头图。
+- 外部：wiki 的エクストラストーリー一览没有收录 603。Fami通的报道确认「THE IDOLM@STER SideM PRODUCER MEETING 315 BE@T OF PASSION FESTIVAL!!!」于 2022-03-12、13 在武蔵野の森総合スポーツプラザ举办，所以这篇是在 Day 2 当晚公开的。报道里没有提到运动会，运动会只在剧情里出现。
+- 已把 `extraStoryTaxonomy.js` 里 603 的说明改为写明这场活动，来源链接改为 Fami通报道。这两项会进入 read model，重新生成候选版本之后才会显示。没有关联歌曲，也没有头图。

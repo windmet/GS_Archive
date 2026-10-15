@@ -562,6 +562,8 @@
       @next-episode="playNextEpisode"
       @update:continuous-playback="playbackController.setContinuous($event)"
       :format-episode-label="playerEpisodeLabel"
+      :live-link="storyLiveLink(currentScenario.scenario_id)"
+      @open-song="openSongFromPlayer"
     >
       <template #language-switch><ArchiveLanguageSwitch /></template>
     </StoryViewer>
@@ -627,6 +629,7 @@ import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearch
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
+import { storyLiveLink } from './data/storyLiveLinks.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
 import { ref, shallowRef, computed, defineAsyncComponent, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
@@ -2527,6 +2530,8 @@ async function loadPlayerQueue(route, request) {
 }
 
 function closePlayer() { return playbackController.close() }
+// The April Fools story hands over to its Live: leave the Player, then open the song from the story's page.
+async function openSongFromPlayer(code) { await closePlayer(); return openSong(code) }
 function onPlayerReady() { playbackController.ready() }
 
 async function loadScenario(name, returnView = 'files', options = {}) {
