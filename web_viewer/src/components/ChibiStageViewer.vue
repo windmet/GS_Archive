@@ -562,6 +562,7 @@ import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo }
 import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
+import { nativeCharacterScale } from '../core/chibiNativeCharacterGeometry.js'
 import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
@@ -719,7 +720,6 @@ const stageViewScale = ref(1)
 // Stage art, monitor movies and fixed effects share an unexpanded environment
 // plane. Keep the optional inspection control separate from source camera zoom.
 const environmentScale = ref(1)
-const CHARACTER_STAGE_SCALE = 0.58
 
 let app = null
 let cameraContainer = null
@@ -3541,20 +3541,16 @@ function layoutRuntime(position, motionEvent = null) {
   const height = app.renderer.height / app.renderer.resolution
   const coordinates = layoutCoordinatesForStage(position, stageTime.value, motionEvent)
   const { y, sortingOrder } = coordinates
-  const character = characters.value.find(item => item.id === runtime.characterId)
-  const characterScale = Number(character?.previewScale) || 0.28
-  const viewportFit = Math.min(1, height / 620)
   const ground = projectChibiGround(selectedSong.value?.songCode, coordinates, width, height)
   runtime.spine.x = ground.x
   // Live CSV Y is a depth coordinate: smaller values stand closer to the
   // camera (and therefore lower on screen). Legacy starts the centre member
   // at Y=170 and the side members at Y=190, matching the official stagger.
   runtime.spine.y = ground.y
-  // Unity keeps the chibi prefab scale stable across solo, duo and ensemble
-  // lives. Formation coordinates and the authored camera provide the framing;
-  // scaling characters by active member count made three-person stages about
-  // 24% larger than the already calibrated five-person reference.
-  runtime.spine.scale.set(characterScale * CHARACTER_STAGE_SCALE * viewportFit)
+  // Source SkeletonDataAsset scale -> bound idol root scale -> camera pixels.
+  // Use the same viewport fit as the art; idol height and measured wait-pose
+  // silhouettes must not rescale the authored body skeleton a second time.
+  runtime.spine.scale.set(nativeCharacterScale(runtime.bodyType, width, height))
   runtime.spine.visible = charactersEnabled.value && activePositions.value.includes(position) && y < 4000
   // Authored baseSortOrder plus native Spotlight offset, including late
   // motion loads. Y and performer index never replace this base.

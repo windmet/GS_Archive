@@ -47,12 +47,8 @@ SPEAKER_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "spe
 COSTUME_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "costume_dictionary.json"
 IDOL_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "idol_unit_dictionary.json"
 
-# Body setup normalization measured from actual visible canvas pixels in the
-# wait pose. Each idol is then scaled by official height relative to Touma
-# (175 cm), rather than incorrectly forcing every idol to the same height.
+# Height remains descriptive metadata; the authored skeleton/root own size.
 TOUMA_HEIGHT_CM = 175
-BODY_PREVIEW_BASE_SCALES = {1: 0.3053, 2: 0.2904, 3: 0.3176, 4: 0.3712, 5: 0.3144}
-PREVIEW_SCALE_CAPS = {5: 0.28}
 OFFSTAGE_COORDINATE_LIMIT = 2000
 COMPATIBILITY_MOTION_IDS = [4001, 12001, 16004, 32005, 56011]
 MOTION_LABELS = {
@@ -215,6 +211,7 @@ def export_all_characters(
 ) -> tuple[list[dict], dict]:
     speaker_data = json.loads(SPEAKER_DICTIONARY_PATH.read_text(encoding="utf-8"))["speakers"]
     idol_data = json.loads(IDOL_DICTIONARY_PATH.read_text(encoding="utf-8"))["by_idol_code"]
+    native_geometry = json.loads((PROJECT_ROOT / 'src/core/chibiNativeCharacterGeometry.json').read_text(encoding='utf-8'))
     costume_rows = json.loads(COSTUME_DICTIONARY_PATH.read_text(encoding="utf-8"))["costumes"]
     costume_names = {
         row["model_resource_id"]: row.get("costume_name")
@@ -308,12 +305,8 @@ def export_all_characters(
 
         default_costume = "005_00" if any(item["id"] == "005_00" for item in costumes) else costumes[0]["id"]
         height_cm = idol_data.get(idol_id, {}).get("height") or TOUMA_HEIGHT_CM
-        preview_scale = round(
-            BODY_PREVIEW_BASE_SCALES[body_type] * height_cm / TOUMA_HEIGHT_CM,
-            4,
-        )
-        if body_type in PREVIEW_SCALE_CAPS:
-            preview_scale = min(preview_scale, PREVIEW_SCALE_CAPS[body_type])
+        preview_scale = (native_geometry['skeletonScales'][str(body_type)]
+                         * native_geometry['idolRootScale'] * native_geometry['pixelsPerUnityUnit'])
         character = {
             "id": idol_id,
             "name": speaker_data.get(idol_id, {}).get("display_name", idol_id),
