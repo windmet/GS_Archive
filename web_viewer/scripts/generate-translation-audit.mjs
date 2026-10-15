@@ -34,7 +34,7 @@ const details=units.map(u=>{
  return {key:u.key,kind:u.kind,field:u.field,source:u.source,sourceHash:u.sourceHash,translation,status,batch:revision?.batch_id||null,references:u.references,notes:revision?.notes||[],translator:revision?.translator||'项目初译',decision:revision?.decision||null}
 })
 const indexes=await loadStudioIndexes(), overlays=new Map(), documents=[], allUnits=new Set()
-const domainLabels={event:'活动剧情',main:'主线剧情',unit:'组合剧情',work:'工作剧情',birthday:'生日剧情',extra:'额外剧情',card:'卡片剧情',idol:'偶像剧情',mobile:'工作通讯',main_story:'主线剧情',unit_story:'组合剧情',card_scenarios:'卡片剧情',idol_story:'偶像剧情',work_story:'工作剧情',mobile_archive:'工作通讯',event_story:'活动剧情'}
+const domainLabels={event:'活动剧情',main:'主线剧情',unit:'组合剧情',work:'工作剧情',birthday:'生日剧情',extra:'额外剧情',card:'卡片剧情',idol:'偶像剧情',mobile:'工作通讯',main_story:'主线剧情',unit_story:'组合剧情',card_scenarios:'卡片剧情',idol_story:'偶像剧情',work_story:'工作剧情',mobile_archive:'工作通讯',event_story:'活动剧情',seasonal:'季节企划'}
 for(const entry of indexes.reading.entries) {
  const loaded=await loadStudioDocument(entry,indexes), catalog=loaded.evidence.scenario_id
  let overlay=overlays.get(catalog)
@@ -67,7 +67,16 @@ for(const type of ['idol','npc']) {
   details.push({key:`${id}:${key}`,kind:id,field:'name',source,translation:entry.name,status,batch:null,references:[{kind:id,id:key,field:'name'}],notes:entry.notes||[],translator:entry.translator||'项目暂用显示名',decision:null})
  }
 }
-const pending=[{id:'home-dialogue',label:'首页对话',total:null,status:'excluded',note:'需按人物语气和上下文细翻，未纳入通用初译且未单独计数；P 名字替换不计翻译。'},{id:'hardcoded-ui',label:'尚未提取的界面文案 / 活动与歌曲专名',total:null,status:'unmeasured',note:'语言开关切换已接入的名称与说明；硬编码导航、偶像详细资料和文案尚未全量本地化，不计作已翻译。'},{id:'image-text',label:'图片内文字、歌词与未进入 Reader 的原始文本',total:null,status:'unmeasured',note:'本审计不覆盖这些原始资源；不能由已有目录数量推断翻译完成。'}]
+// Audio-only lines are counted from the same files the pages read, so these totals move with the data.
+const operational=Object.values(read('public/data/masterdata/card_detail_index.json').cards_by_resource_id).flatMap(card=>card.operational_voice_cues||[])
+const unusedCues=read('src/data/unusedVoiceArchive.json').families.flatMap(f=>f.speakers.flatMap(s=>s.cues))
+const pending=[
+ {id:'card-voice-audio-only',label:'卡面演出语音（仅有音频）',total:operational.filter(c=>c.text_source==='audio_only').length,status:'audio-only',note:'主数据与已抓取的 wiki 卡页都没有文字；剩余 wiki 卡页继续转录后会进入「卡面文本·演出语音」。'},
+ {id:'home-live-result',label:'首页 LiveResult 语音',total:null,status:'audio-only',note:'主数据 343 行指向 3_2_NNN 脚本，脚本只有语音指令没有文字；需先听写音频，未计入首页语音·通用。'},
+ {id:'unused-audio-only',label:'未使用语音（仅有音频）',total:unusedCues.filter(c=>!c.text).length,status:'audio-only',note:'未使用语音存档中没有脚本文字的条目；只有齋藤 3_1_102 的有文字条目计入「未使用语音」。'},
+ {id:'hardcoded-ui',label:'尚未提取的界面文案 / 活动与歌曲专名',total:null,status:'unmeasured',note:'语言开关切换已接入的名称与说明；硬编码导航、偶像详细资料和文案尚未全量本地化，不计作已翻译。'},
+ {id:'image-text',label:'图片内文字、歌词与未进入 Reader 的原始文本',total:null,status:'unmeasured',note:'本审计不覆盖这些原始资源；不能由已有目录数量推断翻译完成。'},
+]
 const gashaEvidence=read('public/data/editorial/gasha-ticket-evidence.json'),gashaGroup=group('gasha','卡池名称（含道具补录）')
 for(const row of gashaEvidence.rows){
  assert.equal(row.source_hash,sourceHash(row.source_name),'Gasha name source changed')
