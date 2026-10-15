@@ -26,3 +26,14 @@
 这批证明来源接线、浏览器绘制及基本控制，不证明原游戏视觉等价、真机帧率、长稳或发布包完整性。
 
 Unity/System.Random 的运行种子未知，预览使用确定性随机流保证暂停和回跳稳定。模式 2 暂用序列化 world X 排序，尚未对齐命令执行瞬间的动画 world X；原生 Awake 的分组抖动和分色也需要原片核对。空调色板的原生 fallback 尚未完整恢复；本次真实 unit 事件全部有非空可解析 token。相机、透视以现有正交舞台接线为基础；透明排序、shader 色彩及密集绘制仍须原片/真机证据。矩阵保持 partial，不将这 6,697 行计为原版验收完成。
+
+## 后续：模式 2 的动画位置排序
+
+输入 HEAD `f0d8b129`。再次核对 `PlayEffectUnitAndMain`（`0x22228c4`）、`SetAnimation`（`0x2222284`）和 `SetSpriteDisplayUnitInner`（`0x22231b8`）：Animator.Play → SetTransform → 世界 X 排序；这段执行器没有显式 Animator.Update。消费者改为在有模式 2 的指令时刻采样进入该时刻前的动画位置，同一时刻连续指令共用位置快照，然后乘本次根节点有符号缩放排序。新建对象采用序列化初始位置。只对需要空间排序的时刻采样，不为所有普通颜色指令额外评估整组动作。
+
+这替代了上文的“模式 2 暂用序列化 world X 排序”；连续时钟采样仍是对最后原生动画帧的近似，Unity 帧内执行时序尚须设备/原片验证，不能据此升级为原版等价。
+
+- 合成行为回归新增：动画位置重排、负缩放反向、同时间先 Play 再分色仍共用进入时刻的位置；回跳、颜色缓存、复位及渲染资源回归保留通过。
+- 全量 118 条模式 2 指令按相同预览随机流比较，颜色分配差异为 0 条 / 0 actor；这是本语料在该预览流下的兼容性证据，不是原生帧内等价证据。本地复核脚本/收据在 `.analysis/penlight-native/worldx-probe.mjs` / `worldx-receipt.json`。
+- `verify-chibi-penlights.mjs --published-assets`、`verify-stage-command-coverage.mjs --published-assets`、`verify-stage-resource-ownership.mjs`、`verify-chibi-stage-layer-order.mjs`、`verify-verifier-coverage.mjs` 均通过。仅变动动作核心与其回归，未机械重复上批 135 项；`build:check` 本轮通过（19.23 秒，仍不复制 public）。
+- 5212 实际 Browser 切至 DRIVE A LIVE（パッションMAX Ver.），在真实模式 2 指令时刻 16,200 ms 观察 3 组 / 143 renderer，回到 0 后再次跳转 16,200 ms 正常；修复后时间段没有新增 error。桌面 1440×900 截图 `C:/Users/windm/.codex/visualizations/2026/10/14/01a13b34-f8ad-7920-8ee0-22c322a422ee/stage-penlight-worldx-16200.png`。该镜头只在画面底部露出部分应援棒，因此截图不支持整组分色空间分布的原片验收。

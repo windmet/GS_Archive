@@ -122,7 +122,7 @@ function initialState(event, prefab, registration, random) {
     x:0,y:0,scale:1,depth:null,time:event.time,speed:1,clipName:'Beat1',
     phases:prefab.actors.map(()=>0),palette:null,colorMode:null,unresolvedColor:false}
 }
-function applyColors(state,event,registration,random) {
+function applyColors(state,event,registration,random,worldX) {
   if(event.command==='Penlight') {
     const color=penlightColor(event.color)
     if(color)state.colors=state.colors.map(()=>color)
@@ -135,7 +135,7 @@ function applyColors(state,event,registration,random) {
   if(state.palette===signature && state.colorMode===event.colorMode)return
   let actors=[...state.prefab.actors]
   if(event.colorMode===1)shuffle(actors,random)
-  else if(event.colorMode===2)actors.sort((a,b)=>a.world.tx-b.world.tx || a.index-b.index)
+  else if(event.colorMode===2)actors.sort((a,b)=>worldX[a.index]-worldX[b.index] || a.index-b.index)
   else {state.unresolvedColor=true;return}
   for(let i=0;i<actors.length;i++) {
     const index=event.colorMode===1?i%colors.length:Math.floor(i/(actors.length/colors.length))
@@ -144,7 +144,9 @@ function applyColors(state,event,registration,random) {
   state.palette=signature;state.colorMode=event.colorMode
 }
 export function penlightsAt(events, time, model, registration={}) {
-  const prefabs=compilePenlightModel(model),states=new Map(),randoms=new Map()
+  const prefabs=compilePenlightModel(model),states=new Map(),randoms=new Map(),poses=new Map()
+  const spatialTimes=new Set((events || []).filter(event=>!event.erase && event.command!=='Penlight' && event.colorMode===2)
+    .map(event=>`${event.prefab}:${event.id}:${event.time}`))
   for(const event of events || []) {
     if(event.time>time)break
     const prefab=prefabs.get(event.prefab)
@@ -153,7 +155,15 @@ export function penlightsAt(events, time, model, registration={}) {
     if(!randoms.has(key))randoms.set(key,seeded(`${registration.seed || ''}:${key}`))
     const random=randoms.get(key)
     let state=states.get(key)
-    if(!state) {state=initialState(event,prefab,registration,random);states.set(key,state)}
+    const created=!state
+    if(created) {state=initialState(event,prefab,registration,random);states.set(key,state)}
+    // Animator.Play requests a state change without an explicit Animator.Update
+    // in the native executor. Preserve the incoming pose for every command at
+    // this timestamp rather than immediately sorting by the newly chosen clip.
+    // Sampling at the command clock approximates the last native animation frame;
+    // native frame scheduling still requires footage/device comparison.
+    if(spatialTimes.has(`${key}:${event.time}`) && poses.get(key)?.time!==event.time)poses.set(key,{time:event.time,
+      x:prefab.actors.map(actor=>(created?actor.world:penlightActorMatrix(actor,state,event.time)).tx)})
     if(event.erase) {
       state.colors=prefab.actors.map(actor=>[...actor.initialColor])
       continue // Native ResetColor preserves animation, transforms and palette cache.
@@ -163,7 +173,10 @@ export function penlightsAt(events, time, model, registration={}) {
     state.phases=prefab.actors.map(()=>random()*.1)
     state.time=event.time;state.speed=event.speed
     state.x=event.x;state.y=event.y;state.scale=event.scale;state.depth=event.depth
-    applyColors(state,event,registration,random)
+    // SetTransform runs before the native world-X selector. Translation is
+    // common to all actors; signed scale reverses order and zero scale ties it.
+    const worldX=event.colorMode===2?poses.get(key).x.map(x=>x*event.scale):null
+    applyColors(state,event,registration,random,worldX)
   }
   return [...states.values()]
 }

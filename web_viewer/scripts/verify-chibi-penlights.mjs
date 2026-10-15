@@ -19,6 +19,20 @@ assert.ok(state.phases.every(x=>x>=0&&x<.1))
 assert.deepEqual(state.colors,Array(3).fill([1,0,0,1]))
 state=penlightsAt([base,unit],100,model,registration)[0]
 assert.deepEqual(state.colors,[[1,1,1,1],[1,1,1,1],[0,1,0,1]])
+const moving=structuredClone(model)
+for(const a of moving.prefabs[0].actors) {
+  a.controllerKey=`c${a.index}`
+  moving.controllers[a.controllerKey]={states:names.map(name=>({name,stateSpeed:1,clip:{serializedFile:'f',pathId:`${name}-${a.index}`}}))}
+  for(const name of names)moving.clips[`f:${name}-${a.index}`]={duration:1,loop:true,curves:[{channel:'position.x',initialValue:name.startsWith('Beat')?10-a.index*10:a.index*10,keys:[]}]}
+}
+const incoming=penlightsAt([base,unit],100,moving,registration)[0]
+assert.deepEqual(incoming.colors,[[0,1,0,1],[1,1,1,1],[1,1,1,1]],'Mode 2 sorts the incoming animated pose, not serialized X')
+const flipped=penlightsAt([base,{...unit,scale:-1}],100,moving,registration)[0]
+assert.deepEqual(flipped.colors,[[1,1,1,1],[1,1,1,1],[0,1,0,1]],'Signed root scale is included before world-X sorting')
+const collapsed=penlightsAt([base,{...unit,scale:0}],100,moving,registration)[0]
+assert.deepEqual(collapsed.colors,[[1,1,1,1],[1,1,1,1],[0,1,0,1]],'Collapsed root scale preserves serialized renderer order for tied X')
+const sameTime=penlightsAt([base,{...unit,animationType:2},{...unit,sourceRow:3,colors:['#ff0000','#0000ff']}],100,moving,registration)[0]
+assert.deepEqual(sameTime.colors,[[0,0,1,1],[1,0,0,1],[1,0,0,1]],'Same-clock commands retain incoming pose despite intervening Play requests')
 const erase={command:'Penlight',id:'1',prefab:'p',time:200,sourceRow:3,erase:true}
 const reset=penlightsAt([base,unit,erase],200,model,registration)[0]
 assert.deepEqual(reset.colors,Array(3).fill([0,0,1,1]))

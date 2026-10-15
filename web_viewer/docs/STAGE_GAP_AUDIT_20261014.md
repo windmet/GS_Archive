@@ -4,7 +4,7 @@
 
 后续更新（2026-10-15，stage 线）：[新悬灯颜色与节拍通道批次](NATIVE_NEW_SUSPENSION_COLOR_BEAT_BATCH_20261015.md) 已接入 2,350 行颜色四模式与 331 行 BeatShow，当前七首节拍曲均有已验证恒定 BPM。下文是 10-14 的历史审计；新悬灯这一项以该批次为准，变速曲时基、原片视觉及其他家族的缺口仍保留。
 
-同日 [全指令 RAW 快照与消费者矩阵](STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md) 已重读 60 个 bundle / 118 编排；未导出的指令会在维护面板显式报缺口。不沿用下文的“没有完整 RAW 行数统计”作为当前结论。[Penlight 消费者批次](NATIVE_PENLIGHT_CONSUMER_BATCH_20261015.md) 进一步接入全部 6,697 行应援棒指令，包含原生网格、动作曲线、字段 39 配色、复位与排序；状态仍为 partial，随机种子、分色瞬间世界坐标和原片视觉未完成等价验收。
+同日 [全指令 RAW 快照与消费者矩阵](STAGE_RAW_COMMAND_MATRIX_BATCH_20261015.md) 已重读 60 个 bundle / 118 编排；未导出的指令会在维护面板显式报缺口。不沿用下文的“没有完整 RAW 行数统计”作为当前结论。[Penlight 消费者批次](NATIVE_PENLIGHT_CONSUMER_BATCH_20261015.md) 进一步接入全部 6,697 行应援棒指令，包含原生网格、动作曲线、字段 39 配色、复位与排序；后续已按进入指令时刻的动画位置修正模式 2 分色排序。状态仍为 partial，随机种子、Unity 帧内更新时间和原片视觉未完成等价验收。
 
 合并后跑了 24 个舞台 verifier（`verify-chibi-*`、`verify-stage-*`、`verify-live-chibi-*`），全部通过。它们证明的是源码和数据链路，**不是**原版视觉验收。
 
