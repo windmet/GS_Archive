@@ -57,3 +57,29 @@ export function nativeMotionMixWindowMs(track, event) {
   const speed = nativeMotionSpeed(track, event)
   return speed > 0 ? 150 / speed : Infinity
 }
+
+// LiveSoundDirector.UpdateCurrentTime: offset + (audioMs-deviceDelayMs)/1000.
+// The archive has no original device calibration; media time uses delay=0.
+export function nativeStageAudioOffsetMs(track) {
+  if (!Number.isFinite(track?.bgmOffsetSeconds)) throw new Error('Native audio clock unavailable')
+  return Math.fround(track.bgmOffsetSeconds) * 1000
+}
+
+export function nativeStageTimeFromAudio(track, seconds) {
+  return seconds * 1000 + nativeStageAudioOffsetMs(track)
+}
+
+export function nativeStageAudioTime(track, milliseconds) {
+  return Math.max(0, (milliseconds - nativeStageAudioOffsetMs(track)) / 1000)
+}
+
+// This viewer starts with the audio, rather than the game's negative prelude.
+// A seek before the media origin must resolve to the pose at audio sample zero.
+export function nativeStageAudioStartTime(track, milliseconds) {
+  return Math.max(0, milliseconds, nativeStageAudioOffsetMs(track))
+}
+
+export function nativeSingerEventsForAudio(track, events) {
+  const offset = nativeStageAudioOffsetMs(track)
+  return events.map(event => ({ ...event, time: event.time - offset }))
+}

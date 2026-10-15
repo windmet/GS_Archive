@@ -4,6 +4,7 @@ import vm from 'node:vm'
 import {createPlaybackIntent} from '../src/core/PlaybackIntent.js'
 import {withLoadDeadline} from '../src/core/AsyncLoadBoundary.js'
 import {nativeMotionSpeed,nativeMotionMixWindowMs} from '../src/core/chibiMotionClock.js'
+import * as nativeClock from '../src/core/chibiMotionClock.js'
 import {parseBatchBlobs,publicationGitSnapshot} from './lib/publication-git-snapshot.mjs'
 import {execFileSync} from 'node:child_process'
 import {SkeletonData, BoneData, Skeleton, Animation, RotateTimeline, AnimationState, AnimationStateData} from '@pixi-spine/runtime-3.8'
@@ -15,8 +16,10 @@ const ref=value=>({value})
 function fixture(boundary='audio'){
   const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
   const c={app:null,lifetime:new AbortController(),stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
+    ...nativeClock,motionClockTrack:ref({bgmOffsetSeconds:0}),stageClockAudio:()=>audios[0],
+    stageAudioTailActive:false,
     stageVocalEnabled:ref(boundary==='unlock'),stageVocalReady:ref(boundary==='unlock'),audioError:ref(''),stageIntent:createPlaybackIntent(()=>''),stageAudioOwners:new Map(),runtimes:new Map([[1,runtime]]),activePositions:ref([1]),activeSlots:ref([{}]),
-    stageVocalSession:{error:ref(''),currentTime:ref(0),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
+    stageVocalSession:{error:ref(''),currentTime:ref(0),duration:ref(120),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
     preloadSongMotions:()=>boundary==='preload'?gate.promise:Promise.resolve(true),syncSlotAtTime:()=>boundary==='slots'?gate.promise:Promise.resolve(),resetEventIndices(){},syncBackmonitor(){},syncStagePlaybackTime(){},stagePlaybackAudios:()=>audios,
     withLoadDeadline:(load,options)=>withLoadDeadline(load,{...options,timeoutMs:25}),performance,animationFrame:0,playbackStartOffset:0,playbackStartedAt:0,
     requestAnimationFrame(){frames.add(1);return 1},cancelAnimationFrame(id){frames.delete(id)},updateStage(){},backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,
@@ -26,6 +29,20 @@ function fixture(boundary='audio'){
   return {c,gate,native,frames,audios,runtime}
 }
 let cases=0
+for(const vocal of [false,true]) {
+  const f=fixture();f.c.stageTime.value=121000;f.c.stageDuration.value=150000
+  f.audios[0].duration=120
+  f.c.stageVocalEnabled.value=vocal;f.c.stageVocalReady.value=vocal
+  let vocalPlays=0
+  f.c.stageVocalSession.unlock=async()=>true
+  f.c.stageVocalSession.play=async()=>{vocalPlays++;return true}
+  await f.c.toggleStage()
+  assert.equal(f.c.playing.value,true);assert.equal(f.c.stageAudioTailActive,true)
+  assert.equal(f.native.length,0);assert.equal(vocalPlays,0,'Silent stage tail must not replay audio sample zero')
+  f.c.stopStage();assert.equal(f.c.stageTime.value,121000)
+  await f.c.toggleStage();assert.equal(f.c.stageAudioTailActive,true)
+  f.c.stopStage();cases++
+}
 {
   // Actual SFC seek at an authored handoff must match the outgoing pose and
   // subsequent cross-fade seen during continuous playback, not setup pose.

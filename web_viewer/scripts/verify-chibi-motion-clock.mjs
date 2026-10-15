@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import {createHash} from 'node:crypto'
+import vm from 'node:vm'
+import * as clock from '../src/core/chibiMotionClock.js'
 import {validateMotionClock,motionClockForSong,nativeMotionTempoAt,nativeMotionSpeed,nativeMotionMixWindowMs} from '../src/core/chibiMotionClock.js'
 
 const read=path=>fs.readFileSync(new URL(path,import.meta.url),'utf8')
@@ -61,6 +63,67 @@ const sfc=read('../src/components/ChibiStageViewer.vue')
 assert.ok(sfc.indexOf('motionClockData.value = await fetchLiveChibiMotionClock')<sfc.indexOf('    initializeLineup()'))
 assert.match(sfc,/nativeMotionSpeed\(motionClockTrack.value,event\)/)
 assert.match(sfc,/runtime.motionSpeedScale \?\? 1/)
+
+// Execute the actual SFC transport functions with an independent native
+// audio/live-clock witness. A +25ms source offset makes an action at 1s
+// occur at media .975s, and audio sample zero represents native .025s.
+const offsetTrack={bgmOffsetSeconds:.025},offsetMs=Math.fround(.025)*1000
+close(clock.nativeStageTimeFromAudio(offsetTrack,1),1025.000000372529)
+close(clock.nativeStageAudioTime(offsetTrack,1000),.974999999627471)
+close(clock.nativeStageAudioStartTime(offsetTrack,0),25.00000037252903)
+assert.equal(clock.nativeStageAudioTime(offsetTrack,0),0)
+const gates=clock.nativeSingerEventsForAudio(offsetTrack,[{time:0,singers:[1]},{time:1000,singers:[2]}])
+close(gates[0].time,-25.00000037252903);close(gates[1].time,974.999999627471)
+assert.deepEqual(gates[0].singers,[1])
+assert.throws(()=>clock.nativeStageAudioTime(null,1000),/unavailable/)
+const ref=value=>({value}),audio={duration:10,currentTime:1,paused:false,pause(){this.paused=true}}
+const c={...clock,motionClockTrack:ref(offsetTrack),stageVocalEnabled:ref(false),stageVocalReady:ref(false),
+  stageTime:ref(0),stageDuration:ref(20000),playing:ref(true),stageStarting:ref(false),preloading:ref(false),
+  stageVocalSession:{currentTime:ref(2),playing:ref(true),duration:ref(10),seek(s){this.currentTime.value=s},pause(){}},
+  stageAudioTailActive:false,
+  stagePlaybackAudios:()=>[audio],stageClockAudio:()=>audio,stageIntent:{cancel(){}},
+  animationFrame:1,cancelAnimationFrame(){},syncMotionPlaybackSpeed(){},
+  backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,
+  frameCap:()=>0,lastStageFrame:0,performance:{now:()=>0},selectedSong:ref({}),
+  playbackStartOffset:0,playbackStartedAt:0,playbackSpeed:ref(1),stageTransportReady:ref(false),
+  activeSlots:ref([]),resetEventIndices(){},applyCurrentLipSync(){},syncStageVocalMix(){},
+  syncStageBackground(){},syncSpotlights(){},syncLaserlights(){},syncPinspotlights(){},
+  applyStageLighting(){},applyCameraTransform(){},syncBackmonitor(){},syncImageLayers(){},syncObjectLayers(){},app:null,
+}
+vm.createContext(c)
+for(const name of ['syncStagePlaybackTime','updateStage','stopStage','seekStage'])
+  vm.runInContext(sfc.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0],c)
+c.syncStagePlaybackTime(1000);close(audio.currentTime,.974999999627471)
+c.updateStage(500);close(c.stageTime.value,1000)
+c.stopStage();close(c.stageTime.value,1000)
+c.playing.value=true;c.stageVocalEnabled.value=true;c.stageVocalReady.value=true
+c.stageVocalSession.currentTime.value=2;c.updateStage(1000);close(c.stageTime.value,2025.000000372529)
+c.stageVocalSession.currentTime.value=10;c.stageVocalSession.playing.value=false
+c.updateStage(2000);close(c.stageTime.value,10025.000000372529)
+c.updateStage(2016);close(c.stageTime.value,10041.000000372529)
+c.playbackSpeed.value=.5;c.updateStage(2032);close(c.stageTime.value,10049.000000372529)
+c.stageVocalEnabled.value=false;audio.ended=true;audio.currentTime=10;c.stageAudioTailActive=false;c.stageTime.value=0
+c.updateStage(3000);c.updateStage(3016);close(c.stageTime.value,10033.000000372529)
+c.stopStage();close(c.stageTime.value,10033.000000372529)
+c.playing.value=true;c.stageAudioTailActive=true;c.stageDuration.value=10050;c.stageTransportReady.value=true
+c.syncPinspotlights=c.syncImageLayers=c.syncObjectLayers=()=>Promise.resolve()
+c.updateStage(3050);assert.equal(c.playing.value,false);assert.equal(c.stageTime.value,10050)
+c.stageDuration.value=20000;c.stageTransportReady.value=false
+c.stageVocalEnabled.value=true
+c.stageTime.value=7000;await c.seekStage();close(c.stageTime.value,7000)
+close(c.stageVocalSession.currentTime.value,6.974999999627471)
+c.stopStage(true);assert.equal(c.stageTime.value,0);assert.equal(c.stageVocalSession.currentTime.value,0)
+c.playing.value=true;c.stageVocalSession.currentTime.value=30;c.stopStage();assert.equal(c.stageTime.value,20000)
+c.stageVocalEnabled.value=false;c.stageVocalReady.value=false;c.playing.value=true;audio.currentTime=30
+c.stopStage();assert.equal(c.stageTime.value,20000)
+assert.match(sfc,/events: nativeSingerEventsForAudio\(motionClockTrack.value,/)
+assert.match(sfc,/nativeStageAudioStartTime\(motionClockTrack.value,stageTime.value\)/)
+const durationBody=sfc.match(/const stageDuration = computed\(\(\) => Math.max\([^]*?\n\)\)/)[0]
+const durationAt=new Function('selectedSong','selectedSongAudio','selectedStageVocalExperiment','motionClockTrack','nativeStageAudioOffsetMs',
+  'const computed=f=>f();'+durationBody+';return stageDuration')
+close(durationAt(ref({duration:2000}),ref({duration:10000}),ref(null),ref(offsetTrack),clock.nativeStageAudioOffsetMs),10025.000000372529)
+assert.equal(durationAt(ref({duration:20000}),ref({duration:10000}),ref(null),ref(offsetTrack),clock.nativeStageAudioOffsetMs),20000)
+console.log('PASS native audio offset sign/float boundary, media seek/start, singer gates, actual SFC official/vocal frame/pause/seek/reset/end clamp')
 if(process.argv.includes('--published-assets')) {
   const text=read('../public/assets/live-chibi/choreography/index.json'),corpus=JSON.parse(text).songs
   validateMotionClock(data,hash(text),corpus)

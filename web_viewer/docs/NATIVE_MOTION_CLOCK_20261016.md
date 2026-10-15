@@ -2,6 +2,8 @@
 
 输入 `stage/20261014-native-fidelity` / `11e786c3`；工作树沿用 stage-native-fidelity-20261014，5212/PID61564。接续人物尺度批次，本批移除动作基础速度为1和队列默认混合.12秒两项旧假设。不是随机动作调度或全舞台复刻完成。
 
+后续：[音频时钟批次](NATIVE_STAGE_AUDIO_CLOCK_20261016.md) 已接入本文最后一节记录的25ms映射缺口，并修复分声部播放中seek目标被暂停覆盖的问题。下方“本批保留”描述的是本BPM批次的历史边界。
+
 ## 原生链路与数据来源
 
 本地已解密ELF `E:/Tools/ghidra_work/sidem/libil2cpp.decrypted.so` 的SHA256为 `9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e`。本批用既有Ghidra项目只读补反编译；方法窗口哈希、常量RVA和导出摘要保存在 `scripts/fixtures/chibi-native-motion-clock.json`。完整原始方法体留在 `.analysis/native-engine/motion-clock-chain` 和 `motion-clock-audio`，未提交反编译全库。

@@ -24,6 +24,7 @@
     :data-ground-registration="chibiGroundRegistration(selectedSong?.songCode).id"
     :data-motion-tempo="motionClockTempo ?? ''"
     data-motion-clock="native-conductor-command-latched"
+    :data-audio-clock-offset-ms="motionClockTrack ? nativeStageAudioOffsetMs(motionClockTrack) : ''"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -567,7 +568,9 @@ import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
 import { nativeCharacterScale } from '../core/chibiNativeCharacterGeometry.js'
-import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotionMixWindowMs } from '../core/chibiMotionClock.js'
+import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotionMixWindowMs,
+  nativeStageAudioOffsetMs, nativeStageTimeFromAudio, nativeStageAudioTime,
+  nativeStageAudioStartTime, nativeSingerEventsForAudio } from '../core/chibiMotionClock.js'
 import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
@@ -1053,8 +1056,11 @@ const selectedVocalSettingFact = computed(() => {
 const stageDuration = computed(() => Math.max(
   selectedSong.value?.duration || 0,
   selectedSong.value?.lipSync?.duration || 0,
-  selectedSongAudio.value?.duration || 0,
-  (selectedStageVocalExperiment.value?.backing?.metadata?.duration_seconds || 0) * 1000,
+  selectedSongAudio.value?.duration
+    ? selectedSongAudio.value.duration + (motionClockTrack.value ? nativeStageAudioOffsetMs(motionClockTrack.value) : 0) : 0,
+  selectedStageVocalExperiment.value?.backing?.metadata?.duration_seconds
+    ? selectedStageVocalExperiment.value.backing.metadata.duration_seconds * 1000
+      + (motionClockTrack.value ? nativeStageAudioOffsetMs(motionClockTrack.value) : 0) : 0,
 ))
 const motionCatalog = computed(() => new Map(
   (choreography.value?.motionCatalog || []).map(motion => [motion.id, motion]),
@@ -1396,6 +1402,7 @@ function setFrameRate() {
 const AUTO_FRAME_TIERS = [30, 60, 0]
 const autoFrameTier = ref(0)
 let lastStageFrame = 0, frameWindow = null, frameStepUpAfter = 0
+let stageAudioTailActive = false
 const frameRateLabel = computed(() => {
   const cap = frameRateSetting.value === 'auto' ? AUTO_FRAME_TIERS[autoFrameTier.value] : frameRateSetting.value === 'max' ? 0 : Number(frameRateSetting.value)
   return cap ? `${cap} 帧` : '跟随屏幕'
@@ -3696,7 +3703,8 @@ async function loadStageVocalAudio() {
     stageVocalSession.setPlaybackRate(playbackSpeed.value)
     await stageVocalSession.configure({
       experiment,
-      events: isSoloChoreography.value ? [] : (selectedSong.value?.singerEvents || []),
+      events: nativeSingerEventsForAudio(motionClockTrack.value,
+        isSoloChoreography.value ? [] : (selectedSong.value?.singerEvents || [])),
       performerLineup,
       continuous: isSoloChoreography.value,
     })
@@ -3732,12 +3740,16 @@ function stageClockAudio() {
   return stageVocalEnabled.value && stageVocalReady.value ? null : songAudio
 }
 
-function syncStagePlaybackTime(seconds) {
-  if (stageVocalEnabled.value && stageVocalReady.value) {
+function syncStagePlaybackTime(milliseconds) {
+  const vocal = stageVocalEnabled.value && stageVocalReady.value
+  const audios = stagePlaybackAudios()
+  if (!vocal && !audios.length) return
+  const seconds = nativeStageAudioTime(motionClockTrack.value, milliseconds)
+  if (vocal) {
     stageVocalSession.seek(seconds)
     return
   }
-  for (const audio of stagePlaybackAudios()) {
+  for (const audio of audios) {
     if (Number.isFinite(audio.duration)) audio.currentTime = Math.min(seconds, audio.duration)
   }
 }
@@ -3908,8 +3920,11 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 }
 
 async function seekStage() {
+  const targetTime = stageTime.value
   stopStage()
-  syncStagePlaybackTime(stageTime.value / 1000)
+  // A vocal pause samples its current clock; do not overwrite the user's seek.
+  stageTime.value = targetTime
+  syncStagePlaybackTime(stageTime.value)
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   resetEventIndices()
   applyCurrentLipSync()
@@ -3954,13 +3969,22 @@ async function toggleStage() {
   if (!await preloadSongMotions(intent)) { if (current()) stageVocalSession.pause(); return }
   if (!current()) return
   if (stageTime.value >= stageDuration.value) stageTime.value = 0
+  if (stageVocalEnabled.value && stageVocalReady.value || stagePlaybackAudios().length) {
+    stageTime.value = nativeStageAudioStartTime(motionClockTrack.value,stageTime.value)
+  }
+  const audioDuration = stageVocalEnabled.value && stageVocalReady.value
+    ? stageVocalSession.duration.value : stageClockAudio()?.duration
+  const silentTail = Number.isFinite(audioDuration) && audioDuration > 0
+    && stageTime.value >= nativeStageTimeFromAudio(motionClockTrack.value,audioDuration)
   await Promise.all(activeSlots.value.map(slot => syncSlotAtTime(slot, stageTime.value, true)))
   if (!current()) return
   resetEventIndices()
   playbackStartOffset = stageTime.value
   playbackStartedAt = performance.now()
-  if (stageVocalEnabled.value && stageVocalReady.value) {
-    stageVocalSession.seek(stageTime.value / 1000)
+  if (silentTail) {
+    syncStagePlaybackTime(stageTime.value)
+  } else if (stageVocalEnabled.value && stageVocalReady.value) {
+    syncStagePlaybackTime(stageTime.value)
     if (!await stageVocalSession.play()) {
       if (current()) audioError.value = stageVocalSession.error.value
       return
@@ -3970,7 +3994,7 @@ async function toggleStage() {
   } else {
     const playbackAudios = stagePlaybackAudios()
     if (playbackAudios.length) {
-      syncStagePlaybackTime(stageTime.value / 1000)
+      syncStagePlaybackTime(stageTime.value)
       playbackAudios.forEach(audio => { audio.playbackRate = playbackSpeed.value })
       try {
         await withLoadDeadline(() => Promise.all(playbackAudios.map(audio => {
@@ -3990,6 +4014,7 @@ async function toggleStage() {
     }
   }
   playing.value = true
+  stageAudioTailActive = silentTail
   syncMotionPlaybackSpeed()
   syncBackmonitor(true)
   if(app)app.ticker.lastTime=performance.now()
@@ -4011,14 +4036,32 @@ function updateStage(now) {
   lastStageFrame = now
   const workStart = performance.now()
   const clockAudio = stageClockAudio()
-  stageTime.value = Math.min(
-    stageDuration.value,
-    stageVocalEnabled.value && stageVocalReady.value
-      ? stageVocalSession.currentTime.value * 1000
-      : clockAudio && !clockAudio.paused
-      ? clockAudio.currentTime * 1000
-      : playbackStartOffset + (now - playbackStartedAt) * playbackSpeed.value,
-  )
+  const vocalClock = stageVocalEnabled.value && stageVocalReady.value
+  const audioEnded = stageAudioTailActive || (vocalClock
+    ? !stageVocalSession.playing.value && stageVocalSession.duration.value > 0
+      && stageVocalSession.currentTime.value >= stageVocalSession.duration.value
+    : Boolean(clockAudio?.ended))
+  // Decoded/media duration can end before the authored final CSV/curve row.
+  // Continue the silent stage tail after a real ended state, without epsilon
+  // thresholds or reading a frozen AudioContext clock forever.
+  if (audioEnded) {
+    const endpoint = nativeStageTimeFromAudio(motionClockTrack.value,
+      vocalClock ? stageVocalSession.currentTime.value : clockAudio.currentTime)
+    stageTime.value = Math.min(stageDuration.value, stageAudioTailActive
+      ? stageTime.value + Math.max(0,gap) * playbackSpeed.value
+      : Math.max(stageTime.value,endpoint))
+    stageAudioTailActive = true
+  } else {
+    stageAudioTailActive = false
+    stageTime.value = Math.min(
+      stageDuration.value,
+      vocalClock
+        ? Math.max(0,nativeStageTimeFromAudio(motionClockTrack.value,stageVocalSession.currentTime.value))
+        : clockAudio && !clockAudio.paused
+        ? Math.max(0,nativeStageTimeFromAudio(motionClockTrack.value,clockAudio.currentTime))
+        : playbackStartOffset + (now - playbackStartedAt) * playbackSpeed.value,
+    )
+  }
   if (!stageTransportReady.value) return
   for (const slot of activeSlots.value) {
     const events = eventsForPosition(slot.position)
@@ -4058,13 +4101,18 @@ function stopStage(reset = false) {
   playing.value = false
   syncMotionPlaybackSpeed()
   stageVocalSession.pause()
-  if (wasPlaying && stageVocalEnabled.value && stageVocalReady.value) {
-    stageTime.value = stageVocalSession.currentTime.value * 1000
+  if (wasPlaying && !stageAudioTailActive && stageVocalEnabled.value && stageVocalReady.value) {
+    stageTime.value = Math.max(0,Math.min(stageDuration.value,
+      nativeStageTimeFromAudio(motionClockTrack.value,stageVocalSession.currentTime.value)))
+  } else if (wasPlaying && !stageAudioTailActive && stageClockAudio()) {
+    stageTime.value = Math.max(0,Math.min(stageDuration.value,
+      nativeStageTimeFromAudio(motionClockTrack.value,stageClockAudio().currentTime)))
   }
   stagePlaybackAudios().forEach(audio => audio.pause())
   backmonitorVideo?.pause()
   backmonitorTransitionVideo?.pause()
   backmonitorTransitionAlphaVideo?.pause()
+  stageAudioTailActive = false
   if (reset) {
     stageTime.value = 0
     syncStagePlaybackTime(0)
