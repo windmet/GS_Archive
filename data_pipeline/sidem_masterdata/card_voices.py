@@ -35,7 +35,11 @@ def classify_card_operational_voices(
             continue
         curated = curated_voices.get(cue, {}) if isinstance(curated_voices, dict) else {}
         raw_text = card.get("36") if suffix == "02_00" and isinstance(card.get("36"), str) else ""
-        text = raw_text or (curated.get("text") if isinstance(curated, dict) else "") or ""
+        curated_text = (curated.get("text") if isinstance(curated, dict) else "") or ""
+        # "0" is the masterdata placeholder for a missing scout line; a curated transcript may replace it.
+        if raw_text.strip() == "0" and curated_text:
+            raw_text = ""
+        text = raw_text or curated_text
         text_source = "masterdata" if raw_text else ("curated" if text else "audio_only")
         entry = {
             "cue": cue,

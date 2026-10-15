@@ -16,9 +16,11 @@ assert.equal(count('card-touch'), 2356, 'unique home touch voices')
 assert.equal(count('call-title'), 341, 'unique call titles')
 assert.equal(count('home-voice'), 1078, 'general HomeStand voices 1029 + IdolDetail self-introductions 49')
 assert.equal(count('office-voice'), 11, 'Yamamura office voices: login bonus 2 + work menu 5 + bonus days 4')
+assert.equal(count('card-voice'), 415, 'unique scout/formation/live lines: masterdata plus the wiki transcripts fetched so far')
 const speakers = unit => new Set(unit.references.map(ref => ref.speaker))
-// Spoken lines belong to one idol; a call title may name calls of several (確かな手ごたえ: 011min, 046chr).
-assert.ok(lines.filter(unit => unit.kind !== 'call-title').every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')
+// Spoken lines belong to one idol; a call title may name calls of several (確かな手ごたえ: 011min, 046chr),
+// and campaign formation lines are shared (NEXT DESTIN@TION！ across 29 idols).
+assert.ok(lines.filter(unit => !['call-title', 'card-voice'].includes(unit.kind)).every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')
 assert.ok(lines.every(unit => [...speakers(unit)].every(code => /^\d{3}[a-z]{3}$/.test(code))), 'speakers are idol codes')
 assert.ok(!lines.some(unit => unit.source.trim() === '0'), 'the extra placeholder 0 is not a line')
 assert.ok(units.filter(unit => !CARD_LINE_KINDS.includes(unit.kind) && !CHAT_KINDS.includes(unit.kind)).every(unit => unit.references.every(ref => !ref.speaker)), 'metadata identities are unchanged')

@@ -21,6 +21,11 @@ export function archiveGeneralTextCorpus(root) {
       if (row.texts?.[field]?.trim() !== '0') add('card-line', row.resource_id, field, row.texts?.[field], row.character_id);
     for (const cue of row.home_voice_cues || []) add('card-touch', `${row.resource_id}:${cue.cue}`, 'text', cue.preview?.text, row.character_id);
   }
+  // Scout/change, unit formation and live voices with text: masterdata or a curated wiki transcript
+  // (data_pipeline/curated/card_voice_transcripts.json); "0" is the masterdata placeholder.
+  const byResource = new Map(cards.map(row => [row.resource_id, row.character_id]));
+  for (const [resourceId, detail] of Object.entries(load('card_detail_index.json').cards_by_resource_id))
+    for (const cue of detail.operational_voice_cues || []) if (cue.text?.trim() !== '0') add('card-voice', `${resourceId}:${cue.cue}`, 'text', cue.text, byResource.get(resourceId));
   // Idol home voices that belong to no card: the HomeStand pool and the idol page's self-introduction.
   for (const idol of load('home_system_voice_index.json').idols) {
     for (const row of idol.scenarios || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'text', row.text, idol.idol_code);

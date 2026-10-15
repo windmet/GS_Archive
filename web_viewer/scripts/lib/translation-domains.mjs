@@ -24,6 +24,7 @@ export const KINDS = {
   work:                 {label:'工作剧情名称',        model:'工作剧情',     shard:'profiles',   prompt:'general'},
   'card-line':          {label:'卡面文本·台词',       model:'卡面台词',     shard:'card-lines', prompt:'character'},
   'card-touch':         {label:'卡面文本·触摸语音',   model:'首页触摸语音', shard:'card-lines', prompt:'character'},
+  'card-voice':         {label:'卡面文本·演出语音',   model:'卡面演出语音', shard:'card-lines', prompt:'character'},
   'home-voice':         {label:'首页语音·通用',       model:'首页通用语音', shard:'card-lines', prompt:'character'},
   'office-voice':       {label:'事务所·系统语音',     model:'事务所系统语音', shard:'card-lines', prompt:'character'},
   'unused-voice':       {label:'未使用语音',          model:'未上线首页语音', shard:'card-lines', prompt:'character'},
