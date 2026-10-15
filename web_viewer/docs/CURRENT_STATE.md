@@ -2,25 +2,26 @@
 
 每次 PR 合入 master 时更新。规则见 [GIT_WORKFLOW.md](GIT_WORKFLOW.md)；带日期的 HANDOFF / BATCH / AUDIT 文档是历史证据，以本页为准。
 
-更新：2026-10-14
+更新：2026-10-15
 
 ## 基线
 
 | 项 | 值 |
 |---|---|
-| master | 2026-10-14 整合合并（PR 见 `git log --merges master -1`），tag `baseline/2026-10-14` |
-| read-model release | `1770c925ee62f877594c81b62bafc774642af7123308b502067efd0d7ed00838`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261014` |
-| R2 data revision | `f1a9b99712d0740cf6184ee67c7e4f706b4821fef81f08fdad6629b4347ffbb4`（`.deploy/release-20261014`，7,088 个对象） |
+| master | 10-14 整合合并 PR #48，tag `baseline/2026-10-14`；之后并入 #49（codex R2 上传记录）、#50（release 绑定 + i18n 线） |
+| read-model release | `2430ef3db583a07878f1967b45e039eb326212cda386b063f6c4f9f8d8a772c3`；候选目录 `E:/Web_build/GS_Archive_Domain_Work/rm-release-20261015` |
+| R2 data revision | `fda1a54c6df58cabc13e7a0d86b40ab14ff831270ca0d197fc9a7298279ec3ab`（worktree `.deploy/release-20261015`，6,397 个对象，已上传）。下一批的叠加链最新一项：worktree `.analysis/release-20261015/overlay-20261015.json` |
 | media epoch | `voice64-gzip-all-20260924` |
 | 正式站 | `gs-archive-preview.pages.dev`，仍是 10-12 的 `?view=` 版本（源码 `612f7519` 一线）。发布需用户授权 |
-| 测试站 | `preview.gs-archive.com` / `gs-architecture-device-test.gs-archive-preview.pages.dev`，部署记录见 [GS_ARCHIVE_TEST_DEPLOY_20261014.md](GS_ARCHIVE_TEST_DEPLOY_20261014.md) |
+| 测试站 | `preview.gs-archive.com` / `gs-architecture-device-test.gs-archive-preview.pages.dev`：源码 `126567c8`、release `2430ef3d`、data `fda1a54c`（2026-10-15）。部署记录见 [GS_ARCHIVE_TEST_DEPLOY_20261014.md](GS_ARCHIVE_TEST_DEPLOY_20261014.md) |
 
-## 两条线
+## 各条线
 
 | 线 | 当前分支 | 下一步 |
 |---|---|---|
-| 门户 portal | `portal/20261014-portal-polish` | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查；正式站发布与 noindex 决定 |
-| 舞台 stage | `stage/20261014-native-fidelity` | 见 [STAGE_GAP_AUDIT_20261014.md](STAGE_GAP_AUDIT_20261014.md)：指令→消费者矩阵、Penlight、新悬灯色相/BeatShow、旧悬灯白名单、tempo 基准 |
+| 门户 portal | `portal/20261014-portal-polish`（需先 merge origin/master） | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查；正式站发布与 noindex 决定 |
+| 翻译 i18n | `i18n/20261015-translation` | 新开的翻译线。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
+| 舞台 stage | `stage/20261014-native-fidelity`（需先 merge origin/master） | 见 [STAGE_GAP_AUDIT_20261014.md](STAGE_GAP_AUDIT_20261014.md)：指令→消费者矩阵、Penlight、新悬灯色相/BeatShow、旧悬灯白名单、tempo 基准 |
 
 ## 未合入但保留的分支
 
