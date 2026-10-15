@@ -15,6 +15,7 @@ import { attachChibiFloor } from '../core/chibiFloorParticles.js'
 import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
 import { validatePenlightData } from '../core/chibiPenlights.js'
 import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
+import { validateMotionOffsetData } from '../core/chibiMotionOffset.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -111,6 +112,16 @@ export async function fetchLiveChibiMouthFix(file,{signal}={}) {
     .map(byte=>byte.toString(16).padStart(2,'0')).join('')
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateMouthFixData(JSON.parse(text),hash)
+}
+export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-motion-offset.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMotionOffsetData(JSON.parse(text),hash)
 }
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
