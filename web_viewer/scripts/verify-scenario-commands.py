@@ -66,3 +66,20 @@ assert bgstart(['cameraflare', '', '']) == [{'id': 'cameraflare', 'visible': Tru
 assert bgstart(['cameraflare', '0', '-1'])[0].get('alpha') is None, 'negative alpha defers to the background lightAlpha'
 assert 'alpha' not in bgstart(['fx_adv_rain', '0', ''], {'id': 'fx_adv_rain', 'visible': False, 'alpha': 0.3})[0]
 print('effect_bgstart: client [effectName, startTime, alpha] with no fade-in passed')
+
+# idol_zoom follows the client's IdolCharacter zoom: [chara, startTime, playTime, posX, posY, size(default 1)].
+def zoom(handler, values, prior=None):
+    compiler = object.__new__(ScenarioCompiler)
+    compiler.state = ScenarioState()
+    compiler.state.spines = [{'id': '036rui', 'model': '036rui_001_00', **(prior or {})}]
+    compiler._mark_stage_change = lambda: None
+    compiler._safe_float = ScenarioCompiler._safe_float
+    getattr(compiler, handler)(values)
+    return {key: value for key, value in compiler.state.spines[0].items() if key.startswith('idol_zoom')}
+
+assert zoom('_idol_zoom', ['036rui', '0', '0.5', '0', '-50', '1.2']) == {
+    'idol_zoom': 1.2, 'idol_zoom_x': 0.0, 'idol_zoom_y': -50.0, 'idol_zoom_transition': {'delay': 0.0, 'duration': 0.5}}
+assert zoom('_idol_zoom', ['036rui', '', '', '30', '', ''], {'idol_zoom_y_offset': 150}) == {
+    'idol_zoom': 1.0, 'idol_zoom_x': 30.0, 'idol_zoom_y': 0.0}, 'size defaults to 1; the old y offset guess is dropped'
+assert zoom('_idol_zoom_reset', ['036rui'], {'idol_zoom': 0.8, 'idol_zoom_x': 1, 'idol_zoom_y': 2, 'idol_zoom_transition': {}}) == {}
+print('idol_zoom: client [chara, startTime, playTime, posX, posY, size] with linear transition and reset passed')

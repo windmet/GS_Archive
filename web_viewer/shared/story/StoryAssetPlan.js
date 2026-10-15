@@ -87,7 +87,6 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
         }
         // Stage placement/lip-sync also read these data resources.
         if (spine?.id) {
-          add('idol-placement', spine.id, use)
           const mouth = add('idol-mouth', spine.id, use, bundle ? null : 'model-specific-mouth-fallback')
           if (bundle && mouth) {
             const config = add('model-mouth', `${spine.id}/${spine.model}`, use)
@@ -95,9 +94,8 @@ export function createStoryAssetPlan(input, { file, sha256 }) {
             config.candidateIds = mouthSettingCandidates(spine.id, spine.model)
             if (!mouth.dependencies.includes(config.key)) mouth.dependencies.push(config.key)
           }
-          add('idol-body-types', 'index', use)
           add('idol-motion', 'index', use)
-          add('costume-prefab-metadata', 'index', use)
+          add('costume-figure-placement', 'index', use)
           add('costume-dictionary', 'index', use)
         }
       }

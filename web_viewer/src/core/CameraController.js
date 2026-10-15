@@ -1,4 +1,5 @@
-import { easeOutCubic, runRafTween } from './rafTween.js'
+import { runRafTween } from './rafTween.js'
+import { cameraScreenTransform } from '../../shared/story/AdvStageLayout.js'
 
 export class CameraController {
   constructor({
@@ -6,39 +7,29 @@ export class CameraController {
     spineContainer,
     getWidth,
     getHeight,
-    getBgSprite,
   }) {
     this.bgContainer = bgContainer
     this.spineContainer = spineContainer
     this.getWidth = getWidth
     this.getHeight = getHeight
-    this.getBgSprite = getBgSprite
 
     this._cameraZoom = null
     this._cameraTween = null
+    this._camera = { zoom: 1, x: 0, y: 0 }
   }
 
-  _applyCameraTransform(scale, x, y) {
-    const width = this.getWidth()
-    const height = this.getHeight()
-    const bgScale = Math.max(1, scale)
-    const bgSprite = this.getBgSprite?.()
-    const bgMinX = bgSprite ? width - ((bgSprite.x + bgSprite.width) * bgScale) : width * 0.5 * (1 - bgScale)
-    const bgMaxX = bgSprite ? -bgSprite.x * bgScale : 0
-    const bgMinY = bgSprite ? height - ((bgSprite.y + bgSprite.height) * bgScale) : height * 0.5 * (1 - bgScale)
-    const bgMaxY = bgSprite ? -bgSprite.y * bgScale : 0
-
-    this.bgContainer.scale.set(bgScale)
-    if (bgScale > 1) {
-      this.bgContainer.x = Math.min(bgMaxX, Math.max(bgMinX, x))
-      this.bgContainer.y = Math.min(bgMaxY, Math.max(bgMinY, y))
-    } else {
-      this.bgContainer.x = 0
-      this.bgContainer.y = 0
-    }
-    this.spineContainer.scale.set(scale)
-    this.spineContainer.x = x
-    this.spineContainer.y = y
+  // StoryCamera.MoveCamera: the camera moves to (offset_x, offset_y) canvas units and orthographicSize becomes
+  // default / zoom, both linearly over the play time. Actors follow the camera fully. ResizeCamera rescales the
+  // background panel only when the view widens (zoom < 1), so it zooms in with the camera but never shrinks.
+  _applyCameraTransform(zoom, cameraX, cameraY) {
+    const view = cameraScreenTransform(this.getWidth(), this.getHeight(), { zoom, x: cameraX, y: cameraY })
+    this.bgContainer.scale.set(view.bgScale)
+    this.bgContainer.x = view.bgX
+    this.bgContainer.y = view.bgY
+    this.spineContainer.scale.set(view.scale)
+    this.spineContainer.x = view.x
+    this.spineContainer.y = view.y
+    this._camera = { zoom, x: cameraX, y: cameraY }
   }
 
   setCameraZoom(zoomData) {
@@ -50,36 +41,25 @@ export class CameraController {
     }
 
     this._cameraZoom = zoomData
-    const { zoom, offset_x, offset_y, duration } = zoomData
-    const animDuration = duration > 0 ? duration * 1000 : 0
-    const width = this.getWidth()
-    const height = this.getHeight()
-    const coordScale = width / 1280
-    const centerX = width / 2
-    const targetScale = zoom
-    const targetX = centerX * (1 - zoom) - offset_x * coordScale * zoom
-    // Source camera targets use Unity's upward-positive Y, just like actor
-    // coordinates. Moving the camera up moves its contents down in Pixi.
-    const targetY = height / 2 * (1 - zoom) + offset_y * coordScale * zoom
+    const target = { zoom: zoomData.zoom, x: Number(zoomData.offset_x || 0), y: Number(zoomData.offset_y || 0) }
+    const animDuration = zoomData.duration > 0 ? zoomData.duration * 1000 : 0
 
     this._cameraTween?.cancel?.()
 
-    if (animDuration > 0 && this.spineContainer.scale.x > 0) {
-      const startScale = this.spineContainer.scale.x
-      const startX = this.spineContainer.x
-      const startY = this.spineContainer.y
+    if (animDuration > 0) {
+      const start = { ...this._camera }
       this._cameraTween = runRafTween({
         durationMs: animDuration,
         delayMs,
         nowMilliseconds: zoomData.nowMilliseconds,
         startValue: 0,
         endValue: 1,
-        ease: easeOutCubic,
+        ease: t => t,
         onUpdate: (t) => {
           this._applyCameraTransform(
-            startScale + (targetScale - startScale) * t,
-            startX + (targetX - startX) * t,
-            startY + (targetY - startY) * t,
+            start.zoom + (target.zoom - start.zoom) * t,
+            start.x + (target.x - start.x) * t,
+            start.y + (target.y - start.y) * t,
           )
         },
       })
@@ -88,16 +68,17 @@ export class CameraController {
         durationMs: 0,
         delayMs,
         nowMilliseconds: zoomData.nowMilliseconds,
-        onUpdate: () => this._applyCameraTransform(targetScale, targetX, targetY),
+        onUpdate: () => this._applyCameraTransform(target.zoom, target.x, target.y),
       })
     } else {
-      this._applyCameraTransform(targetScale, targetX, targetY)
+      this._applyCameraTransform(target.zoom, target.x, target.y)
     }
   }
 
   resetCameraZoom() {
     this._cameraTween?.cancel?.()
     this._cameraZoom = null
+    this._camera = { zoom: 1, x: 0, y: 0 }
     this.bgContainer.scale.set(1)
     this.bgContainer.x = 0
     this.bgContainer.y = 0

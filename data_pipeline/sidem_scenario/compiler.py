@@ -901,41 +901,34 @@ class ScenarioCompiler(ScenarioFileIO):
                 spine["idol_priority"] = priority
             self._mark_stage_change()
 
-    # Y-offset factor applied when idol_zoom < 1.0 to compensate for
-    # the visual sinking caused by root-anchored scaling. Derived from
-    # the entrance scene in 1_1_013the_02 where zoom=0.8 needed +150px:
-    #   150 = (1 - 0.8) * 750
-    # Only applies for zoom < 1.0 (characters scaled down look "sunk"
-    # because the root-anchor compresses them toward the waist). Zoom
-    # > 1.0 (enlarged) naturally fills the vertical space — no lift needed.
-    ZOOM_Y_OFFSET_FACTOR = 750.0
-
     def _idol_zoom(self, vals: list):
-        """Character-specific zoom (scale multiplier).
-        Values: [chara_id, wait?, duration?, ?, ?, zoom_level?]
-        zoom_level: 0.8=80%, 1.2=120%, etc.
-        Stores zoom multiplier in spine state. Also computes a Y
-        offset (idol_zoom_y_offset) to counteract visual sinking
-        when the character scales down around the root anchor.
+        """IdolCharacter zoom: [chara_id, start_time, play_time, position_x, position_y, size].
+        The client tweens IdolCharacter.zoomPostion and localScale linearly to these values (size defaults
+        to 1); the figure keeps its own prefab offset inside the slot, so no compensation is needed.
         """
-        if vals and vals[0] and len(vals) >= 6 and vals[5]:
-            zoom = float(vals[5])
-            spine = self.state.find_spine(vals[0])
-            if spine:
-                spine["idol_zoom"] = zoom
-                if zoom < 1.0 and zoom > 0:
-                    spine["idol_zoom_y_offset"] = (1.0 - zoom) * self.ZOOM_Y_OFFSET_FACTOR
-                else:
-                    spine.pop("idol_zoom_y_offset", None)
-                self._mark_stage_change()
-
-    def _idol_zoom_reset(self, vals: list):
-        """Reset character zoom to default."""
         if vals and vals[0]:
             spine = self.state.find_spine(vals[0])
             if spine:
-                spine.pop("idol_zoom", None)
+                size = self._safe_float(vals[5], 1.0) if len(vals) > 5 and vals[5] != "" else 1.0
+                spine["idol_zoom"] = size
+                spine["idol_zoom_x"] = self._safe_float(vals[3], 0.0) if len(vals) > 3 and vals[3] != "" else 0.0
+                spine["idol_zoom_y"] = self._safe_float(vals[4], 0.0) if len(vals) > 4 and vals[4] != "" else 0.0
+                delay = self._safe_float(vals[1], 0.0) if len(vals) > 1 and vals[1] != "" else 0.0
+                duration = self._safe_float(vals[2], 0.0) if len(vals) > 2 and vals[2] != "" else 0.0
+                if duration > 0 or delay > 0:
+                    spine["idol_zoom_transition"] = {"delay": delay, "duration": duration}
+                else:
+                    spine.pop("idol_zoom_transition", None)
                 spine.pop("idol_zoom_y_offset", None)
+                self._mark_stage_change()
+
+    def _idol_zoom_reset(self, vals: list):
+        """IdolCharacter zoom reset: position 0, size 1."""
+        if vals and vals[0]:
+            spine = self.state.find_spine(vals[0])
+            if spine:
+                for key in ("idol_zoom", "idol_zoom_x", "idol_zoom_y", "idol_zoom_transition", "idol_zoom_y_offset"):
+                    spine.pop(key, None)
                 self._mark_stage_change()
 
     def _idol_fadein(self, vals: list):
@@ -1755,6 +1748,7 @@ class ScenarioCompiler(ScenarioFileIO):
             spine.pop("neck_anim", None)
             spine.pop("neck_anim_stop", None)
             spine.pop("idol_color_transition", None)
+            spine.pop("idol_zoom_transition", None)
         if self._pending_fadeout_ids:
             for idol_id in list(self._pending_fadeout_ids):
                 self.state.set_spine_visible(idol_id, False)

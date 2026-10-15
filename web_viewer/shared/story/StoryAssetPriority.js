@@ -18,7 +18,7 @@ export function createStoryAssetPriority(scenario, entry = {}, nearSteps = 3) {
 
 export function assetPriority(asset, projection) {
   if (!projection) return 'deferred'
-  const stageOnly = /^(spine-|idol-placement|idol-mouth|model-mouth|idol-body-types|idol-motion|costume-|silhouette|effect-texture)/.test(asset.kind)
+  const stageOnly = /^(spine-|idol-mouth|model-mouth|idol-motion|costume-|silhouette|effect-texture)/.test(asset.kind)
   const uses = asset.uses.filter(use => !stageOnly || !projection.communicationIndices?.includes(use.stepIndex))
   if (uses.some(use => use.stepIndex === projection.entryIndex)) return 'critical'
   if (uses.some(use => projection.nearIndices.includes(use.stepIndex))) return 'near'

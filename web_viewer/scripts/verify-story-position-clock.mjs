@@ -14,40 +14,45 @@ const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-9
 try {
   const clock = new StoryClock({ nowMilliseconds: () => wall })
   clock.start()
+  // placeActor drives IdolCharacter canvas units (adv); the screen projection is covered by verify-story-stage-resize.
   const spine = { x: 0, y: 0 }
   const entry = { spine }
-  const stage = Object.assign(Object.create(PixiStageManager.prototype), { spineInstances: { idol: entry } })
-  const animate = (x, y, duration) => stage.animateSpinePosition('idol', x, y, duration, () => clock.elapsed() * 1000)
+  const stage = Object.assign(Object.create(PixiStageManager.prototype), { spineInstances: { idol: entry }, _silhouetteSprites: {}, _silhouettePending: {} })
+  stage._layoutActor = () => {}
+  const animate = (posX, posY, duration) => stage.placeActor('idol', { posX, posY }, { position: { duration }, nowMilliseconds: () => clock.elapsed() * 1000 })
+  const at = (x, y) => { close(entry.adv.posX, x); if (y != null) close(entry.adv.posY, y) }
+  stage.placeActor('idol', {})
   animate(100, 200, 2)
   wall = 500; tick()
-  close(spine.x, 57.8125); close(spine.y, 115.625)
+  at(25, 50)
   clock.pause()
   wall = 10000; tick()
-  close(spine.x, 57.8125)
+  at(25)
   clock.resume()
   wall = 10500; tick()
-  close(spine.x, 87.5)
+  at(50)
   animate(0, 0, 1)
   assert.equal(frames.size, 1, 'replacement cancels prior frame')
   wall = 11500; tick()
-  close(spine.x, 0); close(spine.y, 0)
+  at(0, 0)
   assert.equal(frames.size, 0)
-  assert.equal(entry._slideTweenRaf, null)
+  assert.deepEqual(entry._advTweens, {})
   clock.setRate(2)
   animate(100, 200, 2)
   wall += 500; tick()
-  close(spine.x, 87.5)
+  at(50)
+  // A clock restart (step reset) finishes the running tween, as before.
   clock.start({ offset: 0, rate: 2 })
   wall += 500; tick()
-  close(spine.x, 100)
+  at(100)
   animate(0, 0, 0)
   animate(10, 20, 1)
   stage.cancelAllSpineTweens()
   wall += 2000; tick()
-  close(spine.x, 0)
+  at(0)
   assert.equal(frames.size, 0)
   animate(10, 20, 0)
-  close(spine.x, 10); close(spine.y, 20)
+  at(10, 20)
   assert.equal(frames.size, 0)
 
   // Exercise the actual stage -> SpineManager -> RAF alpha path without a GPU.
@@ -87,5 +92,5 @@ try {
   globalThis.requestAnimationFrame = savedRequest
   globalThis.cancelAnimationFrame = savedCancel
 }
-console.log('Spine position: logical clock, pause/resume, rate, step reset, replacement, cancellation and immediate completion passed')
+console.log('Spine placement (linear IdolCharacter tween): logical clock, pause/resume, rate, step reset, replacement, cancellation and immediate completion passed')
 console.log('Spine alpha: stage forwarding, delayed pause/resume, rate, terminal visibility, replacement and immediate cancellation passed')

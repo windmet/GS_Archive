@@ -17,7 +17,6 @@
     <ArchiveCardHomeStage v-if="homeMode === 'card'" :card="selectedCard" :loading="cardLoading" :error="cardError" @retry="loadCards(true)" />
     <SpineStage
       v-else
-      responsive-positions
       portrait-framing
       ref="spineStageRef"
       :step="renderStep"
