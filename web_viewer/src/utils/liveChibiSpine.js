@@ -12,6 +12,7 @@ import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
 import { attachChibiFloor } from '../core/chibiFloorParticles.js'
+import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -74,6 +75,18 @@ async function liveJson(relativePath, options={}, optional=false) {
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
 export const fetchLiveChibiChoreography = (file,options) => liveJson(file,options)
+export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
+  // Both texts use the bounded transport. Hash the actual loaded choreography,
+  // so an old RAW snapshot cannot silently describe a newer resource corpus.
+  const [text, choreographyText] = await Promise.all([
+    indexTransport.load('/data/stage-command-inventory.json', {signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`, {signal}),
+  ])
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(choreographyText))
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
+  const hash = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('')
+  return validateStageCommandInventory(JSON.parse(text), hash)
+}
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)

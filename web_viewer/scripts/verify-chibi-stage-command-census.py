@@ -30,4 +30,26 @@ assert summary["backmonitorRawValue6"] == {"": 1, "0": 1, "1": 1, "<missing>": 1
 assert summary["backmonitorNonzeroValue6Arrangements"] == 1
 assert census.command_family("Searchlight") == "Searchlight"
 assert census.command_family("Searchlightish") is None
+all_rows = [['type', 'time', 'value1'], ['#Penlight', '0'], [], ['Penlight', '-2000'],
+            ['Livechara_mouth_shape_fix', '10'], ['Livechara_foot_color_solo', '20'],
+            ['Livechara_Offset', '30'], ['Underlight_future', '40'], ['Unknown_Command', '50'],
+            ['Smoke', '60']]
+all_record = census.census_rows(all_rows)
+assert all_record['allCommands'] == {command: 1 for command in [
+    'Penlight', 'Livechara_mouth_shape_fix', 'Livechara_foot_color_solo', 'Livechara_Offset',
+    'Underlight_future', 'Unknown_Command', 'Smoke']}
+all_summary = census.summarize_records([all_record, census.census_rows([['Unknown_Command', '100']])])
+assert all_summary['allCommands']['Unknown_Command'] == 2
+assert all_summary['allAffectedArrangements']['Unknown_Command'] == 2
+assert all_summary['allAffectedArrangements']['Livechara_Offset'] == 1
+all_record.update(songId='song_live_effect', songCode='song', source='song_live_effect',
+                  bundle='song_song.unity3d', serializedFile='CAB-test', pathId='42', textSha256='a' * 64)
+inventory = census.compact_inventory({'choreographyIndexSha256': 'b' * 64, 'arrangements': 1, 'nonTimedCommands': {},
+    'allCommands': all_record['allCommands'], 'allAffectedArrangements': {}, 'bundles': [], 'records': [all_record]})
+assert inventory['songs']['song_live_effect']['commands']['Smoke'] == 1
+assert inventory['songs']['song_live_effect']['raw']['textSha256'] == 'a' * 64
+assert 'firstRows' not in inventory['songs']['song_live_effect']  # No full CSV arguments published.
+annotations = census.census_rows([['type','time'],['指定形式_#Livechara_motion','说明'],['Future','NaN'],['Future','12']])
+assert annotations['nonTimedCommands'] == {'Future': 1, '指定形式_#Livechara_motion': 1}
+assert annotations['allCommands']['Future'] == 2  # Retained, not silently dropped as a comment.
 print("PASS native stage command census: family suffixes, source order, raw flag and empty fields")

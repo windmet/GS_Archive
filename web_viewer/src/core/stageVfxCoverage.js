@@ -1,4 +1,5 @@
 import { NEW_SUSPENSIONLIGHT_COMMANDS } from './chibiSuspensionlights.js'
+import { stageCommandCoverage } from './stageCommandCoverage.js'
 
 function uniqueAssets(events, key) {
   return [...new Set((events || []).map(event => event[key]).filter(Boolean))].sort()
@@ -6,6 +7,7 @@ function uniqueAssets(events, key) {
 
 export function buildStageVfxCoverage(song, indexes = {}) {
   if (!song) return null
+  const rawCommands = stageCommandCoverage(song, indexes.commandInventory, indexes)
   const objectAssets = uniqueAssets(song.objectLayerEvents, 'asset')
   const objectIndex = indexes.objectLayers?.assets || {}
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
@@ -47,6 +49,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   ]
   return {
     songId: song.id,
+    rawCommands,
     sourceEvents: {
       camera: song.cameraEvents?.length || 0,
       backmonitor: song.backmonitorEvents?.length || 0,
@@ -90,7 +93,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     unresolvedColorPlanes,
     unresolvedImageColors,
     imageColorMissing,
-    status: objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length || suspensionCount || backmonitorLogoRequests
+    status: rawCommands.missing.length || rawCommands.unknown.length || rawCommands.guarded.some(row => row.guard === 'disabled') || objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length || suspensionCount || backmonitorLogoRequests
       ? 'partial'
       : 'source_mapped_unverified',
   }

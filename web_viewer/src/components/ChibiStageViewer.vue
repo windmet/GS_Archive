@@ -379,6 +379,23 @@
               </small>
             <div v-if="stageVfxCoverage" class="vfx-coverage">
               <h3>效果覆盖 · 来源统计</h3>
+              <template v-if="stageVfxCoverage.rawCommands.status === 'source_inventory'">
+                <p>RAW 快照共 {{ stageVfxCoverage.rawCommands.total }} 行、{{ stageVfxCoverage.rawCommands.rows.length }} 类原始行<template v-if="stageVfxCoverage.rawCommands.nonTimedCount">，其中 {{ stageVfxCoverage.rawCommands.nonTimedCount }} 行非时序数据</template>；未接线 {{ stageVfxCoverage.rawCommands.missing.reduce((n, row) => n + row.timedCount, 0) }} 行，未识别 {{ stageVfxCoverage.rawCommands.unknown.reduce((n, row) => n + row.timedCount, 0) }} 行。已接线不等于原版视觉验收。</p>
+                <p v-if="stageVfxCoverage.rawCommands.missing.length" class="vfx-coverage-gap">未接线：{{ stageVfxCoverage.rawCommands.missing.map(row => `${row.command} · ${row.count}`).join('、') }}</p>
+                <p v-if="stageVfxCoverage.rawCommands.unknown.length" class="vfx-coverage-gap">未识别：{{ stageVfxCoverage.rawCommands.unknown.map(row => `${row.command} · ${row.count}`).join('、') }}</p>
+                <details class="raw-command-matrix">
+                  <summary>RAW 指令矩阵 · 命名字段、导出、消费者、资源与验证</summary>
+                  <div class="raw-command-table" role="region" aria-label="RAW 指令矩阵" tabindex="0">
+                    <table>
+                      <thead><tr><th scope="col">原始指令 / 行数</th><th scope="col">接线状态</th><th scope="col">命名字段</th><th scope="col">导出</th><th scope="col">消费者</th><th scope="col">资源绑定</th><th scope="col">验证入口</th></tr></thead>
+                      <tbody><tr v-for="row in stageVfxCoverage.rawCommands.rows" :key="row.command">
+                        <th scope="row">{{ row.command }} · {{ row.count }}</th><td>{{ rawCommandStatusLabel(row) }}</td><td>{{ row.fields }}</td><td>{{ row.exported || '未导出' }}</td><td>{{ row.consumer || '未接线' }}</td><td>{{ row.resources || '未绑定到消费者' }}</td><td>{{ row.verification || '尚无专门回归' }}</td>
+                      </tr></tbody>
+                    </table>
+                  </div>
+                </details>
+              </template>
+              <p v-else class="vfx-coverage-gap">{{ stageVfxCoverage.rawCommands.status === 'identity_mismatch' ? 'RAW 快照与当前编排身份不一致' : commandInventoryState === 'unavailable' ? 'RAW 指令快照不可用或版本不一致' : 'RAW 指令快照加载中' }}；以下事件统计仅覆盖已导出部分，不能代表全部原始指令。</p>
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
               <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放、渐隐及颜色／节拍控制。<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条未知指令；<template v-if="stageVfxCoverage.newSuspensionlightTempoPending">{{ stageVfxCoverage.newSuspensionlightTempoPending }} 条节拍指令缺少已验证 BPM；</template></template><template v-else>指令轨道加载中；</template>当前可见 {{ visibleSuspensionlightIds.length }} 束，投影仍待原片核对。</p>
@@ -498,6 +515,7 @@ import {
   destroyLiveChibi,
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
+  fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
   fetchLiveChibiImageObjectIndex,
   fetchLiveChibiObjectLayerIndex,
@@ -571,6 +589,8 @@ let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
 const manifest = shallowRef(null)
 const choreography = shallowRef(null)
+const commandInventory = shallowRef(null)
+const commandInventoryState = ref('not_requested')
 const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
 const musicIndex = shallowRef(null)
@@ -877,6 +897,7 @@ const songs = computed(() => choreography.value?.songs || [])
 const selectedSong = computed(() => songs.value.find(song => song.id === selectedSongId.value) || null)
 const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999')
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
+  commandInventory: commandInventory.value,
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
   imageObjects: imageObjectIndex.value,
@@ -886,6 +907,10 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   newSuspensionlightTempo: suspensionTempo.value,
   stageBackgrounds: stageBackgroundIndex.value,
 }))
+function rawCommandStatusLabel(row) {
+  if (row.status === 'guarded') return row.guard === 'not_loaded' ? '资源索引未加载' : row.guard === 'enabled' ? '已放行，待原片对照' : '预览未放行'
+  return { missing: '未接线', unknown: '未识别', non_timed: '非时序来源行', partial: '已接线，待原片对照' }[row.status] || '待核对'
+}
 const stageVfxApproximateCount = computed(() => {
   const events = stageVfxCoverage.value?.sourceEvents
   return events ? events.characterLight + events.bodyColor + events.spotlight + events.pinspotlight + events.laserlight : 0
@@ -1071,6 +1096,19 @@ onMounted(async () => {
     if (stageDisposed) return
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal})
     if (stageDisposed) return
+    if (MAINTAINER) {
+      commandInventoryState.value = 'loading'
+      void fetchLiveChibiCommandInventory(manifest.value.choreography.index, {signal:lifetime.signal})
+        .then(value => {
+          if (stageDisposed) return
+          commandInventory.value = value
+          commandInventoryState.value = 'loaded'
+        }).catch(error => {
+          if (stageDisposed) return
+          commandInventoryState.value = 'unavailable'
+          console.warn('[ChibiStage] RAW command inventory unavailable', error)
+        })
+    }
     musicIndex.value = await fetchLiveChibiMusicIndex({signal:lifetime.signal})
     if (stageDisposed) return
     initializeLineup()
@@ -4036,6 +4074,10 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .vfx-coverage .vfx-coverage-gap { color: #994a20; }
 .vfx-coverage summary { cursor: pointer; }
 .vfx-coverage code { display: block; overflow-wrap: anywhere; margin-top: 5px; }
+.raw-command-matrix { min-width: 0; }
+.raw-command-table { max-width: 100%; overflow-x: auto; margin-top: 8px; }
+.raw-command-table table { width: 100%; min-width: 760px; border-collapse: collapse; }
+.raw-command-table th, .raw-command-table td { padding: 7px; border: 1px solid var(--gs-rule); text-align: left; vertical-align: top; overflow-wrap: anywhere; font-size: var(--gs-text-meta); }
 
 .lineup-section { display: grid; gap: 8px; }
 .lineup-section .section-heading { margin-bottom: 0; }
