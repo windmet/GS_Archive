@@ -26,6 +26,9 @@ export function archiveGeneralTextCorpus(root) {
     for (const row of idol.scenarios || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'text', row.text, idol.idol_code);
     for (const row of idol.idol_detail || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'self-intro', row.text, idol.idol_code);
   }
+  // Office system voices (Yamamura: login bonus, work menu, bonus days), from the tracked list the home page reads.
+  const office = JSON.parse(fs.readFileSync(path.join(root, 'src/data/officeSystemVoices.json'), 'utf8'));
+  for (const scene of office.scenes) for (const line of scene.lines) add('office-voice', line.cue, 'text', line.text, office.speaker.code);
   // Chats: personal and unit talks and random topics, from the tracked chat text index (the compiled
   // chats stay in the local corpus). References keep the conversation, step and speaker.
   const chats = JSON.parse(fs.readFileSync(path.join(root, 'translation/studio/source/chat-text-index.json'), 'utf8')).files;

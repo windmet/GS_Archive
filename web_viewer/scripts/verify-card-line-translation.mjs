@@ -15,6 +15,7 @@ assert.equal(count('card-line'), 1534, 'normal 584 + awakened 826 + extra 124 un
 assert.equal(count('card-touch'), 2356, 'unique home touch voices')
 assert.equal(count('call-title'), 341, 'unique call titles')
 assert.equal(count('home-voice'), 1078, 'general HomeStand voices 1029 + IdolDetail self-introductions 49')
+assert.equal(count('office-voice'), 11, 'Yamamura office voices: login bonus 2 + work menu 5 + bonus days 4')
 const speakers = unit => new Set(unit.references.map(ref => ref.speaker))
 // Spoken lines belong to one idol; a call title may name calls of several (確かな手ごたえ: 011min, 046chr).
 assert.ok(lines.filter(unit => unit.kind !== 'call-title').every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')

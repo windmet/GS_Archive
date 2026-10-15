@@ -82,8 +82,12 @@ try {
   const detail = read('src/components/archive/ArchiveCardDetail.vue')
   assert.match(detail, /operationalLine\(cue\.text\)\.text/)
   assert.doesNotMatch(detail, /presentProducerAddressingText\(cue\.text\)/)
+  assert.match(home, /archiveLineText\('card-lines', \[\['office-voice', 'text'\]\], line\.text\)/)
+  assert.match(home, /getVoiceUrl\(`\$\{line\.cue\}\.m4a`\)/)
+  const office = JSON.parse(read('src/data/officeSystemVoices.json'))
+  assert.deepEqual(office.scenes.map(scene => [scene.label, scene.lines.length]), [['登录奖励', 2], ['工作开始', 5], ['加成日', 4]])
   const mobile = read('src/components/archive/ArchiveMobileArchive.vue')
   assert.match(mobile, /archiveLineText\('card-lines', \[\['call-title', 'title'\]\]/)
   assert.match(mobile, /archiveLineText\('chats', CHAT_KEYS, source\)/)
-  console.log('Character line text: home touch, general home voices and self-introductions, card lines, operational voices, call titles and chats share one lookup; pending, locale, unnamed/named Producer and P酱; card voice preview carries the translation. Browser acceptance is separate.')
+  console.log('Character line text: home touch, general home voices and self-introductions, office system voices, card lines, operational voices, call titles and chats share one lookup; pending, locale, unnamed/named Producer and P酱; card voice preview carries the translation. Browser acceptance is separate.')
 } finally { globalThis.fetch = originalFetch; await server.close() }

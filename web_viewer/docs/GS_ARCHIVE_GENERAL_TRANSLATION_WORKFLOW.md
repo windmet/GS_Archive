@@ -57,7 +57,7 @@ node scripts/general-translation-workflow.mjs review G-chats-20261015-001 --revi
 
 ## 页面上的唯一通路
 
-卡面台词、触摸语音、首页通用语音、偶像自我介绍、电话标题和聊天都经 `archiveLineText`：按资料语言选译文；分片加载中隐藏，不闪日文；无译文回落原文；最后替换制作人宏。首页通用语音（`cue.source === 'idol'`）查 `home-voice/text`，偶像资料页的自我介绍查 `home-voice/self-intro`。`verify-character-line-text.mjs` 覆盖这条通路。
+卡面台词、触摸语音、首页通用语音、偶像自我介绍、电话标题和聊天都经 `archiveLineText`：按资料语言选译文；分片加载中隐藏，不闪日文；无译文回落原文；最后替换制作人宏。首页通用语音（`cue.source === 'idol'`）查 `home-voice/text`，偶像资料页的自我介绍查 `home-voice/self-intro`。首页「事务所语音」对话框里山村贤的 11 句系统语音（登录奖励 2、工作开始 5、加成日 4，清单在 `src/data/officeSystemVoices.json`）查 `office-voice/text`。随机话题标题不单独翻译：标题就是话题首句换了写法（换行变空格，表情变（表情）），生成时由 `scripts/lib/random-talk-titles.mjs` 用首句译文按同样写法派生（中文直接拼接换行，拉丁词间保留一个空格），所以修改首句后标题会自动跟着变。`verify-character-line-text.mjs` 覆盖这条通路。
 
 ## 剧情正文（含季节企划）
 
