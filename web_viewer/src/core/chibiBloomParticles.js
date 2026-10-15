@@ -15,12 +15,14 @@ function random(seed,birth,channel){
  x=Math.imul(x^(x>>>15),0x846ca68b)
  return ((x^(x>>>16))>>>0)/4294967296
 }
-// Unity LimitVelocityOverLifetime uses a simulation step. The retained native
-// dampen/limit curves are sampled at 60 Hz here; device frame/RNG parity is open.
+// Unity 2020.3.34f1 libunity.so 0x5f8e94..0x5f8f04:
+// limit blending = 1 - powf(1 - dampen, abs(dt) * 30).
+// 30 is the native damping time base, independent of targetFrameRate=60.
+// Curve/displacement integration remains a replayable 60 Hz approximation.
 function distance(system,age,life,speed){
  let t=0,d=0,v=speed
  while(t<age){const dt=Math.min(1/60,age-t),limit=sampleParticleCurve(system.speedLimit,t/life)
-  if(v>limit)v+=(limit-v)*system.dampen*dt*60
+  if(v>limit)v+=(limit-v)*(1-Math.pow(1-system.dampen,Math.abs(dt)*30))
   d+=v*dt;t+=dt
  }
  return d

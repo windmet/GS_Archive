@@ -7,6 +7,16 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/object-layers/index.json',import.meta.url))):{assets:Object.fromEntries(Object.entries(data.assets).map(([name,m])=>[name,{bundle:m.bundle,particleCount:m.particleCount}]))}
 const hash=published?crypto.createHash('sha256').update(fs.readFileSync(new URL('../public/assets/live-chibi/object-layers/index.json',import.meta.url))).digest('hex'):data.objectIndexSha256
 const attached=attachBloom(index,data,hash)
+// A zero-limit probe has a closed geometric distance. Native damping retains
+// sqrt(.88) velocity each 60 Hz step, not .88 (the former preview's 60 multiplier).
+const probe={...data.assets.fx_in_flslgt_bloom_1.systems[1],delay:0,
+ radius:0,rate:0,bursts:[{time:0,count:1}],position:{x:0,y:0,z:0},
+ angle:0,scaleY:1,lifetime:{mode:0,scalar:5},speed:{mode:0,scalar:10},
+ speedLimit:{mode:0,scalar:0},dampen:.12}
+const q=Math.sqrt(.88),expected=10/60*q*(1-q**6)/(1-q)
+const probePoint=sampleBloomSystem(probe,100,0)[0]
+assert.ok(Math.abs(Math.hypot(probePoint.x,probePoint.y)/100-expected)<1e-10,
+ 'Native limit damping uses the exponential 30 Hz time base')
 assert.throws(()=>attachBloom(index,data,'0'.repeat(64)))
 assert.equal(Object.keys(data.assets).length,3)
 if(published)assert.equal(crypto.createHash('sha256').update(fs.readFileSync(new URL('../public/assets/live-chibi/'+data.texture.file,import.meta.url))).digest('hex'),data.texture.pngSha256)
