@@ -5,6 +5,7 @@
 ## 坐标系（`shared/story/AdvStageLayout.js`）
 
 - 单位是 StoryIdolCanvas 画布单位：x 向右，y 向上，原点在画面中心。StoryCamera 的 orthographicSize 为 4.347826 世界单位，画布 1/72，所以视野高 626.087 单位。画面宽高比 ≥ 16:9 时按高度适配，更窄时保持 16:9 的宽度（1113.04 单位）。
+- 竖屏：客户端只有横屏，没有原生规则。宽高比从 1（方屏）到 1:2，可视舞台宽度从 16:9 宽度（1113 单位）连续收窄到 620 单位，人物大小随之变大，不会缩成一条；同时偶像槽位与镜头平移的横向偏移按“可视宽度 / 1113”压缩，三人同框（x = ±350）也留在手机屏内，相邻人物可能略有重叠。横屏与方屏不变。人物大小只取决于整块舞台容器，顶部的 step、返回、菜单是叠层，不参与计算。
 - 偶像槽位 = (idol_position + idol_zoom 位置)，再加上 NotChangedPriority 的 (0, −50)。localScale 等于 idol_zoom 的 size。
 - 骨骼立绘：根节点 y = 槽位 y + prefab 根 y × zoom；Pixi 缩放 = 单位像素 × zoom / 3（SkeletonDataAsset scale 1/300，referencePixelsPerUnit 100）。
 - 贴图立绘（社长等 3 个剪影与 2 个童年剪影）：用 sprite rect 原尺寸，底边中点在 idolothersetting 的 positionY（没有则 −640）。站内 PNG 是打包后的 texture rect，按 textureRectOffset 放回 rect 内。
@@ -28,6 +29,9 @@
 - 删除猜测的开口倍率、037jir 用 mouth 骨的特例、子 rig 与 mouth_clip 补偿、chin_beard 提升。
 
 ## 验证
+
+- 口型（2026-10-15 复核）：剧情里 `004ter` 播放时嘴骨 scaleX 在 1–3.5 间随曲线开合、scaleY 约 1，张/闭嘴贴图（`mouth_default2` / `mouth_default1`、`mouth_swet2`）按采样切换，嘴型与游戏截图一致；编译场景中 6217 次 face 动画有 6151 次能在 MouthInfo 中找到（其余是 102sha 剪影与 3 个 `joy`）。新增 `verify-lip-sync-native.mjs` 固定原生语义（开口、闭口、turnOffLipSync、缺 MouthInfo、body 轨道回退、曲线 60 fps 从 0.1 s 起）。
+- 缩放复核：用游戏截图（舞田 lesson、天道辉教室）按同尺寸渲染对比，头宽与背景板位置相差 2–4%，没有整体偏大，所以未加全局缩放倍数。
 
 - 新增 `verify-native-adv-placement.mjs`（已加入 verifier batch），覆盖几何公式、prefab 数据，以及编译场景中 360 个模型的覆盖。其中 358 个有定位；`020hay_002_00`、`049eis_002_00` 在客户端与站内都没有资源。
 - `verify-scenario-commands.py` 新增 idol_zoom 编译回归。

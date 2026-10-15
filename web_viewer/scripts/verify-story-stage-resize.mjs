@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { SpineManager } from '../src/core/SpineManager.js'
 import { storyStageFrame } from '../src/core/StoryStageFraming.js'
-import { advStageUnit } from '../shared/story/AdvStageLayout.js'
+import { advHorizontalSqueeze, advStageUnit } from '../shared/story/AdvStageLayout.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 const saved = { requestAnimationFrame: globalThis.requestAnimationFrame, cancelAnimationFrame: globalThis.cancelAnimationFrame, ResizeObserver: globalThis.ResizeObserver }
@@ -20,7 +20,7 @@ const point = () => ({ x: 0, y: 0, set(x, y = x) { this.x = x; this.y = y } })
 // Native skeleton root on a width x height stage: slot (posX, -50 + posY) + prefabY * zoom, 1/3 unit per px.
 const expected = (width, height, { posX = 0, posY = 0, zoom = 1 }, prefabY) => {
   const unit = advStageUnit(width, height)
-  return { x: width / 2 + posX * unit, y: height / 2 - (-50 + posY + prefabY * zoom) * unit, scale: unit * zoom / 3 }
+  return { x: width / 2 + posX * unit * advHorizontalSqueeze(width, height), y: height / 2 - (-50 + posY + prefabY * zoom) * unit, scale: unit * zoom / 3 }
 }
 function setup() {
   const spine = { alpha: 0.7, visible: true, position: point(), scale: point() }

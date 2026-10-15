@@ -23,12 +23,32 @@ export const BACKGROUND_PANEL_SCALE = ADV_ORTHOGRAPHIC_SIZE / 5
 // Screen pixels per canvas unit for a width x height stage.
 export function advStageUnit(width, height) {
   if (!(width > 0) || !(height > 0)) return 1
-  return width / height >= ADV_REFERENCE_ASPECT ? height / ADV_VIEW_HEIGHT : width / ADV_VIEW_WIDTH
+  const aspect = width / height
+  if (aspect >= ADV_REFERENCE_ASPECT) return height / ADV_VIEW_HEIGHT
+  return width / advVisibleWidth(aspect)
+}
+
+// The client is landscape-only, so portrait has no native rule: from a square screen down to 1:2 the visible
+// stage width narrows from the 16:9 width to ADV_PORTRAIT_VISIBLE_WIDTH, which keeps figures large enough to
+// read while a centred pair at the usual +-200 slots stays in view. Landscape and square are unchanged.
+export const ADV_PORTRAIT_VISIBLE_WIDTH = 620
+export function advVisibleWidth(aspect) {
+  if (aspect >= 1) return ADV_VIEW_WIDTH
+  const t = Math.min(1, Math.max(0, (aspect - 0.5) / 0.5))
+  return ADV_PORTRAIT_VISIBLE_WIDTH + (ADV_VIEW_WIDTH - ADV_PORTRAIT_VISIBLE_WIDTH) * t
+}
+
+// Portrait only: actor slots and camera pans spread over the full 16:9 width, which a narrow screen cannot show,
+// so their horizontal offsets are squeezed by the same ratio the visible width shrank (figure size is unchanged,
+// neighbours may overlap a little). 1 for landscape and square screens.
+export function advHorizontalSqueeze(width, height) {
+  if (!(width > 0) || !(height > 0)) return 1
+  return advVisibleWidth(width / height) / ADV_VIEW_WIDTH
 }
 
 export function advToScreen(width, height, x, y) {
   const unit = advStageUnit(width, height)
-  return { x: width / 2 + x * unit, y: height / 2 - y * unit }
+  return { x: width / 2 + x * unit * advHorizontalSqueeze(width, height), y: height / 2 - y * unit }
 }
 
 // IdolCharacter origin in canvas units.
@@ -47,10 +67,10 @@ export function textureFigureScreen(width, height, slot, texture, positionY = TE
   const [rectWidth] = texture.size
   const [offsetX, offsetY] = texture.offset
   const [, imageHeight] = texture.image
-  const left = slot.x + (-rectWidth / 2 + offsetX) * zoom
+  const unit = advStageUnit(width, height)
   const top = slot.y + (positionY + offsetY + imageHeight) * zoom
-  const point = advToScreen(width, height, left, top)
-  return { ...point, scale: advStageUnit(width, height) * zoom }
+  const centre = advToScreen(width, height, slot.x, top)
+  return { x: centre.x + (-rectWidth / 2 + offsetX) * zoom * unit, y: centre.y, scale: unit * zoom }
 }
 
 // Screen size of the background panel (its Image stretches any sprite to the 1800x960 rect), centred.
@@ -74,7 +94,7 @@ export function backgroundPanelRect(width, height) {
 // background scales by max(1, zoom) with the same shift.
 export function cameraScreenTransform(width, height, { zoom = 1, x = 0, y = 0 } = {}) {
   const unit = advStageUnit(width, height)
-  const shiftX = -x * unit * zoom, shiftY = y * unit * zoom
+  const shiftX = -x * unit * zoom * advHorizontalSqueeze(width, height), shiftY = y * unit * zoom
   const bgScale = Math.max(1, zoom)
   return {
     scale: zoom, x: width / 2 * (1 - zoom) + shiftX, y: height / 2 * (1 - zoom) + shiftY,
