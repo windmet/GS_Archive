@@ -56,6 +56,8 @@
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
+    :data-penlight-ids="penlightIds.join(',')"
+    :data-penlight-renderers="penlightRendererCount"
     data-old-suspensionlight-status="native-channels-hierarchy-stage-projection"
     data-new-suspensionlight-status="native-show-rotate-scale-fade-stage-projection"
     :data-backmonitor-registration="backmonitorRegistration(selectedSong?.songCode).id"
@@ -271,7 +273,7 @@
             <label class="camera-toggle"><input v-model="cameraEnabled" type="checkbox" @change="applyCameraTransform" /><span>演出镜头</span></label>
             <label class="camera-toggle"><input v-model="lyricsEnabled" type="checkbox" /><span>显示歌词</span></label>
             </div>
-            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台与人物</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
+            <label class="viewing-select"><span>加载</span><select v-model="stageQuality" aria-label="舞台加载方式" @change="applyStageQuality"><option value="lite">轻量 · 舞台、人物与应援棒</option><option value="full">完整 · 含灯光与动态物件</option></select></label>
             <label class="viewing-select"><span>帧率</span><select v-model="frameRateSetting" aria-label="舞台帧率" @change="setFrameRate"><option value="auto">自动{{ frameRateSetting === 'auto' ? `（当前 ${frameRateLabel}）` : '' }}</option><option value="30">30 帧 · 省电</option><option value="60">60 帧</option><option value="max">跟随屏幕刷新率</option></select></label>
             <label class="range-control viewing-range"><span>倍速</span><input v-model.number="playbackSpeed" aria-label="播放倍速" type="range" min="0.5" max="2" step="0.05" @input="applyPlaybackSpeed" /><output>{{ playbackSpeed.toFixed(2) }}×</output></label>
             <label class="range-control viewing-range"><span>视图</span><input v-model.number="stageViewScale" aria-label="整体视图缩放" type="range" min="0.5" max="1.5" step="0.01" @input="applyCameraTransform" /><output>{{ stageViewScale.toFixed(2) }}×</output></label>
@@ -320,6 +322,7 @@
                 <input v-model="beamEffectsEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>光束灯效</span>
               </label>
+              <label><input v-model="penlightsEnabled" type="checkbox" @change="applyLayerDebugVisibility" /><span>应援棒</span></label>
               <label v-if="!isSpecialSingle">
                 <input v-model="charactersEnabled" type="checkbox" @change="applyLayerDebugVisibility" />
                 <span>舞台人物</span>
@@ -379,6 +382,8 @@
               </small>
             <div v-if="stageVfxCoverage" class="vfx-coverage">
               <h3>效果覆盖 · 来源统计</h3>
+              <p v-if="penlightResources">应援棒已接入原生网格、动作、配色与逐渲染器排序；当前 {{ penlightIds.length }} 组、{{ penlightRendererCount }} 个绘制部件。随机种子与原片表现仍待对照。<template v-if="penlightPendingCount">{{ penlightPendingCount }} 组纹理加载中或不可用。</template><template v-if="penlightUnresolvedColors">{{ penlightUnresolvedColors }} 组缺少可解析配色。</template></p>
+              <p v-else-if="penlightLoadFailed" class="vfx-coverage-gap">应援棒资源或命名事件不可用，其他舞台图层仍可观看。</p>
               <template v-if="stageVfxCoverage.rawCommands.status === 'source_inventory'">
                 <p>RAW 快照共 {{ stageVfxCoverage.rawCommands.total }} 行、{{ stageVfxCoverage.rawCommands.rows.length }} 类原始行<template v-if="stageVfxCoverage.rawCommands.nonTimedCount">，其中 {{ stageVfxCoverage.rawCommands.nonTimedCount }} 行非时序数据</template>；未接线 {{ stageVfxCoverage.rawCommands.missing.reduce((n, row) => n + row.timedCount, 0) }} 行，未识别 {{ stageVfxCoverage.rawCommands.unknown.reduce((n, row) => n + row.timedCount, 0) }} 行。已接线不等于原版视觉验收。</p>
                 <p v-if="stageVfxCoverage.rawCommands.missing.length" class="vfx-coverage-gap">未接线：{{ stageVfxCoverage.rawCommands.missing.map(row => `${row.command} · ${row.count}`).join('、') }}</p>
@@ -452,7 +457,7 @@
     </ArchiveTerminalDialog>
     <ArchiveTerminalDialog class="stage-dev-dialog stage-quality-dialog" :open="qualityPromptOpen" title="选择舞台加载方式" :title-id="qualityTitleId" @close="chooseStageQuality(stageQuality)">
       <div class="quality-options">
-        <button type="button" :aria-pressed="stageQuality === 'lite'" @click="chooseStageQuality('lite')"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、演出镜头与歌词。不开启灯光和动态物件，手机与平板更流畅。</span></button>
+        <button type="button" :aria-pressed="stageQuality === 'lite'" @click="chooseStageQuality('lite')"><strong>轻量加载<small v-if="recommendedQuality === 'lite'">推荐</small></strong><span>静态舞台、背景屏幕、舞台人物、应援棒、演出镜头与歌词。不开启光束和动态物件，手机与平板更流畅。</span></button>
         <button type="button" :aria-pressed="stageQuality === 'full'" @click="chooseStageQuality('full')"><strong>完整加载<small v-if="recommendedQuality === 'full'">推荐</small></strong><span>另加灯光、光束与舞台动态物件。灯光仍是复刻中的近似效果，耗电较多。</span></button>
       </div>
       <p class="quality-tip"><Maximize :size="15" aria-hidden="true" />播放时选「沉浸观看」隐藏界面并全屏，画面最流畅。</p>
@@ -515,6 +520,7 @@ import {
   destroyLiveChibi,
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
+  fetchLiveChibiPenlights,
   fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
   fetchLiveChibiImageObjectIndex,
@@ -543,6 +549,8 @@ import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../core/chibiSuspensionlights.js'
+import { createPenlightSampler } from '../core/chibiPenlights.js'
+import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
@@ -651,6 +659,13 @@ const immersiveHintSeen = ref((() => { try { return localStorage.getItem(IMMERSI
 const objectLayersEnabled = ref(stageQuality.value === 'full')
 const lightingEnabled = ref(stageQuality.value === 'full')
 const beamEffectsEnabled = ref(stageQuality.value === 'full')
+const penlightsEnabled = ref(true)
+const penlightResources = shallowRef(null)
+const penlightLoadFailed = ref(false)
+const penlightIds = ref([])
+const penlightRendererCount = ref(0)
+const penlightPendingCount = ref(0)
+const penlightUnresolvedColors = ref(0)
 const charactersEnabled = ref(true)
 const characterShadowsEnabled = ref(true)
 const lyricsEnabled = ref(true)
@@ -737,6 +752,19 @@ const stagelightSprites = createSpotlightSpriteStore({
   onError: error => console.warn('Native stage lamp textures could not be loaded', error),
 })
 let stagelightSongId = ''
+let penlightSongId = ''
+let penlightSamplerKey = ''
+let penlightSampler = null
+const penlightSprites = createSpotlightSpriteStore({
+  layerCount:null,
+  loadTexture:file=>loadImageLayerTexture(file,12000),
+  createRuntime:(_id,layers,textures)=>markRaw(createPenlightRuntime(PIXI,penlightResources.value.model,
+    layers[0].prefab,new Map(layers.map((layer,i)=>[layer.asset,textures[i]])),cameraContainer)),
+  destroyRuntime:releasePenlightRuntime,
+  destroyTexture:texture=>texture.destroy(true),
+  onReady:()=>{syncPenlights();requestPausedSuspensionRender()},
+  onError:error=>console.warn('[ChibiStage] Penlight textures unavailable',error),
+})
 const visibleSuspensionlightIds = ref([])
 let suspensionTrackKey = ''
 const suspensionTrack = shallowRef(null)
@@ -898,6 +926,7 @@ const selectedSong = computed(() => songs.value.find(song => song.id === selecte
 const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999')
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
   commandInventory: commandInventory.value,
+  penlightCommands: penlightResources.value?.commands,
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
   imageObjects: imageObjectIndex.value,
@@ -1139,6 +1168,15 @@ onMounted(async () => {
       stageVocalEnabled.value = stageVocalAvailable.value
     }
     const optionalOptions={signal:lifetime.signal}
+    void fetchLiveChibiPenlights(manifest.value.choreography.index,optionalOptions).then(value=>{
+      if(stageDisposed)return
+      penlightResources.value=value
+      syncPenlights();requestPausedSuspensionRender()
+    }).catch(error=>{
+      if(stageDisposed)return
+      penlightLoadFailed.value=true
+      console.warn('[ChibiStage] Penlight input unavailable',error)
+    })
     const install=(target,value,sync)=> {
       if(stageDisposed || !value)return
       target.value=value
@@ -1188,6 +1226,7 @@ onBeforeUnmount(() => {
   releaseSpotlights()
   stagelightSprites.release()
   suspensionSprites.release()
+  penlightSprites.release()
   suspensionAbort?.abort()
   oldSuspensionSprites.release()
   oldSuspensionAbort?.abort()
@@ -1953,6 +1992,7 @@ function applyStageLighting() {
   syncStagelights()
   syncSuspensionlights()
   syncOldSuspensionlights()
+  syncPenlights()
   syncSpotlightBackground()
   ensureWholeScreenColorOverlay()
   applyImageColors()
@@ -2189,6 +2229,54 @@ function requestPausedSuspensionRender() {
       owner.render()
     }
   })
+}
+
+function syncPenlights() {
+  if(penlightLoadFailed.value)return
+  try {syncPenlightMeshes()}
+  catch(error) {
+    penlightSprites.release()
+    penlightResources.value=null
+    penlightLoadFailed.value=true
+    penlightIds.value=[];penlightRendererCount.value=0
+    console.warn('[ChibiStage] Penlight renderer unavailable',error)
+  }
+}
+
+function syncPenlightMeshes() {
+  if(!app || !cameraContainer)return
+  const song=selectedSong.value,resources=penlightResources.value
+  const generation=`${song?.id || ''}:${stageBuildSequence}`
+  if(penlightSongId!==generation) {
+    penlightSprites.release();penlightSongId=generation
+    penlightSampler=null;penlightSamplerKey=''
+  }
+  const ids=[]
+  let rendered=0,pending=0,unresolved=0
+  for(const runtime of penlightSprites.runtimes.values())for(const draw of runtime.draws)draw.mesh.visible=false
+  const track=resources?.commands.songs[song?.id]
+  if(penlightsEnabled.value && track && track.songCode===song.songCode && track.source===song.source) {
+    const colors=activeSlots.value.map(slot=>resources.commands.idolColors[slot.characterId] || '')
+    const key=`${generation}:${colors.join(',')}`
+    if(key!==penlightSamplerKey) {
+      penlightSamplerKey=key
+      penlightSampler=createPenlightSampler(track.events,resources.model,{seed:song.id,
+        nativeIdolType:track.nativeIdolType,idolColors:colors})
+    }
+    const assets=Object.fromEntries(Object.entries(resources.model.textures).map(([name,asset])=>
+      [name,{file:`penlight/${asset.file}`}]))
+    const width=app.renderer.width/app.renderer.resolution,height=app.renderer.height/app.renderer.resolution
+    for(const state of penlightSampler(stageTime.value)) {
+      const layers=Object.keys(resources.model.textures).map(asset=>({asset,prefab:state.prefab.name}))
+      const runtime=penlightSprites.ensure(`${song.id}:${state.key}`,{layers},assets)
+      if(!runtime) {pending++;continue}
+      rendered+=applyPenlightRuntime(runtime,state,stageTime.value,width,height,environmentScale.value)
+      ids.push(state.key)
+      if(state.unresolvedColor)unresolved++
+    }
+  }
+  if(ids.join(',')!==penlightIds.value.join(','))penlightIds.value=ids
+  penlightRendererCount.value=rendered;penlightPendingCount.value=pending;penlightUnresolvedColors.value=unresolved
 }
 
 function syncSuspensionlights() {

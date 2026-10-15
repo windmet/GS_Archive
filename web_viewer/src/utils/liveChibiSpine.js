@@ -13,6 +13,7 @@ import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
 import { attachChibiFloor } from '../core/chibiFloorParticles.js'
 import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
+import { validatePenlightData } from '../core/chibiPenlights.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -88,6 +89,18 @@ export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
   return validateStageCommandInventory(JSON.parse(text), hash)
 }
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
+export async function fetchLiveChibiPenlights(file, {signal}={}) {
+  const [text,modelText,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-penlight-commands.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/penlight/index.json`,{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const digest=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const [choreographyHash,modelHash]=await Promise.all([digest(choreographyText),digest(modelText)])
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return {commands:validatePenlightData(JSON.parse(text),choreographyHash,modelHash),model:JSON.parse(modelText)}
+}
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
