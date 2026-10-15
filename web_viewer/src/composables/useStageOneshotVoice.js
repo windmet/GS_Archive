@@ -28,7 +28,8 @@ export function validateOneshotManifest(manifest) {
 }
 
 function loadOneshotManifest() {
-  manifestRequest ||= fetch(ONESHOT_MANIFEST_URL)
+  manifestRequest ||= Promise.resolve()
+    .then(() => fetch(ONESHOT_MANIFEST_URL))
     .then(response => {
       if (!response.ok) throw new Error(`oneshot manifest HTTP ${response.status}`)
       return response.json()
@@ -60,6 +61,7 @@ export function useStageOneshotVoice({ songCode, centerIdolCode, playbackRate })
   let audio = null
   let audioIdol = ''
   let cursor = 0
+  let volume = 1
 
   const entry = computed(() => manifest.value?.songs?.[songCode.value] || null)
   const available = computed(() => Boolean(entry.value))
@@ -85,6 +87,7 @@ export function useStageOneshotVoice({ songCode, centerIdolCode, playbackRate })
     audio = new Audio(clip.value.url)
     audio.preload = 'auto'
     audio.playbackRate = playbackRate.value
+    audio.volume = volume
     audioIdol = resolvedIdolCode.value
     audio.load()
     return audio
@@ -119,6 +122,11 @@ export function useStageOneshotVoice({ songCode, centerIdolCode, playbackRate })
     if (audio) audio.playbackRate = rate
   }
 
+  function setVolume(value) {
+    volume = Math.min(1, Math.max(0, Number(value) || 0))
+    if (audio) audio.volume = volume
+  }
+
   watch(songCode, () => {
     selection.value = ONESHOT_CENTER
     releaseClip()
@@ -144,6 +152,7 @@ export function useStageOneshotVoice({ songCode, centerIdolCode, playbackRate })
     triggers,
     release: releaseClip,
     setPlaybackRate,
+    setVolume,
     start,
     stop,
     update,

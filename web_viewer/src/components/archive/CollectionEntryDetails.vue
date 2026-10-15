@@ -1,6 +1,6 @@
 <template>
   <section class="domain-panel collection-entry-details">
-    <DomainMediaPreview :binding="detail.media?.image" :effect-status="detail.media?.effectStatus" :name="name" />
+    <DomainMediaPreview :binding="kind==='costumes' ? costumeImage(detail.entry?.id,detail.media?.image) : detail.media?.image" :effect-status="detail.media?.effectStatus" :name="name" />
     <div class="domain-detail-title"><h3 :title="detail.entry.nameJa">{{ name }}</h3><p v-if="name !== detail.entry.nameJa" lang="ja" class="collection-original">{{ detail.entry.nameJa }}</p></div>
     <p class="domain-description"><DomainInlineText :text="description" /></p>
     <dl class="domain-meta">
@@ -41,7 +41,7 @@ import {ChevronRight,ImageOff} from '@lucide/vue'
 import {historicalDate,historicalPeriod} from './DomainPresentation.mjs'
 import {archiveText as costumeText} from './useArchiveCostumeText.js'
 import {COLLECTION_KINDS} from '../../core/CollectionRouteState.js'
-import {costumeName,costumeSlotLabels,costumeUseLabel} from '../../presentation/CostumeCollection.js'
+import {costumeImage,costumeName,costumeSlotLabels,costumeUseLabel} from '../../presentation/CostumeCollection.js'
 import {archiveText} from './useArchiveCollectionText.js'
 import {archiveText as cardText} from './useArchiveCardTitle.js'
 import {IDOL_ID_TO_NAME} from '../../utils/IdolNameMap.js'
@@ -75,10 +75,18 @@ const usageCards=computed(()=>{
   return Array.isArray(cards) ? cards : []
 })
 const usageHeading=computed(()=>props.kind==='costumes' ? '穿着此衣装的卡片' : '使用此道具的卡片')
+// Unnamed models carry a site label, and models without a usable client icon show a site render.
+const costumeFootnote=computed(()=>{
+  const entry=props.detail.entry || {}
+  const name=entry.nameJa ? '衣装名称与说明来自客户端衣装配置' : '客户端未给此衣装命名，名称为本站按模型外观整理的称呼'
+  const binding=costumeImage(entry.id,props.detail.media?.image)
+  const image=binding?.status!=='site-render' ? '缩略图为客户端衣装图标' : `缩略图为本站从 spine 模型渲染（${binding.replacesIcon ? '客户端图标画的是另一套衣装' : '客户端没有对应的衣装图标'}）`
+  return `${name}；${image}。`
+})
 const footnote=computed(()=>({
   honors:'以下是已知来源，不代表完整的解锁条件。',
   currencies:'历史配置不代表当前可获得。客户端只保存奖励配置；商店价格与兑换内容由服务端下发，尚未完整收录。',
-  costumes:'衣装名称与说明来自客户端衣装配置；缩略图为客户端衣装图标。',
+  costumes:costumeFootnote.value,
 })[props.kind] || '历史配置不代表当前可获得。用途分类为阅读整理标签；兑换商店和任务来源尚未完整收录。')
 const cardTitle=source=>cardText('card',source,'title')
 function cardIdolName(card){const source=IDOL_ID_TO_NAME[card.character_id] || '';return props.displayIdolName(card.character_id,source) || source || '姓名待确认'}

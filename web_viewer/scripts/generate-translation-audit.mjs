@@ -73,7 +73,7 @@ const unusedCues=read('src/data/unusedVoiceArchive.json').families.flatMap(f=>f.
 const pending=[
  {id:'card-voice-audio-only',label:'卡面演出语音（仅有音频）',total:operational.filter(c=>c.text_source==='audio_only').length,status:'audio-only',note:'主数据与已抓取的 wiki 卡页都没有文字；剩余 wiki 卡页继续转录后会进入「卡面文本·演出语音」。'},
  {id:'home-live-result',label:'首页 LiveResult 语音',total:null,status:'audio-only',note:'主数据 343 行指向 3_2_NNN 脚本，脚本只有语音指令没有文字；需先听写音频，未计入首页语音·通用。'},
- {id:'unused-audio-only',label:'未使用语音（仅有音频）',total:unusedCues.filter(c=>!c.text).length,status:'audio-only',note:'未使用语音存档中没有脚本文字的条目；只有齋藤 3_1_102 的有文字条目计入「未使用语音」。'},
+ {id:'unused-audio-only',label:'其他语音（仅有音频）',total:unusedCues.filter(c=>!c.text).length,status:'audio-only',note:'其他语音存档中没有脚本文字的条目（含标题呼号）；只有齋藤 3_1_102 的有文字条目计入「未使用语音」。'},
  {id:'hardcoded-ui',label:'尚未提取的界面文案 / 活动与歌曲专名',total:null,status:'unmeasured',note:'语言开关切换已接入的名称与说明；硬编码导航、偶像详细资料和文案尚未全量本地化，不计作已翻译。'},
  {id:'image-text',label:'图片内文字、歌词与未进入 Reader 的原始文本',total:null,status:'unmeasured',note:'本审计不覆盖这些原始资源；不能由已有目录数量推断翻译完成。'},
 ]

@@ -50,9 +50,12 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     variants: (song.variants || []).map(entry => ({ id: entry.song_code, title: entry.title || '版本名称待确认' })),
     audioGroups: [
       { title: '收录组合 / 关联组合', kind: 'unit', entries: (song.audio?.unit_codes || []).map(unit), note: '组合单轨试听请在上方「演唱试听」中选择「组合」；下方链接打开组合档案。' },
-      { title: 'Center 台词', kind: 'idol', entries: (song.audio?.oneshot_idol_codes || []).map(idol), note: '原曲在曲中留白一句，游戏按编成 Center 卡的偶像播放其台词；舞台页可任选试听。' },
+      { title: 'Center 台词', kind: 'idol', entries: (song.audio?.oneshot_idol_codes || []).map(idol), note: '原曲在曲中留白一句，游戏按编成 Center 卡的偶像播放其台词；上方歌曲播放与舞台页都可任选试听。' },
       { title: '个人声部', kind: 'idol', entries: (song.audio?.idol_vocal_codes || []).map(idol), note: '已收录的个人演唱声部。' },
     ].filter(group => group.entries.length),
+    // The game fills the mix's silent line with the deck center's oneshot; the song page has no deck, so it
+    // starts from the original performer slot 1 and lets the reader pick any collected idol.
+    centerLine: songCenterLine(song, idol),
     fullMixCollected: Boolean(song.audio?.has_full_mix),
     playback: { track: playbackTrack?.url ? playbackTrack : null, experiment },
     playbackLabel: experiment ? '可试听 · 实验混音' : playbackTrack?.url ? '可试听' : '暂未提供试听',
@@ -61,4 +64,18 @@ export function buildSongPresentation(song, identity, { playbackTrack = null, au
     links: song.links || [],
     technicalEvidence: { catalog: song, playbackTrack, audioExperiment },
   }
+}
+
+function songCenterLine(song, idol) {
+  const codes = song.audio_form === 'oneshot' ? song.audio?.oneshot_idol_codes || [] : []
+  if (!codes.length) return null
+  const slots = song.performance_mapping?.performer_slot_idol_codes || []
+  return { idols: codes.map(idol), defaultIdolCode: slots.find(code => codes.includes(code)) || '' }
+}
+
+// Read-model views prebuilt before centerLine existed still carry the catalog row and the named idol entries.
+export function resolveSongCenterLine(view) {
+  if (!view || view.centerLine !== undefined) return view?.centerLine || null
+  const names = new Map((view.audioGroups || []).flatMap(group => group.entries || []).map(entry => [entry.id, entry]))
+  return songCenterLine(view.technicalEvidence?.catalog || {}, code => names.get(code) || { id: code, displayName: code })
 }

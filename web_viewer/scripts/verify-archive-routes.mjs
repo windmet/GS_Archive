@@ -88,6 +88,9 @@ assert.equal(normalizeArchiveRoute({ view: 'mobile_archive' }).pickTarget, 'mobi
 assert.equal(normalizeArchiveRoute({ view: 'episodes' }).view, 'episode_zero_units')
 assert.equal(normalizeArchiveRoute({ view: 'player' }).view, 'home')
 assert.equal(normalizeArchiveRoute({ view: 'player', card: '001tom_n01', voice: '2_1_001_01_01_01' }).view, 'player')
+// Yamamura's office lines preview without a card; other card-less voices still fall back.
+assert.equal(normalizeArchiveRoute({ view: 'player', voice: '4_1_101_01_a1002', returnView: 'unused_archive' }).view, 'player')
+assert.equal(normalizeArchiveRoute({ view: 'player', voice: '2_1_001_01_01_01' }).view, 'home')
 
 assert.equal(archiveSectionForRoute({ view: 'idol_detail', idol: '001tom' }), 'idols')
 assert.equal(archiveSectionForRoute({ view: 'groups', category: 'idol_chat', group: 'chat-1' }), 'interactions')

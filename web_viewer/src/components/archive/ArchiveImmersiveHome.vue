@@ -51,8 +51,8 @@
         <small>{{ activeIdol.kana }}</small>
         <em v-if="!focusMode" class="idol-heading-cta">查看资料<ChevronRight :size="14" aria-hidden="true" /></em>
       </button>
-      <!-- Office system voices: Yamamura's login-bonus and work-menu lines, not part of any idol's home pool. -->
-      <button v-if="!focusMode" type="button" class="home-return home-office" aria-haspopup="dialog" :aria-expanded="officeOpen" @click="openOffice">
+      <!-- Office system voices live in the other-voices archive (with their ADV preview), not in any idol's home pool. -->
+      <button v-if="!focusMode" type="button" class="home-return home-office" title="资料馆 · 其他语音" @click="stopVoice(); emit('open-other-voices')">
         <Building2 :size="15" aria-hidden="true" />事务所语音
       </button>
     </header>
@@ -242,30 +242,6 @@
       </div>
     </dialog>
 
-    <dialog v-if="officeOpen" ref="officeRef" class="scene-settings cue-index office-voices" aria-labelledby="office-voices-title" @cancel.prevent="closeOffice" @close="closeOffice" @click="$event.target === officeRef && closeOffice()">
-      <header>
-        <div>
-          <h3 id="office-voices-title">事务所 · 系统语音</h3>
-          <p>{{ officeSpeaker }} · 登录与工作画面的提示语音 · {{ officeLineCount }} 句</p>
-        </div>
-        <button type="button" aria-label="关闭事务所语音" title="关闭" @click="closeOffice">
-          <X :size="21" />
-        </button>
-      </header>
-      <div class="settings-body cue-index-body">
-        <section v-for="scene in OFFICE_VOICES.scenes" :key="scene.id" class="cue-index-card" :data-office-scene="scene.id">
-          <h4><span>{{ scene.lines.length }} 句</span>{{ scene.label }}</h4>
-          <p class="office-note">{{ scene.note }}</p>
-          <ol>
-            <li v-for="line in scene.lines" :key="line.cue" class="office-line" :data-office-cue="line.cue">
-              <span class="cue-index-line gs-flow" :lang="officeLine(line).lang" :class="{ 'is-pending': officeLine(line).pending }">{{ officeLine(line).text }}</span>
-              <ArchiveVoiceRow compact :src="getVoiceUrl(`${line.cue}.m4a`)" :label="`播放${scene.label}语音`" />
-            </li>
-          </ol>
-        </section>
-      </div>
-    </dialog>
-
     <dialog v-if="settingsOpen" ref="sceneSettingsRef" class="scene-settings" aria-labelledby="scene-settings-title" @cancel.prevent="closeSettings" @close="closeSettings">
       <header>
         <div>
@@ -368,9 +344,6 @@
 
 <script setup>
 import ArchiveLanguageSwitch from './ArchiveLanguageSwitch.vue'
-import ArchiveVoiceRow from './ArchiveVoiceRow.vue'
-import OFFICE_VOICES from '../../data/officeSystemVoices.json'
-import { getVoiceUrl } from '../../utils/AssetResolver.js'
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import {
   ArrowLeft,
@@ -422,7 +395,7 @@ const props = defineProps({
   noAudio: { type: Boolean, default: false },
   idolName: { type: Function, default: null },
 })
-const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'open-card', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
+const emit = defineEmits(['settings', 'open-archive', 'return-to-archive', 'open-story', 'open-cards', 'open-idol', 'open-chat', 'open-card', 'open-other-voices', 'update:homeMode', 'focus-change', 'update:selectedId', 'update:selectedCue', 'update:selectedCostume'])
 
 const selectedId = computed({
   get: () => props.selectedId || props.idols[0]?.id || '',
@@ -461,28 +434,6 @@ function closeCueIndex() {
   cueIndexOpen.value = false
   if (cueIndexReturnFocus?.isConnected) cueIndexReturnFocus.focus({ preventScroll: true })
   cueIndexReturnFocus = null
-}
-// Office system voices: a fixed list, played with plain audio rows; opening it stops the home voice.
-const officeOpen = ref(false), officeRef = ref(null)
-const officeSpeaker = computed(() => props.idolName?.(OFFICE_VOICES.speaker.code, OFFICE_VOICES.speaker.name) || OFFICE_VOICES.speaker.name)
-const officeLineCount = OFFICE_VOICES.scenes.reduce((total, scene) => total + scene.lines.length, 0)
-const officeLine = line => archiveLineText('card-lines', [['office-voice', 'text']], line.text)
-let officeReturnFocus = null
-async function openOffice() {
-  if (officeOpen.value) return
-  officeReturnFocus = document.activeElement
-  costumePickerOpen.value = false
-  closeSettings(); closeCueIndex(); stopVoice()
-  officeOpen.value = true
-  await nextTick()
-  if (homeDisposed || !officeOpen.value) return
-  officeRef.value?.showModal()
-}
-function closeOffice() {
-  officeRef.value?.close()
-  officeOpen.value = false
-  if (officeReturnFocus?.isConnected) officeReturnFocus.focus({ preventScroll: true })
-  officeReturnFocus = null
 }
 const costumePickerOpen = ref(false)
 const stageTapPending = ref(false)
@@ -882,8 +833,7 @@ function resetPreferences() {
 
 function handleKeydown(event) {
   if (event.key !== 'Escape') return
-  if (officeOpen.value) closeOffice()
-  else if (cueIndexOpen.value) closeCueIndex()
+  if (cueIndexOpen.value) closeCueIndex()
   else if (settingsOpen.value) closeSettings()
   else if (focusMode.value) focusMode.value = false
   if (costumePickerOpen.value) costumePickerOpen.value = false
@@ -912,7 +862,6 @@ onBeforeUnmount(() => {
   clearTimeout(autoVoiceTimer)
   sceneSettingsRef.value?.close()
   cueIndexRef.value?.close()
-  officeRef.value?.close()
   restoreSettingsFocus()
   delete document.documentElement.dataset.archiveHomeTheme
   queuedVoiceAbort?.abort()
@@ -991,8 +940,5 @@ button.dialogue-card:hover { color:var(--gs-selected-ink); }
 .home-language-switch { pointer-events:auto;margin-left:auto; }
 .home-masthead { display:flex; flex-direction:column; align-items:start; gap:8px; }
 .home-office { margin-bottom:0;pointer-events:auto;cursor:pointer; }
-.office-note { margin:0 0 6px;font-size:var(--gs-text-meta);color:var(--gs-ink-3);line-height:1.6; }
-.office-line { display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:var(--gs-radius-control); }
-.office-line:hover { background:var(--gs-paper); }
 @media(max-width:760px){ .home-masthead { max-width:calc(100% - 78px); } }
 </style>

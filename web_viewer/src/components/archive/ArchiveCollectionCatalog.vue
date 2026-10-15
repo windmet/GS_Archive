@@ -19,7 +19,7 @@
       <div class="collection-cards" :class="{'is-honors':kind==='honors'}">
         <button v-for="row in visible" :key="row.id" type="button" :class="kind==='items'?itemAttribute(row):''" :aria-label="entryName(row)" :title="entryName(row)" :aria-describedby="tooltipRow===row?tooltipId:undefined" :aria-pressed="detailOpen&&String(row.id)===selectedId" @pointerenter="showTooltip(row,$event)" @pointerleave="hideTooltip" @focus="showTooltip(row,$event)" @blur="hideTooltip" @keydown.esc="hideTooltip" @click="select(row)">
           <span v-if="kind==='items' && collectionItemVariant(row.nameJa)" class="collection-variant">{{ collectionItemVariant(row.nameJa) }}</span>
-          <span class="collection-card-art"><img v-if="row.image?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="row.image.url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="({honors:Medal,currencies:Coins,costumes:Shirt})[kind]||Box" v-else :size="25" /></span>
+          <span class="collection-card-art"><img v-if="rowImage(row)?.url&&!failedThumbnails.has(`${kind}:${row.id}`)" :src="rowImage(row).url" alt="" loading="lazy" decoding="async" @error="failedThumbnails=new Set([...failedThumbnails,`${kind}:${row.id}`])" /><component :is="({honors:Medal,currencies:Coins,costumes:Shirt})[kind]||Box" v-else :size="25" /></span>
           <span class="collection-card-copy"><strong>{{ entryName(row) }}</strong><template v-if="kind==='honors'"><small v-if="honorSourceLabel(row,bootstrap.release)">{{ honorSourceLabel(row,bootstrap.release) }}</small><span class="collection-badge">{{ ownerName(honorIdol(row)) || honorLabels[honorGroup(row)] }}</span></template><template v-else-if="kind==='costumes'"><small v-if="!row.nameJa" class="collection-model-code">{{ row.id }}</small><span class="collection-badge">{{ ownerName(costumeOwner(row)) }}</span></template></span>
 
         </button>
@@ -45,7 +45,7 @@ import ArchiveFloatingTooltip from './ArchiveFloatingTooltip.vue'
 import {archiveText,archiveSearchText} from './useArchiveCollectionText.js'
 import {honorTitle} from './useHonorTitle.js'
 import {archiveSearchText as costumeSearchText} from './useArchiveCostumeText.js'
-import {costumeCategory,costumeName} from '../../presentation/CostumeCollection.js'
+import {costumeCategory,costumeImage,costumeName} from '../../presentation/CostumeCollection.js'
 import {COLLECTION_KINDS,collectionKindForEntity} from '../../core/CollectionRouteState.js'
 import {DomainRepository} from '../../../readmodels/runtime/DomainRepository.mjs'
 import {createCollectionCatalogSession} from '../../../readmodels/runtime/CollectionCatalogSession.mjs'
@@ -77,6 +77,7 @@ const entityType=computed(()=>COLLECTION_KINDS[kind.value]?.type || 'item')
 const units=Object.entries(UNIT_CODE_TO_NAME).map(([id,name])=>({id,name}))
 const attributes=[{id:'',label:'全部'},{id:'physical',label:'Physical'},{id:'intelligent',label:'Intelli'},{id:'mental',label:'Mental'}]
 const summary=row=>collectionSummary(row,kind.value,props.bootstrap.release)
+const rowImage=row=>kind.value==='costumes' ? costumeImage(row.id,row.image) : row.image
 const entryName=row=>kind.value==='honors' ? honorTitle(row,props.displayIdolName) : kind.value==='costumes' ? costumeName(row) :
   archiveText(kind.value==='currencies'?'currency':'item',row.nameJa||row.name)
 const ownerName=owner=>owner ? (props.displayIdolName(owner.id)||owner.name) : ''

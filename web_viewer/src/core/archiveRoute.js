@@ -179,7 +179,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'currencies', label: '货币' },
   { id: 'costumes', label: '服装' },
   { id: 'photos', label: '摄影资源' },
-  { id: 'unused', label: '未使用语音' },
+  { id: 'unused', label: '其他语音' },
   { id: 'live', label: 'LIVE' },
   { id: 'studio', label: '摄影工作台' },
   { id: 'resources', label: '资源' },
@@ -386,7 +386,7 @@ export function normalizeArchiveRoute(input = {}) {
   }
 
   const contract = ARCHIVE_ROUTE_CONTRACTS[view]
-  if (view === 'player' && !scenario && !(voice && card)) view = contract.fallback
+  if (view === 'player' && !scenario && !(voice && (card || OFFICE_VOICE_CUE.test(voice)))) view = contract.fallback
   else if (contract?.required.some(key => !route[key])) view = contract.fallback
   route.view = view || 'home'
   if (route.view === 'chibi_stage') {
@@ -595,7 +595,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (route.view === 'archive_status') return [home, { label: '资源' }]
   if (route.view === 'about') return [home, { label: '关于本站' }]
-  if (route.view === 'unused_archive') return [home, { label: '未使用语音存档' }]
+  if (route.view === 'unused_archive') return [home, { label: '其他语音存档' }]
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
@@ -648,6 +648,8 @@ const SECTION_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
   Object.freeze({ view: 'unused_archive', prefix: 'unused', implied: {} }),
 ])
+// Yamamura's office system lines preview in the player without a card (src/data/officeVoicePreviews.json).
+export const OFFICE_VOICE_CUE = /^4_1_101_0[0-2]_a\d{4}$/
 export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))
 
 function locatorQuery(url) {

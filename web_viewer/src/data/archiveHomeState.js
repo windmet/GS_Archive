@@ -1,3 +1,4 @@
+import { storyCostumeLabel } from '../presentation/costumeSeries.js'
 const RARITY_ORDER = new Map(['N', 'R', 'SR', 'SSR'].map((rarity, index) => [rarity, index]))
 
 function resolveCharacterCards(cardsByCharacter, idolCode) {
@@ -81,21 +82,46 @@ function homeVoiceSources(systemVoiceData) {
 function buildCostumesByIdol(costumeDictionaryData) {
   const result = new Map()
   for (const costume of Object.values(costumeDictionaryData?.by_model_resource_id || {})) {
-    if (!costume?.idol_code || !costume?.spine_exists || !String(costume.costume_name || '').trim()) continue
-    if (!result.has(costume.idol_code)) result.set(costume.idol_code, [])
-    result.get(costume.idol_code).push({
+    // Unnamed story costumes join the home picker only under a verified series label.
+    const name = String(costume?.costume_name || '').trim() || storyCostumeName(costume?.model_resource_id)
+    if (!costume?.idol_code || costume.spine_exists !== true || !name) continue
+    // A model draws the idol its id names; the twins' unnamed sportswear rows point at each other's model.
+    const owner = String(costume.costume_name || '').trim() ? costume.idol_code : costume.model_resource_id.slice(0, 6)
+    if (!result.has(owner)) result.set(owner, [])
+    result.get(owner).push({
       id: costume.model_resource_id,
       modelId: costume.model_resource_id,
-      name: costume.costume_name.trim(),
+      name,
       description: String(costume.description || '').trim(),
       costumeId: costume.costume_id,
       releaseAt: costume.release_at,
       sourceTables: costume.source_tables || [],
       isSceneDefault: false,
+      ...(String(costume.costume_name || '').trim() ? {} : { siteLabel: true }),
     })
   }
   for (const costumes of result.values()) costumes.sort((left, right) => left.modelId.localeCompare(right.modelId))
   return result
+}
+
+function storyCostumeName(modelId) {
+  const series = storyCostumeLabel(modelId)
+  return series ? `${series}（剧情）` : ''
+}
+
+// Home profiles prebuilt by an older read model lack the unnamed story costumes; merge src/data/storyCostumes.json.
+export function withStoryCostumes(idol, storyCostumes = []) {
+  if (!idol?.costumes) return idol
+  const known = new Set(idol.costumes.map(costume => costume.modelId))
+  const extra = storyCostumes.filter(costume => costume.idolCode === idol.id && !known.has(costume.modelId) && storyCostumeName(costume.modelId))
+  if (!extra.length) return idol
+  const added = extra.map(costume => ({
+    id: costume.modelId, modelId: costume.modelId, name: storyCostumeName(costume.modelId), description: '',
+    costumeId: costume.costumeId, releaseAt: costume.releaseAt, sourceTables: costume.sourceTables || [], isSceneDefault: false, siteLabel: true,
+  }))
+  const defaults = idol.costumes.filter(costume => costume.isSceneDefault)
+  const rest = [...idol.costumes.filter(costume => !costume.isSceneDefault), ...added].sort((left, right) => left.modelId.localeCompare(right.modelId))
+  return { ...idol, costumes: [...defaults, ...rest] }
 }
 
 export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManifestData, costumeDictionaryData = null, systemVoiceData = null) {
@@ -127,7 +153,12 @@ export function buildArchiveHomeState(idolUnitData, cardIndexData, archiveManife
       const costumes = [...(costumesByIdol.get(idolCode) || [])]
       const knownModels = new Set(costumes.map(costume => costume.modelId))
       for (const modelId of new Set(cues.map(cue => cue.modelId).filter(Boolean))) {
-        if (knownModels.has(modelId)) continue
+        if (knownModels.has(modelId)) {
+          // A labelled unnamed model the scene uses (047shu_002_00) keeps its label and still leads as the default.
+          const index = costumes.findIndex(costume => costume.modelId === modelId && costume.siteLabel)
+          if (index >= 0) costumes.unshift({ ...costumes.splice(index, 1)[0], isSceneDefault: true })
+          continue
+        }
         if (costumeModels && costumeModels[modelId]?.spine_exists !== true) continue
         costumes.unshift({
           id: modelId,
