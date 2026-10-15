@@ -6,7 +6,7 @@
 
 Browser 实际同页操作先选择 OUR SONG，再选择 JOYFUL HEART MAKER。标题和 URL 已切换，但公开 DOM `data-stage-background-song` 仍是 `ossshd`，旧布景继续出现在画面。真实资源索引中 jfhtmk 没有静态条目，其舞台依靠 Image_layer 指令；旧 `syncStageBackground` 在 `if (!entry) return` 提前返回，跳过 release。
 
-客户端 `LiveStage.Clear` RVA `0x1f2a710` 调用 `LiveObjectContainer.Clear` `0x221a72c`，后者 Destroy 旧对象并清理容器；`LiveStageNormalBackground.Init` `0x1bc1dd0` 对本次加载的每个 SpriteRenderer 重新绑定 Sprite，并按是否存在决定 SetActive。显示与清理均以本场资产为边界，没有跨歌曲保留旧背景的规则。`LiveObjectBackmonitorMovie.Stop` `0x2218d38` 停止电影并关闭 renderer；`Prepare` `0x2219044` 也先关闭 renderer。
+客户端 `LiveStage.Clear` RVA `0x1f2a710` 调用 `LiveObjectContainer.Clear` `0x221a72c`，后者 Destroy 旧对象并清理容器；`LiveStageNormalBackground.<Init>d__3.MoveNext` `0x22565fc` 对本次加载的每个 SpriteRenderer 重新绑定 Sprite，并按是否存在决定 SetActive。显示与清理均以本场资产为边界，没有跨歌曲保留旧背景的规则。`LiveObjectBackmonitorMovie.Stop` `0x2218d38` 停止电影并关闭 renderer；`Prepare` `0x2219044` 也先关闭 renderer。
 
 网页修正：
 
