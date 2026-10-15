@@ -14,6 +14,7 @@ import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
 import { attachChibiFloor } from '../core/chibiFloorParticles.js'
 import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
 import { validatePenlightData } from '../core/chibiPenlights.js'
+import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -101,6 +102,16 @@ export async function fetchLiveChibiPenlights(file, {signal}={}) {
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return {commands:validatePenlightData(JSON.parse(text),choreographyHash,modelHash),model:JSON.parse(modelText)}
 }
+export async function fetchLiveChibiMouthFix(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-mouth-fix.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMouthFixData(JSON.parse(text),hash)
+}
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
@@ -144,6 +155,7 @@ function installLiveChibiLipSync(spine) {
   const mouthSlot = skeleton.findSlot('mouth')
   const mouthBone = skeleton.findBone('mouth') || mouthSlot?.bone
   if (!mouthSlot || !mouthBone) return null
+  const headSlot = skeleton.findSlot('head')
 
   const baseScaleX = mouthBone.data.scaleX
   const baseScaleY = mouthBone.data.scaleY
@@ -153,23 +165,26 @@ function installLiveChibiLipSync(spine) {
     singing: false,
     attachment: null,
     scale: LIVE_CHIBI_LIP_CLOSED_SCALE,
+    fixed: null,
   }
   skeleton.updateWorldTransform = function (...args) {
     try {
       const currentName = mouthSlot.attachment?.name || mouthSlot.data.attachmentName || 'mouth_open'
-      const flipped = currentName.endsWith('_fl')
-      const value = state.singing ? state.value : 0
-      const open = value > LIVE_CHIBI_LIP_OPEN_THRESHOLD
+      const headName=headSlot?.attachment?.name
+      const fixed=state.fixed?.active===true
+      const flipped = fixed && headName ? headName==='head_fl' : currentName.endsWith('_fl')
+      const value = fixed ? state.fixed.rate : state.singing ? state.value : 0
+      const open = value > (fixed?NATIVE_MOUTH_CLOSED_RATE:LIVE_CHIBI_LIP_OPEN_THRESHOLD)
       const attachmentName = `mouth_${open ? 'open' : 'close'}${flipped ? '_fl' : ''}`
       if (mouthSlot.attachment?.name !== attachmentName) {
         skeleton.setAttachment('mouth', attachmentName)
       }
-      state.scale = open
+      state.scale = fixed ? (open?value:1) : open
         ? LIVE_CHIBI_LIP_OPEN_SCALE_MIN
           + value * (LIVE_CHIBI_LIP_OPEN_SCALE_MAX - LIVE_CHIBI_LIP_OPEN_SCALE_MIN)
         : LIVE_CHIBI_LIP_CLOSED_SCALE
-      mouthBone.scaleX = baseScaleX * state.scale
-      mouthBone.scaleY = baseScaleY
+      mouthBone.scaleX = fixed ? state.scale : baseScaleX * state.scale
+      if(!fixed)mouthBone.scaleY = baseScaleY
       state.attachment = attachmentName
     } finally {
       originalUpdateWorldTransform.apply(this, args)
@@ -181,7 +196,7 @@ function installLiveChibiLipSync(spine) {
   return state
 }
 
-export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
+export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing, fixed=null) {
   const controller = runtime?.lipSyncController
   if (!controller) return {
     value: 0,
@@ -191,12 +206,14 @@ export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
   }
   controller.value = singing ? sampleLiveChibiLipSync(curve, milliseconds) : 0
   controller.singing = Boolean(singing && curve)
+  controller.fixed = fixed?.active ? fixed : null
   runtime.spine.skeleton.updateWorldTransform()
   return {
     value: controller.value,
     singing: controller.singing,
     attachment: controller.attachment,
     scale: controller.scale,
+    fixed: controller.fixed,
   }
 }
 

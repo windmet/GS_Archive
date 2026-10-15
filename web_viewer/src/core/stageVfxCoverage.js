@@ -66,6 +66,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
       stagelight: stagelightEvents.length,
       newSuspensionlight: suspensionCount,
       penlight: indexes.penlightCommands?.songs?.[song.id]?.events?.length || 0,
+      mouthFix: indexes.mouthFix?.songs?.[song.id]?.events?.length || 0,
     },
     resourceAssets: { backmonitor: backmonitorAssets.length, imageLayer: imageAssets.length, imageObject: imageObjectAssets.length },
     objectSprites,

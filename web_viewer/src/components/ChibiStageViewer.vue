@@ -91,6 +91,8 @@
     :data-lip-sync-ready="lipSyncReady"
     :data-lip-sync-file="selectedSong?.lipSync?.file || ''"
     :data-lip-sync-frames="lipSyncFrameCount"
+    :data-mouth-fixed-positions="mouthFixedPositions.join(',')"
+    :data-mouth-fixed-rates="mouthFixedRates"
     :data-screen-color="currentWholeScreenColor.color"
     :data-screen-color-alpha="currentWholeScreenColor.alpha.toFixed(4)"
     :data-screen-color-layers="visibleColorPlanes.map(state => `${state.id}:${state.depth}:${state.alpha.toFixed(4)}`).join(',')"
@@ -384,6 +386,7 @@
               <h3>效果覆盖 · 来源统计</h3>
               <p v-if="penlightResources">应援棒已接入原生网格、动作、配色与逐渲染器排序；当前 {{ penlightIds.length }} 组、{{ penlightRendererCount }} 个绘制部件。随机种子与原片表现仍待对照。<template v-if="penlightPendingCount">{{ penlightPendingCount }} 组纹理加载中或不可用。</template><template v-if="penlightUnresolvedColors">{{ penlightUnresolvedColors }} 组缺少可解析配色。</template></p>
               <p v-else-if="penlightLoadFailed" class="vfx-coverage-gap">应援棒资源或命名事件不可用，其他舞台图层仍可观看。</p>
+              <p v-if="mouthFixData && stageVfxCoverage.sourceEvents.mouthFix">固定嘴型 {{ stageVfxCoverage.sourceEvents.mouthFix }} 条已接入；当前固定 {{ mouthFixedPositions.length }} 个出演站位。开度与解除渐变已接线，原片对照仍待完成。</p>
               <template v-if="stageVfxCoverage.rawCommands.status === 'source_inventory'">
                 <p>RAW 快照共 {{ stageVfxCoverage.rawCommands.total }} 行、{{ stageVfxCoverage.rawCommands.rows.length }} 类原始行<template v-if="stageVfxCoverage.rawCommands.nonTimedCount">，其中 {{ stageVfxCoverage.rawCommands.nonTimedCount }} 行非时序数据</template>；未接线 {{ stageVfxCoverage.rawCommands.missing.reduce((n, row) => n + row.timedCount, 0) }} 行，未识别 {{ stageVfxCoverage.rawCommands.unknown.reduce((n, row) => n + row.timedCount, 0) }} 行。已接线不等于原版视觉验收。</p>
                 <p v-if="stageVfxCoverage.rawCommands.missing.length" class="vfx-coverage-gap">未接线：{{ stageVfxCoverage.rawCommands.missing.map(row => `${row.command} · ${row.count}`).join('、') }}</p>
@@ -521,6 +524,7 @@ import {
   fetchLiveChibiBackmonitorIndex,
   fetchLiveChibiChoreography,
   fetchLiveChibiPenlights,
+  fetchLiveChibiMouthFix,
   fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
   fetchLiveChibiImageObjectIndex,
@@ -550,6 +554,7 @@ import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
 import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../core/chibiSuspensionlights.js'
 import { createPenlightSampler } from '../core/chibiPenlights.js'
+import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
@@ -601,6 +606,9 @@ const commandInventory = shallowRef(null)
 const commandInventoryState = ref('not_requested')
 const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
+const mouthFixData = shallowRef(null)
+const mouthFixedPositions = ref([])
+const mouthFixedRates = ref('')
 const musicIndex = shallowRef(null)
 const backmonitorIndex = shallowRef(null)
 const imageLayerIndex = shallowRef(null)
@@ -927,6 +935,7 @@ const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999'
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
   commandInventory: commandInventory.value,
   penlightCommands: penlightResources.value?.commands,
+  mouthFix: mouthFixData.value,
   backmonitor: backmonitorIndex.value,
   imageLayers: imageLayerIndex.value,
   imageObjects: imageObjectIndex.value,
@@ -1168,6 +1177,13 @@ onMounted(async () => {
       stageVocalEnabled.value = stageVocalAvailable.value
     }
     const optionalOptions={signal:lifetime.signal}
+    void fetchLiveChibiMouthFix(manifest.value.choreography.index,optionalOptions).then(value=>{
+      if(stageDisposed)return
+      mouthFixData.value=value
+      applyCurrentLipSync();requestPausedSuspensionRender()
+    }).catch(error=>{
+      if(!stageDisposed)console.warn('[ChibiStage] mouth fix input unavailable',error)
+    })
     void fetchLiveChibiPenlights(manifest.value.choreography.index,optionalOptions).then(value=>{
       if(stageDisposed)return
       penlightResources.value=value
@@ -3696,14 +3712,22 @@ async function loadSongLipSync() {
 }
 
 function applyCurrentLipSync() {
+  const song=selectedSong.value,track=mouthFixData.value?.songs[song?.id]
+  const events=track?.songCode===song?.songCode && track?.source===song?.source ? track?.events : []
+  const fixedPositions=[],rates=[]
   for (const position of activePositions.value) {
+    const fixed=mouthFixAt(events,position,stageTime.value)
+    if(fixed.active) {fixedPositions.push(position);rates.push(`${position}:${fixed.rate.toFixed(4)}`)}
     applyLiveChibiLipSync(
       runtimes.get(position),
       lipSyncCurve,
       stageTime.value,
       currentSingerPositions.value.includes(position),
+      fixed,
     )
   }
+  if(fixedPositions.join(',')!==mouthFixedPositions.value.join(','))mouthFixedPositions.value=fixedPositions
+  mouthFixedRates.value=rates.join(',')
 }
 
 async function preloadSongMotions(intent) {

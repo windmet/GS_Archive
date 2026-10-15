@@ -8,6 +8,8 @@
 
 合并后跑了 24 个舞台 verifier（`verify-chibi-*`、`verify-stage-*`、`verify-live-chibi-*`），全部通过。它们证明的是源码和数据链路，**不是**原版视觉验收。
 
+同日后续 [固定嘴型批次](NATIVE_MOUTH_FIX_BATCH_20261015.md) 已接入全部 29 条 `Livechara_mouth_shape_fix`，保留指定站位、开度渐变、中断和擦除完成后恢复歌曲口型。矩阵为 partial；下文固定嘴型“无导出/消费者”的描述是历史状态，单人脚光与动作 Offset 仍未接线。
+
 ## 一、10-13 审计的六个 P1，现在的状态
 
 | 项 | 状态 | 剩余 |
