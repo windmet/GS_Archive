@@ -9,6 +9,30 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()}
 function install(context,names){vm.createContext(context);for(const name of names){const body=source.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`));assert(body,`Actual SFC function missing: ${name}`);vm.runInContext(body[0],context)}}
 let cases=0
+for(const mode of ['missing-entry','late-previous-load']){
+  const gate=deferred();let destroyed=0,cleared=0
+  const context={cameraContainer:{},selectedSong:ref({songCode:'old'}),
+    stageBackgroundIndex:ref({songs:{old:{layers:[],file:'old.png'}}}),
+    stageBackgroundSongId:ref('old'),stageBackgroundPendingKey:'',stageBackgroundSequence:0,
+    stageBackgroundSprite:null,stageBackgroundParts:new Map(),
+    spotlightBackgroundSprites:{release(){}},spotlightBackgroundAlpha:ref(0),pinspotlightMaskCount:ref(0),
+    clearStageBackgroundArt(){cleared++},loadImageLayerTexture:()=>gate.promise}
+  install(context,['syncStageBackground','releaseStageBackground'])
+  const pending=mode==='late-previous-load'?context.syncStageBackground():null
+  context.selectedSong.value={songCode:'without-static-entry'}
+  await context.syncStageBackground()
+  assert.equal(context.stageBackgroundSongId.value,'','Missing static entry must retire the old song')
+  assert.equal(context.stageBackgroundPendingKey,'');assert.equal(cleared,1)
+  if(pending){gate.resolve({destroy(){destroyed++}});await pending;assert.equal(destroyed,1,'Late old backdrop cannot resurrect after switching to a dynamic-only stage')}
+  cases++
+}
+{
+  const body=source.match(/async function handleSongChange\([^]*?\n\}/)[0]
+  const beforeAwait=body.slice(0,body.indexOf('await '))
+  for(const name of ['releaseStageBackground','releaseImageLayers','releaseObjectLayers','releaseBackmonitor'])
+    assert.ok(beforeAwait.includes(`${name}()`),`${name} must retire before asynchronous song preparation`)
+  cases++
+}
 {
   const context={customRef};vm.createContext(context)
   vm.runInContext(source.match(/const frameValue = [^\r\n]+/)[0]+';this.frameValue=frameValue',context)

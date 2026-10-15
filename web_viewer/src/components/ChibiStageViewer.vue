@@ -1933,7 +1933,12 @@ async function syncStageBackground() {
   if (!cameraContainer || !selectedSong.value || !stageBackgroundIndex.value) return
   const songCode = selectedSong.value.songCode
   const entry = stageBackgroundIndex.value.songs?.[songCode]
-  if (!entry) return
+  if (!entry) {
+    // A song built entirely from Image_layer cues has no static entry.
+    // Absence means no backdrop, not permission to retain the previous song.
+    if (stageBackgroundSongId.value || stageBackgroundPendingKey) releaseStageBackground()
+    return
+  }
   const components = stageBackgroundIndex.value.components
   const componentLayers = components?.songs?.[songCode]?.layers
   const useComponents = Boolean(componentLayers?.length && componentLayers.join(',') === entry.layers.join(',')
@@ -3597,6 +3602,13 @@ async function handleSongChange() {
     choreographyId: selectedSong.value.id,
   })
   stopStage(true)
+  // Native LiveStage.Clear retires the old scene before preparing the next.
+  // Clear synchronously, including pending ownership, before audio/actor awaits.
+  releaseStageBackground()
+  releaseImageLayers()
+  releaseObjectLayers()
+  releaseBackmonitor()
+  app?.render()
   booting.value = true
   statusText.value = isSpecialSingle.value ? '正在准备社长特别演出…' : '正在切换舞台编排…'
   handoffLineup.value = null
