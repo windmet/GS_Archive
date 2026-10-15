@@ -1,7 +1,7 @@
 <template>
   <section class="translation-audit" aria-labelledby="translation-audit-title">
     <div class="audit-heading"><div><h3 id="translation-audit-title">翻译与校对进度</h3><p>初译覆盖与人工校对分别统计。已校对仍可继续修订，不代表终稿。</p></div><button type="button" @click="exportSummary">导出审计摘要</button></div>
-    <p class="audit-scope">{{ audit.scope }}。共 {{ audit.general.unique.toLocaleString() }} 条通用原文，使用 {{ audit.general.references.toLocaleString() }} 次；{{ audit.general.batches }} 个 Gemini 校对批次。</p>
+    <p class="audit-scope">{{ audit.scope }}。共 {{ audit.general.unique.toLocaleString() }} 条通用原文，使用 {{ audit.general.references.toLocaleString() }} 次；翻译记忆 {{ audit.general.memory.toLocaleString() }} 条<template v-if="audit.general.orphans || audit.general.unpublished">（{{ audit.general.orphans }} 条原文已不存在，{{ audit.general.unpublished }} 条尚未发布）</template>。</p>
     <p v-if="audit.gasha" class="audit-scope">卡池另计 {{ audit.gasha.translation_names }} 个独立名称、{{ audit.gasha.catalog_records }} 条目录记录；其中 {{ audit.gasha.supplemental_groups }} 条由道具补录，关联 {{ audit.gasha.tickets }} 种抽取道具。{{ audit.gasha.unlinked_selection_tickets }} 种选择券未指明具体卡池，未建立抽取关联。开放日期与卡片范围不会由券名推定。</p>
     <div class="audit-legend"><span v-for="(label,key) in statuses" :key="key" :class="key">{{ label }}</span></div>
     <nav class="audit-scopes" aria-label="翻译审计范围"><button v-for="item in scopes" :key="item.id" type="button" :aria-pressed="scope===item.id" @click="scope=item.id;selectedDomain=''">{{ item.label }}</button></nav>
@@ -13,7 +13,7 @@
         <small>{{ group.reviewed + group.final }} 已校对 / {{ group.total.toLocaleString() }} 原文<span v-if="group.uncertain"> · {{ group.uncertain }} 项待确认术语</span></small>
       </button>
     </div>
-    <ul class="audit-pending"><li v-for="entry in audit.pending" :key="entry.id"><strong>{{ entry.label }}</strong> · {{ entry.note }}</li></ul>
+    <ul class="audit-pending"><li v-for="entry in audit.pending" :key="entry.id"><strong>{{ entry.label }}</strong><template v-if="entry.total != null"> · {{ entry.total.toLocaleString() }} 条</template> · {{ entry.note }}</li></ul>
     <div v-if="selectedDomain" class="audit-review">
       <div class="audit-heading"><h4>{{ selectedLabel }} · 校对清单</h4><button type="button" @click="selectedDomain=''">收起清单</button></div>
       <p v-if="busy" role="status">正在读取校对清单…</p><p v-if="error" role="alert">{{ error }} <button type="button" @click="openGroup(selectedDomain)">重试</button></p>

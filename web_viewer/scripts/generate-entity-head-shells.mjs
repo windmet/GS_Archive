@@ -43,6 +43,7 @@ export const SECTION_SHELLS = Object.freeze({
   currencies: { view: 'collection_catalog', kind: 'currencies', description: 'SideM GROWING STARS 货币：星钻、金币、记忆之星等的获得来源与用途。' },
   costumes: { view: 'collection_catalog', kind: 'costumes', description: 'SideM GROWING STARS 服装图鉴：全部衣装缩略图、所属偶像与穿着的卡片。' },
   photos: { view: 'photo_catalog', description: 'SideM GROWING STARS 摄影资源：服装、背景、滤镜与贴纸素材。' },
+  unused: { view: 'unused_archive', description: 'SideM GROWING STARS 未使用语音存档：游戏内留有音频、但没有页面播放的语音。' },
 })
 
 export function escapeHtml(value) {

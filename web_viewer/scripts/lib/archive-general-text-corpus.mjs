@@ -21,6 +21,22 @@ export function archiveGeneralTextCorpus(root) {
       if (row.texts?.[field]?.trim() !== '0') add('card-line', row.resource_id, field, row.texts?.[field], row.character_id);
     for (const cue of row.home_voice_cues || []) add('card-touch', `${row.resource_id}:${cue.cue}`, 'text', cue.preview?.text, row.character_id);
   }
+  // Scout/change, unit formation and live voices with text: masterdata or a curated wiki transcript
+  // (data_pipeline/curated/card_voice_transcripts.json); "0" is the masterdata placeholder.
+  const byResource = new Map(cards.map(row => [row.resource_id, row.character_id]));
+  for (const [resourceId, detail] of Object.entries(load('card_detail_index.json').cards_by_resource_id))
+    for (const cue of detail.operational_voice_cues || []) if (cue.text?.trim() !== '0') add('card-voice', `${resourceId}:${cue.cue}`, 'text', cue.text, byResource.get(resourceId));
+  // Idol home voices that belong to no card: the HomeStand pool and the idol page's self-introduction.
+  for (const idol of load('home_system_voice_index.json').idols) {
+    for (const row of idol.scenarios || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'text', row.text, idol.idol_code);
+    for (const row of idol.idol_detail || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'self-intro', row.text, idol.idol_code);
+  }
+  // Office system voices (Yamamura: login bonus, work menu, bonus days), from the tracked list the home page reads.
+  const office = JSON.parse(fs.readFileSync(path.join(root, 'src/data/officeSystemVoices.json'), 'utf8'));
+  for (const scene of office.scenes) for (const line of scene.lines) add('office-voice', line.cue, 'text', line.text, office.speaker.code);
+  // Unused voices: only Saito's unreleased HomeStand lines carry script text (scripts/build-unused-voice-archive.mjs).
+  const unused = JSON.parse(fs.readFileSync(path.join(root, 'src/data/unusedVoiceArchive.json'), 'utf8'));
+  for (const family of unused.families) for (const speaker of family.speakers) for (const line of speaker.cues) add('unused-voice', line.cue, 'text', line.text, speaker.code);
   // Chats: personal and unit talks and random topics, from the tracked chat text index (the compiled
   // chats stay in the local corpus). References keep the conversation, step and speaker.
   const chats = JSON.parse(fs.readFileSync(path.join(root, 'translation/studio/source/chat-text-index.json'), 'utf8')).files;

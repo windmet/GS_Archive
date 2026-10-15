@@ -76,6 +76,7 @@ const VALID_VIEWS = new Set([
   'event_catalog',
   'collection_catalog',
   'photo_catalog',
+  'unused_archive',
   'picture_studio',
   'gashas',
   'gasha_detail',
@@ -146,6 +147,7 @@ const ARCHIVE_ROUTE_CONTRACTS = Object.freeze({
   event_catalog: { section: 'events', required: [] },
   collection_catalog: { section: 'collections', required: [] },
   photo_catalog: { section: 'photos', required: [] },
+  unused_archive: { section: 'unused', required: [] },
   picture_studio: { section: 'studio', required: [], fallback:'studio' },
   gashas: { section: 'gashas', required: [] },
   gasha_detail: { section: 'gashas', required: ['gasha'], fallback: 'gashas' },
@@ -177,6 +179,7 @@ const ARCHIVE_NAVIGATION = Object.freeze([
   { id: 'currencies', label: '货币' },
   { id: 'costumes', label: '服装' },
   { id: 'photos', label: '摄影资源' },
+  { id: 'unused', label: '未使用语音' },
   { id: 'live', label: 'LIVE' },
   { id: 'studio', label: '摄影工作台' },
   { id: 'resources', label: '资源' },
@@ -592,6 +595,7 @@ export function buildArchiveBreadcrumbs(inputRoute, entity = {}) {
 
   if (route.view === 'archive_status') return [home, { label: '资源' }]
   if (route.view === 'about') return [home, { label: '关于本站' }]
+  if (route.view === 'unused_archive') return [home, { label: '未使用语音存档' }]
   if (route.view === 'seasonal_campaign') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('季节企划', route.storySection)]
   if (route.view === 'work_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('工作档案', route.idol)]
   if (route.view === 'idol_story_archive') return [home, { label: '剧情', route: breadcrumbRoute(route, 'story_catalog') }, current('个人故事', route.idol)]
@@ -642,6 +646,7 @@ const SECTION_PATH_ROUTES = Object.freeze([
   Object.freeze({ view: 'collection_catalog', prefix: 'currencies', implied: { collection_kind: 'currencies' } }),
   Object.freeze({ view: 'collection_catalog', prefix: 'costumes', implied: { collection_kind: 'costumes' } }),
   Object.freeze({ view: 'photo_catalog', prefix: 'photos', implied: {} }),
+  Object.freeze({ view: 'unused_archive', prefix: 'unused', implied: {} }),
 ])
 export const ARCHIVE_SECTION_PATHS = Object.freeze(SECTION_PATH_ROUTES.map(entry => entry.prefix))
 

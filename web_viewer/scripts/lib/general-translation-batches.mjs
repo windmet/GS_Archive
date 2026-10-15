@@ -1,24 +1,24 @@
 import assert from 'node:assert/strict'
-import fs from 'node:fs'
-import path from 'node:path'
 import {createHash} from 'node:crypto'
-import {parseJsonStrict} from './strict-json.mjs'
 import {archiveGeneralTextCorpus} from './archive-general-text-corpus.mjs'
-import {validateItemIdolNames} from './item-idol-name-policy.mjs'
-import {validateProducerAddressingOverlay,PRODUCER_NAME_WITH_P_TOKEN} from '../../src/localization/story/ProducerAddressing.js'
+import {PRODUCER_NAME_WITH_P_TOKEN} from '../../src/localization/story/ProducerAddressing.js'
+import {KINDS,LAZY_SHARDS,SHARD_NAMES,kindInfo,kindsWithPrompt} from './translation-domains.mjs'
+import {checkTranslation,loadMemory,protectedTokens} from './translation-memory.mjs'
 
 export const hash = value => createHash('sha256').update(value).digest('hex')
 export const keyOf = row => `metadata:v1:${row.kind}:${row.field}:${hash(row.source)}`
-export const shards = {photos:k=>k==='background'||k==='background-variant'||k.startsWith('photo-'),costumes:k=>k==='costume',cards:k=>k==='card',skills:k=>['skill','skill-category','center-skill'].includes(k),items:k=>k==='item'||k==='currency',honors:k=>k==='honor',profiles:k=>['idol-profile','unit-profile','mobile-status','work'].includes(k),'card-lines':k=>CARD_LINE_KINDS.includes(k),chats:k=>CHAT_KINDS.includes(k)}
+// Shards, prompt families and labels come from the kind registry (translation-domains.mjs).
+export const shards = Object.fromEntries(SHARD_NAMES.map(name => [name, kind => KINDS[kind]?.shard === name]))
 // Character lines: lazily loaded, never in the bundled root overlay, batched by speaker.
-export const CARD_LINE_KINDS = ['card-line','card-touch','call-title']
+export const CARD_LINE_KINDS = kindsWithPrompt('character')
 // Chat lines and the producer's reply choices: conversation by conversation.
-export const CHAT_KINDS = ['chat-line','chat-choice']
-// The root overlay is bundled into the app; character lines and chats live only in lazy shards.
-export const rootOverlayEntries = entries => Object.fromEntries(Object.entries(entries).filter(([kind]) => !CARD_LINE_KINDS.includes(kind) && !CHAT_KINDS.includes(kind)))
+export const CHAT_KINDS = kindsWithPrompt('chat')
+// The root overlay is bundled into the app; lazy shards (character lines, chats) are fetched by their pages.
+export const rootOverlayEntries = entries => Object.fromEntries(Object.entries(entries).filter(([kind]) => !LAZY_SHARDS.includes(KINDS[kind]?.shard)))
 export function sourceUnits(root) {
   const unique = new Map()
   for (const row of archiveGeneralTextCorpus(root)) {
+    kindInfo(row.kind)
     const key = keyOf(row)
     const entry = unique.get(key) || {...row,key,references:[]}
     entry.references.push({kind:row.kind,id:row.id,field:row.field,...(row.speaker?{speaker:row.speaker}:{}),...(row.owner?{owner:row.owner}:{})})
@@ -27,24 +27,12 @@ export function sourceUnits(root) {
   return [...unique.values()].sort((a,b)=>a.kind.localeCompare(b.kind)||a.field.localeCompare(b.field)||a.key.localeCompare(b.key))
 }
 export const corpusHash = units => hash(JSON.stringify(units.map(({key,sourceHash,references})=>({key,sourceHash,references}))))
-export function planBatches(units, limit=100, charLimit=6000) {
-  const batches=[]
-  for (const [domain,select] of Object.entries(shards)) {
-    let rows=[], chars=0, n=0
-    const finish=()=>{if(!rows.length)return;const id=`G-${domain}-${String(++n).padStart(3,'0')}`;batches.push({schema:'GS-GENERAL-BATCH-V1',batch_id:id,locale:'zh-CN',rows,source_digest:hash(JSON.stringify(rows))});rows=[];chars=0}
-    for(const unit of units.filter(u=>select(u.kind))) {
-      if(rows.length && (rows.length>=limit || chars+unit.source.length>charLimit))finish()
-      rows.push(unit);chars+=unit.source.length
-    }
-    finish()
-  }
-  return batches
-}
-const sorted = values => (values||[]).sort()
-export function protectedTokens(text) {
-  return sorted(text.match(/<[A-Za-z][A-Za-z0-9_]*>|\[[A-Za-z][A-Za-z0-9_]*\]|\{[A-Za-z][A-Za-z0-9_]*\}|●{2,}|\d+(?:\.\d+)?/g))
-}
-export function validateGeneralReturn(batch, value, units) {
+export {protectedTokens}
+
+// Checks a parsed batch return against its own local batch map, then each entry's content.
+// The map is the identity: the current corpus is consulted only to flag entries whose source has
+// since left it (orphan, still importable as memory). References and corpus order are never compared.
+export function validateGeneralReturn(batch, value, units = []) {
   assert.equal(batch.schema,'GS-GENERAL-BATCH-V1')
   assert.equal(batch.locale,'zh-CN')
   assert.equal(value.schema,'GS-GENERAL-RETURN-V1')
@@ -53,78 +41,24 @@ export function validateGeneralReturn(batch, value, units) {
   assert.equal(hash(JSON.stringify(batch.rows)),batch.source_digest,'Batch map drift')
   assert(Array.isArray(value.entries),'Expected entries array')
   assert.equal(value.entries.length,batch.rows.length,'Missing/extra rows')
-  const current=new Map(units.map(u=>[u.key,u])), expected=new Map(batch.rows.map(u=>[u.key,u])), seen=new Set()
-  const entries=value.entries.map(entry=>{
+  const live=new Set(units.map(u=>u.key)), expected=new Map(batch.rows.map(u=>[u.key,u])), seen=new Set()
+  return value.entries.map(entry=>{
     assert(Object.keys(entry).every(k=>['key','source_hash','source','translation','decision','notes'].includes(k)),'Unexpected return field')
     assert(!seen.has(entry.key),`Duplicate key ${entry.key}`);seen.add(entry.key)
-    const row=expected.get(entry.key), live=current.get(entry.key)
-    assert(row && live,`Unknown/stale key ${entry.key}`)
-    assert.equal(row.source,live.source,'Source changed')
-    assert.equal(row.kind,live.kind,'Domain changed')
-    assert.equal(row.field,live.field,'Field changed')
+    const row=expected.get(entry.key)
+    assert(row,`Unknown key ${entry.key}`)
     assert.equal(row.sourceHash,hash(row.source),'Source hash drift')
     assert.equal(entry.source_hash,row.sourceHash,'Return source hash changed')
-    assert.deepEqual(row.references,live.references,'Source references changed; re-export')
     assert.equal(entry.source,row.source,'Return altered original text')
-    assert(typeof entry.translation==='string' && entry.translation.trim(),`Empty translation ${entry.key}`)
-    assert(Array.isArray(entry.notes) && entry.notes.every(n=>typeof n==='string'),'notes must be string[]')
-    assert(['translated','uncertain','keep-source'].includes(entry.decision),'Invalid decision')
-    if(entry.decision==='keep-source')assert.equal(entry.translation,row.source,'keep-source must preserve source')
-    if(entry.decision==='uncertain')assert(entry.notes.length,'Uncertainty needs a note')
-    assert.deepEqual(protectedTokens(entry.translation),protectedTokens(row.source),`Number/placeholder drift ${entry.key}`)
-    // Same contract as story overlays: the translation keeps the source's Producer macros verbatim.
-    assert(validateProducerAddressingOverlay(row.source,entry.translation),`Producer slot changed ${entry.key}`)
-    if(['skill','center-skill'].includes(row.kind) && row.field==='description')assert.deepEqual(entry.translation.match(/\d+(?:\.\d+)?/g),row.source.match(/\d+(?:\.\d+)?/g),'Skill number order changed')
-    assert(!/<(?:script|iframe|img)\b|javascript:/i.test(entry.translation),'Unsafe markup')
-    if(['item','honor'].includes(row.kind))validateItemIdolNames(row.source,entry.translation,entry.decision)
-    return {...entry,kind:row.kind,field:row.field,references:row.references,status:'draft'}
+    checkTranslation(row,entry,entry.key)
+    return {...entry,kind:row.kind,field:row.field,references:row.references,status:'draft',orphan:!live.has(entry.key)}
   })
-  return entries
 }
-// Mechanical repairs that leave the reviewed wording alone. Each amendment lists the entries it
-// changed; every change must be exactly what its repair produces, and undoing the amendments in
-// order must give back the return the approval was bound to.
+// Mechanical repairs that leave the reviewed wording alone (general-translation-workflow.mjs amend).
 export const GENERAL_REPAIRS = {
   // Card lines before 2026-10-10 were exported with raw ●●●● and came back as ●●●●制作人.
   'producer-slot-restore': text => text.replace(/(?<!●)●{4}(?!●)制作人/gu, PRODUCER_NAME_WITH_P_TOKEN),
 }
-function approvedReturnHash(record) {
-  const entries=record.return.entries.map(entry=>({...entry}))
-  const returnHash=()=>hash(JSON.stringify({...record.return,entries}))
-  for(const amendment of [...(record.amendments||[])].reverse()) {
-    const repair=GENERAL_REPAIRS[amendment.repair]
-    assert(repair,`Unknown repair ${amendment.repair}`)
-    assert.equal(returnHash(),amendment.to_return_sha256,'Amendment chain drift')
-    for(const change of amendment.changes) {
-      const entry=entries.find(e=>e.key===change.key)
-      assert(entry && entry.translation===change.after && change.before!==change.after && repair(change.before)===change.after,`Amendment is not ${amendment.repair}: ${change.key}`)
-      entry.translation=change.before
-    }
-    assert.equal(returnHash(),amendment.from_return_sha256,'Amendment chain drift')
-  }
-  return returnHash()
-}
-export function loadGeneralRevisions(root, units) {
-  const folder=path.join(root,'translation/studio/general/revisions'), output=new Map()
-  if(!fs.existsSync(folder))return output
-  for(const file of fs.readdirSync(folder).filter(f=>f.endsWith('.json')).sort()) {
-    const record=parseJsonStrict(fs.readFileSync(path.join(folder,file),'utf8'),file)
-    assert.equal(record.schema,'GS-GENERAL-REVISION-V1')
-    assert.equal(record.not_final,true,'Revision must retain not_final')
-    assert(record.translator?.trim(),'Missing translator identity')
-    const entries=validateGeneralReturn(record.batch,record.return,units)
-    assert.equal(record.return_sha256,hash(JSON.stringify(record.return)),'Return receipt drift')
-    if(record.status==='reviewed') {
-      assert.equal(record.approval?.approved,true,'Missing review approval')
-      assert.equal(record.approval?.batch_id,record.batch.batch_id,'Approval bound to different batch')
-      assert.equal(record.approval?.return_sha256,approvedReturnHash(record),'Approval bound to different translation')
-      assert(record.approval?.reviewer?.trim() && record.approval?.statement?.trim(),'Missing reviewer/statement')
-      assert(entries.every(e=>e.decision!=='uncertain'),'Unresolved entries cannot be reviewed')
-    } else { assert.equal(record.status,'draft'); approvedReturnHash(record) }
-    for(const entry of entries) {
-      assert(!output.has(entry.key),`Overlapping revision ${entry.key}; supersede old batch explicitly`)
-      output.set(entry.key,{...entry,status:record.status,batch_id:record.batch.batch_id,translator:record.translator,reviewer:record.approval?.reviewer||null})
-    }
-  }
-  return output
-}
+// Published translations for the current corpus, from the translation memory (translation/tm).
+// Kept under this name for the generator, audit and checks; it never fails on corpus drift.
+export const loadGeneralRevisions = (root, units, options) => loadMemory(root, units, options)

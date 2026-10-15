@@ -35,7 +35,7 @@
         <span>偶像资料页「自己紹介」· 1 段语音</span>
       </div>
       <div class="idol-intro-body">
-        <p class="idol-intro-line gs-flow" lang="ja">{{ introLine }}</p>
+        <p class="idol-intro-line gs-flow" :lang="introLine.lang" :class="{ 'is-pending': introLine.pending }">{{ introLine.text }}</p>
         <button type="button" class="idol-intro-play" :data-archive-focus-id="`idol-intro:${idol.idol_code}`" @click="emit('play-introduction', selfIntroduction.file)">
           <Play :size="15" fill="currentColor" aria-hidden="true" /><span>播放 ADV</span>
         </button>
@@ -124,10 +124,9 @@
 </template>
 
 <script setup>
-import { archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
+import { archiveLineText, archiveNamedText, loadArchiveNames } from './useArchiveNamedText.js'
 import { computed, ref } from 'vue'
 import { BookOpenText, ChevronRight, Images, Camera, Heart, Info, Medal, MessageSquareText, Music, Phone, Play, UsersRound } from '@lucide/vue'
-import { presentProducerAddressingText } from '../../presentation/ProducerAddressingText.js'
 import ArchiveTechnicalDetails from './ArchiveTechnicalDetails.vue'
 import {archiveText} from './useArchiveCollectionText.js'
 import { fesHonorMonth } from '../../presentation/HonorIdentity.mjs'
@@ -152,7 +151,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['open-domain', 'open-unit', 'open-event', 'open-song', 'select-idol','open-honor','play-introduction'])
-const introLine = computed(() => presentProducerAddressingText(props.selfIntroduction?.text || '', 'ja'))
+// The self-introduction is the idol's IdolDetail home voice (home-voice, self-intro in the card-lines shard).
+void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+const introLine = computed(() => archiveLineText('card-lines', [['home-voice', 'self-intro']], props.selfIntroduction?.text || ''))
 // Bond honors (担当 at bond Lv.50, the catchphrase at Lv.100), then FES achievements, then event
 // rankings grouped by event. Notes say where each group comes from in reader terms.
 const openHonorNote = ref('')
@@ -314,6 +315,7 @@ function formatDate(timestamp) {
 .song-links strong { overflow: hidden; font-weight: var(--gs-weight-semibold); text-overflow: ellipsis; white-space: nowrap; }
 .idol-intro-body { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--gs-space-5); padding-top: var(--gs-space-2); }
 .idol-intro-line { margin: 0; color: var(--gs-ink); line-height: 1.8; white-space: pre-line; overflow-wrap: anywhere; }
+.idol-intro-line.is-pending { visibility: hidden; }
 .idol-intro-play { display: inline-flex; flex: none; align-items: center; gap: var(--gs-space-2); min-height: var(--gs-control-normal); padding: 0 var(--gs-space-4); border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .idol-intro-play:hover { color: var(--gs-mint-ink); }
 .idol-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gs-space-8); }

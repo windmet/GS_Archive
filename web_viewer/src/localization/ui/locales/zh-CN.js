@@ -62,6 +62,7 @@ export default Object.freeze({
   'player.settings.returnCatalog': '返回目录',
   'player.complete.episode': '本话播放完毕',
   'player.complete.story': '故事播放完毕',
+  'player.complete.live': '进入 Live',
   'player.complete.loadingNext': '正在加载下一话…',
   'player.complete.nextEpisode': '下一话',
   'player.complete.communication': '通信已读完，可继续回看',

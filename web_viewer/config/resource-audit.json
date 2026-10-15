@@ -50,6 +50,49 @@
     "missing": 0,
     "changed": 0
   },
+  "supplements": [
+    {
+      "id": "office-voice",
+      "label": "事务所系统语音",
+      "count": 11,
+      "unit": "句",
+      "detail": "山村 賢 · 3 个场景：登录奖励、工作开始、加成日",
+      "surface": "首页 · 事务所语音",
+      "state": "live",
+      "source": "src/data/officeSystemVoices.json"
+    },
+    {
+      "id": "unused-voice",
+      "label": "未使用语音存档",
+      "count": 963,
+      "unit": "条",
+      "detail": "8 个编号系列；15 条有脚本文字，其余只有音频",
+      "surface": "收藏 → 未使用语音（/unused/）",
+      "state": "live",
+      "source": "src/data/unusedVoiceArchive.json"
+    },
+    {
+      "id": "card-voice-wiki",
+      "label": "卡面演出语音 · wiki 转录",
+      "count": 134,
+      "unit": "张卡",
+      "detail": "455 句；演出语音文字来源：主数据 486 · 转录 455 · 仅音频 2568",
+      "surface": "卡片详情（下次 read model 候选生成后显示）",
+      "state": "pending-release",
+      "source": "data_pipeline/curated/card_voice_transcripts.json"
+    },
+    {
+      "id": "gasha-ticket",
+      "label": "卡池名称 · 道具补录",
+      "count": 25,
+      "unit": "个卡池",
+      "detail": "由 273 种抽取道具反查；2 种选择券未指明卡池",
+      "surface": "卡池目录",
+      "state": "live",
+      "source": "public/data/editorial/gasha-ticket-evidence.json"
+    }
+  ],
+  "supplementsUnavailable": [],
   "localAssets": {
     "files": 59083,
     "bytes": 7965050158,
@@ -220,6 +263,26 @@
     {
       "file": "public/data/publication/manifest.json",
       "sha256": "a355f08bbe97fcb317f75c369e2fc3af90f0f0db20e7bb2ef27658935915600e"
+    },
+    {
+      "file": "src/data/officeSystemVoices.json",
+      "sha256": "7c52d0e26c8208a29d5ec1bf39e804ed1169bea157a18875524212b4f57b1287"
+    },
+    {
+      "file": "src/data/unusedVoiceArchive.json",
+      "sha256": "a39d2c28e201890e19cf00f221266b74235ca8f33553258cdec0c8280a2a7ee4"
+    },
+    {
+      "file": "../data_pipeline/curated/card_voice_transcripts.json",
+      "sha256": "09049fe304195ed63813af876b9966cbbe627edf5f308264b4bac91efacad8fc"
+    },
+    {
+      "file": "public/data/masterdata/card_detail_index.json",
+      "sha256": "7746cfc050e56174a94ac13a8173b156bd2b5d84a3ce26b358be504c6f9dc9d7"
+    },
+    {
+      "file": "public/data/editorial/gasha-ticket-evidence.json",
+      "sha256": "9f532b911eefe8639475614c4a39096e9e9d3191cc33e82a4e6eeefc7619d8ae"
     }
   ],
   "storage": {

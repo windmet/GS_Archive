@@ -10,11 +10,15 @@ const SERIES = Object.freeze({
     title: '2022年エイプリルフール',
     description: '2022年4月1日に公開された、前後編の特別ストーリー。',
     official: false,
+    // Part a ends with the script's `live` command into this song; masterdata aprilfools_song_id = 47.
+    song: { code: 'drv999', title: 'DRIVE A LIVE（パッションMAX Ver.）', jacketUrl: '/assets/songs/jacket_drv999.png' },
   },
   '603': {
     title: '2022年3月プロミ連動ストーリー',
-    description: 'プロデューサーミーティングと連動して公開された特別ストーリー。',
+    description: '「THE IDOLM@STER SideM PRODUCER MEETING 315 BE@T OF PASSION FESTIVAL!!!」（2022年3月12・13日）2日目の夜に公開。運動会を終えた16人のアイドルが、トークで一日を振り返る。',
     official: false,
+    // Not on the wiki's extra-story list; the event is confirmed by press coverage.
+    sourceUrl: 'https://www.famitsu.com/news/202203/12254425.html',
   },
   '604': {
     title: 'GROWING FES -夜陰のルミネセンス-',
@@ -57,6 +61,8 @@ const SERIES = Object.freeze({
     title: '2023年エイプリルフール',
     description: '2023年4月1日に再公開された、前後編の特別ストーリー。',
     official: false,
+    // Part a ends with the script's `live` command into this song; masterdata aprilfools_song_id = 47.
+    song: { code: 'drv999', title: 'DRIVE A LIVE（パッションMAX Ver.）', jacketUrl: '/assets/songs/jacket_drv999.png' },
   },
 })
 
@@ -70,6 +76,7 @@ export function extraStorySeriesDefinition(seriesId) {
       ? definition.sourceUrl
       : EXTRA_STORY_WIKI_URL,
     gashaCode: definition.gashaCode || '',
+    song: definition.song || null,
   }
 }
 

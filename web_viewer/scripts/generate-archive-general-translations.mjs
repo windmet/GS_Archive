@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {archiveGeneralTextCorpus} from './lib/archive-general-text-corpus.mjs';
+import {randomTalkTitleAliases} from './lib/random-talk-titles.mjs';
 import {sourceUnits,loadGeneralRevisions,shards,rootOverlayEntries} from './lib/general-translation-batches.mjs';
 import {commonNames, photoDescriptions, skillNames, bondHonorNames, skillDescriptionDraft, centerSkillDraft, itemNames, itemDescriptions, itemMaterialDescriptionDraft} from '../translation/studio/general/metadata-drafts.mjs';
 import {honorNameDraft} from '../translation/studio/general/honor-drafts.mjs';
@@ -82,6 +83,9 @@ for (const row of missing.filter(row => row.kind === 'currency')) {
   const translation = entries.item?.[row.field]?.[row.source];
   if (translation) { ((entries.currency ||= {})[row.field] ||= {})[row.source] = translation; missing.splice(missing.indexOf(row), 1); }
 }
+// Random-talk topic titles take their opening line's translation (scripts/lib/random-talk-titles.mjs).
+const topicTitles = randomTalkTitleAliases(root, entries['chat-line']?.text);
+if (Object.keys(topicTitles).length) Object.assign(entries['chat-line'].text, topicTitles);
 const rootEntries = rootOverlayEntries(entries);
 const target = path.join(root, 'public/translations/zh-CN/archive-general.json');
 fs.writeFileSync(target, JSON.stringify({schemaVersion: 1, locale: 'zh-CN', status: 'draft',
@@ -101,4 +105,4 @@ fs.mkdirSync(path.join(root, '.analysis/archive-general-localization'), {recursi
 fs.writeFileSync(path.join(root, '.analysis/archive-general-localization/untranslated.json'), JSON.stringify(uniqueMissing, null, 2) + '\n');
 console.log(JSON.stringify({sourceRows: corpus.length, translatedRows: corpus.length - missing.length,
   uniqueTranslations: Object.fromEntries(Object.entries(entries).map(([kind, fields]) => [kind, Object.values(fields).reduce((sum, values) => sum + Object.keys(values).length, 0)])),
-  untranslatedUnique: uniqueMissing.length, bondSourceEntries: Object.keys(bonds).length}, null, 2));
+  untranslatedUnique: uniqueMissing.length, bondSourceEntries: Object.keys(bonds).length, randomTalkTitleAliases: Object.keys(topicTitles).length}, null, 2));

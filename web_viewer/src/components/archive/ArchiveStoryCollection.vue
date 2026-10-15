@@ -21,12 +21,20 @@
         <p v-if="['extra', 'unit_story'].includes(collection.domain) && collection.description" class="story-lede">{{ collection.description }}</p>
         <p v-if="collection.subject?.kind === 'shared'" class="story-note">该篇由山村贤登场引导，内容为制作人生日问候，归入公共篇。</p>
         <p v-else-if="collection.domain === 'birthday' && collection.sharedChapterCount" class="story-note">生日同期开放的个人故事收在个人故事页，这里只保留入口。</p>
-        <div v-if="collection.gasha || collection.sourceUrl" class="collection-relations">
+        <div v-if="collection.gasha || relatedSong || collection.sourceUrl" class="collection-relations">
           <button v-if="collection.gasha" type="button" class="story-row" @click="emit('open-gasha', collection.gasha)">
             <span class="story-row-thumb"><img v-if="collection.gasha.banner_url" :src="collection.gasha.banner_url" alt="" /></span>
             <span class="story-row-copy">
               <strong>{{ gashaText(collection.gasha.display_name) }}</strong>
               <small>关联卡池 · {{ collection.gasha.derived_pickup_cards?.length || 0 }} 张新卡</small>
+            </span>
+            <ChevronRight :size="18" aria-hidden="true" />
+          </button>
+          <button v-if="relatedSong" type="button" class="story-row" :data-related-song="relatedSong.code" @click="emit('open-song', relatedSong.code)">
+            <span class="story-row-thumb is-jacket"><img :src="relatedSong.jacketUrl" alt="" /></span>
+            <span class="story-row-copy">
+              <strong>{{ relatedSong.title }}</strong>
+              <small>关联歌曲 · 剧情前篇结尾进入这首歌的 Live</small>
             </span>
             <ChevronRight :size="18" aria-hidden="true" />
           </button>
@@ -123,6 +131,7 @@ import { presentProducerAddressingText } from '../../presentation/ProducerAddres
 import { storyCollectionTitle } from '../../presentation/StoryPageTitle.js'
 import { useReaderTitles } from './useReaderTitles.js'
 import {gashaText} from './useArchiveGashaText.js'
+import { extraStorySeriesDefinition } from '../../data/extraStoryTaxonomy.js'
 import '../../styles/archive-story.css'
 
 const props = defineProps({
@@ -135,8 +144,10 @@ const props = defineProps({
   loadReadingDocument: Function,
   idolName: { type: Function, default: () => '' },
 })
-const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-idol-story'])
+const emit = defineEmits(['read-episode', 'retry-reading', 'play-chapter', 'play-episode', 'select-chapter', 'open-gasha', 'open-song', 'open-idol-story'])
 const expandedChapterId = ref('')
+// The April Fools series link the song their story leads into (extraStoryTaxonomy.js); read models stay unchanged.
+const relatedSong = computed(() => props.collection?.domain === 'extra' ? extraStorySeriesDefinition(props.collection.sectionId).song : null)
 const readingByFile = computed(() => { const map = new Map(); for (const entry of props.readingEntries) { if (!entry.source_file) continue; const existing = map.get(entry.source_file); map.set(entry.source_file, existing === undefined ? entry : null) } return map })
 const readingStatusNotice = ref('')
 const chapterUnit = computed(() => ({ main: '话', birthday: '篇' })[props.collection?.domain] || '章')

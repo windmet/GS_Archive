@@ -5,6 +5,7 @@ import { sourceUnits, CHAT_KINDS, shards, rootOverlayEntries } from './lib/gener
 import { planCompactBatches, renderCompactInput } from './lib/general-translation-markdown.mjs'
 import { chatTranslation, isLegacyChat } from '../src/localization/story/ChatTranslations.js'
 import { createStoryLocalization } from '../src/localization/story/StoryLocalizationContext.js'
+import { randomTalkTitleAliases, titleTranslation } from './lib/random-talk-titles.mjs'
 
 // Chats (personal and unit talks, random topics) translate by source text through the general
 // workflow, conversation by conversation, and reach the Player through the shared chats overlay.
@@ -68,4 +69,15 @@ try {
   assert.equal(localization.resolveDialogue(chat.steps[1].dialogue).text, 'おう、任せとけ！', 'the original stays Japanese')
   scope.stop()
 } finally { globalThis.fetch = originalFetch }
-console.log(`Chat translation: ${chats.length} units (${indexRows.length} rows, 649 chats) in ${chatBatches.length} batches; Player lookup verified`)
+// Random-talk topic titles (masterdata spelling) take their opening line's translation: every one of
+// the 245 topics finds its line, and an untranslated line publishes no title.
+const topicIndex = JSON.parse(fs.readFileSync('public/data/masterdata/random_talk_presentation_index.json', 'utf8')).by_topic_id
+const allLines = Object.fromEntries(indexRows.filter(row => row.kind === 'line').map(row => [row.source, `译:${row.source}`]))
+const allTitles = randomTalkTitleAliases(process.cwd(), allLines)
+// 231 of the 245 titles differ from their line (wrapped or with an emoji); the rest already match it.
+assert.equal(Object.keys(allTitles).length, 231)
+assert.deepEqual(randomTalkTitleAliases(process.cwd(), {}), {})
+assert.equal(allTitles['この前、北斗とテニスを したんだ。 思いっきり運動してきたぜ！'], '译:この前、北斗とテニスをしたんだ。思いっきり運動してきたぜ！')
+assert.equal(allTitles['この前ダンスレッスンで すっごーくカッコいい技を 見せてもらったんだ（表情）'], '译:この前ダンスレッスンですっごーくカッコいい技を見せてもらったんだ（表情）')
+assert.equal(titleTranslation('看到高中生们的dance \nlesson，\n真有活力！'), '看到高中生们的dance lesson，真有活力！')
+console.log(`Chat translation: ${chats.length} units (${indexRows.length} rows, 649 chats) in ${chatBatches.length} batches; Player lookup verified; random-talk titles follow their opening line`)

@@ -100,8 +100,13 @@ def verify():
                         'voices': {'base_02_00': {'text': 'curated'}, 'base_03_01': {'text': 'unit'}}}}
     rows = classify_card_operational_voices({'36': '0', '_offset': 9}, 'card', 'base',
                                             {'base_02_00', 'base_03_01', 'base_04_01'}, curated)
-    assert [(row['text'], row['text_source']) for row in rows] == [('0', 'masterdata'), ('unit', 'curated'), ('', 'audio_only')]
-    assert rows[0]['_source']['offset'] == 9 and rows[1]['source_url'] == 'source'
+    # The masterdata placeholder "0" gives way to a curated transcript; real masterdata text never does.
+    assert [(row['text'], row['text_source']) for row in rows] == [('curated', 'curated'), ('unit', 'curated'), ('', 'audio_only')]
+    assert rows[0]['source_url'] == 'source' and rows[1]['source_url'] == 'source'
+    rows = classify_card_operational_voices({'36': 'scout', '_offset': 9}, 'card', 'base', {'base_02_00'}, curated)
+    assert [(row['text'], row['text_source']) for row in rows] == [('scout', 'masterdata')] and rows[0]['_source']['offset'] == 9
+    rows = classify_card_operational_voices({'36': '0', '_offset': 9}, 'card', 'base', {'base_02_00'}, {})
+    assert [(row['text'], row['text_source']) for row in rows] == [('0', 'masterdata')]
     assert classify_card_operational_voices({}, 'card', None, set(), curated) == []
     # The actual writer must bind both returned outputs, never rely on compatibility mutation.
     tree = ast.parse((ROOT.parent / 'data_pipeline/sidem_masterdata/generation_jobs.py').read_text(encoding='utf-8'))
