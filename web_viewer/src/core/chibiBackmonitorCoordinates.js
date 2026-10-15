@@ -1,25 +1,22 @@
-// Static art is centred on its full 1900x1060 transparent texture canvas.
-// Take 01/02 both have a measured aperture [726,300,1160,542], centred
-// at (943,421). Their authored Backmonitor (-7,340) therefore registers
-// at art-relative (-7,-109): Y origin 231, rather than the legacy 250.
-// This is a bounded 2D registration, not a recovered Unity camera transform.
-export function backmonitorRegistration(songCode) {
-  if (['tkstp1', 'tkstp2'].includes(songCode)) return { originY: 231, id: 'take-screen-aperture-v1' }
-  // Measured transparent interiors of the original 1900x1060 PNGs, aligned
-  // against their authored CSV XY. These are bounded 2D registrations;
-  // the native camera/RectTransform conversion is still not recovered.
-  if (songCode === 'psblts') return { originY: 242, id: 'possibilities-screen-aperture-v1' }
-  if (songCode === 'cgtocc') return { originX: -150.5, originY: 137, id: 'chance-star-apertures-v1' }
-  return { originY: 250, id: 'legacy-content-plane' }
+import { nativeBackmonitorGeometry as plane } from './chibiBackmonitorGeometry.js'
+// ScriptPosToStagePos subtracts (0,360,0). Base RectTransform anchored Y=1.35
+// belongs inside the scripted root scale. MoviePanel Sprite1734 is
+// 32px / 100ppu, scaled by (16.25,8.4375): a 520 x 270 stage-pixel plane.
+// The encoded movie resolution does not own the renderer's geometry.
+export function backmonitorRegistration() {
+  return { originY: plane.originY, id: 'native-backmonitor-plane-v1' }
 }
 
 export function projectChibiBackmonitor(songCode, state, width, height, environmentScale = 1) {
   const fit = Math.min(width / 1280, height / 720) * environmentScale
   const registration = backmonitorRegistration(songCode)
+  const rootScale = state.scale / 1000
   return {
-    x: width / 2 + ((registration.originX || 0) + state.x) * fit,
-    y: height / 2 + (registration.originY - state.y) * fit,
-    scale: fit * state.scale / 1000 * 2,
+    x: width / 2 + (state.x + plane.baseOffsetX * rootScale) * fit,
+    y: height / 2 + (registration.originY - state.y - plane.baseOffsetY * rootScale) * fit,
+    scale: fit * rootScale,
+    width: fit * rootScale * plane.width,
+    height: fit * rootScale * plane.height,
   }
 }
 

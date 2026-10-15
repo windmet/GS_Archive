@@ -50,7 +50,7 @@
     :data-backmonitor-ready="backmonitorReady"
     :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
     :data-backmonitor-raw-value7="currentBackmonitorState.rawValue7"
-    data-backmonitor-value7-status="sort-order-candidate-not-movie-alpha"
+    data-backmonitor-value7-status="native-glow-alpha"
     data-backmonitor-logo-status="take-ending-native-mesh-reference-projection"
     :data-backmonitor-logo-angle="backmonitorLogoAngle"
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
@@ -3302,17 +3302,19 @@ function layoutBackmonitor(state) {
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   const projected = projectChibiBackmonitor(selectedSong.value?.songCode, state, width, height, environmentScale.value)
-  const depths = backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  const depths = backmonitorDepths(state,!stageBackgroundSprite)
   backmonitorSprite.zIndex = depths.movie
   backmonitorSprite.position.set(projected.x, projected.y)
-  backmonitorSprite.scale.set(projected.scale)
+  backmonitorSprite.width = projected.width
+  backmonitorSprite.height = projected.height
   backmonitorSprite.rotation = 0
   backmonitorSprite.alpha = 1
   backmonitorSprite.visible = backmonitorEnabled.value && Boolean(state.movie) && state.y < 4000
   if (backmonitorTransitionSprite) {
-    backmonitorTransitionSprite.zIndex = depths.movie
+    backmonitorTransitionSprite.zIndex = depths.transition
     backmonitorTransitionSprite.position.copyFrom(backmonitorSprite.position)
-    backmonitorTransitionSprite.scale.copyFrom(backmonitorSprite.scale)
+    backmonitorTransitionSprite.width = projected.width
+    backmonitorTransitionSprite.height = projected.height
     backmonitorTransitionSprite.rotation = backmonitorSprite.rotation
     backmonitorTransitionSprite.alpha = backmonitorSprite.alpha
   }
@@ -3326,9 +3328,9 @@ function syncBackmonitorLayers(state,projected) {
   if(!model || !backmonitorContainer)return
   const runtime=backmonitorLayerSprites.ensure('native-layers',model,stageEffectIndex.value.assets)
   if(!runtime)return
-  const depths=backmonitorDepths(state,stageBackgroundNativeLayers.value)
+  const depths=backmonitorDepths(state,!stageBackgroundSprite)
   runtime.sprites.forEach((sprite,i)=> {
-    const layer=runtime.layers[i],scale=projected.scale/2
+    const layer=runtime.layers[i],scale=projected.scale
     sprite.position.set(projected.x+layer.x*100*scale,projected.y-layer.y*100*scale)
     sprite.scale.set(scale*layer.scaleX,scale*layer.scaleY)
     sprite.zIndex=depths[layer.role]
@@ -3348,7 +3350,7 @@ function syncBackmonitorLogo(state,projected) {
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
   const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
   if (!runtime) return
-  runtime.mesh.zIndex = backmonitorDepths(state,stageBackgroundNativeLayers.value).logo
+  runtime.mesh.zIndex = backmonitorDepths(state,!stageBackgroundSprite).logo
   updateBackmonitorLogoMesh(runtime,model,sample,projected)
   backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }

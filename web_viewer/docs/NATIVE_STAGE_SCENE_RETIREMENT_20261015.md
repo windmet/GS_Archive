@@ -31,3 +31,5 @@ Browser 实际同页操作先选择 OUR SONG，再选择 JOYFUL HEART MAKER。�
 - song_tkstp1 / song_jfhtmk 的 stage_01 Sprite rect1900×1060、PPU100、pivot(.5,.5)，实际mesh范围X[-9.5,9.5]、Y约[-5.3,5.3]。未发现可以直接解释逐歌补偿的 mesh 平移。
 
 本轮小型 RAW probe 保留在 `.analysis/native-engine/backmonitor-prefabs-full.json` 等 E 盘本地文件，未修改共享 public/assets。下一步继续串联显示链，验证完整矩阵后移除歌曲特例；当前未宣称 JF 顶部穿帮已经修好。
+
+后续已定位到 Base 的 RectTransform.anchoredPosition，见 [背屏公共布局修正](NATIVE_BACKMONITOR_RECTTRANSFORM_20261015.md)。上面的未完成状态保留为当时的调查边界。

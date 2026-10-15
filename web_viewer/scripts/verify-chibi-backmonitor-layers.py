@@ -8,6 +8,7 @@ import tempfile
 from pathlib import Path
 import UnityPy
 from live_chibi_backmonitor_layers import extract_backmonitor_layers
+from live_chibi_backmonitor_geometry import backmonitor_geometry
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('effects', ROOT/'scripts/prepare-live-chibi-stage-effects.py')
@@ -20,6 +21,9 @@ args = parser.parse_args()
 sources = effects.load_archive_sources(args.sources_config)
 data = effects.read_unity_data(effects.find_xapk(None, sources.xapk_file))
 env = UnityPy.load(data)
+geometry=backmonitor_geometry(env)
+geometry['unityDataSha256']=hashlib.sha256(data).hexdigest()
+assert geometry == json.loads((ROOT/'scripts/fixtures/chibi-backmonitor-geometry.json').read_text(encoding='utf8'))
 fixture_path = ROOT/'scripts/fixtures/chibi-backmonitor-renderers.json'
 index_path = ROOT/'public/assets/live-chibi/stage-effects/index.json'
 with tempfile.TemporaryDirectory(prefix='chibi-backmonitor-') as tmp:

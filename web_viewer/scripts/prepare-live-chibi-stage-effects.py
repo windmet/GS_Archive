@@ -24,6 +24,7 @@ from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_old_suspension import old_suspension_model
 from live_chibi_backmonitor_logo import logo_model, extract_logo_source
 from live_chibi_backmonitor_layers import extract_backmonitor_layers
+from live_chibi_backmonitor_geometry import backmonitor_geometry
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -260,6 +261,7 @@ def main() -> None:
         "oldSuspensionlight": old_suspension,
         "backmonitorLogo": backmonitor_logo,
         "backmonitorLayers": backmonitor_layers,
+        "backmonitorGeometry": backmonitor_geometry(environment),
         "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

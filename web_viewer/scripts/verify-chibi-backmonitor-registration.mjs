@@ -1,73 +1,67 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { backmonitorRegistration, projectChibiBackmonitor } from '../src/core/chibiBackmonitorCoordinates.js'
-
-// Independent measurements of the interior alpha hole in both original stage PNGs.
-const aperture = [726, 300, 1160, 542]
-const source = { x: -7, y: 340, scale: 920 }
-for (const code of ['tkstp1', 'tkstp2']) {
-  assert.equal(backmonitorRegistration(code).id, 'take-screen-aperture-v1')
-  for (const [width,height] of [[1280,720],[869,489],[357,201],[321,180],[800,500]]) {
-    for (const environmentScale of [1,1.073,.85]) {
-      const fit = Math.min(width/1280,height/720)*environmentScale
-      const movie = projectChibiBackmonitor(code,source,width,height,environmentScale)
-      const opening = [width/2+(aperture[0]-950)*fit,height/2+(aperture[1]-530)*fit,
-        width/2+(aperture[2]-950)*fit,height/2+(aperture[3]-530)*fit]
-      const bounds = [movie.x-272*movie.scale/2,movie.y-144*movie.scale/2,
-        movie.x+272*movie.scale/2,movie.y+144*movie.scale/2]
-      assert.ok(bounds[0]<opening[0] && bounds[1]<opening[1] && bounds[2]>opening[2] && bounds[3]>opening[3])
-      assert.ok(Math.abs(movie.y-(opening[1]+opening[3])/2)<1e-8)
-      // The former screen was lower, leaving 7.52 design pixels uncovered at its top.
-      assert.ok(Math.abs(height/2-90*fit-144*movie.scale/2-opening[1]-7.52*fit)<1e-8)
-    }
+import {backmonitorRegistration,projectChibiBackmonitor} from '../src/core/chibiBackmonitorCoordinates.js'
+import {nativeBackmonitorGeometry} from '../src/core/chibiBackmonitorGeometry.js'
+import {backmonitorDepths} from '../src/core/chibiFlatStageLayers.js'
+const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/chibi-backmonitor-geometry.json',import.meta.url),'utf8'))
+assert.deepEqual(nativeBackmonitorGeometry,fixture.model)
+const base=fixture.source.transforms.find(t=>t.type==='RectTransform'&&t.tree.m_AnchoredPosition.y>0)
+assert.equal(base.tree.m_LocalPosition.y,0,'Witness retains the misleading serialized Transform cache')
+assert.ok(Math.abs(base.tree.m_AnchoredPosition.y-1.35)<1e-6)
+let checked=0
+const check=(code,state)=> {
+ for(const [width,height] of [[1280,720],[869,489],[357,201],[321,180],[800,500]]) {
+  for(const environmentScale of [.85,1,1.073]) {
+   const fit=Math.min(width/1280,height/720)*environmentScale
+   const root=state.scale/1000
+   const movie=projectChibiBackmonitor(code,state,width,height,environmentScale)
+   // Independent root -> anchored Base -> centred native rectangle matrix.
+   assert.ok(Math.abs(movie.x-(width/2+state.x*fit))<1e-8)
+   assert.ok(Math.abs(movie.y-(height/2+(360-state.y)*fit-1.35*100*root*fit))<1e-8)
+   assert.ok(Math.abs(movie.width-32/100*16.25*100*root*fit)<1e-8)
+   assert.ok(Math.abs(movie.height-32/100*8.4375*100*root*fit)<1e-8)
+   assert.ok(Math.abs(movie.scale-root*fit)<1e-8)
+   assert.ok(Math.abs(movie.y+movie.height/2-(height/2+(360-state.y)*fit))<1e-8,
+    'Scripted point owns the bottom of the screen for every root scale')
+   assert.deepEqual(movie,projectChibiBackmonitor('unlisted-song',state,width,height,environmentScale),
+    'Song names cannot select a registration exception')
+   assert.ok(Object.values(movie).every(Number.isFinite));checked++
   }
-  // Authored motion remains relative to the registered frame, rather than snapping to it.
-  const moved=projectChibiBackmonitor(code,{...source,x:23,y:360},1280,720)
-  assert.equal(moved.x,663); assert.equal(moved.y,231)
+ }
 }
-assert.deepEqual(projectChibiBackmonitor('steqmg',source,1280,720),{x:633,y:270,scale:1.84})
-// Independently measured original PNG alpha interiors (not native transforms).
-const fixtures=JSON.parse(fs.readFileSync(new URL('fixtures/chibi-backmonitor-apertures.json',import.meta.url),'utf8'))
-for (const fixture of fixtures) {
-  const witness={code:fixture.code,state:fixture.events[0],hole:[
-    Math.min(...fixture.holes.map(h=>h[0])),Math.min(...fixture.holes.map(h=>h[1])),
-    Math.max(...fixture.holes.map(h=>h[2])),Math.max(...fixture.holes.map(h=>h[3])),
-  ]}
-  for (const [width,height] of [[1280,720],[357,201],[800,500]]) {
-    for (const environmentScale of [.85,1,1.073]) {
-      const fit=Math.min(width/1280,height/720)*environmentScale
-      const movie=projectChibiBackmonitor(witness.code,witness.state,width,height,environmentScale)
-      const hole=witness.hole.map((p,i)=>i%2?height/2+(p-530)*fit:width/2+(p-950)*fit)
-      const bounds=[movie.x-136*movie.scale,movie.y-72*movie.scale,movie.x+136*movie.scale,movie.y+72*movie.scale]
-      assert.ok(bounds[0]<hole[0] && bounds[1]<hole[1] && bounds[2]>hole[2] && bounds[3]>hole[3])
-      assert.ok(Math.abs(movie.x-(hole[0]+hole[2])/2)<1e-8)
-      assert.ok(Math.abs(movie.y-(hole[1]+hole[3])/2)<1e-8)
-    }
-  }
+for(const code of ['jfhtmk','tkstp1','tkstp2','psblts','cgtocc','flslgt']) {
+ assert.equal(backmonitorRegistration(code).id,'native-backmonitor-plane-v1')
+ for(const scale of [0,600,920,1000,1300,1800])check(code,{x:75,y:280,scale})
 }
-if (process.argv.includes('--published-assets')) {
-  const root=new URL('../public/assets/live-chibi/',import.meta.url)
-  const read=path=>JSON.parse(fs.readFileSync(new URL(path,root),'utf8'))
-  const songs=read('choreography/index.json').songs
-  const backgrounds=read('stage-backgrounds/index.json').songs
-  const media=read('backmonitor/index.json').assets
-  for (const fixture of fixtures) {
-    const song=songs.find(s=>s.songCode===fixture.code)
-    for (const event of song.backmonitorEvents) {
-      assert.equal(event.x,fixture.events[0].x);assert.equal(event.y,fixture.events[0].y)
-      assert.equal(event.scale,fixture.events[0].scale)
-      assert.equal(media[event.movie].width,272);assert.equal(media[event.movie].height,144)
-    }
-  }
-  for (const code of ['tkstp1','tkstp2']) {
-    assert.equal(backgrounds[code].width,1900); assert.equal(backgrounds[code].height,1060)
-    const song=songs.find(song=>song.id===code+'_live_effect')
-    for (const event of song.backmonitorEvents) {
-      assert.equal(event.x,source.x); assert.equal(event.y,source.y); assert.equal(event.scale,source.scale)
-      const movie=media[event.movie]
-      assert.equal(movie.width,272); assert.equal(movie.height,144)
-    }
-  }
-  console.log('Published Take screen dimensions and all authored backmonitor positions passed')
+if(process.argv.includes('--published-assets')) {
+ const songs=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url),'utf8')).songs
+ for(const song of songs)for(const event of song.backmonitorEvents||[])check(song.songCode,event)
 }
-console.log('Take aperture coverage: desktop, portrait, landscape, letterbox and environment scaling passed')
+const source=fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
+assert.ok(source.includes('backmonitorSprite.width = projected.width'))
+assert.ok(source.includes('backmonitorSprite.height = projected.height'))
+assert.ok(source.includes('backmonitorTransitionSprite.width = projected.width'))
+assert.ok(source.includes('backmonitorTransitionSprite.height = projected.height'))
+assert.ok(!source.includes('backmonitorSprite.scale.set(projected.scale)'))
+assert.ok(!source.includes('scale=projected.scale/2'))
+assert.ok(!source.includes('backmonitorDepths(state,stageBackgroundNativeLayers.value)'))
+assert.ok(source.includes('backmonitorTransitionSprite.zIndex = depths.transition'))
+const logo=fs.readFileSync(new URL('../src/core/chibiBackmonitorLogo.js',import.meta.url),'utf8')
+assert.ok(logo.includes('runtime.mesh.scale.set(projected.scale)'))
+const layoutCode=source.slice(source.indexOf('function layoutBackmonitor('),source.indexOf('function syncBackmonitorLayers('))
+for(const composite of [false,true]) {
+ const sprite=()=>({position:{set(x,y){this.x=x;this.y=y},copyFrom(p){this.x=p.x;this.y=p.y}},scale:{}})
+ const context={backmonitorSprite:sprite(),backmonitorTransitionSprite:sprite(),app:{renderer:{width:1280,height:720,resolution:1}},
+  selectedSong:{value:{songCode:'jfhtmk'}},environmentScale:{value:1},backmonitorEnabled:{value:true},
+  stageBackgroundSprite:composite?{}:null,projectChibiBackmonitor,backmonitorDepths,
+  syncBackmonitorLogo(){},syncBackmonitorLayers(){}}
+ const layout=new Function('c',`with(c){${layoutCode};return layoutBackmonitor}`)(context)
+ layout({x:75,y:280,scale:1300,sortingOrder:1250,movie:'movie'})
+ const {backmonitorSprite:movie,backmonitorTransitionSprite:transition}=context
+ assert.equal(movie.position.y,264.5);assert.equal(movie.width,676);assert.equal(movie.height,351)
+ assert.equal(transition.width,movie.width);assert.equal(transition.height,movie.height)
+ assert.equal(transition.position.y,movie.position.y)
+ assert.equal(movie.zIndex,composite?-30000:1250)
+ assert.equal(transition.zIndex,movie.zIndex+2)
+}
+console.log(`Native backmonitor RectTransform / fixed renderer dimensions: ${checked} layouts; root-scale-dependent Base offset, viewport, media-independent geometry, transition/logo/layer wiring and no song exceptions passed`)

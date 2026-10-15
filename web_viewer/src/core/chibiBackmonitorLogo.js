@@ -90,8 +90,7 @@ export function updateBackmonitorLogoMesh(runtime, model, sample, projected) {
   runtime.geometry.getBuffer('aVertexPosition').update(quad.vertices)
   runtime.geometry.getBuffer('aLogoUVQ').update(quad.uvq)
   runtime.mesh.position.set(projected.x,projected.y)
-  // Movie is a half-resolution 272px resource (x2); native Sprite is full-size.
-  runtime.mesh.scale.set(projected.scale/2)
+  runtime.mesh.scale.set(projected.scale)
   runtime.mesh.visible = true
 }
 
