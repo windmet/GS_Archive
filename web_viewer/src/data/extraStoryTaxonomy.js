@@ -10,6 +10,8 @@ const SERIES = Object.freeze({
     title: '2022年エイプリルフール',
     description: '2022年4月1日に公開された、前後編の特別ストーリー。',
     official: false,
+    // Part a ends with the script's `live` command into this song; masterdata aprilfools_song_id = 47.
+    song: { code: 'drv999', title: 'DRIVE A LIVE（パッションMAX Ver.）', jacketUrl: '/assets/songs/jacket_drv999.png' },
   },
   '603': {
     title: '2022年3月プロミ連動ストーリー',
@@ -57,6 +59,8 @@ const SERIES = Object.freeze({
     title: '2023年エイプリルフール',
     description: '2023年4月1日に再公開された、前後編の特別ストーリー。',
     official: false,
+    // Part a ends with the script's `live` command into this song; masterdata aprilfools_song_id = 47.
+    song: { code: 'drv999', title: 'DRIVE A LIVE（パッションMAX Ver.）', jacketUrl: '/assets/songs/jacket_drv999.png' },
   },
 })
 
@@ -70,6 +74,7 @@ export function extraStorySeriesDefinition(seriesId) {
       ? definition.sourceUrl
       : EXTRA_STORY_WIKI_URL,
     gashaCode: definition.gashaCode || '',
+    song: definition.song || null,
   }
 }
 

@@ -523,6 +523,17 @@
               "table_46_row_count": {
                 "type": "integer",
                 "minimum": 1
+              },
+              "special_performer": {
+                "type": "object",
+                "required": ["name", "code", "cv", "evidence"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "code": { "type": "string", "pattern": "^[0-9]{3}[a-z]{3}$" },
+                  "cv": { "type": "string", "minLength": 1 },
+                  "evidence": { "type": "string", "minLength": 1 }
+                },
+                "additionalProperties": false
               }
             },
             "additionalProperties": false

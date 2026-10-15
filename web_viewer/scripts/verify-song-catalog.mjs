@@ -163,6 +163,10 @@ if (s.special_variant_count !== Object.values(catalog.songs).filter(song => song
 const driveVariant = catalog.songs.drvalv.variants.find(variant => variant.song_code === 'drv999')
 if (!driveVariant || driveVariant.variant_kind !== 'april_fools') fail('DRIVE A LIVE April Fools variant missing')
 if (catalog.songs.drv999.related_entities?.[0]?.story_section !== '602') fail('drv999 Extra 602 relation missing')
+// The 2023 rerun (Extra 610) and the singer come from masterdata's April Fools config (song_related_entity_index.json).
+if (catalog.songs.drv999.related_entities?.map(entry => entry.story_section).join() !== '602,610') fail('drv999 must link both April Fools series')
+if (catalog.songs.drv999.performance_mapping.special_performer?.code !== '102sha') fail('drv999 special performer missing')
+if (catalog.songs.drv999.related_entities.some(entry => decodeURIComponent(entry.evidence_url) !== 'https://wikiwiki.jp/sidem-gstars/エイプリルフール2022')) fail('drv999 evidence URL drift')
 if (s.available_song_count !== Object.values(catalog.songs).filter(song => song.available).length) {
   fail(`available_song_count mismatch`)
 }

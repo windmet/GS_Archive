@@ -29,6 +29,9 @@ export function archiveGeneralTextCorpus(root) {
   // Office system voices (Yamamura: login bonus, work menu, bonus days), from the tracked list the home page reads.
   const office = JSON.parse(fs.readFileSync(path.join(root, 'src/data/officeSystemVoices.json'), 'utf8'));
   for (const scene of office.scenes) for (const line of scene.lines) add('office-voice', line.cue, 'text', line.text, office.speaker.code);
+  // Unused voices: only Saito's unreleased HomeStand lines carry script text (scripts/build-unused-voice-archive.mjs).
+  const unused = JSON.parse(fs.readFileSync(path.join(root, 'src/data/unusedVoiceArchive.json'), 'utf8'));
+  for (const family of unused.families) for (const speaker of family.speakers) for (const line of speaker.cues) add('unused-voice', line.cue, 'text', line.text, speaker.code);
   // Chats: personal and unit talks and random topics, from the tracked chat text index (the compiled
   // chats stay in the local corpus). References keep the conversation, step and speaker.
   const chats = JSON.parse(fs.readFileSync(path.join(root, 'translation/studio/source/chat-text-index.json'), 'utf8')).files;

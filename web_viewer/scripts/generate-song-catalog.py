@@ -318,6 +318,8 @@ def build_catalog(
                 "performer_basis": performer_basis,
                 "performer_slot_idol_codes": slot_idol_codes,
                 "performer_slot_basis": "table46_slot_order" if slot_idol_codes else "none",
+                # A singer outside the idol roster, named by masterdata text (song_related_entity_index.json).
+                **({"special_performer": family["special_performer"]} if family.get("special_performer") else {}),
                 "table_46_row_count": meta.get("table_46_row_count") or 0,
             },
             "jacket_url": jacket.get("url") if jacket else None,

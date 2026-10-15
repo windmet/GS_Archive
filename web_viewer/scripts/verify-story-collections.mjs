@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { buildStoryCatalog } from '../src/data/archiveSelectors.js'
 import { buildStoryCollections } from '../src/data/storyCollections.js'
 import { buildBirthdayStoryDomainIdentity, buildExtraStoryDomainIdentity } from '../src/data/storyDomainIdentityIndex.js'
+import { extraStorySeriesDefinition } from '../src/data/extraStoryTaxonomy.js'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const readJson = relative => readFile(path.join(root, relative), 'utf8').then(JSON.parse)
@@ -57,6 +58,9 @@ assert.equal(aprilFools2022.chapters[0].episodes[0].resourceId, '5_03_000_22_a')
 assert.equal(aprilFools2022.chapters[0].episodes[0].file, 'episodes/5_03_000_22_a.json')
 assert.equal(aprilFools2022.chapters[1].episodes[0].resourceId, '5_03_000_22_b')
 assert.equal(aprilFools2022.chapters[1].episodes[0].file, 'episodes/5_03_000_22_b.json')
+// Both April Fools series play the same scenario, whose first part leads into the special song.
+for (const series of ['602', '610']) assert.equal(extraStorySeriesDefinition(series).song?.code, 'drv999')
+assert.equal(extraStorySeriesDefinition('604').song, null)
 
 const newYear2023 = extraCollections.find(collection => collection.sectionId === '608')
 assert.equal(newYear2023.title, '謹賀新年2023')

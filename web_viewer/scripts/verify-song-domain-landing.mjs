@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { readArchiveRoute, buildArchiveUrl, buildArchiveBreadcrumbs, ARCHIVE_NAVIGATION } from '../src/core/archiveRoute.js'
 import { ARCHIVE_SOURCES } from '../src/data/ArchiveDataRepository.js'
 import { verifySongLandingBehavior } from './lib/song-landing-behavior.mjs'
+import { buildSongPresentation } from '../src/presentation/SongPresentation.js'
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url))
 const viewerRoot = path.resolve(scriptDirectory, '..')
@@ -72,7 +73,8 @@ assert.equal(drv999.available, false)
 assert.equal(drv999.archive_status, 'special')
 assert.equal(drv999.parent_song_code, 'drvalv')
 assert.equal(drv999.variant_kind, 'april_fools')
-assert.equal(drv999.related_entities[0].story_section, '602')
+assert.deepEqual(drv999.related_entities.map(entry => entry.story_section), ['602', '610'])
+assert.equal(buildSongPresentation(drv999, null).scopeDescription, '由齋藤 孝司（CV：立木文彦）演唱，依据游戏内的曲目说明。')
 assert.equal(catalog.songs.drvalv.variants[0].song_code, 'drv999')
 assert.equal(drv999.choreography.has_for_lipsync, false)
 assert.equal(drv999.audio_form, 'single-cue')

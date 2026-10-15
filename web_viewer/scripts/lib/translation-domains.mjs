@@ -26,6 +26,7 @@ export const KINDS = {
   'card-touch':         {label:'卡面文本·触摸语音',   model:'首页触摸语音', shard:'card-lines', prompt:'character'},
   'home-voice':         {label:'首页语音·通用',       model:'首页通用语音', shard:'card-lines', prompt:'character'},
   'office-voice':       {label:'事务所·系统语音',     model:'事务所系统语音', shard:'card-lines', prompt:'character'},
+  'unused-voice':       {label:'未使用语音',          model:'未上线首页语音', shard:'card-lines', prompt:'character'},
   'call-title':        {label:'卡面文本·电话标题',   model:'电话标题',     shard:'card-lines', prompt:'character'},
   'chat-line':          {label:'通信·聊天对白',       model:'对白',         shard:'chats',      prompt:'chat'},
   'chat-choice':        {label:'通信·制作人回复',     model:'制作人回复',   shard:'chats',      prompt:'chat'},
