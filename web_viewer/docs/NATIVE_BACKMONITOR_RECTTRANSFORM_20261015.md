@@ -52,3 +52,9 @@ Movie和转场用上述原生矩形尺寸，Logo/Back/Noise/Grow共用Base中心
 Browser使用原5212/PID61564、本worktree的Vite：1440×900检查JF 4s顶部、Take 01 5s、Possibilities 5s、Change to Chance 5s三个屏孔；Take 02 95.9s及曲末Logo与屏框共用锚点；390×844检查JF 4s。OUR SONG实际播放到28.8s后切JF，HIGH JUMP实际播放至曲末后切JF，两次JF的静态背景归属均为空、没有旧布景遮挡；冷加载JF再到4s画面正常。证据在任务visualizations目录：`joyful-native-backmonitor-4000-final.png`、`joyful-native-backmonitor-mobile-final.png`、`take-native-recttransform-5000.png`、`possibilities-native-backmonitor-5000.png`、`chance-native-backmonitor-5000.png`、`take02-native-backmonitor-logo-ending.png`、`joyful-native-after-playing-our-song.png`、`joyful-native-after-playing-high-jump.png`、`joyful-native-backmonitor-cold-4000.png`。
 
 接线过程中先新增import再生成模块，Vite曾记录两条HMR reload失败；模块生成后恢复。最终冷加载未新增error，有两条来自既有pixi-spine tint/update调用的库warning栈，未把本轮写成“全程零console信息”。原生camera、HDR/后处理、原机设备和剩余未接指令的完整等价不在本次几何修正的完成声明内；无部署、无master修改。
+
+## 跟进 master 后复验
+
+修正提交 `cf070302` 保留为独立批次。fetch核实master前进10个提交后，依 `GIT_WORKFLOW.md` 用merge commit `425c89c7` 合入 `origin/master`（当时 `dc348a9c`），无冲突；舞台修改文件没有被合并覆盖。没有修改远端master。
+
+合并后的 `build:check` **19.00s通过**，仍是同一固定代码输出目录、不复制public；生成审计元数据已恢复到合并后HEAD。随后完整 `verify:source-batch` **142/142再次通过**。5212继续使用原PID61564，合并后JF 4s Browser画面和 `native-backmonitor-plane-v1` 归属复验正常，截图 `joyful-native-backmonitor-merged-4000.png`；未重启服务或更换端口。最终提交前恢复临时viewport。
