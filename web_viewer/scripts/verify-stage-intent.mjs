@@ -3,6 +3,7 @@ import fs from 'node:fs'
 import vm from 'node:vm'
 import {createPlaybackIntent} from '../src/core/PlaybackIntent.js'
 import {withLoadDeadline} from '../src/core/AsyncLoadBoundary.js'
+import {nativeMotionSpeed,nativeMotionMixWindowMs} from '../src/core/chibiMotionClock.js'
 import {parseBatchBlobs,publicationGitSnapshot} from './lib/publication-git-snapshot.mjs'
 import {execFileSync} from 'node:child_process'
 import {SkeletonData, BoneData, Skeleton, Animation, RotateTimeline, AnimationState, AnimationStateData} from '@pixi-spine/runtime-3.8'
@@ -34,7 +35,8 @@ let cases=0
     {time:1060,motion:3,speed:1000,mode:2},
     {time:1800,motion:4,speed:1000,mode:3},
   ]
-  function harness(eventList=events) {
+  const unitClock={tempos:[{timeMs:0,bpm:160}]}
+  function harness(eventList=events,clock=unitClock) {
     const data=new SkeletonData();data.bones.push(new BoneData(0,'root',null))
     for (let id=1;id<=4;id++) {
       const curve=new RotateTimeline(2);curve.boneIndex=0
@@ -42,7 +44,7 @@ let cases=0
       data.animations.push(new Animation(`motion${id}_3dance`,[curve],2))
       data.animations.push(new Animation(`motion${id}_4loop`,[curve],2))
     }
-    const stateData=new AnimationStateData(data);stateData.defaultMix=.12
+    const stateData=new AnimationStateData(data);stateData.defaultMix=0
     const skeleton=new Skeleton(data),state=new AnimationState(stateData)
     const runtime={skeletonData:data,spine:{state,skeleton,stateData,
       update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
@@ -50,7 +52,7 @@ let cases=0
     const c={lifetime:new AbortController(),runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
       playing:ref(false),playbackSpeed:ref(1),motionCatalog:ref(new Map(events.map(e=>[e.motion,{id:e.motion}]))),
       injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_3dance`,`motion${motion.id}_4loop`],
-      layoutRuntime(){},eventsForPosition:()=>eventList}
+      layoutRuntime(){},eventsForPosition:()=>eventList,motionClockTrack:ref(clock),nativeMotionSpeed,nativeMotionMixWindowMs}
     vm.createContext(c)
     for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])
       vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
@@ -58,13 +60,13 @@ let cases=0
       vm.runInContext(source.match(new RegExp(`async function ${name}\\([^]*?\\n\\}`))[0],c)
     return {c,slot,runtime}
   }
-  async function continuous(target) {
-    const f=harness()
+  async function continuous(target,clock=unitClock) {
+    const f=harness(events,clock)
     for(let index=0;index<events.length&&events[index].time<=target;index++) {
       const event=events[index]
       await f.c.playSlotEvent(f.slot,event,{reset:index===0})
       const until=Math.min(target,events[index+1]?.time??target)
-      let remaining=(until-event.time)/1000*event.speed/1000
+      let remaining=(until-event.time)/1000*nativeMotionSpeed(clock,event)
       f.runtime.spine.state.timeScale=1
       while(remaining>1e-9){const dt=Math.min(1/60,remaining);f.runtime.spine.update(dt);remaining-=dt}
       f.runtime.spine.state.timeScale=0
@@ -77,6 +79,15 @@ let cases=0
     assert(Math.abs(f.runtime.spine.skeleton.bones[0].rotation-expected)<.001,
       `Authored handoff at ${target} must retain playback pose`)
     assert.equal(f.runtime.spine.state.timeScale,0);cases++
+  }
+  // A .15 animation-second mix is longer than 150 song milliseconds at slow
+  // BPM/speed. The previous fixed lookback discarded its outgoing pose.
+  for(const clock of [{tempos:[{timeMs:0,bpm:80}]},
+    {tempos:[{timeMs:0,bpm:80},{timeMs:1050,bpm:320}]}])for(const target of [1030,1090,1200,1300]) {
+    const f=harness(events,clock);await f.c.syncSlotAtTime(f.slot,target,true)
+    assert(Math.abs(f.runtime.spine.skeleton.bones[0].rotation-await continuous(target,clock))<.001,
+      `Native BPM-latched handoff reconstruction must match playback at ${target}`)
+    cases++
   }
   const old=harness();await old.c.playSlotEvent(old.slot,events[1],{reset:true,seekTime:1000})
   assert(Math.abs(old.runtime.spine.skeleton.bones[0].rotation-await continuous(1000))>10,

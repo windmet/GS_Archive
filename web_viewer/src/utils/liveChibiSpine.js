@@ -19,6 +19,7 @@ import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
 import { validatePenlightData } from '../core/chibiPenlights.js'
 import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
 import { validateMotionOffsetData } from '../core/chibiMotionOffset.js'
+import { validateMotionClock } from '../core/chibiMotionClock.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -125,6 +126,16 @@ export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
     .map(byte=>byte.toString(16).padStart(2,'0')).join('')
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   return validateMotionOffsetData(JSON.parse(text),hash)
+}
+export async function fetchLiveChibiMotionClock(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-motion-clock.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMotionClock(JSON.parse(text),hash,JSON.parse(choreographyText).songs)
 }
 export async function fetchLiveChibiStagelights(file,{signal}={}) {
   const [text,choreographyText]=await Promise.all([
@@ -410,10 +421,11 @@ export async function createLiveChibi(character, costume, {signal,isCurrent=()=>
     missingRegions: [...attachmentLoader.missingRegions],
   }
   if (import.meta.env.DEV) window.__SIDE_M_CHIBI_DIAGNOSTICS__ = diagnostics
-  // Scripted choreography replaces a running motion at exact song timestamps.
-  // Keep a short bone mix available; playLiveChibiMotion hard-switches slots so
-  // optional hand/face attachments cannot accumulate during that mix.
-  spine.stateData.defaultMix = 0.12
+  // LiveIdolFactory creates a new SkeletonDataAsset: ctor leaves defaultMix=0,
+  // and the source arrays contain no per-pair mixes. Normal PlayMotion's
+  // callback explicitly supplies .15s only for its first fragment; queued
+  // before/after/loop fragments and immediate commands retain the zero default.
+  spine.stateData.defaultMix = 0
   return {
     bodyType: character.bodyType,
     spine,
@@ -473,7 +485,12 @@ export function seekLiveChibiMotion(runtime, seconds) {
       state.apply(skeleton)
       remaining -= step
     }
-    runtime.spine.update(0)
+    // Refresh Pixi attachments without another AnimationState.update. Even
+    // delta=0 can consume a queued entry whose trackLast just reached delay;
+    // that would advance seek one state update beyond normal playback.
+    const updateState = state.update
+    state.update = () => {}
+    try { runtime.spine.update(0) } finally { state.update = updateState }
   } finally {
     state.timeScale = priorSpeed
   }
@@ -523,7 +540,7 @@ export function playLiveChibiMotion(runtime, animationNames, {
 
   const mainEntry = state.setAnimation(0, mainName, directLoop)
   if (!shouldReset && mainEntry.mixingFrom) {
-    mainEntry.mixDuration = nativeCommand && !immediate ? 0.15 : mixDuration
+    mainEntry.mixDuration = nativeCommand ? (immediate ? 0 : 0.15) : mixDuration
     mainEntry.mixingFrom.attachmentThreshold = 0
     mainEntry.mixingFrom.drawOrderThreshold = 0
   } else {

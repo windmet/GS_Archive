@@ -22,6 +22,8 @@
     :data-stage-view-scale="stageViewScale.toFixed(3)"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
     :data-ground-registration="chibiGroundRegistration(selectedSong?.songCode).id"
+    :data-motion-tempo="motionClockTempo ?? ''"
+    data-motion-clock="native-conductor-command-latched"
     :data-derived-group-events="derivedGroupEventCount"
     :data-camera-event-time="currentCameraState.eventTime"
     :data-camera-zoom="currentCameraState.zoom.toFixed(4)"
@@ -187,6 +189,7 @@
             :data-motion-sequence="runtimes.get(position)?.currentMotionPlayback?.sequence?.join(' → ') || ''"
             :data-motion-policy="runtimes.get(position)?.currentMotionPlayback?.policy || ''"
             :data-position-sort-order="positionDebugState(position).sortingOrder"
+            :data-motion-speed-scale="runtimeForPosition(position)?.motionSpeedScale ?? ''"
             :data-character-scale="runtimes.get(position)?.spine?.scale?.x?.toFixed(4) || ''"
             :data-position-tween-progress="positionDebugState(position).progress"
             :data-position-x="positionDebugState(position).x"
@@ -530,6 +533,7 @@ import {
   fetchLiveChibiPenlights,
   fetchLiveChibiMouthFix,
   fetchLiveChibiMotionOffset,
+  fetchLiveChibiMotionClock,
   fetchLiveChibiStagelights,
   fetchLiveChibiCommandInventory,
   fetchLiveChibiImageLayerIndex,
@@ -563,6 +567,7 @@ import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
 import { nativeCharacterScale } from '../core/chibiNativeCharacterGeometry.js'
+import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotionMixWindowMs } from '../core/chibiMotionClock.js'
 import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } from '../core/chibiPenlightRenderer.js'
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
@@ -619,6 +624,7 @@ const lipSyncReady = ref(false)
 const lipSyncFrameCount = ref(0)
 const mouthFixData = shallowRef(null)
 const motionOffsetData = shallowRef(null)
+const motionClockData = shallowRef(null)
 const stagelightData = shallowRef(null)
 const mouthFixedPositions = ref([])
 const mouthFixedRates = ref('')
@@ -948,6 +954,8 @@ const motionOffsetTrack = computed(() => {
   const song=selectedSong.value,track=motionOffsetData.value?.songs[song?.id]
   return track && track.songCode===song?.songCode && track.source===song?.source ? track : null
 })
+const motionClockTrack = computed(() => motionClockForSong(motionClockData.value,selectedSong.value))
+const motionClockTempo = frameValue(() => motionClockTrack.value ? nativeMotionTempoAt(motionClockTrack.value,stageTime.value) : null)
 const motionGateState = frameValue(() => randomMotionGateAt(motionOffsetTrack.value,stageTime.value))
 const isSpecialSingle = computed(() => selectedSong.value?.songCode === 'drv999')
 const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value, {
@@ -1158,6 +1166,10 @@ onMounted(async () => {
     manifest.value = await fetchLiveChibiManifest({signal:lifetime.signal})
     if (stageDisposed) return
     choreography.value = await fetchLiveChibiChoreography(manifest.value.choreography.index,{signal:lifetime.signal})
+    if (stageDisposed) return
+    // Native speed is required for both initial poses and transport. Missing
+    // clocks must not silently render an assumed BPM/timeScale=1.
+    motionClockData.value = await fetchLiveChibiMotionClock(manifest.value.choreography.index,{signal:lifetime.signal})
     if (stageDisposed) return
     if (MAINTAINER) {
       commandInventoryState.value = 'loading'
@@ -3853,7 +3865,7 @@ async function playSlotEvent(slot, event, { reset = false, seekTime = null } = {
   if (!current()) return
   slot.currentMotion = motion.id
   slot.currentMotionSource = event.source || 'script'
-  const speedScale = (Number(event.speed) || 1000) / 1000
+  const speedScale = nativeMotionSpeed(motionClockTrack.value,event)
   runtime.currentMotionEvent = event
   runtime.motionSpeedScale = speedScale
   playLiveChibiMotion(runtime, animationNames, { mode: event.mode, reset, nativeCommand: true })
@@ -3876,14 +3888,14 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
   const loadSequence = slot.loadSequence
   // A paused seek inside a cross-fade needs the outgoing pose too. Rebuild
   // only the recent mixing chain and its predecessor, not the whole song.
-  const mixMilliseconds = Math.max(0.15, Number(runtime?.spine.stateData.defaultMix) || 0) * 1000
+  const mixWindowAt = index => nativeMotionMixWindowMs(motionClockTrack.value,events[index])
   let start = index
-  if (reset && start > 0 && events[start].mode !== 3 && events[start].time > milliseconds - mixMilliseconds) {
+  if (reset && start > 0 && milliseconds - events[start].time < mixWindowAt(start)) {
     // A previous command can still be mixing when a second handoff interrupts
     // it. Include the connected handoff chain, not just timestamps within the
     // current frame's lookback window, then its settled predecessor.
-    do { start -= 1 } while (start > 0 && events[start].mode !== 3
-      && events[start + 1].time - events[start].time < mixMilliseconds)
+    do { start -= 1 } while (start > 0
+      && events[start + 1].time - events[start].time < mixWindowAt(start))
   }
   for (let cursor = start; cursor <= index; cursor += 1) {
     if (stageIntent.revision() !== revision || slot.loadSequence !== loadSequence
@@ -4079,7 +4091,7 @@ function syncMotionPlaybackSpeed() {
     const runtime = runtimes.get(position)
     if (runtime) {
       runtime.spine.state.timeScale = playing.value
-        ? playbackSpeed.value * (runtime.motionSpeedScale || 1)
+        ? playbackSpeed.value * (runtime.motionSpeedScale ?? 1)
         : 0
     }
   }
