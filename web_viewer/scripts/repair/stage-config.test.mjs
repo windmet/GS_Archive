@@ -36,10 +36,9 @@ function stageFixture(spines, loaders = {}) {
     applyStateLoad: new AbortController(), projectedStep: null, projectionFailure: null, lastScreenEffectsKey: '',
     NON_VISUAL_IDS: new Set(), isSilhouetteOnlyModel: () => false, getStepSceneState: item => item.state,
     applied: 0, applyStepSceneState: () => { context.applied++; return '' },
-    _loadBodyTypes: () => { throw new Error('unnecessary body type fetch') },
-    _loadPrefabMeta: () => { throw new Error('unnecessary prefab fetch') },
+    _loadFigurePlacement: () => { throw new Error('unnecessary figure placement fetch') },
     _loadMotionSettings: () => { throw new Error('unnecessary motion fetch') },
-    applyCharaOverrides: () => {}, syncBoundsSnapshot: () => {}, debugMode: { value: false },
+    syncBoundsSnapshot: () => {}, debugMode: { value: false },
     syncStates: () => {}, scheduleStageDebugPublish: () => {}, tracePlayer: () => {},
     isSceneProjected: expected => context.projectedStep === expected, ...loaders })
   vm.runInContext(applySource + '\n' + readinessSource, context)
@@ -52,12 +51,12 @@ test('actual SpineStage empty-background entry performs no actor metadata fetch'
   assert.equal(c.projectedStep, c.step)
   assert.equal(c.getSceneReadiness(c.step).status, 'ready')
   const mount = source.slice(source.indexOf('onMounted(() => {'), source.indexOf('\nfunction syncManagedBackground'))
-  assert.doesNotMatch(mount, /void _loadPrefabMeta|void _loadMotionSettings/)
+  assert.doesNotMatch(mount, /void _loadFigurePlacement|void _loadMotionSettings/)
   assert.match(mount, /if \(props.debugControls\) void _loadCostumeDictionary\(\)/)
 })
 test('actual SpineStage actor metadata failure is blocked, never permanent waiting or fake ready', async () => {
   const c = stageFixture([{ id: '047shu', model: '047shu_005_00' }], {
-    _loadBodyTypes: async () => {}, _loadPrefabMeta: async () => { throw Object.assign(new Error('bad prefab'), { code: 'CONFIG_TEST' }) },
+    _loadFigurePlacement: async () => { throw Object.assign(new Error('bad placement'), { code: 'CONFIG_TEST' }) },
     _loadMotionSettings: async () => {} })
   await c.applyState(c.step)
   assert.equal(c.applied, 0)

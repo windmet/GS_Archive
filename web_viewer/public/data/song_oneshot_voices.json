@@ -1,0 +1,839 @@
+{
+ "schema_version": 1,
+ "status": "experimental",
+ "rule": {
+  "selector": "deck_slot",
+  "summary": "Unit_serif 事件时间点播放编成第 value1 槽（1 = center 卡）偶像的 oneshot；与舞台站位和演唱成员无关。",
+  "evidence": [
+   "Unit_serifLiveEffectTypeExecuter.PlayEffect RVA 0x19C6B28",
+   "LiveDeckData.get_deckLiveCards RVA 0x1D69030",
+   "UserDeckData.get_centerUserCardData RVA 0x276F798"
+  ]
+ },
+ "songs": {
+  "flslgt": {
+   "title": "FLASH LIGHT",
+   "source": {
+    "acb": "RAW/audio/song3_flslgt.acb",
+    "acb_sha256": "e91ea763c771c3f8d3523a58ed036e3715d6f10713440c1a934cbe19b6a8b8d4",
+    "bundle": "RAW/asset/song_flslgt.unity3d",
+    "bundle_sha256": "c23c1c2940a0c3032e7b6b1d2b7a3c5a42cbbae6e0d4a52c0155a7db52ba9bd4"
+   },
+   "triggers": [
+    {
+     "time_ms": 35550,
+     "deck_slot": 1,
+     "cue_prefix": "song3_flslgt_oneshot_",
+     "source_csv": "flslgt_live_effect.csv",
+     "rows": 1
+    }
+   ],
+   "clips": {
+    "001tom": {
+     "cue": "song3_flslgt_oneshot_001tom",
+     "url": "/assets/live-chibi/oneshot/flslgt/001tom.m4a",
+     "subsong": 3,
+     "duration_seconds": 4.444467,
+     "bytes": 84791,
+     "sha256": "e7dbe88f0d6c54411bdf8fa1daa2f649fee0c57d665dd27db0665a8adbe9bf72"
+    },
+    "002sht": {
+     "cue": "song3_flslgt_oneshot_002sht",
+     "url": "/assets/live-chibi/oneshot/flslgt/002sht.m4a",
+     "subsong": 4,
+     "duration_seconds": 4.444467,
+     "bytes": 83663,
+     "sha256": "9c5a53983995c0891c6b093a3bc0d54f8f4ce0bf01bd4133186a817144d31dd8"
+    },
+    "003hok": {
+     "cue": "song3_flslgt_oneshot_003hok",
+     "url": "/assets/live-chibi/oneshot/flslgt/003hok.m4a",
+     "subsong": 5,
+     "duration_seconds": 4.444467,
+     "bytes": 36487,
+     "sha256": "95626a294311b4a4daa0ffa098fd16e07a045de641e34d7fe803034021034f3a"
+    },
+    "004ter": {
+     "cue": "song3_flslgt_oneshot_004ter",
+     "url": "/assets/live-chibi/oneshot/flslgt/004ter.m4a",
+     "subsong": 6,
+     "duration_seconds": 4.444467,
+     "bytes": 32752,
+     "sha256": "fa76fc0a228869c29d89519f2eebd27324d0a86166260760c2404c140a5bcc91"
+    },
+    "005kao": {
+     "cue": "song3_flslgt_oneshot_005kao",
+     "url": "/assets/live-chibi/oneshot/flslgt/005kao.m4a",
+     "subsong": 7,
+     "duration_seconds": 4.444467,
+     "bytes": 31557,
+     "sha256": "f0c4b7198b3dae27fdb46e7c8a8aff8094ffb2223c29fd89362d53d1d6ae08d7"
+    },
+    "006tsu": {
+     "cue": "song3_flslgt_oneshot_006tsu",
+     "url": "/assets/live-chibi/oneshot/flslgt/006tsu.m4a",
+     "subsong": 8,
+     "duration_seconds": 4.444467,
+     "bytes": 37074,
+     "sha256": "d97a75fa46215f40eff6b1799b33edf91164933ff7c490293ac0c4c40012456a"
+    },
+    "007kei": {
+     "cue": "song3_flslgt_oneshot_007kei",
+     "url": "/assets/live-chibi/oneshot/flslgt/007kei.m4a",
+     "subsong": 9,
+     "duration_seconds": 4.444467,
+     "bytes": 82247,
+     "sha256": "d02b5f3b9b20ae338b1bc27fc32bd0f8b4cad9e8defa292ea543b8993f9e9966"
+    },
+    "008rei": {
+     "cue": "song3_flslgt_oneshot_008rei",
+     "url": "/assets/live-chibi/oneshot/flslgt/008rei.m4a",
+     "subsong": 10,
+     "duration_seconds": 4.444467,
+     "bytes": 86663,
+     "sha256": "fecc262963e92a5d35eb7032d42ac18e43b5ea52b81415d0bdee3ff63098866c"
+    },
+    "009kyj": {
+     "cue": "song3_flslgt_oneshot_009kyj",
+     "url": "/assets/live-chibi/oneshot/flslgt/009kyj.m4a",
+     "subsong": 11,
+     "duration_seconds": 4.444467,
+     "bytes": 82229,
+     "sha256": "17745777c25aff50e33b8a18d37170331731aae6f3f90b1231053fa52104a16a"
+    },
+    "010pie": {
+     "cue": "song3_flslgt_oneshot_010pie",
+     "url": "/assets/live-chibi/oneshot/flslgt/010pie.m4a",
+     "subsong": 12,
+     "duration_seconds": 4.444467,
+     "bytes": 34528,
+     "sha256": "6841e2bb959843449bc0b322ef22a8df0fcd323eef130fe25738807ae984fb47"
+    },
+    "011min": {
+     "cue": "song3_flslgt_oneshot_011min",
+     "url": "/assets/live-chibi/oneshot/flslgt/011min.m4a",
+     "subsong": 13,
+     "duration_seconds": 4.444467,
+     "bytes": 34343,
+     "sha256": "bacc54f01f8f91a8044af778bf445a7a9621be401f23e6494df5a9e15eb7d183"
+    },
+    "012yus": {
+     "cue": "song3_flslgt_oneshot_012yus",
+     "url": "/assets/live-chibi/oneshot/flslgt/012yus.m4a",
+     "subsong": 14,
+     "duration_seconds": 4.444467,
+     "bytes": 34757,
+     "sha256": "d31cbcb90dedf14faa0d8764a2de442cfe72c2843bff63003452f588be441251"
+    },
+    "013kys": {
+     "cue": "song3_flslgt_oneshot_013kys",
+     "url": "/assets/live-chibi/oneshot/flslgt/013kys.m4a",
+     "subsong": 15,
+     "duration_seconds": 4.444467,
+     "bytes": 39035,
+     "sha256": "f57131d5c960edfcc709b0cc94862201a6d43bca9e16485a784074c6df589d0b"
+    },
+    "014hid": {
+     "cue": "song3_flslgt_oneshot_014hid",
+     "url": "/assets/live-chibi/oneshot/flslgt/014hid.m4a",
+     "subsong": 16,
+     "duration_seconds": 4.444467,
+     "bytes": 84764,
+     "sha256": "aef63cc8c13f9c643aee88bfad41fd8ea47693cb2d485fbbebefbb20621aab9f"
+    },
+    "015ryu": {
+     "cue": "song3_flslgt_oneshot_015ryu",
+     "url": "/assets/live-chibi/oneshot/flslgt/015ryu.m4a",
+     "subsong": 17,
+     "duration_seconds": 4.444467,
+     "bytes": 85822,
+     "sha256": "068b7cb804b2334a930dadb061b2352089c9668856c5dfbff3ba6ca51c655608"
+    },
+    "016sei": {
+     "cue": "song3_flslgt_oneshot_016sei",
+     "url": "/assets/live-chibi/oneshot/flslgt/016sei.m4a",
+     "subsong": 18,
+     "duration_seconds": 4.444467,
+     "bytes": 33941,
+     "sha256": "0f8ae07b474119306180a574e4a44b28aba7d7a3dc2f8a1511cb673f0db02d71"
+    },
+    "017kir": {
+     "cue": "song3_flslgt_oneshot_017kir",
+     "url": "/assets/live-chibi/oneshot/flslgt/017kir.m4a",
+     "subsong": 19,
+     "duration_seconds": 4.444467,
+     "bytes": 42367,
+     "sha256": "532386ea91e5aa907b256e01d061bbda35da35aa09950cb8f7cfb0afe9f6d2df"
+    },
+    "018shm": {
+     "cue": "song3_flslgt_oneshot_018shm",
+     "url": "/assets/live-chibi/oneshot/flslgt/018shm.m4a",
+     "subsong": 20,
+     "duration_seconds": 4.444467,
+     "bytes": 83632,
+     "sha256": "a45158a5a7ddc90f4270c3d25363c429c520e5d49c1faa1177eb834ddf0cbda9"
+    },
+    "019kur": {
+     "cue": "song3_flslgt_oneshot_019kur",
+     "url": "/assets/live-chibi/oneshot/flslgt/019kur.m4a",
+     "subsong": 21,
+     "duration_seconds": 4.444467,
+     "bytes": 31345,
+     "sha256": "573b88a24d790f028ed8896d172251bc152e0fea4b7e446fbd59f962457dcbbc"
+    },
+    "020hay": {
+     "cue": "song3_flslgt_oneshot_020hay",
+     "url": "/assets/live-chibi/oneshot/flslgt/020hay.m4a",
+     "subsong": 22,
+     "duration_seconds": 4.444467,
+     "bytes": 32967,
+     "sha256": "2505361ad05aff1fb40e1e05b9367129488dc4959a618c0032c1bd88ef67f7b8"
+    },
+    "021jun": {
+     "cue": "song3_flslgt_oneshot_021jun",
+     "url": "/assets/live-chibi/oneshot/flslgt/021jun.m4a",
+     "subsong": 23,
+     "duration_seconds": 4.444467,
+     "bytes": 39412,
+     "sha256": "745e69b78557d052d3550464fce0396a6cd5b8d1b53bd2166f8e295e5a9b9576"
+    },
+    "022nat": {
+     "cue": "song3_flslgt_oneshot_022nat",
+     "url": "/assets/live-chibi/oneshot/flslgt/022nat.m4a",
+     "subsong": 24,
+     "duration_seconds": 4.444467,
+     "bytes": 81970,
+     "sha256": "1f427b5dd24e99b0e333110edfa37075c42dbf80426aac65d586e82d20545f43"
+    },
+    "023har": {
+     "cue": "song3_flslgt_oneshot_023har",
+     "url": "/assets/live-chibi/oneshot/flslgt/023har.m4a",
+     "subsong": 25,
+     "duration_seconds": 4.444467,
+     "bytes": 40533,
+     "sha256": "8301ab09630b9c2717e9aa1ea0e1faed10dec93ef76e7d7d4d812b398225b220"
+    },
+    "024shk": {
+     "cue": "song3_flslgt_oneshot_024shk",
+     "url": "/assets/live-chibi/oneshot/flslgt/024shk.m4a",
+     "subsong": 26,
+     "duration_seconds": 4.444467,
+     "bytes": 29935,
+     "sha256": "526fd3767fd94a03f52d7a92726230b13b414b46f9f3f7ed1a483709eb568c34"
+    },
+    "025suz": {
+     "cue": "song3_flslgt_oneshot_025suz",
+     "url": "/assets/live-chibi/oneshot/flslgt/025suz.m4a",
+     "subsong": 27,
+     "duration_seconds": 4.444467,
+     "bytes": 38554,
+     "sha256": "7b38820f3fa44eeafc1c1646322a90871077a3049661dc6c39b773afbff8eea8"
+    },
+    "026gen": {
+     "cue": "song3_flslgt_oneshot_026gen",
+     "url": "/assets/live-chibi/oneshot/flslgt/026gen.m4a",
+     "subsong": 28,
+     "duration_seconds": 4.444467,
+     "bytes": 84890,
+     "sha256": "c3f25d2577c4da3ffdaa90ecc0672f6116080323b6814a143ebb643d26147d97"
+    },
+    "027yuk": {
+     "cue": "song3_flslgt_oneshot_027yuk",
+     "url": "/assets/live-chibi/oneshot/flslgt/027yuk.m4a",
+     "subsong": 29,
+     "duration_seconds": 4.444467,
+     "bytes": 87477,
+     "sha256": "9e5a39b5eb8d6e5a7e612a5fe0fafa3515ae0a2d0d95e6c30d8215c84fbff8b5"
+    },
+    "028soi": {
+     "cue": "song3_flslgt_oneshot_028soi",
+     "url": "/assets/live-chibi/oneshot/flslgt/028soi.m4a",
+     "subsong": 30,
+     "duration_seconds": 4.444467,
+     "bytes": 84463,
+     "sha256": "df6e5be8085e26c5fc9dfedc2314238ff90749f9265901ca63e88cf1d45baf1b"
+    },
+    "029ass": {
+     "cue": "song3_flslgt_oneshot_029ass",
+     "url": "/assets/live-chibi/oneshot/flslgt/029ass.m4a",
+     "subsong": 31,
+     "duration_seconds": 4.444467,
+     "bytes": 85337,
+     "sha256": "2f824305208cd69d8c12926928edbe0b05d22e3deb4fd067995f66622a410e57"
+    },
+    "030mak": {
+     "cue": "song3_flslgt_oneshot_030mak",
+     "url": "/assets/live-chibi/oneshot/flslgt/030mak.m4a",
+     "subsong": 32,
+     "duration_seconds": 4.444467,
+     "bytes": 33357,
+     "sha256": "9ea85c9e048d3d517afada68515e7a02823b61f2cc6cc658acaa981679b6b389"
+    },
+    "031sak": {
+     "cue": "song3_flslgt_oneshot_031sak",
+     "url": "/assets/live-chibi/oneshot/flslgt/031sak.m4a",
+     "subsong": 33,
+     "duration_seconds": 4.444467,
+     "bytes": 85710,
+     "sha256": "442e9bb0256d966d443e497682e5198f7836d4a75c84a62e9f6e83e42c7f97f0"
+    },
+    "032nao": {
+     "cue": "song3_flslgt_oneshot_032nao",
+     "url": "/assets/live-chibi/oneshot/flslgt/032nao.m4a",
+     "subsong": 34,
+     "duration_seconds": 4.444467,
+     "bytes": 83431,
+     "sha256": "c27cf65263363ac50fb1a2c7d4c80bafd78309565ac5fe7405798d840ba51151"
+    },
+    "033shr": {
+     "cue": "song3_flslgt_oneshot_033shr",
+     "url": "/assets/live-chibi/oneshot/flslgt/033shr.m4a",
+     "subsong": 35,
+     "duration_seconds": 4.444467,
+     "bytes": 85165,
+     "sha256": "31bab244155f71bb0464e326e4518d00cf52261c4bdfb2852b5702ab7fd49d1e"
+    },
+    "034kan": {
+     "cue": "song3_flslgt_oneshot_034kan",
+     "url": "/assets/live-chibi/oneshot/flslgt/034kan.m4a",
+     "subsong": 36,
+     "duration_seconds": 4.444467,
+     "bytes": 37650,
+     "sha256": "6943872f57133cd274cb7765f521d5712ac6ace880416f185e59439053718e8d"
+    },
+    "035mco": {
+     "cue": "song3_flslgt_oneshot_035mco",
+     "url": "/assets/live-chibi/oneshot/flslgt/035mco.m4a",
+     "subsong": 37,
+     "duration_seconds": 4.444467,
+     "bytes": 29069,
+     "sha256": "d73075459f69e14c573b847a2a1a8a76ec15a9d1f171cf23544724992ea67563"
+    },
+    "036rui": {
+     "cue": "song3_flslgt_oneshot_036rui",
+     "url": "/assets/live-chibi/oneshot/flslgt/036rui.m4a",
+     "subsong": 38,
+     "duration_seconds": 4.444467,
+     "bytes": 31795,
+     "sha256": "075cb672b75a581f9b2f60465591a64db4d787da9d212393b086211a4f55a6cc"
+    },
+    "037jir": {
+     "cue": "song3_flslgt_oneshot_037jir",
+     "url": "/assets/live-chibi/oneshot/flslgt/037jir.m4a",
+     "subsong": 39,
+     "duration_seconds": 4.444467,
+     "bytes": 85277,
+     "sha256": "7cb451640e3e784a6ef222958c1a9796bd1698845209233601c179c71be3b822"
+    },
+    "038tak": {
+     "cue": "song3_flslgt_oneshot_038tak",
+     "url": "/assets/live-chibi/oneshot/flslgt/038tak.m4a",
+     "subsong": 40,
+     "duration_seconds": 4.444467,
+     "bytes": 35875,
+     "sha256": "0a1b55ca60b7fef17eb5587fa05ca913523189ea105ffe06151cd895f6026ef3"
+    },
+    "039mcr": {
+     "cue": "song3_flslgt_oneshot_039mcr",
+     "url": "/assets/live-chibi/oneshot/flslgt/039mcr.m4a",
+     "subsong": 41,
+     "duration_seconds": 4.444467,
+     "bytes": 34469,
+     "sha256": "162e0bff8dc1e239a9631eefd430dd92dfd3c4f2cb1ff80336a189fe98dd7c57"
+    },
+    "040ren": {
+     "cue": "song3_flslgt_oneshot_040ren",
+     "url": "/assets/live-chibi/oneshot/flslgt/040ren.m4a",
+     "subsong": 42,
+     "duration_seconds": 4.444467,
+     "bytes": 37295,
+     "sha256": "7213ff12a3999c6278d7cdd5d8e080fb1f330adc5772bdb8628bebd14721709e"
+    },
+    "041ryo": {
+     "cue": "song3_flslgt_oneshot_041ryo",
+     "url": "/assets/live-chibi/oneshot/flslgt/041ryo.m4a",
+     "subsong": 43,
+     "duration_seconds": 4.444467,
+     "bytes": 83450,
+     "sha256": "ddc605e3a7df77d44f50838af6e8e0f1de1a404dc47f84d4ba3755626f8df41c"
+    },
+    "042dai": {
+     "cue": "song3_flslgt_oneshot_042dai",
+     "url": "/assets/live-chibi/oneshot/flslgt/042dai.m4a",
+     "subsong": 44,
+     "duration_seconds": 4.444467,
+     "bytes": 84776,
+     "sha256": "5916070622ea5ec89e7ff663ed866b81fe48e5b37266b9212ce276ff07c1e832"
+    },
+    "043kaz": {
+     "cue": "song3_flslgt_oneshot_043kaz",
+     "url": "/assets/live-chibi/oneshot/flslgt/043kaz.m4a",
+     "subsong": 45,
+     "duration_seconds": 4.444467,
+     "bytes": 40065,
+     "sha256": "d4a32bf779daf20a5f37643f24bde2da58c7c5d8cdfc7054153b7c179a70d74e"
+    },
+    "044ame": {
+     "cue": "song3_flslgt_oneshot_044ame",
+     "url": "/assets/live-chibi/oneshot/flslgt/044ame.m4a",
+     "subsong": 46,
+     "duration_seconds": 4.444467,
+     "bytes": 84547,
+     "sha256": "76d5dad19ff3f6ab470b9de1c82a2f4145ba80c3094c8fc63fe39eb63b306cc8"
+    },
+    "045sor": {
+     "cue": "song3_flslgt_oneshot_045sor",
+     "url": "/assets/live-chibi/oneshot/flslgt/045sor.m4a",
+     "subsong": 47,
+     "duration_seconds": 4.444467,
+     "bytes": 35257,
+     "sha256": "e5ee1f1446feb4685f365dbb323803b2446181101663c2972482213be1207461"
+    },
+    "046chr": {
+     "cue": "song3_flslgt_oneshot_046chr",
+     "url": "/assets/live-chibi/oneshot/flslgt/046chr.m4a",
+     "subsong": 48,
+     "duration_seconds": 4.444467,
+     "bytes": 30200,
+     "sha256": "4204bc3ff0ef9e776b0ac7b5476421785b07b12ed5c408b4e1d7260e29cf3544"
+    },
+    "047shu": {
+     "cue": "song3_flslgt_oneshot_047shu",
+     "url": "/assets/live-chibi/oneshot/flslgt/047shu.m4a",
+     "subsong": 49,
+     "duration_seconds": 4.444467,
+     "bytes": 34060,
+     "sha256": "e0b4da5eaf3d6444bf9308f98b1f3ef25a54b95da58feb6e91ed3cfab1ce308f"
+    },
+    "048mom": {
+     "cue": "song3_flslgt_oneshot_048mom",
+     "url": "/assets/live-chibi/oneshot/flslgt/048mom.m4a",
+     "subsong": 50,
+     "duration_seconds": 4.444467,
+     "bytes": 82957,
+     "sha256": "e41f399635622d9fad0e6778af755c02fd1374063f9487baefe0ebc6130a77cc"
+    },
+    "049eis": {
+     "cue": "song3_flslgt_oneshot_049eis",
+     "url": "/assets/live-chibi/oneshot/flslgt/049eis.m4a",
+     "subsong": 51,
+     "duration_seconds": 4.444467,
+     "bytes": 84365,
+     "sha256": "3194e812b6d4b2abc2b3d5ff60e1b02b4f10c99c392cc9b0faf26958efb72d84"
+    }
+   }
+  },
+  "pcuslv": {
+   "title": "precious love",
+   "source": {
+    "acb": "RAW/audio/song3_pcuslv.acb",
+    "acb_sha256": "697afecaefb860d35142dff8e9c7bf0a32552f7dfdade156c12fb9768b810d72",
+    "bundle": "RAW/asset/song_pcuslv.unity3d",
+    "bundle_sha256": "4328e9017adf338644d345d70b2da634165836ceaaae8455fdaa3c99979eb563"
+   },
+   "triggers": [
+    {
+     "time_ms": 60000,
+     "deck_slot": 1,
+     "cue_prefix": "song3_pcuslv_oneshot_",
+     "source_csv": "pcuslv_live_effect.csv",
+     "rows": 2
+    }
+   ],
+   "clips": {
+    "001tom": {
+     "cue": "song3_pcuslv_oneshot_001tom",
+     "url": "/assets/live-chibi/oneshot/pcuslv/001tom.m4a",
+     "subsong": 3,
+     "duration_seconds": 3.636349,
+     "bytes": 72948,
+     "sha256": "3026d32ab3ecdf7f82bcbfe266e9b631777787c734ae05c649dc1b45c674de70"
+    },
+    "002sht": {
+     "cue": "song3_pcuslv_oneshot_002sht",
+     "url": "/assets/live-chibi/oneshot/pcuslv/002sht.m4a",
+     "subsong": 4,
+     "duration_seconds": 3.636349,
+     "bytes": 71373,
+     "sha256": "bc586207dbf4df37c35bf013a25d72e763b1b595f568a65dc6c8d51107b25e35"
+    },
+    "003hok": {
+     "cue": "song3_pcuslv_oneshot_003hok",
+     "url": "/assets/live-chibi/oneshot/pcuslv/003hok.m4a",
+     "subsong": 5,
+     "duration_seconds": 3.636349,
+     "bytes": 71185,
+     "sha256": "91e953839b344dce4fa7d33ef2977d0a3b74b8ed8f77f3a5f64ba64bc7300b21"
+    },
+    "004ter": {
+     "cue": "song3_pcuslv_oneshot_004ter",
+     "url": "/assets/live-chibi/oneshot/pcuslv/004ter.m4a",
+     "subsong": 6,
+     "duration_seconds": 3.636349,
+     "bytes": 71336,
+     "sha256": "9ee95c9df28b81f7667d729aaf2a255c2dcc993d44f1dacf9f4cefea4bf33003"
+    },
+    "005kao": {
+     "cue": "song3_pcuslv_oneshot_005kao",
+     "url": "/assets/live-chibi/oneshot/pcuslv/005kao.m4a",
+     "subsong": 7,
+     "duration_seconds": 3.636349,
+     "bytes": 72511,
+     "sha256": "57a200185dab1a77531e0f9522cdfff12754c1aeb2faf9efd67c198ade59753d"
+    },
+    "006tsu": {
+     "cue": "song3_pcuslv_oneshot_006tsu",
+     "url": "/assets/live-chibi/oneshot/pcuslv/006tsu.m4a",
+     "subsong": 8,
+     "duration_seconds": 3.636349,
+     "bytes": 73275,
+     "sha256": "869fe2ed8e463149861d8f1e38ce69af84499351d737fc8782c41edef21a0005"
+    },
+    "007kei": {
+     "cue": "song3_pcuslv_oneshot_007kei",
+     "url": "/assets/live-chibi/oneshot/pcuslv/007kei.m4a",
+     "subsong": 9,
+     "duration_seconds": 3.636349,
+     "bytes": 72611,
+     "sha256": "9dc98a71503a8cab5ef1faf76e467f673723f5566a1e2a0cbc50bbab813c5844"
+    },
+    "008rei": {
+     "cue": "song3_pcuslv_oneshot_008rei",
+     "url": "/assets/live-chibi/oneshot/pcuslv/008rei.m4a",
+     "subsong": 10,
+     "duration_seconds": 3.636349,
+     "bytes": 72057,
+     "sha256": "8e161e7bbf8472ec810804fc1518edd6cf1b44edb1ff1b3c146497ddf80dda7f"
+    },
+    "009kyj": {
+     "cue": "song3_pcuslv_oneshot_009kyj",
+     "url": "/assets/live-chibi/oneshot/pcuslv/009kyj.m4a",
+     "subsong": 11,
+     "duration_seconds": 3.636349,
+     "bytes": 74136,
+     "sha256": "3d33ddcbc61508dc0cadf800acf302badbcf73d2822f58a707ccb89fb521811e"
+    },
+    "010pie": {
+     "cue": "song3_pcuslv_oneshot_010pie",
+     "url": "/assets/live-chibi/oneshot/pcuslv/010pie.m4a",
+     "subsong": 12,
+     "duration_seconds": 3.636349,
+     "bytes": 72360,
+     "sha256": "552c632335310e90cf4684a2e00039b2282b0c70582172c5c28c89c3110ffffc"
+    },
+    "011min": {
+     "cue": "song3_pcuslv_oneshot_011min",
+     "url": "/assets/live-chibi/oneshot/pcuslv/011min.m4a",
+     "subsong": 13,
+     "duration_seconds": 3.636349,
+     "bytes": 71066,
+     "sha256": "0c918be5f4f59bf4bfe591fd6ef93a7777fd07d5bfa9ac6752c830635e32ff78"
+    },
+    "012yus": {
+     "cue": "song3_pcuslv_oneshot_012yus",
+     "url": "/assets/live-chibi/oneshot/pcuslv/012yus.m4a",
+     "subsong": 14,
+     "duration_seconds": 3.636349,
+     "bytes": 74065,
+     "sha256": "41a704379f3047ba1a81af7804fc9ec149124f59ed6408cf8e0e1b814c96c3ce"
+    },
+    "013kys": {
+     "cue": "song3_pcuslv_oneshot_013kys",
+     "url": "/assets/live-chibi/oneshot/pcuslv/013kys.m4a",
+     "subsong": 15,
+     "duration_seconds": 3.636349,
+     "bytes": 73784,
+     "sha256": "b95b9af243d3d6b82934611aa4c6d153c0e37a7928a691a1bcc8f26d53b1bbd7"
+    },
+    "014hid": {
+     "cue": "song3_pcuslv_oneshot_014hid",
+     "url": "/assets/live-chibi/oneshot/pcuslv/014hid.m4a",
+     "subsong": 16,
+     "duration_seconds": 3.636349,
+     "bytes": 72045,
+     "sha256": "401263852250dd6b1eb669360669688d38dcda5f548f4f025d7e8da9555b7975"
+    },
+    "015ryu": {
+     "cue": "song3_pcuslv_oneshot_015ryu",
+     "url": "/assets/live-chibi/oneshot/pcuslv/015ryu.m4a",
+     "subsong": 17,
+     "duration_seconds": 3.636349,
+     "bytes": 74888,
+     "sha256": "572c0abcb287c0504e30df349df9f49a8a10a59cc4b72ad3c9d56432ed97615d"
+    },
+    "016sei": {
+     "cue": "song3_pcuslv_oneshot_016sei",
+     "url": "/assets/live-chibi/oneshot/pcuslv/016sei.m4a",
+     "subsong": 18,
+     "duration_seconds": 3.636349,
+     "bytes": 72611,
+     "sha256": "b95f585b558feddef08af89390069074c17a39a7308163521dab436d7ea3ca09"
+    },
+    "017kir": {
+     "cue": "song3_pcuslv_oneshot_017kir",
+     "url": "/assets/live-chibi/oneshot/pcuslv/017kir.m4a",
+     "subsong": 19,
+     "duration_seconds": 3.636349,
+     "bytes": 73642,
+     "sha256": "b2705a261082b0f42754c0aab255ba0c67b19559bbc24f95a10de6d804cce6ee"
+    },
+    "018shm": {
+     "cue": "song3_pcuslv_oneshot_018shm",
+     "url": "/assets/live-chibi/oneshot/pcuslv/018shm.m4a",
+     "subsong": 20,
+     "duration_seconds": 3.636349,
+     "bytes": 71406,
+     "sha256": "32bb21884a63030d343b69c4a49d665e8f81f7df12d116f5ddcb48e8f1870bc1"
+    },
+    "019kur": {
+     "cue": "song3_pcuslv_oneshot_019kur",
+     "url": "/assets/live-chibi/oneshot/pcuslv/019kur.m4a",
+     "subsong": 21,
+     "duration_seconds": 3.636349,
+     "bytes": 71022,
+     "sha256": "af1596dd8292b0c86ab3154522285fe4743d383b7bb2186b965688a1b0938d4a"
+    },
+    "020hay": {
+     "cue": "song3_pcuslv_oneshot_020hay",
+     "url": "/assets/live-chibi/oneshot/pcuslv/020hay.m4a",
+     "subsong": 22,
+     "duration_seconds": 3.636349,
+     "bytes": 70959,
+     "sha256": "026977a64c5807bdb45a10c5350756453408985c6e344ac4a6961efba724cbed"
+    },
+    "021jun": {
+     "cue": "song3_pcuslv_oneshot_021jun",
+     "url": "/assets/live-chibi/oneshot/pcuslv/021jun.m4a",
+     "subsong": 23,
+     "duration_seconds": 3.636349,
+     "bytes": 70078,
+     "sha256": "a86623c574eb0e752c1954e503a1527808b00b15c1bc0b4e17afded14dd4440d"
+    },
+    "022nat": {
+     "cue": "song3_pcuslv_oneshot_022nat",
+     "url": "/assets/live-chibi/oneshot/pcuslv/022nat.m4a",
+     "subsong": 24,
+     "duration_seconds": 3.636349,
+     "bytes": 73895,
+     "sha256": "fa540ff305694738b89d5003ba4f261db4ecf04065118be80ba97c56e4a5dafc"
+    },
+    "023har": {
+     "cue": "song3_pcuslv_oneshot_023har",
+     "url": "/assets/live-chibi/oneshot/pcuslv/023har.m4a",
+     "subsong": 25,
+     "duration_seconds": 3.636349,
+     "bytes": 74652,
+     "sha256": "1af8cd4e0712a3a5debd32314d89909bff79394be0ad167f5bb76be19edbacc5"
+    },
+    "024shk": {
+     "cue": "song3_pcuslv_oneshot_024shk",
+     "url": "/assets/live-chibi/oneshot/pcuslv/024shk.m4a",
+     "subsong": 26,
+     "duration_seconds": 3.636349,
+     "bytes": 73429,
+     "sha256": "2a3a70db4d3558d7fbbbc223327a75f60ce0c3016971a060d7553d97b844db3b"
+    },
+    "025suz": {
+     "cue": "song3_pcuslv_oneshot_025suz",
+     "url": "/assets/live-chibi/oneshot/pcuslv/025suz.m4a",
+     "subsong": 27,
+     "duration_seconds": 3.636349,
+     "bytes": 70099,
+     "sha256": "e8d636442f8d9971f118b366d749b6607a9a33dae770eb6579db32c280c85690"
+    },
+    "026gen": {
+     "cue": "song3_pcuslv_oneshot_026gen",
+     "url": "/assets/live-chibi/oneshot/pcuslv/026gen.m4a",
+     "subsong": 28,
+     "duration_seconds": 3.636349,
+     "bytes": 70829,
+     "sha256": "ad84fbf7a99a096c2e24dccd55246ba8b63a3cdfd8bd2b10d1523f8e45db49ef"
+    },
+    "027yuk": {
+     "cue": "song3_pcuslv_oneshot_027yuk",
+     "url": "/assets/live-chibi/oneshot/pcuslv/027yuk.m4a",
+     "subsong": 29,
+     "duration_seconds": 3.636349,
+     "bytes": 69753,
+     "sha256": "d4d3df48b7219063e87bc0f81c8db0943fd0d152995723e7f41c1b07e8983cc3"
+    },
+    "028soi": {
+     "cue": "song3_pcuslv_oneshot_028soi",
+     "url": "/assets/live-chibi/oneshot/pcuslv/028soi.m4a",
+     "subsong": 30,
+     "duration_seconds": 3.636349,
+     "bytes": 71707,
+     "sha256": "8748a856f48254814d1192ea1e30b47d2b03cfe0ce46ca23ba05ae7124323c7c"
+    },
+    "029ass": {
+     "cue": "song3_pcuslv_oneshot_029ass",
+     "url": "/assets/live-chibi/oneshot/pcuslv/029ass.m4a",
+     "subsong": 31,
+     "duration_seconds": 3.636349,
+     "bytes": 73041,
+     "sha256": "85896b1bfc6bbfeb2c1bc238db6635924e0a3fc2d712856fb33196bc7661f85d"
+    },
+    "030mak": {
+     "cue": "song3_pcuslv_oneshot_030mak",
+     "url": "/assets/live-chibi/oneshot/pcuslv/030mak.m4a",
+     "subsong": 32,
+     "duration_seconds": 3.636349,
+     "bytes": 71331,
+     "sha256": "f2b819ffa3ea85c465b5a3d5499f8989fc0e2a1b8d467684095437e7dc7e1262"
+    },
+    "031sak": {
+     "cue": "song3_pcuslv_oneshot_031sak",
+     "url": "/assets/live-chibi/oneshot/pcuslv/031sak.m4a",
+     "subsong": 33,
+     "duration_seconds": 3.636349,
+     "bytes": 74818,
+     "sha256": "4c5d53277f958479ba71e01512ce4dacbaae5c0e834ba2f3c39343c80bef627d"
+    },
+    "032nao": {
+     "cue": "song3_pcuslv_oneshot_032nao",
+     "url": "/assets/live-chibi/oneshot/pcuslv/032nao.m4a",
+     "subsong": 34,
+     "duration_seconds": 3.636349,
+     "bytes": 70259,
+     "sha256": "1131f1f339e62df98929963a70c75746c90caca2717307d5e989f819e9ed8ab8"
+    },
+    "033shr": {
+     "cue": "song3_pcuslv_oneshot_033shr",
+     "url": "/assets/live-chibi/oneshot/pcuslv/033shr.m4a",
+     "subsong": 35,
+     "duration_seconds": 3.636349,
+     "bytes": 73755,
+     "sha256": "f8ac5e7426087561199537e4841a46de81f110e367b02b2fd76581402c5e1173"
+    },
+    "034kan": {
+     "cue": "song3_pcuslv_oneshot_034kan",
+     "url": "/assets/live-chibi/oneshot/pcuslv/034kan.m4a",
+     "subsong": 36,
+     "duration_seconds": 3.636349,
+     "bytes": 73188,
+     "sha256": "b40f5d76a999bb936404b70f917c0f381bcfcfedc93ec2a0f6c6131e2e571cf1"
+    },
+    "035mco": {
+     "cue": "song3_pcuslv_oneshot_035mco",
+     "url": "/assets/live-chibi/oneshot/pcuslv/035mco.m4a",
+     "subsong": 37,
+     "duration_seconds": 3.636349,
+     "bytes": 70822,
+     "sha256": "f5f713925ef3835665b8cd8f60680ae6e4d8a3d43f3923e498ea2d37812219ab"
+    },
+    "036rui": {
+     "cue": "song3_pcuslv_oneshot_036rui",
+     "url": "/assets/live-chibi/oneshot/pcuslv/036rui.m4a",
+     "subsong": 38,
+     "duration_seconds": 3.636349,
+     "bytes": 71523,
+     "sha256": "caa09d43f86afd0a95fa8507ace4ced197054863fc3109ec45dbdf11880e866b"
+    },
+    "037jir": {
+     "cue": "song3_pcuslv_oneshot_037jir",
+     "url": "/assets/live-chibi/oneshot/pcuslv/037jir.m4a",
+     "subsong": 39,
+     "duration_seconds": 3.636349,
+     "bytes": 73859,
+     "sha256": "aee037773c3db1403ff7d2bd0b2cb9cfbac3ef7c3d198faf6e0492135ba288c3"
+    },
+    "038tak": {
+     "cue": "song3_pcuslv_oneshot_038tak",
+     "url": "/assets/live-chibi/oneshot/pcuslv/038tak.m4a",
+     "subsong": 40,
+     "duration_seconds": 3.636349,
+     "bytes": 72171,
+     "sha256": "5ee9069dcb4f495e79742127b7c6808d61cd55abd0c9a01f9bdf0541efa569dd"
+    },
+    "039mcr": {
+     "cue": "song3_pcuslv_oneshot_039mcr",
+     "url": "/assets/live-chibi/oneshot/pcuslv/039mcr.m4a",
+     "subsong": 41,
+     "duration_seconds": 3.636349,
+     "bytes": 73274,
+     "sha256": "4080ac199d51d008347cb11fb5d01ea0472426c51f52ca687787ea19c8d9db6d"
+    },
+    "040ren": {
+     "cue": "song3_pcuslv_oneshot_040ren",
+     "url": "/assets/live-chibi/oneshot/pcuslv/040ren.m4a",
+     "subsong": 42,
+     "duration_seconds": 3.636349,
+     "bytes": 74142,
+     "sha256": "74df30fb1d670a1aba9d53812c76f0b0e047b514bbc9950c896089411d66206f"
+    },
+    "041ryo": {
+     "cue": "song3_pcuslv_oneshot_041ryo",
+     "url": "/assets/live-chibi/oneshot/pcuslv/041ryo.m4a",
+     "subsong": 43,
+     "duration_seconds": 3.636349,
+     "bytes": 72444,
+     "sha256": "256d86ffc28675b80f59217adfd0433a604b7982216d4c32464e4019bf796d4a"
+    },
+    "042dai": {
+     "cue": "song3_pcuslv_oneshot_042dai",
+     "url": "/assets/live-chibi/oneshot/pcuslv/042dai.m4a",
+     "subsong": 44,
+     "duration_seconds": 3.636349,
+     "bytes": 72951,
+     "sha256": "dd9f6bf50d18b28544b08d27dc773e729d37fb1b348d1ab6d81f2e0b9ea5373f"
+    },
+    "043kaz": {
+     "cue": "song3_pcuslv_oneshot_043kaz",
+     "url": "/assets/live-chibi/oneshot/pcuslv/043kaz.m4a",
+     "subsong": 45,
+     "duration_seconds": 3.636349,
+     "bytes": 73241,
+     "sha256": "b4389e2bf7259bd43451c2172c7f98825e369ec8013df3a7792a39d906d2fc74"
+    },
+    "044ame": {
+     "cue": "song3_pcuslv_oneshot_044ame",
+     "url": "/assets/live-chibi/oneshot/pcuslv/044ame.m4a",
+     "subsong": 46,
+     "duration_seconds": 3.636349,
+     "bytes": 73461,
+     "sha256": "dc0d8a4d53353d6cac60b9116094f351c10274a378a806b576150f57a2fff15d"
+    },
+    "045sor": {
+     "cue": "song3_pcuslv_oneshot_045sor",
+     "url": "/assets/live-chibi/oneshot/pcuslv/045sor.m4a",
+     "subsong": 47,
+     "duration_seconds": 3.636349,
+     "bytes": 73645,
+     "sha256": "52a468dd4b9e4872c0a31c8d398cd9317fc6c748863b35759914fd0c2a92b7b1"
+    },
+    "046chr": {
+     "cue": "song3_pcuslv_oneshot_046chr",
+     "url": "/assets/live-chibi/oneshot/pcuslv/046chr.m4a",
+     "subsong": 48,
+     "duration_seconds": 3.636349,
+     "bytes": 73162,
+     "sha256": "97201704cbb1866e60d0c240d5397be8ffd25ebbfcb5d258e4e8668ddaf6c025"
+    },
+    "047shu": {
+     "cue": "song3_pcuslv_oneshot_047shu",
+     "url": "/assets/live-chibi/oneshot/pcuslv/047shu.m4a",
+     "subsong": 49,
+     "duration_seconds": 3.636349,
+     "bytes": 71690,
+     "sha256": "ef84a8d74f87cfe642fc5f2e1e3491ffd5e31e271055c4dd8f74ab0e831ed8ed"
+    },
+    "048mom": {
+     "cue": "song3_pcuslv_oneshot_048mom",
+     "url": "/assets/live-chibi/oneshot/pcuslv/048mom.m4a",
+     "subsong": 50,
+     "duration_seconds": 3.636349,
+     "bytes": 76368,
+     "sha256": "4b751780c459bb7f0426409461040b1581df8e1b4ae1400d20ae7fe294ba82e7"
+    },
+    "049eis": {
+     "cue": "song3_pcuslv_oneshot_049eis",
+     "url": "/assets/live-chibi/oneshot/pcuslv/049eis.m4a",
+     "subsong": 51,
+     "duration_seconds": 3.636349,
+     "bytes": 71749,
+     "sha256": "a63e9339048229bc780802ba9fa2298083d20839deb9f45b50d055db81138760"
+    }
+   }
+  }
+ }
+}

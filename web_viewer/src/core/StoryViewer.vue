@@ -12,7 +12,7 @@
     </div>
     <div class="viewer-stage" :inert="menuOpen || viewingOfferOpen || props.recoveryOpen || undefined">
     <!-- Spine rendering layer (background + characters) -->
-    <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" responsive-positions portrait-framing release-owner="story-player" />
+    <SpineStage v-if="retainedStageStep" ref="spineStageRef" :step="retainedStageStep" :suspended="!communicationContext.needsStage" :fallbackBg="firstAvailableBg" :debug-controls="RUNTIME_DEBUG" :now-milliseconds="storyRuntimeCues.nowMilliseconds" portrait-framing release-owner="story-player" />
     <div ref="frameHoldRoot" v-show="frameHolding" class="held-scene" aria-hidden="true"></div>
     <GsLoadingIndicator v-if="localBuffering && !HIDE_UI" class="local-buffering"
       variant="inline" :message="localBufferingText" />

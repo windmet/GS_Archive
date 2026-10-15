@@ -15,9 +15,7 @@
 
   <!-- Debug Dashboard: visible when debugMode is on -->
   <div v-if="debugControls && debugMode" class="debug-panel">
-    <div class="debug-title">Spine Debug <span class="debug-mode">yMode={{ Y_MODE }} ps={{ PIXEL_SCALE }}</span>
-      <button class="debug-copy-btn" @click="copyParamURL" title="复制当前参数到剪贴板">复制参数</button>
-    </div>
+    <div class="debug-title">Spine Debug <span class="debug-mode">native ADV placement</span></div>
 
     <div v-for="(state, id) in spineStates" :key="id" class="debug-row">
       <div class="debug-id">{{ id }}</div>
@@ -26,16 +24,13 @@
         <label>Y <input type="number" step="1" :value="state.y" @input="setProp(id, 'y', $event.target.value)" /></label>
         <label>S <input type="number" step="0.01" :value="state.scale" @input="setProp(id, 'scale', $event.target.value)" /></label>
       </div>
-      <div v-if="state.costumeInfo || state.prefabMeta" class="debug-prefab">
+      <div class="debug-prefab">
         <span>model {{ state.modelId }}</span>
         <span v-if="state.costumeInfo">idol {{ state.costumeInfo.idol_name || state.costumeInfo.idol_code }}</span>
         <span v-if="state.costumeInfo">costume {{ state.costumeInfo.costume_name || 'unknown' }}</span>
-        <span v-if="state.costumeInfo">source table{{ (state.costumeInfo.source_tables || []).join('/') }}</span>
-        <span v-if="state.costumeInfo">spine {{ yesNo(state.costumeInfo.spine_exists) }} / prefab {{ yesNo(state.costumeInfo.prefab_meta_exists) }}</span>
-        <span>ref {{ state.referenceSource }} {{ fmt(state.referenceY) }}</span>
-        <span v-if="state.prefabMeta">prefabY {{ fmt(state.prefabMeta.derived?.prefabPositionY) }}</span>
-        <span>baseY {{ fmt(state.computedBaseY) }}</span>
-        <span>finalBaseY {{ fmt(state.finalBaseY) }}</span>
+        <span>prefabY {{ fmt(state.figure?.prefabY) }}</span>
+        <span v-if="state.adv">pos {{ fmt(state.adv.posX) }}, {{ fmt(state.adv.posY) }}</span>
+        <span v-if="state.adv">zoom {{ fmt(state.adv.zoom) }} @ {{ fmt(state.adv.zoomX) }}, {{ fmt(state.adv.zoomY) }}</span>
       </div>
       <div v-if="state.bounds" class="debug-prefab debug-bounds">
         <span>top {{ fmt(state.bounds.top) }}</span>
@@ -72,7 +67,7 @@
       <div>rootY {{ fmt(boundsSnapshot.rootY) }}</div>
       <div>visibleTop {{ fmt(boundsSnapshot.visibleTop) }}</div>
       <div>visibleBottom {{ fmt(boundsSnapshot.visibleBottom) }}</div>
-      <div>prefabMapped {{ fmt(boundsSnapshot.prefabMappedY) }}</div>
+      <div>prefabY {{ fmt(boundsSnapshot.prefabY) }}</div>
       <div>dialogueBoxTop {{ fmt(boundsSnapshot.dialogueBoxTop) }}</div>
     </div>
   </div>
@@ -80,32 +75,18 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, markRaw, reactive, onUnmounted, computed } from 'vue'
-import { createStoryConfigStore } from '../utils/StoryConfigStore.js'
-import { storyAssetTransport } from '../core/StoryAssetTransport.js'
-import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
-import { validateStoryConfig } from '../utils/StoryConfigShape.js'
 import { tracePlayer } from '../core/PlayerTrace.js'
-import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../core/StoryStageFraming.js'
+import { storyStageFrame } from '../core/StoryStageFraming.js'
 import { PixiStageManager } from '../core/PixiStageManager.js'
 import { storySpineOrder } from '../core/StorySpineOrder.js'
-import {
-  getBodyTypeUrl,
-  getOtherSettingUrl,
-  isSilhouetteOnlyModel,
-} from '../utils/AssetResolver.js'
-import { loadCostumePrefabMeta } from '../utils/CostumePrefabMetaStore.js'
+import { isSilhouetteOnlyModel } from '../utils/AssetResolver.js'
+import { loadFigurePlacement } from '../utils/FigurePlacementStore.js'
 import { loadCostumeDictionary } from '../utils/CostumeDictionaryStore.js'
 import { getCachedMotionSetting, getCachedMotionTable, loadIdolMotionSettings } from '../utils/IdolMotionSettingStore.js'
-import { computeVisualRootY as computeVisualRootYUtil, resolveBaseY as resolveBaseYUtil } from '../utils/YPositionResolver.js'
 import { applyStepSceneState } from '../core/applyStepSceneState.js'
 import { getStepSceneState } from '../core/story-runtime/StepSceneState.js'
 import { storyReleaseProbe } from '../core/story-runtime/StoryReleaseProbe.js'
-import {
-  buildBoundsSnapshot,
-  buildSpineDebugState,
-  buildYDiagnosticRow,
-  logYDiagnostics,
-} from './SpineStageDiagnostics.js'
+import { buildBoundsSnapshot, buildSpineDebugState } from './SpineStageDiagnostics.js'
 
 const props = defineProps({
   suspended: { type: Boolean, default: false },
@@ -114,7 +95,6 @@ const props = defineProps({
   manageBackground: { type: Boolean, default: false },
   debugControls: { type: Boolean, default: false },
   releaseOwner: { type: String, default: '' },
-  responsivePositions: { type: Boolean, default: false },
   portraitFraming: { type: Boolean, default: false },
   nowMilliseconds: { type: Function, default: undefined },
 })
@@ -141,7 +121,6 @@ function updateFraming() {
   // Set the initial reference dimensions before Pixi reads clientWidth/Height.
   Object.assign(containerRef.value.style, style)
 }
-const portraitBaseY = value => props.portraitFraming ? storyPortraitBaseY(value) : value
 let manager = null
 let unregisterReleaseStage = null
 let applyStateToken = 0
@@ -154,7 +133,7 @@ let managedBackgroundId = null
 const debugMode = ref(false)
 const spineStates = reactive({})
 const boundsSnapshot = ref(null)
-let costumePrefabMeta = {}
+let figurePlacement = null
 let costumeDictionary = {}
 
 onMounted(() => {
@@ -165,7 +144,7 @@ onMounted(() => {
       framingObserver = new ResizeObserver(updateFraming)
       framingObserver.observe(viewportRef.value)
     }
-    manager = markRaw(new PixiStageManager(containerRef.value, { responsiveSpinePositions: props.responsivePositions, presentationScale }))
+    manager = markRaw(new PixiStageManager(containerRef.value, { presentationScale }))
     manager.setPresentationSuspended(props.suspended)
     if (props.releaseOwner === 'story-player') {
       unregisterReleaseStage = storyReleaseProbe.registerStageManager(manager)
@@ -210,12 +189,6 @@ onBeforeUnmount(() => {
 })
 
 function installDebugGlobals() {
-  window.__SIDEM_Y_DEBUG__ = LOG_Y_DIAGNOSTICS
-  window.dumpY = () => {
-    const rows = Object.values(Y_DEBUG_STORE)
-    console.table(rows)
-    return rows
-  }
   window.dumpScene = () => {
     if (!manager) {
       console.warn('No spine manager available yet.')
@@ -223,7 +196,6 @@ function installDebugGlobals() {
     }
     const rows = Object.entries(manager.spineInstances).map(([id, entry]) => {
       const snap = manager.getSpineRuntimeSnapshot(id)
-      const diag = Y_DEBUG_STORE[id] || {}
       return {
         idolId: id,
         modelId: entry?.modelId || snap?.modelId || '',
@@ -231,10 +203,8 @@ function installDebugGlobals() {
         rootY: snap?.root?.y ?? null,
         visibleTop: snap?.bounds?.top ?? null,
         visibleBottom: snap?.bounds?.bottom ?? null,
-        targetY: snap?.positioning?.targetY ?? null,
-        referenceY: diag.referenceY ?? null,
-        computedBaseY: diag.computedBaseY ?? null,
-        finalBaseY: diag.finalBaseY ?? null,
+        prefabY: snap?.placement?.figure?.prefabY ?? null,
+        adv: snap?.placement?.adv ?? null,
         dialogueBoxTop: getDialogueBoxTop(),
       }
     })
@@ -248,14 +218,13 @@ function installDebugGlobals() {
     }
     const rows = Object.entries(manager.spineInstances).map(([id, entry]) => {
       const snap = manager.getSpineRuntimeSnapshot(id)
-      const diag = Y_DEBUG_STORE[id] || {}
       return {
         idolId: id,
         modelId: entry?.modelId || snap?.modelId || '',
         rootY: snap?.root?.y ?? null,
         visibleTop: snap?.bounds?.top ?? null,
         visibleBottom: snap?.bounds?.bottom ?? null,
-        prefabY: diag.prefabY ?? snap?.prefabMeta?.prefabPositionY ?? null,
+        prefabY: snap?.placement?.figure?.prefabY ?? null,
         dialogueBoxTop: getDialogueBoxTop(),
       }
     })
@@ -336,7 +305,7 @@ function collectStageDebugData() {
       scaleY: bg.scale?.y ?? null,
     }
   }
-  data.silhouettes = Object.entries(manager._silhouetteSprites || {}).map(([id, sprite]) => ({
+  data.silhouettes = Object.entries(manager._silhouetteSprites || {}).map(([id, record]) => [id, record?.sprite]).map(([id, sprite]) => ({
     id,
     x: sprite?.x ?? null,
     y: sprite?.y ?? null,
@@ -420,88 +389,11 @@ function getDialogueBoxTop() {
   return Math.round(h * 0.62)
 }
 
-/**
- * Build a URL with all current spine debug parameters, copy to clipboard.
- * Collects every URL-controlled parameter, skipping ones at their default.
- */
-function buildParamURL() {
-  const parts = []
-  if (USE_PREFAB_META) parts.push('prefabMeta=1')
-  if (LOG_Y_DIAGNOSTICS) parts.push('yDebug=1')
-  if (Y_MODE !== 'prefab') parts.push(`yMode=${Y_MODE}`)
-  if (PIXEL_SCALE !== 0.75) parts.push(`pixelScale=${PIXEL_SCALE}`)
-  if (BASE_ANCHOR !== 780) parts.push(`baseAnchor=${BASE_ANCHOR}`)
-  if (ANCHOR_UNITY_Y !== -575) parts.push(`anchorUnityY=${ANCHOR_UNITY_Y}`)
-
-  if (manager) {
-    for (const [id, entry] of Object.entries(manager.spineInstances)) {
-      if (!entry?.spine) continue
-      const x = entry.spine.x
-      const y = entry.spine.y
-      const s = entry.spine.scale?.x
-      if (Number.isFinite(x)) parts.push(`x_${id}=${toParamNum(x)}`)
-      if (Number.isFinite(y)) parts.push(`y_${id}=${toParamNum(y)}`)
-      if (Number.isFinite(s)) parts.push(`s_${id}=${toParamNum(s)}`)
-    }
-  }
-
-  const base = window.location.pathname
-  return parts.length ? base + '?' + parts.join('&') : base
-}
-
-function toParamNum(n) {
-  // Keep 4 significant digits, no trailing zeros
-  return Number(n.toFixed(4)).toString()
-}
-
-function copyParamURL() {
-  const url = buildParamURL()
-  navigator.clipboard.writeText(url).then(() => {
-    // Flash feedback on the button via a temporary toast
-    const btn = document.querySelector('.debug-copy-btn')
-    if (btn) {
-      btn.textContent = 'Copied'
-      setTimeout(() => { btn.textContent = '复制参数' }, 1500)
-    }
-  }).catch(() => {
-    // Fallback: select and copy via textarea
-    const ta = document.createElement('textarea')
-    ta.value = url
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    document.body.appendChild(ta)
-    ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
-  })
-}
-
-function computeVisualRootY(id, baseY, posY = 0) {
-  if (!manager) return baseY
-  // Negate posY: scenario uses Unity convention (Y+ = up, Y- = down),
-  // but web/PixiJS has Y+ = down. So negative posY (down in game) 鈫?larger Y in screen.
-  const rootY = computeVisualRootYUtil(baseY, posY, manager.width)
-  const entry = manager.spineInstances?.[id]
-  const snap = manager.getSpineRuntimeSnapshot(id)
-  const prefabY = snap?.prefabMeta?.prefabPositionY ?? snap?.prefabMeta?.derived?.prefabPositionY ?? null
-  if (entry) {
-    entry.positioning = { targetY: rootY, prefabY, finalRootY: rootY }
-  }
-  return rootY
-}
-
-function positionSpine(id, posX, posY, baseY) {
-  if (!manager) return
-  computeVisualRootY(id, baseY, posY)
-  manager.setSpinePositionByGameCoord(id, posX, posY, baseY)
-}
-
 function syncBoundsSnapshot(step = props.step) {
   boundsSnapshot.value = buildBoundsSnapshot({
     step,
     manager,
     boundsDebug: BOUNDS_DEBUG,
-    yDebugStore: Y_DEBUG_STORE,
     getDialogueBoxTop,
   })
 }
@@ -528,57 +420,17 @@ onUnmounted(() => {
 
 function onSpineDragged(e) {
   if (!debugMode.value) return
-  spineStates[e.detail.id] = buildSpineDebugState({
-    id: e.detail.id,
-    state: e.detail,
-    manager,
-    resolveBaseY: resolveBaseYUtil,
-    config: {
-      usePrefabMeta: USE_PREFAB_META,
-      costumePrefabMeta,
-      costumeDictionary,
-      otherSettingCache: _otherSettingCache,
-      modelYOffsetMap: MODEL_Y_OFFSET,
-      baseAnchor: BASE_ANCHOR,
-      subBaseAnchor: SUB_BASE_ANCHOR,
-      anchorUnityY: ANCHOR_UNITY_Y,
-      subAnchorUnityY: SUB_ANCHOR_UNITY_Y,
-      pixelScale: PIXEL_SCALE,
-      subPixelScale: SUB_PIXEL_SCALE,
-      subModelRe: SUB_MODEL_RE,
-    },
-  })
+  spineStates[e.detail.id] = buildSpineDebugState({ id: e.detail.id, state: e.detail, manager, costumeDictionary })
   syncBoundsSnapshot()
 }
-
 function syncStates() {
   if (!manager) return
   const states = manager.getSpineStates()
   for (const [id, s] of Object.entries(states)) {
-    spineStates[id] = buildSpineDebugState({
-      id,
-      state: s,
-      manager,
-      resolveBaseY: resolveBaseYUtil,
-      config: {
-        usePrefabMeta: USE_PREFAB_META,
-        costumePrefabMeta,
-        costumeDictionary,
-        otherSettingCache: _otherSettingCache,
-        modelYOffsetMap: MODEL_Y_OFFSET,
-        baseAnchor: BASE_ANCHOR,
-        subBaseAnchor: SUB_BASE_ANCHOR,
-        anchorUnityY: ANCHOR_UNITY_Y,
-        subAnchorUnityY: SUB_ANCHOR_UNITY_Y,
-        pixelScale: PIXEL_SCALE,
-        subPixelScale: SUB_PIXEL_SCALE,
-        subModelRe: SUB_MODEL_RE,
-      },
-    })
+    spineStates[id] = buildSpineDebugState({ id, state: s, manager, costumeDictionary })
   }
   syncBoundsSnapshot()
 }
-
 function setProp(id, prop, val) {
   if (!manager) return
   const n = parseFloat(val)
@@ -601,9 +453,7 @@ function centerSpine(id) {
   if (!manager) return
   const entry = manager.spineInstances[id]
   if (!entry) return
-  entry.spine.x = manager.width / 2
-  entry.spine.y = manager.height + 50
-  entry.spine.scale.set(0.45)
+  manager.placeActor(id, {})
   syncStates()
 }
 
@@ -612,77 +462,11 @@ const NON_VISUAL_IDS = new Set([
   'mob', 'group', '100grp', '06fra', '001jup',
 ])
 
-// 鈹€鈹€ Per-character default position from idolothersetting 鈹€鈹€
-const _otherSettingCache = {}
 const URL_FLAGS = new URLSearchParams(window.location.search)
-function readUrlNumber(name, fallback) {
-  const raw = URL_FLAGS.get(name)
-  if (raw == null || raw === '') return fallback
-  const n = Number(raw)
-  return Number.isFinite(n) ? n : fallback
-}
-function normalizeSourceMode(raw, fallback = 'prefab') {
-  const value = String(raw || '').trim().toLowerCase()
-  return value || fallback
-}
-const SUB_MODEL_RE = /^\d{3}sub_/
-// Direct prefabY mapping: devs hand-tuned prefabY to compensate for pose differences.
-// Formula: BASE_ANCHOR - (referenceY - ANCHOR_UNITY_Y) * PIXEL_SCALE
-//   = conservative -> 024shk(-515, lifted by devs) 鈫?floats UP
-//   = negative diff -> 016sei(-745, sunk by devs) 鈫?sinks DOWN
-const PIXEL_SCALE = readUrlNumber('pixelScale', 0.75)
-const BASE_ANCHOR = readUrlNumber('baseAnchor', 780)
-const ANCHOR_UNITY_Y = readUrlNumber('anchorUnityY', -575)  // 011min prefabY
-const SUB_PIXEL_SCALE = readUrlNumber('subPixelScale', PIXEL_SCALE)
-const SUB_BASE_ANCHOR = readUrlNumber('subBaseAnchor', 750)
-const SUB_ANCHOR_UNITY_Y = readUrlNumber('subAnchorUnityY', -510)
-const MODEL_Y_OFFSET = {}
-const USE_PREFAB_META = URL_FLAGS.get('prefabMeta') !== '0'
-const Y_MODE = normalizeSourceMode(URL_FLAGS.get('yMode') || 'prefab', 'prefab')
-const BODY_SCALE_ENABLED = URL_FLAGS.get('bodyScale') === '1'
-const FIT_MODE = (URL_FLAGS.get('fitMode') || 'fixedScale').toLowerCase()
-const ANCHOR_MODE = (URL_FLAGS.get('anchorMode') || 'bottom').toLowerCase()
-const VISUAL_HEIGHT_REFERENCE = readUrlNumber('visualRefHeight', 2640)
-const VISUAL_HEIGHT_STRENGTH = readUrlNumber('heightStrength', 0.8)
-// Per-character overrides from URL (e.g. y_016sei=890&s_024shk=0.23).
-// These snapshot each character's final X/Y/Scale after positioning,
-// so the copy-params button captures multi-character debug adjustments.
-const CHARA_OVERRIDE_RE = /^(x|y|s)_(.+)$/
-const CHARA_OVERRIDES = {}
-for (const [key, val] of URL_FLAGS.entries()) {
-  const m = key.match(CHARA_OVERRIDE_RE)
-  if (m) {
-    const n = Number(val)
-    if (Number.isFinite(n)) {
-      if (!CHARA_OVERRIDES[m[2]]) CHARA_OVERRIDES[m[2]] = {}
-      CHARA_OVERRIDES[m[2]][m[1]] = n
-    }
-  }
-}
-function applyCharaOverrides(manager) {
-  for (const [id, overrides] of Object.entries(CHARA_OVERRIDES)) {
-    const entry = manager?.spineInstances?.[id]
-    if (!entry) continue
-    if (Number.isFinite(overrides.x)) entry.spine.x = overrides.x
-    if (Number.isFinite(overrides.y)) entry.spine.y = overrides.y
-    if (Number.isFinite(overrides.s)) entry.spine.scale.set(overrides.s)
-  }
-}
-const LOG_Y_DIAGNOSTICS = URL_FLAGS.get('yDebug') === '1' || URL_FLAGS.get('debugY') === '1'
 const BOUNDS_DEBUG = URL_FLAGS.get('bounds') === '1' || URL_FLAGS.get('debugBounds') === '1'
-const Y_DEBUG_STORE = (window.__SIDEM_Y_DIAG__ = window.__SIDEM_Y_DIAG__ || {})
-const _bodyTypeById = {}
-const bodyTypeStore = createStoryConfigStore({ kind: 'idol-body-types', url: getBodyTypeUrl })
-
-async function _loadBodyTypes(signal) {
-  const data = await bodyTypeStore.load({ signal })
+async function _loadFigurePlacement(signal) {
+  figurePlacement = await loadFigurePlacement({ signal })
   signal?.throwIfAborted()
-  for (const row of data.dataList) if (row.idolId) _bodyTypeById[row.idolId] = row.bodyType
-}
-async function _loadPrefabMeta(signal) {
-  const data = await loadCostumePrefabMeta({ signal })
-  signal?.throwIfAborted()
-  costumePrefabMeta = data
 }
 async function _loadCostumeDictionary() {
   try {
@@ -695,10 +479,6 @@ async function _loadCostumeDictionary() {
   }
 }
 function _loadMotionSettings(signal) { return loadIdolMotionSettings({ signal }) }
-
-function getBodyType(charaId) {
-  return _bodyTypeById[charaId] || null
-}
 
 function getMotionSetting(charaId, modelId, animName) {
   return getCachedMotionSetting(charaId, modelId, animName)
@@ -715,66 +495,8 @@ function applyStateBodyMotion(manager, sid, modelId, spineState, step) {
   }
 }
 
-async function _loadOtherSetting(charaId, signal) {
-  if (_otherSettingCache[charaId] !== undefined) return
-  try {
-    const data = await withLoadDeadline(taskSignal => storyAssetTransport.getJson(getOtherSettingUrl(charaId),
-      { signal: taskSignal, cache: 'default' }), { signal, timeoutMs: 15000, label: `actor-placement:${charaId}` })
-    signal?.throwIfAborted()
-    validateStoryConfig('idol-placement', data)
-    _otherSettingCache[charaId] = data
-  } catch (error) {
-    // Explicit absence keeps the existing default-placement fallback. Timeout,
-    // cancellation and malformed data must never poison this cache as missing.
-    if (!signal?.aborted && [404, 410].includes(error.status)) _otherSettingCache[charaId] = null
-    else throw error
-  }
-}
-
-function getSelectedReferenceY(charaId, modelId = '') {
-  const prefab = USE_PREFAB_META ? costumePrefabMeta?.[modelId] : null
-  const prefabY = prefab?.derived?.prefabPositionY
-    ?? prefab?.rect?.localPosition?.y
-    ?? prefab?.rect?.anchoredPosition?.y
-  const other = _otherSettingCache[charaId]
-  const otherY = typeof other?.positionY === 'number' ? other.positionY : null
-
-  const y = typeof prefabY === 'number' ? prefabY : typeof otherY === 'number' ? otherY : null
-  const source = typeof prefabY === 'number' ? 'prefab_direct' : typeof otherY === 'number' ? 'idolothersetting' : 'default'
-
-  return { y, source, prefabHit: !!prefab, prefabY: typeof prefabY === 'number' ? prefabY : null, otherY }
-}
-
-function resolveBaseY(charaId, modelId = '') {
-  const reference = getSelectedReferenceY(charaId, modelId)
-  const modelYOffset = MODEL_Y_OFFSET[modelId] || 0
-  const baseY = SUB_MODEL_RE.test(modelId) ? SUB_BASE_ANCHOR : BASE_ANCHOR
-  const referenceY = typeof reference.y === 'number' ? reference.y : null
-
-  // Uniform prefabY-to-screen mapping: trust the devs' hand-tuned positionY.
-  // No pivot/bottom correction needed; prefabY already compensates for pose height.
-  let computedBaseY = baseY
-  if (Number.isFinite(referenceY)) {
-    computedBaseY = SUB_MODEL_RE.test(modelId)
-      ? SUB_BASE_ANCHOR - (referenceY - SUB_ANCHOR_UNITY_Y) * SUB_PIXEL_SCALE
-      : BASE_ANCHOR - (referenceY - ANCHOR_UNITY_Y) * PIXEL_SCALE
-  }
-
-  return {
-    reference,
-    computedBaseY,
-    finalBaseY: computedBaseY + modelYOffset,
-  }
-}
-
 function fmt(value) {
   return typeof value === 'number' ? Number(value.toFixed(3)).toString() : 'null'
-}
-
-function yesNo(value) {
-  if (value === true) return 'yes'
-  if (value === false) return 'no'
-  return 'unknown'
 }
 
 watch(() => props.suspended, value => manager?.setPresentationSuspended(value))
@@ -833,8 +555,8 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   projectedStep = null
   projectionFailure = null
   const desired = state.spines || []
-  const realActors = desired.filter(actor => actor?.id && actor.model && !NON_VISUAL_IDS.has(actor.id)
-    && !isSilhouetteOnlyModel(actor.model))
+  const actors = desired.filter(actor => actor?.id && actor.model && !NON_VISUAL_IDS.has(actor.id))
+  const realActors = actors.filter(actor => !isSilhouetteOnlyModel(actor.model))
   const failProjection = error => {
     if (token !== applyStateToken || !manager || signal.aborted) return
     projectionFailure = { step, code: error.code || error.name, message: String(error.message || error) }
@@ -842,8 +564,8 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   }
   // Metadata is mandatory before actual actor positioning, not before an empty
   // background. Do not eagerly fetch the full actor indexes on mount.
-  if (realActors.length) {
-    try { await Promise.all([_loadBodyTypes(signal), _loadPrefabMeta(signal), _loadMotionSettings(signal)]) }
+  if (actors.length) {
+    try { await Promise.all([_loadFigurePlacement(signal), realActors.length ? _loadMotionSettings(signal) : null]) }
     catch (error) { failProjection(error); return }
   }
   if (token !== applyStateToken || !manager || signal.aborted) return
@@ -876,72 +598,30 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
     desiredOrder.push(spineState)
     if (spineState.idol_priority != null) hasOfficialPriority = true
 
-    // Load the per-character baseline before positioning. Without awaiting
-    // this, first render uses the rough fallback and later navigation differs.
-    if (!isSilhouetteOnlyModel(spineState.model) && _otherSettingCache[sid] === undefined) {
-      try { await _loadOtherSetting(sid, signal) }
-      catch (error) { failProjection(error); return }
-    }
-    if (token !== applyStateToken || !manager) return
-
     const modelId = spineState.model
     const existing = manager.spineInstances[sid]
-    const reference = getSelectedReferenceY(sid, modelId)
-    const resolved = resolveBaseYUtil({
-      charaId: sid,
-      modelId,
-      usePrefabMeta: USE_PREFAB_META,
-      costumePrefabMeta,
-      otherSettingCache: _otherSettingCache,
-      modelYOffsetMap: MODEL_Y_OFFSET,
-      baseAnchor: BASE_ANCHOR,
-      subBaseAnchor: SUB_BASE_ANCHOR,
-      anchorUnityY: ANCHOR_UNITY_Y,
-      subAnchorUnityY: SUB_ANCHOR_UNITY_Y,
-      pixelScale: PIXEL_SCALE,
-      subPixelScale: SUB_PIXEL_SCALE,
-      subModelRe: SUB_MODEL_RE,
-    })
-    const prefabMeta = costumePrefabMeta?.[modelId] || null
-    logYDiagnostics({
-      row: buildYDiagnosticRow({
-        charaId: sid,
-        modelId,
-        reference,
-        manager,
-        resolveBaseY: resolveBaseYUtil,
-        config: {
-          usePrefabMeta: USE_PREFAB_META,
-          costumePrefabMeta,
-          costumeDictionary,
-          otherSettingCache: _otherSettingCache,
-          modelYOffsetMap: MODEL_Y_OFFSET,
-          baseAnchor: BASE_ANCHOR,
-          subBaseAnchor: SUB_BASE_ANCHOR,
-          anchorUnityY: ANCHOR_UNITY_Y,
-          subAnchorUnityY: SUB_ANCHOR_UNITY_Y,
-          pixelScale: PIXEL_SCALE,
-          subPixelScale: SUB_PIXEL_SCALE,
-          subModelRe: SUB_MODEL_RE,
-        },
-      }),
-      enabled: LOG_Y_DIAGNOSTICS,
-      debugMode: debugMode.value,
-      store: Y_DEBUG_STORE,
-    })
+    // IdolCharacter state; compiled idol_zoom_y_offset (an old site-side guess) is ignored.
+    const placement = {
+      posX: spineState.pos_x ?? 0,
+      posY: spineState.pos_y ?? 0,
+      zoomX: spineState.idol_zoom_x ?? 0,
+      zoomY: spineState.idol_zoom_y ?? 0,
+      zoom: spineState.idol_zoom ?? 1,
+    }
+    const transitions = {
+      position: spineState.slide_duration > 0 ? { duration: spineState.slide_duration } : null,
+      zoom: spineState.idol_zoom_transition || null,
+      nowMilliseconds: props.nowMilliseconds,
+    }
+    const texture = figurePlacement?.textures?.[modelId] || null
 
     if (isSilhouetteOnlyModel(modelId) || manager.hasSilhouetteFallback?.(sid, modelId)) {
-      const posX = spineState.pos_x ?? 0
-      let posY = spineState.pos_y ?? 0
-      if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
-      const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), posY)
       if (existing) manager.removeSpine(sid, true)
-      manager.showSilhouette(sid, modelId, posX, 0, rootY)
+      manager.showSilhouette(sid, modelId, texture, placement, transitions)
       continue
     }
 
     if (existing && existing.modelId === modelId) {
-      existing.prefabMeta = prefabMeta
       // Same model: update face/anim and reposition.
       if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
       applyStateBodyMotion(manager, sid, modelId, spineState, step)
@@ -949,25 +629,7 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
       else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
       manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
       manager.flushSpinePose?.(sid, 0)
-      const posX = spineState.pos_x ?? 0
-      let posY = spineState.pos_y ?? 0
-      // Zoom-based Y compensation: when idol_zoom shrinks the character,
-      // the root-anchored scaling pulls visual center downward. Raise the
-      // character proportionally to counteract the sinking.
-      if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
-      const fit = FIT_MODE === 'prefabrect' && prefabMeta
-        ? manager.fitSpineToPrefabRect(existing.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
-        : null
-      const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
-      const targetY = computeVisualRootYUtil(baseY, posY, manager.width)
-      // Slide animation: use animateSpinePosition if slide_duration present
-      if (spineState.slide_duration && spineState.slide_duration > 0) {
-        const targetX = manager.width / 2 + posX * (manager.width / 1280)
-        manager.animateSpinePosition(sid, targetX, targetY, spineState.slide_duration, props.nowMilliseconds, baseY)
-      } else {
-        manager.setSpineZoom(sid, spineState.idol_zoom)
-        positionSpine(sid, posX, posY, baseY)
-      }
+      manager.placeActor(sid, placement, transitions)
       const colorTransition = spineState.idol_color_transition || {}
       manager.setSpineColor(
         sid,
@@ -989,13 +651,8 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         await manager.spawnSpine(sid, modelId, {
           isCurrent: () => token === applyStateToken && !!manager,
           signal,
-          bodyType: getBodyType(sid),
-          prefabMeta,
-          bodyScaleEnabled: BODY_SCALE_ENABLED,
-          fitMode: FIT_MODE,
-          presentationScale: props.portraitFraming ? STORY_PORTRAIT_SCALE : 1,
-          visualHeightReference: VISUAL_HEIGHT_REFERENCE,
-          visualHeightStrength: VISUAL_HEIGHT_STRENGTH,
+          figure: { prefabY: figurePlacement?.skeletons?.[modelId] ?? 0 },
+          placement,
           deferReveal: true,
           fadeInDuration: spineState.fade?.type === 'in' ? spineState.fade.duration : undefined,
         })
@@ -1005,27 +662,15 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
         const entry = manager.spineInstances[sid]
         if (!entry) {
           // Spine asset not found — try silhouette fallback
-          const pX = spineState.pos_x ?? 0
-          let pY = spineState.pos_y ?? 0
-          if (spineState.idol_zoom_y_offset) pY += spineState.idol_zoom_y_offset
-          const rootY = computeVisualRootY(sid, portraitBaseY(resolved.finalBaseY), pY)
-          manager.showSilhouette(sid, modelId, pX, 0, rootY)
+          manager.showSilhouette(sid, modelId, texture, placement)
           continue
         }
-        entry.prefabMeta = prefabMeta
-        const posX = spineState.pos_x ?? 0
-        let posY = spineState.pos_y ?? 0
-        if (spineState.idol_zoom_y_offset) posY += spineState.idol_zoom_y_offset
         if (spineState.face) manager.updateSpineFace(sid, spineState.face, spineState)
         applyStateBodyMotion(manager, sid, modelId, spineState, step)
         if (spineState.neck_anim_stop) manager.stopSpineNeckAnim?.(sid, `state:${step.step_id}:neck-stop:${sid}`)
         else if (spineState.neck_anim) manager.playSpineNeckAnim?.(sid, spineState.neck_anim, `state:${step.step_id}:neck:${sid}:${spineState.neck_anim}`)
         manager.setSpinePartsVisible?.(sid, spineState.parts_visible !== false)
         manager.flushSpinePose?.(sid, 0)
-        const fit = FIT_MODE === 'prefabrect' && prefabMeta
-          ? manager.fitSpineToPrefabRect(entry.spine, prefabMeta, { anchorMode: ANCHOR_MODE })
-          : null
-        const baseY = fit?.rootY ?? portraitBaseY(resolved.finalBaseY)
         const colorTransition = spineState.idol_color_transition || {}
         manager.setSpineColor(
           sid,
@@ -1034,8 +679,6 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
           colorTransition.delay ?? 0,
           props.nowMilliseconds,
         )
-        manager.setSpineZoom(sid, spineState.idol_zoom)
-        positionSpine(sid, posX, posY, baseY)
         if (spineState.fade?.type) {
           const targetAlpha = spineState.fade.type === 'out' ? 0 : 1
           manager.animateSpineAlpha?.(sid, targetAlpha, spineState.fade.duration, spineState.fade.delay, props.nowMilliseconds)
@@ -1062,9 +705,6 @@ async function applyState(step, { resetScreenEffects = false } = {}) {
   } else if (charaId && desiredIds.has(charaId)) {
     manager.bringToFront(charaId)
   }
-
-  // 鈹€鈹€ Apply per-character URL overrides after all positioning logic 鈹€鈹€
-  applyCharaOverrides(manager)
 
   projectedStep = step
   // Manager creation is not actor readiness: spawn may clear queued talking.

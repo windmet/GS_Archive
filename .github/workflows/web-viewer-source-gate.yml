@@ -109,6 +109,12 @@ jobs:
       - name: Verify bounded particle timeline and source identity
         run: npm run verify:chibi-particles
 
+      - name: Verify song center-line oneshot slot
+        run: npm run verify:song-oneshot-voices
+
+      - name: Verify story costume labels and thumbnails
+        run: npm run verify:story-costumes
+
       - name: Verify chibi color plane timelines
         run: npm run verify:chibi-color-layers
 

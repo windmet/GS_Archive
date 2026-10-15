@@ -7,7 +7,7 @@ import { LipSyncController } from '../src/core/LipSyncController.js'
 import { storyAssetAdapter } from '../src/utils/StoryAssetAdapters.js'
 import { validateStoryConfig } from '../src/utils/StoryConfigShape.js'
 
-const configKinds = ['idol-placement', 'idol-mouth', 'model-mouth', 'idol-body-types', 'idol-motion', 'costume-prefab-metadata', 'costume-dictionary']
+const configKinds = ['idol-mouth', 'model-mouth', 'idol-motion', 'costume-figure-placement', 'costume-dictionary']
 const planFor = prefix => {
   const plan = createStoryAssetPlan({ steps: [{ step_id: 7, state: { spines: [{ id: '040ren', model: `${prefix}_001_00` }] } }] },
     { file: 'fixture.json', sha256: `sha256:${'a'.repeat(64)}` })
@@ -26,10 +26,8 @@ const server = http.createServer((request, response) => {
   if (prefix === 'html') { response.end('<!DOCTYPE html><title>fallback</title>'); return }
   if (prefix === 'offline') { response.destroy(); return }
   if (prefix) { response.end(JSON.stringify({ mouthes: prefix === 'empty' ? [] : [{ openMouthScale: 3 }] })); return }
-  const body = request.url.includes('/other/') ? { positionY: -600 }
-    : request.url.includes('body_type') ? { dataList: [] }
-    : request.url.includes('idol_motion') ? { entries: {} }
-    : request.url.includes('prefab') ? { models: {} } : { by_model_resource_id: {} }
+  const body = request.url.includes('idol_motion') ? { entries: {} }
+    : request.url.includes('figure_placement') ? { skeletons: {}, textures: {} } : { by_model_resource_id: {} }
   response.end(JSON.stringify(body))
 })
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
@@ -51,7 +49,7 @@ try {
     assert.equal(task.state, success ? 'json-parsed' : 'failed')
     if (prefix === 'html') assert.match(task.error, /Unexpected HTML response/)
     assert.equal(!!spine._mouthData, success)
-    assert.equal(result.status.succeeded, success ? 6 : 5)
+    assert.equal(result.status.succeeded, success ? 4 : 3)
     assert.equal(result.status.pending, 1, 'logical group is not counted as another parsed config')
     assert.equal(task.uses[0].stepId, 7)
     if (prefix === 'missing') {
