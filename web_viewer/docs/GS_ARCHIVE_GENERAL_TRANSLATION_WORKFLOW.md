@@ -1,100 +1,64 @@
-# 通用资料 Gemini 翻译与校对流程
+# 通用翻译流程（翻译记忆版，2026-10-15）
 
-本流程处理背景、卡面标题、衣装、道具、称号、技能与摄影素材的名称和说明。剧情台词、组合剧情、工作通讯和首页对话继续走现有剧情 batch；不要把通用原文拿去按对白口吻续写。本轮只建立流程，不自动向 AI Studio 上传或代替用户确认译文。
+通用流程处理“按原文翻译、一句对一句”的文本：资料名称与说明、卡面台词、触摸语音、首页通用语音、电话标题、通信聊天。剧情正文（含季节企划）仍走剧情 Studio 批次，按 Reader 文本单元 `unit_id + source_hash` 绑定，见文末。
 
-## 交给 AI Studio（紧凑版 v2）
+## 模型：一条原文 = 一条记忆
 
-当前新包为 `.analysis/general-translation-compact-20261002-ready`。同样的 5,596 个不同资料字段、9,952 次来源使用，分为 22 批。默认每批最多 400 项，**完整 input.md** 最多 16,000 UTF-16 字符，包含指引、原文、短编号和名称上下文；不是只算原文正文。按本轮实际文件对比，旧 60 批输入约 501 万字符，新包约 26.3 万字符，减少约 94.75%。这是字符量比较，不是 Gemini token 计费统计。
+- **翻译记忆** `translation/tm/zh-CN/<分片>.json`：键为 `metadata:v1:<kind>:<field>:<原文 SHA-256>`，每条记原文、译文、状态（draft / reviewed / final）、决定（translated / uncertain / keep-source）、疑义说明、译者、校对者、来源批次。
+- **身份只看原文**。使用位置（哪张卡、哪段聊天）、批次、语料顺序都只是上下文，每次从语料重算，不进身份。所以新增卡片、复用同一句、重新提取导致顺序变化，都不影响已有译文。
+- 原文改了 → 新键，状态为缺译；旧条目成为 orphan，保留不发布，`prune --confirm` 才删除。
+- **改动记录交给 git**。人工确认记在 `translation/tm/reviews.json`（批次、条数、校对者、原话、日期）。不再有整批哈希、批准绑定、amendment 链。
+- 2026-10-15 前的 `translation/studio/general/revisions/` 18 个批次（7,647 条，全部 reviewed）已原样迁入；批准原话和旧回执哈希在 reviews.json 的 `legacy` 字段，旧文件见 git 历史。
 
-1. 新建 AI Studio 会话，先粘贴 `glossary.md`。它是“日文姓名 → 项目暂用中文名”的短表，不是官方中文译名。换新会话时再次提供即可。
-2. 一次粘贴一个批次目录的 `input.md`。每份自带完整中文指引，只包含待译原文、三位短编号和必要名称上下文，不含完整系统键、SHA-256、数据库 ID 或重复使用位置。
-3. 将 Gemini 回答原样保存为该批次的 `output.md`。无需手动补原文、键值、哈希，也无需让 Gemini 返回 JSON。`output-template.md` 只供本地对照，无需上传。
-4. 每批的 `local/batch-map.json` 保留完整原文、键值、哈希和全部使用位置；`local/previous-draft.json` 为初译对照。包根 `local/plan.json` 保存版本和覆盖审计。**local 文件夹不要交给模型。**
+## 新增一类语料
 
-每批第一行回传标记已在 input.md 中给出；原样复制该行。正常译文、疑义和保留原文分别使用以下形式（示例标记须换为实际批次）：
+1. 在 `scripts/lib/archive-general-text-corpus.mjs` 里加提取（`add(kind, id, field, 原文, 说话人, 所属)`）。
+2. 在 `scripts/lib/translation-domains.mjs` 的 `KINDS` 里加一行：审计标签、给模型的小标题、发布分片、提示词类型（general / character / chat）。没登记的 kind 会直接报错。
+3. 页面用 `useArchiveNamedText.js` 的 `archiveLineText(分片, [[kind, field]], 原文)` 显示（台词类），或 `archiveNamedText`（资料类）。
 
-```text
-# G-items-001 @实际短版本标记
-[001]中文译文
-[002?]中文候选译文
-! 尚不确定的专名及理由
-[003=]
-```
+分片、批次分组、提示词、审计分组都从注册表派生，无需改其他脚本。
 
-`[003=]` 不填内容，本地会精确恢复原文；只用于纯资源键或无可靠语义的标记，不能跳过普通日语。正常/疑义译文可直接换行接续，下一条以 `[三位编号]` 开始；保留前导零，不复制原文、上下文、章节标题或检查过程。不用 Markdown 表格，不需要转义字面竖线。
+## 一轮翻译
 
-## 检查、导入和发布草稿
-
-在本仓库 PowerShell 执行（$batchDir 可指向解压后的批次绝对路径）：
+在 `web_viewer` 下：
 
 ```powershell
-$batchDir = '.analysis/general-translation-compact-20261002-ready/G-items-001'
-node scripts/general-translation-workflow.mjs check "$batchDir/local/batch-map.json" "$batchDir/output.md"
-node scripts/general-translation-workflow.mjs import "$batchDir/local/batch-map.json" "$batchDir/output.md" 'Gemini / 实际模型名称'
+# 1. 导出：默认只导出既无记忆、也无规则初译的条目；批次号带波次，不会和旧批次重名
+node scripts/general-translation-workflow.mjs export .analysis/general-translation-batches/<新目录> --domains chats,card-lines --wave 20261015 --max-rows 999 --max-chars 56000
+# 2. AI Studio：先贴 glossary.md，再逐批贴 input.md；回答原样存为该批 output.md（local 文件夹不上传）
+# 3. 检查并导入（逐条写入记忆，状态 draft）
+$b = '.analysis/general-translation-batches/<目录>/G-chats-20261015-001'
+node scripts/general-translation-workflow.mjs check  "$b/local/batch-map.json" "$b/output.md"
+node scripts/general-translation-workflow.mjs import "$b/local/batch-map.json" "$b/output.md" 'Gemini / 实际模型名'
+# 4. 发布到 public/translations，并刷新审计
 node scripts/generate-archive-general-translations.mjs
 node scripts/generate-translation-audit.mjs
-node scripts/verify-general-translation-workflow.mjs
-node scripts/verify-general-translation-markdown.mjs
-node scripts/verify-archive-general-texts.mjs
+# 5. 人工逐批读完后
+node scripts/general-translation-workflow.mjs review G-chats-20261015-001 --reviewer '实际校对者' --statement '校对者原话'
 ```
 
-本地工具从短编号恢复完整 source/key/hash/references，并验证批次短版本标记、漏行、重复、未知/错位编号、来源变化、空译文、数值/参数/图标占位符变化和危险 HTML。疑义条目必须带说明。短标记不是完整校验的替代物；内部仍校验完整批次摘要、每条原文哈希与当前来源引用。检查通过只代表格式和身份有效，不代表翻译自然或准确。
+- `--with-drafts` 把只有规则初译（`translation/studio/general/*-drafts.*`）的条目也导出；`--all` 连已有译文一起导出，供整批重修，旧译文放在 `local/current-translations.json` 对照。
+- 回传格式：首行原样复制批次标记；`[001]译文`、`[002?]候选译文` 加下一行 `! 理由`、`[003=]` 保留原文（只限资源键或内部标签）。
+- `check` 校验：批次标记、漏条、重复、未知编号、原文被改、空译文、数字 / 参数 / 图标 / 占位符、技能数值顺序、制作人宏、危险 HTML、道具与称号里的偶像定名。它还报告导出后原文已离开语料的条目（orphans，仍可导入）。
+- `import`：译文相同的条目跳过；已有**不同**译文的条目默认拒绝，加 `--replace` 才覆盖（覆盖后变回 draft，旧文本在 git 里）。
+- `review`：该批全部条目升为 reviewed；仍有 uncertain 的批次不能升级。模型自称“已检查”不算校对。
+- `amend producer-slot-restore [--batch ID]`：机械修复 `●●●●制作人` → 原文宏，其余措辞和状态不动。
+- `status` 列出每类的总数、draft、reviewed、缺译数，以及 orphans 和无效条目；`verify` 是严格检查（任何记忆条目不合规则即失败）。
 
-导入写入 `translation/studio/general/revisions` 的 draft/not_final 修订。内部继续使用旧 JSON 记录结构，因此公共翻译生成器和资源页校对状态仍可沿用；显示条目使用的是中文译文，疑义说明独立保存。生成器才将有效修订写入公共翻译主索引及页面分片，以后重新生成初译也会保留修订。
+## 与构建的关系
 
-如需单独检查本地展开后的完整 JSON，可执行 `node scripts/general-translation-workflow.mjs normalize <local/batch-map.json> <output.md> <新的return.json>`；拒绝覆盖已有输出。此步骤不是普通导入的必需步骤。
+- `generate-archive-general-translations.mjs` 和审计**不会因语料或记忆变化失败**：无效条目跳过并警告（回落原文），orphan 不发布，记忆里有但没发布的条目计入审计 `general.unpublished`。
+- `npm run build:check` / `prebuild` 仍会刷新审计，因为资源页的「翻译与校对进度」读的是 `config/translation-audit/`；但它只汇报状态，不做翻译的严格检查。
+- 严格检查放在翻译相关的提交里跑：`general-translation-workflow.mjs verify` 和 `npm run verify:general-translation-workflow`。
 
-旧 60 批 JSON 包保留原样，原 `check/import <batch-map.json> <return.json>` 仍兼容。**不能把旧包的回传放进新包同名批次，也不能将两个包的重叠字段重复导入。** 工具会拒绝批次/来源不匹配或修订重叠。默认不覆盖已有修订；替换前必须明确归档旧修订，不能默默覆盖。
+## 制作人称呼占位
 
-审计页仍在「资源 → 数据与资源状态」的「翻译与校对进度」。同一字段多处使用不重复计校对量；按原文、译文、状态、批次、ID、使用位置检索仍读取完整本地映射。剧情继续保留自己的 Reader/compiled/source_hash 身份，使用原有剧情 batch。
+原文的 `●●●●プロデューサー`（名字+P）与 `●●●●●●●●●●`（名字）是程序宏，译文必须原样保留，显示时由 `renderProducerAddressing` 按玩家 P 名和显示语言替换。导出时宏换成 `{{GS_ADDRESS:编号:类型}}`，模型看不到原始圆点；导入时还原，标记被改、删、重复或新造都拒绝。剧情 overlay 用的是同一套 `validateProducerAddressingOverlay`。
 
-## 制作人称呼占位（与剧情同一合同）
+## 页面上的唯一通路
 
-原文的 `●●●●プロデューサー`（名字+P）与 `●●●●●●●●●●`（名字）是程序宏。合同只有一条：**译文必须原样保留原文的宏**，显示时才由 `renderProducerAddressing` 按玩家 P 名和显示语言替换（未设名：中文“制作人”、日文“プロデューサー”；`●●●●プロデューサー酱` 显示“P酱”；10 点后接監督/P酱等称呼时只显示称呼）。
+卡面台词、触摸语音、首页通用语音、偶像自我介绍、电话标题和聊天都经 `archiveLineText`：按资料语言选译文；分片加载中隐藏，不闪日文；无译文回落原文；最后替换制作人宏。首页通用语音（`cue.source === 'idol'`）查 `home-voice/text`，偶像资料页的自我介绍查 `home-voice/self-intro`。`verify-character-line-text.mjs` 覆盖这条通路。
 
-- 导出：`input.md` 里的宏换成剧情批次同款 `{{GS_ADDRESS:编号:类型}}` 标记，模型看不到原始圆点，不会再把 `プロデューサー` 半译成 `●●●●制作人`。
-- 导入：标记还原成原文宏；标记被改、删、重复或新造都拒绝。旧包回传直接写宏也接受。
-- 校验：`validateGeneralReturn` 与剧情 overlay 同用 `validateProducerAddressingOverlay`；修订加载、生成器、审计都经过它，宏被翻译或丢失即失败。
-- 机械修复：`node scripts/general-translation-workflow.mjs amend producer-slot-restore <revision.json>...`。修订保留用户原批准，追加 `amendments`（每条 before/after）；加载时逐条验证确为该修复，并撤回到批准时的 `return_sha256`，任何措辞改动都会被拒。2026-10-10 用它修复了 G-card-lines-001~005 的 242 条 `●●●●制作人`。
+## 剧情正文（含季节企划）
 
-## 台词在页面上的唯一通路
-
-卡面台词、首页触摸语音、演出语音、电话标题和聊天都通过 `useArchiveNamedText.js` 的 `archiveLineText(分片, [[kind, field]...], 原文)`：按资料语言选译文、分片加载中隐藏（不闪日文）、无译文回落原文，最后统一替换制作人宏。页面只需在 setup 里 `loadArchiveNames(分片)` 一次。接入点：卡面详情、首页偶像互动对话框、P 名设置预览、手机电话标题与聊天；卡面“演出预览”经 `translatedVoicePreview` 把触摸语音译文带进播放器，随剧情阅读设置显示。新增显示台词的页面直接用它，不要再自写查表。`verify-character-line-text.mjs` 覆盖这条通路。
-
-## 人工确认后标记已校对
-
-逐批读完或修订并重新导入后，记录用户对**这一个批次和确切回传版本**的确认。不能因为模型说“已检查”就提升状态，也不能沿用其他批次的确认。保存人工确认文件，例如：
-
-```json
-{
-  "approved": true,
-  "batch_id": "G-items-001",
-  "return_sha256": "从对应 revision.json 的 return_sha256 原样复制",
-  "reviewer": "实际校对者",
-  "statement": "实际用户确认内容，明确这批译文已逐项校对"
-}
-```
-
-```powershell
-node scripts/general-translation-workflow.mjs review translation/studio/general/revisions/G-items-001.json path/to/human-approval.json
-node scripts/generate-archive-general-translations.mjs
-node scripts/generate-translation-audit.mjs
-```
-
-仅该批次提升到 reviewed，仍为 not_final。uncertain 尚未解决的批次不能提升；keep-source 可以作为明确保留原文的校对决定。原文变化时旧修订无法再次生成，须重新导出。需要新一轮包时运行 `node scripts/general-translation-workflow.mjs export <新的输出目录>`，默认生成紧凑版，按当前语料重新分批，不会覆盖现有导出。可显式指定 `--max-rows 400 --max-chars 16000`；单条原文超过完整输入上限会报错而非截断。批次数量随语料变化，不写死为 22。
-
-## 全馆审计边界
-
-现有主线 B001 的 993 项保留 reviewed；B002 的 999 项保留 draft。统计读取当前 Reader、compiled、publication 和 overlay 身份，不沿用历史比例。缺译与原文变化分开；没有进入 Reader 的 RAW、图片中文字、首页对话、歌词、未提取的界面文案和部分活动/歌曲专名列为未统计/待处理。语言开关目前影响已接入的资料名称、说明和播放器词条，剧情正文仍由原文/译文/双语阅读设置决定。
-
-代码改动后执行相关回归、`npm run build:check` 并在 Browser 检查实际中/日展示、搜索和移动布局，再显式提交本批文件；不要把模型回传自动提升为终稿或直接生产发布。
-
-## 资源与翻译审计随更新重算
-
-`npm run build:check` 与实际打包 `npm run build` 均先执行翻译/资源审计生成器。单独刷新可用 `npm run audit:translations` 和 `npm run audit:resources`。本地目录和文件变化会更新资源计数、大小与来源指纹；输入不变时保留上次核对日期。源清单或 Reader 身份不一致会报错，不默默沿用过期译文；修订来源变化须重新导出。
-
-R2 属于远端状态，执行 `npm run audit:resources:r2` 独立查询并保存核对时间，普通构建不会冒充实时远端检查。旧 July 快照默认折叠，仅作为历史；音频/图像/设备可用性仍须实际验收。当前谱面 248 个源文件包含 4 个未分配轨，正常可选难度文件为 244 个。
-
-## 本轮验证边界
-
-紧凑版新增回归遍历全部 5,596 字段的导出/本地身份还原、实际输入预算，以及漏项/重复/未知编号、错批次/版本、BOM/CRLF、多行、疑义、保留原文、参数/数字和映射漂移拒绝。旧 JSON 工作流回归继续通过。只验证本地工具，不上传 AI Studio、不伪造真实回传或人工批准、不修改现有译文状态。工具与文档变化未影响前端 bundle，无需再次构建或部署。
+剧情按 Reader 文档导出：`node scripts/prepare-ai-studio-batches.mjs --documents <ID,...> --batch B0NN-<名称> --out .analysis/translation-studio/<目录>`，回传走 `translation:studio:check` / `translation:studio:import`。季节企划 306 篇、2,639 句的批次见 `TRANSLATION_WAVE2_INVENTORY_20261009.md` §6。

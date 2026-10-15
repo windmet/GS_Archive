@@ -47,10 +47,20 @@
 
 ## 4. 还缺的工程
 
-现有 Studio 管线以阅读文档为单位（`prepare-ai-studio-batches.mjs`），卡面文本、通信、随机话题都不是阅读文档，需要先做：
-
-- 通信的同类投影（聊天编译文件的逐行单元）。量最大，建议放在卡面文本之后。
+已完成（10-15）：通信聊天已在通用语料中（chat-line / chat-choice），见 §6。通用流程改为翻译记忆，见 `GS_ARCHIVE_GENERAL_TRANSLATION_WORKFLOW.md`。
 
 ## 5. 现在就能翻的
 
 - **B035-birthday-small-talk**：`web_viewer/.analysis/translation-studio/wave2-20261009/B035-birthday-small-talk/input.md`（10 篇、59 行）。生成方式：`node scripts/prepare-ai-studio-batches.mjs --documents <10 个文档 id> --batch B035-birthday-small-talk --out .analysis/translation-studio/wave2-20261009`。载入流程与 B031–B034 相同；旧合并稿的草稿可作参考，但不能直接套用（换行和键名都变了）。
+
+## 6. 第二波剩余：通信、首页通用语音、季节企划（10-15）
+
+| 内容 | 条目 | 管线 | 包（`web_viewer/.analysis/` 下，不入库） |
+|---|---:|---|---|
+| 通信·聊天对白 / 制作人回复 | 7,948 + 3,586（去重） | 通用流程 | `general-translation-batches/wave2-20261015/` 的 `G-chats-20261015-001`～`012` |
+| 首页通用语音（HomeStand）+ 偶像自我介绍（IdolDetail） | 1,029 + 49 | 通用流程，新 kind `home-voice` | 同上 `G-card-lines-20261015-001`～`002` |
+| 季节企划（情人节 / 白色情人节 2022、2023） | 306 篇、2,639 句 | 剧情 Studio | `translation-studio/wave2-20261015-seasonal/` 的 B036～B041 |
+
+- 通用两类导出命令：`export .analysis/general-translation-batches/wave2-20261015 --domains card-lines,chats --wave 20261015 --max-rows 999 --max-chars 56000`。共 14 批、12,612 条，单批 ≤ 5.6 万字符。只导出缺译条目，已校对的卡面台词不会再出现。
+- 季节企划按 `episode_label` 分组：2022 年两季各拆两半（B036/B037 情人节、B038/B039 白色情人节），2023 年各一批（B040、B041）。单批 5.4～6.9 万字符，与 B020–B025 相当。导入同 B035。
+- 首页 LiveResult 语音（343 行）在 `home_system_voice_index.json` 里没有台词文本，未纳入；要翻需先从编译脚本取文本。

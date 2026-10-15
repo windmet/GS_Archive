@@ -72,7 +72,11 @@ try {
 
   // Every page that shows these lines goes through the shared path.
   const home = read('src/components/archive/ArchiveImmersiveHome.vue')
-  assert.match(home, /archiveLineText\('card-lines', \[\['card-touch', 'text'\]\], activeCue\.value\?\.text\)/)
+  // A card cue reads its touch voice; an idol (general) cue reads the idol's home voice.
+  assert.match(home, /archiveLineText\('card-lines', \[\[cue\?\.source === 'idol' \? 'home-voice' : 'card-touch', 'text'\]\], cue\?\.text\)/)
+  assert.match(home, /const cueLine = computed\(\(\) => cueText\(activeCue\.value\)\)/)
+  const idolDetail = read('src/components/archive/ArchiveIdolDetail.vue')
+  assert.match(idolDetail, /archiveLineText\('card-lines', \[\['home-voice', 'self-intro'\]\], props\.selfIntroduction\?\.text/)
   assert.match(home, /\{\{ cueLine\.text \}\}/)
   assert.doesNotMatch(home, /activeCue\.text\)/, 'the home dialogue never prints the raw cue text')
   const detail = read('src/components/archive/ArchiveCardDetail.vue')
@@ -81,5 +85,5 @@ try {
   const mobile = read('src/components/archive/ArchiveMobileArchive.vue')
   assert.match(mobile, /archiveLineText\('card-lines', \[\['call-title', 'title'\]\]/)
   assert.match(mobile, /archiveLineText\('chats', CHAT_KEYS, source\)/)
-  console.log('Character line text: home touch, card lines, operational voices, call titles and chats share one lookup; pending, locale, unnamed/named Producer and P酱; card voice preview carries the translation. Browser acceptance is separate.')
+  console.log('Character line text: home touch, general home voices and self-introductions, card lines, operational voices, call titles and chats share one lookup; pending, locale, unnamed/named Producer and P酱; card voice preview carries the translation. Browser acceptance is separate.')
 } finally { globalThis.fetch = originalFetch; await server.close() }

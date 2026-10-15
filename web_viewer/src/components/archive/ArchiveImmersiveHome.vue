@@ -446,12 +446,14 @@ const activeIdol = computed(() => props.idols.find(idol => idol.id === selectedI
 const activeCue = computed(() => activeIdol.value?.cues?.find(cue => cue.cue === props.selectedCue) || activeIdol.value?.cues?.[0] || null)
 const displayName = idol => props.idolName?.(idol.id, idol.name) || idol.name
 const activeIdolName = computed(() => activeIdol.value ? displayName(activeIdol.value) : '')
-// A home cue is a card's touch voice: the same translated line as on the card page.
+// A card cue is that card's touch voice, the same translated line as on the card page; an idol cue
+// is the idol's general home voice.
 void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
-const cueLine = computed(() => archiveLineText('card-lines', [['card-touch', 'text']], activeCue.value?.text))
+const cueText = cue => archiveLineText('card-lines', [[cue?.source === 'idol' ? 'home-voice' : 'card-touch', 'text']], cue?.text)
+const cueLine = computed(() => cueText(activeCue.value))
 const cueRows = computed(() => (activeIdol.value?.cues || []).map((cue, index) => ({
   cue, index,
-  line: archiveLineText('card-lines', [['card-touch', 'text']], cue.text),
+  line: cueText(cue),
   title: cue.source === 'idol' ? '' : cardText('card', cue.cardTitle, 'title'),
   condition: homeVoiceConditionLabel(cue.condition),
 })))

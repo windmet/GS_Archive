@@ -21,6 +21,11 @@ export function archiveGeneralTextCorpus(root) {
       if (row.texts?.[field]?.trim() !== '0') add('card-line', row.resource_id, field, row.texts?.[field], row.character_id);
     for (const cue of row.home_voice_cues || []) add('card-touch', `${row.resource_id}:${cue.cue}`, 'text', cue.preview?.text, row.character_id);
   }
+  // Idol home voices that belong to no card: the HomeStand pool and the idol page's self-introduction.
+  for (const idol of load('home_system_voice_index.json').idols) {
+    for (const row of idol.scenarios || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'text', row.text, idol.idol_code);
+    for (const row of idol.idol_detail || []) add('home-voice', `${idol.idol_code}:${row.script_label}`, 'self-intro', row.text, idol.idol_code);
+  }
   // Chats: personal and unit talks and random topics, from the tracked chat text index (the compiled
   // chats stay in the local corpus). References keep the conversation, step and speaker.
   const chats = JSON.parse(fs.readFileSync(path.join(root, 'translation/studio/source/chat-text-index.json'), 'utf8')).files;
