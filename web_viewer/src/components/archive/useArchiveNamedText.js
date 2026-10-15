@@ -51,7 +51,7 @@ export const archiveNamedTranslation=(kind,source,field='name')=>{
 // the shard loads the line is pending (callers hide it, no Japanese flash); without a translation it
 // stays Japanese. Callers start loadArchiveNames(domain) once in setup.
 // Operational voice cues (scout change etc.) repeat card lines and touch voices word for word.
-export const ANY_CARD_LINE=Object.freeze([['card-line','extra'],['card-line','normal'],['card-line','awakened'],['card-touch','text']]);
+export const ANY_CARD_LINE=Object.freeze([['card-line','extra'],['card-line','normal'],['card-line','awakened'],['card-touch','text'],['card-voice','text']]);
 export function archiveLineText(domain,keys,source) {
   const text=typeof source === 'string' ? source : '';
   const original={text:presentProducerAddressingText(text,'ja'),lang:'ja',pending:false};

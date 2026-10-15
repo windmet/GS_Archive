@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { sourceUnits, CARD_LINE_KINDS, CHAT_KINDS, shards, validateGeneralReturn, rootOverlayEntries, loadGeneralRevisions, hash } from './lib/general-translation-batches.mjs'
+import { sourceUnits, CARD_LINE_KINDS, CHAT_KINDS, shards, validateGeneralReturn, rootOverlayEntries, loadGeneralRevisions } from './lib/general-translation-batches.mjs'
 import { validateProducerAddressingOverlay, protectProducerAddressingForTranslation } from '../src/localization/story/ProducerAddressing.js'
 import { planCompactBatches, renderCompactInput, parseCompactReturn, returnHeading } from './lib/general-translation-markdown.mjs'
 
@@ -14,9 +14,13 @@ const count = kind => lines.filter(unit => unit.kind === kind).length
 assert.equal(count('card-line'), 1534, 'normal 584 + awakened 826 + extra 124 unique card lines')
 assert.equal(count('card-touch'), 2356, 'unique home touch voices')
 assert.equal(count('call-title'), 341, 'unique call titles')
+assert.equal(count('home-voice'), 1078, 'general HomeStand voices 1029 + IdolDetail self-introductions 49')
+assert.equal(count('office-voice'), 11, 'Yamamura office voices: login bonus 2 + work menu 5 + bonus days 4')
+assert.equal(count('card-voice'), 415, 'unique scout/formation/live lines: masterdata plus the wiki transcripts fetched so far')
 const speakers = unit => new Set(unit.references.map(ref => ref.speaker))
-// Spoken lines belong to one idol; a call title may name calls of several (確かな手ごたえ: 011min, 046chr).
-assert.ok(lines.filter(unit => unit.kind !== 'call-title').every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')
+// Spoken lines belong to one idol; a call title may name calls of several (確かな手ごたえ: 011min, 046chr),
+// and campaign formation lines are shared (NEXT DESTIN@TION！ across 29 idols).
+assert.ok(lines.filter(unit => !['call-title', 'card-voice'].includes(unit.kind)).every(unit => speakers(unit).size === 1), 'every spoken line has exactly one idol speaker')
 assert.ok(lines.every(unit => [...speakers(unit)].every(code => /^\d{3}[a-z]{3}$/.test(code))), 'speakers are idol codes')
 assert.ok(!lines.some(unit => unit.source.trim() === '0'), 'the extra placeholder 0 is not a line')
 assert.ok(units.filter(unit => !CARD_LINE_KINDS.includes(unit.kind) && !CHAT_KINDS.includes(unit.kind)).every(unit => unit.references.every(ref => !ref.speaker)), 'metadata identities are unchanged')
@@ -58,18 +62,17 @@ for (const broken of ['译文（没有占位符）', asMacro(faithful[withSlots]
 const extra = [...faithful]; extra[withSlots] += '{{GS_ADDRESS:9:producer_name}}'
 assert.throws(() => parseCompactReturn(batch, answer(extra)), 'an invented marker is rejected')
 
-// Imported revisions: every slot is the source macro, and the 2026-10-10 producer-slot-restore
-// amendments undo back to exactly the returns the user approved.
+// Memory entries: every slot is the source macro. The 2026-10-10 producer-slot-restore repair of
+// G-card-lines-001~005 is recorded with the migrated approvals (reviews.json); git history keeps the texts.
 const revisions = loadGeneralRevisions(root, units)
 assert.ok([...revisions.values()].every(entry => validateProducerAddressingOverlay(entry.source, entry.translation)))
-const record = read('translation/studio/general/revisions/G-card-lines-001.json')
-assert.equal(record.amendments?.[0]?.repair, 'producer-slot-restore')
-assert.equal(record.amendments[0].from_return_sha256, record.approval.return_sha256, 'the amendment starts from the approved return')
-const undone = { ...record.return, entries: record.return.entries.map(entry => {
-  const change = record.amendments[0].changes.find(item => item.key === entry.key)
-  return change ? { ...entry, translation: change.before } : entry
-}) }
-assert.equal(hash(JSON.stringify(undone)), record.approval.return_sha256)
+const reviews = read('translation/tm/reviews.json').reviews
+for (let n = 1; n <= 5; n++) {
+  const review = reviews.find(item => item.batch === `G-card-lines-00${n}`)
+  assert.equal(review?.legacy?.amendments?.[0]?.repair, 'producer-slot-restore')
+  assert.ok([...revisions.values()].some(entry => entry.batch_id === review.batch && entry.status === 'reviewed'))
+}
+assert.ok([...revisions.values()].every(entry => !/(?<!●)●{4}(?!●)制作人/u.test(entry.translation)), 'no half-translated slot left')
 
 // Publication: lazy shard only; the bundled root overlay never carries character lines.
 const synthetic = { card: { title: { a: 'A' } }, 'card-line': { normal: { b: 'B' } }, 'card-touch': { text: { c: 'C' } }, 'call-title': { title: { d: 'D' } } }
@@ -80,4 +83,4 @@ const shard = read('public/translations/zh-CN/archive-general/card-lines.json')
 assert.ok(Object.keys(shard.entries).every(kind => CARD_LINE_KINDS.includes(kind)), 'the card-lines shard holds only card lines')
 for (const fields of Object.values(shard.entries)) for (const texts of Object.values(fields))
   for (const [source, text] of Object.entries(texts)) assert.ok(validateProducerAddressingOverlay(source, text), `published slot drift: ${text}`)
-console.log(`Card line translation: ${lines.length} speaker-bound lines in ${lineBatches.length} batches; slots protected as markers and restored verbatim; amendments bound to approvals; lazy shard only`)
+console.log(`Card line translation: ${lines.length} speaker-bound lines in ${lineBatches.length} batches; slots protected as markers and restored verbatim; repair recorded with approvals; lazy shard only`)

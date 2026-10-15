@@ -42,6 +42,7 @@
 .story-page .story-row:disabled { cursor:default; }
 .story-page .story-row-thumb { display:grid;place-items:center;overflow:hidden;width:var(--thumb);aspect-ratio:16 / 9;border-radius:var(--gs-radius-media);background:var(--gs-line);color:var(--gs-ink-3); }
 .story-page .story-row-thumb img { width:100%;height:100%;object-fit:cover; }
+.story-page .story-row-thumb.is-jacket { aspect-ratio:1;width:calc(var(--thumb) * 9 / 16);justify-self:center; }
 .story-page .story-row-copy { display:flex;flex-direction:column;gap:var(--gs-space-1);min-width:0; }
 .story-page .story-row-copy strong { display:-webkit-box;overflow:hidden;font-size:var(--gs-text-body);font-weight:var(--gs-weight-semibold);line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2; }
 .story-page .story-row-copy small { overflow:hidden;color:var(--gs-ink-3);font-size:var(--gs-text-meta);text-overflow:ellipsis;white-space:nowrap; }

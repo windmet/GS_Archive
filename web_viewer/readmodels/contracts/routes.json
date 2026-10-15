@@ -2247,6 +2247,57 @@
       "blockedReasons": []
     },
     {
+      "view": "unused_archive",
+      "entry": {
+        "status": "migrated",
+        "evidence": [
+          "src/App.vue",
+          "src/core/archiveRoute.js"
+        ]
+      },
+      "data": {
+        "status": "migrated",
+        "evidence": [
+          "src/components/archive/ArchiveUnusedVoices.vue",
+          "src/data/unusedVoiceArchive.json"
+        ]
+      },
+      "actions": {
+        "status": "migrated",
+        "evidence": [
+          "src/App.vue",
+          "src/core/archiveRoute.js"
+        ]
+      },
+      "player": {
+        "status": "not-applicable",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "component": {
+        "status": "dynamic",
+        "module": "src/components/archive/ArchiveUnusedVoices.vue",
+        "evidence": [
+          "src/App.vue"
+        ]
+      },
+      "parity": {
+        "status": "pending",
+        "evidence": [
+          "src/components/archive/ArchiveUnusedVoices.vue",
+          "scripts/build-unused-voice-archive.mjs"
+        ]
+      },
+      "browserEvidence": [],
+      "device": {
+        "status": "pending",
+        "evidence": []
+      },
+      "legacyRemaining": [],
+      "blockedReasons": []
+    },
+    {
       "view": "chart_lab",
       "entry": {
         "status": "migrated",

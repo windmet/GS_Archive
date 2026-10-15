@@ -12,7 +12,7 @@ const DESTINATIONS = [
   { id: 'people', label: '偶像与卡片', ids: ['idols', 'cards'] },
   { id: 'songs', label: '歌曲', ids: ['songs'] },
   { id: 'history', label: '活动与卡池', ids: ['events', 'gashas'] },
-  { id: 'collection', label: '收藏', ids: ['collections', 'honors', 'currencies', 'costumes', 'photos'] },
+  { id: 'collection', label: '收藏', ids: ['collections', 'honors', 'currencies', 'costumes', 'photos', 'unused'] },
   // Things to do rather than browse: each opens its own landing page and has no sub-sections.
   { id: 'live', label: 'LIVE', ids: ['live'] },
   { id: 'studio', label: '摄影工作台', ids: ['studio'] },

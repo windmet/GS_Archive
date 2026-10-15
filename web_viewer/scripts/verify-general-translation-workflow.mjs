@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
-import {sourceUnits,planBatches,validateGeneralReturn,loadGeneralRevisions,hash,protectedTokens} from './lib/general-translation-batches.mjs'
+import {sourceUnits,validateGeneralReturn,loadGeneralRevisions,hash,protectedTokens} from './lib/general-translation-batches.mjs'
+import {planCompactBatches} from './lib/general-translation-markdown.mjs'
+import {writeMemory,memoryReport} from './lib/translation-memory.mjs'
 import {collectionItemVariant} from '../src/presentation/CollectionItemVariant.mjs'
 import {PlayerPreferencesRepository} from '../src/core/story-runtime/PlayerPreferencesRepository.js'
-const units=sourceUnits(process.cwd()),batches=planBatches(units),all=batches.flatMap(b=>b.rows)
+const units=sourceUnits(process.cwd()),{batches}=planCompactBatches(units),all=batches.flatMap(b=>b.rows)
 assert.equal(all.length,units.length);assert.equal(new Set(all.map(r=>r.key)).size,units.length)
-assert(batches.every(b=>b.rows.length<=100));assert(units.every(u=>u.references.length>0))
+assert(units.every(u=>u.references.length>0))
 const batch=batches.find(b=>b.batch_id==='G-skills-001')
 const returned={schema:'GS-GENERAL-RETURN-V1',batch_id:batch.batch_id,source_digest:batch.source_digest,entries:batch.rows.map(r=>({key:r.key,source_hash:r.sourceHash,source:r.source,translation:r.source,decision:'keep-source',notes:[]}))}
 assert.equal(validateGeneralReturn(batch,returned,units).length,batch.rows.length)
@@ -14,7 +16,9 @@ const bad=mutate=>{const input=structuredClone(returned);mutate(input);assert.th
 bad(v=>v.entries.pop());bad(v=>v.entries[1]=v.entries[0]);bad(v=>v.batch_id='wrong');bad(v=>v.entries[0].source+='!');bad(v=>v.entries[0].source_hash='0'.repeat(64));bad(v=>v.entries[0].translation='');bad(v=>v.entries[0].decision='reviewed')
 bad(v=>{const e=v.entries.find(e=>/\d/.test(e.source));e.translation=e.source.replace(/\d/,n=>String((Number(n)+1)%10));e.decision='translated'})
 bad(v=>{v.entries[0].decision='uncertain';v.entries[0].notes=[]})
-assert.throws(()=>validateGeneralReturn(batch,returned,units.filter(u=>u.key!==batch.rows[0].key)))
+// A source that left the corpus since export is an orphan, not an error; changed references never matter.
+assert.equal(validateGeneralReturn(batch,returned,units.filter(u=>u.key!==batch.rows[0].key))[0].orphan,true)
+assert.equal(validateGeneralReturn(batch,returned,units.map(u=>({...u,references:[]}))).length,batch.rows.length)
 assert.deepEqual(protectedTokens('8秒 <value> [stamina]'),protectedTokens('每 8 秒 <value> [stamina]'))
 // Honor imports must obey the same canonical idol names as item imports.
 const honorRow=units.find(u=>u.kind==='honor'&&u.source.replaceAll(' ','')==='天ヶ瀬冬馬担当')
@@ -41,18 +45,22 @@ for(const row of details) {
  const revision=liveRevisions.get(row.key)
  if(revision)assert.equal(row.batch,revision.batch_id,'Audit must identify the imported revision batch, including compact batches')
 }
-// Tiny, isolated source-bound revision fixture; never write fake approvals into the live overlay.
+// Isolated translation-memory fixture; never write fake entries or approvals into the live memory.
 fs.mkdirSync(path.resolve('.analysis'),{recursive:true})
-const fixture=fs.mkdtempSync(path.resolve('.analysis/general-revision-fixture-'))
-const folder=path.join(fixture,'translation/studio/general/revisions');fs.mkdirSync(folder,{recursive:true})
-const file=path.join(folder,'sample.json')
-const record={schema:'GS-GENERAL-REVISION-V1',status:'draft',not_final:true,translator:'fixture',batch,return:returned,return_sha256:hash(JSON.stringify(returned))}
-const save=()=>fs.writeFileSync(file,JSON.stringify(record))
-save();assert.equal(loadGeneralRevisions(fixture,units).size,batch.rows.length)
-record.status='reviewed';record.approval={approved:true,batch_id:batch.batch_id,return_sha256:record.return_sha256,reviewer:'fixture',statement:'Fixture only'}
-save();assert([...loadGeneralRevisions(fixture,units).values()].every(e=>e.status==='reviewed'))
-record.approval.batch_id='wrong';save();assert.throws(()=>loadGeneralRevisions(fixture,units))
-record.approval.batch_id=batch.batch_id;record.approval.return_sha256='0'.repeat(64);save();assert.throws(()=>loadGeneralRevisions(fixture,units))
-record.approval.return_sha256=record.return_sha256;record.not_final=false;save();assert.throws(()=>loadGeneralRevisions(fixture,units))
+const fixture=fs.mkdtempSync(path.resolve('.analysis/general-memory-fixture-'))
+const sample=batch.rows.slice(0,3), entry=(row,extra={})=>({kind:row.kind,field:row.field,source:row.source,translation:row.source,status:'draft',decision:'keep-source',translator:'fixture',batch:'G-skills-fixture-001',...extra})
+const save=entries=>writeMemory(fixture,new Map(entries))
+save(sample.map(row=>[row.key,entry(row)]));assert.equal(loadGeneralRevisions(fixture,units).size,sample.length)
+save(sample.map(row=>[row.key,entry(row,{status:'reviewed',reviewer:'fixture'})]));assert([...loadGeneralRevisions(fixture,units).values()].every(e=>e.status==='reviewed'))
+// Broken entries are skipped by the loader (the build keeps going) and fail the strict check.
+for(const broken of [{status:'reviewed'},{translation:''},{source:'changed'},{decision:'uncertain',status:'reviewed',reviewer:'fixture'},{status:'final-ish'}]) {
+  save([[sample[0].key,entry(sample[0],broken)],...sample.slice(1).map(row=>[row.key,entry(row)])])
+  const report=memoryReport(fixture,units)
+  assert.equal(report.live.size,sample.length-1);assert.equal(report.invalid.length,1)
+  assert.throws(()=>memoryReport(fixture,units,{strict:true}))
+}
+// An entry whose source left the corpus is an orphan: kept, not published, not an error.
+save([['metadata:v1:skill:name:'+'0'.repeat(64),entry(sample[0])]])
+const orphaned=memoryReport(fixture,units);assert.equal(orphaned.live.size,0);assert.equal(orphaned.orphans.length,1)
 fs.rmSync(fixture,{recursive:true})
-console.log(`PASS: ${units.length} source-bound units / ${batches.length} batches; return identity, missing/duplicate/stale rows, protected tokens, item variants, persisted locale isolation, audit denominators and B001/B002 status separation.`)
+console.log(`PASS: ${units.length} source-bound units / ${batches.length} batches; return identity, missing/duplicate rows, orphans, translation memory loading, protected tokens, item variants, persisted locale isolation, audit denominators and B001/B002 status separation.`)

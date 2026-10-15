@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { hash, shards, CARD_LINE_KINDS, CHAT_KINDS } from './general-translation-batches.mjs'
+import { KINDS } from './translation-domains.mjs'
 import { protectProducerAddressingForTranslation, restoreProducerAddressingAfterTranslation } from '../../src/localization/story/ProducerAddressing.js'
 
-const kinds = { 'chat-line':'对白','chat-choice':'制作人回复','card-line':'卡面台词','card-touch':'首页触摸语音','call-title':'电话标题',card:'卡面',costume:'衣装',item:'道具',honor:'称号',skill:'技能','center-skill':'中心效果','skill-category':'技能类别',background:'背景','background-variant':'背景时段','photo-filters':'摄影滤镜','photo-stickers':'摄影贴纸','photo-spots':'摄影场景','photo-scenes':'摄影背景','photo-frames':'摄影相框' }
-const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词' }
+const kinds = Object.fromEntries(Object.entries(KINDS).map(([kind, info]) => [kind, info.model]))
+const fields = { name:'名称',title:'标题',description:'说明',normal:'普通',awakened:'特训',extra:'额外',text:'台词','self-intro':'自我介绍' }
 const isCharacterLine = row => CARD_LINE_KINDS.includes(row.kind)
 const isChat = row => CHAT_KINDS.includes(row.kind)
 const firstReference = row => row.references[0]
@@ -48,7 +49,7 @@ const CHAT_RULES = [
   '原样保留数字、表情标记（如 <emoji>…</emoji>）和其他程序标记；换行可按中文调整。姓名参照 glossary.md，不确定时标记疑义。',
 ]
 const CHARACTER_LINE_RULES = [
-  '你是日中游戏本地化译者。下面是偶像角色自己说的台词：卡面台词（普通/特训/额外）、首页点触立绘时的语音和电话标题。按小标题标明的说话人，用符合该角色性格的自然口语译成简体中文。',
+  '你是日中游戏本地化译者。下面是偶像角色自己说的台词：卡面台词（普通/特训/额外）、首页点触立绘时的语音（卡面专属与偶像通用）和电话标题。按小标题标明的说话人，用符合该角色性格的自然口语译成简体中文。',
   '每条是独立的一句或一段，没有上下文；同一位偶像的口吻、自称和对制作人的称呼要前后一致。不要添加原文没有的内容，也不要把多条合并。',
   '称呼规则：「プロデューサーさん」「プロデューサー」译为“制作人”，不加“先生”；人名+さん 译为“先生”（女性用“小姐/女士”）；くん→君，ちゃん→酱，先生（せんせい）→老师；直呼就直呼。',
   ADDRESS_RULE,
@@ -114,17 +115,20 @@ export function renderCompactInput(batch, contexts = new Map()) {
   return lines.join('\n') + '\n'
 }
 
-export function planCompactBatches(units, {maxRows=400,maxChars=16000} = {}) {
+// include: which units to batch (default all; the CLI passes the ones without a memory entry).
+// wave: optional tag in the batch ID (G-chats-20261015-001) so later exports never reuse an ID.
+export function planCompactBatches(units, {maxRows=400,maxChars=16000,include=()=>true,wave=''} = {}) {
   assert(Number.isInteger(maxRows) && maxRows>0 && maxRows<=999,'maxRows must be 1–999')
   assert(Number.isInteger(maxChars) && maxChars>=2000,'maxChars must be at least 2000')
+  assert(/^[0-9a-z]*$/.test(wave),'wave must be lowercase letters or digits')
   const contexts = compactContexts(units), batches = []
   for (const [domain,select] of Object.entries(shards)) {
     let rows=[], number=1
-    const make = () => ({schema:'GS-GENERAL-BATCH-V1',batch_id:`G-${domain}-${String(number).padStart(3,'0')}`,locale:'zh-CN',rows:[...rows],source_digest:hash(JSON.stringify(rows))})
+    const make = () => ({schema:'GS-GENERAL-BATCH-V1',batch_id:`G-${domain}-${wave ? `${wave}-` : ''}${String(number).padStart(3,'0')}`,locale:'zh-CN',rows:[...rows],source_digest:hash(JSON.stringify(rows))})
     const finish = () => { if (rows.length) { batches.push(make()); number++; rows=[] } }
     // Character lines go speaker by speaker, so one idol's lines share a batch and one voice.
     const kindOrder = kind => CARD_LINE_KINDS.indexOf(kind), fieldOrder = ['normal','awakened','extra','text','title']
-    const selected = units.filter(u=>select(u.kind))
+    const selected = units.filter(u=>select(u.kind) && include(u))
     // Chats keep each conversation's own order (owner, file, step), first occurrence of a line.
     if (selected.length && selected.every(isChat)) selected.sort((a,b)=>(firstReference(a).owner||'').localeCompare(firstReference(b).owner||'') || firstReference(a).id.localeCompare(firstReference(b).id))
     else if (selected.every(isCharacterLine)) selected.sort((a,b)=>speakerOf(a).localeCompare(speakerOf(b)) || kindOrder(a.kind)-kindOrder(b.kind) ||

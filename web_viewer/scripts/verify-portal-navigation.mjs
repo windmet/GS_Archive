@@ -11,11 +11,11 @@ import { ARCHIVE_NAVIGATION_GROUPS, buildNavigationGroups } from '../src/core/ar
 const maintainerGroups = buildNavigationGroups(true)
 const readerGroups = buildNavigationGroups(false)
 assert.deepEqual(readerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台'])
-assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 5, 1, 1])
+assert.deepEqual(readerGroups.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1])
 assert.deepEqual(maintainerGroups.map(group => group.label), ['故事', '偶像与卡片', '歌曲', '活动与卡池', '收藏', 'LIVE', '摄影工作台', '资源'])
 assert.ok(!readerGroups.some(group => group.items.some(item => item.id === 'resources')))
 assert.ok(readerGroups.every(group => group.items.every(item => item.label !== group.label || group.items.length === 1)), 'a destination never lists a section with its own name')
-assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 5, 1, 1], 'default module export is the reader view')
+assert.deepEqual(ARCHIVE_NAVIGATION_GROUPS.map(group => group.items.length), [2, 2, 1, 2, 6, 1, 1], 'default module export is the reader view')
 assert.deepEqual(maintainerGroups.flatMap(group => group.items.map(item => item.id)).sort(), ARCHIVE_NAVIGATION.filter(item => item.id !== 'home').map(item => item.id).sort())
 
 for (const query of [
@@ -48,8 +48,8 @@ for (const bad of ['https://example.com/', '//example.com/', '?view=player&scena
 assert.equal(readArchiveRoute('http://localhost/?view=portal').view, 'portal')
 assert.equal(buildArchiveUrl('http://localhost/?view=portal&portal_from=x', { view: 'cards' }).searchParams.has('portal_from'), false)
 assert.deepEqual(ARCHIVE_NAVIGATION.map(item=>item.id),
-  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','currencies','costumes','photos','live','studio','resources'],
-  'desktop taxonomy includes the published event, collection, photo resource, LIVE and photo studio destinations')
+  ['home','stories','songs','idols','cards','gashas','interactions','events','collections','honors','currencies','costumes','photos','unused','live','studio','resources'],
+  'desktop taxonomy includes the published event, collection, photo resource, unused voice archive, LIVE and photo studio destinations')
 
 for (const portalFrom of ['', '?view=cards&rarity=SSR&q=Jupiter']) {
   const portalSource = buildArchiveSourceQuery({ view: 'portal', portalFrom })
