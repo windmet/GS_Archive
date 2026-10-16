@@ -90,3 +90,8 @@
 4. 接Logo资源选择，再处理Searchlight/Underlight等缺家族；粒子/HDR保留原片与设备验收边界。
 
 本次未部署、未改master、未通过增加新常数“修好”尚未查清的问题。10-13/10-14历史文档保留其当时证据，本页作为这次排查的当前入口。
+
+
+## 10-16 灯光反查补充
+
+[Pinspotlight原生接线批次](NATIVE_PINSPOTLIGHT_CHAIN_20261016.md)确认并移除了旧`.62/.7`灯圈缩放、135偏移、蒙版与flash同时换图及线性移动/淡出。影响20首歌40份编排7,146条指令，Study 6秒为本批视觉验收入口。旧悬灯守卫、hndmkh 26.55秒Laserlight style1的六条Graphics近似、Spotlight自由目标与缺消费者继续保留为未收束项。

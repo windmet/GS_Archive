@@ -578,6 +578,7 @@ import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
+import { pinspotlightTimelineAt } from '../core/chibiPinspotlightTimeline.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround, chibiPositionStateAt, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
@@ -2705,63 +2706,8 @@ function releaseLaserlights() {
   visibleLaserlightIds.value = []
 }
 
-function samplePinspotlightState(state, milliseconds) {
-  if (!state) return null
-  const duration = Math.max(0, Number(state.tweenDuration) || 0)
-  const progress = duration <= 0
-    ? 1
-    : Math.max(0, Math.min(1, (milliseconds - state.tweenStart) / duration))
-  const result = {
-    ...state,
-    x: state.fromX + (state.toX - state.fromX) * progress,
-    y: state.fromY + (state.toY - state.fromY) * progress,
-  }
-  if (state.fadeStart !== null) {
-    result.alpha = state.fadeDuration <= 0
-      ? 0
-      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
-  }
-  return result
-}
-
 function pinspotlightStatesAt(milliseconds) {
-  const states = new Map()
-  for (const event of (selectedSong.value?.pinspotlightEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    const previous = samplePinspotlightState(states.get(event.id), eventTime)
-    if (event.hide) {
-      if (!previous) continue
-      states.set(event.id, {
-        ...previous,
-        fadeStart: eventTime,
-        fadeDuration: Math.max(0, Number(event.duration) || 0),
-      })
-      continue
-    }
-    const next = { ...(previous || {}) }
-    for (const [key, value] of Object.entries(event)) {
-      if (value !== null && value !== undefined && value !== '') next[key] = value
-    }
-    const fromX = Number(previous?.x ?? event.x ?? 0)
-    const fromY = Number(previous?.y ?? event.y ?? 0)
-    states.set(event.id, {
-      ...next,
-      alpha: 1,
-      tweenStart: eventTime,
-      tweenDuration: Math.max(0, Number(event.duration) || 0),
-      fromX,
-      fromY,
-      toX: Number(event.x ?? fromX),
-      toY: Number(event.y ?? fromY),
-      fadeStart: null,
-      fadeDuration: 0,
-    })
-  }
-  for (const [id, state] of states) {
-    states.set(id, samplePinspotlightState(state, milliseconds))
-  }
-  return states
+  return pinspotlightTimelineAt(selectedSong.value?.pinspotlightEvents, milliseconds, layoutCoordinatesForStage)
 }
 
 async function syncPinspotlights() {
@@ -2783,18 +2729,11 @@ async function syncPinspotlights() {
     const key = `${state.id}:${model.layers[0].asset}`
     const runtime = pinspotlightSprites.ensure(key, model, stageEffectIndex.value?.assets)
     if (!runtime) continue
-    let x, y, scale
-    if (state.stagePosition) {
-      const target = layoutCoordinatesForStage(Number(state.stagePosition), stageTime.value)
-      const ground = projectChibiGround(selectedSong.value?.songCode, target, width, height)
-      x = ground.x
-      y = ground.y - 135 * viewportScale
-      scale = viewportScale * 0.62
-    } else {
-      x = width * 0.5 + Number(state.x || 0) * viewportScale * environmentScale.value
-      y = height * 0.5 + (360 - Number(state.y || 0)) * viewportScale * environmentScale.value
-      scale = viewportScale * environmentScale.value * 0.7
-    }
+    if (!state.point) continue
+    const fit = viewportScale * environmentScale.value
+    const x = width * 0.5 + state.point.x * fit
+    const y = height * 0.5 + state.point.y * fit
+    const scale = fit
     for (const sprite of [runtime.maskSprite, runtime.sprite]) {
       sprite.position.set(x, y)
       sprite.scale.set(scale)
