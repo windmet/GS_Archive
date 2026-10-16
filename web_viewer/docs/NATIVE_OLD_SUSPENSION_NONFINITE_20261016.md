@@ -36,3 +36,6 @@ python scripts/verify-chibi-old-suspension.py --native-unity .analysis/native-en
 本批新增可选参数，读取真实Unity ELF，验证整体哈希、ELF映射、icall字符串、注册指令、wrapper实际调用、setter存储、状态时间推进指令和7段代码窗口摘要，对照 `scripts/fixtures/chibi-old-suspension-engine.json`。同一命令还按105份轨道文件摘要重算118条空Show，保存每条sourceRow、后续Show和Erase情况，验证78条后续Show均没有中间完成Erase。生成和不写入重放两种模式均实际通过；另跑原Python资源fixture、旧悬灯全部published-assets回归。可选native参数需要本地Capstone，不给CI增添Unity二进制或依赖。
 
 以上是源码/二进制静态取证，不是执行了Unity引擎、ARM模拟器、Android真机或原片验收。本批未改前端，因此不重复Vite构建，也没有新增5212视觉结论；此前5212 Browser验收仍只证明当时的Web消费者行为。未部署、未改master，保留无关随机动作草稿。
+
+
+后续：[ClipPlayable/streamed采样批次](NATIVE_STREAMED_NONFINITE_SAMPLING_20261016.md)已追通SetTime、modff循环与NaN立方求值，并区分欧拉/四元数回退。Web raw sampler不再将NaN改成有限初始姿势；最终动画Transform写回仍未证实，9份守卫保持。

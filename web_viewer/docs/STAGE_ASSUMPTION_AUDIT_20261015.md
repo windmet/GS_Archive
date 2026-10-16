@@ -120,3 +120,8 @@
 ## 10-16 零周期引擎取证补充
 
 [Unity原生setter与状态时间](NATIVE_OLD_SUSPENSION_NONFINITE_20261016.md)证实+Infinity速度不会被忽略，而会进入controller并产生非有限状态时间；118条空Show中78条后有同key Show，均没有中间完成Erase。9份边界继续保留，下一步是非有限clip曲线采样/Transform输出，不能以默认周期或自动恢复相位代替。
+
+
+## 10-16 非有限曲线采样补充
+
+[ClipPlayable/streamed来源](NATIVE_STREAMED_NONFINITE_SAMPLING_20261016.md)确认SetTime保存非有限double、modff对Infinity和NaN的路径不同；修复raw曲线sampler将NaN误当initialValue的旧有限回退。欧拉绑定没有四元数通道的单位姿势回退，最终Animator Transform写回仍待证实；9份未放行。

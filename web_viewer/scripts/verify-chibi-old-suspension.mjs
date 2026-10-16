@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import { sampleStreamedCurve } from '../src/core/chibiNativeAnimation.js'
 import { createHash,webcrypto } from 'node:crypto'
 import { oldSuspensionlightsAt,oldSuspensionlightLayout,attachNativeOldSuspension,validateOldSuspensionTrack } from '../src/core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt,nativeLightScreenLayout,nativeLightLocalLayout } from '../src/core/chibiNativeLightProjection.js'
 const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`,import.meta.url)))
 const model=read('chibi-old-suspension-model.json'),moon=read('chibi-old-suspension-events.json')
+const nativeCurve=model.styles.Suspensionlight.clips.angle60.curve
+assert.ok(Number.isNaN(sampleStreamedCurve(nativeCurve,NaN)),
+ 'Invalid native time must not silently become the finite initial pose')
+assert.equal(sampleStreamedCurve(nativeCurve,-1),nativeCurve.initialValue)
+assert.equal(sampleStreamedCurve(nativeCurve,0),0)
+assert.equal(sampleStreamedCurve(nativeCurve,1),60)
+assert.equal(sampleStreamedCurve(nativeCurve,2),0)
+
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`)
 const row=(time,command='Suspensionlight',changes={})=>({time,command,id:1,erase:false,
  values:['1','1','1','2000','right','1000','30','10','360','#33f170','1650','3000','0','0','0'].map((v,i)=>changes[i+1]??v),extraValues:{}})

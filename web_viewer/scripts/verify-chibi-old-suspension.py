@@ -133,6 +133,31 @@ if args.native_unity:
     assert ['0x135d9c','fdiv','s2, s2, s8'] in advance
     assert ['0x135de4','fadd','s8, s2, s0'] in advance
     assert ['0x135f38','str','s8, [x8]'] in advance
+    assert struct.unpack_from('<2Q',binary,0x10a3fb8)==(0x8680a4,0x8666d0)
+    clip_set=decode(0x8680a4,0x8680d4)
+    assert ['0x8680d0','b','#0x33a758'] in clip_set
+    assert ['0x33a780','str','d8, [x19, #0x60]'] in decode(0x33a758,0x33a7e0)
+    loop_time=decode(0x6ab648,0x6ab768)
+    assert ['0x6ab6bc','bl','#0xaf9c0'] in loop_time
+    assert ['0x6ab72c','fmax','s1, s1, s11'] in loop_time
+    assert ['0x6ab730','fmin','s1, s1, s12'] in loop_time
+    # The quaternion-channel safety branch and Euler branch are different.
+    binding=decode(0x118a70,0x118bf4)
+    assert ['0x118a74','b.eq','#0x118ae0'] in binding
+    assert ['0x118abc','fcmgt','v25.4s, v22.4s, v20.4s'] in binding
+    assert ['0x118ac4','bsl','v25.16b, v21.16b, v19.16b'] in binding
+    assert ['0x118bec','str','q21, [x13, x18, lsl #4]'] in binding
+    assert struct.unpack_from('<4f',binary,0xd41b60)==(0,0,0,1)
+    euler_branch=decode(0x118ae0,0x118bf4)
+    assert not any(i[1] in ('fcmgt','bsl','frsqrte') for i in euler_branch)
+    assert struct.unpack_from('<QQq',binary,0xae138)==(0x10d2748,(241<<32)|0x402,0)
+    symbol_name=struct.unpack_from('<I',binary,0xbb8+241*24)[0]+0x2c40
+    assert binary.startswith(b'modff\x00',symbol_name)
+    cached=decode(0x11ea98,0x11eb70)
+    assert ['0x11eadc','b.hi','#0x11eb64'] in cached
+    assert ['0x11eb60','b.ls','#0x11eae8'] in cached
+
+
     supplement=json.loads((root/'public/data/stage-old-suspension.json').read_text(encoding='utf8'))
     empty_rows=[]
     for song,descriptor in supplement['songs'].items():
@@ -155,11 +180,17 @@ if args.native_unity:
         windows=[dict(name=name,start=hex(a),end=hex(b),sha256=hashlib.sha256(binary[a:b]).hexdigest())
             for name,a,b in [('register_set_speed',0x1c924c,0x1c9260),('set_speed_wrapper',0x1c6fc0,0x1c70cc),
                              ('Animator.SetSpeed',0xfb8cc,0xfb93c),('Animator.SyncSpeed',0xf7f1c,0xf7f60),('Controller.EffectiveSpeed',0x135c04,0x135ca0),
-                             ('Controller.AdvanceStateTime',0x135ca0,0x135f70),('Controller.ClipNormalizedToTime',0x865bcc,0x865d64)]],
+                             ('Controller.AdvanceStateTime',0x135ca0,0x135f70),('Controller.ClipNormalizedToTime',0x865bcc,0x865d64),
+                             ('Clip.Constructor',0x8665a4,0x866650),('Clip.GetAsset',0x8666d0,0x8666d8),
+                             ('Clip.SetTime',0x8680a4,0x8680d4),('Playable.SetTime',0x33a758,0x33a7e0),
+                             ('Clip.LoopTime',0x6ab648,0x6ab768),('Streamed.EvaluateCubic',0x11e82c,0x11e9a4),
+                             ('Streamed.FrameCache',0x11ea98,0x11eb70),('Binding.QuaternionAndEuler',0x118a70,0x118bf4),('Import.modff.PLT',0xaf9c0,0xaf9d0)]],
         registration=registration,setter=setter,emptyShows=empty_rows,
         conclusion='positive_infinity_stored_and_controller_state_time_becomes_nonfinite',
-        unresolved='clip_curve_sampling_and_transform_output_after_nonfinite_state_time')
+        libmImport=dict(symbol='modff',symbolIndex=241,relocationVa='0xae138',gotVa='0x10d2748',pltVa='0xaf9c0'),
+        clipConclusion='settime_stores_nonfinite; positive_infinity_loop_fraction_zero; nan_streamed_cubic_stays_nan; quaternion_guard_is_not_euler_guard',
+        unresolved='animation_output_transform_write_after_nan_euler_conversion')
     path=p/'chibi-old-suspension-engine.json'
     if args.write:path.write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf8')
     else:assert receipt==json.loads(path.read_text(encoding='utf8'))
-    print('PASS Unity Animator icall, Infinity setter and controller state-time advance; curve/transform output NOT verified')
+    print('PASS Unity Animator icall, Infinity setter and controller state-time advance; Clip time/streamed branches verified; final Transform output NOT verified')

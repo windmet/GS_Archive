@@ -46,6 +46,60 @@
       "start": "0x865bcc",
       "end": "0x865d64",
       "sha256": "7750c0137cedcd47a8b82ae1abb8132c2a33286e3fb35ac3deb2052829b1b231"
+    },
+    {
+      "name": "Clip.Constructor",
+      "start": "0x8665a4",
+      "end": "0x866650",
+      "sha256": "c5adf94edab74e31b81d16a7ac7fb190b93b93d9894793054be1b004a2fac2b2"
+    },
+    {
+      "name": "Clip.GetAsset",
+      "start": "0x8666d0",
+      "end": "0x8666d8",
+      "sha256": "e5d4d981e65a59a917e0e348a6fd7d18413350479677c7505e3343c7674998bd"
+    },
+    {
+      "name": "Clip.SetTime",
+      "start": "0x8680a4",
+      "end": "0x8680d4",
+      "sha256": "8bfe5f53daecb634ce2b9fe2b46547ff474728a6a79af74846613e792023cb44"
+    },
+    {
+      "name": "Playable.SetTime",
+      "start": "0x33a758",
+      "end": "0x33a7e0",
+      "sha256": "1b6a0292851d99ff51aaf9b226595542d22e6d952dc525c88d27e54cc6ab47c7"
+    },
+    {
+      "name": "Clip.LoopTime",
+      "start": "0x6ab648",
+      "end": "0x6ab768",
+      "sha256": "e6ca31101a3173d5cc576888c44e1c8465a4276bdfbc7f3ed090c794f6f4f6d7"
+    },
+    {
+      "name": "Streamed.EvaluateCubic",
+      "start": "0x11e82c",
+      "end": "0x11e9a4",
+      "sha256": "366a327cb014390b3be3cd4bda22cb67bbc864d49ad3f1fa78bb15d1eeba81cb"
+    },
+    {
+      "name": "Streamed.FrameCache",
+      "start": "0x11ea98",
+      "end": "0x11eb70",
+      "sha256": "88bc0e4d9039458fe515f5296a95944ab9ea531e99b8f5810ee581bfe1957de8"
+    },
+    {
+      "name": "Binding.QuaternionAndEuler",
+      "start": "0x118a70",
+      "end": "0x118bf4",
+      "sha256": "0c8ac7719687322be21f4ee1e7f63b63e898ac70ee8fe3452422a012d496e999"
+    },
+    {
+      "name": "Import.modff.PLT",
+      "start": "0xaf9c0",
+      "end": "0xaf9d0",
+      "sha256": "91bfed0d55e8de291bb7261072f71208a987ee4a24966ba17ec83b0792646a2a"
     }
   ],
   "registration": [
@@ -1282,5 +1336,13 @@
     }
   ],
   "conclusion": "positive_infinity_stored_and_controller_state_time_becomes_nonfinite",
-  "unresolved": "clip_curve_sampling_and_transform_output_after_nonfinite_state_time"
+  "libmImport": {
+    "symbol": "modff",
+    "symbolIndex": 241,
+    "relocationVa": "0xae138",
+    "gotVa": "0x10d2748",
+    "pltVa": "0xaf9c0"
+  },
+  "clipConclusion": "settime_stores_nonfinite; positive_infinity_loop_fraction_zero; nan_streamed_cubic_stays_nan; quaternion_guard_is_not_euler_guard",
+  "unresolved": "animation_output_transform_write_after_nan_euler_conversion"
 }
