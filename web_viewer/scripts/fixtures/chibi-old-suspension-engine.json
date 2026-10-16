@@ -1,0 +1,1286 @@
+{
+  "schemaVersion": 1,
+  "unitySha256": "acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0",
+  "source": "config.arm64_v8a.apk/lib/arm64-v8a/libunity.so",
+  "icall": "UnityEngine.Animator::set_speed",
+  "icallStringVa": "0xd4ee4e",
+  "windows": [
+    {
+      "name": "register_set_speed",
+      "start": "0x1c924c",
+      "end": "0x1c9260",
+      "sha256": "42ea937058bd850ae10cef1b5e4bd33183df849e67a4b078f1d7680ef454df70"
+    },
+    {
+      "name": "set_speed_wrapper",
+      "start": "0x1c6fc0",
+      "end": "0x1c70cc",
+      "sha256": "2a337ef2c2d9caabe8757407e437d1e1c3ac54b866d54ccbc59c480413ddf00a"
+    },
+    {
+      "name": "Animator.SetSpeed",
+      "start": "0xfb8cc",
+      "end": "0xfb93c",
+      "sha256": "d7905c7581b5745f2ddebeccb91cfbc3175b0e776315763b31d2263f2e7cc0ab"
+    },
+    {
+      "name": "Animator.SyncSpeed",
+      "start": "0xf7f1c",
+      "end": "0xf7f60",
+      "sha256": "5778b1ec3ee07a2fe9bda8de9ff2eb38dba17e704a2936053b1ca37384b0a872"
+    },
+    {
+      "name": "Controller.EffectiveSpeed",
+      "start": "0x135c04",
+      "end": "0x135ca0",
+      "sha256": "0a968fdebee9d31be500635272e0984870e7f6caa4319cb208d4919d975c7e2d"
+    },
+    {
+      "name": "Controller.AdvanceStateTime",
+      "start": "0x135ca0",
+      "end": "0x135f70",
+      "sha256": "ab6658939265d8922cce6beb1c698d44d2024d984370f4bb62248d1df69c3c8e"
+    },
+    {
+      "name": "Controller.ClipNormalizedToTime",
+      "start": "0x865bcc",
+      "end": "0x865d64",
+      "sha256": "7750c0137cedcd47a8b82ae1abb8132c2a33286e3fb35ac3deb2052829b1b231"
+    }
+  ],
+  "registration": [
+    [
+      "0x1c924c",
+      "adrp",
+      "x0, #0xd4e000"
+    ],
+    [
+      "0x1c9250",
+      "adrp",
+      "x1, #0x1c6000"
+    ],
+    [
+      "0x1c9254",
+      "add",
+      "x0, x0, #0xe4e"
+    ],
+    [
+      "0x1c9258",
+      "add",
+      "x1, x1, #0xfc0"
+    ],
+    [
+      "0x1c925c",
+      "b",
+      "#0x344d14"
+    ]
+  ],
+  "setter": [
+    [
+      "0xfb8cc",
+      "sub",
+      "sp, sp, #0x10"
+    ],
+    [
+      "0xfb8d0",
+      "str",
+      "s0, [sp, #0xc]"
+    ],
+    [
+      "0xfb8d4",
+      "ldr",
+      "w8, [x0, #0x5c0]"
+    ],
+    [
+      "0xfb8d8",
+      "add",
+      "x9, sp, #0xc"
+    ],
+    [
+      "0xfb8dc",
+      "cbnz",
+      "w8, #0xfb8f0"
+    ],
+    [
+      "0xfb8e0",
+      "fcmp",
+      "s0, #0.0"
+    ],
+    [
+      "0xfb8e4",
+      "add",
+      "x10, sp, #8"
+    ],
+    [
+      "0xfb8e8",
+      "csel",
+      "x9, x9, x10, gt"
+    ],
+    [
+      "0xfb8ec",
+      "str",
+      "wzr, [sp, #8]"
+    ],
+    [
+      "0xfb8f0",
+      "ldr",
+      "w9, [x9]"
+    ],
+    [
+      "0xfb8f4",
+      "ldr",
+      "w10, [x0, #0x19c]"
+    ],
+    [
+      "0xfb8f8",
+      "str",
+      "w9, [x0, #0x47c]"
+    ],
+    [
+      "0xfb8fc",
+      "cbz",
+      "w10, #0xfb934"
+    ],
+    [
+      "0xfb900",
+      "ldr",
+      "x10, [x0, #0x5f0]"
+    ],
+    [
+      "0xfb904",
+      "cbz",
+      "x10, #0xfb934"
+    ],
+    [
+      "0xfb908",
+      "ldr",
+      "x11, [x10, #0x138]"
+    ],
+    [
+      "0xfb90c",
+      "cbz",
+      "x11, #0xfb934"
+    ],
+    [
+      "0xfb910",
+      "fmov",
+      "s0, w9"
+    ],
+    [
+      "0xfb914",
+      "cmp",
+      "w8, #2"
+    ],
+    [
+      "0xfb918",
+      "cset",
+      "w8, eq"
+    ],
+    [
+      "0xfb91c",
+      "fcmp",
+      "s0, #0.0"
+    ],
+    [
+      "0xfb920",
+      "cset",
+      "w12, mi"
+    ],
+    [
+      "0xfb924",
+      "and",
+      "w8, w8, w12"
+    ],
+    [
+      "0xfb928",
+      "strb",
+      "w8, [x11, #0x2c]"
+    ],
+    [
+      "0xfb92c",
+      "ldr",
+      "x8, [x10, #0x130]"
+    ],
+    [
+      "0xfb930",
+      "str",
+      "w9, [x8]"
+    ],
+    [
+      "0xfb934",
+      "add",
+      "sp, sp, #0x10"
+    ],
+    [
+      "0xfb938",
+      "ret",
+      ""
+    ]
+  ],
+  "emptyShows": [
+    {
+      "song": "anwhre_live_effect",
+      "sourceRow": 538,
+      "time": 23050.0,
+      "command": "Suspensionlight",
+      "id": 140,
+      "nextShowTime": 68430.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "anwhre_live_effect",
+      "sourceRow": 539,
+      "time": 23050.0,
+      "command": "Suspensionlight",
+      "id": 141,
+      "nextShowTime": 74180.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2413,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 201,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2414,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 202,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2415,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 203,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2416,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 204,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2418,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 1,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2419,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 2,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2420,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 3,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hndmkh_live_effect",
+      "sourceRow": 2421,
+      "time": 50200.0,
+      "command": "Suspensionlight_2",
+      "id": 4,
+      "nextShowTime": 52000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hrkzbn_live_effect",
+      "sourceRow": 1204,
+      "time": 69000.0,
+      "command": "Suspensionlight_2",
+      "id": 1,
+      "nextShowTime": 70950.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hrkzbn_live_effect",
+      "sourceRow": 1205,
+      "time": 69000.0,
+      "command": "Suspensionlight_2",
+      "id": 2,
+      "nextShowTime": 70950.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hrkzbn_live_effect",
+      "sourceRow": 1206,
+      "time": 69000.0,
+      "command": "Suspensionlight_2",
+      "id": 3,
+      "nextShowTime": 70950.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "hrkzbn_live_effect",
+      "sourceRow": 1207,
+      "time": 69000.0,
+      "command": "Suspensionlight_2",
+      "id": 4,
+      "nextShowTime": 70950.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 270,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 201,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 271,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 202,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 272,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 203,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 273,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 204,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 282,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 301,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 283,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 302,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 284,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 303,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 285,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 304,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 286,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 305,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 287,
+      "time": 4000.0,
+      "command": "Suspensionlight",
+      "id": 306,
+      "nextShowTime": 4200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 307,
+      "time": 4500.0,
+      "command": "Suspensionlight",
+      "id": 201,
+      "nextShowTime": 59800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 308,
+      "time": 4500.0,
+      "command": "Suspensionlight",
+      "id": 202,
+      "nextShowTime": 59800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 309,
+      "time": 4500.0,
+      "command": "Suspensionlight",
+      "id": 203,
+      "nextShowTime": 59800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 310,
+      "time": 4500.0,
+      "command": "Suspensionlight",
+      "id": 204,
+      "nextShowTime": 59800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1759,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 401,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1760,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 402,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1761,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 403,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1762,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 404,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1763,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 405,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1764,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 406,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1765,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 407,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1766,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 408,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1767,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 409,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 1768,
+      "time": 79900.0,
+      "command": "Suspensionlight_3",
+      "id": 410,
+      "nextShowTime": 103800.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2165,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 301,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2166,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 302,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2167,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 303,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2168,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 304,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2169,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 305,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "montns_live_effect",
+      "sourceRow": 2170,
+      "time": 82700.0,
+      "command": "Suspensionlight_2",
+      "id": 306,
+      "nextShowTime": 86700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 875,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 50,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 876,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 51,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 877,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 52,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 878,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 53,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 879,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 54,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 880,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 55,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 881,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 56,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 882,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 57,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 883,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 58,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 884,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 59,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 885,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 60,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 886,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 61,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 887,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 62,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 888,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 63,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 889,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 64,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 890,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 65,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 891,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 66,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 892,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 67,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 893,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 68,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 894,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 69,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 895,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 70,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 896,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 71,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 897,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 72,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 898,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 73,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "ossshd_live_effect",
+      "sourceRow": 899,
+      "time": 92550.0,
+      "command": "Suspensionlight_4",
+      "id": 74,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1488,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 30,
+      "nextShowTime": 91600.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1489,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 31,
+      "nextShowTime": 91600.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1490,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 32,
+      "nextShowTime": 109400.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1491,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 33,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1492,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 34,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1493,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 35,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1494,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 36,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1495,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 37,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1496,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 38,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1497,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 39,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1498,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 40,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1499,
+      "time": 86800.0,
+      "command": "Suspensionlight",
+      "id": 41,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1556,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 1,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1557,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 2,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1558,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 3,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1559,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 4,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1560,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 5,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1561,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 6,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1562,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 7,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1563,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 8,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1564,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 9,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1565,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 10,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1566,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 11,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "pl1gdd_live_effect",
+      "sourceRow": 1567,
+      "time": 90500.0,
+      "command": "Suspensionlight_2",
+      "id": 12,
+      "nextShowTime": 96000.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 648,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 1,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 649,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 2,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 650,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 3,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 651,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 4,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 652,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 5,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 653,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 6,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 654,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 7,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 655,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 8,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 656,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 9,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 657,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 10,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 658,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 11,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 659,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 12,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 660,
+      "time": 13000.0,
+      "command": "Suspensionlight_2",
+      "id": 13,
+      "nextShowTime": 15200.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 661,
+      "time": 13000.0,
+      "command": "Suspensionlight",
+      "id": 1,
+      "nextShowTime": 13700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 662,
+      "time": 13000.0,
+      "command": "Suspensionlight",
+      "id": 2,
+      "nextShowTime": 13700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 663,
+      "time": 13000.0,
+      "command": "Suspensionlight",
+      "id": 3,
+      "nextShowTime": 13700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "steqmg_live_effect",
+      "sourceRow": 664,
+      "time": 13000.0,
+      "command": "Suspensionlight",
+      "id": 4,
+      "nextShowTime": 13700.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1863,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 1,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1864,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 2,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1865,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 3,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1866,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 4,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1867,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 5,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yivygr_live_effect",
+      "sourceRow": 1868,
+      "time": 122900.0,
+      "command": "Suspensionlight_3",
+      "id": 6,
+      "nextShowTime": null,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yknkmh_live_effect",
+      "sourceRow": 1025,
+      "time": 58000.0,
+      "command": "Suspensionlight_3",
+      "id": 103,
+      "nextShowTime": 102225.0,
+      "completedEraseBeforeNextShow": false
+    },
+    {
+      "song": "yknkmh_live_effect",
+      "sourceRow": 1026,
+      "time": 58000.0,
+      "command": "Suspensionlight_3",
+      "id": 104,
+      "nextShowTime": 102225.0,
+      "completedEraseBeforeNextShow": false
+    }
+  ],
+  "conclusion": "positive_infinity_stored_and_controller_state_time_becomes_nonfinite",
+  "unresolved": "clip_curve_sampling_and_transform_output_after_nonfinite_state_time"
+}

@@ -115,3 +115,8 @@
 ## 10-16 旧悬灯第四类与能力守卫补充
 
 [旧悬灯能力批次](NATIVE_OLD_SUSPENSION_CAPABILITY_20261016.md)补回原生_4两色RGBA Yoyo灯、Shader950混合及RAW BPM时钟，按105份RAW/资源绑定替换歌名白名单。96份/77,485行满足当前能力条件；9份/11,162行因空Show导致原生零周期等问题明确受限（Moon从旧名单移出）。这取代此前42/105按歌名放行的状态，但尚未完成9份原生非有限Animator速度行为，不能将“解除歌名判断”写成全部旧悬灯复原。
+
+
+## 10-16 零周期引擎取证补充
+
+[Unity原生setter与状态时间](NATIVE_OLD_SUSPENSION_NONFINITE_20261016.md)证实+Infinity速度不会被忽略，而会进入controller并产生非有限状态时间；118条空Show中78条后有同key Show，均没有中间完成Erase。9份边界继续保留，下一步是非有限clip曲线采样/Transform输出，不能以默认周期或自动恢复相位代替。

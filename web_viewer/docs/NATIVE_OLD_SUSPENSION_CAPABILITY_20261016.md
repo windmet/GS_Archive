@@ -43,3 +43,6 @@ _4独立数值回归检查两色RGBA线性中点、初始delay、往返端点、
 复用本分支Vite PID61564，未重启端口。Browser插件冷加载Infinite Octave!，12秒出现22个真实_4对象，20秒定点后实播至约83秒，暂停回拖12秒；390×844手机复查。画面为柔和的颜色叠加，当前无对应原片逐像素证据，不把对象计数当成22束可见亮线。
 
 Study冷加载6秒：旧悬灯明确unsupported/nonpositive_animator_period，4个Pinspotlight/蒙版正常绘制。两条既有Spine tint/update弃用warning，无应用error或Vite遮罩。返回歌曲核对清理URL和已加载难度表。截图前缀old-suspension-native，保存在本聊天小型visualizations目录。未部署、未改master、未写公共媒体；无关chibiRandomMotion草稿保留。
+
+
+后续：[Unity非有限速度取证](NATIVE_OLD_SUSPENSION_NONFINITE_20261016.md)已确认实际setter接受+Infinity并传播到Controller状态时间，排除“忽略无效速度/保留旧有限相位”的修补。曲线采样和Transform最终输出仍未证实，96/105能力边界保持。

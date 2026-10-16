@@ -31,6 +31,7 @@ import argparse,hashlib,importlib.util,struct,re,sys
 from live_chibi_suspensionlight import suspensionlight_events
 parser=argparse.ArgumentParser()
 parser.add_argument('--native-elf',type=Path)
+parser.add_argument('--native-unity',type=Path)
 parser.add_argument('--write',action='store_true')
 args=parser.parse_args()
 root=Path(__file__).resolve().parents[1]
@@ -100,3 +101,65 @@ if args.native_elf:
         if args.write:path.write_text(json.dumps(data,separators=(',',':'))+'\n',encoding='utf8')
         else:assert data==json.loads(path.read_text(encoding='utf8'))
     print(f"PASS live APK/ELF, all105 RAW/track bindings, {receipt['enabled']} capability-qualified arrangements, {receipt['rows']} rows")
+
+
+if args.native_unity:
+    import capstone
+    binary=args.native_unity.read_bytes()
+    unity_hash=hashlib.sha256(binary).hexdigest()
+    assert unity_hash=='acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0'
+    # ELF LOAD0 maps file offsets to VA directly; Ghidra project rebases +0x100000.
+    assert struct.unpack_from('<4s',binary)[0]==b'\x7fELF'
+    ph=struct.unpack_from('<Q',binary,32)[0];sz,n=struct.unpack_from('<HH',binary,54)
+    segments=[struct.unpack_from('<IIQQQQQQ',binary,ph+i*sz) for i in range(n)]
+    assert any(p[0]==1 and p[2]==p[3]==0 and p[5]>0xd4ee6b for p in segments)
+    assert binary.startswith(b'UnityEngine.Animator::set_speed\x00',0xd4ee4e)
+    md=capstone.Cs(capstone.CS_ARCH_ARM64,capstone.CS_MODE_LITTLE_ENDIAN)
+    decode=lambda a,b:[[hex(i.address),i.mnemonic,i.op_str] for i in md.disasm(binary[a:b],a)]
+    registration=decode(0x1c924c,0x1c9260)
+    assert [(i[1],i[2]) for i in registration]==[
+        ('adrp','x0, #0xd4e000'),('adrp','x1, #0x1c6000'),
+        ('add','x0, x0, #0xe4e'),('add','x1, x1, #0xfc0'),('b','#0x344d14')]
+    wrapper=decode(0x1c6fc0,0x1c70cc)
+    assert ['0x1c7058','bl','#0xfb8cc'] in wrapper
+    setter=decode(0xfb8cc,0xfb93c)
+    assert ['0xfb8e0','fcmp','s0, #0.0'] in setter
+    assert ['0xfb8e8','csel','x9, x9, x10, gt'] in setter
+    assert ['0xfb8f8','str','w9, [x0, #0x47c]'] in setter
+    assert ['0xfb930','str','w9, [x8]'] in setter
+    advance=decode(0x135ca0,0x135f70)
+    assert ['0x135d6c','bl','#0x135c04'] in advance
+    assert ['0x135d98','fmul','s2, s0, s2'] in advance
+    assert ['0x135d9c','fdiv','s2, s2, s8'] in advance
+    assert ['0x135de4','fadd','s8, s2, s0'] in advance
+    assert ['0x135f38','str','s8, [x8]'] in advance
+    supplement=json.loads((root/'public/data/stage-old-suspension.json').read_text(encoding='utf8'))
+    empty_rows=[]
+    for song,descriptor in supplement['songs'].items():
+        track_bytes=(root/'public/assets/live-chibi'/descriptor['file']).read_bytes()
+        assert hashlib.sha256(track_bytes).hexdigest()==descriptor['fileSha256']
+        events=json.loads(track_bytes)['events']
+        for i,event in enumerate(events):
+            if event['erase'] or event['values'][3]:continue
+            assert not any(event['values'][1:])
+            tail=[e for e in events[i+1:] if e['command']==event['command'] and e['id']==event['id']]
+            later=next((e for e in tail if not e['erase']),None)
+            completed_erase=bool(later and any(e['erase'] and e['time']+200<=later['time'] for e in tail if e['time']<=later['time']))
+            empty_rows.append(dict(song=song,sourceRow=event['sourceRow'],time=event['time'],command=event['command'],id=event['id'],
+                nextShowTime=later['time'] if later else None,completedEraseBeforeNextShow=completed_erase))
+    assert len(empty_rows)==118 and sum(e['nextShowTime'] is not None for e in empty_rows)==78
+    assert not any(e['completedEraseBeforeNextShow'] for e in empty_rows)
+    # These are source/byte proofs; no Unity graph is executed or emulated.
+    receipt=dict(schemaVersion=1,unitySha256=unity_hash,source='config.arm64_v8a.apk/lib/arm64-v8a/libunity.so',
+        icall='UnityEngine.Animator::set_speed',icallStringVa='0xd4ee4e',
+        windows=[dict(name=name,start=hex(a),end=hex(b),sha256=hashlib.sha256(binary[a:b]).hexdigest())
+            for name,a,b in [('register_set_speed',0x1c924c,0x1c9260),('set_speed_wrapper',0x1c6fc0,0x1c70cc),
+                             ('Animator.SetSpeed',0xfb8cc,0xfb93c),('Animator.SyncSpeed',0xf7f1c,0xf7f60),('Controller.EffectiveSpeed',0x135c04,0x135ca0),
+                             ('Controller.AdvanceStateTime',0x135ca0,0x135f70),('Controller.ClipNormalizedToTime',0x865bcc,0x865d64)]],
+        registration=registration,setter=setter,emptyShows=empty_rows,
+        conclusion='positive_infinity_stored_and_controller_state_time_becomes_nonfinite',
+        unresolved='clip_curve_sampling_and_transform_output_after_nonfinite_state_time')
+    path=p/'chibi-old-suspension-engine.json'
+    if args.write:path.write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf8')
+    else:assert receipt==json.loads(path.read_text(encoding='utf8'))
+    print('PASS Unity Animator icall, Infinity setter and controller state-time advance; curve/transform output NOT verified')
