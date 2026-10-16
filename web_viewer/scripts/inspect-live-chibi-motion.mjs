@@ -55,6 +55,7 @@ function summarizeAnimation(animation) {
   return {
     name: animation.name,
     durationSeconds: Number(animation.duration.toFixed(6)),
+    rawDurationSeconds: animation.duration,
     timelineCount: animation.timelines.length,
     timelineTypes,
   }
