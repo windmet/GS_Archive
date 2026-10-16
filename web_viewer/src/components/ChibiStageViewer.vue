@@ -88,7 +88,7 @@
     :data-laser-sprite-count="visibleLaserSpriteCount"
     :data-laserlight-unresolved-ids="unresolvedLaserlightIds.join(',')"
     :data-laser-particle-origins="laserParticleOrigins"
-    data-laser-particle-status="native-texture-burst-curves-reference-director-projection"
+    data-laser-particle-status="native-fields-parent-planes-system-clocks-solver-partial"
     :data-pinspotlight-count="visiblePinspotlightCount"
     :data-pinspotlight-ids="visiblePinspotlightIds.join(',')"
     :data-stage-background-ready="stageBackgroundReady"
@@ -579,8 +579,10 @@ import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { spriteLaserModel, createSpriteLaserRuntime, applySpriteLaserRuntime } from '../core/chibiSpriteLaser.js'
+import { createNativeLightQuad, updateNativeLightQuadAnchor } from '../core/chibiLightQuad.js'
+import { nativeLaserScale } from '../core/chibiLaserGeometry.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
-import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
+import { sampleSpotbeamParticles } from '../core/chibiSpotbeamParticles.js'
 import { pinspotlightTimelineAt } from '../core/chibiPinspotlightTimeline.js'
 import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightModelForAsset } from '../core/chibiPinspotlightSprites.js'
 import { chibiGroundRegistration, projectChibiGround, chibiPositionStateAt, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
@@ -927,7 +929,7 @@ const laserParticleSprites = createSpotlightSpriteStore({
     for (const texture of runtime.frames || []) texture.destroy(false)
   },
   destroyTexture: texture => texture.destroy(true),
-  onReady: () => syncLaserlights(),
+  onReady: () => {syncLaserlights();requestPausedSuspensionRender()},
   onError: error => console.warn('[ChibiStage] native laser texture load failed', error),
 })
 const pinspotlightSprites = createSpotlightSpriteStore({
@@ -2573,7 +2575,6 @@ function syncLaserlights() {
   const origins = []
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
-  const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
     if (Number(state.style) === spriteLaserModel.style) {
       const runtime = spriteLaserSprites.ensure(`${songId}:${state.id}`,spriteLaserModel,stageEffectIndex.value?.assets)
@@ -2592,17 +2593,16 @@ function syncLaserlights() {
       const layout = laserParticleLayout(state,width,height,environmentScale.value)
       const particles = (spotbeam ? sampleSpotbeamParticles : sampleLaserParticles)(native,state,stageTime.value)
       runtime.container.position.set(layout.x,layout.y)
-      const scale = spotbeam ? spotbeamParticleScale(state) : { x: 1, y: 1 }
-      runtime.container.scale.set(scale.x,scale.y)
-      runtime.container.rotation = spotbeam ? -Number(state.angle)*Math.PI/180 : 0
+      const scale = nativeLaserScale(state)
+      runtime.container.scale.set(scale.x*layout.fit,scale.y*layout.fit)
+      runtime.container.rotation = 0
       runtime.container.zIndex = Number(state.depth) || 1650
       runtime.container.visible = true
       for (let i = 0; i < Math.max(particles.length,runtime.sprites.length); i++) {
         const sample = particles[i]
         let sprite = runtime.sprites[i]
         if (!sprite && sample) {
-          sprite = markRaw(new PIXI.Sprite(runtime.texture))
-          sprite.blendMode = PIXI.BLEND_MODES.ADD
+          sprite = markRaw(createNativeLightQuad(PIXI,spotbeam?runtime.frames[sample.frame]:runtime.texture,sample.anchorX,sample.anchorY,1,1))
           runtime.container.addChild(sprite)
           runtime.sprites.push(sprite)
         }
@@ -2610,11 +2610,11 @@ function syncLaserlights() {
         sprite.visible = Boolean(sample && sample.alpha > .001)
         if (!sample) continue
         if (spotbeam) sprite.texture = runtime.frames[sample.frame]
-        sprite.position.set((sample.x || 0) * layout.fit,(sample.y || 0) * layout.fit)
-        sprite.anchor.set(sample.anchorX,sample.anchorY)
-        sprite.width = sample.width * layout.fit
-        sprite.height = sample.length * layout.fit
-        sprite.rotation = sample.rotation
+        updateNativeLightQuadAnchor(sprite,sample.anchorX,sample.anchorY)
+        const plane=sample.matrix
+        sprite.transform.setFromMatrix(new PIXI.Matrix(
+          plane.a*sample.width,plane.b*sample.width,plane.c*sample.length,plane.d*sample.length,
+          sample.x || 0,sample.y || 0))
         sprite.alpha = sample.alpha
         sprite.tint = sample.color
         if (sprite.visible) visibleLaserParticleCount.value++

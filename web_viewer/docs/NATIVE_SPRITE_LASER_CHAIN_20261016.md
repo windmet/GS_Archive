@@ -23,7 +23,7 @@ python scripts/verify-chibi-laser-parser.py --native-elf E:/Tools/ghidra_work/si
 
 ## 消费方修正
 
-用原生三张Sprite的四边形和层级矩阵，按默认动画曲线采样。采用非批处理SimpleMesh表示同一四边形，独立写float RGBA uniform：Pixi普通Sprite batch及默认MeshMaterial里的Color.premultiply都会clamp，无法直接保留alpha1.2。本批绕过这两个封顶点，保留原贴图软边和颜色，不增加白线内芯、经验线宽或重复衰减。
+用原生三张Sprite的四边形和层级矩阵，按默认动画曲线采样，保留原贴图软边和颜色，不增加白线内芯、经验线宽或重复衰减。最初批次因命令alpha=1.2而绕过Pixi颜色封顶；随后[粒子公共链路反查](NATIVE_LASER_PARTICLE_CHAIN_20261016.md)实际导出APK Shader950，证明原生顶点程序自身clamp COLOR0至0..1。这推翻了“最终应保留1.2增亮”的推论；当前绘制已按原生限制与SrcAlpha/One混合纠正。
 
 删除旧laserSweepAngle/laserBeamOffsets/drawLaserlight及Graphics回退。style1走上述Sprite链；3..9继续既有粒子路径。未来无已绑定模型的style只报告unresolved，不画猜测光束。增加公开诊断`data-laser-sprite-count`与`data-laserlight-unresolved-ids`；资源仍由带generation的store负责异步安装与释放。
 
@@ -60,3 +60,6 @@ python scripts/verify-chibi-laser-parser.py --native-elf E:/Tools/ghidra_work/si
 最终冷加载控制台无应用error，保留两条既有Spine tint/update警告。临时viewport已恢复。截图和console保存在`C:/Users/windm/.codex/visualizations/2026/10/15/01a13fa7-14e2-7682-9c89-a485261616a6/sprite-laser-*`。Browser验收证明接线/显示/资源生命周期，未声称原机逐帧、Unity Animator首帧调度或最终HDR后处理等价。
 
 本批只收束style1与公共即时Erase；粒子分支的字段/矩阵/时钟问题仍按上表继续。未部署、未合master，保留未跟踪的随机动作草稿。
+
+
+10-16后续：[粒子公共链路批次](NATIVE_LASER_PARTICLE_CHAIN_20261016.md)已处理上表的字段、父平面、逐系统时钟与Not Alone 1.8倍率，并更正本页原alpha1.2推论。字节量化和Unity内部求解器边界仍明确保留。

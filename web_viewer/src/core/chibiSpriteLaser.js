@@ -2,16 +2,8 @@ import model from './chibiSpriteLaserModel.json' with { type: 'json' }
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 
 export const spriteLaserModel = model
-export function updateSpriteLaserMaterial() {
-  const tint=this.tint, alpha=this.alpha
-  const gain=this.texture.baseTexture.alphaMode ? alpha : 1
-  const color=this.uniforms.uColor
-  color[0]=(tint>>16&255)/255*gain
-  color[1]=(tint>>8&255)/255*gain
-  color[2]=(tint&255)/255*gain
-  color[3]=alpha
-  if(this.uvMatrix.update())this.uniforms.uTextureMatrix=this.uvMatrix.mapCoord
-}
+export { updateNativeLightMaterial as updateSpriteLaserMaterial } from './chibiLightQuad.js'
+import { createNativeLightQuad } from './chibiLightQuad.js'
 const multiply = (l, r) => ({
   a:l.a*r.a+l.c*r.b, b:l.b*r.a+l.d*r.b,
   c:l.a*r.c+l.c*r.d, d:l.b*r.c+l.d*r.d,
@@ -46,18 +38,7 @@ export function sampleSpriteLaser(state, milliseconds, native = model) {
 export function createSpriteLaserRuntime(PIXI, parent, layers, textures) {
   const container = new PIXI.Container()
   const sprites = layers.map((layer,index) => {
-    // MeshMaterial's non-batched float uColor preserves native alpha > 1.
-    // Pixi's ordinary Sprite batch clamps worldAlpha to 1 before packing it.
-    const texture = textures[index], w = texture.width, h = texture.height
-    const x = -w*layer.anchorX, y = -h*layer.anchorY
-    const sprite = new PIXI.SimpleMesh(texture,
-      new Float32Array([x,y,x+w,y,x+w,y+h,x,y+h]),
-      new Float32Array([0,0,1,0,1,1,0,1]),new Uint16Array([0,1,2,0,2,3]))
-    sprite.shader.batchable = false
-    // MeshMaterial's stock Color.premultiply also clamps channels. Keep the
-    // native float RGBA in uniforms, including the source's alpha 1.2.
-    sprite.shader.update = updateSpriteLaserMaterial
-    sprite.blendMode = PIXI.BLEND_MODES.ADD
+    const sprite=createNativeLightQuad(PIXI,textures[index],layer.anchorX,layer.anchorY)
     container.addChild(sprite)
     return sprite
   })

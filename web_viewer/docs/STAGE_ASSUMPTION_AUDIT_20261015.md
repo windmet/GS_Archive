@@ -100,3 +100,8 @@
 ## 10-16 激光 Sprite 接线补充
 
 [style1原生链路](NATIVE_SPRITE_LASER_CHAIN_20261016.md)接回hndmkh六组18束原生Sprite/Animator，删除Graphics猜测回退，按原生语义恢复速度、颜色alpha、整体缩放与即时Erase。进一步确认粒子style3..9仍有width/alpha误读、非整体缩放、统一粒子时钟及Not Alone额外1.8倍率；该公共链路应作为下一项优先反查，不能将“已有native texture”视为完整原生接线。
+
+
+## 10-16 粒子激光公共链路补充
+
+[粒子激光原生链路](NATIVE_LASER_PARTICLE_CHAIN_20261016.md)收束60个系统的父平面/Local对齐、逐系统duration时钟、整体缩放、value10透明度与Shader950真实clamp/混合，删除Not Alone 1.8和反向X等旧修补；全库1,083条粒子指令按同一来源合同验收。Shader导出反证了上一批“命令alpha1.2应直接增亮”的推论，代码和记录一并纠正。尚未完成的旧悬灯守卫、Spotlight自由目标和缺家族继续保留，不将本批宣称为所有灯光完成。

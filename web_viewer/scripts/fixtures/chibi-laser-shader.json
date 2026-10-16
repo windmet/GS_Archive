@@ -1,0 +1,16 @@
+{
+  "shaderPathId": 950,
+  "shaderSha256": "7251f5c686e43bf50d0b4f470c83cc84af5774f867802d249388331ccbc4e4f5",
+  "exportedSourceSha256": "d9fa146ab76536165f52ff7b7a3f49d559757ae08659db2b08009b66c2935a0d",
+  "vertexClamp": "    vs_COLOR0 = in_COLOR0;\n#ifdef UNITY_ADRENO_ES3\n    vs_COLOR0 = min(max(vs_COLOR0, 0.0), 1.0);\n#else\n    vs_COLOR0 = clamp(vs_COLOR0, 0.0, 1.0);\n#endif\n",
+  "fragmentOutput": "SV_Target0 = u_xlat16_0 * vs_COLOR0;",
+  "blend": {
+    "srcBlend": 5.0,
+    "destBlend": 1.0,
+    "srcBlendAlpha": 5.0,
+    "destBlendAlpha": 1.0,
+    "blendOp": 0.0,
+    "blendOpAlpha": 0.0,
+    "colMask": 15.0
+  }
+}
