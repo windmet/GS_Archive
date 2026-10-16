@@ -59,6 +59,7 @@
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
     :data-old-suspensionlight-ids="visibleOldSuspensionlightIds.join(',')"
+    :data-old-suspensionlight-unresolved-ids="unresolvedOldSuspensionlightIds.join(',')"
     :data-old-suspensionlight-capability="stageEffectIndex?.oldSuspensionlightSongs?.[selectedSong?.id]?.nativeCapability || 'not_loaded'"
     :data-old-suspensionlight-guard-reasons="[...new Set((stageEffectIndex?.oldSuspensionlightSongs?.[selectedSong?.id]?.reasons || []).map(row=>row.reason))].join(',')"
     :data-penlight-ids="penlightIds.join(',')"
@@ -830,6 +831,7 @@ const suspensionSprites = createSpotlightSpriteStore({
 })
 const spotlightBackgroundAlpha = ref(0)
 const visibleOldSuspensionlightIds = ref([])
+const unresolvedOldSuspensionlightIds = ref([])
 const backmonitorLogoAngle = ref('')
 const backmonitorLogoAlpha = ref(0)
 let pausedBackmonitorRenderPending = false
@@ -2426,13 +2428,14 @@ function syncOldSuspensionlights() {
   if (!app || !cameraContainer) return
   const songId = selectedSong.value?.id || ''
   const descriptor = stageEffectIndex.value?.oldSuspensionlightSongs?.[songId]
-  const key = `${songId}:${descriptor?.nativeCapability==='supported' ? descriptor.file : ''}`
+  const playable = ['supported','partial'].includes(descriptor?.nativeCapability)
+  const key = `${songId}:${playable ? descriptor.file : ''}`
   if (oldSuspensionTrackKey !== key) {
     oldSuspensionSprites.release()
     oldSuspensionAbort?.abort()
     oldSuspensionTrack = null
     oldSuspensionTrackKey = key
-    if (descriptor?.nativeCapability==='supported' && descriptor.file) {
+    if (playable && descriptor.file) {
       const abort = new AbortController()
       oldSuspensionAbort = abort
       fetchLiveChibiOldSuspensionTrack(descriptor,{signal:abort.signal}).then(track=> {
@@ -2446,12 +2449,14 @@ function syncOldSuspensionlights() {
     }
   }
   visibleOldSuspensionlightIds.value = []
+  unresolvedOldSuspensionlightIds.value = []
   for (const runtime of oldSuspensionSprites.runtimes.values()) runtime.sprite.visible = false
   if (!beamEffectsEnabled.value || !oldSuspensionTrack) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   for (const state of oldSuspensionlightsAt(oldSuspensionTrack.events, stageTime.value,
     stageEffectIndex.value?.oldSuspensionlight,{...descriptor,tempoAt:time=>motionClockTrack.value?nativeMotionTempoAt(motionClockTrack.value,time):null})) {
+    if(state.unresolved)unresolvedOldSuspensionlightIds.value.push(state.key)
     if (state.alpha <= .001) continue
     const runtime = oldSuspensionSprites.ensure(`${songId}:${state.key}`,state.model,stageEffectIndex.value.assets)
     if (!runtime) continue

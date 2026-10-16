@@ -86,7 +86,7 @@ if args.native_elf:
             elif e['command'] in ('Suspensionlight_3','Suspensionlight_4','Suspensionlight_5') and float(values[11] or 0)<=0:reason='nonpositive_channel_period'
             if reason:reasons.append(dict(sourceRow=e['sourceRow'],time=e['time'],command=e['command'],id=e['id'],reason=reason))
         songs[id]=dict(file=descriptor['file'],eventCount=len(events),source=descriptor['source'],fileSha256=hashlib.sha256(path.read_bytes()).hexdigest(),
-            nativeCapability='unsupported' if reasons else 'supported',reasons=reasons,
+            nativeCapability=('partial' if all(r['reason'] in ('nonpositive_animator_period','nonpositive_channel_period') for r in reasons) else 'unsupported') if reasons else 'supported',reasons=reasons,
             commands=sorted({e['command'] for e in events}))
     settings=next(o for o in env.objects if o.path_id==106549 and o.assets_file.name=='resources.assets').get_raw_data()
     assert struct.unpack_from('<i',settings,88)[0]==6
@@ -96,7 +96,8 @@ if args.native_elf:
     receipt=dict(elfSha256=hashlib.sha256(elf).hexdigest(),unityDataSha256=hashlib.sha256(apk).hexdigest(),
         methods=[dict(name=name,start=hex(a),end=hex(b),sha256=hashlib.sha256(elf[offset(a):offset(b)]).hexdigest()) for name,a,b in windows],
         materialPathId=225,shaderPathId=950,dotweenSettingsSha256=hashlib.sha256(settings).hexdigest(),defaultEase=6,colorEase=1,colorLoopType=1,
-        arrangements=len(songs),enabled=sum(s['nativeCapability']=='supported' for s in songs.values()),rows=sum(s['eventCount'] for s in songs.values()))
+        arrangements=len(songs),enabled=sum(s['nativeCapability']=='supported' for s in songs.values()),
+        partial=sum(s['nativeCapability']=='partial' for s in songs.values()),rows=sum(s['eventCount'] for s in songs.values()))
     for path,data in [(root/'public/data/stage-old-suspension.json',supplement),(p/'chibi-old-suspension-chain.json',receipt)]:
         if args.write:path.write_text(json.dumps(data,separators=(',',':'))+'\n',encoding='utf8')
         else:assert data==json.loads(path.read_text(encoding='utf8'))

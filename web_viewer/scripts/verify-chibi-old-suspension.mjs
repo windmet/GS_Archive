@@ -96,7 +96,8 @@ const supplement=JSON.parse(fs.readFileSync(new URL('../public/data/stage-old-su
 const hash=text=>createHash('sha256').update(text).digest('hex')
 const nativeIndex=attachNativeOldSuspension(JSON.parse(indexText),supplement,hash(indexText))
 assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='supported').length,96)
-assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.nativeCapability,'unsupported')
+assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='partial').length,9)
+assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.nativeCapability,'partial')
 assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.reasons[0].reason,'nonpositive_animator_period')
 assert.equal(nativeIndex.oldSuspensionlightSongs.bnckgy_live_effect.nativeCapability,'supported')
 assert.throws(()=>attachNativeOldSuspension(JSON.parse(indexText),supplement,'0'.repeat(64)),/match/)
@@ -104,11 +105,12 @@ const broken=structuredClone(supplement);broken.songs.bnckgy_live_effect.eventCo
 assert.throws(()=>attachNativeOldSuspension(JSON.parse(indexText),broken,hash(indexText)),/capability/)
 for(const descriptor of Object.values(nativeIndex.oldSuspensionlightSongs)) {
  const text=fs.readFileSync(new URL(descriptor.file,base),'utf8'),track=JSON.parse(text)
- if(descriptor.nativeCapability==='supported') {
+ if(['supported','partial'].includes(descriptor.nativeCapability)) {
   validateOldSuspensionTrack(track,descriptor,hash(text))
   const sampleTimes=new Set(track.events.flatMap(e=>[e.time,e.time+100,e.time+1500]))
   for(const t of sampleTimes)for(const state of oldSuspensionlightsAt(track.events,t,nativeIndex.oldSuspensionlight,{tempo:140}))
-    for(const field of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(state[field]))
+    if(state.unresolved)assert.equal(state.alpha,0)
+    else for(const field of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(state[field]))
  }
 }
 const descriptor=nativeIndex.oldSuspensionlightSongs.bnckgy_live_effect
@@ -178,7 +180,7 @@ for(const rotation of [-90,0,30])for(const zoom of [1,2]){
  close(Math.sin(local.rotation+.3),Math.sin(projected.rotation))
  close(local.scaleX*.82,projected.scaleX)
 }
-for(const t of [0,6000,20000,105100])for(const s of at(moon,t))for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
+for(const t of [0,6000,20000,105100])for(const s of at(moon,t))if(!s.unresolved)for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
 if(process.argv.includes('--published-assets')){
  const base=new URL('../public/assets/live-chibi/',import.meta.url)
  const index=JSON.parse(fs.readFileSync(new URL('stage-effects/index.json',base)))
@@ -195,7 +197,7 @@ if(process.argv.includes('--published-assets')){
    const before=state(19999).find(s=>s.key==='Suspensionlight:1'),after=state(20000).find(s=>s.key==='Suspensionlight:1')
    assert.ok(after.phase>=before.phase && after.phase-before.phase<.000001)
   }
-  for(const t of [6000,19000,28385,112900])for(const s of at(events,t))for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
+  for(const t of [6000,19000,28385,112900])for(const s of at(events,t))if(!s.unresolved)for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
  }
  const choreography=JSON.parse(fs.readFileSync(new URL('choreography/index.json',base)))
  for(const song of choreography.songs)for(const event of song.cameraEvents||[]){
@@ -221,6 +223,7 @@ const syncFactory=new Function('selectedSong','stageEffectIndex','fetchLiveChibi
  let oldSuspensionTrackKey='',oldSuspensionTrack=null,oldSuspensionAbort=null,stageDisposed=false;
  const app={renderer:{width:1280,height:720,resolution:1}},cameraContainer={},beamEffectsEnabled={value:true};
  const visibleOldSuspensionlightIds={value:[]},stageTime={value:12000},environmentScale={value:1},motionClockTrack={value:null};
+ const unresolvedOldSuspensionlightIds={value:[]};
  const requestPausedSuspensionRender=()=>{},parseHexColor=()=>0;
  ${syncSection}
  return {sync:syncOldSuspensionlights,track:()=>oldSuspensionTrack};
@@ -234,6 +237,37 @@ pending[1].resolve({events:[]});await Promise.resolve();await Promise.resolve();
 assert.deepEqual(actualSync.track(),{events:[]})
 selected.value={id:'steqmg_live_effect'};actualSync.sync()
 assert.equal(actualSync.track(),null)
-assert.equal(pending.length,2,'Unsupported native period must not inherit old previewEnabled permission')
+assert.equal(pending.length,3,'Partial tracks must load normal instances while guarding affected generations')
 assert.equal(releases,3)
+resources.value={oldSuspensionlightSongs:{unbound:{nativeCapability:'unsupported',file:'unbound.json'}}}
+selected.value={id:'unbound'};actualSync.sync()
+assert.equal(pending.length,3,'An unbound native profile cannot load')
 console.log('PASS actual SFC native capability, track cancellation and stale-song completion')
+
+// A malformed Show is an active-generation mutation, not a skipped command.
+// Guard its later finite updates too; only completed deactivation resets it.
+const guarded=[row(0),row(500,'Suspensionlight',{4:''}),row(1000),row(1500)]
+guarded[3].erase=true
+assert.equal(at(guarded,499)[0].unresolved,null)
+assert.deepEqual(at(guarded,500),[{key:'Suspensionlight:1',alpha:0,unresolved:'nonfinite_animator_time'}])
+assert.equal(at(guarded,1200)[0].unresolved,'nonfinite_animator_time')
+assert.equal(at(guarded,1600)[0].unresolved,'nonfinite_animator_time')
+assert.equal(at(guarded,1700).length,0)
+const cancelled=[...guarded,row(1600)]
+assert.equal(at(cancelled,1800)[0].unresolved,'nonfinite_animator_time','Show cancels pending Erase without resetting Animator')
+const reset=[...guarded,row(1700)]
+assert.equal(at(reset,1800)[0].unresolved,null,'Completed Erase creates a fresh finite generation')
+const independent=[...guarded,{...row(500,'Suspensionlight',{1:'2'}),id:2}].sort((a,b)=>a.time-b.time)
+assert.equal(at(independent,1200).find(s=>s.key==='Suspensionlight:2').unresolved,null)
+assert.deepEqual(at(independent,499),at(guarded,499),'Backward seek restores pre-invalid generation')
+
+const moonDescriptor=nativeIndex.oldSuspensionlightSongs.montns_live_effect
+const moonTrack=JSON.parse(fs.readFileSync(new URL(moonDescriptor.file,base)))
+assert.equal(moonDescriptor.nativeCapability,'partial')
+for(const t of [1800,6000,20000,60000,80000,100000]){
+ const states=at(moonTrack.events,t)
+ assert.ok(states.some(s=>s.alpha>.001&&!s.unresolved),`MOON normal source lights must render at ${t}`)
+ for(const s of states.filter(s=>!s.unresolved))for(const k of ['angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]))
+}
+assert.ok(at(moonTrack.events,4300).some(s=>s.key==='Suspensionlight:301'&&s.unresolved==='nonfinite_animator_time'))
+console.log('PASS per-generation guard, cancelled/completed Erase, independent lamps, rewind and MOON source lights')

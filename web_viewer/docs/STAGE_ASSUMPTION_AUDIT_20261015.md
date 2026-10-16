@@ -128,3 +128,6 @@
 # K.now O.nly专项复查（2026-10-16）
 
 [专项记录](NATIVE_KNWONL_LASER_RECHECK_20261016.md)：该曲72条Show全部共用style3；旧style角度/宽度/反向X猜测已在315e8876移除。新增118份RAW的977条Erase接线校验及该曲实际Show/Erase/空档/回拖回归，5212桌面和手机尺寸通过。曲目火焰面板来源profile保留，不能与激光混同；粒子求解器及旧悬灯未决边界仍在。
+# MOON NIGHT恢复与推广（2026-10-16）
+
+[公共实例限制批次](NATIVE_MOON_UPLIGHT_RECONNECT_20261016.md)将9份整曲禁用改为partial：正常来源灯恢复，只限制非有限时间的活动代次，完成Erase才复位。105份轨道共用接线，无MOON歌名白名单；新增当前unresolved实例证据。最终Unity非有限Transform仍未证实，不能把partial提升为完整恢复。
