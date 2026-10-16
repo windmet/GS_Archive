@@ -85,6 +85,8 @@
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
     :data-laser-particle-count="visibleLaserParticleCount"
+    :data-laser-sprite-count="visibleLaserSpriteCount"
+    :data-laserlight-unresolved-ids="unresolvedLaserlightIds.join(',')"
     :data-laser-particle-origins="laserParticleOrigins"
     data-laser-particle-status="native-texture-burst-curves-reference-director-projection"
     :data-pinspotlight-count="visiblePinspotlightCount"
@@ -576,6 +578,7 @@ import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOl
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
 import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
+import { spriteLaserModel, createSpriteLaserRuntime, applySpriteLaserRuntime } from '../core/chibiSpriteLaser.js'
 import { sampleLaserParticles, laserParticleLayout } from '../core/chibiLaserParticles.js'
 import { sampleSpotbeamParticles, spotbeamParticleScale } from '../core/chibiSpotbeamParticles.js'
 import { pinspotlightTimelineAt } from '../core/chibiPinspotlightTimeline.js'
@@ -896,7 +899,17 @@ const spotlightBackgroundSprites = createSpotlightSpriteStore({
   onReady: () => syncSpotlightBackground(),
   onError: error => console.warn('Native Spotlight background could not be loaded', error),
 })
-const laserlightRuntimes = new Map()
+const visibleLaserSpriteCount = ref(0)
+const unresolvedLaserlightIds = ref([])
+const spriteLaserSprites = createSpotlightSpriteStore({
+  layerCount: 3,
+  loadTexture: file => loadImageLayerTexture(file),
+  createRuntime: (id, layers, textures) => markRaw(createSpriteLaserRuntime(PIXI, cameraContainer, layers, textures)),
+  destroyRuntime: runtime => {runtime.container.removeFromParent();runtime.container.destroy({children:true})},
+  destroyTexture: texture => texture.destroy(true),
+  onReady: () => {syncLaserlights();requestPausedSuspensionRender()},
+  onError: error => console.warn('[ChibiStage] native sprite laser texture load failed', error),
+})
 let laserParticleSongId = ''
 const laserParticleSprites = createSpotlightSpriteStore({
   layerCount: 1,
@@ -2518,11 +2531,7 @@ function laserlightStatesAt(milliseconds) {
     const previous = states.get(event.id)
     if (event.hide) {
       if (!previous) continue
-      states.set(event.id, {
-        ...previous,
-        fadeStart: eventTime,
-        fadeDuration: Math.max(0, Number(event.duration) || 0),
-      })
+      states.delete(event.id)
       continue
     }
     const next = { ...(previous || {}) }
@@ -2537,76 +2546,7 @@ function laserlightStatesAt(milliseconds) {
       fadeDuration: 0,
     })
   }
-  for (const state of states.values()) {
-    if (state.fadeStart === null) continue
-    state.alpha = state.fadeDuration <= 0
-      ? 0
-      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
-  }
   return states
-}
-
-function laserSweepAngle(state, milliseconds) {
-  const base = Number(state.angle) || 0
-  const period = Math.max(1, Number(state.sweepDuration) || 1000)
-  const phase = Math.max(0, milliseconds - Number(state.eventTime || state.time || 0)) / period
-  const direction = state.direction === 'left' ? -1 : 1
-  const style = Number(state.style) || 7
-  if (style === 6) return base + direction * phase * 360
-  const amplitudes = { 1: 8, 3: 10, 4: 10, 5: 14, 7: 20, 8: 42, 9: 42 }
-  const cycle = (phase + (style === 9 ? 1 : 0)) % 2
-  const triangle = cycle <= 1 ? cycle : 2 - cycle
-  let angle = base + direction * (amplitudes[style] || 20) * triangle
-  // The source comments call style 3 "カクカクのやつ": the fixture turns
-  // in discrete steps rather than interpolating continuously.
-  if (style === 3) angle = Math.round(angle / 5) * 5
-  return angle
-}
-
-function createLaserlightRuntime(id) {
-  const graphics = markRaw(new PIXI.Graphics())
-  graphics.blendMode = PIXI.BLEND_MODES.ADD
-  cameraContainer.addChild(graphics)
-  const runtime = markRaw({ id, graphics })
-  laserlightRuntimes.set(id, runtime)
-  return runtime
-}
-
-function laserBeamOffsets(style) {
-  // data.unity3d / LiveObjectLaserlight stores nine prefab references.
-  // The dominant style 3 prefab contains four particle systems at
-  // 0 / +20 / -20 / 0 degrees. Style 7 contains paired forward/reverse
-  // systems. Preserve those authored beam groups instead of reducing every
-  // CSV event to one line.
-  if (style === 1) return [0, 5, -5]
-  if (style === 3 || style === 4) return [0, 20, -20, 0]
-  if (style === 5 || style === 6) return [0.5, 1.5, 179.5, 178.5]
-  if (style === 7) return [0, 180, 0, 180]
-  return [0]
-}
-
-function drawLaserlight(runtime, state, viewportScale) {
-  const graphics = runtime.graphics
-  const length = Math.max(1, Number(state.length) || 900)
-    * viewportScale * environmentScale.value
-  const width = Math.max(0.2, (Number(state.width) || 1000) / 1000)
-  const color = parseHexColor(state.color, 0xffffff)
-  const style = Number(state.style) || 7
-  const intensity = style === 9 ? 0.55 : 1
-  const offsets = laserBeamOffsets(style)
-  const duplicateAttenuation = offsets.length >= 4 ? 0.72 : 1
-  graphics.clear()
-  const drawPass = (lineWidth, lineColor, alpha) => {
-    graphics.lineStyle(lineWidth, lineColor, alpha * intensity * duplicateAttenuation)
-    for (const offset of offsets) {
-      const radians = offset * Math.PI / 180
-      graphics.moveTo(0, 0)
-      graphics.lineTo(Math.cos(radians) * length, Math.sin(radians) * length)
-    }
-  }
-  drawPass(18 * width * viewportScale, color, 0.08)
-  drawPass(7 * width * viewportScale, color, 0.24)
-  drawPass(1.25 * width * viewportScale, 0xffffff, 0.82)
 }
 
 function syncLaserlights() {
@@ -2614,6 +2554,7 @@ function syncLaserlights() {
   const songId = selectedSong.value?.id || ''
   if (laserParticleSongId !== songId) {
     laserParticleSprites.release()
+    spriteLaserSprites.release()
     laserParticleSongId = songId
   }
   const states = laserlightStatesAt(stageTime.value)
@@ -2624,9 +2565,9 @@ function syncLaserlights() {
     : []
   visibleLaserlightCount.value = active.length
   visibleLaserlightIds.value = active.map(state => state.id).sort((a, b) => a - b)
-  for (const [id, runtime] of laserlightRuntimes) {
-    runtime.graphics.visible = false
-  }
+  visibleLaserSpriteCount.value = 0
+  unresolvedLaserlightIds.value = []
+  for (const runtime of spriteLaserSprites.runtimes.values()) runtime.container.visible = false
   for (const runtime of laserParticleSprites.runtimes.values()) runtime.container.visible = false
   visibleLaserParticleCount.value = 0
   const origins = []
@@ -2634,6 +2575,12 @@ function syncLaserlights() {
   const height = app.renderer.height / app.renderer.resolution
   const viewportScale = Math.min(width / 1280, height / 720)
   for (const state of active) {
+    if (Number(state.style) === spriteLaserModel.style) {
+      const runtime = spriteLaserSprites.ensure(`${songId}:${state.id}`,spriteLaserModel,stageEffectIndex.value?.assets)
+      if (!runtime) continue
+      visibleLaserSpriteCount.value += applySpriteLaserRuntime(PIXI,runtime,state,stageTime.value,width,height,environmentScale.value)
+      continue
+    }
     const native = stageEffectIndex.value?.laserlight?.styles?.[state.style]
       || stageEffectIndex.value?.spotbeam?.styles?.[state.style]
       || stageEffectIndex.value?.turnlaser?.styles?.[state.style]
@@ -2675,20 +2622,7 @@ function syncLaserlights() {
       origins.push(`${state.id}:${layout.x.toFixed(1)},${layout.y.toFixed(1)}`)
       continue
     }
-    const runtime = laserlightRuntimes.get(state.id) || createLaserlightRuntime(state.id)
-    drawLaserlight(runtime, state, viewportScale)
-    runtime.graphics.position.set(
-      width * 0.5 - Number(state.x) * viewportScale * environmentScale.value,
-      height * 0.5 + (360 - Number(state.y)) * viewportScale * environmentScale.value,
-    )
-    // Laserlight's effect-space X axis is opposite the character/ObjectLayer
-    // stage axis. Unity's Y-up angle then maps to the screen by negating it:
-    // 280/260 degree top fixtures point down and inward, while 110/70 degree
-    // floor fixtures point up and outward.
-    runtime.graphics.rotation = -laserSweepAngle(state, stageTime.value) * Math.PI / 180
-    runtime.graphics.zIndex = Number(state.depth) || 1650
-    runtime.graphics.alpha = Math.max(0, Math.min(1, Number(state.alpha) || 0))
-    runtime.graphics.visible = true
+    unresolvedLaserlightIds.value.push(state.id)
   }
   laserParticleOrigins.value = origins.join(';')
 }
@@ -2697,11 +2631,9 @@ function releaseLaserlights() {
   laserParticleSprites.release()
   visibleLaserParticleCount.value = 0
   laserParticleOrigins.value = ''
-  for (const runtime of laserlightRuntimes.values()) {
-    runtime.graphics.removeFromParent()
-    runtime.graphics.destroy()
-  }
-  laserlightRuntimes.clear()
+  spriteLaserSprites.release()
+  visibleLaserSpriteCount.value = 0
+  unresolvedLaserlightIds.value = []
   visibleLaserlightCount.value = 0
   visibleLaserlightIds.value = []
 }

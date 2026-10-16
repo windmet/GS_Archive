@@ -1,0 +1,2611 @@
+{
+  "owner": {
+    "rawHex": "00000000fa7b00000000000001000000010000000e0200000000000000000000090000000000000002c50100000000000000000074b6010000000000000000006cf00100000000000000000048ec01000000000000000000a8ae010000000000000000004eff0100000000000000000046fd010000000000000000000ecb010000000000000000002cde01000000000000000000e35f010000000000",
+    "sha256": "d7ef06a5994df0c2af496fe3d9195b498ac6da550160afcbc4624e16d8c6f647"
+  },
+  "prefab": {
+    "name": "fx_in_laserlight_side",
+    "serializedFile": "resources.assets",
+    "pathId": "23884",
+    "components": [
+      {
+        "type": "Transform",
+        "serializedFile": "resources.assets",
+        "pathId": "42416",
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": -0.866025447845459,
+          "w": 0.4999999403953552
+        }
+      },
+      {
+        "type": "MonoBehaviour",
+        "serializedFile": "resources.assets",
+        "pathId": "115970",
+        "bytes": 112,
+        "sha256": "b0d6622327ef98176923cd7f46b16fbe8615b5e32accf59d12e16c1c4efd2fb3",
+        "typetreeStatus": "partial_unknown_custom_fields",
+        "strictReadError": "Expected to read 112 bytes, but only read 32 bytes",
+        "rawHex": "000000004c5d00000000000001000000010000000d0100000000000000000000030000000000000065cd00000000000000000000f3cd0000000000000000000078db000000000000030000000000000005b40000000000000000000006b40000000000000000000007b4000000000000",
+        "scriptClass": "LiveObjectLightSpriteEffect",
+        "commonFields": {
+          "m_GameObject": {
+            "m_FileID": 0,
+            "m_PathID": 23884
+          },
+          "m_Enabled": 1,
+          "m_Script": {
+            "m_FileID": 1,
+            "m_PathID": 269
+          },
+          "m_Name": ""
+        }
+      }
+    ],
+    "children": [
+      {
+        "name": "center",
+        "serializedFile": "resources.assets",
+        "pathId": "23880",
+        "components": [
+          {
+            "type": "Transform",
+            "serializedFile": "resources.assets",
+            "pathId": "42412",
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            },
+            "rotation": {
+              "x": -0.0,
+              "y": -0.0,
+              "z": -0.0,
+              "w": 1.0
+            }
+          }
+        ],
+        "children": [
+          {
+            "name": "laserlight",
+            "serializedFile": "resources.assets",
+            "pathId": "23882",
+            "components": [
+              {
+                "type": "Transform",
+                "serializedFile": "resources.assets",
+                "pathId": "42414",
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 0.5,
+                  "y": 4.0,
+                  "z": 1.0
+                },
+                "rotation": {
+                  "x": -0.0,
+                  "y": -0.0,
+                  "z": -0.0,
+                  "w": 1.0
+                }
+              },
+              {
+                "type": "Animator",
+                "serializedFile": "resources.assets",
+                "pathId": "46085",
+                "controller": {
+                  "serializedFile": "resources.assets",
+                  "pathId": "1346"
+                },
+                "animationEvidenceKey": "resources.assets:1346"
+              }
+            ],
+            "children": [
+              {
+                "name": "LaserlightSprite",
+                "serializedFile": "resources.assets",
+                "pathId": "28547",
+                "components": [
+                  {
+                    "type": "Transform",
+                    "serializedFile": "resources.assets",
+                    "pathId": "39494",
+                    "position": {
+                      "x": 0.0,
+                      "y": -0.07999999821186066,
+                      "z": 0.0
+                    },
+                    "scale": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    },
+                    "rotation": {
+                      "x": -0.0,
+                      "y": -0.0,
+                      "z": -0.0,
+                      "w": 1.0
+                    }
+                  },
+                  {
+                    "type": "SpriteRenderer",
+                    "serializedFile": "resources.assets",
+                    "pathId": "52581",
+                    "enabled": true,
+                    "flipX": false,
+                    "flipY": false,
+                    "drawMode": 0,
+                    "renderState": {
+                      "Enabled": true,
+                      "SortingLayerID": 0,
+                      "SortingLayer": 0,
+                      "FlipX": false,
+                      "FlipY": false,
+                      "DrawMode": 0,
+                      "MaskInteraction": 0,
+                      "SpriteSortPoint": 0
+                    },
+                    "color": {
+                      "r": 1.0,
+                      "g": 1.0,
+                      "b": 1.0,
+                      "a": 1.0
+                    },
+                    "sortingOrder": 0,
+                    "sprite": {
+                      "name": "laserlight_1",
+                      "serializedFile": "resources.assets",
+                      "pathId": "2716",
+                      "rect": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 512.0,
+                        "height": 512.0
+                      },
+                      "pivot": {
+                        "x": 0.5,
+                        "y": 0.0
+                      },
+                      "pixelsToUnits": 100.0,
+                      "packingFlags": 64,
+                      "texture": {
+                        "name": "laserlight_1",
+                        "serializedFile": "resources.assets",
+                        "pathId": "898",
+                        "width": 512,
+                        "height": 512
+                      }
+                    },
+                    "materials": [
+                      {
+                        "name": "Additive",
+                        "serializedFile": "resources.assets",
+                        "pathId": "164",
+                        "shader": "Mobile/Particles/Additive"
+                      }
+                    ]
+                  }
+                ],
+                "children": [],
+                "activeSelf": true,
+                "layer": 29
+              }
+            ],
+            "activeSelf": true,
+            "layer": 29
+          }
+        ],
+        "activeSelf": true,
+        "layer": 29
+      },
+      {
+        "name": "left",
+        "serializedFile": "resources.assets",
+        "pathId": "23881",
+        "components": [
+          {
+            "type": "Transform",
+            "serializedFile": "resources.assets",
+            "pathId": "42413",
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.04361940547823906,
+              "w": 0.9990482926368713
+            }
+          }
+        ],
+        "children": [
+          {
+            "name": "laserlight",
+            "serializedFile": "resources.assets",
+            "pathId": "23883",
+            "components": [
+              {
+                "type": "Transform",
+                "serializedFile": "resources.assets",
+                "pathId": "42415",
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 0.5,
+                  "y": 4.0,
+                  "z": 1.0
+                },
+                "rotation": {
+                  "x": -0.0,
+                  "y": -0.0,
+                  "z": -0.0,
+                  "w": 1.0
+                }
+              },
+              {
+                "type": "Animator",
+                "serializedFile": "resources.assets",
+                "pathId": "46086",
+                "controller": {
+                  "serializedFile": "resources.assets",
+                  "pathId": "1346"
+                },
+                "animationEvidenceKey": "resources.assets:1346"
+              }
+            ],
+            "children": [
+              {
+                "name": "LaserlightSprite",
+                "serializedFile": "resources.assets",
+                "pathId": "6098",
+                "components": [
+                  {
+                    "type": "Transform",
+                    "serializedFile": "resources.assets",
+                    "pathId": "44466",
+                    "position": {
+                      "x": 0.0,
+                      "y": -0.07999999821186066,
+                      "z": 0.0
+                    },
+                    "scale": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    },
+                    "rotation": {
+                      "x": -0.0,
+                      "y": -0.0,
+                      "z": -0.0,
+                      "w": 1.0
+                    }
+                  },
+                  {
+                    "type": "SpriteRenderer",
+                    "serializedFile": "resources.assets",
+                    "pathId": "52723",
+                    "enabled": true,
+                    "flipX": false,
+                    "flipY": false,
+                    "drawMode": 0,
+                    "renderState": {
+                      "Enabled": true,
+                      "SortingLayerID": 0,
+                      "SortingLayer": 0,
+                      "FlipX": false,
+                      "FlipY": false,
+                      "DrawMode": 0,
+                      "MaskInteraction": 0,
+                      "SpriteSortPoint": 0
+                    },
+                    "color": {
+                      "r": 1.0,
+                      "g": 1.0,
+                      "b": 1.0,
+                      "a": 1.0
+                    },
+                    "sortingOrder": 0,
+                    "sprite": {
+                      "name": "laserlight_1",
+                      "serializedFile": "resources.assets",
+                      "pathId": "2716",
+                      "rect": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 512.0,
+                        "height": 512.0
+                      },
+                      "pivot": {
+                        "x": 0.5,
+                        "y": 0.0
+                      },
+                      "pixelsToUnits": 100.0,
+                      "packingFlags": 64,
+                      "texture": {
+                        "name": "laserlight_1",
+                        "serializedFile": "resources.assets",
+                        "pathId": "898",
+                        "width": 512,
+                        "height": 512
+                      }
+                    },
+                    "materials": [
+                      {
+                        "name": "Additive",
+                        "serializedFile": "resources.assets",
+                        "pathId": "164",
+                        "shader": "Mobile/Particles/Additive"
+                      }
+                    ]
+                  }
+                ],
+                "children": [],
+                "activeSelf": true,
+                "layer": 29
+              }
+            ],
+            "activeSelf": true,
+            "layer": 29
+          }
+        ],
+        "activeSelf": true,
+        "layer": 29
+      },
+      {
+        "name": "right",
+        "serializedFile": "resources.assets",
+        "pathId": "23886",
+        "components": [
+          {
+            "type": "Transform",
+            "serializedFile": "resources.assets",
+            "pathId": "42418",
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": -0.04361940547823906,
+              "w": 0.9990482926368713
+            }
+          }
+        ],
+        "children": [
+          {
+            "name": "laserlight",
+            "serializedFile": "resources.assets",
+            "pathId": "23885",
+            "components": [
+              {
+                "type": "Transform",
+                "serializedFile": "resources.assets",
+                "pathId": "42417",
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 0.5,
+                  "y": 4.0,
+                  "z": 1.0
+                },
+                "rotation": {
+                  "x": -0.0,
+                  "y": -0.0,
+                  "z": -0.0,
+                  "w": 1.0
+                }
+              },
+              {
+                "type": "Animator",
+                "serializedFile": "resources.assets",
+                "pathId": "46087",
+                "controller": {
+                  "serializedFile": "resources.assets",
+                  "pathId": "1346"
+                },
+                "animationEvidenceKey": "resources.assets:1346"
+              }
+            ],
+            "children": [
+              {
+                "name": "LaserlightSprite",
+                "serializedFile": "resources.assets",
+                "pathId": "8996",
+                "components": [
+                  {
+                    "type": "Transform",
+                    "serializedFile": "resources.assets",
+                    "pathId": "44824",
+                    "position": {
+                      "x": 0.0,
+                      "y": -0.07999999821186066,
+                      "z": 0.0
+                    },
+                    "scale": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    },
+                    "rotation": {
+                      "x": -0.0,
+                      "y": -0.0,
+                      "z": -0.0,
+                      "w": 1.0
+                    }
+                  },
+                  {
+                    "type": "SpriteRenderer",
+                    "serializedFile": "resources.assets",
+                    "pathId": "56184",
+                    "enabled": true,
+                    "flipX": false,
+                    "flipY": false,
+                    "drawMode": 0,
+                    "renderState": {
+                      "Enabled": true,
+                      "SortingLayerID": 0,
+                      "SortingLayer": 0,
+                      "FlipX": false,
+                      "FlipY": false,
+                      "DrawMode": 0,
+                      "MaskInteraction": 0,
+                      "SpriteSortPoint": 0
+                    },
+                    "color": {
+                      "r": 1.0,
+                      "g": 1.0,
+                      "b": 1.0,
+                      "a": 1.0
+                    },
+                    "sortingOrder": 0,
+                    "sprite": {
+                      "name": "laserlight_1",
+                      "serializedFile": "resources.assets",
+                      "pathId": "2716",
+                      "rect": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "width": 512.0,
+                        "height": 512.0
+                      },
+                      "pivot": {
+                        "x": 0.5,
+                        "y": 0.0
+                      },
+                      "pixelsToUnits": 100.0,
+                      "packingFlags": 64,
+                      "texture": {
+                        "name": "laserlight_1",
+                        "serializedFile": "resources.assets",
+                        "pathId": "898",
+                        "width": 512,
+                        "height": 512
+                      }
+                    },
+                    "materials": [
+                      {
+                        "name": "Additive",
+                        "serializedFile": "resources.assets",
+                        "pathId": "164",
+                        "shader": "Mobile/Particles/Additive"
+                      }
+                    ]
+                  }
+                ],
+                "children": [],
+                "activeSelf": true,
+                "layer": 29
+              }
+            ],
+            "activeSelf": true,
+            "layer": 29
+          }
+        ],
+        "activeSelf": true,
+        "layer": 29
+      }
+    ],
+    "activeSelf": true,
+    "layer": 29
+  },
+  "animations": {
+    "resources.assets:1346": {
+      "serializedFile": "resources.assets",
+      "pathId": "1346",
+      "name": "laserlight",
+      "typetree": {
+        "m_Name": "laserlight",
+        "m_ControllerSize": 1184,
+        "m_Controller": {
+          "m_LayerArray": [
+            {
+              "data": {
+                "m_StateMachineIndex": 0,
+                "m_StateMachineSynchronizedLayerIndex": 0,
+                "m_BodyMask": {
+                  "word0": 4294967295,
+                  "word1": 4294967295,
+                  "word2": 524287
+                },
+                "m_SkeletonMask": {
+                  "data": {
+                    "m_Data": []
+                  }
+                },
+                "m_Binding": 756556552,
+                "(int&)m_LayerBlendingMode": 0,
+                "m_DefaultWeight": 0.0,
+                "m_IKPass": false,
+                "m_SyncedLayerAffectsTiming": false
+              }
+            }
+          ],
+          "m_StateMachineArray": [
+            {
+              "data": {
+                "m_StateConstantArray": [
+                  {
+                    "data": {
+                      "m_TransitionConstantArray": [],
+                      "m_BlendTreeConstantIndexArray": [
+                        0
+                      ],
+                      "m_BlendTreeConstantArray": [
+                        {
+                          "data": {
+                            "m_NodeArray": [
+                              {
+                                "data": {
+                                  "m_BlendType": 0,
+                                  "m_BlendEventID": 4294967295,
+                                  "m_BlendEventYID": 4294967295,
+                                  "m_ChildIndices": [],
+                                  "m_Blend1dData": {
+                                    "data": {
+                                      "m_ChildThresholdArray": []
+                                    }
+                                  },
+                                  "m_Blend2dData": {
+                                    "data": {
+                                      "m_ChildPositionArray": [],
+                                      "m_ChildMagnitudeArray": [],
+                                      "m_ChildPairVectorArray": [],
+                                      "m_ChildPairAvgMagInvArray": [],
+                                      "m_ChildNeighborListArray": []
+                                    }
+                                  },
+                                  "m_BlendDirectData": {
+                                    "data": {
+                                      "m_ChildBlendEventIDArray": [],
+                                      "m_NormalizedBlendValues": false
+                                    }
+                                  },
+                                  "m_ClipID": 0,
+                                  "m_Duration": 1.0,
+                                  "m_CycleOffset": 0.0,
+                                  "m_Mirror": false
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "m_NameID": 963165681,
+                      "m_PathID": 3602816629,
+                      "m_FullPathID": 3602816629,
+                      "m_TagID": 0,
+                      "m_SpeedParamID": 0,
+                      "m_MirrorParamID": 0,
+                      "m_CycleOffsetParamID": 0,
+                      "m_TimeParamID": 0,
+                      "m_Speed": 1.0,
+                      "m_CycleOffset": 0.0,
+                      "m_IKOnFeet": false,
+                      "m_WriteDefaultValues": true,
+                      "m_Loop": true,
+                      "m_Mirror": false
+                    }
+                  },
+                  {
+                    "data": {
+                      "m_TransitionConstantArray": [],
+                      "m_BlendTreeConstantIndexArray": [
+                        0
+                      ],
+                      "m_BlendTreeConstantArray": [
+                        {
+                          "data": {
+                            "m_NodeArray": [
+                              {
+                                "data": {
+                                  "m_BlendType": 0,
+                                  "m_BlendEventID": 4294967295,
+                                  "m_BlendEventYID": 4294967295,
+                                  "m_ChildIndices": [],
+                                  "m_Blend1dData": {
+                                    "data": {
+                                      "m_ChildThresholdArray": []
+                                    }
+                                  },
+                                  "m_Blend2dData": {
+                                    "data": {
+                                      "m_ChildPositionArray": [],
+                                      "m_ChildMagnitudeArray": [],
+                                      "m_ChildPairVectorArray": [],
+                                      "m_ChildPairAvgMagInvArray": [],
+                                      "m_ChildNeighborListArray": []
+                                    }
+                                  },
+                                  "m_BlendDirectData": {
+                                    "data": {
+                                      "m_ChildBlendEventIDArray": [],
+                                      "m_NormalizedBlendValues": false
+                                    }
+                                  },
+                                  "m_ClipID": 1,
+                                  "m_Duration": 1.0,
+                                  "m_CycleOffset": 0.0,
+                                  "m_Mirror": false
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ],
+                      "m_NameID": 1142901172,
+                      "m_PathID": 2882103856,
+                      "m_FullPathID": 2882103856,
+                      "m_TagID": 0,
+                      "m_SpeedParamID": 0,
+                      "m_MirrorParamID": 0,
+                      "m_CycleOffsetParamID": 0,
+                      "m_TimeParamID": 0,
+                      "m_Speed": 1.0,
+                      "m_CycleOffset": 0.0,
+                      "m_IKOnFeet": false,
+                      "m_WriteDefaultValues": true,
+                      "m_Loop": true,
+                      "m_Mirror": false
+                    }
+                  }
+                ],
+                "m_AnyStateTransitionConstantArray": [],
+                "m_SelectorStateConstantArray": [
+                  {
+                    "data": {
+                      "m_TransitionConstantArray": [
+                        {
+                          "data": {
+                            "m_Destination": 0,
+                            "m_ConditionConstantArray": []
+                          }
+                        }
+                      ],
+                      "m_FullPathID": 756556552,
+                      "m_IsEntry": true
+                    }
+                  },
+                  {
+                    "data": {
+                      "m_TransitionConstantArray": [
+                        {
+                          "data": {
+                            "m_Destination": 30000,
+                            "m_ConditionConstantArray": []
+                          }
+                        }
+                      ],
+                      "m_FullPathID": 756556552,
+                      "m_IsEntry": false
+                    }
+                  }
+                ],
+                "m_DefaultState": 0,
+                "m_SynchronizedLayerCount": 1
+              }
+            }
+          ],
+          "m_Values": {
+            "data": {
+              "m_ValueArray": []
+            }
+          },
+          "m_DefaultValues": {
+            "data": {
+              "m_PositionValues": [],
+              "m_QuaternionValues": [],
+              "m_ScaleValues": [],
+              "m_FloatValues": [],
+              "m_IntValues": [],
+              "m_BoolValues": []
+            }
+          }
+        },
+        "m_TOS": [
+          [
+            1142901172,
+            "angle30"
+          ],
+          [
+            3602816629,
+            "Base Layer.angle60"
+          ],
+          [
+            2105523844,
+            "GravityWeight"
+          ],
+          [
+            756556552,
+            "Base Layer"
+          ],
+          [
+            0,
+            ""
+          ],
+          [
+            2882103856,
+            "Base Layer.angle30"
+          ],
+          [
+            963165681,
+            "angle60"
+          ]
+        ],
+        "m_AnimationClips": [
+          {
+            "m_FileID": 0,
+            "m_PathID": 1241
+          },
+          {
+            "m_FileID": 0,
+            "m_PathID": 1240
+          }
+        ],
+        "m_StateMachineBehaviourVectorDescription": {
+          "m_StateMachineBehaviourRanges": [],
+          "m_StateMachineBehaviourIndices": []
+        },
+        "m_StateMachineBehaviours": [],
+        "m_MultiThreadedStateMachine": true
+      },
+      "clips": [
+        {
+          "serializedFile": "resources.assets",
+          "pathId": "1241",
+          "bytes": 2568,
+          "sha256": "902ab687e5a30802a3650c18c48691df51b109f3c7880a4c27a2de0639c8b928",
+          "typetree": {
+            "m_Name": "angle60",
+            "m_Legacy": false,
+            "m_Compressed": false,
+            "m_UseHighQualityCurve": true,
+            "m_RotationCurves": [],
+            "m_CompressedRotationCurves": [],
+            "m_EulerCurves": [],
+            "m_PositionCurves": [],
+            "m_ScaleCurves": [],
+            "m_FloatCurves": [],
+            "m_PPtrCurves": [],
+            "m_SampleRate": 60.0,
+            "m_WrapMode": 0,
+            "m_Bounds": {
+              "m_Center": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "m_Extent": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              }
+            },
+            "m_MuscleClipSize": 2832,
+            "m_MuscleClip": {
+              "m_DeltaPose": {
+                "m_RootX": {
+                  "t": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  "q": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 1.0
+                  },
+                  "s": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                "m_LookAtPosition": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "m_LookAtWeight": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 0.0
+                },
+                "m_GoalArray": [
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  }
+                ],
+                "m_LeftHandPose": {
+                  "m_GrabX": {
+                    "t": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "q": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0,
+                      "w": 1.0
+                    },
+                    "s": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    }
+                  },
+                  "m_DoFArray": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "m_Override": 0.0,
+                  "m_CloseOpen": 0.0,
+                  "m_InOut": 0.0,
+                  "m_Grab": 0.0
+                },
+                "m_RightHandPose": {
+                  "m_GrabX": {
+                    "t": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "q": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0,
+                      "w": 1.0
+                    },
+                    "s": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    }
+                  },
+                  "m_DoFArray": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "m_Override": 0.0,
+                  "m_CloseOpen": 0.0,
+                  "m_InOut": 0.0,
+                  "m_Grab": 0.0
+                },
+                "m_DoFArray": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "m_TDoFArray": [
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                ]
+              },
+              "m_StartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_StopX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_LeftFootStartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_RightFootStartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_AverageSpeed": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "m_Clip": {
+                "data": {
+                  "m_StreamedClip": {
+                    "data": [
+                      4286578687,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      3270508544,
+                      1127481344,
+                      0,
+                      0,
+                      1065353216,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      1123024896,
+                      3274964992,
+                      0,
+                      1114636288,
+                      1073741824,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2139095040,
+                      0
+                    ],
+                    "curveCount": 3
+                  },
+                  "m_DenseClip": {
+                    "m_FrameCount": 122,
+                    "m_CurveCount": 0,
+                    "m_SampleRate": 60.0,
+                    "m_BeginTime": 0.0,
+                    "m_SampleArray": []
+                  },
+                  "m_ConstantClip": {
+                    "data": []
+                  }
+                }
+              },
+              "m_StartTime": 0.0,
+              "m_StopTime": 2.0,
+              "m_OrientationOffsetY": 0.0,
+              "m_Level": 0.0,
+              "m_CycleOffset": 0.0,
+              "m_AverageAngularSpeed": 0.0,
+              "m_IndexArray": [
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1
+              ],
+              "m_ValueArrayDelta": [
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                },
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                },
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                }
+              ],
+              "m_ValueArrayReferencePose": [],
+              "m_Mirror": false,
+              "m_LoopTime": true,
+              "m_LoopBlend": false,
+              "m_LoopBlendOrientation": false,
+              "m_LoopBlendPositionY": false,
+              "m_LoopBlendPositionXZ": false,
+              "m_StartAtOrigin": true,
+              "m_KeepOriginalOrientation": false,
+              "m_KeepOriginalPositionY": true,
+              "m_KeepOriginalPositionXZ": false,
+              "m_HeightFromFeet": false
+            },
+            "m_ClipBindingConstant": {
+              "genericBindings": [
+                {
+                  "path": 0,
+                  "attribute": 4,
+                  "script": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "typeID": 4,
+                  "customType": 4,
+                  "isPPtrCurve": 0
+                }
+              ],
+              "pptrCurveMapping": []
+            },
+            "m_HasGenericRootTransform": true,
+            "m_HasMotionFloatCurves": false,
+            "m_Events": []
+          }
+        },
+        {
+          "serializedFile": "resources.assets",
+          "pathId": "1240",
+          "bytes": 2568,
+          "sha256": "2e6cf86aef5a1223697d8c206ae6567d39875419472c4914394c5d42f6f43861",
+          "typetree": {
+            "m_Name": "angle30",
+            "m_Legacy": false,
+            "m_Compressed": false,
+            "m_UseHighQualityCurve": true,
+            "m_RotationCurves": [],
+            "m_CompressedRotationCurves": [],
+            "m_EulerCurves": [],
+            "m_PositionCurves": [],
+            "m_ScaleCurves": [],
+            "m_FloatCurves": [],
+            "m_PPtrCurves": [],
+            "m_SampleRate": 60.0,
+            "m_WrapMode": 0,
+            "m_Bounds": {
+              "m_Center": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "m_Extent": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              }
+            },
+            "m_MuscleClipSize": 2832,
+            "m_MuscleClip": {
+              "m_DeltaPose": {
+                "m_RootX": {
+                  "t": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  "q": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 1.0
+                  },
+                  "s": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                "m_LookAtPosition": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "m_LookAtWeight": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 0.0
+                },
+                "m_GoalArray": [
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  },
+                  {
+                    "m_X": {
+                      "t": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                      },
+                      "q": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                      },
+                      "s": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                      }
+                    },
+                    "m_WeightT": 0.0,
+                    "m_WeightR": 0.0,
+                    "m_HintT": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "m_HintWeightT": 0.0
+                  }
+                ],
+                "m_LeftHandPose": {
+                  "m_GrabX": {
+                    "t": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "q": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0,
+                      "w": 1.0
+                    },
+                    "s": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    }
+                  },
+                  "m_DoFArray": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "m_Override": 0.0,
+                  "m_CloseOpen": 0.0,
+                  "m_InOut": 0.0,
+                  "m_Grab": 0.0
+                },
+                "m_RightHandPose": {
+                  "m_GrabX": {
+                    "t": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0
+                    },
+                    "q": {
+                      "x": 0.0,
+                      "y": 0.0,
+                      "z": 0.0,
+                      "w": 1.0
+                    },
+                    "s": {
+                      "x": 1.0,
+                      "y": 1.0,
+                      "z": 1.0
+                    }
+                  },
+                  "m_DoFArray": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                  ],
+                  "m_Override": 0.0,
+                  "m_CloseOpen": 0.0,
+                  "m_InOut": 0.0,
+                  "m_Grab": 0.0
+                },
+                "m_DoFArray": [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "m_TDoFArray": [
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                ]
+              },
+              "m_StartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_StopX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_LeftFootStartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_RightFootStartX": {
+                "t": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "q": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0,
+                  "w": 1.0
+                },
+                "s": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "m_AverageSpeed": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+              },
+              "m_Clip": {
+                "data": {
+                  "m_StreamedClip": {
+                    "data": [
+                      4286578687,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      3262119936,
+                      1119092736,
+                      0,
+                      0,
+                      1065353216,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      1114636288,
+                      3266576384,
+                      0,
+                      1106247680,
+                      1073741824,
+                      3,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2,
+                      0,
+                      0,
+                      0,
+                      0,
+                      2139095040,
+                      0
+                    ],
+                    "curveCount": 3
+                  },
+                  "m_DenseClip": {
+                    "m_FrameCount": 122,
+                    "m_CurveCount": 0,
+                    "m_SampleRate": 60.0,
+                    "m_BeginTime": 0.0,
+                    "m_SampleArray": []
+                  },
+                  "m_ConstantClip": {
+                    "data": []
+                  }
+                }
+              },
+              "m_StartTime": 0.0,
+              "m_StopTime": 2.0,
+              "m_OrientationOffsetY": 0.0,
+              "m_Level": 0.0,
+              "m_CycleOffset": 0.0,
+              "m_AverageAngularSpeed": 0.0,
+              "m_IndexArray": [
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1
+              ],
+              "m_ValueArrayDelta": [
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                },
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                },
+                {
+                  "m_Start": 0.0,
+                  "m_Stop": 0.0
+                }
+              ],
+              "m_ValueArrayReferencePose": [],
+              "m_Mirror": false,
+              "m_LoopTime": true,
+              "m_LoopBlend": false,
+              "m_LoopBlendOrientation": false,
+              "m_LoopBlendPositionY": false,
+              "m_LoopBlendPositionXZ": false,
+              "m_StartAtOrigin": true,
+              "m_KeepOriginalOrientation": false,
+              "m_KeepOriginalPositionY": true,
+              "m_KeepOriginalPositionXZ": false,
+              "m_HeightFromFeet": false
+            },
+            "m_ClipBindingConstant": {
+              "genericBindings": [
+                {
+                  "path": 0,
+                  "attribute": 4,
+                  "script": {
+                    "m_FileID": 0,
+                    "m_PathID": 0
+                  },
+                  "typeID": 4,
+                  "customType": 4,
+                  "isPPtrCurve": 0
+                }
+              ],
+              "pptrCurveMapping": []
+            },
+            "m_HasGenericRootTransform": true,
+            "m_HasMotionFloatCurves": false,
+            "m_Events": []
+          }
+        }
+      ]
+    }
+  },
+  "unityDataSha256": "d35231c0b00a09f6941f47f7ffedde9e9b35701f5b66d6f432517da860e1a500",
+  "native": {
+    "elfSha256": "9843113b723d183882ee1a0a0881806518022d293c2dd7d23ed3960facbd810e",
+    "constants": {
+      "0x317a3bc": 1000.0,
+      "0x3175568": 180.0
+    },
+    "methodWindows": [
+      {
+        "name": "Laserlight.PlayEffect",
+        "start": "0x221d9bc",
+        "end": "0x221dd84",
+        "sha256": "4406b96dcc69c9215c42e36b7e59a4acabf278a8e8a49c712c2f7218a513a508"
+      },
+      {
+        "name": "Laserlight.EraseEffect",
+        "start": "0x221ddac",
+        "end": "0x221deac",
+        "sha256": "9a3975afa68f916783ede09cecdddff380bc68be02d931d609625b6ef1611cb6"
+      },
+      {
+        "name": "LightSprite.SetSpeed",
+        "start": "0x221e724",
+        "end": "0x221e85c",
+        "sha256": "39a289dce2aeb869507e79d64124aea894ad7693e29a53422d67a7843d808989"
+      },
+      {
+        "name": "LightSprite.SetColor",
+        "start": "0x221e85c",
+        "end": "0x221e9ac",
+        "sha256": "bd59ec01e5b824827c242b4bb68334871711466bc233d307a2803a8e7729d4f5"
+      }
+    ]
+  },
+  "base": {
+    "pathId": 90083,
+    "sha256": "4868e28bc58697f518864dac23e4cf395d0ef0c229e3f1443d22f8a7f0608312",
+    "tree": {
+      "m_GameObject": {
+        "m_FileID": 0,
+        "m_PathID": 23333
+      },
+      "m_LocalRotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+      },
+      "m_LocalPosition": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "m_LocalScale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "m_Children": [],
+      "m_Father": {
+        "m_FileID": 0,
+        "m_PathID": 81132
+      },
+      "m_AnchorMin": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "m_AnchorMax": {
+        "x": 0.5,
+        "y": 0.5
+      },
+      "m_AnchoredPosition": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "m_SizeDelta": {
+        "x": 100.0,
+        "y": 100.0
+      },
+      "m_Pivot": {
+        "x": 0.5,
+        "y": 0.5
+      }
+    }
+  }
+}

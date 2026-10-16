@@ -95,3 +95,8 @@
 ## 10-16 灯光反查补充
 
 [Pinspotlight原生接线批次](NATIVE_PINSPOTLIGHT_CHAIN_20261016.md)确认并移除了旧`.62/.7`灯圈缩放、135偏移、蒙版与flash同时换图及线性移动/淡出。影响20首歌40份编排7,146条指令，Study 6秒为本批视觉验收入口。旧悬灯守卫、hndmkh 26.55秒Laserlight style1的六条Graphics近似、Spotlight自由目标与缺消费者继续保留为未收束项。
+
+
+## 10-16 激光 Sprite 接线补充
+
+[style1原生链路](NATIVE_SPRITE_LASER_CHAIN_20261016.md)接回hndmkh六组18束原生Sprite/Animator，删除Graphics猜测回退，按原生语义恢复速度、颜色alpha、整体缩放与即时Erase。进一步确认粒子style3..9仍有width/alpha误读、非整体缩放、统一粒子时钟及Not Alone额外1.8倍率；该公共链路应作为下一项优先反查，不能将“已有native texture”视为完整原生接线。
