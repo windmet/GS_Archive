@@ -158,6 +158,31 @@ for(const song of corpus.songs) for(const event of song.laserlightEvents||[]) {
 assert.equal(rows,1083);assert.equal(hdr,118)
 console.log(`PASS ${rows} published particle commands (${hdr} alpha>1), model binding, source clocks, finite geometry and replay`)
 
+// K.now O.nly uses the same style3 prefab as other songs. Exercise actual
+// Show/Erase ordering and rewind through the production state reducer.
+const know=corpus.songs.find(s=>s.id==='knwonl_live_effect')
+assert.equal(know.laserlightEvents.filter(e=>!e.hide).length,72)
+assert.deepEqual([...new Set(know.laserlightEvents.filter(e=>!e.hide).map(e=>e.style))],[3])
+song.value=know
+const witnesses=[
+ [1800,[1,2,3,4],4], [2500,[1,2,3,4,5,6,7,8],8],
+ [3600,[10,11,12,13],0], [30000,[],0],
+ [86000,[30,31,32,33,34,35,36,37],8], [87850,[],0],
+ [2500,[1,2,3,4,5,6,7,8],8],
+]
+for(const [time,ids,count] of witnesses){
+ const states=[...sample(time).values()]
+ assert.deepEqual([...sample(time).keys()],ids)
+ const particles=states.flatMap(state=>sampleLaserParticles(models.laser.styles[state.style],state,time))
+ assert.equal(particles.filter(p=>p.alpha>.001).length,count)
+ for(const state of states){
+  assert.deepEqual(nativeLaserScale(state),{x:Math.fround(.8),y:Math.fround(.8)})
+  assert.equal(nativeLaserAlpha(state),Math.fround(.6))
+ }
+}
+assert.ok(!samplerSection.includes('songCode'),'Laser state reduction must depend on source events')
+console.log('PASS K.now O.nly: 72 native style3 shows, shared state/plane/scale/alpha, erase boundaries, gap and rewind')
+
 material.alpha=.5;updateSpriteLaserMaterial.call(material)
 assert.ok(Math.abs(material.uniforms.uColor[2]-161/255)<1e-7,'Source alpha is applied by native SrcAlpha blend, not twice in RGB')
 assert.equal(material.uniforms.uColor[3],.5)

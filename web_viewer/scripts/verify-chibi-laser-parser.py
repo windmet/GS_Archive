@@ -111,7 +111,7 @@ print('PASS native Shader950 source hashes, all three GLES tiers COLOR0 clamp, S
 
 if args.native_elf:
     index=json.loads((root.parent/'public/assets/live-chibi/choreography/index.json').read_text(encoding='utf8'))
-    by_name={s['id']:s for s in index['songs']};checked=0;bound=set()
+    by_name={s['id']:s for s in index['songs']};checked=0;erased=0;bound=set()
     numeric={'value1':'id','value2':'style','value3':'sweepDuration','value4':'angle','value6':'length',
              'value7':'x','value8':'y','value10':'width','value11':'depth'}
     import re
@@ -122,9 +122,12 @@ if args.native_elf:
             if text.m_Name not in by_name:continue
             payload=text.m_Script
             if isinstance(payload,bytes):payload=payload.decode('utf-8-sig')
-            native_rows=[]
+            native_rows=[];native_erases=[]
             for row in csv.DictReader(io.StringIO(payload)):
-                if row.get('type')!='Laserlight' or row.get('value101')=='1':continue
+                if row.get('type')!='Laserlight':continue
+                if row.get('value101')=='1':
+                    native_erases.append(dict(time=float(row['time']),id=int(row['value1'])))
+                    continue
                 native={'time':float(row['time'])}
                 for field,key in numeric.items():
                     value=(row.get(field) or '').strip()
@@ -137,6 +140,10 @@ if args.native_elf:
                 for e in by_name[text.m_Name].get('laserlightEvents',[]) if not e['hide']]
             sort=lambda r:(r['time'],r['id'])
             assert sorted(native_rows,key=sort)==sorted(published,key=sort),text.m_Name
+            published_erases=[dict(time=e['time'],id=e['id']) for e in by_name[text.m_Name].get('laserlightEvents',[]) if e['hide']]
+            assert sorted(native_erases,key=sort)==sorted(published_erases,key=sort),text.m_Name
+            erased+=len(native_erases)
             checked+=len(native_rows);bound.add(text.m_Name)
     assert checked==1089 and len(bound)==118
     print('PASS all 118 RAW arrangements / 1089 Laserlight shows: exact integer getters, field mapping and published event binding')
+    print(f'PASS all {erased} RAW Laserlight erases: exact ID/time binding, including knwonl')

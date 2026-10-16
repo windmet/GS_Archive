@@ -125,3 +125,6 @@
 ## 10-16 非有限曲线采样补充
 
 [ClipPlayable/streamed来源](NATIVE_STREAMED_NONFINITE_SAMPLING_20261016.md)确认SetTime保存非有限double、modff对Infinity和NaN的路径不同；修复raw曲线sampler将NaN误当initialValue的旧有限回退。欧拉绑定没有四元数通道的单位姿势回退，最终Animator Transform写回仍待证实；9份未放行。
+# K.now O.nly专项复查（2026-10-16）
+
+[专项记录](NATIVE_KNWONL_LASER_RECHECK_20261016.md)：该曲72条Show全部共用style3；旧style角度/宽度/反向X猜测已在315e8876移除。新增118份RAW的977条Erase接线校验及该曲实际Show/Erase/空档/回拖回归，5212桌面和手机尺寸通过。曲目火焰面板来源profile保留，不能与激光混同；粒子求解器及旧悬灯未决边界仍在。
