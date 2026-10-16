@@ -138,7 +138,7 @@ def main() -> None:
     old_animation = {}
     old_roots = [audit.inspect_prefab(o, old_animation) for o in environment.objects
                  if o.type.name == 'GameObject' and o.read().m_Name in {
-                     'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
+                     'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_4','LiveObjectSuspensionlight_5'}]
     old_suspension = old_suspension_model(old_roots, old_animation)
     backmonitor_logo = logo_model(extract_logo_source(environment))
     backmonitor_layers, backmonitor_assets = extract_backmonitor_layers(environment, output_root)
@@ -194,10 +194,8 @@ def main() -> None:
                 target.write_text(json.dumps(old_track,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
                 old_suspension_songs[script.m_Name] = {'file':f'stage-effects/{relative}',
                     'eventCount':len(old_events), 'source':old_track['source'],
-                    # Moon and the shared Growing/Drive families are recording
-                    # checked previews; unrelated director planes remain guarded.
-                    'previewEnabled':script.m_Name=='montns_live_effect' or script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')),
-                    'referenceProjection':'stage-rig-v1' if script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')) else 'legacy-half-plane'}
+                    'previewEnabled':False,
+                    'referenceProjection':'native-stage-camera-v1'}
             events = suspensionlight_events(payload)
             if not events: continue
             if script.m_Name in suspension_songs:

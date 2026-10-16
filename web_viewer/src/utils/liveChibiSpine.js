@@ -1,3 +1,4 @@
+import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
 import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
 import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
 import { attachBloom } from '../core/chibiBloomParticles.js'
@@ -160,7 +161,21 @@ export async function fetchLiveChibiStagelights(file,{signal}={}) {
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
-export const fetchLiveChibiStageEffectIndex = options => liveJson('stage-effects/index.json',options,true)
+export async function fetchLiveChibiStageEffectIndex({signal}={}) {
+  const [text,native]=await Promise.all([
+    indexTransport.load(`${LIVE_CHIBI_BASE}/stage-effects/index.json`,{signal}),
+    indexTransport.load('/data/stage-old-suspension.json',{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return attachNativeOldSuspension(JSON.parse(text),JSON.parse(native),hash)
+}
+export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
+  const text=await indexTransport.load(`${LIVE_CHIBI_BASE}/${descriptor.file}`,{signal})
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateOldSuspensionTrack(JSON.parse(text),descriptor,hash)
+}
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
 export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
   const index=await liveJson('object-layers/index.json',{signal},true)

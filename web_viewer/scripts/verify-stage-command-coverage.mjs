@@ -26,7 +26,7 @@ assert.equal(coverage.rows.find(row=>row.command==='Penlight').status,'partial')
 assert.deepEqual(coverage.unknown.map(row=>row.command),['Unknown_Command'])
 assert.equal(coverage.guarded[0].guard,'not_loaded')
 assert.equal(stageCommandCoverage(song,inventory,{stageEffects:{}}).guarded[0].guard,'disabled')
-const enabled=stageCommandCoverage(song,inventory,{stageEffects:{oldSuspensionlightSongs:{test:{previewEnabled:true}}}})
+const enabled=stageCommandCoverage(song,inventory,{stageEffects:{oldSuspensionlightSongs:{test:{nativeCapability:'supported'}}}})
 assert.equal(enabled.guarded[0].guard,'enabled')
 assert.equal(buildStageVfxCoverage(song,{commandInventory:inventory}).status,'partial')
 const future={...inventory,songs:{test:{...inventory.songs.test,commands:{NewSuspensionlight_future:1,Penlight_future:1}}}}

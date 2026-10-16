@@ -110,3 +110,8 @@
 ## 10-16 Spotlight 字段与自由位置补充
 
 [Spotlight 原生链路](NATIVE_SPOTLIGHT_CHAIN_20261016.md)确认value4是自由Y、value6是根缩放，删除旧duration/characterDepth误读；补齐0.5秒OutQuad、离屏移动、追随、Hide冻结/重显以及材质950混合。118编排以RAW生成并绑定原index摘要的新数据接入；本页此前“Spotlight自由目标未收束”的状态由本批取代。旧悬灯守卫和缺家族仍待处理。
+
+
+## 10-16 旧悬灯第四类与能力守卫补充
+
+[旧悬灯能力批次](NATIVE_OLD_SUSPENSION_CAPABILITY_20261016.md)补回原生_4两色RGBA Yoyo灯、Shader950混合及RAW BPM时钟，按105份RAW/资源绑定替换歌名白名单。96份/77,485行满足当前能力条件；9份/11,162行因空Show导致原生零周期等问题明确受限（Moon从旧名单移出）。这取代此前42/105按歌名放行的状态，但尚未完成9份原生非有限Animator速度行为，不能将“解除歌名判断”写成全部旧悬灯复原。

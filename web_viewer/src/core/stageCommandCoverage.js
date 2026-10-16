@@ -99,7 +99,7 @@ export function stageCommandCoverage(song, inventory, indexes = {}) {
   const rows = Object.entries(record.commands).map(([command, count]) => {
     const binding = Object.hasOwn(STAGE_COMMAND_BINDINGS, command) ? STAGE_COMMAND_BINDINGS[command] : { ...absent('未识别指令'), status: 'unknown' }
     const guard = binding.status === 'guarded'
-      ? !indexes.stageEffects ? 'not_loaded' : indexes.stageEffects.oldSuspensionlightSongs?.[song.id]?.previewEnabled === true ? 'enabled' : 'disabled' : null
+      ? !indexes.stageEffects ? 'not_loaded' : indexes.stageEffects.oldSuspensionlightSongs?.[song.id]?.nativeCapability === 'supported' ? 'enabled' : 'disabled' : null
     const nonTimedCount = record.nonTimedCommands?.[command] || 0
     return { command, count, ...binding, guard, nonTimedCount, timedCount: count - nonTimedCount,
       status: count === nonTimedCount ? 'non_timed' : binding.status }
