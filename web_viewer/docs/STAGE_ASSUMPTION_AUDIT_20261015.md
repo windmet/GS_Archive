@@ -131,3 +131,6 @@
 # MOON NIGHT恢复与推广（2026-10-16）
 
 [公共实例限制批次](NATIVE_MOON_UPLIGHT_RECONNECT_20261016.md)将9份整曲禁用改为partial：正常来源灯恢复，只限制非有限时间的活动代次，完成Erase才复位。105份轨道共用接线，无MOON歌名白名单；新增当前unresolved实例证据。最终Unity非有限Transform仍未证实，不能把partial提升为完整恢复。
+# 聚光灯交接帧修正（2026-10-16）
+
+[资源就绪批次](NATIVE_LIGHTING_FRAME_READINESS_20261016.md)实测∞ Possibilities旧路径4个缺灯帧：共享贴图已加载，新ID仍延后到Promise回调，当前帧暗场因缺mask隐藏。改为同步安装已加载ID、seek/play前预备本曲未来变体。修复后∞全曲和Beyond The Dream 35..96.4秒实际播放均0缺灯帧；118份编排共用接线。未改原生渐变或用亮度经验参数遮掩。

@@ -40,6 +40,8 @@
     :data-lighting-enabled="lightingEnabled"
     :data-spotlight-background-alpha="spotlightBackgroundAlpha.toFixed(3)"
     :data-pinspotlight-mask-count="pinspotlightMaskCount"
+    :data-lighting-incomplete-frames="lightingIncompleteFrames"
+    :data-lighting-last-incomplete-frame="lightingLastIncompleteFrame"
     :data-beam-effects-enabled="beamEffectsEnabled"
     :data-characters-enabled="charactersEnabled && !isSpecialSingle"
     :data-character-shadows-enabled="characterShadowsEnabled"
@@ -889,6 +891,8 @@ const oldSuspensionSprites = createSpotlightSpriteStore({
   onError: error => console.warn('[ChibiStage] old sidelight texture load failed', error),
 })
 const pinspotlightMaskCount = ref(0)
+const lightingIncompleteFrames = ref(0)
+const lightingLastIncompleteFrame = ref('')
 const spotlightBackgroundSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
@@ -3745,6 +3749,28 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
   }
 }
 
+async function prepareStageLighting() {
+  if(!lightingEnabled.value && !beamEffectsEnabled.value)return true
+  const song=selectedSong.value
+  if(!song)return false
+  if(!stageEffectIndex.value){
+    const index=await fetchLiveChibiStageEffectIndex({signal:lifetime.signal})
+    if(stageDisposed || selectedSong.value!==song)return false
+    stageEffectIndex.value=index
+  }
+  const index=stageEffectIndex.value,jobs=[]
+  if(song.spotlightEvents?.some(e=>!e.hide))
+    jobs.push(spotlightSprites.prepare(index.spotlight,index.assets))
+  const pinAssets=new Set((song.pinspotlightEvents||[]).filter(e=>!e.hide).map(e=>e.asset))
+  for(const asset of pinAssets)
+    jobs.push(pinspotlightSprites.prepare(pinspotlightModelForAsset(index.pinspotlight,index.assets,asset),index.assets))
+  if(jobs.length)jobs.push(spotlightBackgroundSprites.prepare(index.spotlightBackground,index.assets))
+  const ready=await Promise.all(jobs)
+  if(stageDisposed || selectedSong.value!==song)return false
+  if(!ready.every(Boolean))throw new Error('舞台聚光灯或蒙版资源尚未就绪')
+  return true
+}
+
 async function seekStage() {
   const targetTime = stageTime.value
   stopStage()
@@ -3756,6 +3782,7 @@ async function seekStage() {
   applyCurrentLipSync()
   syncStageVocalMix()
   await syncStageBackground()
+  if(!await prepareStageLighting())return
   syncSpotlights()
   syncLaserlights()
   await syncPinspotlights()
@@ -3785,6 +3812,8 @@ async function toggleStage() {
   const runtimeSnapshot = [...runtimes.entries()]
   const current = () => intent.current() && !stageDisposed && runtimeSnapshot.every(([position,runtime]) => runtimes.get(position) === runtime)
   stageStarting.value = true
+  lightingIncompleteFrames.value = 0
+  lightingLastIncompleteFrame.value = ''
   try {
   // Keep resume inside the original tap, before motion/resource awaits.
   if (stageVocalEnabled.value && stageVocalReady.value && !await stageVocalSession.unlock()) {
@@ -3794,6 +3823,7 @@ async function toggleStage() {
   if (!current()) return
   if (!await preloadSongMotions(intent)) { if (current()) stageVocalSession.pause(); return }
   if (!current()) return
+  if(!await prepareStageLighting() || !current())return
   if (stageTime.value >= stageDuration.value) stageTime.value = 0
   if (stageVocalEnabled.value && stageVocalReady.value || stagePlaybackAudios().length) {
     stageTime.value = nativeStageAudioStartTime(motionClockTrack.value,stageTime.value)
@@ -3911,6 +3941,15 @@ function updateStage(now) {
   if (stageTime.value >= stageDuration.value) {
     stopStage()
     return
+  }
+  const pendingLights = [
+    ...spotlightSprites.pendingIds.map(id=>`spotlight:${id}`),
+    ...pinspotlightSprites.pendingIds.map(id=>`pinspotlight:${id}`),
+    ...spotlightBackgroundSprites.pendingIds.map(id=>`background:${id}`),
+  ]
+  if(pendingLights.length){
+    lightingIncompleteFrames.value++
+    lightingLastIncompleteFrame.value = `${stageTime.value.toFixed(2)}:${pendingLights.join(',')}`
   }
   app?.ticker.update(now)
   measureStageFrame(gap, performance.now() - workStart, cap, now)

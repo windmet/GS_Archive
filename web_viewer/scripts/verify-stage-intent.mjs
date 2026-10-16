@@ -17,7 +17,8 @@ function fixture(boundary='audio'){
   const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
   const c={app:null,lifetime:new AbortController(),stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
     ...nativeClock,motionClockTrack:ref({bgmOffsetSeconds:0}),stageClockAudio:()=>audios[0],
-    stageAudioTailActive:false,
+    stageAudioTailActive:false,lightingIncompleteFrames:ref(0),lightingLastIncompleteFrame:ref(''),
+    prepareStageLighting:()=>boundary==='lighting'?gate.promise:Promise.resolve(true),
     stageVocalEnabled:ref(boundary==='unlock'),stageVocalReady:ref(boundary==='unlock'),audioError:ref(''),stageIntent:createPlaybackIntent(()=>''),stageAudioOwners:new Map(),runtimes:new Map([[1,runtime]]),activePositions:ref([1]),activeSlots:ref([{}]),
     stageVocalSession:{error:ref(''),currentTime:ref(0),duration:ref(120),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
     preloadSongMotions:()=>boundary==='preload'?gate.promise:Promise.resolve(true),syncSlotAtTime:()=>boundary==='slots'?gate.promise:Promise.resolve(),resetEventIndices(){},syncBackmonitor(){},syncStagePlaybackTime(){},stagePlaybackAudios:()=>audios,
@@ -197,7 +198,7 @@ for(const vocal of [false,true]) {
   assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,1)
   f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0);cases++
 }
-for(const boundary of ['unlock','preload','slots']){
+for(const boundary of ['unlock','preload','lighting','slots']){
   const f=fixture(boundary),p=f.c.toggleStage();await flush();assert(f.c.stageStarting.value)
   f.c.stopStage();f.gate.resolve(true);await p
   assert(!f.c.playing.value&&!f.c.stageStarting.value);assert.equal(f.frames.size,0);assert.equal(f.native.length,0);cases++

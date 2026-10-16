@@ -70,7 +70,7 @@ loads[3].resolve({ current: 'pool' })
 await settle()
 assert.equal(store.runtimes.size, 1)
 assert.equal(store.ensure(1, model, assets), store.runtimes.get(1))
-store.ensure(2, model, assets)
+assert.ok(store.ensure(2, model, assets),'A new lamp ID with loaded native textures must exist before this frame renders')
 await settle()
 assert.equal(loads.length, 4)
 assert.equal(store.runtimes.size, 2)
@@ -92,3 +92,48 @@ assert.equal(loads.length, 6, 'Failure does not trigger a request on every anima
 store.release()
 assert.equal(destroyedTextures.length, 5, 'Successful sibling texture is released after a failed load')
 console.log('Native Spotlight shared textures, late stage loads, duplicate IDs and partial failure disposal passed')
+
+// Preload only native textures; never create an early visible lamp. A new ID
+// must be ready in the very same stack as its Show, before any microtask.
+const preparedLoads=[],preparedDestroyed=[]
+let preparedReady=0
+const prepared=createSpotlightSpriteStore({
+ loadTexture:async file=>{preparedLoads.push(file);return {file}},
+ createRuntime:(id,layers,textures)=>({id,layers,textures}),
+ destroyRuntime:()=>{},destroyTexture:t=>preparedDestroyed.push(t),
+ onReady:()=>preparedReady++,onError:error=>{throw error},
+})
+assert.equal(await prepared.prepare(null,assets),false)
+assert.equal(await prepared.prepare(model,assets),true)
+assert.equal(prepared.runtimes.size,0)
+assert.deepEqual(preparedLoads,['cone.png','pool.png'])
+for(const id of [1,2,7,20])assert.ok(prepared.ensure(id,model,assets),`Same-frame Show ${id}`)
+assert.equal(preparedReady,0,'Synchronous install must not recursively re-enter the frame sync')
+assert.deepEqual(prepared.pendingIds,[])
+prepared.release();assert.equal(preparedDestroyed.length,2)
+const pendingPrepare=prepared.prepare(model,assets);prepared.release()
+assert.equal(await pendingPrepare,false,'Released preparation cannot qualify another stage generation')
+assert.equal(prepared.runtimes.size,0)
+console.log('PASS future-ID same-frame install, texture-only preparation and released-generation rejection')
+
+const {pinspotlightModelForAsset}=await import('../src/core/chibiPinspotlightSprites.js')
+const catalog=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))
+const choreography=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url)))
+const selected={value:null},effects={value:catalog},preparedCalls=[]
+const prepareStore=family=>({prepare:async model=>{preparedCalls.push({family,model});return Boolean(model)}})
+const prepareActual=new Function('lightingEnabled','beamEffectsEnabled','selectedSong','stageEffectIndex','stageDisposed',
+ 'fetchLiveChibiStageEffectIndex','lifetime','spotlightSprites','pinspotlightSprites','spotlightBackgroundSprites','pinspotlightModelForAsset',
+ source.match(/async function prepareStageLighting\([^]*?\n\}/)[0]+';return prepareStageLighting')(
+ {value:true},{value:true},selected,effects,false,async()=>catalog,new AbortController(),
+ prepareStore('spotlight'),prepareStore('pinspotlight'),prepareStore('background'),pinspotlightModelForAsset)
+for(const song of choreography.songs){
+ selected.value=song;preparedCalls.length=0
+ assert.equal(await prepareActual(),true)
+ const expectedPins=new Set(song.pinspotlightEvents.filter(e=>!e.hide).map(e=>e.asset)).size
+ assert.equal(preparedCalls.filter(c=>c.family==='pinspotlight').length,expectedPins)
+ assert.equal(preparedCalls.filter(c=>c.family==='spotlight').length,song.spotlightEvents.some(e=>!e.hide)?1:0)
+ assert.equal(preparedCalls.filter(c=>c.family==='background').length,preparedCalls.length?1:0)
+}
+effects.value={...catalog,spotlight:null};selected.value=choreography.songs.find(s=>s.songCode==='byndtd')
+await assert.rejects(prepareActual(),/资源尚未就绪/)
+console.log('PASS actual SFC preparation for all 118 arrangements, future mask variants and missing-resource rejection')

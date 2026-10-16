@@ -87,7 +87,9 @@ const c={...clock,motionClockTrack:ref(offsetTrack),stageVocalEnabled:ref(false)
   frameCap:()=>0,lastStageFrame:0,performance:{now:()=>0},selectedSong:ref({}),
   playbackStartOffset:0,playbackStartedAt:0,playbackSpeed:ref(1),stageTransportReady:ref(false),
   activeSlots:ref([]),resetEventIndices(){},applyCurrentLipSync(){},syncStageVocalMix(){},
-  syncStageBackground(){},syncSpotlights(){},syncLaserlights(){},syncPinspotlights(){},
+  syncStageBackground(){},prepareStageLighting:async()=>true,syncSpotlights(){},syncLaserlights(){},syncPinspotlights(){},
+  spotlightSprites:{pendingIds:[]},pinspotlightSprites:{pendingIds:[]},spotlightBackgroundSprites:{pendingIds:[]},
+  lightingIncompleteFrames:ref(0),lightingLastIncompleteFrame:ref(''),
   applyStageLighting(){},applyCameraTransform(){},syncBackmonitor(){},syncImageLayers(){},syncObjectLayers(){},app:null,
 }
 vm.createContext(c)
