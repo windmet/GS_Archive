@@ -1,3 +1,4 @@
+import { attachWholeScreen } from '../core/chibiWholeScreen.js'
 import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
 import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
 import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
@@ -84,14 +85,15 @@ async function liveJson(relativePath, options={}, optional=false) {
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
 export async function fetchLiveChibiChoreography(file,{signal}={}) {
-  const [text,spotlights]=await Promise.all([
+  const [text,spotlights,wholeScreen]=await Promise.all([
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
     indexTransport.load('/data/stage-spotlight-commands.json',{signal}),
+    indexTransport.load('/data/stage-whole-screen.json',{signal}),
   ])
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   const hash=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')
-  return attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash)
+  return attachWholeScreen(attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash),JSON.parse(wholeScreen),hash)
 }
 export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
   // Both texts use the bounded transport. Hash the actual loaded choreography,

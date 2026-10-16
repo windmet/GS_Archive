@@ -43,7 +43,7 @@ export const STAGE_COMMAND_BINDINGS = {
     'stage-motion-offset', 'randomMotionDueTime → performanceEventsByPosition', 'source-identified BPM set', 'verify-chibi-motion-offset.mjs'),
   Livechara_skill: absent('技能指令'),
   Smoke: absent('烟雾'),
-  Whole_screen: absent('全屏控制'),
+  Whole_screen: bound('全屏粒子与遮罩', 'type/depth/duration/erase', 'wholeScreenEvents', 'wholeScreenAt + sampleWholeScreen', 'stage-whole-screen native prefabs/textures; Type6 deferred', 'verify-chibi-whole-screen.mjs'),
   After_Spappeal: absent('特殊演出后控制'),
   Finish: absent('结束控制'),
   Unit_serif: absent('组合台词'),

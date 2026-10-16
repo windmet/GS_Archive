@@ -20,6 +20,9 @@
     :data-position-tween-ms="POSITION_TWEEN_MS"
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
+    :data-whole-screen-particles="wholeScreenCount"
+    :data-whole-screen-types="wholeScreenTypes"
+    :data-whole-screen-deferred="wholeScreenDeferred"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
     :data-ground-registration="chibiGroundRegistration(selectedSong?.songCode).id"
     :data-motion-tempo="motionClockTempo ?? ''"
@@ -578,6 +581,7 @@ import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo }
 import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
+import { createWholeScreenRenderer } from '../core/chibiWholeScreenRenderer.js'
 import { nativeCharacterScale } from '../core/chibiNativeCharacterGeometry.js'
 import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotionMixWindowMs,
   nativeStageAudioOffsetMs, nativeStageTimeFromAudio, nativeStageAudioTime,
@@ -636,6 +640,9 @@ let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
 const manifest = shallowRef(null)
 const choreography = shallowRef(null)
+const wholeScreenRenderer=createWholeScreenRenderer(PIXI)
+const wholeScreenCount=ref(0),wholeScreenTypes=ref('')
+const wholeScreenDeferred=computed(()=>[...new Set((selectedSong.value?.wholeScreenEvents||[]).flatMap(e=>{const m=choreography.value?.wholeScreen?.models[e.type];return m?.kind==='unsupported'?[m.reason]:m?.deferred||[e.unresolvedReason].filter(Boolean)}))].join(','))
 const commandInventory = shallowRef(null)
 const commandInventoryState = ref('not_requested')
 const lipSyncReady = ref(false)
@@ -1325,6 +1332,7 @@ onBeforeUnmount(() => {
   releaseBackmonitor()
   releaseImageLayers()
   releaseObjectLayers()
+  wholeScreenRenderer.clear()
   releaseSpotlights()
   stagelightSprites.release()
   suspensionSprites.release()
@@ -2096,6 +2104,10 @@ function syncCharacterLayers() {
 }
 
 function applyStageLighting() {
+  if(app && cameraContainer){
+    const result=wholeScreenRenderer.update(choreography.value?.wholeScreen,selectedSong.value?.wholeScreenEvents,stageTime.value,cameraContainer,app.renderer.width/app.renderer.resolution,app.renderer.height/app.renderer.resolution,environmentScale.value,objectLayersEnabled.value)
+    wholeScreenCount.value=result.count;wholeScreenTypes.value=result.types.join(',')
+  }
   syncCharacterLayers()
   syncStagelights()
   syncSuspensionlights()
@@ -2989,6 +3001,7 @@ async function syncObjectLayers() {
   if (!cameraContainer || !selectedSong.value || !objectLayerIndex.value) return
   if (objectLayerSongId !== selectedSong.value.id) {
     releaseObjectLayers()
+  wholeScreenRenderer.clear()
     objectLayerSongId = selectedSong.value.id
   }
   const sequence = objectLayerSequence
@@ -3454,6 +3467,7 @@ async function handleSongChange() {
   releaseStageBackground()
   releaseImageLayers()
   releaseObjectLayers()
+  wholeScreenRenderer.clear()
   releaseBackmonitor()
   app?.render()
   booting.value = true
@@ -3750,6 +3764,11 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 }
 
 async function prepareStageLighting() {
+  if(objectLayersEnabled.value && selectedSong.value?.wholeScreenEvents) {
+    const song=selectedSong.value
+    await wholeScreenRenderer.prepare(choreography.value.wholeScreen,song.wholeScreenEvents)
+    if(stageDisposed || selectedSong.value!==song)return false
+  }
   if(!lightingEnabled.value && !beamEffectsEnabled.value)return true
   const song=selectedSong.value
   if(!song)return false
