@@ -1,3 +1,4 @@
+import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
 import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
 import { attachBloom } from '../core/chibiBloomParticles.js'
 import { validateStagelightData } from '../core/chibiStagelights.js'
@@ -81,7 +82,16 @@ async function liveJson(relativePath, options={}, optional=false) {
   catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
-export const fetchLiveChibiChoreography = (file,options) => liveJson(file,options)
+export async function fetchLiveChibiChoreography(file,{signal}={}) {
+  const [text,spotlights]=await Promise.all([
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    indexTransport.load('/data/stage-spotlight-commands.json',{signal}),
+  ])
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  const hash=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  return attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash)
+}
 export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
   // Both texts use the bounded transport. Hash the actual loaded choreography,
   // so an old RAW snapshot cannot silently describe a newer resource corpus.

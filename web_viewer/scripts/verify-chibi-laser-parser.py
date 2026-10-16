@@ -73,7 +73,7 @@ if args.native_elf:
     for o in UnityPy.load(str(bundle)).objects:
         if o.type.name=='TextAsset' and o.read().m_Name=='hndmkh_live_effect':
             payload=o.read().m_Script
-            if isinstance(payload,bytes):payload=payload.decode('utf8-sig')
+            if isinstance(payload,bytes):payload=payload.decode('utf-8-sig')
             rows=[r for r in csv.DictReader(io.StringIO(payload)) if r.get('type')=='Laserlight' and r.get('value2')=='1' and r.get('value101')!='1']
     assert len(rows)==6 and all(r['time']=='26550' and r['value3']=='6000' and r['value10']=='1200' for r in rows)
     print('PASS re-read APK style1/controller/clip hashes, decrypted ELF and six RAW hndmkh alpha/period witnesses')
@@ -121,7 +121,7 @@ if args.native_elf:
             text=asset.read()
             if text.m_Name not in by_name:continue
             payload=text.m_Script
-            if isinstance(payload,bytes):payload=payload.decode('utf8-sig')
+            if isinstance(payload,bytes):payload=payload.decode('utf-8-sig')
             native_rows=[]
             for row in csv.DictReader(io.StringIO(payload)):
                 if row.get('type')!='Laserlight' or row.get('value101')=='1':continue

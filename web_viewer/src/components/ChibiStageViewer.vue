@@ -81,6 +81,8 @@
     data-stagelight-animation="native-director-channels-projection-rng-partial"
     :data-spotlight-ids="visibleSpotlightIds.join(',')"
     :data-spotlight-unresolved-ids="unresolvedSpotlightIds.join(',')"
+    :data-spotlight-free-ids="freeSpotlightIds.join(',')"
+    :data-spotlight-contract="selectedSong?.spotlightContract || ''"
     :data-spotlight-renderer="stageEffectIndex?.spotlight ? 'native-sprites' : 'resources-unavailable'"
     :data-laserlight-count="visibleLaserlightCount"
     :data-laserlight-ids="visibleLaserlightIds.join(',')"
@@ -555,6 +557,7 @@ import { getSongUrl } from '../utils/AssetResolver.js'
 import { fetchSongTimelineManifest } from '../utils/songPerformanceData.js'
 import { resolveSongStageHandoff } from '../core/songStageHandoff.js'
 import { buildStageVfxCoverage } from '../core/stageVfxCoverage.js'
+import { spotlightTimelineAt, spotlightPoint } from '../core/chibiSpotlightTimeline.js'
 import { spotlightBackgroundAt } from '../core/chibiSpotlightBackground.js'
 import { spotlightSortOffsetsAt, spotlightBackgroundOrderAt } from '../core/chibiCharacterLayers.js'
 import { createBackmonitorLayer, setBackmonitorLayerAlpha, destroyBackmonitorLayer } from '../core/chibiBackmonitorMaterials.js'
@@ -718,6 +721,7 @@ const floorParticleState = ref('')
 const visibleSpotlightCount = ref(0)
 const visibleSpotlightIds = ref([])
 const unresolvedSpotlightIds = ref([])
+const freeSpotlightIds = ref([])
 const visibleLaserlightCount = ref(0)
 const visibleLaserlightIds = ref([])
 const visibleLaserParticleCount = ref(0)
@@ -2187,44 +2191,15 @@ function syncSpotlightBackground() {
 }
 
 function spotlightStatesAt(milliseconds) {
-  const states = new Map()
-  for (const event of (selectedSong.value?.spotlightEvents || [])) {
-    const eventTime = Number(event.time)
-    if (eventTime > milliseconds) break
-    const previous = states.get(event.id)
-    if (event.hide) {
-      if (!previous) continue
-      states.set(event.id, {
-        ...previous,
-        fadeStart: eventTime,
-        fadeDuration: Math.max(0, Number(event.duration) || 0),
-      })
-      continue
-    }
-    states.set(event.id, {
-      ...event,
-      alpha: 1,
-      fadeStart: null,
-      fadeDuration: 0,
-    })
-  }
-  for (const state of states.values()) {
-    if (state.fadeStart === null) continue
-    state.alpha = state.fadeDuration <= 0
-      ? 0
-      : Math.max(0, 1 - (milliseconds - state.fadeStart) / state.fadeDuration)
-  }
-  return states
+  return spotlightTimelineAt(selectedSong.value?.spotlightEvents,milliseconds,layoutCoordinatesForStage)
 }
 
 function createSpotlightRuntime(id, layers, textures) {
   const container = markRaw(new PIXI.Container())
   const sprites = layers.map((layer, index) => {
-    const sprite = markRaw(new PIXI.Sprite(textures[index]))
-    sprite.anchor.set(layer.anchorX, layer.anchorY)
+    const sprite = markRaw(createNativeLightQuad(PIXI,textures[index],layer.anchorX,layer.anchorY))
     sprite.position.set(layer.x, layer.y)
     sprite.scale.set(layer.scaleX, layer.scaleY)
-    sprite.blendMode = PIXI.BLEND_MODES.ADD
     container.addChild(sprite)
     return sprite
   })
@@ -2233,23 +2208,17 @@ function createSpotlightRuntime(id, layers, textures) {
 }
 
 function spotlightTargetAt(state, milliseconds) {
-  const position = Number(state.stagePosition)
-  // A zero/unbound target has no resolved performer position. The CSV does
-  // not provide the free Y coordinate previously invented here as 180.
-  // Keep its environment state, but do not draw a phantom pool at centre stage.
-  if (!Number.isInteger(position) || position <= 0) return null
-  const target = layoutCoordinatesForStage(position, milliseconds)
-  if (!target || !Number.isFinite(target.x) || !Number.isFinite(target.y)) return null
-  return target
+  return state.point || spotlightPoint(state,milliseconds,layoutCoordinatesForStage)
 }
 
 function syncSpotlights() {
   if (!app || !cameraContainer) return
   const states = spotlightStatesAt(stageTime.value)
   const active = beamEffectsEnabled.value
-    ? [...states.values()].filter(state => state.alpha > 0.001 && state.beamColor)
+    ? [...states.values()].filter(state => state.alpha > 0.001 && state.scale !== 0 && state.beamColor)
     : []
   unresolvedSpotlightIds.value = []
+  freeSpotlightIds.value = []
   visibleSpotlightIds.value = []
   for (const runtime of spotlightRuntimes.values()) runtime.container.visible = false
   const width = app.renderer.width / app.renderer.resolution
@@ -2263,9 +2232,10 @@ function syncSpotlights() {
     }
     const runtime = spotlightSprites.ensure(state.id, stageEffectIndex.value?.spotlight, stageEffectIndex.value?.assets)
     if (!runtime) continue
-    const { x: targetX, y: targetY } = projectChibiGround(selectedSong.value?.songCode, target, width, height)
-    runtime.container.position.set(targetX, targetY)
-    runtime.container.scale.set(viewportScale)
+    const fit=viewportScale*environmentScale.value
+    runtime.container.position.set(width/2+target.x*fit,height/2+target.y*fit)
+    runtime.container.scale.set(fit*state.scale)
+    if(!state.stagePosition)freeSpotlightIds.value.push(state.id)
     runtime.container.zIndex = (state.depth ?? 1800) + 1
     runtime.container.alpha = Math.max(0, Math.min(1, state.alpha))
     runtime.container.visible = true
@@ -2274,6 +2244,7 @@ function syncSpotlights() {
   }
   visibleSpotlightIds.value.sort((a, b) => a - b)
   unresolvedSpotlightIds.value.sort((a, b) => a - b)
+  freeSpotlightIds.value.sort((a,b)=>a-b)
   visibleSpotlightCount.value = visibleSpotlightIds.value.length
 }
 
@@ -2523,6 +2494,7 @@ function releaseSpotlights() {
   visibleSpotlightCount.value = 0
   visibleSpotlightIds.value = []
   unresolvedSpotlightIds.value = []
+  freeSpotlightIds.value = []
 }
 
 function laserlightStatesAt(milliseconds) {

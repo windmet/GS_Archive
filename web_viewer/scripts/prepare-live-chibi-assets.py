@@ -37,6 +37,7 @@ from live_chibi_body_colors import body_color_events
 from live_chibi_foot_colors import foot_color_events
 from live_chibi_image_colors import image_color_events
 from live_chibi_camera_controls import camera_controls
+from live_chibi_spotlight_commands import spotlight_command
 from live_chibi_backmonitor import parse_backmonitor_row
 
 
@@ -652,22 +653,9 @@ def read_choreography_scripts(
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide, duration = parse_hide_transition(row, parse_number(row[5], 1))
-                    spotlight_events.append(
-                        {
-                            "time": event_time,
-                            "id": parse_number(row[2]),
-                            "targetSlot": parse_optional_number(row[3]),
-                            "x": parse_optional_number(row[4]),
-                            "duration": duration,
-                            "beamColor": row[6].strip() or None,
-                            "characterDepth": parse_optional_number(row[7]),
-                            "environmentColor": row[8].strip() or None,
-                            "environmentOpacity": parse_optional_number(row[9]),
-                            "depth": parse_optional_number(row[10]),
-                            "hide": hide,
-                        }
-                    )
+                    # Native value4 is Y, value6 is uniform scale. Show always
+                    # moves for .5 seconds; erases use the named value102 field.
+                    spotlight_events.append(spotlight_command(dict(zip(header, row))))
                     spotlight_command_order.append(("spotlight", spotlight_events[-1]))
                     continue
                 if row[0] == "Pinspotlight" and len(row) >= 13:

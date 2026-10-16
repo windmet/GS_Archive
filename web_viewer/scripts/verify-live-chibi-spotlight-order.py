@@ -23,11 +23,19 @@ songs, _ = prepare.read_choreography_scripts(
 generated = {song['id']: song for song in songs}
 path = ROOT / 'public/assets/live-chibi/choreography/index.json'
 index = json.loads(path.read_text(encoding='utf-8'))
+sidecar=json.loads((ROOT/'public/data/stage-spotlight-commands.json').read_text(encoding='utf8'))
 count = 0
 for song in index['songs']:
     native = generated[song['id']]
     for family in ('spotlight', 'pinspotlight'):
-        assert song[family + 'Events'] == native[family + 'Events'], (song['id'], family)
+        if family=='spotlight':
+            # Current media index uses the legacy names. Its replacement
+            # sidecar has the canonical native fields and identical identity/order.
+            canonical=[{k:v for k,v in e.items() if k!='sourceRow'} for e in sidecar['songs'][song['id']]['events']]
+            assert canonical==native['spotlightEvents'],song['id']
+            assert [(e['time'],e['id'],e['hide']) for e in song['spotlightEvents']]==[(e['time'],e['id'],e['hide']) for e in canonical]
+        else:
+            assert song[family + 'Events'] == native[family + 'Events'], (song['id'], family)
     if options.write:
         song['spotlightCommandOrder'] = native['spotlightCommandOrder']
     else:

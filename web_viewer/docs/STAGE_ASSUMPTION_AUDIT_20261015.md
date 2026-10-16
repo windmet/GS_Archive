@@ -105,3 +105,8 @@
 ## 10-16 粒子激光公共链路补充
 
 [粒子激光原生链路](NATIVE_LASER_PARTICLE_CHAIN_20261016.md)收束60个系统的父平面/Local对齐、逐系统duration时钟、整体缩放、value10透明度与Shader950真实clamp/混合，删除Not Alone 1.8和反向X等旧修补；全库1,083条粒子指令按同一来源合同验收。Shader导出反证了上一批“命令alpha1.2应直接增亮”的推论，代码和记录一并纠正。尚未完成的旧悬灯守卫、Spotlight自由目标和缺家族继续保留，不将本批宣称为所有灯光完成。
+
+
+## 10-16 Spotlight 字段与自由位置补充
+
+[Spotlight 原生链路](NATIVE_SPOTLIGHT_CHAIN_20261016.md)确认value4是自由Y、value6是根缩放，删除旧duration/characterDepth误读；补齐0.5秒OutQuad、离屏移动、追随、Hide冻结/重显以及材质950混合。118编排以RAW生成并绑定原index摘要的新数据接入；本页此前“Spotlight自由目标未收束”的状态由本批取代。旧悬灯守卫和缺家族仍待处理。

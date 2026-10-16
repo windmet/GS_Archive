@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import { createNativeLightQuad } from '../src/core/chibiLightQuad.js'
 import { createSpotlightSpriteStore } from '../src/core/chibiSpotlightSprites.js'
 
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-spotlight-prefab.json', import.meta.url), 'utf8'))
 const source = fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue', import.meta.url), 'utf8')
 const createSource = source.slice(source.indexOf('function createSpotlightRuntime('), source.indexOf('function syncSpotlights('))
 const pair = () => ({ set(...values) { this.values = values } })
-class Sprite { constructor(texture) { this.texture = texture; this.anchor = pair(); this.position = pair(); this.scale = pair() } }
+class SimpleMesh { constructor(texture,vertices) { this.texture=texture; this.vertices=vertices; this.position=pair(); this.scale=pair() } }
+class MeshMaterial { constructor(texture,options) { this.texture=texture; this.uniforms=options.uniforms } }
 class Container { constructor() { this.children = [] } addChild(sprite) { this.children.push(sprite) } }
 const camera = new Container()
-const factory = new Function('PIXI', 'markRaw', 'cameraContainer', createSource + '\nreturn createSpotlightRuntime')(
-  { Container, Sprite, BLEND_MODES: { ADD: 'native-add' } }, value => value, camera)
-const nativeTextures = [{ asset: 'Spotlight1' }, { asset: 'Spotlight2' }]
+const factory = new Function('PIXI', 'markRaw', 'cameraContainer', 'createNativeLightQuad', createSource + '\nreturn createSpotlightRuntime')(
+  { Container, SimpleMesh, MeshMaterial, Program:{from:()=>({})}, BLEND_MODES: { ADD_NPM: 'native-add' } }, value => value, camera, createNativeLightQuad)
+const nativeTextures = [{ asset: 'Spotlight1',width:1024,height:1024 }, { asset: 'Spotlight2',width:512,height:512 }]
 const actualRuntime = factory(20, fixture.model.layers, nativeTextures)
 assert.equal(camera.children[0], actualRuntime.container)
 assert.equal(actualRuntime.sprites.length, 2)
@@ -20,12 +22,14 @@ actualRuntime.sprites.forEach((sprite, index) => {
   assert.equal(sprite.texture, nativeTextures[index])
   assert.deepEqual(sprite.position.values, [layer.x, layer.y])
   assert.deepEqual(sprite.scale.values, [layer.scaleX, layer.scaleY])
-  assert.deepEqual(sprite.anchor.values, [layer.anchorX, layer.anchorY])
+  assert.equal(sprite.vertices[0],-nativeTextures[index].width*layer.anchorX)
+  assert.equal(sprite.vertices[1],-nativeTextures[index].height*layer.anchorY)
+  assert.equal(sprite.shader.batchable,false)
   assert.equal(sprite.blendMode, 'native-add')
 })
 assert.equal(source.includes('ensureSpotlightConeTexture'), false, 'Generated cone must not replace the native resource')
 
-const model = { layers: [{ asset: 'Spotlight1' }, { asset: 'Spotlight2' }] }
+const model = { layers: [{ asset: 'Spotlight1',width:1024,height:1024 }, { asset: 'Spotlight2',width:512,height:512 }] }
 const assets = { Spotlight1: { file: 'cone.png' }, Spotlight2: { file: 'pool.png' } }
 const deferred = () => {
   let resolve, reject
