@@ -28,6 +28,11 @@ for(let mode=1;mode<=6;mode++) {
 }
 const fade={time:100,command:'Searchlight_fade',values:['1','1000','0']}
 assert.equal(searchlightsAt([show,fade],600)[0].alpha,.25)
+// Take queues Fade 100 ms before Show; the tween must survive the activation.
+const preFade={time:0,command:'Searchlight_fade',values:['2','200','600']}
+const lateShow={time:100,command:'Searchlight_show',hide:false,values:['2','fx_in_bnckgy_pinspotlight','0','0','#ffffff','0','0','0','0','1000','1690']}
+assert.ok(searchlightsAt([preFade,lateShow],50)[0].alpha>0)
+assert.equal(searchlightsAt([preFade,lateShow],500)[0].alpha,.6)
 const pulse={...show,values:show.values.map((v,i)=>i===2?'2':v)}
 assert.equal(searchlightsAt([pulse],125,()=>120)[0].alpha,.5)
 assert.equal(searchlightsAt([pulse],250,()=>120)[0].alpha,1)

@@ -61,9 +61,14 @@ export function searchlightsAt(events,time,tempoAt=()=>null,positionAt=()=>null)
         s={...s,id,asset:e.values[1],alpha:n(e,4)/1000,hsv:hsv(e.values[4]),target:n(e,6),x:n(e,7),y:n(e,8),angle:n(e,9)/(e.command.endsWith('_2')?1:1000),rootScale:n(e,10)/1000,depth:n(e,11),
           scaleX:s?.scaleX??1,scaleY:s?.scaleY??1,flash:n(e,3),flashTime:e.time,tempo:tempoAt(e.time),deferred:null}
       }
+    } else if(e.command==='Searchlight_fade') {
+      // Native fade targets the object even when Play comes later: Take queues
+      // Fade 100 ms before Show, and the tween must survive the activation.
+      const base=s || {id,alpha:0,hsv:[0,0,0],scaleX:1,scaleY:1,depth:0,x:0,y:0,angle:0,rootScale:0}
+      base.fade={time:e.time,duration:n(e,2),from:base.alpha,to:n(e,3)/1000}
+      s=base
     } else if(s) {
-      if(e.command==='Searchlight_fade')s.fade={time:e.time,duration:n(e,2),from:s.alpha,to:n(e,3)/1000}
-      else if(e.command==='Searchlight_coloranim') {
+      if(e.command==='Searchlight_coloranim') {
         const to=hsv(e.values[1]),from=s.hsv
         if(n(e,4)===0)to[0]+=from[0]<=to[0]?-1:1
         s.colorTween={time:e.time,duration:n(e,3),from,to}
