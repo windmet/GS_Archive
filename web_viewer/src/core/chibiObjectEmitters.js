@@ -30,18 +30,31 @@ function distance(speed,limit,age) {
   while(t<age){const dt=Math.min(1/60,age-t);if(v>limit.speed)v+=(limit.speed-v)*(1-Math.pow(1-limit.dampen,dt*30));d+=v*dt;t+=dt}
   return Math.sign(speed)*d
 }
+// RotationModule curves are an angular rate over particle lifetime; integrate on the same 60 Hz boundary as distance().
+function rotationAt(c,age,life,r) {
+  if(!c)return 0
+  if(c.mode!==1)return sample(c,0,r)*age
+  let a=0,t=0
+  while(t<age){const dt=Math.min(1/60,age-t);a+=sample(c,life>0?Math.min(1,(t+dt/2)/life):0,r)*dt;t+=dt}
+  return a
+}
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) {
-  const elapsed=(time-activatedAt)/1000-system.delay,cutoff=(stoppedAt-activatedAt)/1000-system.delay
-  if(elapsed<0 || cutoff<0)return []
+  const delay=typeof system.delay==='number'?{mode:0,value:system.delay,min:system.delay}:(system.delay||{mode:0,value:0,min:0})
+  const prewarm=system.prewarm?Number(system.duration)||0:0
+  const base=(time-activatedAt)/1000+prewarm,cutoff=(stoppedAt-activatedAt)/1000+prewarm
+  const earliest=base-Math.max(0,Number(delay.min)||0)
+  if(earliest<0 || cutoff<0)return []
   const maxLife=Math.max(system.lifetime.scalar,system.lifetime.minScalar),period=system.duration
-  const last=system.looping?Math.floor(Math.min(elapsed,cutoff)/period):0
-  const first=system.looping?Math.max(0,Math.floor((elapsed-maxLife)/period)):0
+  const last=system.looping?Math.floor(Math.min(earliest,cutoff)/period):0
+  const first=system.looping?Math.max(0,Math.floor((earliest-maxLife)/period)):0
   const matrix=emitterMatrix(system.chain),seed=[...system.source.pathId].reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0)|0,7),out=[]
   for(let loop=first;loop<=last;loop++) {
     const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
     if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
     for(const [index,birth] of births.entries()) {
-      const born=loop*period+birth,age=elapsed-born,id=loop*100000+index,rnd=c=>random(seed,id,c),life=sample(system.lifetime,0,rnd(0))
+      const id=loop*100000+index,rnd=c=>random(seed,id,c),life=sample(system.lifetime,0,rnd(0))
+      const wait=delay.mode===3?delay.min+(delay.value-delay.min)*rnd(20):delay.value
+      const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
       let p=shape?euler(shape.type===12?{x:(rnd(1)*2-1)*shape.radius.value*shape.m_Scale.x,y:0,z:0}:{x:(rnd(1)-.5)*shape.m_Scale.x,y:(rnd(2)-.5)*shape.m_Scale.y,z:(rnd(3)-.5)*shape.m_Scale.z},shape.m_Rotation):{x:0,y:0,z:0}
@@ -49,7 +62,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
       const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,0,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
-      const a=sample(system.rotation,0,rnd(7))+(system.angularVelocity?sample(system.angularVelocity,0,rnd(13))*age:0),c=Math.cos(a),s=Math.sin(a)
+      const a=sample(system.rotation,0,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)),c=Math.cos(a),s=Math.sin(a)
       const basis=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
       const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):system.color,over=system.colorOverLife
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)

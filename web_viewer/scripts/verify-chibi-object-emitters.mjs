@@ -7,10 +7,10 @@ const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,28)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,42)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),320)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),25)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),362)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),28)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
 assert.equal(sampleObjectEmitter(meter,0,0).length,1)
@@ -38,7 +38,7 @@ assert.equal(line.length,35)
 assert.equal(Object.entries(data.assets).filter(([name])=>name.startsWith('fx_in_tkstp1_linelight_')).reduce((n,[,a])=>n+a.systems.length,0),247)
 const phases=line.map(s=>sampleObjectEmitter(s,650,0)[0]?.alpha??0)
 assert.ok(new Set(phases.map(n=>n.toFixed(5))).size>2)
-assert.equal(line[1].delay,.05000000074505806)
+assert.equal(line[1].delay.value,.05000000074505806)
 const mirror=emitterMatrix([{position:{x:0,y:0},rotation:{x:0,y:1,z:0,w:0},scale:{x:1,y:1}}])
 assert.deepEqual(mirror,{a:-1,b:0,c:0,d:1,tx:0,ty:0})
 const beam=data.assets.fx_in_plmask_incidentlight_1.systems[0]
@@ -52,5 +52,22 @@ assert.ok(smoke)
 const flow={...probe,velocity:{x:{mode:0,scalar:2},y:{mode:0,scalar:3},z:{mode:0,scalar:0}}}
 const drift=sampleObjectEmitter(flow,1500,0)[0]
 assert.equal(drift.x,100);assert.equal(drift.y,-150)
+// Prewarm: the native system is already mid-cycle on activation, so t=0 is not empty.
+const star=data.assets.fx_in_trhorz_star_2.systems[0]
+assert.equal(star.prewarm,true)
+assert.ok(sampleObjectEmitter(star,0,0).length>0,'Prewarmed star must be visible at activation')
+assert.ok(sampleObjectEmitter(data.assets.fx_in_trhorz_starline_1.systems[0],0,0).length>0)
+// Random start delay (MinMaxCurve mode 3) waits per particle; it must not emit before the minimum.
+const staggered={...probe,looping:false,delay:{mode:3,value:2,min:1},bursts:[{time:0,count:8}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4}}
+assert.equal(sampleObjectEmitter(staggered,500,0).length,0)
+assert.ok(sampleObjectEmitter(staggered,1600,0).length>0)
+// A RotationModule curve is an angular rate; the integrated angle must match a constant 1 rad/s curve.
+const turning={...probe,looping:false,bursts:[{time:0,count:1}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4},
+  angularVelocity:{mode:1,scalar:1,minScalar:0,keys:[{time:0,value:1,inSlope:0,outSlope:0},{time:1,value:1,inSlope:0,outSlope:0}]}}
+const turned=sampleObjectEmitter(turning,1000,0)[0]
+assert.ok(Math.abs(turned.a-Math.cos(1)*200)<1e-6)
+assert.ok(Math.abs(turned.c-Math.sin(1)*600)<1e-6)
+assert.equal(data.assets.fx_in_trhorz_star_1.deferred.length,3)
+assert.deepEqual([...new Set(data.assets.fx_in_trhorz_star_1.deferred.flatMap(d=>d.reasons))].sort(),['native_stretched_billboard_solver','unsupported_source_profile: Unsupported shape'])
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 29 native resources / 320 consumed + 25 explicitly deferred; 247 independent lamps, edge XY beams, mirror, burst loops, stop tails, UV and rewind passed')
+console.log('Object emitters: 43 provenance-bound resources / 362 consumed + 28 explicitly deferred; 247 lamps, edge XY beams, mirror, prewarm, random start delay, integrated rotation, burst loops, stop tails, UV and rewind passed')
