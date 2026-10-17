@@ -7,13 +7,19 @@ from live_chibi_native_particle_mask import require_native_particle_mask,native_
 
 def model(p):
     m=p['modules'];i=m['InitialModule'];e=m['EmissionModule'];r=p['renderer'];main=p['main'];s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule')
-    w.require(set(m)<=set(['InitialModule','ShapeModule','EmissionModule','UVModule','SizeModule','ColorModule','ClampVelocityModule']),'Unsupported module')
-    w.require(r['renderMode']==0 and r['alignment'] in [0,2] and not i['size3D'] and not i['rotation3D'],'Unsupported renderer')
-    w.require(not main['prewarm'] and main['simulationSpeed']==1 and main['moveWithTransform']==0 and main['scalingMode']==0,'Unsupported clock/scale')
-    w.require(i['gravityModifier']['scalar']==0 and i['startColor']['minMaxState']==0,'Unsupported initial state')
-    w.require(not s or s['type']==5,'Unsupported shape')
+    w.require(set(m)<=set(['InitialModule','ShapeModule','EmissionModule','UVModule','SizeModule','ColorModule','ClampVelocityModule','RotationModule','VelocityModule']),'Unsupported module')
+    w.require(r['enabled'] and r['pivot']==dict(x=0,y=0,z=0) and r['renderMode']==0 and r['alignment'] in [0,2] and not i['rotation3D'],'Unsupported renderer')
+    w.require(main['startDelay']['minMaxState']==0 and not main['prewarm'] and main['simulationSpeed']==1 and main['moveWithTransform']==0 and main['scalingMode']==0,'Unsupported clock/scale')
+    w.require(i['gravityModifier']['scalar']==0 and i['startColor']['minMaxState'] in [0,4],'Unsupported initial state')
+    w.require(not s or s['type'] in [5,12],'Unsupported shape')
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
-    w.require(all(t['rotation']['x']==t['rotation']['y']==0 for t in p['transformChain']),'Nonplanar emitter transform')
+    for t in p['transformChain']:
+        q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
+        w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
+    if s and s['type']==12:w.require(s['radius']['mode']==0 and i['startSpeed']['scalar']==0,'Unsupported moving edge')
+    w.require(all(i[k]['minMaxState'] in [0,3] for k in ['startLifetime','startSpeed','startSize','startRotation']),'Initial curve requires birth-time sampling')
+    if 'RotationModule' in m:w.require(m['RotationModule']['curve']['minMaxState'] in [0,3],'Angular curve requires integration')
+    if 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
     w.require(e['rateOverTime']['minMaxState']==0 and e['rateOverDistance']['scalar']==0,'Unsupported emission rate')
     bursts=[]
     for b in e['m_Bursts']:
@@ -21,50 +27,76 @@ def model(p):
         bursts.append(dict(time=b['time'],count=int(b['countCurve']['scalar'])))
     if u:w.require(u['mode']==u['timeMode']==u['animationType']==0 and u['flipU']==u['flipV']==0,'Unsupported sheet')
     if c:w.require(not c['separateAxis'] and c['drag']['scalar']==0 and c['magnitude']['minMaxState']==0,'Unsupported velocity limit')
+    w.require(len(r['materials'])==1,'Ambiguous renderer material')
+    velocity=m.get('VelocityModule')
+    if velocity:
+        w.require(not velocity['inWorldSpace'] and all(t['scale']==dict(x=1,y=1,z=1) for t in p['transformChain']) and not c,'Unsupported velocity coordinate scale/limit')
+        w.require(all(velocity[k]['minMaxState']==0 and velocity[k]['scalar']==0 for k in ['orbitalX','orbitalY','orbitalZ','orbitalOffsetX','orbitalOffsetY','orbitalOffsetZ','radial']) and velocity['speedModifier']['scalar']==1,'Unsupported orbital velocity')
+        w.require(all(velocity[k]['minMaxState'] in [0,3] for k in ['x','y','z']),'Velocity curve requires integration')
     mat=r['materials'][0];masked=mat['shader']['name'].startswith('Alpha Masked/')
     if masked:require_native_particle_mask(mat)
-    else:w.require(mat['shader']['name']=='Mobile/Particles/Additive','Unsupported material')
+    else:w.require(mat['shader']['name'] in ['Mobile/Particles/Additive','Mobile/Particles/Alpha Blended'],'Unsupported material')
     textures={t['property']:t['pathId'] for t in mat['textures']}
     one=dict(colors=[dict(time=t,r=1,g=1,b=1,a=1) for t in [0,1]],alphas=[dict(time=t,value=1) for t in [0,1]])
     return dict(source={k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']},name=p['name'],alignment=r['alignment'],sortingOrder=r['sortingOrder'],chain=p['transformChain'],
         duration=main['lengthInSec'],looping=main['looping'],delay=main['startDelay']['scalar'],capacity=i['maxNumParticles'],rate=e['rateOverTime']['scalar'],bursts=bursts,
-        shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),rotation=w.curve(i['startRotation']),color=i['startColor']['maxColor'],
+        shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),sizeY=w.curve(i['startSizeY']) if i['size3D'] else None,rotation=w.curve(i['startRotation']),color=i['startColor']['maxColor'],colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,
         colorOverLife=w.gradient(m['ColorModule']['gradient']['maxGradient']) if 'ColorModule' in m else one,sizeOverLife=w.curve(m['SizeModule']['curve']) if 'SizeModule' in m else None,
+        sizeOverLifeY=w.curve(m['SizeModule']['y']) if m.get('SizeModule',{}).get('separateAxes') else None,
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,
-        limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') else 'add')
+        velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
+        limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
 
 def extract():
     import UnityPy
     a=w.load('object_audit','audit-live-chibi-stage-objects.py');e=w.load('object_effects','prepare-live-chibi-stage-effects.py');sources=e.load_archive_sources(None)
     indexpath=ROOT/'public/assets/live-chibi/object-layers/index.json';index=json.loads(indexpath.read_text(encoding='utf8'))
-    path=sources.raw_root/'asset/song_rote77.unity3d';env=UnityPy.load(str(path));depfile=sources.raw_root/'asset/shaders_and_materials.unity3d';dep=UnityPy.load(str(depfile));dependencies={o.assets_file.name:o.assets_file for o in dep.objects}
-    entries={k:v for k,v in index['assets'].items() if k.startswith('fx_in_rote77_')};models={};records=[];textures={};images={}
-    masks=[]
-    for ob in env.objects:
-        if ob.type.name!='MonoBehaviour':continue
-        t=ob.read_typetree()
-        if '_isMaskingEnabled' not in t:continue
-        go=a.local_object(ob,t['m_GameObject'],'GameObject');chain=a.transform_chain(go)
-        w.require(t['_isMaskingEnabled']==t['_useMaskAlphaChannel']==1 and t['mainTexTiling']==dict(x=1,y=1) and t['mainTexOffset']==dict(x=0,y=0),'Changed mask flags')
-        masks.append(dict(source=a.source_ref(ob),chain=chain,texture=str(t['mainTex']['m_PathID'])))
-    for name,entry in entries.items():
-        record=a.inspect_asset(env,name,entry,True,dependencies);records.append(record);systems=[];deferred=[]
-        for p in record['particles']:
-            reasons=[]
-            if p['renderer']['renderMode']!=0:reasons.append('native_stretched_billboard_solver')
-            if 'NoiseModule' in p['modules']:reasons.append('unity_noise_displacement')
-            if reasons:deferred.append(dict(source=a.source_ref(next(o for o in env.objects if str(o.path_id)==p['pathId'])),reasons=reasons));continue
-            system=model(p);systems.append(system)
-            for identity in [system['texture'],system['maskTexture']]:
-                if not identity or identity in textures:continue
-                ob=next(o for o in env.objects if str(o.path_id)==identity);tex=ob.read();images[identity]=tex.image.convert('RGBA');textures[identity]=dict(source=a.source_ref(ob),rawSha256=w.sha(ob.get_raw_data()),file=f'/data/stage-object-emitters/{identity}.png',width=tex.m_Width,height=tex.m_Height,nativeSampling=native_particle_texture_sampling(tex))
-        root=record['rootTransformChain'][-1]['pathId']
-        bound_masks=[m for m in masks if m['chain'][-1]['pathId']==root]
-        models[name]=dict(profile='native-box-point-emitters-v1',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
-        for s in systems:
-            if s['maskTexture']:w.require(any(m['texture']==s['maskTexture'] for m in bound_masks),'Unbound per-particle mask')
+    depfile=sources.raw_root/'asset/shaders_and_materials.unity3d';dep=UnityPy.load(str(depfile));dependencies={o.assets_file.name:o.assets_file for o in dep.objects}
+    extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2'}
+    entries={k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_'))}
+    models={};records=[];textures={};images={};all_masks=[]
+    for bundle in sorted({entry['bundle'] for entry in entries.values()}):
+        path=sources.raw_root/'asset'/bundle;env=UnityPy.load(str(path));masks=[]
+        for ob in env.objects:
+            if ob.type.name!='MonoBehaviour':continue
+            t=ob.read_typetree()
+            if '_isMaskingEnabled' not in t:continue
+            go=a.local_object(ob,t['m_GameObject'],'GameObject');chain=a.transform_chain(go)
+            w.require(t['_isMaskingEnabled']==t['_useMaskAlphaChannel']==1 and t['mainTexTiling']==dict(x=1,y=1) and t['mainTexOffset']==dict(x=0,y=0),'Changed mask flags')
+            masks.append(dict(source=a.source_ref(ob),chain=chain,texture=str(t['mainTex']['m_PathID'])))
+        for name,entry in entries.items():
+            if entry['bundle']!=bundle:continue
+            record=a.inspect_asset(env,name,entry,True,dependencies);records.append(record);systems=[];deferred=[]
+            for p in record['particles']:
+                reasons=[]
+                if p['renderer']['renderMode']!=0:reasons.append('native_stretched_billboard_solver')
+                if 'NoiseModule' in p['modules']:reasons.append('unity_noise_displacement')
+                if reasons:deferred.append(dict(source=a.source_ref(next(o for o in env.objects if str(o.path_id)==p['pathId'])),reasons=reasons));continue
+                try:system=model(p)
+                except ValueError as error:
+                    deferred.append(dict(source={k:p[k] for k in ['serializedFile','pathId']},reasons=[f'unsupported_source_profile: {error}']));continue
+                if p['renderer']['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
+                    shader=next(o for o in env.objects if str(o.path_id)==p['renderer']['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
+                    values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
+                    from UnityPy.export.ShaderConverter import export_shader
+                    code=export_shader(shader.read());w.require('SV_Target0 = u_xlat16_0 * vs_COLOR0;' in code and 'vs_COLOR0 = clamp(vs_COLOR0, 0.0, 1.0);' in code,'Changed alpha shader math')
+                    system['alphaShader']=dict(source=a.source_ref(shader),rawSha256=w.sha(shader.get_raw_data()),blend=values)
+                systems.append(system)
+                for field in ['texture','maskTexture']:
+                    identity=system[field]
+                    if not identity:continue
+                    ob=next(o for o in env.objects if str(o.path_id)==identity);key=f'{ob.assets_file.name}:{identity}';system[field]=key
+                    if key in textures:continue
+                    tex=ob.read();images[key]=tex.image.convert('RGBA');filename=w.sha(key.encode())[:24]
+                    textures[key]=dict(source=a.source_ref(ob),rawSha256=w.sha(ob.get_raw_data()),file=f'/data/stage-object-emitters/{filename}.png',width=tex.m_Width,height=tex.m_Height,nativeSampling=native_particle_texture_sampling(tex))
+            root=record['rootTransformChain'][-1]['pathId']
+            bound_masks=[{**m,'texture':f'{m["source"]["serializedFile"]}:{m["texture"]}'} for m in masks if m['chain'][-1]['pathId']==root]
+            all_masks.extend(bound_masks)
+            models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
+            for system in systems:
+                if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')
     data=dict(schemaVersion=1,objectIndexSha256=w.sha(indexpath.read_bytes()),shaderBundleSha256=w.sha(depfile.read_bytes()),assets=models,textures=textures)
-    return data,dict(objects=records,masks=masks,objectIndexSha256=data['objectIndexSha256'],shaderBundleSha256=data['shaderBundleSha256']),images
+    return data,dict(objects=records,masks=all_masks,objectIndexSha256=data['objectIndexSha256'],shaderBundleSha256=data['shaderBundleSha256']),images
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write',action='store_true');args=parser.parse_args();data,fixture,images=extract()

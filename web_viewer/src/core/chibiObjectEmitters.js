@@ -9,7 +9,7 @@ const random=(seed,birth,channel)=> {
 export function emitterMatrix(chain) {
   let m={a:1,b:0,c:0,d:1,tx:0,ty:0}
   for(const t of chain) {
-    const angle=2*Math.atan2(t.rotation.z,t.rotation.w),c=Math.cos(angle),s=Math.sin(angle),a=c*t.scale.x,b=s*t.scale.x,k=-s*t.scale.y,d=c*t.scale.y
+    const {x,y,z,w}=t.rotation,a=(1-2*(y*y+z*z))*t.scale.x,b=2*(x*y+w*z)*t.scale.x,k=2*(x*y-w*z)*t.scale.y,d=(1-2*(x*x+z*z))*t.scale.y
     m={a:a*m.a+k*m.b,b:b*m.a+d*m.b,c:a*m.c+k*m.d,d:b*m.c+d*m.d,tx:a*m.tx+k*m.ty+t.position.x,ty:b*m.tx+d*m.ty+t.position.y}
   }
   return m
@@ -44,17 +44,19 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const born=loop*period+birth,age=elapsed-born,id=loop*100000+index,rnd=c=>random(seed,id,c),life=sample(system.lifetime,0,rnd(0))
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
-      let p=shape?euler({x:(rnd(1)-.5)*shape.m_Scale.x,y:(rnd(2)-.5)*shape.m_Scale.y,z:(rnd(3)-.5)*shape.m_Scale.z},shape.m_Rotation):{x:0,y:0,z:0}
+      let p=shape?euler(shape.type===12?{x:(rnd(1)*2-1)*shape.radius.value*shape.m_Scale.x,y:0,z:0}:{x:(rnd(1)-.5)*shape.m_Scale.x,y:(rnd(2)-.5)*shape.m_Scale.y,z:(rnd(3)-.5)*shape.m_Scale.z},shape.m_Rotation):{x:0,y:0,z:0}
       const v=shape?euler({x:0,y:0,z:1},shape.m_Rotation):{x:0,y:0,z:1},d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
-      p={x:p.x+(shape?.m_Position.x||0)+v.x*d,y:p.y+(shape?.m_Position.y||0)+v.y*d,z:p.z+(shape?.m_Position.z||0)+v.z*d}
-      const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100,a=sample(system.rotation,0,rnd(7)),c=Math.cos(a),s=Math.sin(a)
+      p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
+      const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
+      const sizeY=system.sizeY?sample(system.sizeY,0,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
+      const a=sample(system.rotation,0,rnd(7))+(system.angularVelocity?sample(system.angularVelocity,0,rnd(13))*age:0),c=Math.cos(a),s=Math.sin(a)
       const basis=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
-      const rgba=system.color,over=system.colorOverLife
+      const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):system.color,over=system.colorOverLife
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,
         x:(matrix.a*p.x+matrix.c*p.y+matrix.tx)*100,y:-(matrix.b*p.x+matrix.d*p.y+matrix.ty)*100,
-        a:(basis.a*c+basis.c*s)*size,b:-(basis.b*c+basis.d*s)*size,c:(basis.a*s-basis.c*c)*size,d:(-basis.b*s+basis.d*c)*size})
+        a:(basis.a*c+basis.c*s)*size,b:-(basis.b*c+basis.d*s)*size,c:(basis.a*s-basis.c*c)*sizeY,d:(-basis.b*s+basis.d*c)*sizeY})
     }
   }
   return out.slice(-system.capacity)
@@ -66,7 +68,7 @@ export function attachObjectEmitters(index,data,hash) {
   for(const [name,model] of Object.entries(data.assets)) {
     const source=assets[name]
     if(source?.bundle!==model.bundle || source.particleCount!==model.particleCount || model.systems.length+model.deferred.length!==source.particleCount)throw new Error(`Object emitter identity mismatch ${name}`)
-    assets[name]={...source,nativeParticleAnimation:{...model,textures:data.textures}}
+    assets[name]=model.systems.length?{...source,nativeParticleAnimation:{...model,textures:data.textures}}:{...source,nativeParticleDeferred:model}
   }
   return {...index,assets}
 }
