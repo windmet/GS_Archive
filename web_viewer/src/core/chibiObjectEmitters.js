@@ -42,11 +42,13 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
   const delay=typeof system.delay==='number'?{mode:0,value:system.delay,min:system.delay}:(system.delay||{mode:0,value:0,min:0})
   const prewarm=system.prewarm?Number(system.duration)||0:0
   const base=(time-activatedAt)/1000+prewarm,cutoff=(stoppedAt-activatedAt)/1000+prewarm
-  const earliest=base-Math.max(0,Number(delay.min)||0)
-  if(earliest<0 || cutoff<0)return []
+  // Births carry startDelay; the loop window must be shifted too or delayed loops drop out.
+  const shift=Number(delay.mode===3?delay.min:delay.value)||0
+  const probe=base-shift
+  if(probe<0 || cutoff<0)return []
   const maxLife=Math.max(system.lifetime.scalar,system.lifetime.minScalar),period=system.duration
-  const last=system.looping?Math.floor(Math.min(earliest,cutoff)/period):0
-  const first=system.looping?Math.max(0,Math.floor((earliest-maxLife)/period)):0
+  const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
+  const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
   const matrix=emitterMatrix(system.chain),seed=[...system.source.pathId].reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0)|0,7),out=[]
   for(let loop=first;loop<=last;loop++) {
     const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))

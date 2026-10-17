@@ -7,10 +7,10 @@ const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,42)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,43)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),362)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),28)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),365)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),29)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
 assert.equal(sampleObjectEmitter(meter,0,0).length,1)
@@ -61,6 +61,9 @@ assert.ok(sampleObjectEmitter(data.assets.fx_in_trhorz_starline_1.systems[0],0,0
 const staggered={...probe,looping:false,delay:{mode:3,value:2,min:1},bursts:[{time:0,count:8}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4}}
 assert.equal(sampleObjectEmitter(staggered,500,0).length,0)
 assert.ok(sampleObjectEmitter(staggered,1600,0).length>0)
+// A delayed looping emitter must not lose whole loops: the loop window is shifted by startDelay.
+const delayedLoop={...probe,looping:true,duration:1,delay:{mode:0,value:1.2,min:0},bursts:[],rate:25,lifetime:{mode:0,scalar:1,minScalar:1},size:{mode:0,scalar:1},sizeOverLife:null}
+for(const t of [2000,2500,3000,3500,4000,4500])assert.ok(sampleObjectEmitter(delayedLoop,t,0).length>0,`Delayed loop dropped at ${t} ms`)
 // A RotationModule curve is an angular rate; the integrated angle must match a constant 1 rad/s curve.
 const turning={...probe,looping:false,bursts:[{time:0,count:1}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4},
   angularVelocity:{mode:1,scalar:1,minScalar:0,keys:[{time:0,value:1,inSlope:0,outSlope:0},{time:1,value:1,inSlope:0,outSlope:0}]}}
@@ -70,4 +73,4 @@ assert.ok(Math.abs(turned.c-Math.sin(1)*600)<1e-6)
 assert.equal(data.assets.fx_in_trhorz_star_1.deferred.length,3)
 assert.deepEqual([...new Set(data.assets.fx_in_trhorz_star_1.deferred.flatMap(d=>d.reasons))].sort(),['native_stretched_billboard_solver','unsupported_source_profile: Unsupported shape'])
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 43 provenance-bound resources / 362 consumed + 28 explicitly deferred; 247 lamps, edge XY beams, mirror, prewarm, random start delay, integrated rotation, burst loops, stop tails, UV and rewind passed')
+console.log('Object emitters: 44 provenance-bound resources / 365 consumed + 29 explicitly deferred; 247 lamps, edge XY beams, mirror, prewarm, random start delay, integrated rotation, burst loops, stop tails, UV and rewind passed')

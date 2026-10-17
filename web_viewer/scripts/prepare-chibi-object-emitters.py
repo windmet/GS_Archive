@@ -66,7 +66,7 @@ def select_entries(index, mode, only=None):
         choreo=json.loads((ROOT/'public/assets/live-chibi/choreography/index.json').read_text(encoding='utf8'))
         referenced={e['asset'] for s in choreo['songs'] for e in s.get('objectLayerEvents') or []}
         return {k:v for k,v in index['assets'].items() if k in referenced and v.get('kind')=='particle'}
-    extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter'}
+    extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1'}
     return {k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_','fx_in_trhorz_','fx_in_swyrlv_incidentlight_'))}
 
 def extract(mode='current', only=None):
