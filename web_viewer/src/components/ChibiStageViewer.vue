@@ -21,6 +21,10 @@
     :data-stage-base-zoom="STAGE_BASE_ZOOM"
     :data-stage-view-scale="stageViewScale.toFixed(3)"
     :data-whole-screen-particles="wholeScreenCount"
+    :data-searchlight-count="searchlightCount"
+    :data-object-native-particles="nativeObjectParticleCount"
+    :data-object-native-deferred="nativeObjectDeferred"
+    :data-searchlight-deferred="searchlightDeferred"
     :data-whole-screen-types="wholeScreenTypes"
     :data-whole-screen-deferred="wholeScreenDeferred"
     :data-stage-environment-scale="environmentScale.toFixed(3)"
@@ -581,6 +585,9 @@ import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo }
 import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
+import { loadObjectEmitters,updateObjectEmitters } from '../core/chibiObjectEmitterRenderer.js'
+import { searchlightsAt } from '../core/chibiSearchlights.js'
+import { createSearchlightRenderer } from '../core/chibiSearchlightRenderer.js'
 import { createWholeScreenRenderer } from '../core/chibiWholeScreenRenderer.js'
 import { nativeCharacterScale } from '../core/chibiNativeCharacterGeometry.js'
 import { motionClockForSong, nativeMotionTempoAt, nativeMotionSpeed, nativeMotionMixWindowMs,
@@ -641,6 +648,10 @@ const canvasRef = ref(null)
 const manifest = shallowRef(null)
 const choreography = shallowRef(null)
 const wholeScreenRenderer=createWholeScreenRenderer(PIXI)
+const searchlightRenderer=createSearchlightRenderer(PIXI,()=>cameraContainer,()=>{if(app && !playing.value) {applyStageLighting();app.render()}})
+const searchlightCount=ref(0),searchlightDeferred=ref('')
+const nativeObjectParticleCount=ref(0)
+const nativeObjectDeferred=computed(()=>[...new Set((selectedSong.value?.objectLayerEvents||[]).map(e=>e.asset))].flatMap(asset=>(objectLayerIndex.value?.assets?.[asset]?.nativeParticleAnimation?.deferred||[]).map(d=>`${asset}:${d.source.pathId}:${d.reasons.join('+')}`)).join(','))
 const wholeScreenCount=ref(0),wholeScreenTypes=ref('')
 const wholeScreenDeferred=computed(()=>[...new Set((selectedSong.value?.wholeScreenEvents||[]).flatMap(e=>{const m=choreography.value?.wholeScreen?.models[e.type];return m?.kind==='unsupported'?[m.reason]:m?.deferred||[e.unresolvedReason].filter(Boolean)}))].join(','))
 const commandInventory = shallowRef(null)
@@ -1333,6 +1344,7 @@ onBeforeUnmount(() => {
   releaseImageLayers()
   releaseObjectLayers()
   wholeScreenRenderer.clear()
+  searchlightRenderer.release()
   releaseSpotlights()
   stagelightSprites.release()
   suspensionSprites.release()
@@ -2105,6 +2117,9 @@ function syncCharacterLayers() {
 
 function applyStageLighting() {
   if(app && cameraContainer){
+    const search=searchlightsAt(selectedSong.value?.searchlightEvents,stageTime.value,t=>motionClockTrack.value?nativeMotionTempoAt(motionClockTrack.value,t):null,(slot,t)=>layoutCoordinatesForStage(stagePositionForPerformerSlot(slot),t))
+    searchlightCount.value=searchlightRenderer.update(choreography.value?.searchlights,search,app.renderer.width/app.renderer.resolution,app.renderer.height/app.renderer.resolution,environmentScale.value,beamEffectsEnabled.value)
+    searchlightDeferred.value=[...new Set(search.map(s=>s.deferred).filter(Boolean))].join(',')
     const result=wholeScreenRenderer.update(choreography.value?.wholeScreen,selectedSong.value?.wholeScreenEvents,stageTime.value,cameraContainer,app.renderer.width/app.renderer.resolution,app.renderer.height/app.renderer.resolution,environmentScale.value,objectLayersEnabled.value)
     wholeScreenCount.value=result.count;wholeScreenTypes.value=result.types.join(',')
   }
@@ -2705,7 +2720,7 @@ function loadImageLayerTexture(relativePath, timeoutMs = 0) {
     }
     image.onerror = fail
     if (timeoutMs) timer = setTimeout(fail, timeoutMs)
-    image.src = `${LIVE_CHIBI_BASE}/${relativePath}`
+    image.src = relativePath.startsWith('/') ? relativePath : `${LIVE_CHIBI_BASE}/${relativePath}`
   })
 }
 
@@ -2892,6 +2907,7 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if(entry.nativeParticleAnimation)return {...await loadObjectEmitters(PIXI,entry.nativeParticleAnimation,path=>loadImageLayerTexture(path,15000)),entry}
   if (entry.bloomAnimation) return {...await loadChibiBloom(PIXI,entry.bloomAnimation,path=>loadImageLayerTexture(path,10000)),entry}
   if (entry.floorAnimation) {
     return { ...await loadChibiFloor(PIXI, entry.floorAnimation,
@@ -2968,10 +2984,12 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.alpha = particle?particle.alpha:Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = objectLayersEnabled.value && (particle?particle.visible:runtime.container.alpha > 0.001)
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
+    if(runtime.nativeEmitters)updateObjectEmitters(PIXI,runtime,stageTime.value,state.activatedAt,particle?.stoppedAt,cameraContainer.rotation)
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
     if (runtime.bloomEmitters) updateChibiBloom(runtime,stageTime.value,state.activatedAt,particle?.stoppedAt)
     syncObjectRendererPlanes(runtime)
   }
+  nativeObjectParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((n,r)=>n+(r.nativeParticleCount||0),0)
   bloomParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((sum,r)=>sum+(r.bloomParticleCount || 0),0)
   if (!playing.value || inspectorOpen.value) floorParticleState.value = [...objectLayerRuntimes.values()].filter(r => r.floorEmitters && r.container.visible)
     .map(r => r.floorSignature).join(',')
@@ -2993,6 +3011,7 @@ function releaseObjectLayers() {
   visibleObjectLayerAssets.value = []
   unsupportedObjectLayerAssets.value = []
   if (!playing.value || inspectorOpen.value) particleLayerFrames.value = ''
+  nativeObjectParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((n,r)=>n+(r.nativeParticleCount||0),0)
   bloomParticleCount.value=[...objectLayerRuntimes.values()].filter(r=>r.container.visible).reduce((sum,r)=>sum+(r.bloomParticleCount || 0),0)
   if (!playing.value || inspectorOpen.value) floorParticleState.value = ''
 }
@@ -3001,7 +3020,6 @@ async function syncObjectLayers() {
   if (!cameraContainer || !selectedSong.value || !objectLayerIndex.value) return
   if (objectLayerSongId !== selectedSong.value.id) {
     releaseObjectLayers()
-  wholeScreenRenderer.clear()
     objectLayerSongId = selectedSong.value.id
   }
   const sequence = objectLayerSequence
@@ -3013,7 +3031,7 @@ async function syncObjectLayers() {
   const unsupportedStates = []
   for (const state of activeStates) {
     const entry = objectLayerIndex.value.assets?.[state.asset]
-    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation || entry?.bloomAnimation) supportedStates.push(state)
+    if (entry?.kind === 'sprite' || entry?.kind === 'mixed' || entry?.particleAnimation || entry?.floorAnimation || entry?.bloomAnimation || entry?.nativeParticleAnimation) supportedStates.push(state)
     else unsupportedStates.push(state)
   }
   visibleObjectLayerCount.value = supportedStates.length
@@ -3027,6 +3045,8 @@ async function syncObjectLayers() {
     syncObjectRendererPlanes(runtime)
   }
 
+  // Prepared emitters must sample this frame before the renderer runs.
+  layoutObjectLayers(states)
   await Promise.all(supportedStates.map(async state => {
     let runtime = objectLayerRuntimes.get(state.asset)
     if (!runtime) {
@@ -3468,6 +3488,7 @@ async function handleSongChange() {
   releaseImageLayers()
   releaseObjectLayers()
   wholeScreenRenderer.clear()
+  searchlightRenderer.release()
   releaseBackmonitor()
   app?.render()
   booting.value = true
@@ -3764,6 +3785,29 @@ async function syncSlotAtTime(slot, milliseconds, reset = true) {
 }
 
 async function prepareStageLighting() {
+  if(objectLayersEnabled.value && selectedSong.value) {
+    const song=selectedSong.value
+    if(!objectLayerIndex.value)objectLayerIndex.value=await fetchLiveChibiObjectLayerIndex({signal:lifetime.signal})
+    if(stageDisposed || selectedSong.value!==song)return false
+    if(objectLayerSongId!==song.id){releaseObjectLayers();objectLayerSongId=song.id}
+    const sequence=objectLayerSequence
+    for(const asset of new Set((song.objectLayerEvents||[]).map(e=>e.asset))) {
+      const entry=objectLayerIndex.value?.assets?.[asset]
+      if(!entry?.nativeParticleAnimation || objectLayerRuntimes.has(asset))continue
+      let load=objectLayerLoads.get(asset)
+      if(!load){load=loadObjectLayerRuntime(entry);objectLayerLoads.set(asset,load)}
+      const runtime=await load
+      if(stageDisposed || selectedSong.value!==song || sequence!==objectLayerSequence)return false
+      if(!objectLayerRuntimes.has(asset)){objectLayerRuntimes.set(asset,runtime);runtime.container.visible=false;cameraContainer.addChild(runtime.container);createObjectRendererPlanes(PIXI,runtime,cameraContainer)}
+      if(objectLayerLoads.get(asset)===load)objectLayerLoads.delete(asset)
+    }
+  }
+
+  if(beamEffectsEnabled.value && selectedSong.value?.searchlightEvents) {
+    const song=selectedSong.value
+    await searchlightRenderer.prepare(choreography.value.searchlights,song.searchlightEvents)
+    if(stageDisposed || selectedSong.value!==song)return false
+  }
   if(objectLayersEnabled.value && selectedSong.value?.wholeScreenEvents) {
     const song=selectedSong.value
     await wholeScreenRenderer.prepare(choreography.value.wholeScreen,song.wholeScreenEvents)

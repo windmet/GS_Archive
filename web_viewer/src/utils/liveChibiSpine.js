@@ -1,3 +1,5 @@
+import { attachObjectEmitters } from '../core/chibiObjectEmitters.js'
+import { attachSearchlights } from '../core/chibiSearchlights.js'
 import { attachWholeScreen } from '../core/chibiWholeScreen.js'
 import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
 import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
@@ -85,15 +87,16 @@ async function liveJson(relativePath, options={}, optional=false) {
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
 export async function fetchLiveChibiChoreography(file,{signal}={}) {
-  const [text,spotlights,wholeScreen]=await Promise.all([
+  const [text,spotlights,wholeScreen,searchlights]=await Promise.all([
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
     indexTransport.load('/data/stage-spotlight-commands.json',{signal}),
     indexTransport.load('/data/stage-whole-screen.json',{signal}),
+    indexTransport.load('/data/stage-searchlights.json',{signal}),
   ])
   const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   const hash=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')
-  return attachWholeScreen(attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash),JSON.parse(wholeScreen),hash)
+  return attachSearchlights(attachWholeScreen(attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash),JSON.parse(wholeScreen),hash),JSON.parse(searchlights),hash)
 }
 export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
   // Both texts use the bounded transport. Hash the actual loaded choreography,
@@ -180,8 +183,12 @@ export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
 }
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
 export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
-  const index=await liveJson('object-layers/index.json',{signal},true)
+  let index=await liveJson('object-layers/index.json',{signal},true)
   if (!index) return null
+  const [emitterText,objectText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})])
+  const objectHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(objectText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  index=attachObjectEmitters(index,JSON.parse(emitterText),objectHash)
   // Start refinements independently; never mutate the shared cached source.
   let refined=index
   for(const [file,attach] of [['particle-layers',attachChibiParticleLayers],['floor-particles',attachChibiFloor]]) {

@@ -4,7 +4,7 @@
 export function createObjectRendererPlanes(PIXI, runtime, parent) {
   if (runtime.rendererPlanes) return
   const root=runtime.container
-  const renderers=runtime.bloomEmitters ? runtime.bloomEmitters.flatMap(emitter=>emitter.sprites) : runtime.floorEmitters
+  const renderers=runtime.nativeEmitters ? runtime.nativeEmitters.flatMap(emitter=>emitter.sprites) : runtime.bloomEmitters ? runtime.bloomEmitters.flatMap(emitter=>emitter.sprites) : runtime.floorEmitters
     ? runtime.floorEmitters.flatMap(emitter=>emitter.sprites)
     : runtime.particles ? runtime.particles.map(p=>p.sprite) : [...root.children]
   const buckets=new Map()

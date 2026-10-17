@@ -64,7 +64,7 @@ for (const command of ['Suspensionlight','Suspensionlight_2','Suspensionlight_3'
   STAGE_COMMAND_BINDINGS[command] = { ...bound('旧悬灯', 'asset/color/period/transform/erase',
     'stage-effects oldSuspensionlightSongs', 'oldSuspensionlightsAt', 'stage-effects oldSuspensionlight', 'verify-chibi-old-suspension.mjs'), status: 'guarded' }
 for (const suffix of ['show','show_2','ovalmove','rotateanim','scaleanim','coloranim','fade'])
-  STAGE_COMMAND_BINDINGS[`Searchlight_${suffix}`] = absent('探照灯')
+  STAGE_COMMAND_BINDINGS[`Searchlight_${suffix}`] = bound('探照灯', 'id/Sprite/flash/alpha/color/target/position/angle/scale/depth + tween channels', 'searchlightEvents', 'searchlightsAt', 'stage-searchlights native Sprite bindings / six oval modes', 'verify-chibi-searchlights.mjs')
 for (const command of ['Underlight','Underlight_2','Underlight_3','Underlight_4'])
   STAGE_COMMAND_BINDINGS[command] = absent('舞台底灯')
 Object.freeze(STAGE_COMMAND_BINDINGS)
