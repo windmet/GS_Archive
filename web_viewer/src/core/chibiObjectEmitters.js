@@ -24,6 +24,25 @@ function euler(p,r) {
   }
   return {x,y,z}
 }
+// ShapeModule sampling: box(5), edge(12), sphere(0), hemisphere(2), circle(10), cone(4).
+// Sphere surface vs volume follows radiusThickness; cone uses its base radius.
+function shapePosition(shape,rnd) {
+  const scale=shape.m_Scale||{x:1,y:1,z:1},radius=(shape.radius&&shape.radius.value)||0
+  switch(shape.type) {
+    case 12:return {x:(rnd(1)*2-1)*radius*scale.x,y:0,z:0}
+    case 5:return {x:(rnd(1)-.5)*scale.x,y:(rnd(2)-.5)*scale.y,z:(rnd(3)-.5)*scale.z}
+    case 10:{const phi=rnd(1)*Math.PI*2,r=radius*Math.sqrt(rnd(2));return {x:Math.cos(phi)*r*scale.x,y:Math.sin(phi)*r*scale.y,z:0}}
+    case 4:{const phi=rnd(1)*Math.PI*2,r=radius*Math.sqrt(rnd(2));return {x:Math.cos(phi)*r*scale.x,y:Math.sin(phi)*r*scale.y,z:0}}
+    case 0:
+    case 2:{
+      const u=rnd(1)*2-1,phi=rnd(2)*Math.PI*2,s=Math.sqrt(Math.max(0,1-u*u)),surface=Number(shape.radiusThickness)>=.999
+      const r=radius*(surface?1:Math.cbrt(rnd(3)))
+      const d={x:s*Math.cos(phi),y:shape.type===2?Math.abs(u):u,z:s*Math.sin(phi)}
+      return {x:d.x*r*scale.x,y:d.y*r*scale.y,z:d.z*r*scale.z}
+    }
+    default:return {x:0,y:0,z:0}
+  }
+}
 function distance(speed,limit,age) {
   if(!limit)return speed*age
   let t=0,d=0,v=Math.abs(speed)
@@ -59,7 +78,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
-      let p=shape?euler(shape.type===12?{x:(rnd(1)*2-1)*shape.radius.value*shape.m_Scale.x,y:0,z:0}:{x:(rnd(1)-.5)*shape.m_Scale.x,y:(rnd(2)-.5)*shape.m_Scale.y,z:(rnd(3)-.5)*shape.m_Scale.z},shape.m_Rotation):{x:0,y:0,z:0}
+      let p=shape?euler(shapePosition(shape,rnd),shape.m_Rotation):{x:0,y:0,z:0}
       const v=shape?euler({x:0,y:0,z:1},shape.m_Rotation):{x:0,y:0,z:1},d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
       const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100

@@ -5,11 +5,13 @@ ROOT=Path(__file__).resolve().parents[1]
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
-def model(p):
+def model(p, partial=False):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
-    w.require(set(m)<=set(['InitialModule','ShapeModule','EmissionModule','UVModule','SizeModule','ColorModule','ClampVelocityModule','RotationModule','VelocityModule']),'Unsupported module')
+    allowed=['InitialModule','ShapeModule','EmissionModule','UVModule','SizeModule','ColorModule','ClampVelocityModule','RotationModule','VelocityModule']
+    if partial:allowed.append('NoiseModule')
+    w.require(set(m)<=set(allowed),'Unsupported module')
     w.require(r.get('enabled') and r.get('pivot')==dict(x=0,y=0,z=0),'Unsupported renderer pivot')
     w.require(r.get('alignment') in [0,2],'Unsupported alignment')
     w.require(not i.get('rotation3D'),'Unsupported 3D rotation')
@@ -21,7 +23,7 @@ def model(p):
     w.require(main.get('scalingMode')==0,'Unsupported scaling mode')
     w.require(i['gravityModifier']['scalar']==0,'Unsupported gravity')
     w.require(i['startColor']['minMaxState'] in [0,4],'Unsupported start color mode')
-    w.require(not s or s['type'] in [5,12],'Unsupported shape')
+    w.require(not s or s['type'] in [0,2,4,5,10,12],'Unsupported shape')
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
     for t in chain:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
@@ -50,7 +52,7 @@ def model(p):
     else:w.require(mat['shader']['name'] in ['Mobile/Particles/Additive','Mobile/Particles/Alpha Blended'],'Unsupported material')
     textures={t['property']:t['pathId'] for t in mat['textures']}
     one=dict(colors=[dict(time=t,r=1,g=1,b=1,a=1) for t in [0,1]],alphas=[dict(time=t,value=1) for t in [0,1]])
-    return dict(source={k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']},name=p['name'],alignment=r['alignment'],sortingOrder=r['sortingOrder'],chain=p['transformChain'],
+    data=dict(source={k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']},name=p['name'],alignment=r['alignment'],sortingOrder=r['sortingOrder'],chain=p['transformChain'],
         duration=main['lengthInSec'],looping=main['looping'],delay=delay,prewarm=bool(main.get('prewarm')),capacity=i['maxNumParticles'],rate=e['rateOverTime']['scalar'],bursts=bursts,
         shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),sizeY=w.curve(i['startSizeY']) if i['size3D'] else None,rotation=w.curve(i['startRotation']),color=i['startColor']['maxColor'],colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,
         colorOverLife=w.gradient(m['ColorModule']['gradient']['maxGradient']) if 'ColorModule' in m else one,sizeOverLife=w.curve(m['SizeModule']['curve']) if 'SizeModule' in m else None,
@@ -58,6 +60,15 @@ def model(p):
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
+    if partial:
+        marks=[]
+        if 'NoiseModule' in m:
+            nz=m['NoiseModule']
+            data['noise']=dict(strength=nz.get('strength',{}).get('scalar',0),frequency=nz.get('frequency',0),scroll=nz.get('scrollSpeed',{}).get('scalar',0),damping=bool(nz.get('damping')),octaveCount=nz.get('octaveCount',1),octaveMultiplier=nz.get('octaveMultiplier',1),octaveScale=nz.get('octaveScale',1),quality=nz.get('quality',0))
+            marks.append('noise_omitted')
+        if r.get('renderMode')==1:marks.append('stretch_omitted')
+        if marks:data['partial']=marks
+    return data
 
 def select_entries(index, mode, only=None):
     if only:
@@ -69,7 +80,7 @@ def select_entries(index, mode, only=None):
     extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1'}
     return {k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_','fx_in_trhorz_','fx_in_swyrlv_incidentlight_'))}
 
-def extract(mode='current', only=None):
+def extract(mode='current', only=None, partial=False):
     import UnityPy
     a=w.load('object_audit','audit-live-chibi-stage-objects.py');e=w.load('object_effects','prepare-live-chibi-stage-effects.py');sources=e.load_archive_sources(None)
     indexpath=ROOT/'public/assets/live-chibi/object-layers/index.json';index=json.loads(indexpath.read_text(encoding='utf8'))
@@ -98,9 +109,9 @@ def extract(mode='current', only=None):
                 if 'NoiseModule' in (p.get('modules') or {}):reasons.append('unity_noise_displacement')
                 ob=next((o for o in env.objects if str(o.path_id)==p.get('pathId')),None)
                 source=a.source_ref(ob) if ob else {k:p.get(k) for k in ['serializedFile','pathId']}
-                if reasons:deferred.append(dict(source=source,reasons=reasons));continue
+                if reasons and not partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
-                    system=model(p)
+                    system=model(p,partial)
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -127,8 +138,8 @@ def extract(mode='current', only=None):
     return data,dict(objects=records,masks=all_masks,objectIndexSha256=data['objectIndexSha256'],shaderBundleSha256=data['shaderBundleSha256']),images
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write',action='store_true');parser.add_argument('--mode',choices=['current','all-particles'],default='current');parser.add_argument('--report',action='store_true');parser.add_argument('--asset',action='append',default=[]);args=parser.parse_args()
-    data,fixture,images=extract(args.mode,set(args.asset) or None)
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--write',action='store_true');parser.add_argument('--mode',choices=['current','all-particles'],default='current');parser.add_argument('--report',action='store_true');parser.add_argument('--asset',action='append',default=[]);parser.add_argument('--consume-deferred',action='store_true');args=parser.parse_args()
+    data,fixture,images=extract(args.mode,set(args.asset) or None,args.consume_deferred)
     if args.report:
         import collections
         reasons=collections.Counter(r for a in data['assets'].values() for d in a['deferred'] for r in d['reasons'])
