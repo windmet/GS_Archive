@@ -14,15 +14,13 @@ def model(p, partial=False):
     w.require(set(m)<=set(allowed),'Unsupported module')
     w.require(r.get('enabled') and r.get('pivot')==dict(x=0,y=0,z=0),'Unsupported renderer pivot')
     w.require(r.get('alignment') in [0,2],'Unsupported alignment')
-    w.require(not i.get('rotation3D'),'Unsupported 3D rotation')
     w.require(main.get('startDelay',{}).get('minMaxState') in [0,3],'Unsupported start delay mode')
     delay=main.get('startDelay',{})
     delay=dict(mode=delay.get('minMaxState',0),value=delay.get('scalar',0),min=delay.get('minScalar',0))
     w.require(main.get('simulationSpeed')==1,'Unsupported simulation speed')
     w.require(main.get('moveWithTransform')==0,'Unsupported move with transform')
     w.require(main.get('scalingMode')==0,'Unsupported scaling mode')
-    w.require(i['gravityModifier']['scalar']==0,'Unsupported gravity')
-    w.require(i['startColor']['minMaxState'] in [0,4],'Unsupported start color mode')
+    w.require(i['startColor']['minMaxState'] in [0,2,4],'Unsupported start color mode')
     w.require(not s or s['type'] in [0,2,4,5,10,12],'Unsupported shape')
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
     for t in chain:
@@ -31,8 +29,10 @@ def model(p, partial=False):
     if s and s['type']==12:w.require(s['radius']['mode']==0 and i['startSpeed']['scalar']==0,'Unsupported moving edge')
     w.require(all(i[k]['minMaxState'] in [0,3] for k in ['startLifetime','startSpeed','startSize','startRotation']),'Initial curve requires birth-time sampling')
     if 'RotationModule' in m:
-        w.require(not m['RotationModule'].get('separateAxes'),'Unsupported separate rotation axes')
-        w.require(m['RotationModule']['curve']['minMaxState'] in (0,1,3),'Unsupported rotation curve mode')
+        rot3=m['RotationModule']
+        w.require(rot3['curve']['minMaxState'] in (0,1,3),'Unsupported rotation curve mode')
+        if rot3.get('separateAxes'):
+            w.require(all(rot3[k]['minMaxState'] in (0,1,3) for k in ['x','y']),'Unsupported separate rotation curve mode')
     if 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
     w.require(e['rateOverTime']['minMaxState']==0 and e['rateOverDistance']['scalar']==0,'Unsupported emission rate')
     bursts=[]
@@ -54,7 +54,7 @@ def model(p, partial=False):
     one=dict(colors=[dict(time=t,r=1,g=1,b=1,a=1) for t in [0,1]],alphas=[dict(time=t,value=1) for t in [0,1]])
     data=dict(source={k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']},name=p['name'],alignment=r['alignment'],sortingOrder=r['sortingOrder'],chain=p['transformChain'],
         duration=main['lengthInSec'],looping=main['looping'],delay=delay,prewarm=bool(main.get('prewarm')),capacity=i['maxNumParticles'],rate=e['rateOverTime']['scalar'],bursts=bursts,
-        shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),sizeY=w.curve(i['startSizeY']) if i['size3D'] else None,rotation=w.curve(i['startRotation']),color=i['startColor']['maxColor'],colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,
+        shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),sizeY=w.curve(i['startSizeY']) if i['size3D'] else None,rotation=w.curve(i['startRotation']),gravity=w.curve(i['gravityModifier']),rotationX=w.curve(i['startRotationX']) if i.get('rotation3D') else None,rotationY=w.curve(i['startRotationY']) if i.get('rotation3D') else None,color=i['startColor']['maxColor'],colorMin=i['startColor'].get('minColor'),colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,angularX=w.curve(m['RotationModule']['x']) if m.get('RotationModule',{}).get('separateAxes') else None,angularY=w.curve(m['RotationModule']['y']) if m.get('RotationModule',{}).get('separateAxes') else None,
         colorOverLife=w.gradient(m['ColorModule']['gradient']['maxGradient']) if 'ColorModule' in m else one,sizeOverLife=w.curve(m['SizeModule']['curve']) if 'SizeModule' in m else None,
         sizeOverLifeY=w.curve(m['SizeModule']['y']) if m.get('SizeModule',{}).get('separateAxes') else None,
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,

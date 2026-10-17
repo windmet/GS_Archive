@@ -83,14 +83,28 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
       const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,0,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
-      const a=sample(system.rotation,0,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13)),c=Math.cos(a),s=Math.sin(a)
-      const basis=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
-      const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):system.color,over=system.colorOverLife
+      const rz=sample(system.rotation,0,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
+      let A,B,C,D
+      if(system.rotationX){
+        // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
+        const rx=sample(system.rotationX,0,rnd(17))+rotationAt(system.angularX,age,life,rnd(21)),ry=sample(system.rotationY,0,rnd(18))+rotationAt(system.angularY,age,life,rnd(22))
+        const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz)
+        A=cy*cz+sy*sx*sz;B=-(cx*sz);C=-cy*sz+sy*sx*cz;D=-(cx*cz)
+      } else {
+        const c=Math.cos(rz),s=Math.sin(rz)
+        const base=system.alignment===2?matrix:{a:Math.hypot(matrix.a,matrix.b),b:0,c:0,d:Math.hypot(matrix.c,matrix.d)}
+        A=base.a*c+base.c*s;B=-(base.b*c+base.d*s);C=base.a*s-base.c*c;D=-(base.b*s-base.d*c)
+      }
+      const mix=system.colorMode===2&&system.colorMin?rnd(12):null
+      const rgba=system.colorMode===4?Object.fromEntries(['r','g','b','a'].map(k=>[k,k==='a'?sampleFloorGradient(system.colorGradient.alphas,rnd(12)):sampleFloorGradient(system.colorGradient.colors,rnd(12),k)])):mix===null?system.color:Object.fromEntries(['r','g','b','a'].map(k=>[k,system.colorMin[k]+(system.color[k]-system.colorMin[k])*mix])),over=system.colorOverLife
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
+      // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
+      const g=(system.gravity?sample(system.gravity,0,rnd(19)):0)*-9.81
+      const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+0.5*g*age*age
       out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,
-        x:(matrix.a*p.x+matrix.c*p.y+matrix.tx)*100,y:-(matrix.b*p.x+matrix.d*p.y+matrix.ty)*100,
-        a:(basis.a*c+basis.c*s)*size,b:-(basis.b*c+basis.d*s)*size,c:(basis.a*s-basis.c*c)*sizeY,d:(-basis.b*s+basis.d*c)*sizeY})
+        x:wx*100,y:-wy*100,
+        a:A*size,b:B*size,c:C*sizeY,d:D*sizeY})
     }
   }
   return out.slice(-system.capacity)
