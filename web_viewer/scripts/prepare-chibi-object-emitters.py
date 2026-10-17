@@ -65,7 +65,7 @@ def model(p, partial=False):
         if 'NoiseModule' in m:
             nz=m['NoiseModule']
             data['noise']=dict(strength=nz.get('strength',{}).get('scalar',0),frequency=nz.get('frequency',0),scroll=nz.get('scrollSpeed',{}).get('scalar',0),damping=bool(nz.get('damping')),octaveCount=nz.get('octaveCount',1),octaveMultiplier=nz.get('octaveMultiplier',1),octaveScale=nz.get('octaveScale',1),quality=nz.get('quality',0))
-            marks.append('noise_omitted')
+            marks.append('noise_preview')
         if r.get('renderMode')==1:marks.append('stretch_omitted')
         if marks:data['partial']=marks
     return data

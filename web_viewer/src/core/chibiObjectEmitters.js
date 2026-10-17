@@ -1,6 +1,33 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 const sample=(c,t,r)=>c.mode===3?c.minScalar+(c.scalar-c.minScalar)*r:sampleParticleCurve(c,t)
+// Unity particle noise: Ken Perlin's permutation table, read from libunity .rodata 0xdf8134 (uint32).
+const PERM=new Uint8Array([151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180])
+function fade(t){return t*t*t*(t*(t*6-15)+10)}
+function lerp(a,b,t){return a+(b-a)*t}
+function grad(h,x,y,z){const g=h&15,u=g<8?x:y,v=g<4?y:(g===12||g===14?x:z);return ((g&1)?-u:u)+((g&2)?-v:v)}
+function perlin(x,y,z){
+  const X=Math.floor(x)&255,Y=Math.floor(y)&255,Z=Math.floor(z)&255
+  x-=Math.floor(x);y-=Math.floor(y);z-=Math.floor(z)
+  const u=fade(x),v=fade(y),w=fade(z),A=PERM[X]+Y,B=PERM[X+1]+Y
+  const AA=PERM[A]+Z,AB=PERM[A+1]+Z,BA=PERM[B]+Z,BB=PERM[B+1]+Z
+  return lerp(lerp(lerp(grad(PERM[AA],x,y,z),grad(PERM[BA],x-1,y,z),u),lerp(grad(PERM[AB],x,y-1,z),grad(PERM[BB],x-1,y-1,z),u),v),
+    lerp(lerp(grad(PERM[AA+1],x,y,z-1),grad(PERM[BA+1],x-1,y,z-1),u),lerp(grad(PERM[AB+1],x,y-1,z-1),grad(PERM[BB+1],x-1,y-1,z-1),u),v),w)
+}
+// NoiseModule displacement over the particle lifetime: frequency, scroll, octaves and strength.
+// Damping and Unity's remap curve are not reproduced yet (see partial marker).
+function noiseOffset(n,p,age){
+  const f=Number(n.frequency)||1,scroll=Number(n.scroll)||0,oct=Math.max(1,Math.min(4,Number(n.octaveCount)||1)),s=Number(n.strength)||0
+  const x=p.x*f+scroll*age,y=p.y*f,z=p.z*f-scroll*age
+  let ax=0,ay=0,az=0,amp=1,freq=1
+  for(let k=0;k<oct;k++){
+    ax+=amp*perlin(x*freq,y*freq,z*freq)
+    ay+=amp*perlin(x*freq+31.4,y*freq+47.2,z*freq+13.7)
+    az+=amp*perlin(x*freq+67.1,y*freq+89.3,z*freq+5.9)
+    amp*=Number(n.octaveMultiplier)||0.5;freq*=Number(n.octaveScale)||2
+  }
+  return {x:ax*s,y:ay*s,z:az*s}
+}
 const random=(seed,birth,channel)=> {
   let n=seed^Math.imul(birth+1,0x9e3779b1)^Math.imul(channel+1,0x85ebca77)
   n=Math.imul(n^(n>>>16),0x7feb352d);n=Math.imul(n^(n>>>15),0x846ca68b)
@@ -79,6 +106,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
       let p=shape?euler(shapePosition(shape,rnd),shape.m_Rotation):{x:0,y:0,z:0}
+      if(system.noise){const d=noiseOffset(system.noise,p,age);p={x:p.x+d.x,y:p.y+d.y,z:p.z+d.z}}
       const v=shape?euler({x:0,y:0,z:1},shape.m_Rotation):{x:0,y:0,z:1},d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
       const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
