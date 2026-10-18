@@ -49,3 +49,7 @@ pivot全部零；maxParticleSize分别1、100、50，min全部0。旧audit只保
 - 工具内断言两分支一致、零速收缩、rotation忽略及UV方向，防止以后将普通billboard分支误当Stretch。
 - 新增内容仅分析工具、fixture与文档；没有应用运行时代码或public数据改动，不重复Vite构建、147门禁或Browser验收；未部署。
 - 下一步补真实renderer字段提取，恢复完整相机上下文、速度与尺寸缩放以及FRSQRTE顺序，然后按顶点/UV对照接通公共消费者。8个stretch_omitted及其它Noise/Whole_screen/无消费者缺口继续保留。
+
+## 相机准备与估计指令继续项
+
+[同日相机与FRSQRTE取证](NATIVE_STRETCH_CAMERA_ESTIMATE_20261019.md) 将真实renderer/context准备串入两条solver，现有24组顶点/UV；验证512个倒平方根估计桶边界及4096个跨指数输入。新数据反证“单位四角再乘末端矩阵”足以覆盖非均匀缩放，也确认屏幕尺寸上限参与宽度消费。仍未解除8个省略标记。
