@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-18T12:08:29+08:00",
-  "generated_from_commit": "20b83a550504771e1416d38add254232d33c041c",
+  "generated_at": "2026-10-18T12:41:35+08:00",
+  "generated_from_commit": "ae202afcab9019dd779541b167aaf68e776a8ae8",
   "governed_extensions": [
     "png"
   ],
   "summary": {
-    "files": 384,
-    "bytes": 70599536,
+    "files": 385,
+    "bytes": 70607737,
     "grandfathered_files": 110,
-    "new_policy_files": 274
+    "new_policy_files": 275
   },
   "entries": [
     {
@@ -5195,6 +5195,20 @@
       "sha256": "85ccc6197178565a8272ca84f26d9ffc4fabb184237ca6322c7d0cd1249d8b55",
       "category": "stable-promoted-asset",
       "logical_id": "stage-object-emitters:90c9865b6cbd40a2df37d04d",
+      "consumer": [
+        "ChibiStageViewer"
+      ],
+      "reason_tracked": "RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix",
+      "force_add_allowed": false,
+      "owner_release": "2026-10-17-native-stage-textures-001",
+      "grandfathered": false
+    },
+    {
+      "path": "web_viewer/public/data/stage-object-emitters/90fea7f6f8f7ce535cc97441.png",
+      "bytes": 8201,
+      "sha256": "e5cb32ff27e5a672ae5bb7aa4600886443d424ed913b4737c08c8994a59bb08d",
+      "category": "stable-promoted-asset",
+      "logical_id": "stage-object-emitters:90fea7f6f8f7ce535cc97441",
       "consumer": [
         "ChibiStageViewer"
       ],

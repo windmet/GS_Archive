@@ -1,6 +1,25 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
-const sample=(c,t,r)=>c.mode===3?c.minScalar+(c.scalar-c.minScalar)*r:sampleParticleCurve(c,t)
+export function sampleObjectCurve(c,t,r) {
+  if(c.mode===3)return c.minScalar+(c.scalar-c.minScalar)*r
+  if(c.mode===2){const min=sampleParticleCurve({...c,keys:c.minKeys},t);return min+(sampleParticleCurve(c,t)-min)*r}
+  return sampleParticleCurve(c,t)
+}
+const sample=sampleObjectCurve
+// A Hermite segment lies inside its Bezier control hull. Include tangent overshoot
+// when selecting old birth loops, or long-lived particles can disappear early.
+function curveUpperBound(c) {
+  if(c.mode===0)return c.scalar
+  if(c.mode===3)return Math.max(c.scalar,c.minScalar)
+  const values=[]
+  for(const keys of [c.keys,...(c.mode===2?[c.minKeys]:[])]) {
+    for(let j=0;j<keys.length;j++) {
+      const a=keys[j];values.push(a.value*c.scalar)
+      if(j+1<keys.length){const b=keys[j+1],dt=b.time-a.time;values.push((a.value+dt*a.outSlope/3)*c.scalar,(b.value-dt*b.inSlope/3)*c.scalar)}
+    }
+  }
+  return Math.max(...values)
+}
 // Unity particle noise: Ken Perlin's permutation table, read from libunity .rodata 0xdf8134 (uint32).
 const PERM=new Uint8Array([151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,151,160,137,91,90,15,131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,190,6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,88,237,149,56,87,174,20,125,136,171,168,68,175,74,165,71,134,139,48,27,166,77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,102,143,54,65,25,63,161,1,216,80,73,209,76,132,187,208,89,18,169,200,196,135,130,116,188,159,86,164,100,109,198,173,186,3,64,52,217,226,250,124,123,5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,223,183,170,213,119,248,152,2,44,154,163,70,221,153,101,155,167,43,172,9,129,22,39,253,19,98,108,110,79,113,224,232,178,185,112,104,218,246,97,228,251,34,242,193,238,210,144,12,191,179,162,241,81,51,145,235,249,14,239,107,49,192,214,31,181,199,106,157,184,84,204,176,115,121,50,45,127,4,150,254,138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180])
 function fade(t){return t*t*t*(t*(t*6-15)+10)}
@@ -110,7 +129,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
   const shift=Number(delay.mode===3?delay.min:delay.value)||0
   const probe=base-shift
   if(probe<0 || cutoff<0)return []
-  const maxLife=Math.max(system.lifetime.scalar,system.lifetime.minScalar),period=system.duration
+  const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
   const matrix=emitterMatrix(system.chain),seed=[...system.source.pathId].reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0)|0,7),out=[]
@@ -118,7 +137,8 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
     const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
     if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
     for(const [index,birth] of births.entries()) {
-      const id=loop*100000+index,rnd=c=>random(seed,id,c),life=sample(system.lifetime,0,rnd(0))
+      const id=loop*100000+index,rnd=c=>random(seed,id,c),birthPhase=Math.max(0,Math.min(1,birth/period))
+      const life=Math.max(.00001,sample(system.lifetime,birthPhase,rnd(0)))
       const wait=delay.mode===3?delay.min+(delay.value-delay.min)*rnd(20):delay.value
       const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
@@ -126,15 +146,15 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const emitted=shape?sampleEmitterShape(shape,rnd):{position:{x:0,y:0,z:0},direction:{x:0,y:0,z:1}}
       let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
       if(system.noise){const d=noiseOffset(system.noise,p,age);p={x:p.x+d.x,y:p.y+d.y,z:p.z+d.z}}
-      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
+      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=distance(sample(system.speed,birthPhase,rnd(4)),system.limit,age)
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
-      const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
-      const sizeY=system.sizeY?sample(system.sizeY,0,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
-      const rz=sample(system.rotation,0,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
+      const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
+      const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
+      const rz=sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
       let A,B,C,D
       if(system.rotationX){
         // rotation3D: Unity Euler order Z, then X, then Y; project world axes onto the screen plane.
-        const rx=sample(system.rotationX,0,rnd(17))+rotationAt(system.angularX,age,life,rnd(21)),ry=sample(system.rotationY,0,rnd(18))+rotationAt(system.angularY,age,life,rnd(22))
+        const rx=sample(system.rotationX,birthPhase,rnd(17))+rotationAt(system.angularX,age,life,rnd(21)),ry=sample(system.rotationY,birthPhase,rnd(18))+rotationAt(system.angularY,age,life,rnd(22))
         const cx=Math.cos(rx),sx=Math.sin(rx),cy=Math.cos(ry),sy=Math.sin(ry),cz=Math.cos(rz),sz=Math.sin(rz)
         A=cy*cz+sy*sx*sz;B=-(cx*sz);C=-cy*sz+sy*sx*cz;D=-(cx*cz)
       } else {
@@ -147,7 +167,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
-      const g=(system.gravity?sample(system.gravity,0,rnd(19)):0)*-9.81
+      const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
       const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+0.5*g*age*age
       out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,
         x:wx*100,y:-wy*100,

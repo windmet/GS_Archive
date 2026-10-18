@@ -6,6 +6,19 @@ PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.js
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
+def initial_curve(c):
+    import math
+    mode=c['minMaxState']
+    w.require(mode in (0,1,2,3),'Unsupported initial curve mode')
+    # Both curves share scalar. minScalar is a constant-mode field, not a second multiplier.
+    result=w.curve({**c,'minMaxState':1} if mode==2 else c)
+    result['mode']=mode
+    if mode==2:result['minKeys']=w.curve({**c,'minMaxState':1,'maxCurve':c['minCurve']})['keys']
+    if mode in (1,2):
+        for keys in [result['keys']]+([result['minKeys']] if mode==2 else []):
+            w.require(bool(keys) and all(all(math.isfinite(k[f]) for f in ('time','value','inSlope','outSlope')) and (j==0 or keys[j-1]['time']<k['time']) for j,k in enumerate(keys)),'Unsupported initial curve keys')
+    return result
+
 def model(p, partial=False):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
@@ -30,14 +43,16 @@ def model(p, partial=False):
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
     if s and s['type']==12:w.require(s['radius']['mode']==0 and i['startSpeed']['scalar']==0,'Unsupported moving edge')
-    w.require(all(i[k]['minMaxState'] in [0,3] for k in ['startLifetime','startSpeed','startSize','startRotation']),'Initial curve requires birth-time sampling')
+    for k in ['startLifetime','startSpeed','startSize','startRotation','gravityModifier']:
+        initial_curve(i[k])
     if 'RotationModule' in m:
         rot3=m['RotationModule']
         w.require(rot3['curve']['minMaxState'] in (0,1,3),'Unsupported rotation curve mode')
         if rot3.get('separateAxes'):
             w.require(all(rot3[k]['minMaxState'] in (0,1,3) for k in ['x','y']),'Unsupported separate rotation curve mode')
     if 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
-    w.require(e['rateOverTime']['minMaxState']==0 and e['rateOverDistance']['scalar']==0,'Unsupported emission rate')
+    w.require(e['rateOverTime']['minMaxState']==0,'Unsupported emission rate curve')
+    w.require(e['rateOverDistance']['scalar']==0,'Rate-over-distance requires emitter motion history')
     bursts=[]
     for b in e['m_Bursts']:
         w.require(b['countCurve']['minMaxState']==0 and b['cycleCount']==1 and b['probability']==1,'Unsupported burst')
@@ -57,7 +72,7 @@ def model(p, partial=False):
     one=dict(colors=[dict(time=t,r=1,g=1,b=1,a=1) for t in [0,1]],alphas=[dict(time=t,value=1) for t in [0,1]])
     data=dict(source={k:p[k] for k in ['serializedFile','pathId','parameterTreeSha256']},name=p['name'],alignment=r['alignment'],sortingOrder=r['sortingOrder'],chain=p['transformChain'],
         duration=main['lengthInSec'],looping=main['looping'],delay=delay,prewarm=bool(main.get('prewarm')),capacity=i['maxNumParticles'],rate=e['rateOverTime']['scalar'],bursts=bursts,
-        shape=s,lifetime=w.curve(i['startLifetime']),speed=w.curve(i['startSpeed']),size=w.curve(i['startSize']),sizeY=w.curve(i['startSizeY']) if i['size3D'] else None,rotation=w.curve(i['startRotation']),gravity=w.curve(i['gravityModifier']),rotationX=w.curve(i['startRotationX']) if i.get('rotation3D') else None,rotationY=w.curve(i['startRotationY']) if i.get('rotation3D') else None,color=i['startColor']['maxColor'],colorMin=i['startColor'].get('minColor'),colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,angularX=w.curve(m['RotationModule']['x']) if m.get('RotationModule',{}).get('separateAxes') else None,angularY=w.curve(m['RotationModule']['y']) if m.get('RotationModule',{}).get('separateAxes') else None,
+        shape=s,lifetime=initial_curve(i['startLifetime']),speed=initial_curve(i['startSpeed']),size=initial_curve(i['startSize']),sizeY=initial_curve(i['startSizeY']) if i['size3D'] else None,rotation=initial_curve(i['startRotation']),gravity=initial_curve(i['gravityModifier']),rotationX=initial_curve(i['startRotationX']) if i.get('rotation3D') else None,rotationY=initial_curve(i['startRotationY']) if i.get('rotation3D') else None,color=i['startColor']['maxColor'],colorMin=i['startColor'].get('minColor'),colorMode=i['startColor']['minMaxState'],colorGradient=w.gradient(i['startColor']['maxGradient']),angularVelocity=w.curve(m['RotationModule']['curve']) if 'RotationModule' in m else None,angularX=w.curve(m['RotationModule']['x']) if m.get('RotationModule',{}).get('separateAxes') else None,angularY=w.curve(m['RotationModule']['y']) if m.get('RotationModule',{}).get('separateAxes') else None,
         colorOverLife=w.gradient(m['ColorModule']['gradient']['maxGradient']) if 'ColorModule' in m else one,sizeOverLife=w.curve(m['SizeModule']['curve']) if 'SizeModule' in m else None,
         sizeOverLifeY=w.curve(m['SizeModule']['y']) if m.get('SizeModule',{}).get('separateAxes') else None,
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,
@@ -80,7 +95,7 @@ def select_entries(index, mode, only=None):
         choreo=json.loads((ROOT/'public/assets/live-chibi/choreography/index.json').read_text(encoding='utf8'))
         referenced={e['asset'] for s in choreo['songs'] for e in s.get('objectLayerEvents') or []}
         return {k:v for k,v in index['assets'].items() if k in referenced and v.get('kind')=='particle'}
-    extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1'}
+    extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1','fx_in_pavetl_crystal_1','fx_in_pavetl_crystal_2','fx_in_smlegg_crystal_1','fx_in_smlegg_crystal_2'}
     # Frozen source identities from the all-particle audit; no per-song visual parameters.
     extra.update(PROMOTIONS['assets'])
     return {k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_','fx_in_trhorz_','fx_in_swyrlv_incidentlight_'))}
