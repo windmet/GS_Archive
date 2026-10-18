@@ -45,3 +45,7 @@
 ## 2026-10-19 新入口
 
 [层级缩放与renderer参数块](NATIVE_PARTICLE_SCALE_RENDERER_20261019.md) 已证明 `0x6c505c` 把三项stretch字段复制到紧凑块 +0x0c/+0x10/+0x14；`0x809088` 的renderMode=1分支进入 `0x80b8a4` / `0x817658`。当前已取得这两条顶点路径；下一步最小CPU重放，不再只沿旧renderer偏移扫描。8个stretch_omitted继续保留。
+
+## 实际顶点重放
+
+[2026-10-19 顶点与UV重放](NATIVE_STRETCH_VERTEX_REPLAY_20261019.md) 已执行上述两条solver及真实stream writer，16组结果固定；另重读8个renderer的速度/长度字段。已证明纹理横轴沿尾迹、附加速度参与方向、零速退化及classic忽略粒子rotation。相机上下文、缩放及FRSQRTE浮点顺序尚未收束，因此仍未解除8个stretch_omitted。
