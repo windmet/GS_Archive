@@ -2,6 +2,8 @@
 
 输入 HEAD `baeebc18`；工作树 `stage-native-fidelity-20261014`。本记录区分运行时消费者、可解析资源与原生视觉等价；三者不互相代替。
 
+后续接入结果见 [30 资源接线记录](NATIVE_OBJECT_PROMOTIONS_20261018.md)：当前无消费者资源已降至 37 个。本页下述计数保留为接入前审计快照。
+
 ## 消费者核对
 
 新增 `node scripts/audit-chibi-object-consumption.mjs`。它调用实际 attach 验证器，合并通用对象粒子、旧 particle layers、floor 和 Bloom 索引；消费者优先顺序与 `loadObjectLayerRuntime` 一致。`--json` 输出逐资源的消费者、partial 标记、deferred 数、事件数、编排 ID 和全部输入 SHA-256。

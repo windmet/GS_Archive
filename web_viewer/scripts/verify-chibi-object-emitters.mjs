@@ -7,9 +7,9 @@ const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,44)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,74)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),394)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),549)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -80,6 +80,23 @@ const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.parti
 assert.equal(partial.length,28)
 assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,20)
 assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,8)
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,44)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,74)
+const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
+assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
+assert.equal(Object.keys(promotions.assets).length,30)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),155)
+for(const [name,expected] of Object.entries(promotions.assets)) {
+  const model=data.assets[name]
+  assert.equal(model.systems.length,expected.systems,name)
+  assert.equal(model.deferred.length,0,name)
+  assert.ok(model.systems.every(s=>!s.partial?.length),name)
+  // Every newly admitted resource must actually emit, survive rewind, and retire after stop.
+  const times=[0,100,1000,3000,7000,15000,30000]
+  assert.ok(times.some(t=>model.systems.some(s=>sampleObjectEmitter(s,t,0).length)),`${name}: empty across activation samples`)
+  for(const system of model.systems) {
+    const retire=(Math.max(system.lifetime.scalar,system.lifetime.minScalar)+2)*1000
+    assert.equal(sampleObjectEmitter(system,retire,0,0).length,0,`${name}: retained particles after stop`)
+  }
+}
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 44 provenance-bound resources / 394 consumed (28 preview) + 0 deferred; 247 lamps, edge XY beams, mirror, prewarm, random start delay, integrated rotation, burst loops, stop tails, UV and rewind passed')
+console.log('Object emitters: 74 provenance-bound resources / 549 consumed (28 preview) + 0 deferred; 30 promoted resources emit and retire; 247 lamps, edge XY beams, mirror, prewarm, random start delay, integrated rotation, burst loops, stop tails, UV and rewind passed')

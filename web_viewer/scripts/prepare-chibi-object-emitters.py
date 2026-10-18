@@ -2,6 +2,7 @@
 import json,sys,argparse,importlib.util
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
+PROMOTIONS=json.loads((ROOT/'scripts/fixtures/chibi-object-emitter-promotions.json').read_text(encoding='utf8'))
 spec=importlib.util.spec_from_file_location('whole',ROOT/'scripts/prepare-chibi-whole-screen.py');w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 from live_chibi_native_particle_mask import require_native_particle_mask,native_particle_texture_sampling
 
@@ -78,12 +79,15 @@ def select_entries(index, mode, only=None):
         referenced={e['asset'] for s in choreo['songs'] for e in s.get('objectLayerEvents') or []}
         return {k:v for k,v in index['assets'].items() if k in referenced and v.get('kind')=='particle'}
     extra={'fx_in_tfmvmt_Incidentlight','fx_in_ossshd_glitter','fx_in_swyrlv_leaf','fx_in_plmask_panel_1','fx_in_plmask_chandelier','fx_in_inndgn_smoke_1','fx_in_inndgn_smoke_2','fx_in_strclb_starlight','fx_in_wtstry_glitter','fx_in_tkstp1_panel_1'}
+    # Frozen source identities from the all-particle audit; no per-song visual parameters.
+    extra.update(PROMOTIONS['assets'])
     return {k:v for k,v in index['assets'].items() if k in extra or k.startswith(('fx_in_rote77_','fx_in_tkstp1_linelight_','fx_in_plmask_incidentlight_','fx_in_infoct_Incidentlight_','fx_in_trhorz_','fx_in_swyrlv_incidentlight_'))}
 
 def extract(mode='current', only=None, partial=False):
     import UnityPy
     a=w.load('object_audit','audit-live-chibi-stage-objects.py');e=w.load('object_effects','prepare-live-chibi-stage-effects.py');sources=e.load_archive_sources(None)
     indexpath=ROOT/'public/assets/live-chibi/object-layers/index.json';index=json.loads(indexpath.read_text(encoding='utf8'))
+    w.require(PROMOTIONS['schemaVersion']==1 and PROMOTIONS['objectIndexSha256']==w.sha(indexpath.read_bytes()),'Promotion source index changed')
     depfile=sources.raw_root/'asset/shaders_and_materials.unity3d';dep=UnityPy.load(str(depfile));dependencies={o.assets_file.name:o.assets_file for o in dep.objects}
     entries=select_entries(index,mode,only)
     models={};records=[];textures={};images={};all_masks=[]
@@ -132,6 +136,8 @@ def extract(mode='current', only=None, partial=False):
             bound_masks=[{**m,'texture':f'{m["source"]["serializedFile"]}:{m["texture"]}'} for m in masks if m['chain'][-1]['pathId']==root]
             all_masks.extend(bound_masks)
             models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
+            if name in PROMOTIONS['assets']:
+                w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
             for system in systems:
                 if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')
     data=dict(schemaVersion=1,objectIndexSha256=w.sha(indexpath.read_bytes()),shaderBundleSha256=w.sha(depfile.read_bytes()),assets=models,textures=textures)
