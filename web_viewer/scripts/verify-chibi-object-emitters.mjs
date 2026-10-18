@@ -3,12 +3,34 @@ import fs from 'node:fs'
 import crypto from 'node:crypto'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
+import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})
+const clock=createNoiseClock(1)
+let wall=0
+for(const event of noiseProof.clockProof.sequence) {
+  if(event.advance) {
+    if(event.count)assert.equal(clock.admit(wall,event.dt),true)
+    wall+=event.dt
+  }
+  assert.ok(Math.abs(clock.timeAt(wall)*noiseProof.clockProof.scrollSpeed-event.expectedScroll)<1e-6,'Native empty/nonempty clock gate mismatch')
+}
+assert.equal(createNoiseClock(1).timeAt(0),noiseProof.clockProof.resetExpected)
+const gaps=createNoiseClock(20)
+for(const t of [0,.05,1,1.05])for(let i=0;i<10;i++)assert.equal(gaps.admit(t,.2),true)
+assert.ok(Math.abs(gaps.timeAt(.9)-.25)<1e-12,'Empty gaps must not advance scroll')
+assert.ok(Math.abs(gaps.timeAt(1.1)-.35)<1e-12,'Later burst resumes the held phase')
+gaps.discardBefore(.8)
+assert.ok(Math.abs(gaps.timeAt(1.1)-.35)<1e-12,'Pruning must preserve accumulated phase')
+assert.throws(()=>gaps.timeAt(.1),/retained history/)
+const capped=createNoiseClock(1)
+assert.equal(capped.admit(0,.2),true)
+assert.equal(capped.admit(.1,5),false,'At capacity native emission drops new births')
+assert.equal(capped.timeAt(2),.2,'A dropped birth must not extend the clock')
 for(const c of noiseProof.gradientCases) {
   const actual=sampleNoiseDerivatives(point(c.point),c.frequency)
   for(const [i,axis] of ['x','y'].entries())assert.ok(Math.abs(actual[axis]-c.expected[i])<.00002,`Native derivative mismatch ${JSON.stringify(c)}`)
@@ -110,6 +132,9 @@ const noiseAt700=sampleObjectEmitter(movingNoise,700,0)
 sampleObjectEmitter(movingNoise,3300,0)
 assert.deepEqual(sampleObjectEmitter(movingNoise,700,0),noiseAt700,'Rewind resets the integrated trajectory')
 assert.deepEqual(sampleObjectEmitter(structuredClone(movingNoise),700,0),noiseAt700,'Cached and cold integration must agree')
+assert.deepEqual(sampleObjectEmitter(movingNoise,700,0,300),noiseAt700,'StopEmitting must not freeze Noise on a surviving particle')
+const cappedNoise={...movingNoise,capacity:1,lifetime:{mode:0,scalar:.2},bursts:[{time:0,count:1},{time:.1,count:1}]}
+assert.equal(sampleObjectEmitter(cappedNoise,150,0)[0].birth,0,'Actual consumer must retain the old particle and reject an overflowing birth')
 const gravityNoise={...movingNoise,noise:{...movingNoise.noise,strength:0},gravity:{mode:0,scalar:1},chain:[{position:{x:0,y:0},rotation:{x:0,y:0,z:Math.SQRT1_2,w:Math.SQRT1_2},scale:{x:2,y:3}}]}
 const falling=sampleObjectEmitter(gravityNoise,1000,0)[0]
 assert.ok(Math.abs(falling.x)<1e-9,'World gravity must stay vertical through a rotated/scaled emitter plane')

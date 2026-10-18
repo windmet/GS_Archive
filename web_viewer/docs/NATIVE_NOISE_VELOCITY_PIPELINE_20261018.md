@@ -2,6 +2,8 @@
 
 输入 HEAD `9d486e53`，舞台工作树 `stage-native-fidelity-20261014`。接续 [Curl 内核校准](NATIVE_NOISE_CURL_KERNEL_20261018.md)，本批解决“内核值直接加到出生位置”的错误，仍保留 Noise preview。
 
+后续 [存活区间时钟](NATIVE_NOISE_CLOCK_20261018.md) 已修复空档仍推进相位的问题，并补容量准入；本文的相位未完成描述为当时状态。原生帧批次边界仍未等价。
+
 ## 真正漏掉的消费步骤
 
 同一 libunity SHA `acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0`，Ghidra base `0x100000`：

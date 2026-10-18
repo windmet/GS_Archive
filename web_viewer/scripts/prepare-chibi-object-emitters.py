@@ -116,6 +116,7 @@ def model(p, partial=False, stationary=False):
         marks=[]
         if 'NoiseModule' in m:
             nz=m['NoiseModule']
+            w.require(main.get('ringBufferMode')==0 and all(0<=b['time']<=main['lengthInSec'] for b in bursts),'Unsupported noise birth/capacity timeline')
             w.require(nz['quality']==2 and nz['octaves']==1 and not nz['remapEnabled'] and not nz['separateAxes'],'Unsupported curl noise profile')
             w.require(all(nz[k]['minMaxState']==0 for k in ['strength','scrollSpeed','positionAmount','rotationAmount','sizeAmount']) and nz['positionAmount']['scalar']==1 and nz['rotationAmount']['scalar']==nz['sizeAmount']['scalar']==0,'Unsupported noise amount/curve')
             data['noise']=dict(profile='native-high-curl-v1',strength=nz['strength']['scalar'],frequency=nz['frequency'],scroll=nz['scrollSpeed']['scalar'],damping=bool(nz['damping']),octaveCount=nz['octaves'],octaveMultiplier=nz['octaveMultiplier'],octaveScale=nz['octaveScale'],quality=nz['quality'],remapEnabled=False,separateAxes=False)

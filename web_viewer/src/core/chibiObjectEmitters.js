@@ -1,4 +1,5 @@
 import { stepNoiseMotion } from './chibiParticleNoise.js'
+import { createNoiseClock } from './chibiParticleNoiseClock.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
@@ -99,19 +100,40 @@ function rotationAt(c,age,life,r) {
 // grid states so fractional renders and rewind never change future samples.
 // This grid is a Web integration boundary, not Unity's recorded frame schedule.
 const noiseMotionCache=new WeakMap()
-function noiseMotion(system,id,initial,age,phase,options) {
-  let cache=noiseMotionCache.get(system)
-  if(!cache){cache=new Map();noiseMotionCache.set(system,cache)}
+const noiseTimelineCache=new WeakMap()
+function noiseTimeline(system,births,last,cutoff,wait,maxLife,seed) {
+  let timeline=noiseTimelineCache.get(system)
+  if(!timeline || timeline.cutoff!==cutoff || last<timeline.last) {
+    timeline={last:-1,cutoff,clock:createNoiseClock(system.capacity),records:[]}
+    noiseTimelineCache.set(system,timeline)
+  }
+  const ordered=births.map((birth,index)=>({birth,index})).sort((a,b)=>a.birth-b.birth || a.index-b.index)
+  for(let loop=timeline.last+1;loop<=last;loop++)for(const {birth,index} of ordered) {
+    const id=loop*100000+index,born=loop*system.duration+birth+wait
+    if(born>cutoff)continue
+    const life=Math.max(.00001,sample(system.lifetime,Math.max(0,Math.min(1,birth/system.duration)),random(seed,id,0)))
+    if(timeline.clock.admit(born,life))timeline.records.push({id,born,end:born+life})
+  }
+  timeline.last=last
+  const start=last*system.duration+wait
+  timeline.records=timeline.records.filter(r=>r.end>start)
+  timeline.clock.discardBefore(Math.max(0,start-maxLife))
+  return {clock:timeline.clock,ids:new Set(timeline.records.map(r=>r.id))}
+}
+function noiseMotion(system,id,initial,age,born,options) {
+  let savedCache=noiseMotionCache.get(system)
+  if(!savedCache || savedCache.clock!==options.clock){savedCache={clock:options.clock,entries:new Map()};noiseMotionCache.set(system,savedCache)}
+  const cache=savedCache.entries
   const steps=Math.floor(age*60)
   let saved=cache.get(id)
   if(!saved || saved.steps>steps)saved={steps:0,state:initial}
   while(saved.steps<steps) {
-    saved={steps:saved.steps+1,state:stepNoiseMotion(saved.state,system.noise,{...options,dt:1/60,phase:phase+(saved.steps+1)/60})}
+    saved={steps:saved.steps+1,state:stepNoiseMotion(saved.state,system.noise,{...options,dt:1/60,phase:options.clock.timeAt(born+(saved.steps+1)/60)})}
   }
   cache.set(id,saved)
   while(cache.size>Math.max(32,system.capacity*2))cache.delete(cache.keys().next().value)
   const rest=age-steps/60
-  return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:phase+age}).position:saved.state.position
+  return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) {
   // Nonzero distance rates are retained. This profile proves the world emitter
@@ -133,11 +155,13 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
   const matrix=emitterMatrix(system.chain),out=[]
+  const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
+  if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
+  const timeline=system.noise?noiseTimeline(system,births,last,cutoff,wait,maxLife,seed):null
   for(let loop=first;loop<=last;loop++) {
-    const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
-    if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
     for(const [index,birth] of births.entries()) {
       const id=loop*100000+index,rnd=c=>random(seed,id,c),birthPhase=Math.max(0,Math.min(1,birth/period))
+      if(timeline && !timeline.ids.has(id))continue
       const life=Math.max(.00001,sample(system.lifetime,birthPhase,rnd(0)))
       const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
@@ -150,7 +174,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
         const speed=sample(system.speed,birthPhase,rnd(4)),det=matrix.a*matrix.d-matrix.b*matrix.c
         if(Math.abs(det)<1e-12)throw Error('Singular noise emitter gravity plane')
         const initial={position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},velocity:{x:v.x*speed,y:v.y*speed,z:v.z*speed}}
-        p=noiseMotion(system,id,initial,age,born-shift,{offset:{x:random(seed,0,31),y:random(seed,0,32),z:random(seed,0,33)},
+        p=noiseMotion(system,id,initial,age,born,{clock:timeline.clock,offset:{x:random(seed,0,31),y:random(seed,0,32),z:random(seed,0,33)},
           velocity:system.velocity?{x:sample(system.velocity.x,t,rnd(14)),y:sample(system.velocity.y,t,rnd(15)),z:sample(system.velocity.z,t,rnd(16))}:{x:0,y:0,z:0},
           gravity:{x:-matrix.c*g/det,y:matrix.a*g/det,z:0},limit:system.limit})
       } else {
