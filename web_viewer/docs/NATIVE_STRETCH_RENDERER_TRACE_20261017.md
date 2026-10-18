@@ -41,3 +41,7 @@
 
 - 44 资源 / 394 系统 / 0 deferred / 28 preview（20 noise_preview + 8 stretch_omitted）/ 33 纹理。
 - 本轮没有源码或数据改动，仅记录反查结果。
+
+## 2026-10-19 新入口
+
+[层级缩放与renderer参数块](NATIVE_PARTICLE_SCALE_RENDERER_20261019.md) 已证明 `0x6c505c` 把三项stretch字段复制到紧凑块 +0x0c/+0x10/+0x14；`0x809088` 的renderMode=1分支进入 `0x80b8a4` / `0x817658`。当前已取得这两条顶点路径；下一步最小CPU重放，不再只沿旧renderer偏移扫描。8个stretch_omitted继续保留。

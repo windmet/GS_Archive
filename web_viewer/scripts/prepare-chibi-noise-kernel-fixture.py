@@ -163,8 +163,33 @@ def gravity_space_replay():
  uc.hook_del(hook)
  return dict(function='0x70dae8',simulationSpaceGetter='0x6d8f78',physicsManagerAdapter='0x3901f0 returns null: native built-in gravity fallback; diagnostic already issued',matrixBoundary='Synthetic inverse matrix supplied at state+0xcc; does not prove construction or renderer scaling',cases=cases)
 proof['gravitySpaceProof']=gravity_space_replay()
+def scaling_replay():
+ def transform(x=0,y=0,angle=0,sx=1,sy=1,mirror=False):
+  return dict(position=dict(x=x,y=y,z=0),rotation=dict(x=0,y=1 if mirror else 0,z=0 if mirror else math.sin(angle/2),w=0 if mirror else math.cos(angle/2)),scale=dict(x=sx,y=sy,z=1))
+ chains=[[transform(sx=2,sy=3)],
+  [transform(angle=math.pi/4,sx=2,sy=3)],
+  [transform(1,2,math.pi/4,2,3),transform(4,5,math.pi/6,4,5)],
+  [transform(sx=-2,sy=3)],
+  [transform(1,2,math.pi/4,2,3),transform(4,5,math.pi/6,-4,5)],
+  [transform(mirror=True),transform(angle=math.pi/6,sx=2,sy=3)]]
+ cases=[]
+ config,main,state,modules,ref,data,trs,parents=0x2090000,0x2091000,0x2092000,0x2093000,0x2096000,0x2097000,0x2098000,0x2099000
+ for mode in [0,1,2]:
+  for chain in chains:
+   for address in [config,main,state,modules,ref,data,trs,parents]:uc.mem_write(address,bytes(0x1000))
+   ptr(config+0x40,main);ptr(config+0x48,state);ptr(config+0x50,modules)
+   uc.mem_write(main+0x48,struct.pack('<I',mode));ptr(ref,data);ptr(ref+8,0)
+   ptr(data+0x18,trs);ptr(data+0x20,parents)
+   for j,t in enumerate(chain):
+    floats(trs+j*48,[*t['position'].values(),0,*t['rotation'].values(),*t['scale'].values(),0])
+    uc.mem_write(parents+j*4,struct.pack('<i',j+1 if j+1<len(chain) else -1))
+   execute(0x6cf028,[config,0,ref,ref])
+   matrix=struct.unpack('<16f',uc.mem_read(state+0x3c,64))
+   cases.append(dict(scalingMode=mode,chain=chain,expectedMatrix=dict(zip(['a','b','c','d','tx','ty'],[matrix[j] for j in [0,1,4,5,12,13]])),expectedShapeScale=list(struct.unpack('<3f',uc.mem_read(state+0x148,12))),expectedParticleScale=list(struct.unpack('<3f',uc.mem_read(state+0x154,12)))))
+ return dict(function='0x6cf028',scaleFunction='0x6cfd84',boundary='Synthetic Transform hierarchy; native matrix and scale construction execute without function adapters. No vertex solver or full scene replay.',cases=cases)
+proof['scalingProof']=scaling_replay()
 path=Path(__file__).parent/'fixtures/chibi-noise-kernel-native.json'
 rendered=json.dumps(proof,ensure_ascii=False,indent=2)+'\n'
 if args.write:path.write_text(rendered,encoding='utf8')
 else:assert json.loads(path.read_text(encoding='utf8'))==json.loads(rendered),'Native replay fixture mismatch'
-print(f'Native Noise replay: {len(gradientCases)} derivative, {len(workerCases)} worker, {len(trajectoryCases)} trajectory, clock sequence/reset and {len(proof["gravitySpaceProof"]["cases"])} gravity-space cases match')
+print(f'Native Noise replay: {len(gradientCases)} derivative, {len(workerCases)} worker, {len(trajectoryCases)} trajectory, clock sequence/reset, {len(proof["gravitySpaceProof"]["cases"])} gravity-space and {len(proof["scalingProof"]["cases"])} scaling cases match')

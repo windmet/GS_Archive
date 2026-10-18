@@ -10,6 +10,11 @@ const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})
+for(const c of noiseProof.scalingProof.cases) {
+  if(c.scalingMode!==0)continue // Other scaling modes are rejected by extraction.
+  const actual=emitterMatrix(c.chain)
+  for(const k of ['a','b','c','d','tx','ty'])assert.ok(Math.abs(actual[k]-c.expectedMatrix[k])<2e-5,`Native hierarchy matrix mismatch: ${k}`)
+}
 const clock=createNoiseClock(1)
 let wall=0
 for(const event of noiseProof.clockProof.sequence) {
