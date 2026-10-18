@@ -2984,7 +2984,10 @@ function layoutObjectLayers(states = objectLayerStatesAt(stageTime.value)) {
     runtime.container.alpha = particle?particle.alpha:Math.max(0, Math.min(1, Number(state.alpha) || 0))
     runtime.container.visible = objectLayersEnabled.value && (particle?particle.visible:runtime.container.alpha > 0.001)
     if (runtime.particles) updateChibiParticleLayer(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
-    if(runtime.nativeEmitters)updateObjectEmitters(PIXI,runtime,stageTime.value,state.activatedAt,particle?.stoppedAt,cameraContainer.rotation)
+    // 720 reference pixels / 100 pixels per particle unit, undoing parent zoom
+    // and object scale for the native screen-relative particle-size boundary.
+    if(runtime.nativeEmitters)updateObjectEmitters(PIXI,runtime,stageTime.value,state.activatedAt,particle?.stoppedAt,cameraContainer.rotation,
+      7.2/Math.max(1e-6,environmentScale.value*Number(state.scale)/1000*cameraContainer.scale.x))
     if (runtime.floorEmitters) updateChibiFloor(runtime, stageTime.value, state.activatedAt,particle?.stoppedAt)
     if (runtime.bloomEmitters) updateChibiBloom(runtime,stageTime.value,state.activatedAt,particle?.stoppedAt)
     syncObjectRendererPlanes(runtime)

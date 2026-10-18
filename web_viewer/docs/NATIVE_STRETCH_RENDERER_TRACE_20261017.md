@@ -49,3 +49,7 @@
 ## 实际顶点重放
 
 [2026-10-19 顶点与UV重放](NATIVE_STRETCH_VERTEX_REPLAY_20261019.md) 已执行上述两条solver及真实stream writer，16组结果固定；另重读8个renderer的速度/长度字段。已证明纹理横轴沿尾迹、附加速度参与方向、零速退化及classic忽略粒子rotation。相机上下文、缩放及FRSQRTE浮点顺序尚未收束，因此仍未解除8个stretch_omitted。
+
+## 共享平面系统已接入
+
+[平面消费批次](NATIVE_STRETCH_PLANAR_WIRING_20261019.md) 已将fx_in_tfmvmt_Incidentlight/light接入通用四角消费者，46组原生重放及5212实播验证。标记现为20 Noise preview、1 Stretch preview、7 Stretch omitted。ROUTE77 Cone有1度展开产生Z速度，未借用平面模型，仍待继续。

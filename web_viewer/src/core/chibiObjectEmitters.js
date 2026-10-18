@@ -1,5 +1,6 @@
 import { stepNoiseMotion } from './chibiParticleNoise.js'
 import { createNoiseClock } from './chibiParticleNoiseClock.js'
+import { samplePlanarStretch, transformStretchVelocity } from './chibiParticleStretch.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
@@ -135,7 +136,7 @@ function noiseMotion(system,id,initial,age,born,options) {
   const rest=age-steps/60
   return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:options.clock.timeAt(born+age)}).position:saved.state.position
 }
-export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) {
+export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity,view={}) {
   // Nonzero distance rates are retained. This profile proves the world emitter
   // stays fixed after placement/Play, so native dt*|velocity| contributes zero.
   // Never apply that reduction to an unproven moving emitter.
@@ -200,9 +201,22 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
       const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
-      out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,
-        x:wx*100,y:-wy*100,
-        a:A*size,b:B*size,c:C*sizeY,d:D*sizeY})
+      let geometry={x:wx*100,y:-wy*100,a:A*size,b:B*size,c:C*sizeY,d:D*sizeY}
+      if(system.stretch) {
+        if(system.stretch.profile!=='native-classic-planar-v1')throw Error('Unknown stretch profile')
+        const fp=Math.fround,speed=fp(sample(system.speed,birthPhase,rnd(4)))
+        const vx=fp(v.x*speed),vy=fp(v.y*speed)
+        const velocity=transformStretchVelocity(matrix,{x:vx,y:vy},view.rotation??0)
+        const quad=samplePlanarStretch({position:{x:wx,y:wy},velocity,size:size/100,
+          scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...system.stretch,
+          viewHeight:view.height??7.2,cameraRotation:view.rotation??0})
+        // PNG extraction flips Unity texture Y. Native (0,1),(1,1),(1,0),(0,0)
+        // maps to the four Pixi corners in that order; texture X follows the tail.
+        geometry={x:(quad[0].x+quad[2].x)*50,y:-(quad[0].y+quad[2].y)*50,
+          a:(quad[1].x-quad[0].x)*100,b:-(quad[1].y-quad[0].y)*100,
+          c:(quad[3].x-quad[0].x)*100,d:-(quad[3].y-quad[0].y)*100}
+      }
+      out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,...geometry})
     }
   }
   return out.slice(-system.capacity)

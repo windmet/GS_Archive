@@ -37,15 +37,15 @@ export async function loadObjectEmitters(PIXI,model,loadTexture) {
   }
 }
 
-export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation) {
+export function updateObjectEmitters(PIXI,runtime,time,activatedAt,stoppedAt,cameraRotation,viewHeight=7.2) {
   let count=0
   for(const {system,frames,sprites,w,h} of runtime.nativeEmitters) {
-    const samples=sampleObjectEmitter(system,time,activatedAt,stoppedAt)
+    const samples=sampleObjectEmitter(system,time,activatedAt,stoppedAt,{rotation:cameraRotation,height:viewHeight})
     for(let i=0;i<sprites.length;i++) {
       const sprite=sprites[i],s=samples[i];sprite.visible=Boolean(s && s.alpha>0)
       if(!s)continue
       let {a,b,c,d}=s
-      if(system.alignment===0){const cos=Math.cos(-cameraRotation),sin=Math.sin(-cameraRotation);[a,b,c,d]=[cos*a-sin*b,sin*a+cos*b,cos*c-sin*d,sin*c+cos*d]}
+      if(system.alignment===0&&!system.stretch){const cos=Math.cos(-cameraRotation),sin=Math.sin(-cameraRotation);[a,b,c,d]=[cos*a-sin*b,sin*a+cos*b,cos*c-sin*d,sin*c+cos*d]}
       sprite.texture=frames[s.frame];sprite.transform.setFromMatrix(new PIXI.Matrix(a/w,b/w,c/h,d/h,s.x,s.y));sprite.alpha=s.alpha;sprite.tint=s.color;count++
     }
   }

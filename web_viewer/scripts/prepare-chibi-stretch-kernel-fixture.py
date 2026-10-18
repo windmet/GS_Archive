@@ -77,15 +77,16 @@ def vertices(function,case):
         ptr(engine+0x40,main);ptr(engine+0x48,state);ptr(engine+0x50,modules)
         uc.mem_write(renderer+0x1c8,struct.pack('<H',1))
         floats(renderer+0x1cc,[0,case.get('maxParticleSize',100),0,case['velocityScale'],case['lengthScale'],0,1,0])
-        floats(renderer+0x1fc,[1,1,0])
+        floats(renderer+0x1fc,[0,0,0]) # RAW m_Flip; never introduce random UV flips.
         default=struct.unpack('<Q',uc.mem_read(0x11d1178,8))[0]
         uc.mem_write(modules+0x8ac,bytes(uc.mem_read(default,8)))
         floats(state+0x154,case.get('particleScale',[1,1,1]))
         floats(state+0x7c,case.get('worldRotation',[0,0,0,1]))
         a,b,c,d,tx,ty=case.get('matrix',[1,0,0,1,0,0])
         floats(state+0x3c,[a,b,0,0,c,d,0,0,0,0,1,0,tx,ty,0,1])
-        floats(camera+4,[1,0,0,0,0,1,0,0,0,0,1,0,0,0,-10,1])
-        floats(camera+0x44,[1,0,0,0,0,1,0,0,0,0,1,0,0,0,10,1])
+        angle=case.get('cameraRotation',0);cos=math.cos(angle);sin=math.sin(angle)
+        floats(camera+4,[cos,sin,0,0,-sin,cos,0,0,0,0,1,0,0,0,-10,1])
+        floats(camera+0x44,[cos,-sin,0,0,sin,cos,0,0,0,0,1,0,0,0,10,1])
         floats(camera+0xd4,[0,0,1]);floats(camera+0xe0,[10,1,1])
         uc.mem_write(camera+0xec,bytes([1]))
         execute(0x6c505c,[renderer,engine,camera,0,context,params,0])
@@ -111,6 +112,12 @@ inputs=[dict(name='x',velocity=[1,0,0],size=2,velocityScale=1,lengthScale=2),
     dict(name='packed-scaled',velocity=[3,4,0],size=2,velocityScale=1,lengthScale=2,packedContext=True,matrix=[2,0,0,3,0,0],particleScale=[2,3,1]),
     dict(name='packed-rotated',velocity=[3,4,0],size=2,velocityScale=1,lengthScale=2,packedContext=True,matrix=[1,math.sqrt(3),-3*math.sqrt(3)/2,1.5,0,0],particleScale=[2,3,1],worldRotation=[0,0,.5,math.sqrt(3)/2]),
     dict(name='packed-clamped',velocity=[3,4,0],size=2,velocityScale=1,lengthScale=2,packedContext=True,maxParticleSize=.01)]
+# Repeat all scalar inputs through real packing as well, including birth and
+# animated-velocity boundaries. These are separate from the early direct context.
+inputs += [{**case,'name':'packed-'+case['name'],'packedContext':True} for case in inputs[:8]]
+inputs += [dict(name='packed-camera',velocity=[3,4,0],size=2,velocityScale=1,lengthScale=2,packedContext=True,matrix=[2,0,0,3,0,0],particleScale=[2,3,1],cameraRotation=.7),
+    dict(name='packed-offset',velocity=[-3,2,0],size=.7,velocityScale=0,lengthScale=3,packedContext=True,matrix=[.25,0,0,.45,2,3],particleScale=[.25,.45,1]),
+    dict(name='packed-fire-birth',velocity=[0,20,0],size=1.2000000476837158,velocityScale=0,lengthScale=3,packedContext=True)]
 cases=[dict(function=hex(function),**case,expected=vertices(function,case)) for function in [0x80b8a4,0x817658] for case in inputs]
 uc.hook_del(hook)
 half=len(inputs)
@@ -134,7 +141,7 @@ for asset in bound['objects']:
     for obj in env.objects:
         if str(obj.path_id) not in selected:continue
         tree=obj.read_typetree()
-        keys=['m_RenderMode','m_RenderAlignment','m_Pivot','m_MinParticleSize','m_MaxParticleSize','m_CameraVelocityScale','m_VelocityScale','m_LengthScale']
+        keys=['m_RenderMode','m_RenderAlignment','m_Pivot','m_Flip','m_MinParticleSize','m_MaxParticleSize','m_CameraVelocityScale','m_VelocityScale','m_LengthScale']
         renderers.append(dict(asset=asset['asset'],bundle=asset['bundle'],bundleSha256=hashlib.sha256(blob).hexdigest(),pathId=str(obj.path_id),rendererTreeSha256=hashlib.sha256(json.dumps(tree,sort_keys=True,separators=(',',':')).encode()).hexdigest(),fields={k:tree[k] for k in keys}))
 proof=dict(binarySha256=native['identity'],boundary='Synthetic camera inputs: old cases use direct identity context/z=1; packedContext cases execute real 0x6c505c and 0x6c5580 before the solvers, with z=0. Scalar size, zero pivot/camera speed, fixed stream. Two real vertex solvers and real stream writer execute. Only null cleanup 0x306258 is skipped; no allocator or full scene replay.',reciprocalSqrtEstimate=dict(instructionSource='0x80bb70: frsqrte v0.4S,v0.4S copied verbatim, followed by ret',profile='positive-normal-float32',normalizedExponents=[127,128],normalizedBuckets=estimate_table,randomSeed='0x12345678',randomCases=4096,bucketEdgeCases=512),cases=cases,renderers=sorted(renderers,key=lambda r:(r['asset'],r['pathId'])))
 path=root/'scripts/fixtures/chibi-stretch-kernel-native.json'

@@ -173,6 +173,12 @@ def particle_record(owner, value, include_module_data=False, dependencies=None):
                         for key, value in modules.items() if value["enabled"]},
             "parameterTreeSha256": json_hash(t),
             "renderer": {**source_ref(renderer), "enabled": r["m_Enabled"],
+                         **({"stretch": {"rendererTreeSha256": json_hash(r),
+                             "flip": r["m_Flip"],
+                             "minSize": r["m_MinParticleSize"], "maxSize": r["m_MaxParticleSize"],
+                             "cameraVelocityScale": r["m_CameraVelocityScale"],
+                             "velocityScale": r["m_VelocityScale"], "lengthScale": r["m_LengthScale"]}}
+                            if r["m_RenderMode"] == 1 else {}),
                          "renderMode": r["m_RenderMode"],
                          "renderModeName": RENDER_MODES.get(r["m_RenderMode"], "unknown"),
                          "alignment": r["m_RenderAlignment"], "pivot": r["m_Pivot"],

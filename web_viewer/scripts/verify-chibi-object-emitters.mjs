@@ -4,10 +4,26 @@ import crypto from 'node:crypto'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
 import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 import {createNoiseClock} from '../src/core/chibiParticleNoiseClock.js'
+import {reciprocalSqrtEstimate,samplePlanarStretch,transformStretchVelocity} from '../src/core/chibiParticleStretch.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
+const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
+assert.equal(stretchProof.binarySha256,noiseProof.binarySha256)
+for(const [row,exponent] of [127,128].entries())for(let bucket=0;bucket<128;bucket++) {
+  const buffer=new DataView(new ArrayBuffer(4));buffer.setUint32(0,exponent<<23|bucket<<16,true)
+  assert.equal(reciprocalSqrtEstimate(buffer.getFloat32(0,true)),stretchProof.reciprocalSqrtEstimate.normalizedBuckets[row][bucket])
+}
+for(const c of stretchProof.cases.filter(c=>c.packedContext)) {
+  assert.deepEqual(c.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]],'Bound zero-flip native renderer UV orientation')
+  const fp=Math.fround,[a,b,k,d,tx,ty]=(c.matrix||[1,0,0,1,0,0]).map(fp)
+  const vx=fp(c.velocity[0]+(c.animatedVelocity?.[0]||0)),vy=fp(c.velocity[1]+(c.animatedVelocity?.[1]||0))
+  const [scaleX,scaleY]=c.particleScale||[1,1]
+  const actual=samplePlanarStretch({position:{x:tx,y:ty},velocity:transformStretchVelocity({a,b,c:k,d},{x:vx,y:vy},c.cameraRotation||0),
+    size:c.size,scaleX,scaleY,lengthScale:c.lengthScale,velocityScale:c.velocityScale,maxSize:c.maxParticleSize??100,cameraRotation:c.cameraRotation||0})
+  for(const [i,p] of actual.entries())for(const [axis,j] of [['x',0],['y',1]])assert.ok(Math.abs(p[axis]-c.expected[i].position[j])<2e-5,`Native stretch ${c.function} ${c.name} corner ${i}.${axis}`)
+}
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})
 for(const c of noiseProof.scalingProof.cases) {
@@ -207,9 +223,38 @@ for(const s of partial.filter(s=>s.noise)) {
   assert.equal(s.noise.octaveCount,1)
   assert.equal(s.noise.quality,2)
 }
-assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,8)
+assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,7)
+assert.equal(partial.filter(s=>s.partial.includes('stretch_preview')).length,1)
+for(const asset of ['fire_1','fire_2','fire_3','turbo_1','turbo_2'].map(s=>'fx_in_rote77_'+s)) {
+  const system=data.assets[asset].systems.find(s=>s.partial?.includes('stretch_omitted'))
+  assert.equal(system.shape.type,4)
+  assert.ok(system.shape.angle>0,'Cone spread retains a nonplanar velocity component')
+  assert.equal(system.stretch,undefined,'Nonplanar cone must not enter the planar solver')
+}
+for(const system of partial.filter(s=>s.stretch)) {
+  assert.equal(system.stretch.profile,'native-classic-planar-v1')
+  assert.equal(system.stretch.rendererTreeSha256.length,64)
+  const at=sampleObjectEmitter(system,49000,0)
+  assert.deepEqual(sampleObjectEmitter(system,49000,0),at,'Stretch seeking must be deterministic')
+}
+const sharedStretch=data.assets.fx_in_tfmvmt_Incidentlight.systems.find(s=>s.stretch)
+const birthModel={...sharedStretch,chain:[],shape:{...sharedStretch.shape,radius:{value:0},arc:{value:0},m_Rotation:{x:0,y:0,z:0}},looping:false,delay:0,rate:0,bursts:[{time:0,count:1}],lifetime:{mode:0,scalar:2},speed:{mode:0,scalar:1},size:{mode:0,scalar:2},sizeOverLife:null,rotation:{mode:0,scalar:0},stretch:{...sharedStretch.stretch,velocityScale:1,lengthScale:2}}
+const birthQuad=sampleObjectEmitter(birthModel,0,0,Infinity,{height:10})[0]
+const golden=stretchProof.cases.find(c=>c.name==='packed-x').expected
+for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
+  assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
+  assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
+}
 assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,78)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
+for(const r of stretchProof.renderers) {
+  const source=rawObjects.find(o=>o.asset===r.asset)
+  const particle=source.particles.find(p=>p.renderer.pathId===r.pathId)
+  const system=data.assets[r.asset].systems.find(s=>s.source.pathId===particle.pathId)
+  if(!system.stretch)continue
+  for(const [field,raw] of Object.entries({minSize:'m_MinParticleSize',maxSize:'m_MaxParticleSize',cameraVelocityScale:'m_CameraVelocityScale',velocityScale:'m_VelocityScale',lengthScale:'m_LengthScale'}))assert.equal(system.stretch[field],r.fields[raw],`Unsourced stretch field ${r.asset}.${field}`)
+  assert.equal(system.stretch.rendererTreeSha256,particle.renderer.stretch.rendererTreeSha256)
+}
 for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl_crystal_2:10,fx_in_smlegg_crystal_1:21,fx_in_smlegg_crystal_2:34})) {
   const model=data.assets[name]
   assert.equal(model.systems.length,count*2)

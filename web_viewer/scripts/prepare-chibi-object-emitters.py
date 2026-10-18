@@ -121,7 +121,27 @@ def model(p, partial=False, stationary=False):
             w.require(all(nz[k]['minMaxState']==0 for k in ['strength','scrollSpeed','positionAmount','rotationAmount','sizeAmount']) and nz['positionAmount']['scalar']==1 and nz['rotationAmount']['scalar']==nz['sizeAmount']['scalar']==0,'Unsupported noise amount/curve')
             data['noise']=dict(profile='native-high-curl-v1',strength=nz['strength']['scalar'],frequency=nz['frequency'],scroll=nz['scrollSpeed']['scalar'],damping=bool(nz['damping']),octaveCount=nz['octaves'],octaveMultiplier=nz['octaveMultiplier'],octaveScale=nz['octaveScale'],quality=nz['quality'],remapEnabled=False,separateAxes=False)
             marks.append('noise_preview')
-        if r.get('renderMode')==1:marks.append('stretch_omitted')
+        if r.get('renderMode')==1:
+            # A scalar-size, force-free plane with an orthogonal emitter basis.
+            # Keep 3D sphere trails and unproven combinations explicitly omitted.
+            import math
+            a,b,k,d=1,0,0,1
+            for tr in chain:
+                q=tr['rotation'];x,y,z,v=(q[f] for f in ['x','y','z','w'])
+                A=(1-2*(y*y+z*z))*tr['scale']['x'];B=2*(x*y+v*z)*tr['scale']['x']
+                C=2*(x*y-v*z)*tr['scale']['y'];D=(1-2*(x*x+z*z))*tr['scale']['y']
+                a,b,k,d=A*a+C*b,B*a+D*b,A*k+C*d,B*k+D*d
+            planar=bool(s) and ((s['type']==4 and s['angle']==0 and abs(abs(s['m_Rotation']['x'])-90)<1e-6 and s['m_Rotation']['y']==0) or (s['type']==10 and s['m_Rotation']['x']==s['m_Rotation']['y']==0))
+            sr=r['stretch']
+            supported=(planar and not c and not velocity and 'NoiseModule' not in m and not i['size3D'] and not i.get('rotation3D')
+                and i['gravityModifier']['minMaxState']==0 and i['gravityModifier']['scalar']==0
+                and all(t['scale']['x']>0 and t['scale']['y']>0 for t in chain)
+                and abs(a*k+b*d)<1e-5 and min(math.hypot(a,b),math.hypot(k,d))>1e-6
+                and sr['flip']==dict(x=0,y=0,z=0) and sr['cameraVelocityScale']==0 and 0<=sr['minSize']<=sr['maxSize'])
+            if supported:
+                data['stretch']={**sr,'profile':'native-classic-planar-v1'}
+                marks.append('stretch_preview')
+            else:marks.append('stretch_omitted')
         if marks:data['partial']=marks
     return data
 
