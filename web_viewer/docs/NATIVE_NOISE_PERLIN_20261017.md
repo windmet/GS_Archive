@@ -1,5 +1,7 @@
 # 对象粒子 Noise：Perlin 置换表与 preview 位移
 
+后续 [原生 Curl 内核校准](NATIVE_NOISE_CURL_KERNEL_20261018.md) 已纠正本页旧实现：原生高质量分支组合的是 Perlin 导数，不是三个 Perlin 值。damping 与原生梯度表已用 AArch64 CPU 重放验证；整条更新链仍保留 preview。本页为历史记录。
+
 输入 HEAD `88b4e827`；工作树 `stage-native-fidelity-20261014`；9334 端口无 BFCache 的无头 Edge 验收。
 
 ## 一、反编译证据

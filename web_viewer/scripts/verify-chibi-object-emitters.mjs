@@ -2,9 +2,23 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
+import {sampleNoiseDerivatives,sampleCurlNoise} from '../src/core/chibiParticleNoise.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
+const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
+assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
+const point=([x,y,z])=>({x,y,z})
+for(const c of noiseProof.gradientCases) {
+  const actual=sampleNoiseDerivatives(point(c.point),c.frequency)
+  for(const [i,axis] of ['x','y'].entries())assert.ok(Math.abs(actual[axis]-c.expected[i])<.00002,`Native derivative mismatch ${JSON.stringify(c)}`)
+}
+for(const c of noiseProof.workerCases) {
+  const n={quality:2,octaveCount:1,frequency:c.frequency,strength:c.strength,damping:c.damping,remapEnabled:false,separateAxes:false}
+  const actual=sampleCurlNoise(n,point(c.point),c.scroll,point(c.offset))
+  for(const [i,axis] of ['x','y','z'].entries())assert.ok(Math.abs(actual[axis]-c.expected[i])<.00002,`Native curl mismatch ${JSON.stringify(c)}`)
+}
+assert.throws(()=>sampleCurlNoise({quality:0},point([0,0,0]),0,point([0,0,0])),/Unsupported native curl profile/)
 const nativeBinaryArg=process.argv.indexOf('--native-engine')
 if(nativeBinaryArg>=0) {
   assert.ok(process.argv[nativeBinaryArg+1],'--native-engine needs the local libunity path')
@@ -129,6 +143,11 @@ assert.ok(data.assets.fx_in_swyrlv_leaf.systems.some(s=>s.rotationX&&s.gravity))
 const partial=Object.values(data.assets).flatMap(m=>m.systems).filter(s=>s.partial)
 assert.equal(partial.length,28)
 assert.equal(partial.filter(s=>s.partial.includes('noise_preview')).length,20)
+for(const s of partial.filter(s=>s.noise)) {
+  assert.equal(s.noise.profile,'native-high-curl-v1')
+  assert.equal(s.noise.octaveCount,1)
+  assert.equal(s.noise.quality,2)
+}
 assert.equal(partial.filter(s=>s.partial.includes('stretch_omitted')).length,8)
 assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,78)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects

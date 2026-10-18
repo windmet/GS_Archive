@@ -116,7 +116,9 @@ def model(p, partial=False, stationary=False):
         marks=[]
         if 'NoiseModule' in m:
             nz=m['NoiseModule']
-            data['noise']=dict(strength=nz.get('strength',{}).get('scalar',0),frequency=nz.get('frequency',0),scroll=nz.get('scrollSpeed',{}).get('scalar',0),damping=bool(nz.get('damping')),octaveCount=nz.get('octaveCount',1),octaveMultiplier=nz.get('octaveMultiplier',1),octaveScale=nz.get('octaveScale',1),quality=nz.get('quality',0))
+            w.require(nz['quality']==2 and nz['octaves']==1 and not nz['remapEnabled'] and not nz['separateAxes'],'Unsupported curl noise profile')
+            w.require(all(nz[k]['minMaxState']==0 for k in ['strength','scrollSpeed','positionAmount','rotationAmount','sizeAmount']) and nz['positionAmount']['scalar']==1 and nz['rotationAmount']['scalar']==nz['sizeAmount']['scalar']==0,'Unsupported noise amount/curve')
+            data['noise']=dict(profile='native-high-curl-v1',strength=nz['strength']['scalar'],frequency=nz['frequency'],scroll=nz['scrollSpeed']['scalar'],damping=bool(nz['damping']),octaveCount=nz['octaves'],octaveMultiplier=nz['octaveMultiplier'],octaveScale=nz['octaveScale'],quality=nz['quality'],remapEnabled=False,separateAxes=False)
             marks.append('noise_preview')
         if r.get('renderMode')==1:marks.append('stretch_omitted')
         if marks:data['partial']=marks

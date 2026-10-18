@@ -31,6 +31,8 @@
 
 ## 三、下一步
 
+2026-10-18 复查：旧 `find-stretch-loads*.py` 仅匹配 `LDR W` 的 `0xB9400000`，没有匹配 `LDR S` 的 `0xBD400000`，因此“不存在同簇”不能排除浮点读取。新扫描找到 91 个非 SP/FP 的标量浮点候选；其中 `0xb054b0`、`0xb08f80`、`0xb09aa4` 等已反编译，属于其它处理路径，不能因偏移相同便认作粒子 renderer。完整结果位于 `.analysis/native-engine/stretch-float-readers.c`。`0x5a79e8` 仍未证明；后续还须扫描 SIMD/pair load 或参数块拷贝，stretch 标记继续保留。
+
 1. 在 `FUN_005a79e8` 内定位对 `sp+0x1d8`（velocityScale）的读取，向上追到参数来源，确认是否来自 renderer 拷贝。
 2. 若确认，提取同一段中的 velocity 向量、length 计算与四个顶点写入，按 2D 投影实现。
 3. 在此之前不修改数据语义；`stretch_omitted` 仍是显式边界。
