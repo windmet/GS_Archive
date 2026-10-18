@@ -1,5 +1,7 @@
 # 对象粒子 Shape 扩展与 ROUTE77 partial 消费
 
+后续校正：本页是旧参考实现记录。球体厚度判定、半球轴向、锥形/圆形初速方向与 Arc 已由本地 libunity 反查修正，当前公式与证据见 [Shape 原生反查](NATIVE_PARTICLE_SHAPE_SOLVER_20261018.md)。下文旧算法不可作为当前语义依据。
+
 输入 HEAD `68ff17a4`；工作树 `stage-native-fidelity-20261014`；9334 端口无 BFCache 的无头 Edge 验收。
 
 ## 一、Shape 采样扩展

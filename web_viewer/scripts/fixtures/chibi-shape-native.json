@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "binary": {
+    "name": "libunity.so",
+    "sha256": "acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0",
+    "ghidraImageBase": "0x100000"
+  },
+  "shapeModuleFields": {
+    "type": "0xc",
+    "angle": "0x48",
+    "radiusThickness": "0x50",
+    "arc": "0x68",
+    "arcMode": "0x6c"
+  },
+  "functions": {
+    "dispatch": "0x855d64",
+    "sphereRandom": "0x8590a8",
+    "hemisphereRandom": "0x85a818",
+    "coneRandom": "0x85bfac",
+    "circleRandom": "0x85f500",
+    "normalizeDirection": "0x8611d8"
+  },
+  "sphereThicknessInstructions": {
+    "ghidraStart": "0x8590c8",
+    "elfOffset": "0x7590c8",
+    "bytes": "0840009101c9404d005040bd3b0840f9086840bde163803d01102e1e2038201efa03072af30306aaf40305aaf50304aaf60302aaf70301aaf80300aa535be5970110211e0008211e4058e597027340bd"
+  },
+  "sourceBoundary": "Random arc with zero spread and constant radius; Web RNG and JS elementary functions are not Unity SIMD bit-equivalent"
+}

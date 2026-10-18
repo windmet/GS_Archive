@@ -1,9 +1,39 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
-import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter} from '../src/core/chibiObjectEmitters.js'
+import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape} from '../src/core/chibiObjectEmitters.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
+const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
+const nativeBinaryArg=process.argv.indexOf('--native-engine')
+if(nativeBinaryArg>=0) {
+  assert.ok(process.argv[nativeBinaryArg+1],'--native-engine needs the local libunity path')
+  const binary=fs.readFileSync(process.argv[nativeBinaryArg+1]),proof=nativeProof.sphereThicknessInstructions
+  assert.equal(sha(binary),nativeProof.binary.sha256,'Native shape binary identity changed')
+  const offset=Number(proof.elfOffset)
+  assert.equal(binary.subarray(offset,offset+proof.bytes.length/2).toString('hex'),proof.bytes)
+  console.log('Native shape generator proof: libunity SHA-256 and sphere thickness instructions match')
+}
+// Geometric constraints from libunity's random-arc shape generators, independent of Web RNG.
+const shape={type:0,radius:{mode:0,value:2},radiusThickness:1,arc:{value:360,mode:0,spread:0},m_Scale:{x:1,y:1,z:1}}
+const fixed=channel=>({1:0,2:.5,3:.125}[channel]??0)
+const volume=sampleEmitterShape(shape,fixed)
+assert.ok(Math.abs(Math.hypot(...Object.values(volume.position))-1)<1e-12,'Thickness 1 emits inside the sphere, not on its surface')
+assert.deepEqual(volume.direction,{x:1,y:0,z:0})
+assert.equal(Math.hypot(...Object.values(sampleEmitterShape({...shape,radiusThickness:0},fixed).position)),2,'Thickness 0 emits on the sphere surface')
+const shell=sampleEmitterShape({...shape,radiusThickness:.5},()=>0)
+assert.equal(Math.hypot(...Object.values(shell.position)),1,'Half thickness retains an inner half-radius shell')
+const hemisphere=sampleEmitterShape({...shape,type:2},fixed)
+assert.equal(hemisphere.direction.z,.5,'Hemisphere is along local +Z')
+const circle=sampleEmitterShape({...shape,type:10,radiusThickness:0},fixed)
+assert.deepEqual(circle.position,{x:2,y:0,z:0});assert.deepEqual(circle.direction,{x:1,y:0,z:0})
+const halfArc=sampleEmitterShape({...shape,type:10,arc:{value:180},radiusThickness:0},c=>c===1?.5:0)
+assert.ok(Math.abs(halfArc.position.x)<1e-12);assert.ok(Math.abs(halfArc.position.y-2)<1e-12)
+const cone=sampleEmitterShape({...shape,type:4,angle:45},fixed)
+assert.ok(Math.abs(cone.position.x-2*Math.sqrt(.5005))<1e-12,'Cone area fraction has native 0.001 inner clamp')
+assert.ok(cone.direction.x>0&&cone.direction.z>0);assert.ok(Math.abs(Math.hypot(...Object.values(cone.direction))-1)<1e-12)
+assert.ok(Math.abs(cone.direction.x/cone.direction.z-Math.sqrt(.5005))<1e-12,'Cone initial direction uses radius fraction and angle')
+assert.deepEqual(sampleEmitterShape({...shape,type:12},fixed).direction,{x:0,y:1,z:0})
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256

@@ -51,24 +51,42 @@ function euler(p,r) {
   }
   return {x,y,z}
 }
-// ShapeModule sampling: box(5), edge(12), sphere(0), hemisphere(2), circle(10), cone(4).
-// Sphere surface vs volume follows radiusThickness; cone uses its base radius.
-function shapePosition(shape,rnd) {
+// libunity ShapeModule random-arc generators: 0x8590a8 sphere, 0x85a818 hemisphere,
+// 0x85bfac cone base, 0x85f500 circle (Ghidra VA). Position and direction are separate.
+export function sampleEmitterShape(shape,rnd) {
   const scale=shape.m_Scale||{x:1,y:1,z:1},radius=(shape.radius&&shape.radius.value)||0
+  const thickness=Math.max(0,Math.min(1,Number(shape.radiusThickness??1)))
+  const phi=rnd(1)*Number(shape.arc?.value??360)*Math.PI/180
+  const unit={x:Math.cos(phi),y:Math.sin(phi)}
+  let position,direction={x:0,y:0,z:1}
   switch(shape.type) {
-    case 12:return {x:(rnd(1)*2-1)*radius*scale.x,y:0,z:0}
-    case 5:return {x:(rnd(1)-.5)*scale.x,y:(rnd(2)-.5)*scale.y,z:(rnd(3)-.5)*scale.z}
-    case 10:{const phi=rnd(1)*Math.PI*2,r=radius*Math.sqrt(rnd(2));return {x:Math.cos(phi)*r*scale.x,y:Math.sin(phi)*r*scale.y,z:0}}
-    case 4:{const phi=rnd(1)*Math.PI*2,r=radius*Math.sqrt(rnd(2));return {x:Math.cos(phi)*r*scale.x,y:Math.sin(phi)*r*scale.y,z:0}}
+    case 12:position={x:(rnd(1)*2-1)*radius,y:0,z:0};direction={x:0,y:1,z:0};break
+    case 5:position={x:rnd(1)-.5,y:rnd(2)-.5,z:rnd(3)-.5};break
+    case 10:{
+      const inner=(1-thickness)**2,r=radius*Math.sqrt(inner+(1-inner)*rnd(2))
+      position={x:unit.x*r,y:unit.y*r,z:0};direction={...unit,z:0};break
+    }
+    case 4:{
+      // Native cone uses an area fraction and clamps its inner term to 0.001;
+      // unlike Circle it does not square (1-thickness).
+      const inner=Math.max(0.001,1-thickness),fraction=Math.sqrt(inner+(1-inner)*rnd(2))
+      const angle=Number(shape.angle||0)*Math.PI/180,sin=Math.sin(angle)
+      position={x:unit.x*radius*fraction,y:unit.y*radius*fraction,z:0}
+      direction={x:unit.x*fraction*sin,y:unit.y*fraction*sin,z:Math.cos(angle)}
+      const length=Math.hypot(direction.x,direction.y,direction.z)
+      if(length>0)direction={x:direction.x/length,y:direction.y/length,z:direction.z/length}
+      break
+    }
     case 0:
     case 2:{
-      const u=rnd(1)*2-1,phi=rnd(2)*Math.PI*2,s=Math.sqrt(Math.max(0,1-u*u)),surface=Number(shape.radiusThickness)>=.999
-      const r=radius*(surface?1:Math.cbrt(rnd(3)))
-      const d={x:s*Math.cos(phi),y:shape.type===2?Math.abs(u):u,z:s*Math.sin(phi)}
-      return {x:d.x*r*scale.x,y:d.y*r*scale.y,z:d.z*r*scale.z}
+      const z=shape.type===2?rnd(2):rnd(2)*2-1,s=Math.sqrt(Math.max(0,1-z*z)),inner=(1-thickness)**3
+      const r=radius*Math.cbrt(inner+(1-inner)*rnd(3))
+      direction={x:s*unit.x,y:s*unit.y,z}
+      position={x:direction.x*r,y:direction.y*r,z:direction.z*r};break
     }
-    default:return {x:0,y:0,z:0}
+    default:position={x:0,y:0,z:0}
   }
+  return {position:{x:position.x*scale.x,y:position.y*scale.y,z:position.z*scale.z},direction}
 }
 function distance(speed,limit,age) {
   if(!limit)return speed*age
@@ -105,9 +123,10 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
-      let p=shape?euler(shapePosition(shape,rnd),shape.m_Rotation):{x:0,y:0,z:0}
+      const emitted=shape?sampleEmitterShape(shape,rnd):{position:{x:0,y:0,z:0},direction:{x:0,y:0,z:1}}
+      let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
       if(system.noise){const d=noiseOffset(system.noise,p,age);p={x:p.x+d.x,y:p.y+d.y,z:p.z+d.z}}
-      const v=shape?euler({x:0,y:0,z:1},shape.m_Rotation):{x:0,y:0,z:1},d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
+      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=distance(sample(system.speed,0,rnd(4)),system.limit,age)
       p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
       const size=sample(system.size,0,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,0,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size

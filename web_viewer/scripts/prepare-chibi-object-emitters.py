@@ -24,6 +24,8 @@ def model(p, partial=False):
     w.require(i['startColor']['minMaxState'] in [0,2,4],'Unsupported start color mode')
     w.require(not s or s['type'] in [0,2,4,5,10,12],'Unsupported shape')
     if s:w.require(s['randomDirectionAmount']==s['sphericalDirectionAmount']==s['randomPositionAmount']==0 and not s['alignToDirection'],'Unsupported shape direction')
+    if s and s['type'] in [0,2,4,10]:
+        w.require(s['radius']['mode']==0 and s['arc']['mode']==0 and s['arc']['spread']==0,'Unsupported animated or stepped shape radius/arc')
     for t in chain:
         q=t['rotation'];x,y,z,v=(q[k] for k in ['x','y','z','w'])
         w.require(abs(2*(x*z-v*y))<1e-5 and abs(2*(y*z+v*x))<1e-5,'Nonplanar emitter transform')
