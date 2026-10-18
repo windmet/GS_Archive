@@ -143,8 +143,9 @@ def main():
     if args.report:
         import collections
         reasons=collections.Counter(r for a in data['assets'].values() for d in a['deferred'] for r in d['reasons'])
-        detail={k:dict(systems=len(a['systems']),deferred=len(a['deferred']),reasons=[r for d in a['deferred'] for r in d['reasons']]) for k,a in data['assets'].items()} if args.asset else None
-        print(json.dumps(dict(mode=args.mode,assets=len(data['assets']),systems=sum(len(a['systems']) for a in data['assets'].values()),deferred=sum(len(a['deferred']) for a in data['assets'].values()),textures=len(images),reasons=dict(reasons),empty=[k for k,a in data['assets'].items() if not a['systems']],detail=detail),ensure_ascii=False))
+        detail={k:dict(systems=len(a['systems']),deferred=len(a['deferred']),partialSystems=sum(bool(s.get('partial')) for s in a['systems']),reasons=[r for d in a['deferred'] for r in d['reasons']]) for k,a in data['assets'].items()}
+        markers=collections.Counter(mark for a in data['assets'].values() for s in a['systems'] for mark in s.get('partial',[]))
+        print(json.dumps(dict(mode=args.mode,assets=len(data['assets']),systems=sum(len(a['systems']) for a in data['assets'].values()),deferred=sum(len(a['deferred']) for a in data['assets'].values()),partialSystems=sum(v['partialSystems'] for v in detail.values()),partialMarkers=dict(markers),textures=len(images),reasons=dict(reasons),empty=[k for k,a in data['assets'].items() if not a['systems']],detail=detail),ensure_ascii=False))
         return
     for identity,image in images.items():
         path=ROOT/'public'/data['textures'][identity]['file'].lstrip('/')

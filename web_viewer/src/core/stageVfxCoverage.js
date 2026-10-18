@@ -5,6 +5,18 @@ function uniqueAssets(events, key) {
   return [...new Set((events || []).map(event => event[key]).filter(Boolean))].sort()
 }
 
+// Match loadObjectLayerRuntime precedence. A bound consumer is not visual parity.
+export function objectParticleCoverage(entry) {
+  const consumer = ['nativeParticleAnimation', 'bloomAnimation', 'floorAnimation', 'particleAnimation']
+    .find(key => entry?.[key]) || null
+  const model = consumer ? entry[consumer] : entry?.nativeParticleDeferred
+  const partialMarkers = [...new Set((model?.systems || []).flatMap(system => system.partial || []))].sort()
+  const deferredSystems = (model?.deferred || model?.deferredSystems || []).length
+  return { consumer, partialMarkers, deferredSystems,
+    // Legacy consumers retain their own projection/RNG/material boundaries.
+    status: !consumer ? 'missing' : partialMarkers.length || deferredSystems ? 'partial' : 'mapped_unverified' }
+}
+
 export function buildStageVfxCoverage(song, indexes = {}) {
   if (!song) return null
   const rawCommands = stageCommandCoverage(song, indexes.commandInventory, indexes)
@@ -12,10 +24,10 @@ export function buildStageVfxCoverage(song, indexes = {}) {
   const objectIndex = indexes.objectLayers?.assets || {}
   const objectSprites = objectAssets.filter(asset => ['sprite', 'mixed'].includes(objectIndex[asset]?.kind))
   const objectParticles = objectAssets.filter(asset => objectIndex[asset]?.kind === 'particle')
-  const objectParticlePilots = objectParticles.filter(asset => objectIndex[asset]?.particleAnimation || objectIndex[asset]?.floorAnimation || objectIndex[asset]?.bloomAnimation)
-  const objectParticlePartial = objectParticles.filter(asset => objectIndex[asset]?.floorAnimation?.deferredSystems?.length)
-  const objectParticleUnimplemented = objectParticles.filter(asset => objectParticlePartial.includes(asset)
-    || !objectIndex[asset]?.particleAnimation && !objectIndex[asset]?.floorAnimation && !objectIndex[asset]?.bloomAnimation)
+  const objectParticleConsumers = Object.fromEntries(objectParticles.map(asset => [asset, objectParticleCoverage(objectIndex[asset])]))
+  const objectParticlePilots = objectParticles.filter(asset => objectParticleConsumers[asset].consumer)
+  const objectParticlePartial = objectParticles.filter(asset => objectParticleConsumers[asset].status === 'partial')
+  const objectParticleUnimplemented = objectParticles.filter(asset => !objectParticleConsumers[asset].consumer)
   const objectMissing = objectAssets.filter(asset => !objectIndex[asset])
   const objectOther = objectAssets.filter(asset => objectIndex[asset] &&
     !['sprite', 'mixed', 'particle'].includes(objectIndex[asset].kind))
@@ -75,6 +87,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     objectParticlePilots,
     objectParticleUnimplemented,
     objectParticlePartial,
+    objectParticleConsumers,
     floorParticleStatus: objectAssets.some(asset => objectIndex[asset]?.floorAnimation)
       ? 'native_inputs_reference_projection_rng_noise_not_unity_equivalent' : 'not_loaded',
     objectMissing,
