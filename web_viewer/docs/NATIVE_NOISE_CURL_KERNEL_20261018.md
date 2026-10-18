@@ -2,6 +2,8 @@
 
 输入 HEAD `cf6e2d8c`，舞台工作树 `stage-native-fidelity-20261014`。本批替换对象粒子 Noise 的旧经验位移，但保留整条更新链的 preview 边界；不宣称 Noise 完整收口。
 
+后续 [速度积分链](NATIVE_NOISE_VELOCITY_PIPELINE_20261018.md) 已证实并修复“把 Noise 直接作为位置偏移”的接线错误；下述更新顺序边界保留为本提交当时的状态。相位/步长等限制继续保留。
+
 ## 旧实现的实际问题
 
 旧代码虽然用了原生 Perlin 置换表，却把三个独立 Perlin 值当作 XYZ 位移，另加 31.4/47.2/13.7 等经验偏置；damping 未消费。提取器还把 RAW `octaves` 误读成不存在的 `octaveCount`，永远回落到 1。当前 20 个目标系统实际都为一 octave，因此此前目录计数没暴露这个错误。

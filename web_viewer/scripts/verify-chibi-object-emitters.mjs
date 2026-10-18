@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import {attachObjectEmitters,emitterMatrix,sampleObjectEmitter,sampleEmitterShape,sampleObjectCurve} from '../src/core/chibiObjectEmitters.js'
-import {sampleNoiseDerivatives,sampleCurlNoise} from '../src/core/chibiParticleNoise.js'
+import {sampleNoiseDerivatives,sampleCurlNoise,stepNoiseMotion} from '../src/core/chibiParticleNoise.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-object-emitters.json'))
 const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
@@ -19,6 +19,12 @@ for(const c of noiseProof.workerCases) {
   for(const [i,axis] of ['x','y','z'].entries())assert.ok(Math.abs(actual[axis]-c.expected[i])<.00002,`Native curl mismatch ${JSON.stringify(c)}`)
 }
 assert.throws(()=>sampleCurlNoise({quality:0},point([0,0,0]),0,point([0,0,0])),/Unsupported native curl profile/)
+for(const c of noiseProof.trajectoryProof.cases) {
+  let state={position:point(c.point),velocity:point(c.velocity)}
+  const n={quality:2,octaveCount:1,frequency:c.frequency,strength:c.strength,damping:true,scroll:c.scrollSpeed,remapEnabled:false,separateAxes:false}
+  for(let i=0;i<c.steps;i++)state=stepNoiseMotion(state,n,{dt:c.dt,phase:c.phase+(i+1)*c.dt,offset:point(c.offset),velocity:point(c.animatedVelocity),gravity:point([0,0,0]),limit:c.limit})
+  for(const field of ['position','velocity'])for(const [i,axis] of ['x','y','z'].entries())assert.ok(Math.abs(state[field][axis]-c.expected[field][i])<.00002,`Native trajectory mismatch ${field}.${axis}: ${JSON.stringify(c)}`)
+}
 const nativeBinaryArg=process.argv.indexOf('--native-engine')
 if(nativeBinaryArg>=0) {
   assert.ok(process.argv[nativeBinaryArg+1],'--native-engine needs the local libunity path')
@@ -97,6 +103,17 @@ const beam=data.assets.fx_in_plmask_incidentlight_1.systems[0]
 assert.equal(beam.shape.type,12)
 assert.equal(beam.sizeY.scalar,6)
 const probe={...beam,chain:[{position:{x:0,y:0},rotation:{x:0,y:0,z:0,w:1},scale:{x:1,y:1}}],shape:{...beam.shape,radius:{value:0},m_Scale:{x:1,y:1,z:1}},size:{mode:0,scalar:2},sizeY:{mode:0,scalar:6},sizeOverLife:null,sizeOverLifeY:null,rotation:{mode:0,scalar:0},rate:1,lifetime:{mode:0,scalar:4,minScalar:4},bursts:[],limit:null}
+const movingNoise={...probe,shape:null,looping:false,delay:0,bursts:[{time:0,count:1}],rate:0,speed:{mode:0,scalar:0},noise:{quality:2,octaveCount:1,frequency:.5,strength:1,damping:true,scroll:1,remapEnabled:false,separateAxes:false}}
+assert.equal(sampleObjectEmitter(movingNoise,0,0)[0].x,0,'Noise is velocity: no instantaneous birth displacement')
+assert.ok(sampleObjectEmitter(movingNoise,0,0)[0].y===0)
+const noiseAt700=sampleObjectEmitter(movingNoise,700,0)
+sampleObjectEmitter(movingNoise,3300,0)
+assert.deepEqual(sampleObjectEmitter(movingNoise,700,0),noiseAt700,'Rewind resets the integrated trajectory')
+assert.deepEqual(sampleObjectEmitter(structuredClone(movingNoise),700,0),noiseAt700,'Cached and cold integration must agree')
+const gravityNoise={...movingNoise,noise:{...movingNoise.noise,strength:0},gravity:{mode:0,scalar:1},chain:[{position:{x:0,y:0},rotation:{x:0,y:0,z:Math.SQRT1_2,w:Math.SQRT1_2},scale:{x:2,y:3}}]}
+const falling=sampleObjectEmitter(gravityNoise,1000,0)[0]
+assert.ok(Math.abs(falling.x)<1e-9,'World gravity must stay vertical through a rotated/scaled emitter plane')
+assert.ok(Math.abs(falling.y-9.81*(61/120)*100)<1e-8,'Gravity uses semi-implicit integration and is not added again after projection')
 const keys=(a,b,slope=b-a)=>[{time:0,value:a,inSlope:slope,outSlope:slope},{time:1,value:b,inSlope:slope,outSlope:slope}]
 const twoCurves={mode:2,scalar:2,minScalar:100,keys:keys(.5,1),minKeys:keys(.2,.4)}
 assert.ok(Math.abs(sampleObjectCurve(twoCurves,.5,.5)-1.05)<1e-12,'Two curves share the multiplier and ignore constantMin')

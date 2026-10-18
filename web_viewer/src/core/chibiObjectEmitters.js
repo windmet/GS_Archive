@@ -1,4 +1,4 @@
-import { sampleCurlNoise } from './chibiParticleNoise.js'
+import { stepNoiseMotion } from './chibiParticleNoise.js'
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
 export function sampleObjectCurve(c,t,r) {
@@ -95,6 +95,24 @@ function rotationAt(c,age,life,r) {
   while(t<age){const dt=Math.min(1/60,age-t);a+=sample(c,life>0?Math.min(1,(t+dt/2)/life):0,r)*dt;t+=dt}
   return a
 }
+// Replay from birth on a deterministic Web 60 Hz grid. Keep only completed
+// grid states so fractional renders and rewind never change future samples.
+// This grid is a Web integration boundary, not Unity's recorded frame schedule.
+const noiseMotionCache=new WeakMap()
+function noiseMotion(system,id,initial,age,phase,options) {
+  let cache=noiseMotionCache.get(system)
+  if(!cache){cache=new Map();noiseMotionCache.set(system,cache)}
+  const steps=Math.floor(age*60)
+  let saved=cache.get(id)
+  if(!saved || saved.steps>steps)saved={steps:0,state:initial}
+  while(saved.steps<steps) {
+    saved={steps:saved.steps+1,state:stepNoiseMotion(saved.state,system.noise,{...options,dt:1/60,phase:phase+(saved.steps+1)/60})}
+  }
+  cache.set(id,saved)
+  while(cache.size>Math.max(32,system.capacity*2))cache.delete(cache.keys().next().value)
+  const rest=age-steps/60
+  return rest>1e-12?stepNoiseMotion(saved.state,system.noise,{...options,dt:rest,phase:phase+age}).position:saved.state.position
+}
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) {
   // Nonzero distance rates are retained. This profile proves the world emitter
   // stays fixed after placement/Play, so native dt*|velocity| contributes zero.
@@ -126,9 +144,18 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const t=age/life,shape=system.shape
       const emitted=shape?sampleEmitterShape(shape,rnd):{position:{x:0,y:0,z:0},direction:{x:0,y:0,z:1}}
       let p=shape?euler(emitted.position,shape.m_Rotation):emitted.position
-      if(system.noise){const d=sampleCurlNoise(system.noise,p,Math.max(0,base-shift)*system.noise.scroll,{x:random(seed,0,31),y:random(seed,0,32),z:random(seed,0,33)});p={x:p.x+d.x,y:p.y+d.y,z:p.z+d.z}}
-      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=distance(sample(system.speed,birthPhase,rnd(4)),system.limit,age)
-      p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
+      const v=shape?euler(emitted.direction,shape.m_Rotation):emitted.direction,d=system.noise?0:distance(sample(system.speed,birthPhase,rnd(4)),system.limit,age)
+      const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
+      if(system.noise) {
+        const speed=sample(system.speed,birthPhase,rnd(4)),det=matrix.a*matrix.d-matrix.b*matrix.c
+        if(Math.abs(det)<1e-12)throw Error('Singular noise emitter gravity plane')
+        const initial={position:{x:p.x+(shape?.m_Position.x||0),y:p.y+(shape?.m_Position.y||0),z:p.z+(shape?.m_Position.z||0)},velocity:{x:v.x*speed,y:v.y*speed,z:v.z*speed}}
+        p=noiseMotion(system,id,initial,age,born-shift,{offset:{x:random(seed,0,31),y:random(seed,0,32),z:random(seed,0,33)},
+          velocity:system.velocity?{x:sample(system.velocity.x,t,rnd(14)),y:sample(system.velocity.y,t,rnd(15)),z:sample(system.velocity.z,t,rnd(16))}:{x:0,y:0,z:0},
+          gravity:{x:-matrix.c*g/det,y:matrix.a*g/det,z:0},limit:system.limit})
+      } else {
+        p={x:p.x+(shape?.m_Position.x||0)+v.x*d+(system.velocity?sample(system.velocity.x,t,rnd(14))*age:0),y:p.y+(shape?.m_Position.y||0)+v.y*d+(system.velocity?sample(system.velocity.y,t,rnd(15))*age:0),z:p.z+(shape?.m_Position.z||0)+v.z*d+(system.velocity?sample(system.velocity.z,t,rnd(16))*age:0)}
+      }
       const size=sample(system.size,birthPhase,rnd(5))*(system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100
       const sizeY=system.sizeY?sample(system.sizeY,birthPhase,rnd(10))*(system.sizeOverLifeY?sample(system.sizeOverLifeY,t,rnd(11)):system.sizeOverLife?sample(system.sizeOverLife,t,rnd(6)):1)*100:size
       const rz=sample(system.rotation,birthPhase,rnd(7))+rotationAt(system.angularVelocity,age,life,rnd(13))
@@ -148,8 +175,7 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
       const color=['r','g','b'].reduce((v,k,i)=>v|(Math.round(Math.max(0,Math.min(1,rgba[k]*sampleFloorGradient(over.colors,t,k)))*255)<<(16-8*i)),0)
       const u=system.uv,n=u?u.columns*u.rows:1,f=u?sample(u.startFrame,0,rnd(8))+sample(u.frameOverTime,(t*u.cycles)%1,rnd(9)):0
       // World gravity (Unity default -9.81 y) after the emitter matrix; screen y is negated.
-      const g=(system.gravity?sample(system.gravity,birthPhase,rnd(19)):0)*-9.81
-      const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+0.5*g*age*age
+      const wx=matrix.a*p.x+matrix.c*p.y+matrix.tx,wy=matrix.b*p.x+matrix.d*p.y+matrix.ty+(system.noise?0:0.5*g*age*age)
       out.push({birth:born,frame:((Math.floor(f*n)%n)+n)%n,alpha:rgba.a*sampleFloorGradient(over.alphas,t),color,
         x:wx*100,y:-wy*100,
         a:A*size,b:B*size,c:C*sizeY,d:D*sizeY})
