@@ -15,7 +15,7 @@ const read = path => {
 }
 const sourcePath = 'assets/live-chibi/object-layers/index.json'
 const source = read(sourcePath), songs = read('assets/live-chibi/choreography/index.json').songs
-let index = attachObjectEmitters(source, read('data/stage-object-emitters.json'), inputs[sourcePath])
+let index = attachObjectEmitters(source, read('data/stage-object-emitters.json'), inputs[sourcePath], inputs['assets/live-chibi/choreography/index.json'])
 index = attachChibiParticleLayers(index, read('assets/live-chibi/particle-layers/index.json'))
 index = attachChibiFloor(index, read('assets/live-chibi/floor-particles/index.json'))
 index = attachBloom(index, read('data/stage-bloom-particles.json'), inputs[sourcePath])

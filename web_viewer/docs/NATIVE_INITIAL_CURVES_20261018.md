@@ -2,6 +2,8 @@
 
 输入 HEAD `ae202afc`；舞台工作树 `stage-native-fidelity-20261014`，5212 原 Vite PID 61564。
 
+后续 [距离发射及系统延迟](NATIVE_DISTANCE_EMISSION_20261018.md) 已接入下述 80 个晶体本体；本页的 629/80 是该提交的历史边界。
+
 ## 原生反查
 
 继续使用 `libunity.so`，SHA-256 `acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0`，Ghidra base `0x100000`。

@@ -122,24 +122,31 @@ function rotationAt(c,age,life,r) {
   return a
 }
 export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) {
+  // Nonzero distance rates are retained. This profile proves the world emitter
+  // stays fixed after placement/Play, so native dt*|velocity| contributes zero.
+  // Never apply that reduction to an unproven moving emitter.
+  if(system.distanceRate && system.distanceMode!=='stationary-object-layer-v1')throw Error('Unbound distance emitter motion')
   const delay=typeof system.delay==='number'?{mode:0,value:system.delay,min:system.delay}:(system.delay||{mode:0,value:0,min:0})
+  const seed=[...system.source.pathId].reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0)|0,7)
+  // MainModule.startDelay delays system playback once. It is not a fresh
+  // per-particle or per-loop random draw.
+  const wait=delay.mode===3?delay.min+(delay.value-delay.min)*random(seed,0,20):delay.value
   const prewarm=system.prewarm?Number(system.duration)||0:0
   const base=(time-activatedAt)/1000+prewarm,cutoff=(stoppedAt-activatedAt)/1000+prewarm
   // Births carry startDelay; the loop window must be shifted too or delayed loops drop out.
-  const shift=Number(delay.mode===3?delay.min:delay.value)||0
+  const shift=Number(wait)||0
   const probe=base-shift
   if(probe<0 || cutoff<0)return []
   const maxLife=Math.max(.00001,curveUpperBound(system.lifetime)),period=system.duration
   const last=system.looping?Math.floor(Math.min(probe,cutoff)/period):0
   const first=system.looping?Math.max(0,Math.floor((probe-maxLife)/period)):0
-  const matrix=emitterMatrix(system.chain),seed=[...system.source.pathId].reduce((n,c)=>Math.imul(n,31)+c.charCodeAt(0)|0,7),out=[]
+  const matrix=emitterMatrix(system.chain),out=[]
   for(let loop=first;loop<=last;loop++) {
     const births=system.bursts.flatMap(b=>Array.from({length:b.count},()=>b.time))
     if(system.rate)for(let i=1;i<=Math.ceil(period*system.rate);i++)if(i/system.rate<=period)births.push(i/system.rate)
     for(const [index,birth] of births.entries()) {
       const id=loop*100000+index,rnd=c=>random(seed,id,c),birthPhase=Math.max(0,Math.min(1,birth/period))
       const life=Math.max(.00001,sample(system.lifetime,birthPhase,rnd(0)))
-      const wait=delay.mode===3?delay.min+(delay.value-delay.min)*rnd(20):delay.value
       const born=loop*period+birth+wait,age=base-born
       if(age<0 || age>=life || born>cutoff)continue
       const t=age/life,shape=system.shape
@@ -177,12 +184,17 @@ export function sampleObjectEmitter(system,time,activatedAt,stoppedAt=Infinity) 
   return out.slice(-system.capacity)
 }
 
-export function attachObjectEmitters(index,data,hash) {
+export function attachObjectEmitters(index,data,hash,choreographyHash) {
   if(data?.schemaVersion!==1 || data.objectIndexSha256!==hash)throw new Error('Object emitter source binding mismatch')
+  if(data.choreographyIndexSha256 && data.choreographyIndexSha256!==choreographyHash)throw new Error('Distance emitter choreography binding mismatch')
   const assets={...index.assets}
   for(const [name,model] of Object.entries(data.assets)) {
     const source=assets[name]
     if(source?.bundle!==model.bundle || source.particleCount!==model.particleCount || model.systems.length+model.deferred.length!==source.particleCount)throw new Error(`Object emitter identity mismatch ${name}`)
+    if(model.systems.some(s=>s.distanceRate)) {
+      const proof=model.distanceMotionProof
+      if(!data.choreographyIndexSha256 || proof?.profile!=='stationary-object-layer-v1' || !proof.components?.length || !proof.arrangements?.length || model.systems.some(s=>s.distanceRate && s.distanceMode!==proof.profile))throw new Error(`Unproven distance emitter motion ${name}`)
+    }
     assets[name]=model.systems.length?{...source,nativeParticleAnimation:{...model,textures:data.textures}}:{...source,nativeParticleDeferred:model}
   }
   return {...index,assets}

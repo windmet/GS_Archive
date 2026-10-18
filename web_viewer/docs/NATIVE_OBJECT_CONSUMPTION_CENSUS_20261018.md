@@ -2,7 +2,7 @@
 
 输入 HEAD `baeebc18`；工作树 `stage-native-fidelity-20261014`。本记录区分运行时消费者、可解析资源与原生视觉等价；三者不互相代替。
 
-后续接入结果见 [30 资源接线记录](NATIVE_OBJECT_PROMOTIONS_20261018.md)：当前无消费者资源已降至 37 个。本页下述计数保留为接入前审计快照。
+后续接入结果见 [30 资源接线记录](NATIVE_OBJECT_PROMOTIONS_20261018.md)、[InitialModule](NATIVE_INITIAL_CURVES_20261018.md) 及 [距离发射](NATIVE_DISTANCE_EMISSION_20261018.md)：无消费者资源已降至 33 个，涉及 428 次事件、18 份编排。通用目录为 78 资源 / 709 系统 / 0 deferred / 28 preview，合并所有消费者有 11 个显式 partial 资源。四个源缺失资源仍在。本页下述计数保留为接入前审计快照，目录内无 deferred 不等于全库完成。
 
 ## 消费者核对
 

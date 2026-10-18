@@ -19,7 +19,37 @@ def initial_curve(c):
             w.require(bool(keys) and all(all(math.isfinite(k[f]) for f in ('time','value','inSlope','outSlope')) and (j==0 or keys[j-1]['time']<k['time']) for j,k in enumerate(keys)),'Unsupported initial curve keys')
     return result
 
-def model(p, partial=False):
+def stationary_distance_proof(record, environment, audit, choreography):
+    """Prove zero emitter displacement, rather than dropping a nonzero rate."""
+    keeper=next(o for o in environment.objects if str(o.path_id)==record['keeper']['pathId'])
+    script=audit.local_object(keeper,keeper.read_typetree()['m_Script'],'MonoScript')
+    script_type=script.read_typetree()
+    w.require(script_type['m_ClassName']=='LiveObjectObjectLayerRefKeeper' and script_type['m_Namespace']=='Growing.Live' and script_type['m_AssemblyName']=='Assembly-CSharp.dll','Unknown keeper may move emitters')
+    root=record['rootTransformChain']
+    w.require(len(root)==1 and root[0]['parent']==dict(fileId=0,pathId='0'),'External emitter parent needs motion history')
+    byid={str(o.path_id):o for o in environment.objects};pending=[record['rootTransformChain'][0]['pathId']];components=[]
+    while pending:
+        tr=byid[pending.pop()];t=tr.read_typetree();go=audit.local_object(tr,t['m_GameObject'],'GameObject')
+        for item in go.read_typetree()['m_Component']:
+            ref=item['component'];w.require(ref['m_FileID']==0,'External motion component')
+            co=byid[str(ref['m_PathID'])]
+            w.require(co.type.name in ('Transform','ParticleSystem','ParticleSystemRenderer','SpriteRenderer') or co.path_id==keeper.path_id,'Animated or scripted emitter hierarchy')
+            components.append(dict(source=audit.source_ref(co),treeSha256=audit.json_hash(co.read_typetree())))
+        for child in t['m_Children']:
+            w.require(child['m_FileID']==0,'External emitter transform')
+            pending.append(str(child['m_PathID']))
+    arrangements=[]
+    for song in choreography['songs']:
+        events=[e for e in song.get('objectLayerEvents',[]) if e['asset']==record['asset']]
+        if not events:continue
+        shown=[e for e in events if not e['hide']]
+        w.require(len(shown)==1 and all(shown[0].get(k) is not None for k in ('x','y','scale')),'Emitter motion/repeated Play needs history')
+        w.require(all(e['hide'] or e is shown[0] for e in events),'Unknown emitter motion')
+        arrangements.append(dict(id=song['id'],eventSha256=audit.json_hash(events)))
+    w.require(bool(arrangements),'No choreography proof for distance emitter')
+    return dict(profile='stationary-object-layer-v1',components=components,arrangements=arrangements)
+
+def model(p, partial=False, stationary=False):
     m=p.get('modules') or {};i=m.get('InitialModule');e=m.get('EmissionModule');r=p.get('renderer') or {};main=p.get('main') or {}
     w.require(bool(i) and bool(e) and bool(r) and bool(main),'Missing core particle modules')
     s=m.get('ShapeModule');u=m.get('UVModule');c=m.get('ClampVelocityModule');chain=p.get('transformChain') or []
@@ -52,7 +82,8 @@ def model(p, partial=False):
             w.require(all(rot3[k]['minMaxState'] in (0,1,3) for k in ['x','y']),'Unsupported separate rotation curve mode')
     if 'ColorModule' in m:w.require(m['ColorModule']['gradient']['minMaxState']==1,'Unsupported lifetime color mode')
     w.require(e['rateOverTime']['minMaxState']==0,'Unsupported emission rate curve')
-    w.require(e['rateOverDistance']['scalar']==0,'Rate-over-distance requires emitter motion history')
+    distance=e['rateOverDistance']
+    w.require(distance['minMaxState']==0 and (distance['scalar']==0 or stationary),'Rate-over-distance requires emitter motion history')
     bursts=[]
     for b in e['m_Bursts']:
         w.require(b['countCurve']['minMaxState']==0 and b['cycleCount']==1 and b['probability']==1,'Unsupported burst')
@@ -78,6 +109,9 @@ def model(p, partial=False):
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
+    if distance['scalar']:
+        data['distanceRate']=w.curve(distance)
+        data['distanceMode']='stationary-object-layer-v1'
     if partial:
         marks=[]
         if 'NoiseModule' in m:
@@ -104,6 +138,7 @@ def extract(mode='current', only=None, partial=False):
     import UnityPy
     a=w.load('object_audit','audit-live-chibi-stage-objects.py');e=w.load('object_effects','prepare-live-chibi-stage-effects.py');sources=e.load_archive_sources(None)
     indexpath=ROOT/'public/assets/live-chibi/object-layers/index.json';index=json.loads(indexpath.read_text(encoding='utf8'))
+    choreopath=ROOT/'public/assets/live-chibi/choreography/index.json';choreography=json.loads(choreopath.read_text(encoding='utf8'))
     w.require(PROMOTIONS['schemaVersion']==1 and PROMOTIONS['objectIndexSha256']==w.sha(indexpath.read_bytes()),'Promotion source index changed')
     depfile=sources.raw_root/'asset/shaders_and_materials.unity3d';dep=UnityPy.load(str(depfile));dependencies={o.assets_file.name:o.assets_file for o in dep.objects}
     entries=select_entries(index,mode,only)
@@ -122,7 +157,10 @@ def extract(mode='current', only=None, partial=False):
             try: record=a.inspect_asset(env,name,entry,True,dependencies)
             except Exception as error:
                 models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=[],systems=[],deferred=[dict(source={'serializedFile':entry['bundle'],'pathId':None},reasons=[f'asset_inspect_failed: {error}'])],masks=[]);continue
-            records.append(record);systems=[];deferred=[]
+            records.append(record);systems=[];deferred=[];distance_proof=None
+            if any(p.get('modules',{}).get('EmissionModule',{}).get('rateOverDistance',{}).get('scalar',0) for p in record['particles']):
+                try:distance_proof=stationary_distance_proof(record,env,a,choreography)
+                except (ValueError,KeyError):pass # Unproven motion stays explicitly deferred.
             for p in record['particles']:
                 reasons=[]
                 prenderer=p.get('renderer') or {}
@@ -132,7 +170,7 @@ def extract(mode='current', only=None, partial=False):
                 source=a.source_ref(ob) if ob else {k:p.get(k) for k in ['serializedFile','pathId']}
                 if reasons and not partial:deferred.append(dict(source=source,reasons=reasons));continue
                 try:
-                    system=model(p,partial)
+                    system=model(p,partial,bool(distance_proof))
                     if prenderer['materials'][0]['shader']['name']=='Mobile/Particles/Alpha Blended':
                         shader=next(o for o in env.objects if str(o.path_id)==prenderer['materials'][0]['shader']['pathId']);parsed=shader.read_typetree()['m_ParsedForm'];blend=parsed['m_SubShaders'][0]['m_Passes'][0]['m_State']['rtBlend0']
                         values={k:blend[k]['val'] for k in ['srcBlend','destBlend','blendOp']};w.require(values==dict(srcBlend=5,destBlend=10,blendOp=0),'Unsupported native alpha blend')
@@ -153,11 +191,13 @@ def extract(mode='current', only=None, partial=False):
             bound_masks=[{**m,'texture':f'{m["source"]["serializedFile"]}:{m["texture"]}'} for m in masks if m['chain'][-1]['pathId']==root]
             all_masks.extend(bound_masks)
             models[name]=dict(profile='native-planar-emitters-v2',bundle=entry['bundle'],bundleSha256=w.sha(path.read_bytes()),particleCount=entry['particleCount'],keeper=record['keeper'],systems=systems,deferred=deferred,masks=bound_masks)
+            if any(s.get('distanceRate') for s in systems):models[name]['distanceMotionProof']=distance_proof
             if name in PROMOTIONS['assets']:
                 w.require(not deferred and not any(s.get('partial') for s in systems) and len(systems)==PROMOTIONS['assets'][name]['systems'],'Promoted emitter source no longer passes the bounded profile: '+name)
             for system in systems:
                 if system['maskTexture']:w.require(any(m['texture']==system['maskTexture'] for m in bound_masks),'Unbound per-particle mask')
     data=dict(schemaVersion=1,objectIndexSha256=w.sha(indexpath.read_bytes()),shaderBundleSha256=w.sha(depfile.read_bytes()),assets=models,textures=textures)
+    if any(a.get('distanceMotionProof') for a in models.values()):data['choreographyIndexSha256']=w.sha(choreopath.read_bytes())
     return data,dict(objects=records,masks=all_masks,objectIndexSha256=data['objectIndexSha256'],shaderBundleSha256=data['shaderBundleSha256']),images
 
 def main():

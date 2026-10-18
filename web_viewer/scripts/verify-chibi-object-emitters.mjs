@@ -10,11 +10,11 @@ if(nativeBinaryArg>=0) {
   assert.ok(process.argv[nativeBinaryArg+1],'--native-engine needs the local libunity path')
   const binary=fs.readFileSync(process.argv[nativeBinaryArg+1])
   assert.equal(sha(binary),nativeProof.binary.sha256,'Native shape binary identity changed')
-  for(const proof of [nativeProof.sphereThicknessInstructions,nativeProof.initialModuleProof.instructions]) {
+  for(const proof of [nativeProof.sphereThicknessInstructions,nativeProof.initialModuleProof.instructions,nativeProof.distanceEmissionProof.instructions,nativeProof.startDelayProof.instructions]) {
     const offset=Number(proof.elfOffset)
     assert.equal(binary.subarray(offset,offset+proof.bytes.length/2).toString('hex'),proof.bytes)
   }
-  console.log('Native particle proof: libunity SHA-256, shape and initial MinMaxCurve instructions match')
+  console.log('Native particle proof: libunity SHA-256, shape, initial curves, distance and startDelay instructions match')
 }
 // Geometric constraints from libunity's random-arc shape generators, independent of Web RNG.
 const shape={type:0,radius:{mode:0,value:2},radiusThickness:1,arc:{value:360,mode:0,spread:0},m_Scale:{x:1,y:1,z:1}}
@@ -39,10 +39,16 @@ assert.deepEqual(sampleEmitterShape({...shape,type:12},fixed).direction,{x:0,y:1
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
-assert.equal(Object.values(attachObjectEmitters(index,data,hash).assets).filter(a=>a.nativeParticleAnimation).length,78)
+const choreographyHash=sha(read('public/assets/live-chibi/choreography/index.json'))
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,78)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),629)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),80)
+assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
+assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
+const unproven=structuredClone(data)
+delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
+assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),709)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
 assert.equal(sampleObjectEmitter(meter,0,0).length,1)
@@ -97,10 +103,14 @@ const star=data.assets.fx_in_trhorz_star_2.systems[0]
 assert.equal(star.prewarm,true)
 assert.ok(sampleObjectEmitter(star,0,0).length>0,'Prewarmed star must be visible at activation')
 assert.ok(sampleObjectEmitter(data.assets.fx_in_trhorz_starline_1.systems[0],0,0).length>0)
-// Random start delay (MinMaxCurve mode 3) waits per particle; it must not emit before the minimum.
-const staggered={...probe,looping:false,delay:{mode:3,value:2,min:1},bursts:[{time:0,count:8}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4}}
+// Random start delay belongs to the system: all births in a burst share it,
+// and later loops retain it. No particle may start before the minimum.
+const staggered={...probe,capacity:16,looping:false,delay:{mode:3,value:2,min:1},bursts:[{time:0,count:8}],rate:0,lifetime:{mode:0,scalar:4,minScalar:4}}
 assert.equal(sampleObjectEmitter(staggered,500,0).length,0)
-assert.ok(sampleObjectEmitter(staggered,1600,0).length>0)
+assert.equal(sampleObjectEmitter(staggered,2100,0).length,8)
+for(let t=1000;t<=2000;t+=10)assert.ok([0,8].includes(sampleObjectEmitter(staggered,t,0).length),'A single burst must not acquire per-particle delays')
+const randomLoop={...staggered,looping:true,duration:3,lifetime:{mode:0,scalar:.5,minScalar:.5}}
+for(let t=1000;t<=2500;t+=10)assert.equal(sampleObjectEmitter(randomLoop,t,0).length,sampleObjectEmitter(randomLoop,t+3000,0).length,'Loop must reuse the system delay')
 // A delayed looping emitter must not lose whole loops: the loop window is shifted by startDelay.
 const delayedLoop={...probe,looping:true,duration:1,delay:{mode:0,value:1.2,min:0},bursts:[],rate:25,lifetime:{mode:0,scalar:1,minScalar:1},size:{mode:0,scalar:1},sizeOverLife:null}
 for(const t of [2000,2500,3000,3500,4000,4500])assert.ok(sampleObjectEmitter(delayedLoop,t,0).length>0,`Delayed loop dropped at ${t} ms`)
@@ -124,15 +134,24 @@ assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,78)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl_crystal_2:10,fx_in_smlegg_crystal_1:21,fx_in_smlegg_crystal_2:34})) {
   const model=data.assets[name]
-  assert.equal(model.systems.length,count)
-  assert.equal(model.deferred.length,count,'Distance emitters must remain explicit, not converted into zero-rate particles')
-  assert.ok(model.systems.every(s=>s.name==='glitter'),'Only companion glitter is currently renderable')
-  assert.ok(model.deferred.every(d=>d.reasons.includes('unsupported_source_profile: Rate-over-distance requires emitter motion history')))
+  assert.equal(model.systems.length,count*2)
+  assert.equal(model.deferred.length,0)
+  assert.equal(model.systems.filter(s=>s.name==='glitter').length,count)
+  assert.equal(model.distanceMotionProof.profile,'stationary-object-layer-v1')
+  assert.ok(model.distanceMotionProof.components.length>0)
+  assert.ok(model.distanceMotionProof.arrangements.length>0)
   const source=rawObjects.find(o=>o.asset===name)
-  for(const d of model.deferred) {
-    const p=source.particles.find(p=>p.pathId===d.source.pathId)
+  const crystals=model.systems.filter(s=>s.distanceRate)
+  assert.equal(crystals.length,count)
+  for(const s of crystals) {
+    const p=source.particles.find(p=>p.pathId===s.source.pathId)
     assert.equal(p.modules.InitialModule.startLifetime.minMaxState,2)
     assert.equal(p.modules.EmissionModule.rateOverDistance.scalar,1)
+    assert.equal(s.distanceRate.scalar,1,'Retain native nonzero rate even though proved displacement is zero')
+    assert.equal(s.distanceMode,'stationary-object-layer-v1')
+    assert.throws(()=>sampleObjectEmitter({...s,distanceMode:'moving'},2000,0),/Unbound distance emitter motion/)
+    assert.ok(Array.from({length:81},(_,i)=>i*50).some(t=>sampleObjectEmitter(s,t,0).length),'Crystal burst must really emit')
+    assert.equal(sampleObjectEmitter(s,10000,0,0).length,0,'Stopped crystal must retire')
   }
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
@@ -153,4 +172,4 @@ for(const [name,expected] of Object.entries(promotions.assets)) {
   }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 78 provenance-bound resources / 629 consumed (28 preview) + 80 distance-emission deferred; initial two-curve lifetime, frozen birth values, tangent bounds and existing geometry/lifecycle checks passed')
+console.log('Object emitters: 78 provenance-bound resources / 709 consumed (28 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

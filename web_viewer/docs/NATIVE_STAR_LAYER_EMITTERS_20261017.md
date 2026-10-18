@@ -19,7 +19,7 @@
 逐项按 RAW `ParticleSystem` typetree 接线，不按曲名或资源名放行：
 
 - `main.prewarm`：原版在激活时已预演一整轮。采样器把系统内部时钟前移 `duration`，循环系统在 t=0 即为中段相位；这是星星、星线此前被挡的主因。
-- `main.startDelay.minMaxState=3`：逐粒子在两个常量间取延迟。延迟进入粒子出生时间而不是系统级扣减，StopEmitting 截断随内部时钟一起平移。
+- 此处旧实现把 `main.startDelay.minMaxState=3` 按逐粒子抽取，后经原生 `0x6cde10` 证实不正确：延迟在系统初始化时只取一次。修正与验证见 [距离发射及系统延迟](NATIVE_DISTANCE_EMISSION_20261018.md)。下文验证保留为当时快照，不能证明旧随机延迟语义正确。
 - `RotationModule.curve`：角速度曲线按粒子寿命归一化，在 60 Hz 离散边界上积分（与已反查的 ClampVelocity 阻尼同一时间基），不再用“曲线起点 × 年龄”的常量近似。
 - 修正一个真实判定 bug：`minMaxState in [0,3]` 被当成范围，实际只接受 0 和 3，导致所有 curve 模式（1/2）被静默 deferred。现明确为 `(0,1,3)`，并拒绝 `separateAxes`。
 - 新增 `--mode all-particles` 与 `--report`：按编排引用筛选全部 particle 资源、逐系统输出延迟原因，不写盘；本批只把星星与同族资源纳入正式目录。
