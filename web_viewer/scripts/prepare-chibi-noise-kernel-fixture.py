@@ -137,8 +137,34 @@ def clock_replay():
  uc.hook_del(hook)
  return dict(updateFunction='0x6db88c',advanceFunction='0x841400',resetFunction='0x841e7c',scrollSpeed=2,skippedAfterClock='0x852c18: worker dispatch is a no-op for this clock-only proof',sequence=sequence,resetExpected=reset)
 proof['clockProof']=clock_replay()
+def gravity_space_replay():
+ # Native fallback when no PhysicsManager exists; do not replace gravity math.
+ def absent_physics(uc,address,size,user):
+  uc.reg_write(UC_ARM64_REG_X0,0)
+  uc.reg_write(UC_ARM64_REG_PC,uc.reg_read(UC_ARM64_REG_X30))
+ hook=uc.hook_add(UC_HOOK_CODE,absent_physics,begin=0x3901f0,end=0x3901f0)
+ uc.mem_write(0x126bc38,b'\x01') # Already issued fallback diagnostic.
+ cases=[]
+ for space in [0,1]:
+  for a,b,c,d in [(1,0,0,1),(0,3,-2,0),(2,0,0,3)]:
+   det=a*d-b*c
+   inverse=[d/det,-b/det,0,0,-c/det,a/det,0,0,0,0,1,0]
+   for dt in [.1,1/60]:
+    initial,main,state,particles,dtbuf=0x2080000,0x2081000,0x2082000,0x2030000,0x2083000
+    for address in [initial,main,state,dtbuf]:uc.mem_write(address,bytes(0x1000))
+    floats(initial+0x15c,[1]);floats(main+0x28,[1])
+    uc.mem_write(main+0x44,struct.pack('<I',space))
+    floats(state+0xcc,inverse);floats(dtbuf,[dt]*4)
+    for j in range(3):
+     address=0x2054000+j*0x100;ptr(particles+0x60+j*0x20,address);floats(address,[0]*4)
+    execute(0x70dae8,[initial,main,state,particles,0,4,dtbuf,1])
+    expected=[struct.unpack('<f',uc.mem_read(0x2054000+j*0x100,4))[0] for j in range(3)]
+    cases.append(dict(space=space,matrix=dict(a=a,b=b,c=c,d=d),inverseInput=inverse,dt=dt,expectedVelocity=expected))
+ uc.hook_del(hook)
+ return dict(function='0x70dae8',simulationSpaceGetter='0x6d8f78',physicsManagerAdapter='0x3901f0 returns null: native built-in gravity fallback; diagnostic already issued',matrixBoundary='Synthetic inverse matrix supplied at state+0xcc; does not prove construction or renderer scaling',cases=cases)
+proof['gravitySpaceProof']=gravity_space_replay()
 path=Path(__file__).parent/'fixtures/chibi-noise-kernel-native.json'
 rendered=json.dumps(proof,ensure_ascii=False,indent=2)+'\n'
 if args.write:path.write_text(rendered,encoding='utf8')
 else:assert json.loads(path.read_text(encoding='utf8'))==json.loads(rendered),'Native replay fixture mismatch'
-print(f'Native Noise replay: {len(gradientCases)} derivative, {len(workerCases)} worker, {len(trajectoryCases)} trajectory and clock sequence/reset match')
+print(f'Native Noise replay: {len(gradientCases)} derivative, {len(workerCases)} worker, {len(trajectoryCases)} trajectory, clock sequence/reset and {len(proof["gravitySpaceProof"]["cases"])} gravity-space cases match')

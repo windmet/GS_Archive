@@ -139,6 +139,18 @@ const gravityNoise={...movingNoise,noise:{...movingNoise.noise,strength:0},gravi
 const falling=sampleObjectEmitter(gravityNoise,1000,0)[0]
 assert.ok(Math.abs(falling.x)<1e-9,'World gravity must stay vertical through a rotated/scaled emitter plane')
 assert.ok(Math.abs(falling.y-9.81*(61/120)*100)<1e-8,'Gravity uses semi-implicit integration and is not added again after projection')
+for(const c of noiseProof.gravitySpaceProof.cases) {
+  const m=c.matrix,det=m.a*m.d-m.b*m.c
+  const gravity=c.space===1?{x:0,y:-9.81,z:0}:{x:m.c*9.81/det,y:-m.a*9.81/det,z:0}
+  for(const [i,axis] of ['x','y','z'].entries())assert.ok(Math.abs(gravity[axis]*c.dt-c.expectedVelocity[i])<2e-7,'Native gravity simulation-space branch mismatch')
+  if(c.space!==0 || c.dt!==1/60)continue // Object profile only admits local simulation.
+  const rotated=m.b!==0
+  const system={...gravityNoise,velocity:null,chain:[{position:{x:0,y:0},rotation:{x:0,y:0,z:rotated?Math.SQRT1_2:0,w:rotated?Math.SQRT1_2:1},scale:{x:rotated?m.b:m.a,y:rotated?-m.c:m.d}}]}
+  const actual=sampleObjectEmitter(system,1000,0)[0]
+  const [vx,vy]=c.expectedVelocity,steps=60,integral=c.dt*steps*(steps+1)/2*100
+  assert.ok(Math.abs(actual.x-(m.a*vx+m.c*vy)*integral)<.0002,'Object gravity projection differs from native velocity replay')
+  assert.ok(Math.abs(actual.y+(m.b*vx+m.d*vy)*integral)<.0002,'Object gravity accumulated displacement differs from native replay')
+}
 const keys=(a,b,slope=b-a)=>[{time:0,value:a,inSlope:slope,outSlope:slope},{time:1,value:b,inSlope:slope,outSlope:slope}]
 const twoCurves={mode:2,scalar:2,minScalar:100,keys:keys(.5,1),minKeys:keys(.2,.4)}
 assert.ok(Math.abs(sampleObjectCurve(twoCurves,.5,.5)-1.05)<1e-12,'Two curves share the multiplier and ignore constantMin')
