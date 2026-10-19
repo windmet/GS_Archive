@@ -76,8 +76,10 @@ export const SCENES = {
     return { component: await component('ArchiveWorkStory'), props: { idol: index.idols[0], idols: index.idols } }
   } },
   'seasonal': { label: '季节企划', async mount() {
-    const [index] = await load(['masterdata/seasonal_campaign_index.json'])
-    return { component: await component('ArchiveSeasonalCampaign'), props: { campaign: index.campaigns[0], campaigns: index.campaigns } }
+    // The page is the read-model ledger view; prepare.mjs builds it with the read-model projection.
+    const response = await fetch('/qa/gallery/generated/seasonal-ledger.json')
+    if (!response.ok) throw new Error('Run qa/gallery/prepare.mjs (capture-gallery does this) first')
+    return { component: await component('ArchiveSeasonalCampaign'), props: { page: { ledger: await response.json() } } }
   } },
   'mobile-archive': { label: '通信 · 个人聊天', async mount() {
     // The read-model projection needs node:crypto; prepare.mjs writes its production shape.

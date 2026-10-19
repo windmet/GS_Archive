@@ -1,6 +1,7 @@
 // Page gallery capture: screenshots every gallery scene and key app routes at desktop, tablet
 // and phone width with a real browser, and fails on empty renders or page errors.
-//   node scripts/capture-gallery.mjs <label> [--base=http://localhost:5175] [--only=card-detail,app-portal]
+//   node scripts/capture-gallery.mjs <label> [--base=http://localhost:5175] [--only=card-detail,app-portal] [--styles]
+// --styles also samples each control role's computed style and writes styles.json (see lib/control-style-sample.mjs).
 // Needs a running dev server and a cached Playwright Chromium (no npm package required).
 import { spawn } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -8,6 +9,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { prepareGalleryData } from '../qa/gallery/prepare.mjs'
+import { controlStyleExpression, summarizeControlStyles } from './lib/control-style-sample.mjs'
 import { ARCHIVE_USER_PREFERENCES_KEY as PREFERENCES_KEY, DEFAULT_ARCHIVE_USER_PREFERENCES } from '../src/data/archiveUserPreferences.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -16,6 +18,7 @@ const label = args.find(arg => !arg.startsWith('--')) || 'current'
 const option = name => args.find(arg => arg.startsWith(`--${name}=`))?.split('=').slice(1).join('=')
 const base = (option('base') || 'http://localhost:5175').replace(/\/$/, '')
 const only = option('only')?.split(',')
+const styles = args.includes('--styles')
 
 const GALLERY = ['card-detail', 'card-list', 'song-detail', 'gasha-detail', 'story-main', 'story-extra', 'story-birthday', 'story-collection', 'work-story', 'seasonal', 'mobile-archive']
   .map(id => ({ id, url: `${base}/qa/gallery/?scene=${id}`, gallery: true }))
@@ -95,7 +98,7 @@ const send = (method, params = {}) => new Promise((resolve, reject) => {
 const evaluate = async expression => (await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true })).result?.value
 await send('Page.enable'); await send('Runtime.enable')
 
-const report = []
+const report = [], styleSamples = []
 try {
   for (const scene of scenes) {
     for (const size of WIDTHS) {
@@ -122,6 +125,7 @@ try {
       const shot = await send('Page.captureScreenshot', { format: 'png' })
       const file = `${scene.id}-${size.name}.png`
       writeFileSync(path.join(out, file), Buffer.from(shot.data, 'base64'))
+      if (styles) styleSamples.push({ scene: scene.id, width: size.name, samples: await evaluate(controlStyleExpression) })
       const problems = []
       if (scene.gallery && state.gallery !== 'ready') problems.push(`scene state ${state.gallery || 'never ready'}`)
       // A stage scene is judged by its canvas; its dialogue box may be closed at the captured step.
@@ -147,6 +151,7 @@ try {
   try { rmSync(profile, { recursive: true, force: true }) } catch {}
 }
 writeFileSync(path.join(out, 'report.json'), JSON.stringify({ label, base, capturedAt: new Date().toISOString(), report }, null, 2))
+if (styles) writeFileSync(path.join(out, 'styles.json'), JSON.stringify({ label, summary: summarizeControlStyles(styleSamples), samples: styleSamples }, null, 2))
 const failed = report.filter(entry => !entry.ok)
 console.log(`Gallery "${label}": ${report.length - failed.length}/${report.length} captures clean -> ${path.relative(root, out)}`)
 process.exitCode = failed.length ? 1 : 0

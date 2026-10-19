@@ -506,6 +506,7 @@ function domainLabel(domain) { return { cards: '卡片', songs: '歌曲', idols:
    the search, then the index of every section. */
 @media (max-width:760px) {
   .portal-overview-scroll { padding:var(--gs-space-4) var(--gs-space-4) var(--gs-space-8); }
+  .overview-search-form input { font-size:var(--gs-text-subtitle); } /* touch input: 16px or iOS zooms on focus */
   .overview-toolbar { grid-template-columns:auto minmax(0,1fr) auto;row-gap:var(--gs-space-2); }
   .overview-brand { display:contents; }
   .overview-breadcrumb-divider { display:none; }

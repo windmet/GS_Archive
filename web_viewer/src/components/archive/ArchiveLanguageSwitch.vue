@@ -14,7 +14,7 @@ import {Languages} from '@lucide/vue'
 defineProps({ compactMobile: { type: Boolean, default: true }, dropdown:Boolean, onDark:Boolean, inline:Boolean })
 </script>
 <style scoped>
-.archive-language-dropdown{display:flex;align-items:center;gap:5px;padding:0 8px;color:inherit}.archive-language-dropdown select{max-width:88px;min-height:40px;border:0;background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}.archive-language-dropdown select:focus-visible{outline:2px solid #258a8a;outline-offset:2px}
+.archive-language-dropdown{display:flex;align-items:center;gap:5px;padding:0 8px;color:inherit}.archive-language-dropdown select{max-width:88px;min-height:40px;border:0;background:transparent;color:inherit;font:inherit;font-size:var(--gs-text-meta);cursor:pointer}.archive-language-dropdown select:focus-visible{outline:2px solid #258a8a;outline-offset:2px}
 .archive-language-switch { display:inline-flex; flex:none; align-items:center; gap:2px; padding:3px; border:1px solid var(--gs-line); border-radius:var(--gs-radius-control); background:var(--gs-surface); color:var(--gs-ink-2); }
 .archive-language-switch button { display:inline-flex; align-items:center; gap:4px; min-height:32px; padding:4px 8px; border:0; border-radius:6px; background:transparent; color:inherit; font:inherit; font-size:12px; cursor:pointer; white-space:nowrap; }
 .archive-language-switch button[aria-pressed=true] { color:var(--gs-selected-ink); background:var(--gs-selected-bg); }
@@ -40,6 +40,6 @@ defineProps({ compactMobile: { type: Boolean, default: true }, dropdown:Boolean,
 .archive-language-switch.inline .locale-toggle .selected { color:var(--gs-mint-ink);font-weight:var(--gs-weight-bold); }
 .archive-language-switch.inline .locale-toggle .locale-divider { color:var(--gs-line); }
 @media(max-width:760px) { .archive-language-switch.compact.on-dark { background:transparent; } .archive-language-switch.on-dark .locale-toggle { color:var(--gs-chrome-ink); } .archive-language-switch.on-dark .locale-toggle .selected { color:var(--gs-surface); } }
-@media(max-width:760px) { .archive-language-switch button { min-height:44px; min-width:44px; } }
+@media(max-width:760px) { .archive-language-switch button { min-height:44px; min-width:44px; } .archive-language-dropdown select { font-size:var(--gs-text-subtitle); } }
 @media(max-width:400px) { .archive-language-switch button { padding:4px 6px; } .archive-language-switch .locale-note { display:none; } }
 </style>
