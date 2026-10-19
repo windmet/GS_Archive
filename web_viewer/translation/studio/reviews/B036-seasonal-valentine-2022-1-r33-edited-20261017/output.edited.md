@@ -411,4 +411,3 @@
 | T000409 | 我很期待！ |
 | T000410 | 噢！我会准备能让{{GS_ADDRESS:0:producer_name_with_p}}的心 熊熊燃烧起来的礼物的！ |
 | T000411 | 噢！我会准备能让{{GS_ADDRESS:0:producer_name_with_p}}的心 熊熊燃烧起来的礼物的！ |
-
