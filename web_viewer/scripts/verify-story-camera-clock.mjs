@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { Container } from 'pixi.js'
 import { CameraController } from '../src/core/CameraController.js'
-import { advStageUnit } from '../shared/story/AdvStageLayout.js'
+import { advHorizontalSqueeze, advStageUnit, advToScreen } from '../shared/story/AdvStageLayout.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 import { createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 
@@ -96,16 +96,18 @@ try {
     const actors = new Container(), background = new Container()
     const camera = new CameraController({ bgContainer: background, spineContainer: actors,
       getWidth: () => width, getHeight: () => height })
-    const unit = advStageUnit(width, height)
+    // Portrait squeezes horizontal canvas offsets (advHorizontalSqueeze); 1 elsewhere.
+    const unit = advStageUnit(width, height), squeeze = advHorizontalSqueeze(width, height)
     for (const offset_y of [-90, 0, 90]) for (const zoom of [0.9, 1, 1.3, 2]) {
       const offset_x = 60
       camera.setCameraZoom({ zoom, offset_x, offset_y, duration: 0 })
       close(actors.scale.x, zoom)
       close(background.scale.x, Math.max(1, zoom))
-      close((width / 2 + offset_x * unit) * zoom + actors.x, width / 2)
-      close((height / 2 - offset_y * unit) * zoom + actors.y, height / 2)
+      const target = advToScreen(width, height, offset_x, offset_y)
+      close(target.x * zoom + actors.x, width / 2)
+      close(target.y * zoom + actors.y, height / 2)
       // The background panel centre (canvas origin) moves with the camera like any canvas point.
-      close(width / 2 * background.scale.x + background.x, width / 2 - offset_x * unit * zoom)
+      close(width / 2 * background.scale.x + background.x, width / 2 - offset_x * unit * squeeze * zoom)
       close(height / 2 * background.scale.x + background.y, height / 2 + offset_y * unit * zoom)
     }
     camera.destroy(); actors.destroy(); background.destroy()

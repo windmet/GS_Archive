@@ -62,6 +62,8 @@ for (const [model, texture] of Object.entries(placement.textures)) {
   assert.ok(texture.image[0] <= texture.size[0] + 1 && texture.image[1] <= texture.size[1] + 1, `${model} packed rect fits`)
 }
 assert.equal(placement.skeletons['010pie_001_00'], -630)
+// Site spines and compiled scenarios are gitignored corpus; CI checks the tracked placement data above.
+if (process.argv.includes('--published-assets')) {
 const spineDir = new URL('public/assets/spines/', root)
 for (const model of readdirSync(spineDir)) {
   if (!existsSync(new URL(`${model}/`, spineDir)) || !readdirSync(new URL(`${model}/`, spineDir)).length) continue
@@ -91,3 +93,4 @@ for (const model of uncovered) {
   if (existsSync(rawDir)) assert.ok(!existsSync(`${rawDir}/costume_${model}.unity3d`), `${model} has a RAW costume bundle but no placement`)
 }
 console.log(`Figure placement: ${models.size} compiled actor models, ${models.size - uncovered.length} placed; without any client figure: ${uncovered.join(' ') || 'none'}`)
+}

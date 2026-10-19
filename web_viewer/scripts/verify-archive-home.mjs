@@ -143,7 +143,7 @@ const context = vm.createContext({
   bootstrapIdolDictionary: { source: 'bootstrap-idols' },
   bootstrapMembership: { source: 'bootstrap-membership' },
   buildIdolReference: (_id, dictionary, membership) => ({ dictionary, membership }),
-  withStoryCostumes, storyCostumeData: readJson('../src/data/storyCostumes.json'),
+  storyCostumeData: readJson('../src/data/storyCostumes.json'), storyCostumeMerge: { value: null },
 })
 const projections = vm.runInContext(`${appSource.slice(projectionStart, projectionEnd)}\n;[
   archiveStats, archiveHomeIdols, preferredArchiveIdolReference
@@ -160,6 +160,8 @@ assert.equal(projections[1].value[0].name, '冬馬')
 // Profiles prebuilt by an older read model gain the labelled story costumes, sorted after the scene default.
 const oldToma = { ...toma, costumes: toma.costumes.filter(costume => !costume.siteLabel) }
 context.homeReadModelProfiles.value = { '001tom': oldToma }
+assert.deepEqual(projections[1].value[0].costumes, oldToma.costumes, 'without supplements the profile passes through')
+context.storyCostumeMerge.value = { merge: withStoryCostumes, costumes: context.storyCostumeData.costumes }
 assert.deepEqual(projections[1].value[0].costumes, toma.costumes)
 assert.deepEqual(withStoryCostumes(toma, context.storyCostumeData.costumes), toma)
 assert.doesNotMatch(immersiveHomeSource, /home-highlight|activeHighlight|stepHighlight/)

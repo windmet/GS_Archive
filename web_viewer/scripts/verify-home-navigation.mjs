@@ -46,6 +46,7 @@ function fixture() {
     captureActiveArchiveView: () => calls.push(['capture']),
     restoreRoute: async route => { calls.push(['restore', route]); c.view.value = route.view },
     syncArchiveRoute: () => calls.push(['sync']),
+    loadStoryCostumes: () => c.supplements?.promise,
   }
   const api = bindHomeNavigation(app, c)
   c.view.value = 'portal'; c.portalScope.value = '001tom'; c.portalQuery.value = 'KEEP'
@@ -84,6 +85,16 @@ try {
     await t.loadHomeIdol('005kao')
     assert.deepEqual(Object.keys(c.homeReadModelProfiles.value).sort(), ['001tom', '003hok', '005kao'], 'cache hit updates three-person LRU order')
     await assert.rejects(t.loadHomeIdol('missing'), /Unavailable/); t.stop()
+  }
+  for (const outcome of ['resolve', 'reject']) {
+    // Story costume supplements gate publication of the Home index; a failed supplement still publishes it.
+    const t = fixture(); t.c.supplements = deferred()
+    const loading = t.loadHomeIndex(); await flush()
+    assert.equal(t.c.homeReadModelIndex.value, null, 'Home index waits for its supplements')
+    const warn = console.warn; console.warn = () => {}
+    t.c.supplements[outcome](new Error('supplement offline')); await loading
+    console.warn = warn
+    assert.ok(t.c.homeReadModelIndex.value, `Home index publishes after supplements ${outcome}`); t.stop()
   }
   for (const corrupt of [d => d.idols.pop(), d => d.idols.reverse(), d => d.stats = null, d => d.highlights = null]) {
     const t = fixture(); corrupt(t.data.get('home-index')); await assert.rejects(t.loadHomeIndex(), /bootstrap/)

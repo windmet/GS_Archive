@@ -57,6 +57,8 @@ for (const [modelId, render] of Object.entries(renders)) {
 // Consumers: the collection list and detail use the renders, and the home merges the list into older profiles.
 assert.match(readSource('../src/components/archive/ArchiveCollectionCatalog.vue'), /costumeImage\(row\.id,row\.image\)/)
 assert.match(readSource('../src/components/archive/CollectionEntryDetails.vue'), /costumeImage\(detail\.entry\?\.id,detail\.media\?\.image\)/)
-assert.match(readSource('../src/App.vue'), /withStoryCostumes\(homeReadModelProfiles\.value\[idol\.id\] \|\| idol, storyCostumeData\.costumes\)/)
+const appSource = readSource('../src/App.vue')
+assert.match(appSource, /storyCostumeMerge\.value\.merge\(profile, storyCostumeMerge\.value\.costumes\)/)
+assert.match(appSource, /loadHomeSupplements: loadStoryCostumes/, 'Home index waits for the story costume labels')
 
 console.log(`Story costumes verified: ${stories.length} labelled models, ${Object.keys(renders).length} rendered thumbnails (${checkedFiles} files checked locally)`)

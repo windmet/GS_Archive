@@ -630,7 +630,6 @@ import {loadArchiveNames,archiveNamedText,archiveNamesSettled,archiveNamedSearch
 import { useStoryPlaybackController } from './core/useStoryPlaybackController.js'
 import { useEpisodeQueue } from './core/useEpisodeQueue.js'
 import { buildCardVoicePreviewScenario, findCardVoiceCue } from './data/cardVoicePreview.js'
-import { buildOfficeVoicePreviewScenario } from './data/officeVoicePreview.js'
 import { storyLiveLink } from './data/storyLiveLinks.js'
 import { createArchiveNavigationCoordinator } from './core/ArchiveNavigationCoordinator.js'
 import { useArchiveNavigationState } from './core/useArchiveNavigationState.js'
@@ -658,8 +657,6 @@ import { resolveArchiveHomeAction, resolveArchiveStartup } from './core/archiveS
 import { archiveCardName, archiveDocumentTitle, archiveSectionTitle } from './presentation/ArchiveDocumentTitle.js'
 import { readBootstrap } from '../readmodels/runtime/readBootstrap.mjs'
 import { ReadModelClient } from '../readmodels/runtime/ReadModelClient.mjs'
-import { withStoryCostumes } from './data/archiveHomeState.js'
-import storyCostumeData from './data/storyCostumes.json'
 import {
   archiveSectionForRoute,
   buildArchiveBreadcrumbs,
@@ -1079,9 +1076,21 @@ const {
   goHome, loadScenario, loadCardDetail: (...args) => loadCardDetail(...args),
 })
 
+// Story costume labels merge into Home profiles. They load beside the Home index instead of in the startup chunk.
+const storyCostumeMerge = shallowRef(null)
+let storyCostumeLoad = null
+function loadStoryCostumes() {
+  storyCostumeLoad ||= Promise.all([import('./data/archiveHomeState.js'), import('./data/storyCostumes.json')])
+    .then(([module, data]) => { storyCostumeMerge.value = { merge: module.withStoryCostumes, costumes: data.default.costumes } })
+    .catch(error => { storyCostumeLoad = null; throw error })
+  return storyCostumeLoad
+}
 const archiveStats = computed(() => homeReadModelIndex.value?.stats || [])
 const archiveHomeIdols = computed(() => homeReadModelIndex.value
-  ? homeReadModelIndex.value.idols.map(idol => withStoryCostumes(homeReadModelProfiles.value[idol.id] || idol, storyCostumeData.costumes))
+  ? homeReadModelIndex.value.idols.map(idol => {
+    const profile = homeReadModelProfiles.value[idol.id] || idol
+    return storyCostumeMerge.value ? storyCostumeMerge.value.merge(profile, storyCostumeMerge.value.costumes) : profile
+  })
   : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
@@ -1108,6 +1117,7 @@ const {
   portalFrom, detailSourceRoute, navigation, archiveBootstrap,
   readModelClient, currentArchiveRoute, openIdolPicker, commitView,
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+  loadHomeSupplements: loadStoryCostumes,
 })
 
 const {
@@ -2509,7 +2519,8 @@ async function openVoicePreview(card, cue, returnView) {
 
 // Yamamura's office lines open in the player from the other-voices archive and return there.
 async function officeVoiceScenario(cue) {
-  await loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
+  const [{ buildOfficeVoicePreviewScenario }] = await Promise.all([import('./data/officeVoicePreview.js'),
+    loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))])
   return buildOfficeVoicePreviewScenario(cue, { translate: source => archiveNamedTranslation('office-voice', source, 'text') })
 }
 function previewOfficeVoice(cue, options = {}) {
