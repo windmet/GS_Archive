@@ -73,6 +73,8 @@ state=pinspotlightTimelineAt(events,4600,placement).get(1)
 assert.equal(state.alpha,1,'Show during a fade restores serialized alpha')
 assert.ok(Math.abs(state.point.x-Math.fround(stageScale/100)*100*100)<0.00001,'Free position unbinds the old performer')
 assert.deepEqual(pinspotlightTimelineAt(events,2500,placement),pinspotlightTimelineAt(events.slice(0,2),2500,placement),'Backward seek has no future state')
+// The arrangement sweep reads the gitignored choreography; CI runs the fixtures above.
+if(process.argv.includes('--published-assets')){
 // Every published arrangement, forward and backward, uses source position rows.
 const corpus=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url),'utf8'))
 let commands=0, arrangements=0
@@ -86,3 +88,4 @@ for(const song of corpus.songs){
  }
 }
 console.log(`Native pin geometry, binding/unbinding, OutBack, interrupted hide and ${commands} commands across ${arrangements} arrangements passed`)
+}

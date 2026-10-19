@@ -127,7 +127,7 @@ assert.deepEqual(sampleEmitterShape({...shape,type:12},fixed).direction,{x:0,y:1
 const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
-const choreographyHash=sha(read('public/assets/live-chibi/choreography/index.json'))
+const choreographyHash=published?sha(read('public/assets/live-chibi/choreography/index.json')):data.choreographyIndexSha256
 assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,80)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)

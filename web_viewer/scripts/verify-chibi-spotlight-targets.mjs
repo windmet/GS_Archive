@@ -4,9 +4,21 @@ import { projectChibiGround } from '../src/core/chibiStageCoordinates.js'
 
 import crypto from 'node:crypto'
 import { attachNativeSpotlights, spotlightTimelineAt, spotlightPoint } from '../src/core/chibiSpotlightTimeline.js'
-const raw = fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json', import.meta.url), 'utf8')
 const canonical = JSON.parse(fs.readFileSync(new URL('../public/data/stage-spotlight-commands.json', import.meta.url), 'utf8'))
+// The published choreography is gitignored. Without it, rebuild only the
+// fields attachNativeSpotlights binds against from the tracked command file:
+// identity, legacy time/id/hide order and the slot to stage-position map.
+const publishedAssets = process.argv.includes('--published-assets')
+const raw = publishedAssets
+  ? fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json', import.meta.url), 'utf8')
+  : JSON.stringify({songs: Object.entries(canonical.songs).map(([id, track]) => ({
+    id, source: track.source, songCode: track.songCode,
+    spotlightEvents: track.events.map(({time, id, hide}) => ({time, id, hide})),
+    stagePositionMap: [...new Map(track.events.filter(e => !e.hide && e.stagePosition !== null)
+      .map(e => [e.targetSlot, {performerSlot: e.targetSlot, stagePosition: e.stagePosition}])).values()],
+  }))})
 const hash = crypto.createHash('sha256').update(raw).digest('hex')
+if (!publishedAssets) canonical.choreographyIndexSha256 = hash
 const index = attachNativeSpotlights(JSON.parse(raw), canonical, hash)
 assert.equal(index.songs.length,118)
 assert.throws(()=>attachNativeSpotlights(JSON.parse(raw),canonical,'0'.repeat(64)),/match/)
@@ -124,8 +136,10 @@ console.log('Native RAW Spotlight fields, scale, 500ms OutQuad handoff, free pos
 // Exercise the real loader: required sidecar, actual-byte digest and cancellation.
 const loaderSource=fs.readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8')
 const loaderSection=loaderSource.slice(loaderSource.indexOf('export async function fetchLiveChibiChoreography('),loaderSource.indexOf('export async function fetchLiveChibiCommandInventory(')).replace('export ','')
-const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeSpotlights',loaderSection+';return fetchLiveChibiChoreography')(transport,'/assets/live-chibi',crypto.webcrypto,attachNativeSpotlights)
-const transport={load:async path=>path==='/data/stage-spotlight-commands.json'?JSON.stringify(canonical):raw}
+const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeSpotlights','attachWholeScreen','attachSearchlights',loaderSection+';return fetchLiveChibiChoreography')(
+ transport,'/assets/live-chibi',crypto.webcrypto,attachNativeSpotlights,index=>index,index=>index)
+// Whole-screen and searchlight sidecars have their own verifiers; pass them through.
+const transport={load:async path=>path==='/data/stage-spotlight-commands.json'?JSON.stringify(canonical):/stage-(whole-screen|searchlights)/.test(path)?'{}':raw}
 assert.equal((await makeLoader(transport)('choreography/index.json')).songs.length,118)
 await assert.rejects(makeLoader({load:async path=>{if(path.includes('stage-spotlight'))throw new Error('missing native commands');return raw}})('choreography/index.json'),/missing native/)
 const abort=new AbortController();abort.abort()

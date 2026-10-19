@@ -138,6 +138,9 @@ assert.deepEqual(nativeLaserScale({...command,length:500}),{x:.5,y:.5})
 assert.throws(()=>laserBillboardPlane({...models.laser.styles[3].systems[0],source:{pathId:'missing'}},models.laser.styles[3],{style:3},0,0),/Unbound/)
 console.log(`PASS ${planes} source billboard planes / ${corners} independent quaternion corners, per-system clocks, alpha/scale separation and unknown binding rejection`)
 
+// The published-command sweep and K.now O.nly witnesses read the gitignored
+// choreography; CI runs the fixture checks above and the blend contract below.
+if(process.argv.includes('--published-assets')){
 const {sampleSpotbeamParticles}=await import('../src/core/chibiSpotbeamParticles.js')
 const corpus=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url),'utf8'))
 let rows=0,hdr=0
@@ -182,6 +185,7 @@ for(const [time,ids,count] of witnesses){
 }
 assert.ok(!samplerSection.includes('songCode'),'Laser state reduction must depend on source events')
 console.log('PASS K.now O.nly: 72 native style3 shows, shared state/plane/scale/alpha, erase boundaries, gap and rewind')
+}
 
 material.alpha=.5;updateSpriteLaserMaterial.call(material)
 assert.ok(Math.abs(material.uniforms.uColor[2]-161/255)<1e-7,'Source alpha is applied by native SrcAlpha blend, not twice in RGB')
