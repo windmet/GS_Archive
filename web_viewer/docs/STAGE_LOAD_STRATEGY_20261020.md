@@ -2,6 +2,8 @@
 
 舞台线下一轮以加载策略为主，MV 消费检查为辅，不再逐首修补。本页是起点；数据来自 2026-10-19 在 `stage/20261014-native-fidelity`（已并入 master，PR #55）上的冷缓存 CDP 实测。
 
+10-20 舞台线更新：新分支 `stage/20261020-native-followup` 已完成新悬灯 Sprite、Time Before Time 内置对象、公共 RGBA 接线，并同步 #53。下文 MV 旧待办以 [最新续批入口](STAGE_FOLLOWUP_20261020.md)及[合并验证](STAGE_MASTER_SYNC_20261020.md)校正；本页加载测量仍保留历史输入，没有宣称重测。
+
 ## 实测基线（drvalv 默认曲，1280×800，冷缓存，dev 服务）
 
 - 2504 个请求，0 个错误，堆 157 MB。除开发态代码外约 51 MiB。

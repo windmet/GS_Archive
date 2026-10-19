@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
+import {createSearchlightRenderer} from '../src/core/chibiSearchlightRenderer.js'
 import {attachSearchlights,searchlightsAt} from '../src/core/chibiSearchlights.js'
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url)),sha=b=>crypto.createHash('sha256').update(b).digest('hex')
 const data=JSON.parse(read('public/data/stage-searchlights.json'))
@@ -42,6 +43,25 @@ for(const song of Object.values(data.songs)) {
     assert.ok(['x','y','angle','alpha','scaleX','scaleY','color'].every(k=>Number.isFinite(s[k])),`${song.source} ${s.id} ${t}`)
   }
 }
+// FLASH LIGHT contains four show rows without a Sprite name. Preload only
+// authored image references; a missing named Sprite must still fail preparation.
+let loadedFiles=[],destroyedTextures=0
+const preload=createSearchlightRenderer({
+  BaseTexture:class {constructor(file){this.valid=true;loadedFiles.push(file)}},
+  Texture:class {constructor(base){this.baseTexture=base} destroy(){destroyedTextures++}},
+},()=>null,()=>{},()=>null)
+const flash=data.songs.flslgt_live_effect.events
+assert.equal(flash.filter(e=>!e.hide && e.command.startsWith('Searchlight_show') && !e.values[1]).length,4)
+await preload.prepare(data,flash)
+assert.deepEqual(new Set(loadedFiles),new Set([
+  data.assets.fx_in_psblts_pinspotlight.file,data.assets.fx_in_pavetl_pinspotlight.file,
+]))
+assert.equal(loadedFiles.length,2)
+await preload.prepare(data,flash)
+assert.equal(loadedFiles.length,2,'preparation reuses loaded images')
+await assert.rejects(preload.prepare(data,[{...show,values:['1','missing_named_sprite']}]),/Searchlight/)
+preload.release()
+assert.equal(destroyedTextures,2)
 // Resource refinement must not clear independently prepared common layers.
 const sfc=read('src/components/ChibiStageViewer.vue').toString()
 const objectSync=sfc.slice(sfc.indexOf('async function syncObjectLayers()'),sfc.indexOf('function ensureBackmonitor()'))

@@ -20,7 +20,7 @@ export function createSearchlightRenderer(PIXI,parent,onReady,getRenderer) {
   const model=(data,asset)=>data?.assets[asset]?.file?{layers:[{...data.assets[asset],asset}]}:null
   const assets=data=>data?.assets||{}
   async function prepare(data,events) {
-    const used=new Set((events||[]).filter(e=>!e.hide && e.command.startsWith('Searchlight_show')).map(e=>e.values[1]))
+    const used=new Set((events||[]).filter(e=>!e.hide && e.command.startsWith('Searchlight_show') && e.values[1]).map(e=>e.values[1]))
     const results=await Promise.all([...used].map(asset=>store.prepare(model(data,asset),assets(data))))
     if(!results.every(Boolean))throw new Error('Searchlight 原始图片尚未就绪')
   }
