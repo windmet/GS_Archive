@@ -1,5 +1,7 @@
 # 舞台图层反查与后续待办
 
+2026-10-15现状校正见 [遗留假设审计](STAGE_ASSUMPTION_AUDIT_20261015.md)：粒子独立启停与背屏RectTransform已接入；syksai第四层排序、Logo资源选择、人物经验尺度和动作时基仍需收束。下列旧未勾选项须结合该页读取，避免重复修已解决的问题。
+
 用户反馈：灯光较此前明显改善，但仍有尚不能准确描述的遗漏。先登记，后续结合明确时间点或原始链路处理；本轮不凭印象继续调光。
 
 当前优先：反查图层排序、遮光层与人物的关系，以及灯光叠加与人物自身着色的边界。
@@ -17,6 +19,8 @@
 - [ ] ObjectLayer粒子生命周期：原版Play直接启动，Erase StopEmitting后延迟SetActive(false)，不同于Web统一父容器淡入淡出；不要用Sprite DOFade语义替代粒子。
 - [ ] syksai 第四层模板、背屏 RectTransform/视频有效画面几何、Passion Logo override，以及原版 HDR/深度缓冲完整链路。
 - [x] 背屏 value7 错当 Logo 渐变时长：已反查确认其为 GrowSprite alpha，限定预览 Logo 改为原版固定500ms/显示alpha0.8。
+- [ ] Time Before Time（tibeti）：APK `resources.assets` 的4个原版物件（overlight_1/2、water_1/2）已定位未接线；还差运行时索引的APK来源、蒙版关联、纹理发布、Sprite材质/动画消费与浏览器验收，见 [NATIVE_STAGE_FORMULA_CLOSEOUT_20261019.md](NATIVE_STAGE_FORMULA_CLOSEOUT_20261019.md)。
+- [ ] Change to Chance（cgtocc）：仅定位24.4秒的 `NewSuspensionlight_create/normal_show`（ID1401/1403），尚未修复；不能启用被注释的 `#Spotlight` 凑截图，同见收尾文档。
 - [ ] 后续处理用户暂无法描述的灯光差异，保留待办，不宣称全部灯光还原完成。
 
 验证边界：反编译、源资源、浏览器合成各自提供证据；源码构建不代表原版视频或真机视觉一致。

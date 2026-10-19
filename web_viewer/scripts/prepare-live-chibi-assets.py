@@ -37,6 +37,7 @@ from live_chibi_body_colors import body_color_events
 from live_chibi_foot_colors import foot_color_events
 from live_chibi_image_colors import image_color_events
 from live_chibi_camera_controls import camera_controls
+from live_chibi_spotlight_commands import spotlight_command
 from live_chibi_backmonitor import parse_backmonitor_row
 
 
@@ -47,12 +48,8 @@ SPEAKER_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "spe
 COSTUME_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "costume_dictionary.json"
 IDOL_DICTIONARY_PATH = PROJECT_ROOT / "public" / "data" / "masterdata" / "idol_unit_dictionary.json"
 
-# Body setup normalization measured from actual visible canvas pixels in the
-# wait pose. Each idol is then scaled by official height relative to Touma
-# (175 cm), rather than incorrectly forcing every idol to the same height.
+# Height remains descriptive metadata; the authored skeleton/root own size.
 TOUMA_HEIGHT_CM = 175
-BODY_PREVIEW_BASE_SCALES = {1: 0.3053, 2: 0.2904, 3: 0.3176, 4: 0.3712, 5: 0.3144}
-PREVIEW_SCALE_CAPS = {5: 0.28}
 OFFSTAGE_COORDINATE_LIMIT = 2000
 COMPATIBILITY_MOTION_IDS = [4001, 12001, 16004, 32005, 56011]
 MOTION_LABELS = {
@@ -215,6 +212,7 @@ def export_all_characters(
 ) -> tuple[list[dict], dict]:
     speaker_data = json.loads(SPEAKER_DICTIONARY_PATH.read_text(encoding="utf-8"))["speakers"]
     idol_data = json.loads(IDOL_DICTIONARY_PATH.read_text(encoding="utf-8"))["by_idol_code"]
+    native_geometry = json.loads((PROJECT_ROOT / 'src/core/chibiNativeCharacterGeometry.json').read_text(encoding='utf-8'))
     costume_rows = json.loads(COSTUME_DICTIONARY_PATH.read_text(encoding="utf-8"))["costumes"]
     costume_names = {
         row["model_resource_id"]: row.get("costume_name")
@@ -308,12 +306,8 @@ def export_all_characters(
 
         default_costume = "005_00" if any(item["id"] == "005_00" for item in costumes) else costumes[0]["id"]
         height_cm = idol_data.get(idol_id, {}).get("height") or TOUMA_HEIGHT_CM
-        preview_scale = round(
-            BODY_PREVIEW_BASE_SCALES[body_type] * height_cm / TOUMA_HEIGHT_CM,
-            4,
-        )
-        if body_type in PREVIEW_SCALE_CAPS:
-            preview_scale = min(preview_scale, PREVIEW_SCALE_CAPS[body_type])
+        preview_scale = (native_geometry['skeletonScales'][str(body_type)]
+                         * native_geometry['idolRootScale'] * native_geometry['pixelsPerUnityUnit'])
         character = {
             "id": idol_id,
             "name": speaker_data.get(idol_id, {}).get("display_name", idol_id),
@@ -659,22 +653,9 @@ def read_choreography_scripts(
                     event_time = parse_optional_number(row[1])
                     if event_time is None:
                         continue
-                    hide, duration = parse_hide_transition(row, parse_number(row[5], 1))
-                    spotlight_events.append(
-                        {
-                            "time": event_time,
-                            "id": parse_number(row[2]),
-                            "targetSlot": parse_optional_number(row[3]),
-                            "x": parse_optional_number(row[4]),
-                            "duration": duration,
-                            "beamColor": row[6].strip() or None,
-                            "characterDepth": parse_optional_number(row[7]),
-                            "environmentColor": row[8].strip() or None,
-                            "environmentOpacity": parse_optional_number(row[9]),
-                            "depth": parse_optional_number(row[10]),
-                            "hide": hide,
-                        }
-                    )
+                    # Native value4 is Y, value6 is uniform scale. Show always
+                    # moves for .5 seconds; erases use the named value102 field.
+                    spotlight_events.append(spotlight_command(dict(zip(header, row))))
                     spotlight_command_order.append(("spotlight", spotlight_events[-1]))
                     continue
                 if row[0] == "Pinspotlight" and len(row) >= 13:

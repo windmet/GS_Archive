@@ -184,6 +184,22 @@ function classify(relativePath) {
     }
   }
 
+  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos)\//)
+  if (stageNativeTexture) {
+    return {
+      category: 'stable-promoted-asset',
+      logical_id: `${stageNativeTexture[1]}:${logicalStem}`,
+      consumer: ['ChibiStageViewer'],
+      reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
+      force_add_allowed: false,
+      owner_release: stageNativeTexture[1]==='stage-backmonitor-logos'
+        ? '2026-10-19-native-backmonitor-logos-001'
+        : stageNativeTexture[1]==='stage-object-emitters' && ['866092bffcd833f1041a2e7d','e192ddf6239b66e93c672199','e6daf431ce6a295fa54a79b8'].includes(logicalStem)
+          ? '2026-10-19-native-mtples-formula-001' : '2026-10-17-native-stage-textures-001',
+      grandfathered: false,
+    }
+  }
+
   if (relativePath.includes('/public/data/fx_extracted/')) {
     return {
       category: 'stable-promoted-asset',

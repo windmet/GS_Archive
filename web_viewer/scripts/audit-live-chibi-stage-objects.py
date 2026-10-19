@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 
 import UnityPy
+from live_chibi_object_keeper import object_keeper_tree
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "data_pipeline"))
@@ -173,6 +174,12 @@ def particle_record(owner, value, include_module_data=False, dependencies=None):
                         for key, value in modules.items() if value["enabled"]},
             "parameterTreeSha256": json_hash(t),
             "renderer": {**source_ref(renderer), "enabled": r["m_Enabled"],
+                         **({"stretch": {"rendererTreeSha256": json_hash(r),
+                             "flip": r["m_Flip"],
+                             "minSize": r["m_MinParticleSize"], "maxSize": r["m_MaxParticleSize"],
+                             "cameraVelocityScale": r["m_CameraVelocityScale"],
+                             "velocityScale": r["m_VelocityScale"], "lengthScale": r["m_LengthScale"]}}
+                            if r["m_RenderMode"] == 1 else {}),
                          "renderMode": r["m_RenderMode"],
                          "renderModeName": RENDER_MODES.get(r["m_RenderMode"], "unknown"),
                          "alignment": r["m_RenderAlignment"], "pivot": r["m_Pivot"],
@@ -189,11 +196,10 @@ def inspect_asset(environment, asset, entry, include_module_data=False, dependen
     for obj in environment.objects:
         if obj.type.name != "MonoBehaviour":
             continue
-        t = obj.read_typetree()
-        if "_particles" not in t:
-            continue
+        t = obj.read_typetree(check_read=False)
         go = local_object(obj, t.get("m_GameObject", {}), "GameObject")
         if go and go.read_typetree()["m_Name"].casefold() == f"liveobjectobjectlayer_{asset}".casefold():
+            t = object_keeper_tree(obj)
             found.append((obj, t, go))
     if len(found) != 1:
         raise ValueError(f"{asset}: expected one exact keeper, found {len(found)}")

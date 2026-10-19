@@ -16,7 +16,9 @@ export function createFlatStageLayers(parent) {
   }
 }
 
-export function backmonitorDepths(state, nativeLayers) {
+// Flattened legacy composite art needs the movie behind the whole bitmap.
+// Dynamic-only scenes have native Image_layer orders and use the native plane.
+export function backmonitorDepths(state, nativeLayers=true) {
   const base = nativeLayers ? Number(state.sortingOrder) || 1000 : -30000
-  return { movie:base, back:base-5, logo:base+1, noise:base+5, glow:base+110 }
+  return { movie:base, transition:base+2, back:base-5, logo:base+1, noise:base+5, glow:base+110 }
 }

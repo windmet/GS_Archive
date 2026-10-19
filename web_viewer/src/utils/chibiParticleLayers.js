@@ -43,9 +43,9 @@ export async function loadChibiParticleLayer(animation, loadTexture) {
   }
 }
 
-export function updateChibiParticleLayer(runtime, milliseconds, activatedAt) {
+export function updateChibiParticleLayer(runtime, milliseconds, activatedAt, stoppedAt=Infinity) {
   runtime.particleFrames = runtime.particles.map(({ system, sprite, frames }) => {
-    const state = sampleChibiParticle(system, milliseconds, activatedAt)
+    const state = sampleChibiParticle(system, milliseconds, activatedAt,stoppedAt)
     sprite.visible = state.visible
     sprite.texture = frames[state.frame]
     return state.visible ? state.frame : '-'

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { sampleBackmonitorLogo,logoProjectiveQuad,logoFadeAt,updateBackmonitorLogoMesh } from '../src/core/chibiBackmonitorLogo.js'
+import { sampleBackmonitorLogo,resolveBackmonitorLogo,backmonitorLogoResources,logoProjectiveQuad,logoFadeAt,updateBackmonitorLogoMesh } from '../src/core/chibiBackmonitorLogo.js'
 const close=(a,b)=>assert(Math.abs(a-b)<1e-9, `${a} != ${b}`)
 const source=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-backmonitor-logo-native.json',import.meta.url)))
 const model={width:1200,height:800,localScale:source.transform.scale.x,perspectiveAngle:10,duration:2,
@@ -13,9 +13,20 @@ assert.equal(sample(95849),null);assert.equal(sample(95850).angle,0)
 assert.equal(sample(96350).angle,90);assert.equal(sample(96850).angle,180)
 assert.deepEqual(sample(111000),sample(111000),'Paused mesh is deterministic')
 sample(115000);assert.equal(sample(95850).angle,0,'Backward seek recomputes phase')
-for (const input of [{...state,rawValue6:0},{...state,movie:'other'},{...state,y:5000}])
+for (const input of [{...state,rawValue6:0},{...state,movie:null},{...state,y:5000}])
  assert.equal(sampleBackmonitorLogo('tkstp1',input,111000,model),null)
-assert.equal(sampleBackmonitorLogo('montns',state,111000,model),null)
+assert.ok(sampleBackmonitorLogo('unlisted-song',{...state,movie:'unlisted-movie'},111000,model),'Native Show does not depend on song/movie lists')
+const defaultLogo=backmonitorLogoResources.defaultAsset,passion='live_backmonitor_movie_logo_passion'
+const selections=[{time:0,logo:passion},{time:10,logo:null},{time:20,logo:'missing'},{time:30,logo:defaultLogo}]
+assert.equal(resolveBackmonitorLogo(model,selections,-1).asset,defaultLogo)
+for(const time of [0,10,20])assert.equal(resolveBackmonitorLogo(model,selections,time).asset,passion)
+assert.equal(resolveBackmonitorLogo(model,selections,30).asset,defaultLogo)
+assert.equal(resolveBackmonitorLogo(model,selections,10).asset,passion,'Backward seek restores the selected Sprite')
+for(const entry of Object.values(backmonitorLogoResources.assets)) {
+ const bytes=fs.readFileSync(new URL('../public'+entry.file,import.meta.url))
+ const crypto=await import('node:crypto')
+ assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.pngSha256)
+}
 const drive={...state,movie:model.previewMovies.drvalv,movieTime:15700}
 assert.equal(sampleBackmonitorLogo('drvalv',drive,16200,model).angle,90)
 assert.equal(sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0},16200,model),null)
@@ -40,12 +51,22 @@ updateBackmonitorLogoMesh(mock,model,fading,{x:0,y:0,scale:1})
 close(mock.shader.uniforms.uLogoAlpha,.2)
 const face=logoProjectiveQuad(model,0),edge=logoProjectiveQuad(model,90),back=logoProjectiveQuad(model,180)
 assert.ok(Math.abs(face.vertices[2]-face.vertices[0]-420)<.001)
-assert.ok(Math.abs(edge.vertices[2]-edge.vertices[0])<1e-5)
+assert.ok(Math.abs(edge.vertices[2]-edge.vertices[0])<3e-5,'Native float32 cos(pi/2) retains a tiny signed width')
 assert.ok(back.vertices[2]<back.vertices[0],'Cull-Off back face reverses texture orientation')
 const tilted=logoProjectiveQuad(model,45)
 assert.notEqual(tilted.uvq[2],tilted.uvq[5],'Perspective varies independently from horizontal scale')
 assert.notEqual(Math.abs(tilted.vertices[1]),Math.abs(tilted.vertices[3]),'Near and far edges have different projected height')
 assert.ok([...tilted.vertices,...tilted.uvq].every(Number.isFinite))
+const kernel=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-logo-kernel-native.json',import.meta.url)))
+for(const c of kernel.cases) {
+ const actual=logoProjectiveQuad(model,c.angle)
+ for(const [i,k] of [0,1,3,2].entries()) {
+  assert.ok(Math.abs(actual.vertices[i*2]-c.vertices[k*3]*100*model.localScale)<1e-4,`Native logo X ${c.angle}/${i}`)
+  assert.ok(Math.abs(actual.vertices[i*2+1]+c.vertices[k*3+1]*100*model.localScale)<1e-4,`Native logo Y ${c.angle}/${i}`)
+  const expected=[c.uvq[k*3],c.uvq[k*3+2]-c.uvq[k*3+1],c.uvq[k*3+2]]
+  for(let j=0;j<3;j++)assert.ok(Math.abs(actual.uvq[i*3+j]-expected[j])<2e-6,`Native logo UVQ ${c.angle}/${i}/${j}`)
+ }
+}
 // Reconstruct UV at the fixed screen origin using barycentric interpolation
 // and the shader's homogeneous division, independently of bounding-box centre.
 for (let angle=0;angle<360;angle+=15) {
@@ -77,5 +98,15 @@ if(process.argv.includes('--published-assets')) {
  assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===15700&&e.movie===model.previewMovies.drvalv&&e.rawValue6===1)))
  assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===29600&&e.rawValue6===0&&(e.rawValue7??e.opacity)===1000)))
  assert.deepEqual(index.backmonitorLogo.fadeControls,model.fadeControls)
+ const growing=songs.filter(s=>s.songCode==='grwsml')
+ assert.equal(growing.length,21)
+ for(const song of growing) {
+  const event=song.backmonitorEvents.find(e=>e.rawValue6===1)
+  const selected=resolveBackmonitorLogo(index.backmonitorLogo,song.backmonitorEvents,event.time+600)
+  assert.equal(selected.asset,defaultLogo)
+  assert.equal(sampleBackmonitorLogo(song.songCode,{...state,movie:event.movie},event.time+600,selected,song.backmonitorEvents).alpha,.8)
+ }
+ const passionSong=songs.find(s=>s.songCode==='drv999')
+ for(const event of passionSong.backmonitorEvents.filter(e=>e.logo))assert.equal(resolveBackmonitorLogo(index.backmonitorLogo,passionSong.backmonitorEvents,event.time).asset,passion)
 }
 console.log('PASS native logo phase, activation guard, rewind/pause and perspective mesh instead of flat scale')

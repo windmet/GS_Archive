@@ -23,6 +23,8 @@ sys.path.insert(0, str(DATA_PIPELINE_ROOT))
 from archive_paths import add_sources_config_argument, load_archive_sources
 from live_chibi_raw_semantics import load_raw_live_semantics
 from live_chibi_texture import sprite_image
+from live_chibi_sprite_geometry import sprite_geometry
+from live_chibi_object_keeper import object_keeper_tree
 from live_chibi_object_transform import local_matrix, relative_matrix, decompose
 
 
@@ -101,10 +103,12 @@ def find_keeper(environment, objects_by_id: dict[int, object], asset: str):
         if obj.type.name != "MonoBehaviour":
             continue
         try:
-            tree = obj.read_typetree()
+            tree = obj.read_typetree(check_read=False)
             game_object = objects_by_id[pptr_path_id(tree.get("m_GameObject", {}))].read()
         except Exception:
             continue
+        if game_object.m_Name.lower() == expected:
+            tree = object_keeper_tree(obj)
         if game_object.m_Name.lower() == expected and any(
             key in tree for key in ("_particles", "_sprites", "_groups")
         ):
@@ -118,8 +122,9 @@ def inspect_asset(
     output_root: Path,
     force: bool,
     astcenc=None,
+    environment=None,
 ) -> dict | None:
-    environment = UnityPy.load(str(bundle))
+    environment = environment or UnityPy.load(str(bundle))
     objects_by_id = {int(obj.path_id): obj for obj in environment.objects}
     keeper, root, root_path_id = find_keeper(environment, objects_by_id, asset)
     if keeper is None:
@@ -154,10 +159,7 @@ def inspect_asset(
                 "id": str(sprite_id),
                 "name": sprite.m_Name,
                 "file": f"object-layers/sprites/{filename}",
-                "pivot": {
-                    "x": round(float(sprite.m_Pivot.x), 6),
-                    "y": round(1 - float(sprite.m_Pivot.y), 6),
-                },
+                **sprite_geometry(sprite,metadata["width"],metadata["height"]),
                 "pixelsPerUnit": round(float(sprite.m_PixelsToUnits), 4),
                 **metadata,
             }

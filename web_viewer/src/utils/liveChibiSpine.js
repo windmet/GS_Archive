@@ -1,3 +1,11 @@
+import { attachObjectEmitters } from '../core/chibiObjectEmitters.js'
+import { attachSearchlights } from '../core/chibiSearchlights.js'
+import { attachWholeScreen } from '../core/chibiWholeScreen.js'
+import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
+import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
+import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
+import { attachBloom } from '../core/chibiBloomParticles.js'
+import { validateStagelightData } from '../core/chibiStagelights.js'
 import {createBoundedTextTransport} from './BoundedTextTransport.js'
 import * as PIXI from 'pixi.js'
 import {
@@ -12,6 +20,11 @@ import { BinaryInput, TextureAtlas, TextureAtlasRegion } from '@pixi-spine/base'
 import { withLoadDeadline } from '../core/AsyncLoadBoundary.js'
 import { attachChibiParticleLayers } from '../core/chibiParticleTimeline.js'
 import { attachChibiFloor } from '../core/chibiFloorParticles.js'
+import { validateStageCommandInventory } from '../core/stageCommandCoverage.js'
+import { validatePenlightData } from '../core/chibiPenlights.js'
+import { NATIVE_MOUTH_CLOSED_RATE, validateMouthFixData } from '../core/chibiMouthFix.js'
+import { validateMotionOffsetData } from '../core/chibiMotionOffset.js'
+import { validateMotionClock } from '../core/chibiMotionClock.js'
 
 export const LIVE_CHIBI_BASE = '/assets/live-chibi'
 const LIVE_CHIBI_LIP_OPEN_THRESHOLD = 0.04
@@ -73,16 +86,110 @@ async function liveJson(relativePath, options={}, optional=false) {
   catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
-export const fetchLiveChibiChoreography = (file,options) => liveJson(file,options)
+export async function fetchLiveChibiChoreography(file,{signal}={}) {
+  const [text,spotlights,wholeScreen,searchlights]=await Promise.all([
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+    indexTransport.load('/data/stage-spotlight-commands.json',{signal}),
+    indexTransport.load('/data/stage-whole-screen.json',{signal}),
+    indexTransport.load('/data/stage-searchlights.json',{signal}),
+  ])
+  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  const hash=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  return attachSearchlights(attachWholeScreen(attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash),JSON.parse(wholeScreen),hash),JSON.parse(searchlights),hash)
+}
+export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
+  // Both texts use the bounded transport. Hash the actual loaded choreography,
+  // so an old RAW snapshot cannot silently describe a newer resource corpus.
+  const [text, choreographyText] = await Promise.all([
+    indexTransport.load('/data/stage-command-inventory.json', {signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`, {signal}),
+  ])
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(choreographyText))
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
+  const hash = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('')
+  return validateStageCommandInventory(JSON.parse(text), hash)
+}
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
+export async function fetchLiveChibiPenlights(file, {signal}={}) {
+  const [text,modelText,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-penlight-commands.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/penlight/index.json`,{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const digest=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const [choreographyHash,modelHash]=await Promise.all([digest(choreographyText),digest(modelText)])
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return {commands:validatePenlightData(JSON.parse(text),choreographyHash,modelHash),model:JSON.parse(modelText)}
+}
+export async function fetchLiveChibiMouthFix(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-mouth-fix.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMouthFixData(JSON.parse(text),hash)
+}
+export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-motion-offset.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMotionOffsetData(JSON.parse(text),hash)
+}
+export async function fetchLiveChibiMotionClock(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-motion-clock.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateMotionClock(JSON.parse(text),hash,JSON.parse(choreographyText).songs)
+}
+export async function fetchLiveChibiStagelights(file,{signal}={}) {
+  const [text,choreographyText]=await Promise.all([
+    indexTransport.load('/data/stage-stagelight-commands.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
+    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateStagelightData(JSON.parse(text),hash)
+}
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
-export const fetchLiveChibiStageEffectIndex = options => liveJson('stage-effects/index.json',options,true)
+export async function fetchLiveChibiStageEffectIndex({signal}={}) {
+  const [text,native]=await Promise.all([
+    indexTransport.load(`${LIVE_CHIBI_BASE}/stage-effects/index.json`,{signal}),
+    indexTransport.load('/data/stage-old-suspension.json',{signal}),
+  ])
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return attachNativeOldSuspension(JSON.parse(text),JSON.parse(native),hash)
+}
+export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
+  const text=await indexTransport.load(`${LIVE_CHIBI_BASE}/${descriptor.file}`,{signal})
+  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  return validateOldSuspensionTrack(JSON.parse(text),descriptor,hash)
+}
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
 export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
-  const index=await liveJson('object-layers/index.json',{signal},true)
+  let index=await liveJson('object-layers/index.json',{signal},true)
   if (!index) return null
+  const [emitterText,objectText,choreographyText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal})])
+  const objectHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(objectText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+  if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
+  const choreographyHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+  index=attachObjectEmitters(index,JSON.parse(emitterText),objectHash,choreographyHash)
   // Start refinements independently; never mutate the shared cached source.
   let refined=index
   for(const [file,attach] of [['particle-layers',attachChibiParticleLayers],['floor-particles',attachChibiFloor]]) {
@@ -90,6 +197,16 @@ export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
       if(!signal?.aborted && extra) {refined=attach(refined,extra); onOptional?.(refined)}
     }).catch(error=> {if(error.name!=='AbortError')console.warn('[ChibiStage] optional particle index unavailable',error)})
   }
+  void Promise.all([indexTransport.load('/data/stage-bloom-particles.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+      if(!signal?.aborted){refined=attachBloom(refined,JSON.parse(text),hash);onOptional?.(refined)}
+    }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] bloom index unavailable',error)})
+  void Promise.all([indexTransport.load('/data/stage-object-sprite-geometry.json',{signal}),
+    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
+      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+      if(!signal?.aborted){refined=attachObjectSpriteGeometry(refined,JSON.parse(text),hash);onOptional?.(refined)}
+    }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] object Sprite geometry unavailable',error)})
   return index
 }
 export async function fetchLiveChibiStageBackgroundIndex({signal,onOptional}={}) {
@@ -118,6 +235,7 @@ function installLiveChibiLipSync(spine) {
   const mouthSlot = skeleton.findSlot('mouth')
   const mouthBone = skeleton.findBone('mouth') || mouthSlot?.bone
   if (!mouthSlot || !mouthBone) return null
+  const headSlot = skeleton.findSlot('head')
 
   const baseScaleX = mouthBone.data.scaleX
   const baseScaleY = mouthBone.data.scaleY
@@ -127,23 +245,26 @@ function installLiveChibiLipSync(spine) {
     singing: false,
     attachment: null,
     scale: LIVE_CHIBI_LIP_CLOSED_SCALE,
+    fixed: null,
   }
   skeleton.updateWorldTransform = function (...args) {
     try {
       const currentName = mouthSlot.attachment?.name || mouthSlot.data.attachmentName || 'mouth_open'
-      const flipped = currentName.endsWith('_fl')
-      const value = state.singing ? state.value : 0
-      const open = value > LIVE_CHIBI_LIP_OPEN_THRESHOLD
+      const headName=headSlot?.attachment?.name
+      const fixed=state.fixed?.active===true
+      const flipped = fixed && headName ? headName==='head_fl' : currentName.endsWith('_fl')
+      const value = fixed ? state.fixed.rate : state.singing ? state.value : 0
+      const open = value > (fixed?NATIVE_MOUTH_CLOSED_RATE:LIVE_CHIBI_LIP_OPEN_THRESHOLD)
       const attachmentName = `mouth_${open ? 'open' : 'close'}${flipped ? '_fl' : ''}`
       if (mouthSlot.attachment?.name !== attachmentName) {
         skeleton.setAttachment('mouth', attachmentName)
       }
-      state.scale = open
+      state.scale = fixed ? (open?value:1) : open
         ? LIVE_CHIBI_LIP_OPEN_SCALE_MIN
           + value * (LIVE_CHIBI_LIP_OPEN_SCALE_MAX - LIVE_CHIBI_LIP_OPEN_SCALE_MIN)
         : LIVE_CHIBI_LIP_CLOSED_SCALE
-      mouthBone.scaleX = baseScaleX * state.scale
-      mouthBone.scaleY = baseScaleY
+      mouthBone.scaleX = fixed ? state.scale : baseScaleX * state.scale
+      if(!fixed)mouthBone.scaleY = baseScaleY
       state.attachment = attachmentName
     } finally {
       originalUpdateWorldTransform.apply(this, args)
@@ -155,7 +276,7 @@ function installLiveChibiLipSync(spine) {
   return state
 }
 
-export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
+export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing, fixed=null) {
   const controller = runtime?.lipSyncController
   if (!controller) return {
     value: 0,
@@ -165,12 +286,14 @@ export function applyLiveChibiLipSync(runtime, curve, milliseconds, singing) {
   }
   controller.value = singing ? sampleLiveChibiLipSync(curve, milliseconds) : 0
   controller.singing = Boolean(singing && curve)
+  controller.fixed = fixed?.active ? fixed : null
   runtime.spine.skeleton.updateWorldTransform()
   return {
     value: controller.value,
     singing: controller.singing,
     attachment: controller.attachment,
     scale: controller.scale,
+    fixed: controller.fixed,
   }
 }
 
@@ -333,10 +456,11 @@ export async function createLiveChibi(character, costume, {signal,isCurrent=()=>
     missingRegions: [...attachmentLoader.missingRegions],
   }
   if (import.meta.env.DEV) window.__SIDE_M_CHIBI_DIAGNOSTICS__ = diagnostics
-  // Scripted choreography replaces a running motion at exact song timestamps.
-  // Keep a short bone mix available; playLiveChibiMotion hard-switches slots so
-  // optional hand/face attachments cannot accumulate during that mix.
-  spine.stateData.defaultMix = 0.12
+  // LiveIdolFactory creates a new SkeletonDataAsset: ctor leaves defaultMix=0,
+  // and the source arrays contain no per-pair mixes. Normal PlayMotion's
+  // callback explicitly supplies .15s only for its first fragment; queued
+  // before/after/loop fragments and immediate commands retain the zero default.
+  spine.stateData.defaultMix = 0
   return {
     bodyType: character.bodyType,
     spine,
@@ -396,7 +520,12 @@ export function seekLiveChibiMotion(runtime, seconds) {
       state.apply(skeleton)
       remaining -= step
     }
-    runtime.spine.update(0)
+    // Refresh Pixi attachments without another AnimationState.update. Even
+    // delta=0 can consume a queued entry whose trackLast just reached delay;
+    // that would advance seek one state update beyond normal playback.
+    const updateState = state.update
+    state.update = () => {}
+    try { runtime.spine.update(0) } finally { state.update = updateState }
   } finally {
     state.timeScale = priorSpeed
   }
@@ -446,7 +575,7 @@ export function playLiveChibiMotion(runtime, animationNames, {
 
   const mainEntry = state.setAnimation(0, mainName, directLoop)
   if (!shouldReset && mainEntry.mixingFrom) {
-    mainEntry.mixDuration = nativeCommand && !immediate ? 0.15 : mixDuration
+    mainEntry.mixDuration = nativeCommand ? (immediate ? 0 : 0.15) : mixDuration
     mainEntry.mixingFrom.attachmentThreshold = 0
     mainEntry.mixingFrom.drawOrderThreshold = 0
   } else {

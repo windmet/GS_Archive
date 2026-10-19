@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { chibiPositionStateAt, resolveChibiPlacement, projectChibiGround } from '../src/core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../src/core/chibiCharacterShadow.js'
+import { nativeCharacterScale } from '../src/core/chibiNativeCharacterGeometry.js'
 const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}.json`,import.meta.url)))
 const witnesses = read('chibi-placement-witness')
 const sfc = fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
@@ -47,17 +48,17 @@ assert.equal(resolveChibiPlacement({x:5000,y:5000,scale:1700},{time:100,x:0,y:18
 assert.equal(resolveChibiPlacement(null,{x:12,y:250},0).x,12)
 // Exercise the actual layout consumer: value4 changes order without changing
 // the prefab size, including the source's 2600 foreground order.
-const actor={characterId:'test',spine:{scale:{set(value){this.x=value;this.y=value}}}}
+const actor={characterId:'test',bodyType:1,spine:{scale:{set(value){this.x=value;this.y=value}}}}
 const stageTime={value:1799}
 const layoutSong={...witnesses.psblts_live_effect,positionEvents:[
   {time:-2000,position:3,x:350,y:230,sortingOrder:1700},
   {time:1800,position:3,x:350,y:230,sortingOrder:2600},
 ]}
 const layout=new Function('runtimes','app','canvasRef','stageTime','layoutCoordinatesForStage','characters','selectedSong',
-  'projectChibiGround','CHARACTER_STAGE_SCALE','charactersEnabled','activePositions','syncCharacterShadow','lightingEnabled','spotlightSortOffsetsAt',
+  'projectChibiGround','nativeCharacterScale','charactersEnabled','activePositions','syncCharacterShadow','lightingEnabled','spotlightSortOffsetsAt',
   sfc.match(/function layoutRuntime\([^]*?\n\}/)[0]+';return layoutRuntime')(
   new Map([[4,actor]]),{renderer:{width:1280,height:720,resolution:1}},{value:{}},stageTime,sampler(layoutSong),
-  {value:[{id:'test',previewScale:.3}]},{value:layoutSong},projectChibiGround,.58,{value:true},{value:[4]},()=>{},{value:true},spotlightSortOffsetsAt)
+  {value:[{id:'test',previewScale:.3}]},{value:layoutSong},projectChibiGround,nativeCharacterScale,{value:true},{value:[4]},()=>{},{value:true},spotlightSortOffsetsAt)
 layout(4);const initialSize=actor.spine.scale.x
 assert.equal(actor.spine.zIndex,1700)
 stageTime.value=1800;layout(4)

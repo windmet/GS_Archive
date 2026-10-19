@@ -1,6 +1,6 @@
 import { sampleParticleCurve } from './chibiParticleTimeline.js'
 import { sampleFloorGradient } from './chibiFloorParticles.js'
-import { sampleStreamedCurve } from './chibiNativeAnimation.js'
+import { laserSimulationClock, laserBillboardPlane, nativeLaserAlpha } from './chibiLaserGeometry.js'
 
 // Integrate unweighted native angular-velocity curves, rather than treating
 // their values as absolute rotation angles or inventing a triangular sweep.
@@ -21,10 +21,11 @@ export function integrateLaserCurve(curve, time) {
 }
 
 export function sampleLaserParticles(model, state, milliseconds) {
-  const elapsed = (milliseconds - state.eventTime) / Math.max(1, Number(state.sweepDuration) || 1000) * model.defaultDuration
-  if (elapsed < 0) return []
+  if (milliseconds < state.eventTime) return []
   return model.systems.flatMap((s, systemIndex) => {
-    const life = sampleParticleCurve(s.lifetime, 0), local = elapsed - s.delay
+    const clock = laserSimulationClock(s,state,milliseconds)
+    if (!Number.isFinite(clock.elapsed)) return []
+    const life = sampleParticleCurve(s.lifetime, 0), local = clock.elapsed - s.delay
     if (local < 0) return []
     const samples = []
     const first = Math.max(0, Math.floor((local - life) / s.period))
@@ -35,23 +36,15 @@ export function sampleLaserParticles(model, state, milliseconds) {
         if (age < 0 || age >= life) continue
         const fraction = age / life
         const angular = s.angularVelocity ? integrateLaserCurve(s.angularVelocity, fraction) * life : 0
-        // CSV/director alignment and 2D projection are recording-guided.
-        // Style 7's Y-axis mirror reverses fan rotation, not beam direction.
-        // World-space turning particles retain the Animator angle at birth.
-        const animated = s.animation ? sampleStreamedCurve(s.animation.curve,
-          (born*s.animation.speed)%s.animation.duration)*Math.PI/180 : 0
-        const angle = (s.mirrored ? -1 : 1) * (s.angle + angular + animated)
-        const color = [16,8,0].reduce((tint,shift,i) => tint | (Math.round(
-          (Number.parseInt(String(state.color || '#ffffff').slice(1),16) >> shift & 255)
-          * s.color[['r','g','b'][i]]) << shift), 0)
+        const plane=laserBillboardPlane(s,model,state,milliseconds,sampleParticleCurve(s.rotation,0)+angular)
+        const color=Number.parseInt(String(state.color || '#ffffff').slice(1,7),16)
         for (let n = 0; n < burst.count; n++) samples.push({ systemIndex, born, n,
-          alpha: sampleFloorGradient(s.alpha, fraction) * s.color.a * state.alpha,
-          width: sampleParticleCurve(s.width,0) * 100 * Number(state.width) / 1000
+          alpha: sampleFloorGradient(s.alpha, fraction) * nativeLaserAlpha(state),
+          width: sampleParticleCurve(s.width,0) * 100
             * (s.sizeX ? sampleParticleCurve(s.sizeX,fraction) : 1),
-          length: sampleParticleCurve(s.length,0) * 100 * Number(state.length) / 1000
+          length: sampleParticleCurve(s.length,0) * 100
             * (s.sizeY ? sampleParticleCurve(s.sizeY,fraction) : 1),
-          rotation: (Number(state.style) === 7 ? 0 : Math.PI/2)
-            - Number(state.angle) * Math.PI/180 - angle,
+          matrix:plane, x:plane.x, y:plane.y, rotation:Math.atan2(plane.b,plane.a),
           color, asset: s.asset, anchorX: s.anchorX, anchorY: s.anchorY })
       }
     }
@@ -61,5 +54,5 @@ export function sampleLaserParticles(model, state, milliseconds) {
 
 export function laserParticleLayout(state, width, height, environmentScale = 1) {
   const fit = Math.min(width/1280,height/720) * environmentScale
-  return { x: width/2 - Number(state.x)*fit, y: height/2 + (360-Number(state.y))*fit, fit }
+  return { x: width/2 + Number(state.x)*fit, y: height/2 + (360-Number(state.y))*fit, fit }
 }

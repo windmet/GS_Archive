@@ -21,12 +21,12 @@ for (const [width, height] of [[1280,720],[869.46,489.07125],[357,200.8125],[327
     assert.ok(Math.abs(oldY-point.y-50.4*fit)<1e-8)
   }
 }
-assert.equal(chibiGroundRegistration('steqmg').id, 'design-space-ground-v1')
+assert.equal(chibiGroundRegistration('steqmg').id, 'native-character-plane-v1')
 for (const code of ['anwhre','tkstp1','tkstp2','psblts','drvalv','brndnf',undefined]) {
   const point = projectChibiGround(code, {x:230,y:190}, 1280,720)
   assert.equal(point.x, 870)
   assert.equal(point.y, 530)
-  assert.equal(chibiGroundRegistration(code).id, 'design-space-ground-v1')
+  assert.equal(chibiGroundRegistration(code).id, 'native-character-plane-v1')
   // A letterboxed/rounded canvas must retain registration with centred art.
   for (const [width,height] of [[869,489],[800,500]]) {
     assert.equal(projectChibiGround(code,{x:230,y:190},width,height).y,
