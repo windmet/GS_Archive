@@ -2,6 +2,8 @@
 
 输入 `d1a18e06`，分支 `stage/20261020-native-followup`，主checkout `E:/Web_build/SideM_Archived/web_viewer`。承接 [10-19来源定位](NATIVE_STAGE_FORMULA_CLOSEOUT_20261019.md) 与 [10-20路线](STAGE_FOLLOWUP_20261020.md)。本批补来源和实际消费者，不用“找到资源”代替“已经显示”。
 
+后续：[公共RGBA模式](NATIVE_ADDITIVE_RGBA_20261020.md)已统一其他NativeLightQuad调用方与本批内置Sprite的模式注册。下文“其他旧调用方仍待处理”是本批收束时状态，当前由该续批取代；Sprite淡入等边界仍保留。
+
 ## 来源与原生行为
 
 歌曲RAW的四个对象在原始object-layers索引中为missing；它们实际位于APK `resources.assets`。保留原索引和所有依赖它的hash绑定，通过独立 [sidecar](../public/data/stage-built-in-objects.json) 补入运行时；不改RAW、不重写公共索引或放松现有来源守卫。

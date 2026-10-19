@@ -35,10 +35,10 @@ export function sampleSpriteLaser(state, milliseconds, native = model) {
   })
 }
 
-export function createSpriteLaserRuntime(PIXI, parent, layers, textures) {
+export function createSpriteLaserRuntime(PIXI, parent, layers, textures, renderer) {
   const container = new PIXI.Container()
   const sprites = layers.map((layer,index) => {
-    const sprite=createNativeLightQuad(PIXI,textures[index],layer.anchorX,layer.anchorY)
+    const sprite=createNativeLightQuad(PIXI,renderer,textures[index],layer.anchorX,layer.anchorY)
     container.addChild(sprite)
     return sprite
   })

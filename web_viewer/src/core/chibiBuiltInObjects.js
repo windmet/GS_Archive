@@ -32,16 +32,6 @@ export function attachBuiltInObjects(index,data,indexHash) {
   return {...attached,missing:(index.missing || []).filter(name=>!Object.hasOwn(data.assets,name)),builtInObjectSource:data.unityDataSha256}
 }
 
-const nativeBlend=new WeakMap()
-function additiveMode(renderer) {
-  if(!nativeBlend.has(renderer)) {
-    const id=renderer.state.blendModes.length
-    const restore=()=>{renderer.state.blendModes[id]=[renderer.gl.SRC_ALPHA,renderer.gl.ONE]}
-    restore();renderer.runners.contextChange.add({contextChange:restore});nativeBlend.set(renderer,id)
-  }
-  return nativeBlend.get(renderer)
-}
-
 export async function loadBuiltInObjectSprites(PIXI,renderer,entry,loadTexture) {
   const results=await Promise.allSettled(entry.textures.map(async metadata=>({metadata,texture:await loadTexture(metadata.file)})))
   const loaded=results.filter(r=>r.status==='fulfilled').map(r=>r.value)
@@ -55,15 +45,12 @@ export async function loadBuiltInObjectSprites(PIXI,renderer,entry,loadTexture) 
   try {
     for(const instance of entry.instances) {
       const {texture,metadata}=loaded.find(row=>row.metadata.id===instance.texture)
-      const mesh=createNativeLightQuad(PIXI,texture,metadata.pivot.x,metadata.pivot.y)
+      const mesh=createNativeLightQuad(PIXI,renderer,texture,metadata.pivot.x,metadata.pivot.y)
       meshes.push(mesh);container.addChild(mesh)
       mesh.position.set(instance.x,instance.y)
       mesh.scale.set(instance.scaleX*100/metadata.pixelsPerUnit,instance.scaleY*100/metadata.pixelsPerUnit)
       mesh.rotation=instance.rotation*Math.PI/180;mesh.skew.set(instance.skewX*Math.PI/180,0)
       mesh.tint=instance.tint;mesh.alpha=instance.alpha;mesh.zIndex=instance.sortingOrder
-      // Shader950 uses SrcAlpha/One for BOTH RGBA channels. Pixi ADD_NPM's
-      // separate alpha factors are [One,One], which do not match that source.
-      mesh.blendMode=additiveMode(renderer)
     }
     return {container,textures:loaded.map(row=>row.texture),nativeBuiltInSprites:meshes,releaseNativeMaterials,entry}
   } catch(error) {

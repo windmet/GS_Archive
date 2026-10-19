@@ -11,8 +11,9 @@ class SimpleMesh { constructor(texture,vertices) { this.texture=texture; this.ve
 class MeshMaterial { constructor(texture,options) { this.texture=texture; this.uniforms=options.uniforms } }
 class Container { constructor() { this.children = [] } addChild(sprite) { this.children.push(sprite) } }
 const camera = new Container()
-const factory = new Function('PIXI', 'markRaw', 'cameraContainer', 'createNativeLightQuad', createSource + '\nreturn createSpotlightRuntime')(
-  { Container, SimpleMesh, MeshMaterial, Program:{from:()=>({})}, BLEND_MODES: { ADD_NPM: 'native-add' } }, value => value, camera, createNativeLightQuad)
+const nativeRenderer={state:{blendModes:new Array(32)},gl:{SRC_ALPHA:770,ONE:1},runners:{contextChange:{add(){}}}}
+const factory = new Function('PIXI', 'markRaw', 'cameraContainer', 'createNativeLightQuad','app', createSource + '\nreturn createSpotlightRuntime')(
+  { Container, SimpleMesh, MeshMaterial, Program:{from:()=>({})}, BLEND_MODES: { ADD_NPM: 'native-add' } }, value => value, camera, createNativeLightQuad,{renderer:nativeRenderer})
 const nativeTextures = [{ asset: 'Spotlight1',width:1024,height:1024 }, { asset: 'Spotlight2',width:512,height:512 }]
 const actualRuntime = factory(20, fixture.model.layers, nativeTextures)
 assert.equal(camera.children[0], actualRuntime.container)
@@ -25,7 +26,8 @@ actualRuntime.sprites.forEach((sprite, index) => {
   assert.equal(sprite.vertices[0],-nativeTextures[index].width*layer.anchorX)
   assert.equal(sprite.vertices[1],-nativeTextures[index].height*layer.anchorY)
   assert.equal(sprite.shader.batchable,false)
-  assert.equal(sprite.blendMode, 'native-add')
+  assert.equal(sprite.blendMode,32)
+  assert.deepEqual(nativeRenderer.state.blendModes[sprite.blendMode],[770,1])
 })
 assert.equal(source.includes('ensureSpotlightConeTexture'), false, 'Generated cone must not replace the native resource')
 

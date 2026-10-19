@@ -6,6 +6,8 @@
 
 再续批：[Time Before Time内置对象](NATIVE_TIBETI_BUILT_IN_OBJECTS_20261020.md) 已补四个APK对象的来源与消费者，包含Sprite材质/几何、water粒子和两套AlphaTex。有效运行时源缺失从4降为0，native emitter为82；无consumer32种仍开放。新确认的下一公共问题是其他NativeLightQuad调用方的ADD_NPM独立alpha因子；本批已纠正object消费者，未外推到所有灯具。
 
+随后 [公共RGBA续批](NATIVE_ADDITIVE_RGBA_20261020.md) 已把所有NativeLightQuad实际构造方接至同一renderer原生模式，256组GPU对照（含真实context恢复）通过，旧模式反例稳定失败。此前这项待办已关闭；仍保留缺家族、32种粒子、Sprite淡入与原片/设备边界。
+
 ## 当前基线
 
 - RAW 矩阵重新验证：118 份编排、58 类原始行、261,812 行，其中一行非时序说明。矩阵存在不代表字段或原片视觉完整。

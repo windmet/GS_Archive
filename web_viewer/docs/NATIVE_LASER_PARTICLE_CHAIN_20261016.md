@@ -2,6 +2,8 @@
 
 2026-10-20校正：[内置对象材质检查](NATIVE_TIBETI_BUILT_IN_OBJECTS_20261020.md)直接核对当前Pixi映射，`ADD_NPM`的alpha因子实际为One/One。下文将NativeLightQuad的ADD_NPM称为RGBA均匹配的说法过度；原生Shader950的RGBA SrcAlpha/One来源结论不变。object消费者本次已用显式模式/批渲染纠正，其他NativeLightQuad调用方仍待接线，不能将本页旧测试总结当作当前alpha混合验收。
 
+同日后续：[公共RGBA接线与GPU对照](NATIVE_ADDITIVE_RGBA_20261020.md)已完成其他NativeLightQuad调用方的修复；上下文恢复前后各128组透明RGBA8目标读回通过，旧ADD_NPM反例alpha64/expected16仍失败。上段“待接线”为来源纠错时状态，当前以该续批为准。
+
 输入`stage/20261014-native-fidelity` / `2b1f7f7b`。继续[Sprite激光批次](NATIVE_SPRITE_LASER_CHAIN_20261016.md)明确的公共链路缺口，覆盖Laserlight style3/4/5/6/7/8/9。沿用5212 / PID61564，保留随机动作草稿。
 
 ## 原生调用链与修正

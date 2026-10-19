@@ -649,8 +649,8 @@ let pureReturnFocus = null, shortcutSeeking = false
 const canvasRef = ref(null)
 const manifest = shallowRef(null)
 const choreography = shallowRef(null)
-const wholeScreenRenderer=createWholeScreenRenderer(PIXI)
-const searchlightRenderer=createSearchlightRenderer(PIXI,()=>cameraContainer,()=>{if(app && !playing.value) {applyStageLighting();app.render()}})
+const wholeScreenRenderer=createWholeScreenRenderer(PIXI,()=>app?.renderer)
+const searchlightRenderer=createSearchlightRenderer(PIXI,()=>cameraContainer,()=>{if(app && !playing.value) {applyStageLighting();app.render()}},()=>app?.renderer)
 const searchlightCount=ref(0),searchlightDeferred=ref('')
 const nativeObjectParticleCount=ref(0)
 const nativeObjectDeferred=computed(()=>[...new Set((selectedSong.value?.objectLayerEvents||[]).map(e=>e.asset))].flatMap(asset=>((objectLayerIndex.value?.assets?.[asset]?.nativeParticleAnimation||objectLayerIndex.value?.assets?.[asset]?.nativeParticleDeferred)?.deferred||[]).map(d=>`${asset}:${d.source.pathId}:${d.reasons.join('+')}`)).join(','))
@@ -902,7 +902,7 @@ const oldSuspensionSprites = createSpotlightSpriteStore({
   layerCount: 1,
   loadTexture: file => loadImageLayerTexture(file),
   createRuntime: (id, layers, textures) => {
-    const sprite = markRaw(createNativeLightQuad(PIXI,textures[0],layers[0].anchorX,layers[0].anchorY))
+    const sprite = markRaw(createNativeLightQuad(PIXI,app.renderer,textures[0],layers[0].anchorX,layers[0].anchorY))
     cameraContainer.addChild(sprite)
     return markRaw({ sprite })
   },
@@ -937,7 +937,7 @@ const unresolvedLaserlightIds = ref([])
 const spriteLaserSprites = createSpotlightSpriteStore({
   layerCount: 3,
   loadTexture: file => loadImageLayerTexture(file),
-  createRuntime: (id, layers, textures) => markRaw(createSpriteLaserRuntime(PIXI, cameraContainer, layers, textures)),
+  createRuntime: (id, layers, textures) => markRaw(createSpriteLaserRuntime(PIXI, cameraContainer, layers, textures, app.renderer)),
   destroyRuntime: runtime => {runtime.container.removeFromParent();runtime.container.destroy({children:true})},
   destroyTexture: texture => texture.destroy(true),
   onReady: () => {syncLaserlights();requestPausedSuspensionRender()},
@@ -2233,7 +2233,7 @@ function spotlightStatesAt(milliseconds) {
 function createSpotlightRuntime(id, layers, textures) {
   const container = markRaw(new PIXI.Container())
   const sprites = layers.map((layer, index) => {
-    const sprite = markRaw(createNativeLightQuad(PIXI,textures[index],layer.anchorX,layer.anchorY))
+    const sprite = markRaw(createNativeLightQuad(PIXI,app.renderer,textures[index],layer.anchorX,layer.anchorY))
     sprite.position.set(layer.x, layer.y)
     sprite.scale.set(layer.scaleX, layer.scaleY)
     container.addChild(sprite)
@@ -2594,7 +2594,7 @@ function syncLaserlights() {
         const sample = particles[i]
         let sprite = runtime.sprites[i]
         if (!sprite && sample) {
-          sprite = markRaw(createNativeLightQuad(PIXI,spotbeam?runtime.frames[sample.frame]:runtime.texture,sample.anchorX,sample.anchorY,1,1))
+          sprite = markRaw(createNativeLightQuad(PIXI,app.renderer,spotbeam?runtime.frames[sample.frame]:runtime.texture,sample.anchorX,sample.anchorY,1,1))
           runtime.container.addChild(sprite)
           runtime.sprites.push(sprite)
         }

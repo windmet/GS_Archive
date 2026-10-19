@@ -35,18 +35,32 @@ export function updateNativeLightMaterial() {
   if(this.uvMatrix.update())this.uniforms.uTextureMatrix=this.uvMatrix.mapCoord
 }
 
-export function createNativeLightQuad(PIXI,texture,anchorX,anchorY,width=texture.width,height=texture.height) {
+const nativeBlendModes=new WeakMap()
+export function nativeAdditiveBlendMode(renderer) {
+  if(!renderer?.state?.blendModes || !renderer.gl || !renderer.runners?.contextChange)
+    throw Error('Native light requires the active WebGL renderer')
+  if(!nativeBlendModes.has(renderer)) {
+    const id=renderer.state.blendModes.length
+    const restore=()=>{renderer.state.blendModes[id]=[renderer.gl.SRC_ALPHA,renderer.gl.ONE]}
+    restore();renderer.runners.contextChange.add({contextChange:restore});nativeBlendModes.set(renderer,id)
+  }
+  return nativeBlendModes.get(renderer)
+}
+
+export function createNativeLightQuad(PIXI,renderer,texture,anchorX,anchorY,width=texture.width,height=texture.height) {
+  const blendMode=nativeAdditiveBlendMode(renderer)
   const x=-width*anchorX,y=-height*anchorY
   const mesh=new PIXI.SimpleMesh(texture,
     new Float32Array([x,y,x+width,y,x+width,y+height,x,y+height]),
     new Float32Array([0,0,1,0,1,1,0,1]),new Uint16Array([0,1,2,0,2,3]))
   // Native blend is SrcAlpha/One for RGB and alpha. Use straight output so
-  // ADD_NPM reproduces both channels, including alpha accumulation (a*a).
+  // Pixi ADD_NPM uses separate One/One alpha factors. Register the source
+  // factors explicitly so alpha accumulates a*a, just like RGB uses source a.
   mesh.shader=new PIXI.MeshMaterial(texture,{program:PIXI.Program.from(NATIVE_LIGHT_VERTEX,NATIVE_LIGHT_FRAGMENT),
     uniforms:{uTexturePremultiplied:texture.baseTexture?.alphaMode ? 1 : 0}})
   mesh.shader.batchable=false
   mesh.shader.update=updateNativeLightMaterial
-  mesh.blendMode=PIXI.BLEND_MODES.ADD_NPM
+  mesh.blendMode=blendMode
   mesh.nativeAnchorX=anchorX
   mesh.nativeAnchorY=anchorY
   return mesh

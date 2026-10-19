@@ -21,7 +21,7 @@
 |---|---|---|
 | 门户 portal | `portal/20261014-portal-polish`（需先 merge origin/master） | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查；正式站发布与 noindex 决定 |
 | 翻译 i18n | `i18n/20261015-translation` | 新开的翻译线。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从最新 `origin/master` / `e6cd9641` 新开；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。自定义新悬灯Sprite与[Time Before Time内置对象](NATIVE_TIBETI_BUILT_IN_OBJECTS_20261020.md)已补来源/消费者；下一项其他NativeLightQuad消费者的RGBA混合与缺家族。原片对照、32种无consumer粒子、旧悬灯9份partial仍开放 |
+| 舞台 stage | `stage/20261020-native-followup`，从最新 `origin/master` / `e6cd9641` 新开；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。新悬灯Sprite、Time Before Time与[公共RGBA混合](NATIVE_ADDITIVE_RGBA_20261020.md)已修并验证；下一项缺家族、Sprite淡入公共语义。原片对照、32种无consumer粒子、旧悬灯9份partial仍开放 |
 
 ## 未合入但保留的分支
 
