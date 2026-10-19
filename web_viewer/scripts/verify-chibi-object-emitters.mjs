@@ -128,14 +128,14 @@ const published=process.argv.includes('--published-assets')
 const index=published?JSON.parse(read('public/assets/live-chibi/object-layers/index.json')):{assets:Object.fromEntries(Object.entries(data.assets).map(([k,v])=>[k,{bundle:v.bundle,particleCount:v.particleCount}]))}
 const hash=published?sha(read('public/assets/live-chibi/object-layers/index.json')):data.objectIndexSha256
 const choreographyHash=sha(read('public/assets/live-chibi/choreography/index.json'))
-assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,78)
+assert.equal(Object.values(attachObjectEmitters(index,data,hash,choreographyHash).assets).filter(a=>a.nativeParticleAnimation).length,80)
 assert.throws(()=>attachObjectEmitters(index,data,'0'.repeat(64)))
 assert.throws(()=>attachObjectEmitters(index,data,hash),/choreography binding/)
 assert.throws(()=>attachObjectEmitters(index,data,hash,'0'.repeat(64)),/choreography binding/)
 const unproven=structuredClone(data)
 delete unproven.assets.fx_in_pavetl_crystal_1.distanceMotionProof
 assert.throws(()=>attachObjectEmitters(index,unproven,hash,choreographyHash),/Unproven distance emitter motion/)
-assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),709)
+assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.systems.length,0),720)
 assert.equal(Object.values(data.assets).reduce((n,a)=>n+a.deferred.length,0),0)
 for(const a of Object.values(data.textures))assert.equal(sha(read('public'+a.file)),a.pngSha256)
 const meter=data.assets.fx_in_rote77_meter.systems[0]
@@ -270,7 +270,7 @@ for(const [i,[u,v]] of [[-.5,-.5],[.5,-.5],[.5,.5],[-.5,.5]].entries()) {
   assert.ok(Math.abs((birthQuad.x+birthQuad.a*u+birthQuad.c*v)/100-golden[i].position[0])<2e-5,'Actual consumer stretch X/UV orientation mismatch')
   assert.ok(Math.abs(-(birthQuad.y+birthQuad.b*u+birthQuad.d*v)/100-golden[i].position[1])<2e-5,'Actual consumer stretch Y/UV orientation mismatch')
 }
-assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,78)
+assert.equal(Object.values(data.assets).filter(m=>m.systems.length).length,80)
 const rawObjects=JSON.parse(read('scripts/fixtures/chibi-object-emitters-native.json')).objects
 for(const r of stretchProof.renderers) {
   const source=rawObjects.find(o=>o.asset===r.asset)
@@ -304,8 +304,8 @@ for(const [name,count] of Object.entries({fx_in_pavetl_crystal_1:15,fx_in_pavetl
 }
 const promotions=JSON.parse(read('scripts/fixtures/chibi-object-emitter-promotions.json'))
 assert.equal(promotions.objectIndexSha256,data.objectIndexSha256)
-assert.equal(Object.keys(promotions.assets).length,30)
-assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),155)
+assert.equal(Object.keys(promotions.assets).length,32)
+assert.equal(Object.values(promotions.assets).reduce((n,a)=>n+a.systems,0),166)
 for(const [name,expected] of Object.entries(promotions.assets)) {
   const model=data.assets[name]
   assert.equal(model.systems.length,expected.systems,name)
@@ -320,4 +320,4 @@ for(const [name,expected] of Object.entries(promotions.assets)) {
   }
 }
 for(const m of Object.values(data.assets))for(const s of m.systems)if(s.alphaShader)assert.deepEqual(s.alphaShader.blend,{srcBlend:5,destBlend:10,blendOp:0})
-console.log('Object emitters: 78 provenance-bound resources / 709 consumed (28 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')
+console.log('Object emitters: 80 provenance-bound resources / 720 consumed (28 preview), 0 deferred; 80 stationary distance emitters, system startDelay, source binding and geometry/lifecycle checks passed')

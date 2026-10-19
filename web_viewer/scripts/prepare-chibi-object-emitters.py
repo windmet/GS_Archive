@@ -97,7 +97,7 @@ def model(p, partial=False, stationary=False):
         w.require(all(velocity[k]['minMaxState']==0 and velocity[k]['scalar']==0 for k in ['orbitalX','orbitalY','orbitalZ','orbitalOffsetX','orbitalOffsetY','orbitalOffsetZ','radial']) and velocity['speedModifier']['scalar']==1,'Unsupported orbital velocity')
         w.require(all(velocity[k]['minMaxState'] in [0,3] for k in ['x','y','z']),'Velocity curve requires integration')
     mat=r['materials'][0];masked=mat['shader']['name'].startswith('Alpha Masked/')
-    if masked:require_native_particle_mask(mat)
+    if masked:material_tint=require_native_particle_mask(mat,allow_tint=True)
     else:w.require(mat['shader']['name'] in ['Mobile/Particles/Additive','Mobile/Particles/Alpha Blended'],'Unsupported material')
     textures={t['property']:t['pathId'] for t in mat['textures']}
     one=dict(colors=[dict(time=t,r=1,g=1,b=1,a=1) for t in [0,1]],alphas=[dict(time=t,value=1) for t in [0,1]])
@@ -109,6 +109,7 @@ def model(p, partial=False, stationary=False):
         uv=dict(columns=u['tilesX'],rows=u['tilesY'],cycles=u['cycles'],startFrame=w.curve(u['startFrame']),frameOverTime=w.curve(u['frameOverTime'])) if u else None,
         velocity={k:w.curve(velocity[k]) for k in ['x','y','z']} if velocity else None,
         limit=dict(speed=c['magnitude']['scalar'],dampen=c['dampen']) if c else None,texture=textures['_MainTex'],maskTexture=textures.get('_AlphaTex'),blend='normal' if mat['shader']['name'].startswith('Alpha Masked/Unlit') or mat['shader']['name']=='Mobile/Particles/Alpha Blended' else 'add')
+    if masked and material_tint!=[1,1,1,1]:data['materialTint']=material_tint
     if distance['scalar']:
         data['distanceRate']=w.curve(distance)
         data['distanceMode']='stationary-object-layer-v1'

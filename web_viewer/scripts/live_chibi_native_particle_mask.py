@@ -5,7 +5,7 @@ def native_particle_texture_sampling(texture):
         raise ValueError('Unsupported native particle texture sampling')
     return dict(wrap=settings.m_WrapU,filter=settings.m_FilterMode,mipCount=texture.m_MipCount)
 
-def require_native_particle_mask(material):
+def require_native_particle_mask(material, allow_tint=False):
     name=material['shader']['name']
     additive=name=='Alpha Masked/Particles/Additive'
     if not additive and name!='Alpha Masked/Unlit Alpha Masked - World Coords':
@@ -14,7 +14,12 @@ def require_native_particle_mask(material):
     if any(material['floats'].get(k)!=v for k,v in expected.items()):
         raise ValueError('Unsupported native particle mask flags')
     tint=material['colors'].get('_TintColor' if additive else '_Color')
-    if tint!={k:.5 if additive else 1 for k in ['r','g','b','a']}:
+    import math
+    if not tint or set(tint)!={'r','g','b','a'} or any(not math.isfinite(v) or v<0 for v in tint.values()):
+        raise ValueError('Unsupported native particle mask tint')
+    # Older floor consumers do not carry material uniforms. Keep their gate strict.
+    if not allow_tint and tint!={k:.5 if additive else 1 for k in ['r','g','b','a']}:
         raise ValueError('Unsupported native particle mask tint')
     if any(t['scale']!={'x':1,'y':1} or t['offset']!={'x':0,'y':0} for t in material['textures']):
         raise ValueError('Unsupported native particle mask texture transform')
+    return [tint[k]*(2 if additive else 1) for k in ['r','g','b','a']]

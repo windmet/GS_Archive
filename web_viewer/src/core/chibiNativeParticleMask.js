@@ -21,7 +21,8 @@ export function configureNativeParticleTexture(texture,sampling){
 
 // Supported RAW profiles all use alpha-channel masks, bilinear/clamp textures,
 // identity texture ST, no horizontal/vertical clamp and no screen-space mode.
-// Additive has 2 * _TintColor(.5); unlit has _Color(1): both preserve vertex RGBA.
+// Native additive uses 2 * vertex * _TintColor, then clamps alpha before masking.
+// Keep material tint in float uniforms: RGB multipliers above one must survive.
 export function registerNativeParticleMaskRenderer(PIXI) {
   if(registered.has(PIXI))return
   class MaskGeometry extends PIXI.BatchGeometry {
@@ -52,11 +53,12 @@ export function registerNativeParticleMaskRenderer(PIXI) {
         varying float vTextureId;
         uniform sampler2D uSamplers[%count%];
         uniform sampler2D uMask;
+        uniform vec4 uMaterialTint;
         void main(){
           vec4 color;
           %forloop%
           // Floor owns NPM texture bases, matching native straight RGBA filtering.
-          color*=vColor;
+          color*=vColor*uMaterialTint;
           color.a=clamp(color.a,0.0,1.0)*texture2D(uMask,vMaskCoord).a;
           gl_FragColor=color;
         }`)
@@ -66,6 +68,7 @@ export function registerNativeParticleMaskRenderer(PIXI) {
       this.maxTextures=1
       this._shader=this.shaderGenerator.generateShader(1)
       this._shader.uniforms.uMask=1
+      this._shader.uniforms.uMaterialTint=[1,1,1,1]
       for(let i=0;i<this._packedGeometryPoolSize;i++)this._packedGeometries[i]=new this.geometryClass()
       this.initFlushBuffers()
       const modes=this.renderer.state.blendModes,gl=this.renderer.gl
@@ -82,6 +85,7 @@ export function registerNativeParticleMaskRenderer(PIXI) {
     flush(){
       if(this._vertexCount){
         this.renderer.texture.bind(this.maskContext.sprite.texture.baseTexture,1)
+        this._shader.uniforms.uMaterialTint=this.maskContext.materialTint||[1,1,1,1]
         this.renderer.shader.bind(this._shader)
       }
       super.flush()

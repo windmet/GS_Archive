@@ -10,6 +10,7 @@ from pathlib import Path
 import sys
 
 import UnityPy
+from live_chibi_object_keeper import object_keeper_tree
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT.parent / "data_pipeline"))
@@ -195,11 +196,10 @@ def inspect_asset(environment, asset, entry, include_module_data=False, dependen
     for obj in environment.objects:
         if obj.type.name != "MonoBehaviour":
             continue
-        t = obj.read_typetree()
-        if "_particles" not in t:
-            continue
+        t = obj.read_typetree(check_read=False)
         go = local_object(obj, t.get("m_GameObject", {}), "GameObject")
         if go and go.read_typetree()["m_Name"].casefold() == f"liveobjectobjectlayer_{asset}".casefold():
+            t = object_keeper_tree(obj)
             found.append((obj, t, go))
     if len(found) != 1:
         raise ValueError(f"{asset}: expected one exact keeper, found {len(found)}")
