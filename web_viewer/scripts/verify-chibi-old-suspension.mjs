@@ -90,11 +90,20 @@ const tempoCommands=[row(0,'Suspensionlight_2',{12:'1'}),row(1000,'Suspensionlig
 close(oldSuspensionlightsAt(tempoCommands,250,model,{tempoAt:tempoHistory})[0].alpha,.25)
 close(oldSuspensionlightsAt(tempoCommands,1000+60000/180/2,model,{tempoAt:tempoHistory})[0].alpha,.25)
 
+// The native supplement, loader and MOON checks read the gitignored stage
+// catalog. Without it the SFC lifecycle runs on a three-song index that keeps
+// only the fields syncOldSuspensionlights reads.
+const publishedAssets=process.argv.includes('--published-assets')
+let nativeIndex={oldSuspensionlightSongs:{
+ bnckgy_live_effect:{nativeCapability:'supported',file:'bnckgy.json'},
+ infoct_live_effect:{nativeCapability:'supported',file:'infoct.json'},
+ steqmg_live_effect:{nativeCapability:'partial',file:'steqmg.json'}}}
+if(publishedAssets){
 const base=new URL('../public/assets/live-chibi/',import.meta.url)
 const indexText=fs.readFileSync(new URL('stage-effects/index.json',base),'utf8')
 const supplement=JSON.parse(fs.readFileSync(new URL('../public/data/stage-old-suspension.json',import.meta.url),'utf8'))
 const hash=text=>createHash('sha256').update(text).digest('hex')
-const nativeIndex=attachNativeOldSuspension(JSON.parse(indexText),supplement,hash(indexText))
+nativeIndex=attachNativeOldSuspension(JSON.parse(indexText),supplement,hash(indexText))
 assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='supported').length,96)
 assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='partial').length,9)
 assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.nativeCapability,'partial')
@@ -130,6 +139,7 @@ assert.equal((await loader.track(descriptor)).events.length,descriptor.eventCoun
 const abort=new AbortController();abort.abort()
 await assert.rejects(loader.track(descriptor,{signal:abort.signal}),{name:'AbortError'})
 await assert.rejects(makeLoader({load:async()=>{throw new Error('HTTP 404')}}).index(),/404/)
+}
 // Independent matrix oracle: root Rz * LeftRightBase Rx * fixed Rz60 *
 // Animator Rz(a), with texture/screen Y reflection. Check corners, not angles
 // alone, so a wrong reflection cannot pass by matching a beam's centre ray.
@@ -231,9 +241,10 @@ const syncFactory=new Function('selectedSong','stageEffectIndex','fetchLiveChibi
 const actualSync=syncFactory(selected,resources,requests,mockStore,oldSuspensionlightsAt,oldSuspensionlightLayout,()=>140)
 actualSync.sync();assert.equal(pending.length,1)
 selected.value={id:'infoct_live_effect'};actualSync.sync();assert.equal(pending.length,2)
-pending[0].resolve({events:[]});await Promise.resolve();await Promise.resolve()
+const settle=()=>new Promise(resolve=>setTimeout(resolve,0))
+pending[0].resolve({events:[]});await settle()
 assert.equal(actualSync.track(),null,'Prior song result cannot install after switch')
-pending[1].resolve({events:[]});await Promise.resolve();await Promise.resolve();await Promise.resolve()
+pending[1].resolve({events:[]});await settle()
 assert.deepEqual(actualSync.track(),{events:[]})
 selected.value={id:'steqmg_live_effect'};actualSync.sync()
 assert.equal(actualSync.track(),null)
@@ -261,6 +272,8 @@ const independent=[...guarded,{...row(500,'Suspensionlight',{1:'2'}),id:2}].sort
 assert.equal(at(independent,1200).find(s=>s.key==='Suspensionlight:2').unresolved,null)
 assert.deepEqual(at(independent,499),at(guarded,499),'Backward seek restores pre-invalid generation')
 
+if(publishedAssets){
+const base=new URL('../public/assets/live-chibi/',import.meta.url)
 const moonDescriptor=nativeIndex.oldSuspensionlightSongs.montns_live_effect
 const moonTrack=JSON.parse(fs.readFileSync(new URL(moonDescriptor.file,base)))
 assert.equal(moonDescriptor.nativeCapability,'partial')
@@ -270,4 +283,5 @@ for(const t of [1800,6000,20000,60000,80000,100000]){
  for(const s of states.filter(s=>!s.unresolved))for(const k of ['angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]))
 }
 assert.ok(at(moonTrack.events,4300).some(s=>s.key==='Suspensionlight:301'&&s.unresolved==='nonfinite_animator_time'))
-console.log('PASS per-generation guard, cancelled/completed Erase, independent lamps, rewind and MOON source lights')
+}
+console.log(`PASS per-generation guard, cancelled/completed Erase, independent lamps and rewind${publishedAssets?', MOON source lights':''}`)

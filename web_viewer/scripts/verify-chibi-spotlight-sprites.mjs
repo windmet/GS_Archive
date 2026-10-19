@@ -116,16 +116,20 @@ assert.equal(await pendingPrepare,false,'Released preparation cannot qualify ano
 assert.equal(prepared.runtimes.size,0)
 console.log('PASS future-ID same-frame install, texture-only preparation and released-generation rejection')
 
+// The full-corpus sweep needs the gitignored stage catalogs; CI runs the
+// fixture checks above only.
+if(process.argv.includes('--published-assets')){
 const {pinspotlightModelForAsset}=await import('../src/core/chibiPinspotlightSprites.js')
 const catalog=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))
 const choreography=JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/choreography/index.json',import.meta.url)))
 const selected={value:null},effects={value:catalog},preparedCalls=[]
 const prepareStore=family=>({prepare:async model=>{preparedCalls.push({family,model});return Boolean(model)}})
 const prepareActual=new Function('lightingEnabled','beamEffectsEnabled','selectedSong','stageEffectIndex','stageDisposed',
- 'fetchLiveChibiStageEffectIndex','lifetime','spotlightSprites','pinspotlightSprites','spotlightBackgroundSprites','pinspotlightModelForAsset',
+ 'fetchLiveChibiStageEffectIndex','lifetime','spotlightSprites','pinspotlightSprites','spotlightBackgroundSprites','pinspotlightModelForAsset','objectLayersEnabled','searchlightRenderer','choreography',
  source.match(/async function prepareStageLighting\([^]*?\n\}/)[0]+';return prepareStageLighting')(
  {value:true},{value:true},selected,effects,false,async()=>catalog,new AbortController(),
- prepareStore('spotlight'),prepareStore('pinspotlight'),prepareStore('background'),pinspotlightModelForAsset)
+ prepareStore('spotlight'),prepareStore('pinspotlight'),prepareStore('background'),pinspotlightModelForAsset,
+ {value:false},{prepare:async()=>true},{value:{searchlights:null}})
 for(const song of choreography.songs){
  selected.value=song;preparedCalls.length=0
  assert.equal(await prepareActual(),true)
@@ -137,3 +141,4 @@ for(const song of choreography.songs){
 effects.value={...catalog,spotlight:null};selected.value=choreography.songs.find(s=>s.songCode==='byndtd')
 await assert.rejects(prepareActual(),/资源尚未就绪/)
 console.log('PASS actual SFC preparation for all 118 arrangements, future mask variants and missing-resource rejection')
+}
