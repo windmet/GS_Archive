@@ -40,12 +40,22 @@ updateBackmonitorLogoMesh(mock,model,fading,{x:0,y:0,scale:1})
 close(mock.shader.uniforms.uLogoAlpha,.2)
 const face=logoProjectiveQuad(model,0),edge=logoProjectiveQuad(model,90),back=logoProjectiveQuad(model,180)
 assert.ok(Math.abs(face.vertices[2]-face.vertices[0]-420)<.001)
-assert.ok(Math.abs(edge.vertices[2]-edge.vertices[0])<1e-5)
+assert.ok(Math.abs(edge.vertices[2]-edge.vertices[0])<3e-5,'Native float32 cos(pi/2) retains a tiny signed width')
 assert.ok(back.vertices[2]<back.vertices[0],'Cull-Off back face reverses texture orientation')
 const tilted=logoProjectiveQuad(model,45)
 assert.notEqual(tilted.uvq[2],tilted.uvq[5],'Perspective varies independently from horizontal scale')
 assert.notEqual(Math.abs(tilted.vertices[1]),Math.abs(tilted.vertices[3]),'Near and far edges have different projected height')
 assert.ok([...tilted.vertices,...tilted.uvq].every(Number.isFinite))
+const kernel=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-logo-kernel-native.json',import.meta.url)))
+for(const c of kernel.cases) {
+ const actual=logoProjectiveQuad(model,c.angle)
+ for(const [i,k] of [0,1,3,2].entries()) {
+  assert.ok(Math.abs(actual.vertices[i*2]-c.vertices[k*3]*100*model.localScale)<1e-4,`Native logo X ${c.angle}/${i}`)
+  assert.ok(Math.abs(actual.vertices[i*2+1]+c.vertices[k*3+1]*100*model.localScale)<1e-4,`Native logo Y ${c.angle}/${i}`)
+  const expected=[c.uvq[k*3],c.uvq[k*3+2]-c.uvq[k*3+1],c.uvq[k*3+2]]
+  for(let j=0;j<3;j++)assert.ok(Math.abs(actual.uvq[i*3+j]-expected[j])<2e-6,`Native logo UVQ ${c.angle}/${i}/${j}`)
+ }
+}
 // Reconstruct UV at the fixed screen origin using barycentric interpolation
 // and the shader's homogeneous division, independently of bounding-box centre.
 for (let angle=0;angle<360;angle+=15) {

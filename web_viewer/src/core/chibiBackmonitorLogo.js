@@ -2,8 +2,8 @@ import { sampleStreamedCurve } from './chibiNativeAnimation.js'
 
 // Native sprite/curve/shader inputs, bounded to the two recording-checked
 // Take endings and Drive's recorded opening. Alpha follows native FadeAlpha;
-// rotation phase and geometry remain
-// reference-calibrated until the director/RotateSprite bodies are recovered.
+// rotation phase/selection remain reference-bounded. Mesh math follows the
+// recovered RotateSprite body; it does not establish Animator lifecycle parity.
 export function logoFadeAt(events, milliseconds) {
   let alpha=0, target=0, origin=0, movie=null, tween=null
   const sample=time=>{
@@ -38,19 +38,28 @@ export function sampleBackmonitorLogo(songCode, state, milliseconds, model, even
 }
 
 export function logoProjectiveQuad(model, angle) {
-  const radians = angle * Math.PI / 180
-  const halfWidth = model.width * model.localScale / 2
-  const halfHeight = model.height * model.localScale / 2
-  const tangent = Math.tan(model.perspectiveAngle * Math.PI / 180)
-  const vertices = [], uvq = []
-  for (const [x,y,u,v] of [[-1,-1,0,0],[1,-1,1,0],[1,1,1,1],[-1,1,0,1]]) {
-    const q = 1 / (1 - x * Math.sin(radians) * tangent)
-    vertices.push(x * halfWidth * Math.cos(radians) * q, y * halfHeight * q)
-    uvq.push(u*q,v*q,q)
+  const f=Math.fround,phase=((angle%360)+360)%360,quadrant=Math.floor(phase/90)
+  const perspectives=[0,model.perspectiveAngle,0,-model.perspectiveAngle,0]
+  const radians=f(phase*f(Math.PI/180)),perspective=f(f(perspectives[quadrant]+f((perspectives[quadrant+1]-perspectives[quadrant])*f((phase%90)/90)))*f(Math.PI/180))
+  const cos=f(Math.cos(radians)),pc=f(Math.cos(perspective)),ps=f(Math.sin(perspective))
+  const hw=model.width/200,hh=model.height/200
+  // Native Sprite order is TL, TR, BL, BR in Unity's Y-up plane.
+  const points=[[-hw,hh],[hw,hh],[-hw,-hh],[hw,-hh]].map(([x,y])=>[f(cos*x),f(f(pc*y)+f(f(ps*x)*Math.sign(y)))])
+  const [v0,v1,v2,v3]=points,dx=f(v0[0]-v3[0]),dy=f(v0[1]-v3[1]),ex=f(v2[0]-v1[0]),ey=f(v2[1]-v1[1])
+  const den=f(f(ex*dy)-f(ey*dx)),sx=f(v1[0]-v3[0]),sy=f(v1[1]-v3[1])
+  const cx=f(v1[0]+f(ex*f(f(f(dx*sy)-f(sx*dy))/den)))
+  const cy=f(v1[1]+f(ey*f(f(f(ex*sy)-f(ey*sx))/den)))
+  const distances=points.map(([x,y])=>f(Math.sqrt(f(f(f(x-cx)**2)+f(f(y-cy)**2)))))
+  const weights=distances.map((d,i)=>{
+    const opposite=distances[3-i]
+    return opposite!==0&&!Number.isNaN(opposite)?f(f(d+opposite)/opposite):1
+  })
+  const vertices=[],uvq=[],factor=model.localScale*100
+  for(const i of [0,1,3,2]) {
+    const [x,y]=points[i],q=weights[i]
+    vertices.push(f(x-cx)*factor,-y*factor)
+    uvq.push((i%2)*q,(i<2?0:1)*q,q)
   }
-  // The native pivot is (0.5, 0.5): its projected rotation axis stays at
-  // local (0, 0). Recentring the asymmetric perspective bounds would move
-  // that texture pivot sideways as the logo turns.
   return { vertices: new Float32Array(vertices), uvq: new Float32Array(uvq) }
 }
 

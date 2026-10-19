@@ -1,5 +1,7 @@
 # Take 结尾背屏标志翻转接线
 
+后续：[2026-10-19 RotateSprite 实际网格反查](NATIVE_ROTATE_SPRITE_GEOMETRY_20261019.md)已替换本页早期固定透视公式。原始资源/曲线、固定轴与淡入回归保留；触发、选图与 Animator 相位仍未完整还原，不能将本页接线验收作为原版等价结论。
+
 输入 HEAD：`961e02b6`；分支 `codex/chibi-stage-reconstruction-20261002`。
 
 ## 本批结果与来源
