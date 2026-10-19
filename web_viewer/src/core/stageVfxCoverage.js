@@ -109,7 +109,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
     unresolvedColorPlanes,
     unresolvedImageColors,
     imageColorMissing,
-    status: rawCommands.missing.length || rawCommands.unknown.length || rawCommands.guarded.some(row => row.guard === 'disabled') || objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length || suspensionCount || backmonitorLogoRequests
+    status: rawCommands.missing.length || rawCommands.unknown.length || rawCommands.guarded.some(row => row.guard === 'disabled' || row.guard === 'partial') || objectParticles.length || objectMissing.length || objectOther.length || missingMedia.length || unresolvedColorPlanes.length || unresolvedImageColors.length || imageColorMissing.length || stagelightUnimplemented.length || stagelightUnimplementedCommands.length || suspensionCount || backmonitorLogoRequests
       ? 'partial'
       : 'source_mapped_unverified',
   }

@@ -1023,7 +1023,7 @@ const stageVfxCoverage = computed(() => buildStageVfxCoverage(selectedSong.value
   stageBackgrounds: stageBackgroundIndex.value,
 }))
 function rawCommandStatusLabel(row) {
-  if (row.status === 'guarded') return row.guard === 'not_loaded' ? '资源索引未加载' : row.guard === 'enabled' ? '已放行，待原片对照' : '预览未放行'
+  if (row.status === 'guarded') return row.guard === 'not_loaded' ? '资源索引未加载' : row.guard === 'enabled' ? '已放行，待原片对照' : row.guard === 'partial' ? '部分实例受限，正常灯具已放行' : '预览未放行'
   return { missing: '未接线', unknown: '未识别', non_timed: '非时序来源行', partial: '已接线，待原片对照' }[row.status] || '待核对'
 }
 const stageVfxApproximateCount = computed(() => {
