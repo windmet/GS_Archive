@@ -1,6 +1,113 @@
 {
   "binarySha256": "acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0",
-  "boundary": "Synthetic camera inputs: old cases use direct identity context/z=1; packedContext cases execute real 0x6c505c and 0x6c5580 before the solvers, with z=0. Scalar size, zero pivot/camera speed, fixed stream. Two real vertex solvers and real stream writer execute. Only null cleanup 0x306258 is skipped; no allocator or full scene replay.",
+  "boundary": "Synthetic camera inputs: old cases use direct identity context/z=1; packedContext executes real 0x6c505c and 0x6c5580. Explicit position/depthMatrix cases retain XYZ; others have z=0. sameViewMatrices reproduces equal +4/+0x44 inputs established at the native call site; legacy packed cases retain the earlier inverse pair as synthetic tests. Scalar size, zero pivot/camera speed, fixed stream. Two real vertex solvers and stream writer execute. Only null cleanup 0x306258 is skipped; no allocator or full scene replay.",
+  "cameraBinding": {
+    "unityDataSha256": "d35231c0b00a09f6941f47f7ffedde9e9b35701f5b66d6f432517da860e1a500",
+    "stagePathId": "114160",
+    "stageSha256": "178fae3f9b73f1a0b2fd911ee9e8bebcf282f40cdcaad4667ad778f3a6102716",
+    "scriptPathId": "111805",
+    "scriptSha256": "abe052623c96fdd77b462c44897148b1c8c2581fc280a6afc95083d04124e016",
+    "cameraPathId": "45565",
+    "cameraSha256": "82ed279dbe84626d8ce3298c5e0d9ddc795afa7dca1e17e8e5f9c5e576f02fb1",
+    "orthographic": true,
+    "orthographicSize": 5.0,
+    "chain": [
+      {
+        "serializedFile": "resources.assets",
+        "pathId": "40921",
+        "type": "Transform",
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": -0.0,
+          "y": -0.0,
+          "z": -0.0,
+          "w": 1.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "parent": {
+          "fileId": 0,
+          "pathId": "39065"
+        }
+      },
+      {
+        "serializedFile": "resources.assets",
+        "pathId": "39065",
+        "type": "Transform",
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
+        "rotation": {
+          "x": -0.0,
+          "y": -0.0,
+          "z": -0.0,
+          "w": 1.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "parent": {
+          "fileId": 0,
+          "pathId": "38270"
+        }
+      },
+      {
+        "serializedFile": "resources.assets",
+        "pathId": "38270",
+        "type": "Transform",
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0,
+          "w": 1.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "parent": {
+          "fileId": 0,
+          "pathId": "0"
+        }
+      }
+    ],
+    "boundary": "Serialized LiveStage camera binding and initial Transform parents only; runtime parenting and camera commands are not replayed."
+  },
+  "cameraSourceWindows": [
+    {
+      "address": "0x6c5c40",
+      "bytes": "e00316aaff7dfc97e20300aae0830191e10316aa4ef8fc97",
+      "sha256": "ec2c3e9c368a0dbcfd4b23270efb8009f9f0f9bc9555a0182158dc536f960fd9"
+    },
+    {
+      "address": "0x603d8c",
+      "bytes": "f553bea9f37b01a9281045b9f30300aaf50302aaf40301aa080000b9e00301aaa585ff97611201917f1e0d94801a40f9615e00f021603691c54cf497faebf7976086182d628e192d88ee5339e00314aa68b2033912a9ff97e00314aa60e200bdf4acff97e00314aa60e600bd8b94ff9760ea00bd882a44b9891242f961120091e00315aa68de00b969420df8661e0d94e00314aab98cff9761120291621e0d947fb60339f37b41a9f553c2a8c0035fd6",
+      "sha256": "284159647a76e227b5dfdb73435b0a9cb74d15e79dd87ccd4bd519f37cb92b70"
+    },
+    {
+      "address": "0x5e5440",
+      "bytes": "ff8301d1f42300f9f37b05a908a853391370019148020034f40300aa00f6030f08f0b752e1030091e00313aae00300fde80b00b991d70194801a40f9615f00b02160369115c7f497e8030091e266f897e1030091e00313aa93d60194e00313aaf37b45a9f42340f9ff830191c0035fd6",
+      "sha256": "925df7572b879cd1fcc10ca1f0b926ae4f44b119fe6fcc20370b674f34700b19"
+    }
+  ],
+  "variantPositionMaxError": 2.384185791015625e-07,
   "reciprocalSqrtEstimate": {
     "instructionSource": "0x80bb70: frsqrte v0.4S,v0.4S copied verbatim, followed by ret",
     "profile": "positive-normal-float32",
@@ -1697,6 +1804,1524 @@
       ]
     },
     {
+      "function": "0x80b8a4",
+      "name": "packed-3d",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4263458251953125,
+            -4.568411827087402,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.035493850708008,
+            -3.3807075023651123,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "packed-3d-scaled",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "depthMatrix": [
+        2,
+        10
+      ],
+      "expected": [
+        {
+          "position": [
+            5.897366523742676,
+            8.05131721496582,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.531205177307129,
+            -10.805826187133789,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.3259382247924805,
+            -8.90846061706543,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            2.102633476257324,
+            9.94868278503418,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "packed-3d-camera",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "cameraRotation": 0.7,
+      "expected": [
+        {
+          "position": [
+            2.8045737743377686,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4322168827056885,
+            -4.576239585876465,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.041365146636963,
+            -3.3885347843170166,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954257488250732,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "packed-z-only",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        0,
+        0,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "expected": [
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-identity",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.7999999523162842,
+            -0.5999999642372131,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.601174354553223,
+            -7.801565647125244,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -6.201174736022949,
+            -6.601565837860107,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.7999999523162842,
+            0.5999999642372131,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-scaled",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.7888543605804443,
+            -1.3416407108306885,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.7923583984375,
+            -20.504066467285156,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -11.370067596435547,
+            -17.820785522460938,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.7888543605804443,
+            1.3416407108306885,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-rotated",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        1,
+        1.7320508075688772,
+        -2.598076211353316,
+        1.5,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "worldRotation": [
+        0,
+        0,
+        0.5,
+        0.8660254037844386
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.669023871421814,
+            1.6529698371887207,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            13.488030433654785,
+            -16.247726440429688,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            10.149983406066895,
+            -19.553665161132812,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.669023871421814,
+            -1.6529698371887207,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-clamped",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "maxParticleSize": 0.01,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.03999999538064003,
+            -0.029999995604157448,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.361174583435059,
+            -7.231565952301025,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.441174507141113,
+            -7.171565532684326,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.03999999538064003,
+            0.029999995604157448,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-x",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-y",
+      "velocity": [
+        0,
+        2,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.0,
+            -6.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -1.0,
+            -6.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-diagonal",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 0.5,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.800000011920929,
+            -0.6000000238418579,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.1011743545532227,
+            -5.801565647125244,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.701174259185791,
+            -4.601565837860107,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.800000011920929,
+            0.6000000238418579,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-reverse",
+      "velocity": [
+        -1,
+        0,
+        0
+      ],
+      "size": 1,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            0.5,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            3.0,
+            0.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            3.0,
+            -0.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            -0.5,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-stationary",
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-rotation",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "rotation": 1.57,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-animated",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "animatedVelocity": [
+        0,
+        2,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 0.5,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.8944272398948669,
+            -0.44721361994743347,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -1.3942222595214844,
+            -5.024512767791748,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.183076858520508,
+            -4.130085468292236,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.8944272398948669,
+            0.44721361994743347,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-length-zero",
+      "velocity": [
+        0,
+        5,
+        0
+      ],
+      "size": 1,
+      "velocityScale": 0.3,
+      "lengthScale": 0,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.5,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.5,
+            -1.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -0.5,
+            -1.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.5,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-camera",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "cameraRotation": 0.7,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.7888543605804443,
+            -1.3416409492492676,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.804101943969727,
+            -20.527551651000977,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -11.381811141967773,
+            -17.844270706176758,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.7888543605804443,
+            1.3416409492492676,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-offset",
+      "velocity": [
+        -3,
+        2,
+        0
+      ],
+      "size": 0.7,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "matrix": [
+        0.25,
+        0,
+        0,
+        0.45,
+        2,
+        3
+      ],
+      "particleScale": [
+        0.25,
+        0.45,
+        1
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.0672192573547363,
+            3.1008291244506836,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.4039487838745117,
+            2.696753740310669,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.269510269165039,
+            2.4950954914093018,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.9327806234359741,
+            2.8991708755493164,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-fire-birth",
+      "velocity": [
+        0,
+        20,
+        0
+      ],
+      "size": 1.2000000476837158,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.5999999642372131,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.5999999642372131,
+            -3.6017613410949707,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -0.5999999642372131,
+            -3.6017613410949707,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.5999999642372131,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-3d",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4263458251953125,
+            -4.568411827087402,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.035493850708008,
+            -3.3807075023651123,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-3d-scaled",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "depthMatrix": [
+        2,
+        10
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            5.897366523742676,
+            8.05131721496582,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.531205177307129,
+            -10.805826187133789,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.3259382247924805,
+            -8.90846061706543,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            2.102633476257324,
+            9.94868278503418,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-3d-camera",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "cameraRotation": 0.7,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.8045737743377686,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4322168827056885,
+            -4.576239585876465,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.041365146636963,
+            -3.3885347843170166,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954257488250732,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x80b8a4",
+      "name": "same-view-packed-z-only",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        0,
+        0,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
       "function": "0x817658",
       "name": "x",
       "velocity": [
@@ -3109,6 +4734,1524 @@
             -0.5999999642372131,
             0.0,
             0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "packed-3d",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4263458251953125,
+            -4.568411827087402,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.035493850708008,
+            -3.3807075023651123,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "packed-3d-scaled",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "depthMatrix": [
+        2,
+        10
+      ],
+      "expected": [
+        {
+          "position": [
+            5.897366523742676,
+            8.05131721496582,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.531205177307129,
+            -10.805826187133789,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.3259382247924805,
+            -8.90846061706543,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            2.102633476257324,
+            9.94868278503418,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "packed-3d-camera",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "cameraRotation": 0.7,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4322168827056885,
+            -4.576239585876465,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.041365146636963,
+            -3.3885347843170166,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "packed-z-only",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        0,
+        0,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "expected": [
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-identity",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.7999999523162842,
+            -0.5999999642372131,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.601174354553223,
+            -7.801565647125244,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -6.201174736022949,
+            -6.601565837860107,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.7999999523162842,
+            0.5999999642372131,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-scaled",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.7888543605804443,
+            -1.3416407108306885,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.7923583984375,
+            -20.504066467285156,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -11.370067596435547,
+            -17.820785522460938,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.7888543605804443,
+            1.3416407108306885,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-rotated",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        1,
+        1.7320508075688772,
+        -2.598076211353316,
+        1.5,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "worldRotation": [
+        0,
+        0,
+        0.5,
+        0.8660254037844386
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.669023871421814,
+            1.6529698371887207,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            13.488030433654785,
+            -16.247726440429688,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            10.149983406066895,
+            -19.553665161132812,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.669023871421814,
+            -1.6529698371887207,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-clamped",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "maxParticleSize": 0.01,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.03999999538064003,
+            -0.029999995604157448,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.361174583435059,
+            -7.231565952301025,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.441174507141113,
+            -7.171565532684326,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.03999999538064003,
+            0.029999995604157448,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-x",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-y",
+      "velocity": [
+        0,
+        2,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.0,
+            -6.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -1.0,
+            -6.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-diagonal",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 0.5,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.800000011920929,
+            -0.6000000238418579,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.1011743545532227,
+            -5.801565647125244,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.701174259185791,
+            -4.601565837860107,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.800000011920929,
+            0.6000000238418579,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-reverse",
+      "velocity": [
+        -1,
+        0,
+        0
+      ],
+      "size": 1,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            0.5,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            3.0,
+            0.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            3.0,
+            -0.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            -0.5,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-stationary",
+      "velocity": [
+        0,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-rotation",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "rotation": 1.57,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            -1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -5.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-animated",
+      "velocity": [
+        1,
+        0,
+        0
+      ],
+      "animatedVelocity": [
+        0,
+        2,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 0.5,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.8944272398948669,
+            -0.44721361994743347,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -1.3942222595214844,
+            -5.024512767791748,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.183076858520508,
+            -4.130085468292236,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.8944272398948669,
+            0.44721361994743347,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-length-zero",
+      "velocity": [
+        0,
+        5,
+        0
+      ],
+      "size": 1,
+      "velocityScale": 0.3,
+      "lengthScale": 0,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.5,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.5,
+            -1.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -0.5,
+            -1.5,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.5,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-camera",
+      "velocity": [
+        3,
+        4,
+        0
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "cameraRotation": 0.7,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            1.7888543605804443,
+            -1.3416409492492676,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.804101943969727,
+            -20.527551651000977,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -11.381811141967773,
+            -17.844270706176758,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -1.7888543605804443,
+            1.3416409492492676,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-offset",
+      "velocity": [
+        -3,
+        2,
+        0
+      ],
+      "size": 0.7,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "matrix": [
+        0.25,
+        0,
+        0,
+        0.45,
+        2,
+        3
+      ],
+      "particleScale": [
+        0.25,
+        0.45,
+        1
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.0672192573547363,
+            3.1008291244506836,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.4039487838745117,
+            2.696753740310669,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.269510269165039,
+            2.4950954914093018,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.9327806234359741,
+            2.8991708755493164,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-fire-birth",
+      "velocity": [
+        0,
+        20,
+        0
+      ],
+      "size": 1.2000000476837158,
+      "velocityScale": 0,
+      "lengthScale": 3,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            0.5999999642372131,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            0.5999999642372131,
+            -3.6017613410949707,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -0.5999999642372131,
+            -3.6017613410949707,
+            0.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            -0.5999999642372131,
+            0.0,
+            0.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-3d",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4263458251953125,
+            -4.568411827087402,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.035493850708008,
+            -3.3807075023651123,
+            -2.4872798919677734
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-3d-scaled",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "matrix": [
+        2,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      "particleScale": [
+        2,
+        3,
+        1
+      ],
+      "depthMatrix": [
+        2,
+        10
+      ],
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            5.897366523742676,
+            8.05131721496582,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -3.531205177307129,
+            -10.805826187133789,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -7.3259382247924805,
+            -8.90846061706543,
+            5.714285850524902
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            2.102633476257324,
+            9.94868278503418,
+            12.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-3d-camera",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        3,
+        4,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "cameraRotation": 0.7,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.8045740127563477,
+            2.4061477184295654,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -2.4322168827056885,
+            -4.576239585876465,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            -4.041365146636963,
+            -3.3885347843170166,
+            -2.4911937713623047
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1954259872436523,
+            3.5938522815704346,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            0.0
+          ]
+        }
+      ]
+    },
+    {
+      "function": "0x817658",
+      "name": "same-view-packed-z-only",
+      "position": [
+        2,
+        3,
+        1
+      ],
+      "velocity": [
+        0,
+        0,
+        2
+      ],
+      "size": 2,
+      "velocityScale": 1,
+      "lengthScale": 2,
+      "packedContext": true,
+      "sameViewMatrices": true,
+      "expected": [
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            1.0
+          ],
+          "uv": [
+            0.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            2.832050323486328,
+            2.4452998638153076,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            1.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            -5.0
+          ],
+          "uv": [
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "position": [
+            1.1679496765136719,
+            3.5547001361846924,
+            1.0
           ],
           "uv": [
             0.0,

@@ -11,11 +11,20 @@ const nativeProof=JSON.parse(read('scripts/fixtures/chibi-shape-native.json'))
 const noiseProof=JSON.parse(read('scripts/fixtures/chibi-noise-kernel-native.json'))
 const stretchProof=JSON.parse(read('scripts/fixtures/chibi-stretch-kernel-native.json'))
 assert.equal(stretchProof.binarySha256,noiseProof.binarySha256)
+assert.equal(stretchProof.cameraBinding.cameraPathId,'45565')
+assert.equal(stretchProof.cameraBinding.scriptPathId,'111805')
+assert.equal(stretchProof.cameraBinding.orthographic,true)
+assert.equal(stretchProof.cameraBinding.orthographicSize,5)
+assert.deepEqual(stretchProof.cameraBinding.chain.map(t=>t.pathId),['40921','39065','38270'])
+assert.equal(stretchProof.cameraBinding.chain.reduce((n,t)=>n+t.position.z,0),2)
+assert.equal(stretchProof.cases.filter(c=>c.sameViewMatrices).length,38)
+assert.equal(stretchProof.cases.filter(c=>c.position).length,16)
+for(const window of stretchProof.cameraSourceWindows)assert.equal(sha(Buffer.from(window.bytes,'hex')),window.sha256)
 for(const [row,exponent] of [127,128].entries())for(let bucket=0;bucket<128;bucket++) {
   const buffer=new DataView(new ArrayBuffer(4));buffer.setUint32(0,exponent<<23|bucket<<16,true)
   assert.equal(reciprocalSqrtEstimate(buffer.getFloat32(0,true)),stretchProof.reciprocalSqrtEstimate.normalizedBuckets[row][bucket])
 }
-for(const c of stretchProof.cases.filter(c=>c.packedContext)) {
+for(const c of stretchProof.cases.filter(c=>c.packedContext&&!c.position)) {
   assert.deepEqual(c.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]],'Bound zero-flip native renderer UV orientation')
   const fp=Math.fround,[a,b,k,d,tx,ty]=(c.matrix||[1,0,0,1,0,0]).map(fp)
   const vx=fp(c.velocity[0]+(c.animatedVelocity?.[0]||0)),vy=fp(c.velocity[1]+(c.animatedVelocity?.[1]||0))
@@ -23,6 +32,22 @@ for(const c of stretchProof.cases.filter(c=>c.packedContext)) {
   const actual=samplePlanarStretch({position:{x:tx,y:ty},velocity:transformStretchVelocity({a,b,c:k,d},{x:vx,y:vy},c.cameraRotation||0),
     size:c.size,scaleX,scaleY,lengthScale:c.lengthScale,velocityScale:c.velocityScale,maxSize:c.maxParticleSize??100,cameraRotation:c.cameraRotation||0})
   for(const [i,p] of actual.entries())for(const [axis,j] of [['x',0],['y',1]])assert.ok(Math.abs(p[axis]-c.expected[i].position[j])<2e-5,`Native stretch ${c.function} ${c.name} corner ${i}.${axis}`)
+}
+// Nonplanar native evidence is checked separately: the runtime still admits
+// only its planar profile. These synthetic camera inputs are not a stage binding.
+for(const c of stretchProof.cases.filter(c=>c.position)) {
+  const f=Math.fround,[a,b,k,d,tx,ty]=(c.matrix||[1,0,0,1,0,0]).map(f)
+  const [px,py,pz]=c.position,[sz,tz]=c.depthMatrix||[1,0]
+  const p={x:f(f(a*px)+f(k*py)+tx),y:f(f(b*px)+f(d*py)+ty),z:f(f(sz*pz)+tz)}
+  const velocity=transformStretchVelocity({a,b,c:k,d},{x:c.velocity[0],y:c.velocity[1]},c.cameraRotation||0)
+  const vz=f(sz*c.velocity[2]),speed2=f(velocity.speedSquared+f(vz*vz))
+  const factor=f(f(c.velocityScale)+f(f(f(c.lengthScale*(c.particleScale?.[0]||1))*c.size)*f(reciprocalSqrtEstimate(speed2)*f(1.0019569))))
+  const crossX=p.y*vz-(p.z-10)*velocity.y,crossY=(p.z-10)*velocity.x-p.x*vz,norm=Math.hypot(crossX,crossY)
+  const side={x:crossX/norm*c.size/2*(c.particleScale?.[0]||1),y:crossY/norm*c.size/2*(c.particleScale?.[1]||1),z:0}
+  const tail={x:f(p.x-f(velocity.x*factor)),y:f(p.y-f(velocity.y*factor)),z:f(p.z-f(vz*factor))}
+  const actual=[p,tail,tail,p].map((v,i)=>Object.fromEntries(['x','y','z'].map(axis=>[axis,v[axis]+side[axis]*(i<2?1:-1)])))
+  assert.deepEqual(c.expected.map(v=>v.uv),[[0,1],[1,1],[1,0],[0,0]])
+  for(const [i,v] of actual.entries())for(const [j,axis] of ['x','y','z'].entries())assert.ok(Math.abs(v[axis]-c.expected[i].position[j])<2e-5,`Nonplanar native evidence ${c.function} ${c.name} ${i}.${axis}`)
 }
 assert.equal(noiseProof.binarySha256,nativeProof.binary.sha256)
 const point=([x,y,z])=>({x,y,z})
