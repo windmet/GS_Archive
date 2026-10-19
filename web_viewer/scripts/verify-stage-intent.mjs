@@ -12,17 +12,17 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve
 const flush=async()=>{for(let i=0;i<12;i++)await Promise.resolve()}
 const ref=value=>({value})
 function fixture(boundary='audio'){
-  const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
+  const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},oneshot={starts:[],stops:0,rates:[],start(time){this.starts.push(time)},stop(){this.stops++},setPlaybackRate(rate){this.rates.push(rate)},update(){},release(){}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
   const c={app:null,lifetime:new AbortController(),stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
     stageVocalEnabled:ref(boundary==='unlock'),stageVocalReady:ref(boundary==='unlock'),audioError:ref(''),stageIntent:createPlaybackIntent(()=>''),stageAudioOwners:new Map(),runtimes:new Map([[1,runtime]]),activePositions:ref([1]),activeSlots:ref([{}]),
     stageVocalSession:{error:ref(''),currentTime:ref(0),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
     preloadSongMotions:()=>boundary==='preload'?gate.promise:Promise.resolve(true),syncSlotAtTime:()=>boundary==='slots'?gate.promise:Promise.resolve(),resetEventIndices(){},syncBackmonitor(){},syncStagePlaybackTime(){},stagePlaybackAudios:()=>audios,
     withLoadDeadline:(load,options)=>withLoadDeadline(load,{...options,timeoutMs:25}),performance,animationFrame:0,playbackStartOffset:0,playbackStartedAt:0,
-    requestAnimationFrame(){frames.add(1);return 1},cancelAnimationFrame(id){frames.delete(id)},updateStage(){},backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,
+    requestAnimationFrame(){frames.add(1);return 1},cancelAnimationFrame(id){frames.delete(id)},updateStage(){},backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,stageOneshot:oneshot,
   }
   vm.createContext(c)
   for(const name of ['toggleStage','stopStage','applyPlaybackSpeed','syncMotionPlaybackSpeed'])vm.runInContext(source.match(new RegExp(`(?:async )?function ${name}\\([^]*?\\n\\}`))[0],c)
-  return {c,gate,native,frames,audios,runtime}
+  return {c,gate,native,frames,audios,runtime,oneshot}
 }
 let cases=0
 {
@@ -162,8 +162,10 @@ let cases=0
   const f=fixture(),p=f.c.toggleStage();await flush();f.runtime.motionSpeedScale=0.5
   f.native[0].resolve();await p
   assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,0.5)
+  assert.deepEqual(f.oneshot.starts,[100],'Oneshot voices start at the stage clock once playback is committed')
   f.c.playbackSpeed.value=1.5;f.c.applyPlaybackSpeed();assert.equal(f.runtime.spine.state.timeScale,0.75)
-  f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0)
+  assert.deepEqual(f.oneshot.rates,[1.5],'Oneshot voices follow the playback speed')
+  f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0);assert.equal(f.oneshot.stops,1,'Stopping the stage stops oneshot voices')
   f.c.playbackSpeed.value=2;f.c.applyPlaybackSpeed();assert.equal(f.runtime.spine.state.timeScale,0)
   const resume=f.c.toggleStage();await flush();f.native[1].resolve();await resume
   assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,1)
@@ -172,7 +174,8 @@ let cases=0
 for(const boundary of ['unlock','preload','slots']){
   const f=fixture(boundary),p=f.c.toggleStage();await flush();assert(f.c.stageStarting.value)
   f.c.stopStage();f.gate.resolve(true);await p
-  assert(!f.c.playing.value&&!f.c.stageStarting.value);assert.equal(f.frames.size,0);assert.equal(f.native.length,0);cases++
+  assert(!f.c.playing.value&&!f.c.stageStarting.value);assert.equal(f.frames.size,0);assert.equal(f.native.length,0)
+  assert.equal(f.oneshot.starts.length,0,`A start cancelled at ${boundary} must not start oneshot voices`);cases++
 }
 {
   const f=fixture('slots'),p=f.c.toggleStage();await flush();f.c.runtimes.set(1,{})
