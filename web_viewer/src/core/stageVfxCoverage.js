@@ -102,7 +102,7 @@ export function buildStageVfxCoverage(song, indexes = {}) {
      newSuspensionlightCommandsLoaded: Boolean(indexes.newSuspensionlightTrack || suspensionTrack?.events),
      newSuspensionlightStatus: suspensionCount ? 'native_channels_reference_projection_constant_tempo_only' : 'not_loaded',
     backmonitorLogoRequests,
-    backmonitorLogoStatus: backmonitorLogoRequests ? 'unimplemented_runtime_sprite_selection_pending' : 'not_requested',
+    backmonitorLogoStatus: backmonitorLogoRequests ? 'partial_native_selection_reference_clock' : 'not_requested',
     // Resource binding / color assignment are separate from native tween parity.
     stagelightAnimationStatus: stagelightEvents.length ? indexes.stagelight ? 'native_director_channels_projection_rng_partial' : 'legacy_fields_not_consumed' : 'not_loaded',
     missingMedia,

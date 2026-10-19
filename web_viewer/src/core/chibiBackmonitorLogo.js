@@ -1,8 +1,22 @@
 import { sampleStreamedCurve } from './chibiNativeAnimation.js'
+import logoResources from './chibiBackmonitorLogoResources.json' with {type:'json'}
+export const backmonitorLogoResources=logoResources
 
-// Native sprite/curve/shader inputs, bounded to the two recording-checked
-// Take endings and Drive's recorded opening. Alpha follows native FadeAlpha;
-// rotation phase/selection remain reference-bounded. Mesh math follows the
+// Empty, unknown and same-name native requests preserve the current Sprite.
+export function resolveBackmonitorLogo(model,events,milliseconds,requestedLogo=null) {
+  if(!model)return null
+  let asset=logoResources.defaultAsset
+  if(events) {
+    for(const event of events) {
+      if(Number(event.time)>milliseconds)break
+      if(Object.hasOwn(logoResources.models,event.logo))asset=event.logo
+    }
+  } else if(Object.hasOwn(logoResources.models,requestedLogo))asset=requestedLogo
+  return {...model,...logoResources.models[asset],asset}
+}
+
+// Native sprite/curve/shader inputs and dictionary selection. Alpha follows
+// native FadeAlpha; rotation phase remains reference-bounded. Mesh follows the
 // recovered RotateSprite body; it does not establish Animator lifecycle parity.
 export function logoFadeAt(events, milliseconds) {
   let alpha=0, target=0, origin=0, movie=null, tween=null
@@ -28,10 +42,10 @@ export function logoFadeAt(events, milliseconds) {
   return {alpha:sample(milliseconds),movieTime:origin,movie}
 }
 
-export function sampleBackmonitorLogo(songCode, state, milliseconds, model, events) {
+export function sampleBackmonitorLogo(_songCode, state, milliseconds, model, events) {
   const fade=events
     ? logoFadeAt(events,milliseconds) : {alpha:state.rawValue6===1 ? .8 : 0,movieTime:state.movieTime}
-  if (!model?.previewSongs?.includes(songCode) || state.movie !== (model.previewMovies?.[songCode] || model.previewMovie)
+  if (!model || !state.movie
       || fade.alpha <= .00001 || state.y >= 4000 || milliseconds < fade.movieTime) return null
   const seconds = (milliseconds - fade.movieTime) / 1000 % model.duration
   return { angle: sampleStreamedCurve(model.curve, seconds), seconds,alpha:fade.alpha }

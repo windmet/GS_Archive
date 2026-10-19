@@ -184,7 +184,7 @@ function classify(relativePath) {
     }
   }
 
-  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen)\//)
+  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos)\//)
   if (stageNativeTexture) {
     return {
       category: 'stable-promoted-asset',
@@ -192,7 +192,8 @@ function classify(relativePath) {
       consumer: ['ChibiStageViewer'],
       reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
       force_add_allowed: false,
-      owner_release: '2026-10-17-native-stage-textures-001',
+      owner_release: stageNativeTexture[1]==='stage-backmonitor-logos'
+        ? '2026-10-19-native-backmonitor-logos-001' : '2026-10-17-native-stage-textures-001',
       grandfathered: false,
     }
   }

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { sampleBackmonitorLogo,logoProjectiveQuad,logoFadeAt,updateBackmonitorLogoMesh } from '../src/core/chibiBackmonitorLogo.js'
+import { sampleBackmonitorLogo,resolveBackmonitorLogo,backmonitorLogoResources,logoProjectiveQuad,logoFadeAt,updateBackmonitorLogoMesh } from '../src/core/chibiBackmonitorLogo.js'
 const close=(a,b)=>assert(Math.abs(a-b)<1e-9, `${a} != ${b}`)
 const source=JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-backmonitor-logo-native.json',import.meta.url)))
 const model={width:1200,height:800,localScale:source.transform.scale.x,perspectiveAngle:10,duration:2,
@@ -13,9 +13,20 @@ assert.equal(sample(95849),null);assert.equal(sample(95850).angle,0)
 assert.equal(sample(96350).angle,90);assert.equal(sample(96850).angle,180)
 assert.deepEqual(sample(111000),sample(111000),'Paused mesh is deterministic')
 sample(115000);assert.equal(sample(95850).angle,0,'Backward seek recomputes phase')
-for (const input of [{...state,rawValue6:0},{...state,movie:'other'},{...state,y:5000}])
+for (const input of [{...state,rawValue6:0},{...state,movie:null},{...state,y:5000}])
  assert.equal(sampleBackmonitorLogo('tkstp1',input,111000,model),null)
-assert.equal(sampleBackmonitorLogo('montns',state,111000,model),null)
+assert.ok(sampleBackmonitorLogo('unlisted-song',{...state,movie:'unlisted-movie'},111000,model),'Native Show does not depend on song/movie lists')
+const defaultLogo=backmonitorLogoResources.defaultAsset,passion='live_backmonitor_movie_logo_passion'
+const selections=[{time:0,logo:passion},{time:10,logo:null},{time:20,logo:'missing'},{time:30,logo:defaultLogo}]
+assert.equal(resolveBackmonitorLogo(model,selections,-1).asset,defaultLogo)
+for(const time of [0,10,20])assert.equal(resolveBackmonitorLogo(model,selections,time).asset,passion)
+assert.equal(resolveBackmonitorLogo(model,selections,30).asset,defaultLogo)
+assert.equal(resolveBackmonitorLogo(model,selections,10).asset,passion,'Backward seek restores the selected Sprite')
+for(const entry of Object.values(backmonitorLogoResources.assets)) {
+ const bytes=fs.readFileSync(new URL('../public'+entry.file,import.meta.url))
+ const crypto=await import('node:crypto')
+ assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),entry.pngSha256)
+}
 const drive={...state,movie:model.previewMovies.drvalv,movieTime:15700}
 assert.equal(sampleBackmonitorLogo('drvalv',drive,16200,model).angle,90)
 assert.equal(sampleBackmonitorLogo('drvalv',{...drive,rawValue6:0},16200,model),null)
@@ -87,5 +98,15 @@ if(process.argv.includes('--published-assets')) {
  assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===15700&&e.movie===model.previewMovies.drvalv&&e.rawValue6===1)))
  assert.ok(driveSongs.every(s=>s.backmonitorEvents.some(e=>e.time===29600&&e.rawValue6===0&&(e.rawValue7??e.opacity)===1000)))
  assert.deepEqual(index.backmonitorLogo.fadeControls,model.fadeControls)
+ const growing=songs.filter(s=>s.songCode==='grwsml')
+ assert.equal(growing.length,21)
+ for(const song of growing) {
+  const event=song.backmonitorEvents.find(e=>e.rawValue6===1)
+  const selected=resolveBackmonitorLogo(index.backmonitorLogo,song.backmonitorEvents,event.time+600)
+  assert.equal(selected.asset,defaultLogo)
+  assert.equal(sampleBackmonitorLogo(song.songCode,{...state,movie:event.movie},event.time+600,selected,song.backmonitorEvents).alpha,.8)
+ }
+ const passionSong=songs.find(s=>s.songCode==='drv999')
+ for(const event of passionSong.backmonitorEvents.filter(e=>e.logo))assert.equal(resolveBackmonitorLogo(index.backmonitorLogo,passionSong.backmonitorEvents,event.time).asset,passion)
 }
 console.log('PASS native logo phase, activation guard, rewind/pause and perspective mesh instead of flat scale')

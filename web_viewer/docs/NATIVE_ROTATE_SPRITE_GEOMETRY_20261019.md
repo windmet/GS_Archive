@@ -52,3 +52,5 @@
 ## 仍需继续
 
 previewSongs/指定视频白名单仍在；value9 资源选择、Passion override、Animator 的实际启停/相位与异步电影完成时钟仍待打通。原版 `SetLogoSpriteIfNeeded` 对空名、字典未命中、同名均不换图；本批只取得其代码证据，未把它接成新的换图消费。前述非平面粒子、全库无消费者及其它舞台指令缺口仍保留；未部署、未合主线。
+
+后续：[Logo资源选择接线](NATIVE_BACKMONITOR_LOGO_SELECTION_20261019.md)已移除运行时曲目/视频白名单，接入默认和Passion字典资源；Animator相位与异步完成时钟仍未关闭缺口。

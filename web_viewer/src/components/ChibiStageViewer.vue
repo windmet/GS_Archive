@@ -63,7 +63,8 @@
     :data-backmonitor-raw-value6="currentBackmonitorState.rawValue6"
     :data-backmonitor-raw-value7="currentBackmonitorState.rawValue7"
     data-backmonitor-value7-status="native-glow-alpha"
-    data-backmonitor-logo-status="take-ending-native-mesh-reference-projection"
+    data-backmonitor-logo-status="native-sprite-selection-reference-clock"
+    :data-backmonitor-logo-asset="backmonitorLogoAsset"
     :data-backmonitor-logo-angle="backmonitorLogoAngle"
     :data-backmonitor-logo-alpha="backmonitorLogoAlpha"
     :data-new-suspensionlight-ids="visibleSuspensionlightIds.join(',')"
@@ -431,7 +432,7 @@
               <p>镜头 {{ stageVfxCoverage.sourceEvents.camera }} 条；屏幕 {{ stageVfxCoverage.sourceEvents.backmonitor }} 条、图片布景 {{ stageVfxCoverage.sourceEvents.imageLayer }} 条已登记。</p>
               <p v-if="stageVfxCoverage.sourceEvents.imageObject">图片对象 {{ stageVfxCoverage.sourceEvents.imageObject }} 条已接线，组合 Logo 使用独立资源和出现／退场时间。</p>
               <p v-if="stageVfxCoverage.sourceEvents.newSuspensionlight">新悬灯 {{ stageVfxCoverage.sourceEvents.newSuspensionlight }} 条原始指令；已接入显示、旋转、缩放、渐隐及颜色／节拍控制。<template v-if="stageVfxCoverage.newSuspensionlightCommandsLoaded">{{ stageVfxCoverage.newSuspensionlightUnimplementedCommands }} 条未知指令；<template v-if="stageVfxCoverage.newSuspensionlightTempoPending">{{ stageVfxCoverage.newSuspensionlightTempoPending }} 条节拍指令缺少已验证 BPM；</template></template><template v-else>指令轨道加载中；</template>当前可见 {{ visibleSuspensionlightIds.length }} 束，投影仍待原片核对。</p>
-              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次候选出现指令；Take 结尾与 DRIVE A LIVE 已接旋转标志，其他运行时换图仍待核对。</p>
+              <p v-if="stageVfxCoverage.backmonitorLogoRequests" class="vfx-coverage-gap">背屏标志有 {{ stageVfxCoverage.backmonitorLogoRequests }} 次出现指令；已按资源名选择默认与 Passion 标志，旋转起始时钟仍待核对。</p>
               <p>人物染色、聚光与激光共 {{ stageVfxApproximateCount }} 条，当前采用浏览器近似绘制，尚未对原片逐帧核对。</p>
               <p v-if="stageVfxCoverage.sourceEvents.wholeScreenColorLayer">多层舞台染色 {{ stageVfxCoverage.sourceEvents.wholeScreenColorLayer }} 条已接线，深度合成仍待原片核对。</p>
               <p v-if="stageVfxCoverage.unresolvedColorPlanes.length" class="vfx-coverage-gap">{{ stageVfxCoverage.unresolvedColorPlanes.length }} 条染色指令缺少层编号，暂未应用。</p>
@@ -597,7 +598,7 @@ import { createPenlightRuntime, applyPenlightRuntime, releasePenlightRuntime } f
 import { oldSuspensionlightsAt, oldSuspensionlightLayout } from '../core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt } from '../core/chibiNativeLightProjection.js'
 import { validateSongChart } from '../presentation/SongChartPresentation.js'
-import { sampleBackmonitorLogo, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
+import { sampleBackmonitorLogo, resolveBackmonitorLogo, backmonitorLogoResources, createBackmonitorLogoMesh, updateBackmonitorLogoMesh, destroyBackmonitorLogoMesh } from '../core/chibiBackmonitorLogo.js'
 import { spriteLaserModel, createSpriteLaserRuntime, applySpriteLaserRuntime } from '../core/chibiSpriteLaser.js'
 import { createNativeLightQuad, updateNativeLightQuadAnchor } from '../core/chibiLightQuad.js'
 import { nativeLaserScale } from '../core/chibiLaserGeometry.js'
@@ -854,6 +855,7 @@ const visibleOldSuspensionlightIds = ref([])
 const unresolvedOldSuspensionlightIds = ref([])
 const backmonitorLogoAngle = ref('')
 const backmonitorLogoAlpha = ref(0)
+const backmonitorLogoAsset = ref('')
 let pausedBackmonitorRenderPending = false
 function requestPausedBackmonitorRender() {
   const owner = app
@@ -3226,17 +3228,24 @@ function syncBackmonitorLayers(state,projected) {
 
 function syncBackmonitorLogo(state,projected) {
   backmonitorLogoAngle.value = ''
+  backmonitorLogoAsset.value = ''
   for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
-  const model = stageEffectIndex.value?.backmonitorLogo
-  // Load the rotating logo with the song, not on its first frame (see warmSongImages).
-  if (model?.previewSongs?.includes(selectedSong.value?.songCode) && backmonitorContainer) backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
+  const base = stageEffectIndex.value?.backmonitorLogo
+  const events=selectedSong.value?.backmonitorEvents
+  const model=resolveBackmonitorLogo(base,events,stageTime.value,state.logo)
+  if(base&&backmonitorContainer&&(events||[]).some(e=>Number(e.rawValue6??e.rotation)===1)) {
+    for(const asset of Object.keys(backmonitorLogoResources.models)) {
+      backmonitorLogoSprites.ensure(asset,{...base,...backmonitorLogoResources.models[asset]},backmonitorLogoResources.assets)
+    }
+  }
   const sample = sampleBackmonitorLogo(selectedSong.value?.songCode,state,stageTime.value,model,selectedSong.value?.backmonitorEvents)
   backmonitorLogoAlpha.value = sample?.alpha || 0
   if (!backmonitorEnabled.value || !sample || !backmonitorContainer) return
-  const runtime = backmonitorLogoSprites.ensure('backmonitor-logo',model,stageEffectIndex.value.assets)
+  const runtime = backmonitorLogoSprites.ensure(model.asset,model,backmonitorLogoResources.assets)
   if (!runtime) return
   runtime.mesh.zIndex = backmonitorDepths(state,!stageBackgroundSprite).logo
   updateBackmonitorLogoMesh(runtime,model,sample,projected)
+  backmonitorLogoAsset.value = model.asset
   backmonitorLogoAngle.value = sample.angle.toFixed(2)
 }
 
@@ -3289,6 +3298,7 @@ function syncBackmonitor(forceSeek = false) {
   const state = currentBackmonitorState.value
   if (!state.movie || !backmonitorIndex.value?.assets?.[state.movie]) {
     backmonitorLogoAngle.value = ''
+    backmonitorLogoAsset.value = ''
     for (const runtime of backmonitorLogoSprites.runtimes.values()) runtime.mesh.visible = false
     for (const runtime of backmonitorLayerSprites.runtimes.values())for(const sprite of runtime.sprites)sprite.visible=false
     if (backmonitorSprite) backmonitorSprite.visible = false
@@ -3320,6 +3330,7 @@ function releaseBackmonitor() {
   backmonitorLogoSprites.release()
   backmonitorLayerSprites.release()
   backmonitorLogoAngle.value = ''
+  backmonitorLogoAsset.value = ''
   backmonitorVideo?.pause()
   pauseBackmonitorTransition()
   backmonitorMovie = ''

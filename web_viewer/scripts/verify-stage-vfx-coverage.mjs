@@ -15,6 +15,8 @@ const indexes = {
 const coverages = songs.map(song => buildStageVfxCoverage(song, indexes))
 assert.equal(coverages.length, 118)
 const byId = Object.fromEntries(coverages.map(entry => [entry.songId, entry]))
+assert.equal(byId.grwsml_live_effect.backmonitorLogoStatus,'partial_native_selection_reference_clock')
+assert.equal(byId.drv999_live_effect.backmonitorLogoStatus,'partial_native_selection_reference_clock')
 assert.deepEqual(byId.drvalv_live_effect.objectParticles,
   ['fx_in_drvalv_panel', 'fx_in_tfmvmt_Incidentlight'])
 assert.deepEqual(byId.brndnf_live_effect.objectParticles, ['fx_in_brndnf_ring'])
