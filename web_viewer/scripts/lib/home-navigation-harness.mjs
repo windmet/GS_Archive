@@ -22,6 +22,8 @@ export function bindHomeNavigation(app, context = {}) {
     homeReadModelIndex: ref(null), homeReadModelProfiles: ref({}), homeEntryStatus: ref(''),
     loading: ref(false), userPreferenceNotice: ref(''), userPreferences: ref({}), validArchiveHomeIdols: ref([]),
     window: { location: { href: 'http://localhost/' } },
+    // Story costume labels are a Home supplement; fixtures resolve it immediately unless they test it.
+    loadStoryCostumes: () => Promise.resolve(),
   }
   for (const name of ['openIdolPicker', 'commitView', 'captureActiveArchiveView', 'restoreRoute',
     'syncArchiveRoute']) defaults[name] = unexpected(name)

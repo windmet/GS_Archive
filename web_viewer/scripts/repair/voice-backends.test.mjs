@@ -120,9 +120,13 @@ test('optional lip starts in parallel, never blocks sound, and is cancelled on s
   await t.cleanup()
 })
 test('media lip uses actual media time, not the separate audio-context logical clock', async () => {
-  const t = setup({ backendMode: 'media', lipStore: { ...emptyLipStore(), load: async () => ({ scales: [{ y: 0 }, { y: 1 }], gain: 1 }) } })
+  const t = setup({ backendMode: 'media', lipStore: { ...emptyLipStore(), load: async () => ({ scales: Array.from({ length: 120 }, (_, i) => ({ x: 1, y: i / 120 })), gain: 1 }) } })
   await t.player.playVoice(); await tick(); t.element.currentTime = 1; t.context.currentTime = 200
-  assert.equal(t.player.getVoiceVolume(), 0.5)
+  // Client LipSyncPlayData: 0.1 s lead, sample (int)(time * 60), no interpolation.
+  assert.equal(t.player.getVoiceVolume(), 66 / 120)
+  assert.deepEqual(t.player.getLipScale(), { x: 1, y: 66 / 120 })
+  t.element.currentTime = 1.95
+  assert.equal(t.player.getLipScale(), null)
   await t.cleanup()
 })
 test('backlog audition and closing it leave no source behind', async () => {

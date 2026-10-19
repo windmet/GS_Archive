@@ -6,7 +6,7 @@ import { collectionKindLabel } from '../core/CollectionRouteState.js'
 export const ARCHIVE_SITE_TITLE = 'GS Archive · SideM GROWING STARS 资料馆'
 export const ENTITY_TITLE_VIEWS = Object.freeze(new Set(['idol_detail', 'unit_detail', 'card_detail', 'song_detail', 'event_detail', 'gasha_detail']))
 export const SECTION_TITLES = Object.freeze({ idols: '偶像', unit_catalog: '组合', cards: '卡片', song_catalog: '歌曲', event_catalog: '活动',
-  gashas: '卡池', story_catalog: '故事', photo_catalog: '摄影资源', unused_archive: '未使用语音存档' })
+  gashas: '卡池', story_catalog: '故事', photo_catalog: '摄影资源', unused_archive: '其他语音存档' })
 
 // The collection catalogue is four sections, /items/, /honors/, /currencies/ and /costumes/.
 export function archiveSectionTitle(view, collectionKind = 'items') {

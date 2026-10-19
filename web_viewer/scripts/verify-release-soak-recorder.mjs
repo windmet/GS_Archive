@@ -197,6 +197,6 @@ assert.match(viewerSource, /if \(RUNTIME_DEBUG\) console\.debug\('\[Lifecycle\] 
 assert.match(stageManagerSource, /inspectReleaseState\(\)/)
 assert.match(stageManagerSource, /active_count:\s*Object\.values\(overlays\)/)
 assert.doesNotMatch(stageManagerSource, /console\.warn\('\[SPAWN_DONE\]'/)
-assert.match(stageManagerSource, /if \(this\._debugMode\) \{\s*console\.debug\('\[SPAWN_DONE\]'/)
+assert.match(stageManagerSource, /if \(this\._debugMode\) \{?\s*console\.debug\('\[SPAWN_DONE\]'/)
 
 console.log('Release soak recorder: persistent v2 collector, bounded sampling, Story lifecycle and quiet endpoint controls verified')

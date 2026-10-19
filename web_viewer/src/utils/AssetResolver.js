@@ -205,19 +205,8 @@ export function getMouthSettingUrl(idolId) {
   return `/data/idolsetting/mouth/idol_mouth_stg_${idolId}.json`
 }
 
-/**
- * Per-character default offset (idolothersetting).
- * Provides default X/Y position offset for each character's spine.
- */
-export function getOtherSettingUrl(idolId) {
-  return `/data/idolsetting/other/idol_other_stg_${idolId}.json`
-}
-
-export function getBodyTypeUrl() {
-  return `/data/idolsetting/body_type.json`
-}
-
-export const getCostumePrefabMetaUrl = () => '/data/idolsetting/costume_prefab_meta.json'
+// Costume prefab root y and texture-figure rects (scripts/build-idol-figure-placement.py).
+export const getFigurePlacementUrl = () => '/data/idolsetting/idol_figure_placement.json'
 export const getCostumeDictionaryUrl = () => '/data/masterdata/costume_dictionary.json'
 export const getIdolMotionSettingUrl = () => '/data/idolsetting/motion/idol_motion_index.json'
 

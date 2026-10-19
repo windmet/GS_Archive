@@ -5,6 +5,7 @@ import {
   archiveHomeStateStats,
   buildArchiveHomeHighlights,
   buildArchiveHomeState,
+  withStoryCostumes,
 } from '../src/data/archiveHomeState.js'
 
 const readJson = path => JSON.parse(fs.readFileSync(new URL(path, import.meta.url), 'utf8'))
@@ -47,10 +48,20 @@ assert.equal(toma.cues[0].voice, '2_1_001_01_00_09.m4a')
 assert.equal(toma.cues[0].background, 'bg001_315pro_in_01')
 assert.equal(toma.cues[0].modelId, '001tom_002_00')
 assert.equal(toma.cues[0].previewStep.state.spines[0].id, '001tom')
-assert.equal(toma.costumes.length, 12)
+// Unnamed story costumes join under a site label (src/presentation/costumeSeries.js): 001tom_003_00, _004_00, _004_01.
+assert.equal(toma.costumes.length, 15)
+assert.deepEqual(toma.costumes.filter(costume => costume.name.endsWith('（剧情）')).map(costume => [costume.modelId, costume.name]),
+  [['001tom_003_00', '秋冬便服（剧情）'], ['001tom_004_00', '运动服（剧情）'], ['001tom_004_01', '运动服 2（剧情）']])
 assert.equal(toma.costumes[0].name, 'ベーシックウェア')
 assert.equal(toma.costumes[0].modelId, '001tom_002_00')
-assert.equal(idols.flatMap(idol => idol.costumes).length, 599)
+// Every costume-catalog model (690); 047shu_002_00 was already present as Shu's scene default.
+assert.equal(idols.flatMap(idol => idol.costumes).length, 690)
+const costumeOf = (idolCode, modelId) => idols.find(idol => idol.id === idolCode).costumes.find(costume => costume.modelId === modelId)
+assert.equal(costumeOf('010pie', '010pie_001_00')?.name, '青蛙玩偶装（剧情）')
+// The client table swaps the twins' sportswear rows; each model stays with the idol it draws.
+assert.equal(costumeOf('012yus', '012yus_004_00')?.name, '运动服（剧情）')
+assert.equal(costumeOf('013kys', '013kys_004_00')?.name, '运动服（剧情）')
+assert.equal(costumeOf('013kys', '012yus_004_00'), undefined)
 
 // Actual source scene defaults do not all have the same availability. The
 // unnamed Shu rig is present; Hayato/Eishin source cues reference absent rigs.
@@ -132,6 +143,7 @@ const context = vm.createContext({
   bootstrapIdolDictionary: { source: 'bootstrap-idols' },
   bootstrapMembership: { source: 'bootstrap-membership' },
   buildIdolReference: (_id, dictionary, membership) => ({ dictionary, membership }),
+  storyCostumeData: readJson('../src/data/storyCostumes.json'), storyCostumeMerge: { value: null },
 })
 const projections = vm.runInContext(`${appSource.slice(projectionStart, projectionEnd)}\n;[
   archiveStats, archiveHomeIdols, preferredArchiveIdolReference
@@ -145,6 +157,13 @@ context.homeReadModelIndex.value = {
 }
 assert.equal(projections[0].value[0].value, 12)
 assert.equal(projections[1].value[0].name, '冬馬')
+// Profiles prebuilt by an older read model gain the labelled story costumes, sorted after the scene default.
+const oldToma = { ...toma, costumes: toma.costumes.filter(costume => !costume.siteLabel) }
+context.homeReadModelProfiles.value = { '001tom': oldToma }
+assert.deepEqual(projections[1].value[0].costumes, oldToma.costumes, 'without supplements the profile passes through')
+context.storyCostumeMerge.value = { merge: withStoryCostumes, costumes: context.storyCostumeData.costumes }
+assert.deepEqual(projections[1].value[0].costumes, toma.costumes)
+assert.deepEqual(withStoryCostumes(toma, context.storyCostumeData.costumes), toma)
 assert.doesNotMatch(immersiveHomeSource, /home-highlight|activeHighlight|stepHighlight/)
 
 console.log(`Archive home state: ${stats.idols} idols, ${stats.cues} cues, ${stats.models} models, ${highlights.length} highlights; standalone background owner and read-model projection verified`)

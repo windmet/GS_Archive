@@ -2,8 +2,10 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 
-// Writes src/data/unusedVoiceArchive.json: game voices that no archive page plays. Each family is enumerated
-// from the converted voice corpus. Only Saito's unreleased HomeStand lines have script text in RAW; the
+// Writes src/data/unusedVoiceArchive.json: the "other voices" archive — game voices that no idol, card or
+// story page plays. Families with a known in-game use (title calls) come first; the rest are unused or
+// unconfirmed. Yamamura's office lines are listed by the page from officeSystemVoices.json. Each family is
+// enumerated from the converted voice corpus. Only Saito's unreleased HomeStand lines have script text in RAW; the
 // rest are voice-only, so the archive lists the cue and plays the file.
 // Usage: node scripts/build-unused-voice-archive.mjs [voiceDir] [rawScenarioDir]
 const root = process.cwd()
@@ -20,10 +22,10 @@ for (const command of JSON.parse(fs.readFileSync(path.join(rawDir, '3_x_102sha/s
 assert.equal(saitoText.size, 15)
 
 const FAMILIES = [
-  { id: '9_1', label: '9_1 系列', pattern: /^9_1_(\d{3})_00$/, perSpeaker: 1,
-    note: '每人 1 条，平均约 3.7 秒。客户端 IdolController 会读取 9_1_ 前缀的语音包，也有对应的口型数据，但没有脚本、文字或主数据行，具体在什么场景播放尚未确认。' },
-  { id: '9_9', label: '9_9 系列（编号末尾 99）', pattern: /^9_9_(\d{3})_00$/, perSpeaker: 1,
-    note: '每人 1 条，平均约 0.8 秒，有对应的口型数据，没有脚本、文字或主数据行，用途未确认。' },
+  { id: '9_1', label: '登录标题呼号', use: 'title', pattern: /^9_1_(\d{3})_00$/, perSpeaker: 1,
+    note: '登录时偶像念出游戏标题「アイドルマスター SideM GROWING STARS」（试听核对）。每人 1 条，平均约 3.7 秒；客户端 IdolController 读取 9_1_ 前缀的语音包，有对应口型数据，没有脚本或文字行。' },
+  { id: '9_9', label: '万代南梦宫呼号', use: 'title', pattern: /^9_9_(\d{3})_00$/, perSpeaker: 1,
+    note: '偶像各自喊「バンダイナムコ」（试听核对），编号末尾为 99。每人 1 条，平均约 0.8 秒，有对应口型数据，没有脚本或文字行；具体播放时机未在客户端核实。' },
   { id: '2_5', label: 'Live 应援（appeal）', pattern: /^2_5_(\d{3})_00_04_0[1-7]$/, perSpeaker: { default: 7, '102sha': 2 },
     note: '原资源整理者归为 appeal。49 位偶像各 7 条，齋藤只有 01 和 07 两条，都没有文字。客户端代码里只直接写了齋藤的 2_5_102_00。' },
   { id: '3_2', label: 'Live 结算（live_result）', pattern: /^3_2_(\d{3})_0[0-3]$/, perSpeaker: 4,

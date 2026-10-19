@@ -11,41 +11,10 @@ import * as PIXI from 'pixi.js'
 import { DeformTimeline } from '@pixi-spine/runtime-3.8'
 import { MixBlend } from '@pixi-spine/base'
 import { easeOutCubic, runRafTween } from './rafTween.js'
-import { recordSpinePosition } from './SpinePositionLayout.js'
 
 export class SpineManager {
   constructor(manager) {
     this.manager = manager
-  }
-
-  setSpinePosition(idolId, positionIdx) {
-    const entry = this.manager.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-    const POSITION_X_RATIOS = { 0: 0.25, 1: 0.5, 2: 0.75 }
-    if (positionIdx != null && POSITION_X_RATIOS[positionIdx] !== undefined) {
-      spine.x = this.manager.width * POSITION_X_RATIOS[positionIdx]
-    } else {
-      spine.x = this.manager.width * 0.5
-    }
-    spine.y = this.manager.height + 20
-    recordSpinePosition(entry, this.manager)
-  }
-
-  setSpinePositionByGameCoord(idolId, posX, posY = 0, baseY = null) {
-    const entry = this.manager.spineInstances[idolId]
-    if (!entry) return
-    if (entry._slideTweenRaf) {
-      cancelAnimationFrame(entry._slideTweenRaf)
-      entry._slideTweenRaf = null
-      entry._positionTween = null
-    }
-    const centerX = this.manager.width / 2
-    const yBase = baseY != null ? baseY : this.manager.height + 20
-    const coordScale = this.manager.width / 1280
-    entry.spine.x = centerX + posX * coordScale
-    entry.spine.y = yBase - posY * coordScale
-    recordSpinePosition(entry, this.manager, baseY)
   }
 
   bringToFront(idolId) {

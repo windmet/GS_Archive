@@ -21,7 +21,7 @@ function deferred() {
 function fakeSpine() {
   return {
     stateData: {}, state: { update: noop, apply: noop, tracks: [] },
-    scale: { x: 1 }, on: noop, destroyed: false,
+    scale: { x: 1 }, position: { set: noop }, on: noop, destroyed: false,
     destroy() { this.destroyed = true },
   }
 }
@@ -31,7 +31,7 @@ function setup() {
     app: { stage: { on: noop } }, width: 1280, _spawnTokens: {}, _spawnLoads: new Map(), spineInstances: {},
     removeSpine(id) { removals.push(id); delete this.spineInstances[id]; this._spawnTokens[id] = (this._spawnTokens[id] || 0) + 1 },
     _detectBlinkSlots: noop, _detectEffectSlots: noop, _detectOptionalPartsSlots: noop,
-    _applyDefaultPosition: noop, setSpineColor: noop, setSpineZoom: noop,
+    setSpineColor: noop, placeActor: noop,
     setSpineAlpha: noop, updateSpineFace: noop, bringToFront: noop,
     showSilhouette(id, model) { this.spineInstances[id] = { modelId: model, silhouette: true } },
   }
@@ -44,20 +44,12 @@ function setup() {
     },
     manager, applyStateToken: 0, projectedStep: null, props: { step: null }, lastScreenEffectsKey: null, emit: noop,
     getStepSceneState: step => step?.entry_snapshot,
-    _loadBodyTypes: async () => {}, applyStepSceneState: noop,
-    _loadPrefabMeta: async () => {}, _loadMotionSettings: async () => {},
-    NON_VISUAL_IDS: new Set(), _otherSettingCache: { idol: {} },
-    portraitBaseY: value => value, getSelectedReferenceY: noop, resolveBaseYUtil: () => ({ finalBaseY: 0 }),
-    USE_PREFAB_META: false, costumePrefabMeta: {}, MODEL_Y_OFFSET: {},
-    BASE_ANCHOR: 0, SUB_BASE_ANCHOR: 0, ANCHOR_UNITY_Y: 0, SUB_ANCHOR_UNITY_Y: 0,
-    PIXEL_SCALE: 1, SUB_PIXEL_SCALE: 1, SUB_MODEL_RE: /sub/, costumeDictionary: {},
-    logYDiagnostics: noop, buildYDiagnosticRow: noop, LOG_Y_DIAGNOSTICS: false,
-    debugMode: { value: false }, Y_DEBUG_STORE: {}, isSilhouetteOnlyModel: () => false,
-    getBodyType: noop, BODY_SCALE_ENABLED: false, FIT_MODE: '',
-    VISUAL_HEIGHT_REFERENCE: 0, VISUAL_HEIGHT_STRENGTH: 0,
-    positionSpine: noop, applyCharaOverrides: noop, syncBoundsSnapshot: noop,
-    scheduleStageDebugPublish: noop, computeVisualRootY: () => 0,
-    computeVisualRootYUtil: () => 0, applyStateBodyMotion: noop,
+    applyStepSceneState: noop,
+    _loadFigurePlacement: async () => {}, _loadMotionSettings: async () => {},
+    figurePlacement: { skeletons: {}, textures: {} },
+    NON_VISUAL_IDS: new Set(), costumeDictionary: {},
+    debugMode: { value: false }, isSilhouetteOnlyModel: () => false,
+    syncBoundsSnapshot: noop, scheduleStageDebugPublish: noop, applyStateBodyMotion: noop,
     getSpineAtlasUrl: id => id, getSpineSkelUrl: id => id,
     Spine: {}, SkeletonBinary: {}, AtlasAttachmentLoader: {}, TextureAtlas: {},
     loadAndCreateSpine: ({ signal }) => {
@@ -157,7 +149,7 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
 {
   const t = setup()
   const prefab = deferred(), motion = deferred()
-  t.context._loadPrefabMeta = () => prefab.promise
+  t.context._loadFigurePlacement = () => prefab.promise
   t.context._loadMotionSettings = () => motion.promise
   const current = step('same')
   current.entry_snapshot.spines[0].face = 'entry-face'
@@ -205,7 +197,7 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
 {
   const t = setup()
   const metadata = deferred()
-  t.context._loadPrefabMeta = () => metadata.promise
+  t.context._loadFigurePlacement = () => metadata.promise
   const old = t.apply(step('old')); await flush()
   const currentStep = step('current')
   const current = t.apply(currentStep); await flush()
@@ -217,19 +209,23 @@ const step = model => ({ step_id: model, entry_snapshot: { spines: model ? [{ id
   assert.deepEqual(t.published, ['current'])
   assert.equal(t.isReady('idol', currentStep), true)
 }
-// Legacy entry slides must receive the same cumulative story clock as the stage.
+// Entry slides and zoom transitions must receive the same cumulative story clock as the stage.
 {
   const t = setup()
   const current = step('same')
-  current.entry_snapshot.spines[0].slide_duration = 2
+  Object.assign(current.entry_snapshot.spines[0], { slide_duration: 2, pos_x: 200, idol_zoom: 1.2, idol_zoom_y: -50,
+    idol_zoom_y_offset: 99, idol_zoom_transition: { delay: 0.5, duration: 1 } })
   t.manager.spineInstances.idol = { modelId: 'same', spine: fakeSpine() }
   const now = () => 1234
   t.context.props.nowMilliseconds = now
   let received
-  t.manager.animateSpinePosition = (...args) => { received = args }
+  t.manager.placeActor = (...args) => { received = args }
   await t.apply(current)
-  assert.equal(received?.[3], 2)
-  assert.equal(received?.[4], now)
+  assert.equal(received?.[0], 'idol')
+  assert.deepEqual({ ...received?.[1] }, { posX: 200, posY: 0, zoomX: 0, zoomY: -50, zoom: 1.2 }, 'old idol_zoom_y_offset is ignored')
+  assert.deepEqual({ ...received?.[2].position }, { duration: 2 })
+  assert.deepEqual({ ...received?.[2].zoom }, { delay: 0.5, duration: 1 })
+  assert.equal(received?.[2].nowMilliseconds, now)
 }
 console.log('Story stage loading: scene replacement, departure, late failure, direct spawn and slide clock forwarding passed')
 

@@ -1,6 +1,6 @@
 import { withLoadDeadline } from './AsyncLoadBoundary.js'
 import { getVoiceUrlCandidates } from '../utils/AssetResolver.js'
-import { sampleLipCurve } from '../utils/LipSyncHelpers.js'
+import { sampleLipCurve, sampleLipScale } from '../utils/LipSyncHelpers.js'
 import { isKnownDanglingStoryVoice } from '../data/knownDanglingStoryVoices.js'
 import { PlayerPreferencesRepository } from './story-runtime/PlayerPreferencesRepository.js'
 import { StoryAudioSession } from './story-runtime/StoryAudioSession.js'
@@ -161,18 +161,25 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
       preparations.delete(controller)
     }
   }
+  function voiceElapsed() {
+    return current.backend === 'media' ? media.currentTime() : Math.max(0, session.currentTime() - current.startedAt)
+  }
   function getVoiceVolume() {
     const curve = current?.prepared.lipRequest?.curve || current?.prepared.lipCurve
     if (!curve || !current.started) return 0
-    const elapsed = current.backend === 'media' ? media.currentTime() : Math.max(0, session.currentTime() - current.startedAt)
-    const duration = current.backend === 'media' ? media.duration() : current.prepared.audioBuffer?.duration
-    return sampleLipCurve({ ...curve, duration: duration || curve.scales.length / 60 }, elapsed)
+    return sampleLipCurve(curve, voiceElapsed())
+  }
+  // Native lip sample {x, y} (null = closed), read by LipSyncController each frame.
+  function getLipScale() {
+    const curve = current?.prepared.lipRequest?.curve || current?.prepared.lipCurve
+    if (!curve || !current.started) return null
+    return sampleLipScale(curve, voiceElapsed())
   }
   function setTalking(on) {
     if (noVoice || (on && !canAnimateStage())) return
     const id = current?.prepared.step?.chara_id
     if (!id || (on && current.prepared.step?.lipSync === false)) return
-    spineStageRef.value?.manager?.setSpineTalking(id, on, getVoiceVolume)
+    spineStageRef.value?.manager?.setSpineTalking(id, on, getLipScale)
   }
   function stopCurrentVoice(reason = 'unspecified') {
     generation++
@@ -296,7 +303,7 @@ export function useVoicePlayer({ spineStageRef, currentStep, currentStepIndex, c
     resetVoiceDedup()
   }
   return { playVoice, retryVoice, replayVoiceDetached, prepareVoice, playPreparedVoice, releasePreparedVoice,
-    requiresVoice, hasDecodedVoice, stopCurrentVoice, resetVoiceDedup, setTalking, getVoiceVolume,
+    requiresVoice, hasDecodedVoice, stopCurrentVoice, resetVoiceDedup, setTalking, getVoiceVolume, getLipScale,
     ensureAudioCtx, unlockAudioContext, setBackendMode, getBackendMode: () => mode,
     getVoiceState: () => voiceState, getAudioSession: () => session, dispose,
     getDiagnostics: () => ({ state: voiceState, contextState: audioCtx?.state || 'uninitialized',

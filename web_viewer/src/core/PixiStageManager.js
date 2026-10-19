@@ -23,7 +23,7 @@ import { Spine, SkeletonBinary, AtlasAttachmentLoader } from '@pixi-spine/runtim
 import { TextureAtlas } from '@pixi-spine/base'
 import { getBgUrl, getMouthSettingUrl, getSpineAtlasUrl, getSpineSkelUrl, getSilhouetteUrl } from '../utils/AssetResolver.js'
 import { resolveSpineTextureUrl } from '../utils/SpineTextureUrl.js'
-import { positionFrame, positionBaseline, projectSpinePosition, recordSpinePosition, resizeSpinePosition } from './SpinePositionLayout.js'
+import { idolSlotPosition, skeletonFigureScreen, textureFigureScreen, TEXTURE_FIGURE_POSITION_Y } from '../../shared/story/AdvStageLayout.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
 import { tweenOverlayFade, tweenOverlaySlide } from './transitionTweens.js'
 import { loadAndCreateSpine } from './spineSpawnPipeline.js'
@@ -33,7 +33,6 @@ import { ScreenEffectManager } from './ScreenEffectManager.js'
 import { loadImageTexture } from './loadImageTexture.js'
 import { CameraController } from './CameraController.js'
 import { SpineManager } from './SpineManager.js'
-import { fitSpineToPrefabRect as fitSpineToPrefabRectUtil, getPrefabRectMetrics as getPrefabRectMetricsUtil } from './spinePrefabFit.js'
 
 import { LipSyncController } from './LipSyncController.js'
 import { cancelBlinkCover } from './spineBlinkCover.js'
@@ -42,40 +41,6 @@ import { detectBlinkSlots } from './spineBlinkSlots.js'
 // IdolFigureSkeleton._trackIndexCloseEye / ANIMATION_EYE_CLOSE (client 2.6.10).
 const EYE_TRACK = SPINE_TRACK.eye
 const EYE_CLOSE_ANIMATION = 'eye_close'
-const ADULT_BASE_SCALE = 0.26
-const SUB_BASE_SCALE = 0.235
-
-// Per-character default scale calibration.
-// Do not infer this directly from idol_zoom counts: many scenarios apply
-// idol_zoom as scene direction, and it must not be multiplied a second time.
-const CHARACTER_BASE_SCALE_MULTIPLIER = {
-  '037jir': 1.3,
-}
-
-// livecharacter bodyType is a broad body class, not an ADV portrait scale.
-// Keep this subtle; native rig art and idolothersetting carry most of the
-// visible height/position differences.
-const BODY_TYPE_SCALE_MULTIPLIER = {
-  1: 1.00,
-  2: 1.025,
-  3: 0.975,
-  4: 0.94,
-  5: 0.90,
-}
-
-// Model-level visual calibration is only for proven outliers. Keep empty by
-// default; original bodyType + otherSetting should do the general work.
-const MODEL_BASE_SCALE_MULTIPLIER = {}
-const DEFAULT_ADULT_SCALE = ADULT_BASE_SCALE
-const DEFAULT_SUB_SCALE = SUB_BASE_SCALE
-
-// Silhouette PNGs are authored independently from the Spine rigs. Keep
-// character-specific framing here when matching the ADV portrait requires a
-// visibly different scale from the generic full-body fallback.
-const SILHOUETTE_SCALE_MULTIPLIER = {
-  '102sha_001_00': 1.28,
-}
-
 export class PixiStageManager {
   setPresentationSuspended(suspended) {
     this.presentationSuspended = suspended
@@ -87,7 +52,6 @@ export class PixiStageManager {
     this.width = options.width || containerEl.clientWidth || 1280
     this.height = options.height || containerEl.clientHeight || 720
     this.presentationScale = options.presentationScale || 1
-    this.responsiveSpinePositions = options.responsiveSpinePositions === true
 
     this.app = null
     this._destroyed = false
@@ -95,10 +59,9 @@ export class PixiStageManager {
     this._spawnTokens = {}
     this._spawnLoads = new Map()
     this._textureOwner = new AbortController()
-    this._silhouetteSprites = {}  // { idolId: PIXI.Sprite } — fallback for missing Spine assets
-    this._silhouettePending = {}  // { idolId: { token, modelId, posX, posY, baseY } }
+    this._silhouetteSprites = {}  // { idolId: { modelId, sprite, texture, adv } } — texture figures
+    this._silhouettePending = {}  // { idolId: { token, modelId, texture, adv } }
     this._silhouetteLoadTokens = {}
-    this._silhouetteRelayoutJobs = {}
     this._pendingTalking = {}
     this.lipSyncController = new LipSyncController({
       getSpineEntry: idolId => this.spineInstances[idolId],
@@ -166,7 +129,6 @@ export class PixiStageManager {
       spineContainer: this.spineContainer,
       getWidth: () => this.width,
       getHeight: () => this.height,
-      getBgSprite: () => this.bgSprite,
     })
     this.spineManager = new SpineManager(this)
     this._debugOverlay = new PIXI.Container()
@@ -254,20 +216,7 @@ export class PixiStageManager {
             this._effectOverlay.width = width
             this._effectOverlay.height = height
           }
-          for (const sprite of Object.values(this._silhouetteSprites)) {
-            const layout = sprite?._silhouetteLayout
-            if (!layout) continue
-            this._layoutSilhouette(
-              sprite,
-              layout.sourceWidth,
-              layout.sourceHeight,
-              layout.posX,
-              layout.posY,
-              layout.baseY,
-            )
-          }
-          // Story layout opts in. Lab instances preserve manually dragged pixels.
-          for (const spineEntry of Object.values(this.spineInstances)) resizeSpinePosition(spineEntry, this)
+          this._layoutAllActors()
         }
       }
     })
@@ -317,7 +266,6 @@ export class PixiStageManager {
     const stageScaleY = this.spineContainer?.scale?.y || 1
     const stageX = this.spineContainer?.x || 0
     const stageY = this.spineContainer?.y || 0
-    const prefabMeta = entry.prefabMeta || null
     const tracks = Array.isArray(spine.state?.tracks)
       ? spine.state.tracks.map((track, index) => track ? {
         index,
@@ -330,21 +278,6 @@ export class PixiStageManager {
         alpha: track.alpha ?? null,
       } : null)
       : null
-    const positioning = entry.positioning || {}
-    const targetY = positioning.targetY ?? entry.targetVisualBottom ?? null
-    const baselineBottomOffset = positioning.baselineBottomOffset ?? ((entry.baselineSkeletonLocalBounds || localBounds) ? ((entry.baselineSkeletonLocalBounds || localBounds).bottom * spine.scale.x) : null)
-    const currentBottomOffset = positioning.currentBottomOffset ?? ((skeletonLocalBounds || localBounds) ? ((skeletonLocalBounds || localBounds).bottom * spine.scale.x) : null)
-    const rootOffset = positioning.rootOffset ?? baselineBottomOffset
-    const finalRootY = positioning.finalRootY ?? spine.y
-    const offsetStrengthUsed = positioning.offsetStrengthUsed ?? null
-    const pivotY = positioning.pivotY ?? prefabMeta?.pivotY ?? prefabMeta?.derived?.pivotY ?? null
-    const isPivotOutlier = !!positioning.isPivotOutlier
-    const baselineBottomError = targetY != null && baselineBottomOffset != null && finalRootY != null
-      ? ((finalRootY + baselineBottomOffset) - targetY)
-      : null
-    const currentBottomError = targetY != null && currentBottomOffset != null && finalRootY != null
-      ? ((finalRootY + currentBottomOffset) - targetY)
-      : null
     return {
       idolId,
       modelId: entry.modelId,
@@ -354,18 +287,7 @@ export class PixiStageManager {
         scaleX: spine.scale.x,
         scaleY: spine.scale.y,
       },
-      scale: {
-        base: spine._baseScale || null,
-        current: spine.scale.x,
-        bodyTypeScale: entry.scaleConfig?.bodyTypeScale ?? null,
-        charaScale: entry.scaleConfig?.charaScale ?? null,
-        modelScale: entry.scaleConfig?.modelScale ?? null,
-        visualHeightReference: entry.scaleConfig?.visualHeightReference ?? null,
-        visualHeightStrength: entry.scaleConfig?.visualHeightStrength ?? null,
-        visualHeightScale: entry.scaleConfig?.visualHeightScale ?? null,
-        bodyScaleEnabled: !!entry.scaleConfig?.bodyScaleEnabled,
-        fitMode: entry.scaleConfig?.fitMode || 'current',
-      },
+      scale: { current: spine.scale.x },
       stage: {
         x: stageX,
         y: stageY,
@@ -432,28 +354,7 @@ export class PixiStageManager {
         width: spine.skeleton?.data?.width || null,
         height: spine.skeleton?.data?.height || null,
       },
-      prefabMeta: prefabMeta ? {
-        prefabPositionY: prefabMeta?.derived?.prefabPositionY ?? null,
-        estimatedRectBottomY: prefabMeta?.derived?.estimatedRectBottomY ?? null,
-        pivotY: prefabMeta?.derived?.pivotY ?? null,
-        sizeDeltaY: prefabMeta?.derived?.sizeDeltaY ?? null,
-        rectFit: spine._prefabRectFit || null,
-      } : null,
-      positioning: {
-        positionMode: entry.positionMode || null,
-        targetY,
-        targetVisualBottom: targetY,
-        baselineBottomOffset,
-        currentBottomOffset,
-        rootOffset,
-        offsetStrengthUsed,
-        pivotY,
-        isPivotOutlier,
-        finalRootY,
-        baselineBottomError,
-        currentBottomError,
-      },
-      prefabMetrics: entry.prefabMetrics || null,
+      placement: { figure: entry.figure || null, adv: entry.adv || null },
       tracks,
     }
   }
@@ -795,76 +696,81 @@ export class PixiStageManager {
   }
 
   cancelAllSpineTweens() {
-    for (const entry of Object.values(this.spineInstances)) {
-      if (entry?._slideTweenRaf) {
-        cancelAnimationFrame(entry._slideTweenRaf)
-        entry._slideTweenRaf = null
-        entry._positionTween = null
+    for (const entry of Object.values(this.spineInstances)) this._cancelActorTweens(entry)
+  }
+
+  // Native ADV placement (AdvStageLayout.js). `placement` is the IdolCharacter state: idol_position
+  // (posX, posY), idol_zoom position (zoomX, zoomY) and size (zoom). IdolCharacter tweens position and zoom
+  // linearly and independently; `position` / `zoom` give each one's { duration, delay } in seconds.
+  placeActor(idolId, placement, { position = null, zoom = null, nowMilliseconds = () => performance.now() } = {}) {
+    const actor = this._actor(idolId)
+    if (!actor) return
+    const target = {
+      posX: Number(placement?.posX) || 0,
+      posY: Number(placement?.posY) || 0,
+      zoomX: Number(placement?.zoomX) || 0,
+      zoomY: Number(placement?.zoomY) || 0,
+      zoom: Number(placement?.zoom) > 0 ? Number(placement.zoom) : 1,
+    }
+    this._cancelActorTweens(actor)
+    actor.adv = actor.adv ? { ...actor.adv } : { ...target }
+    actor._advTweens = {}
+    for (const [name, keys, transition] of [['position', ['posX', 'posY'], position], ['zoom', ['zoomX', 'zoomY', 'zoom'], zoom]]) {
+      const from = Object.fromEntries(keys.map(key => [key, actor.adv[key]]))
+      if (keys.every(key => from[key] === target[key])) continue
+      const durationMs = Math.max(0, Number(transition?.duration) || 0) * 1000
+      const delayMs = Math.max(0, Number(transition?.delay) || 0) * 1000
+      if (durationMs <= 0 && delayMs <= 0) {
+        for (const key of keys) actor.adv[key] = target[key]
+        continue
       }
+      const tween = runRafTween({
+        durationMs,
+        delayMs,
+        nowMilliseconds,
+        ease: t => t,
+        onUpdate: value => {
+          for (const key of keys) actor.adv[key] = from[key] + (target[key] - from[key]) * value
+          this._layoutActor(actor)
+        },
+        onComplete: () => { if (actor._advTweens?.[name] === tween) delete actor._advTweens[name] },
+      })
+      actor._advTweens[name] = tween
+    }
+    this._layoutActor(actor)
+  }
+
+  // Spine entry, or the silhouette record (loaded sprite or pending load) for a texture figure.
+  _actor(idolId) {
+    return this.spineInstances[idolId] || this._silhouetteSprites[idolId] || this._silhouettePending[idolId] || null
+  }
+
+  _cancelActorTweens(actor) {
+    for (const tween of Object.values(actor?._advTweens || {})) tween?.cancel?.()
+    if (actor) actor._advTweens = {}
+  }
+
+  _layoutActor(actor) {
+    const adv = actor?.adv
+    if (!adv) return
+    const slot = idolSlotPosition(adv)
+    if (actor.spine) {
+      if (actor.spine.destroyed) return
+      const placed = skeletonFigureScreen(this.width, this.height, slot, actor.figure?.prefabY ?? 0, adv.zoom)
+      actor.spine.position.set(placed.x, placed.y)
+      actor.spine.scale.set(placed.scale)
+    } else if (actor.sprite && !actor.sprite.destroyed) {
+      const placed = textureFigureScreen(this.width, this.height, slot, actor.texture, actor.texture.positionY, adv.zoom)
+      actor.sprite.position.set(placed.x, placed.y)
+      actor.sprite.scale.set(placed.scale * actor.texture.image[1] / actor.sprite.texture.height)
     }
   }
-  // Spine position animation (slide)
 
-  /**
-   * Animate a spine from its current position to target position.
-   * @param {string} idolId
-   * @param {number} targetX - target screen X
-   * @param {number} targetY - target screen Y
-   * @param {number} duration - animation duration in seconds
-   */
-  animateSpinePosition(idolId, targetX, targetY, duration, nowMilliseconds = () => performance.now(), baseY) {
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const { spine } = entry
-
-    // Cancel previous tween on this spine
-    if (entry._slideTweenRaf) {
-      cancelAnimationFrame(entry._slideTweenRaf)
-      entry._slideTweenRaf = null
-      entry._positionTween = null
-    }
-
-    const startX = spine.x
-    const startY = spine.y
-    const dx = targetX - startX
-    const dy = targetY - startY
-    const durMs = duration * 1000
-    const startFrame = entry._positionLayout || positionFrame(this)
-    const targetFrame = positionFrame(this, baseY === undefined ? startFrame.baseY : baseY)
-    let lastEase = 0
-    const render = () => {
-      const start = this.responsiveSpinePositions ? projectSpinePosition({ x: startX, y: startY }, startFrame, this) : { x: startX, y: startY }
-      const end = this.responsiveSpinePositions ? projectSpinePosition({ x: targetX, y: targetY }, targetFrame, this) : { x: targetX, y: targetY }
-      spine.x = start.x + (end.x - start.x) * lastEase
-      spine.y = start.y + (end.y - start.y) * lastEase
-      const interpolatedBase = startFrame.baseY == null && targetFrame.baseY == null ? null
-        : positionBaseline(startFrame, this.height) + (positionBaseline(targetFrame, this.height) - positionBaseline(startFrame, this.height)) * lastEase
-      recordSpinePosition(entry, this, interpolatedBase)
-    }
-    entry._positionTween = null
-
-    if (durMs <= 0 || (dx === 0 && dy === 0)) {
-      lastEase = 1
-      render()
-      return
-    }
-
-    const t0 = nowMilliseconds()
-    if (this.responsiveSpinePositions) entry._positionTween = { render }
-    const tick = () => {
-      const elapsed = Math.max(0, nowMilliseconds() - t0)
-      const t = Math.min(elapsed / durMs, 1)
-      lastEase = 1 - Math.pow(1 - t, 3)  // easeOutCubic
-      render()
-      if (t < 1) {
-        entry._slideTweenRaf = requestAnimationFrame(tick)
-      } else {
-        entry._slideTweenRaf = null
-        entry._positionTween = null
-      }
-    }
-    entry._slideTweenRaf = requestAnimationFrame(tick)
+  _layoutAllActors() {
+    for (const entry of Object.values(this.spineInstances)) this._layoutActor(entry)
+    for (const record of Object.values(this._silhouetteSprites)) this._layoutActor(record)
   }
+
   // Spine color tinting
 
   /**
@@ -913,23 +819,6 @@ export class PixiStageManager {
       entry.spine.tint = target
     }
   }
-  // Character zoom (idol_zoom multiplier)
-
-  /**
-   * Apply character-specific zoom multiplier to base scale.
-   * Stores the base scale (calculated from model type) and applies zoom factor.
-   */
-  setSpineZoom(idolId, zoomMultiplier) {
-    const entry = this.spineInstances[idolId]
-    if (!entry) return
-    const baseScale = entry.spine._baseScale || entry.spine.scale.x
-    if (zoomMultiplier != null && zoomMultiplier > 0) {
-      entry.spine.scale.set(baseScale * zoomMultiplier)
-    } else {
-      entry.spine.scale.set(baseScale)
-    }
-  }
-
   setSpineScale(idolId, scale) {
     const entry = this.spineInstances[idolId]
     if (!entry) return
@@ -953,127 +842,62 @@ export class PixiStageManager {
     }
   }
 
-  getPrefabRectMetrics(spine, prefabMeta) {
-    return getPrefabRectMetricsUtil(spine, prefabMeta)
-  }
-
-  fitSpineToPrefabRect(spine, prefabMeta, options = {}) {
-    return fitSpineToPrefabRectUtil(spine, prefabMeta, this.height, options)
-  }
-  // Silhouette fallback for missing Spine assets (NPC/non-idol characters)
-
-  _layoutSilhouette(sprite, sourceWidth, sourceHeight, posX = 0, posY = 0, baseY = null) {
-    const stageW = this.width || 1280
-    const stageH = this.height || 720
-    const baseX = stageW / 2 + posX * (stageW / 1280)
-    const baseYPos = baseY ?? Math.round(stageH * 0.62)
-    sprite.x = baseX
-    sprite.y = baseYPos + 15 + posY * (stageW / 1280)
-    const modelScale = SILHOUETTE_SCALE_MULTIPLIER[sprite._silhouetteModelId] || 1
-    const silScale = ((stageH * 1.02) / sourceHeight) * modelScale
-    sprite.scale.set(silScale)
-    sprite._silhouetteLayout = { sourceWidth, sourceHeight, posX, posY, baseY }
-  }
-
-  _cancelSilhouetteRelayout(idolId) {
-    const job = this._silhouetteRelayoutJobs[idolId]
-    if (!job) return
-    if (job.rafId != null) cancelAnimationFrame(job.rafId)
-    for (const timerId of job.timerIds) clearTimeout(timerId)
-    delete this._silhouetteRelayoutJobs[idolId]
-  }
-
-  _scheduleSilhouetteRelayout(idolId, sprite, token) {
-    this._cancelSilhouetteRelayout(idolId)
-    const relayout = () => {
-      if (
-        this._silhouetteLoadTokens[idolId] !== token ||
-        this._silhouetteSprites[idolId] !== sprite ||
-        sprite.destroyed
-      ) return
-      const layout = sprite._silhouetteLayout
-      if (!layout) return
-      this._layoutSilhouette(
-        sprite,
-        layout.sourceWidth,
-        layout.sourceHeight,
-        layout.posX,
-        layout.posY,
-        layout.baseY,
-      )
-    }
-    this._silhouetteRelayoutJobs[idolId] = {
-      rafId: requestAnimationFrame(relayout),
-      // Edge can decode the PNG before the responsive player finishes its
-      // initial sizing. Re-check both after layout settles and after slower
-      // first-load font/CSS work, independent of ResizeObserver delivery.
-      timerIds: [setTimeout(relayout, 250), setTimeout(relayout, 1000)],
-    }
-  }
-
   hasSilhouetteFallback(idolId, modelId = null) {
-    const sprite = this._silhouetteSprites[idolId]
+    const record = this._silhouetteSprites[idolId]
     const pending = this._silhouettePending[idolId]
     return !!(
-      (sprite && (!modelId || sprite._silhouetteModelId === modelId)) ||
+      (record && (!modelId || record.modelId === modelId)) ||
       (pending && (!modelId || pending.modelId === modelId))
     )
   }
 
-  showSilhouette(idolId, modelId, posX = 0, posY = 0, baseY = null) {
+  // Texture figure (IdolFigureTexture): `texture` is its idol_figure_placement entry; the placement follows
+  // placeActor. Without an entry the image is taken as the whole sprite rect at the default positionY.
+  showSilhouette(idolId, modelId, texture = null, placement = {}, transitions = {}) {
     const existing = this._silhouetteSprites[idolId]
-    if (existing && existing._silhouetteModelId === modelId) {
-      const source = existing.texture?.baseTexture?.resource?.source
-      this._layoutSilhouette(
-        existing,
-        source?.naturalWidth || source?.width || existing.texture.width,
-        source?.naturalHeight || source?.height || existing.texture.height,
-        posX,
-        posY,
-        baseY,
-      )
+    if (existing && existing.modelId === modelId) {
+      this.placeActor(idolId, placement, transitions)
       return
     }
     if (existing) this.removeSilhouette(idolId)
 
     const pending = this._silhouettePending[idolId]
     if (pending && pending.modelId === modelId) {
-      Object.assign(pending, { posX, posY, baseY })
+      this.placeActor(idolId, placement, transitions)
       return
     }
 
     const token = (this._silhouetteLoadTokens[idolId] || 0) + 1
     this._silhouetteLoadTokens[idolId] = token
-    this._silhouettePending[idolId] = { token, modelId, posX, posY, baseY }
-    const url = getSilhouetteUrl(modelId)
+    this._silhouettePending[idolId] = { token, modelId, texture }
+    this.placeActor(idolId, placement)
     const img = new Image()
     img.crossOrigin = 'anonymous'
-    img.src = url
+    img.src = getSilhouetteUrl(modelId)
     img.onload = () => {
       const latest = this._silhouettePending[idolId]
       if (!latest || latest.token !== token) return
       delete this._silhouettePending[idolId]
       if (!this.spineContainer) return
-      // Remove any stale sprite for this idol
-      const old = this._silhouetteSprites[idolId]
-      if (old) {
-        if (old.parent) old.parent.removeChild(old)
-        try { old.destroy() } catch (_) {}
-      }
       const bt = PIXI.BaseTexture.from(img)
       bt.alphaMode = PIXI.ALPHA_MODES.PMA
-      const texture = PIXI.Texture.from(bt)
-      const sprite = new PIXI.Sprite(texture)
-      sprite.anchor.set(0.5, 1.0)
-      sprite._silhouetteModelId = modelId
-      this._layoutSilhouette(sprite, img.width, img.height, latest.posX, latest.posY, latest.baseY)
+      const sprite = new PIXI.Sprite(PIXI.Texture.from(bt))
+      sprite.anchor.set(0, 0)
+      const record = {
+        modelId,
+        sprite,
+        texture: latest.texture || { positionY: TEXTURE_FIGURE_POSITION_Y, size: [img.width, img.height], offset: [0, 0], image: [img.width, img.height] },
+        adv: latest.adv,
+        _advTweens: latest._advTweens,
+      }
       this.spineContainer.addChild(sprite)
-      this._silhouetteSprites[idolId] = sprite
-      this._scheduleSilhouetteRelayout(idolId, sprite, token)
+      this._silhouetteSprites[idolId] = record
+      this._layoutActor(record)
     }
     img.onerror = () => {
       const latest = this._silhouettePending[idolId]
       if (!latest || latest.token !== token) return
+      this._cancelActorTweens(latest)
       delete this._silhouettePending[idolId]
       if (!this._silhouetteSprites[idolId]) {
         this._silhouetteSprites[idolId] = null
@@ -1083,12 +907,13 @@ export class PixiStageManager {
 
   removeSilhouette(idolId) {
     this._silhouetteLoadTokens[idolId] = (this._silhouetteLoadTokens[idolId] || 0) + 1
-    this._cancelSilhouetteRelayout(idolId)
+    this._cancelActorTweens(this._silhouettePending[idolId])
     delete this._silhouettePending[idolId]
-    const sprite = this._silhouetteSprites[idolId]
-    if (sprite) {
-      if (sprite.parent) sprite.parent.removeChild(sprite)
-      try { sprite.destroy() } catch (_) {}
+    const record = this._silhouetteSprites[idolId]
+    if (record) {
+      this._cancelActorTweens(record)
+      if (record.sprite.parent) record.sprite.parent.removeChild(record.sprite)
+      try { record.sprite.destroy() } catch (_) {}
     }
     delete this._silhouetteSprites[idolId]
   }
@@ -1254,18 +1079,9 @@ export class PixiStageManager {
         this._applyOptionalPartsSlots(spine)
       }
 
-      this._applyDefaultPosition(spine, modelId, idolId, options)
-      if (this._debugMode) {
-        console.debug('[SPAWN_DONE]', idolId, modelId, {
-          x: spine.x,
-          y: spine.y,
-          baseScale: spine._baseScale || spine.scale.x,
-        })
-      }
-
-      if (!spine._baseScale) {
-        spine._baseScale = spine.scale.x
-      }
+      // Off-stage until finalize places the figure (placeActor / the default placement).
+      spine.position.set(this.width / 2, this.height * 2)
+      if (this._debugMode) console.debug('[SPAWN_DONE]', idolId, modelId, options.figure || null)
 
       spine.eventMode = this._debugMode ? 'dynamic' : 'none'
       spine.cursor = 'grab'
@@ -1426,95 +1242,6 @@ export class PixiStageManager {
       console.warn(`[PixiStageManager] Failed to capture baseline bounds for "${idolId}":`, err?.message || err)
       return null
     }
-  }
-
-  _applyDefaultPosition(spine, modelId = '', idolId = '', options = {}) {
-    // Keep character height differences from the original rigs.  Normalizing by
-    // skeleton.data.height made taller idols look artificially smaller because
-    // some rigs include different whitespace/bounds.
-    const isSubModel = /^\d{3}sub_/.test(modelId)
-    const fitMode = (options.fitMode || 'current').toLowerCase()
-    const bodyScaleEnabled = !!options.bodyScaleEnabled
-    const baseScale = isSubModel ? DEFAULT_SUB_SCALE : DEFAULT_ADULT_SCALE
-    const charaScale = CHARACTER_BASE_SCALE_MULTIPLIER[idolId] || 1
-    const bodyTypeScale = bodyScaleEnabled ? (BODY_TYPE_SCALE_MULTIPLIER[options.bodyType] || 1) : 1
-    const modelScale = MODEL_BASE_SCALE_MULTIPLIER[modelId] || 1
-    const visualHeightReference = Number.isFinite(options.visualHeightReference) ? options.visualHeightReference : null
-    const visualHeightStrength = Number.isFinite(options.visualHeightStrength) ? options.visualHeightStrength : 1
-    let visualHeightScale = 1
-    let finalScale = baseScale
-
-    if (fitMode === 'visualheight' && visualHeightReference && visualHeightReference > 0) {
-      try {
-        const local = spine.getLocalBounds()
-        if (local && Number.isFinite(local.height) && local.height > 0) {
-          visualHeightScale = Math.pow(visualHeightReference / local.height, visualHeightStrength)
-        }
-      } catch (_) {
-        visualHeightScale = 1
-      }
-    }
-
-    if (fitMode === 'current') {
-      finalScale = baseScale * charaScale * bodyTypeScale * modelScale
-      spine.scale.set(finalScale)
-      spine.y = this.app.screen.height + 20
-    } else if (fitMode === 'fixedscale') {
-      finalScale = baseScale * bodyTypeScale
-      spine.scale.set(finalScale)
-      spine.y = this.app.screen.height + 20
-    } else if (fitMode === 'visualheight') {
-      finalScale = baseScale * visualHeightScale * bodyTypeScale
-      spine.scale.set(finalScale)
-      spine.y = this.app.screen.height + 20
-    } else if (fitMode === 'prefabrect') {
-      const fit = this.fitSpineToPrefabRect(spine, options.prefabMeta)
-      if (fit) {
-        finalScale = fit.scale
-      } else {
-        finalScale = baseScale * bodyTypeScale
-        spine.scale.set(finalScale)
-      }
-      spine.y = Number.isFinite(spine.y) ? spine.y : this.app.screen.height + 20
-    } else {
-      finalScale = baseScale * charaScale * bodyTypeScale * modelScale
-      spine.scale.set(finalScale)
-      spine.y = this.app.screen.height + 20
-    }
-    const presentationScale = options.presentationScale > 0 ? options.presentationScale : 1
-    finalScale *= presentationScale
-    spine.scale.set(finalScale)
-    spine.x = this.app.screen.width * 0.5
-    spine._scaleConfig = {
-      fitMode,
-      bodyScaleEnabled,
-      baseScale,
-      charaScale,
-      bodyTypeScale,
-      modelScale,
-      visualHeightReference,
-      visualHeightStrength,
-      visualHeightScale,
-      presentationScale,
-      finalScale,
-    }
-    return spine._scaleConfig
-  }
-
-  setSpinePosition(idolId, positionIdx) {
-    return this.spineManager?.setSpinePosition(idolId, positionIdx)
-  }
-
-  /**
-   * Position a spine using native game coordinates (-200, 0, 200, etc.).
-   * The game's native canvas is ~1280é”?20; maps offsets to current screen size.
-   * @param {string} idolId
-   * @param {number} posX - native x offset (e.g. -200 = left position)
-   * @param {number} [posY=0] - native y offset
-   * @param {number} [baseY] - base Y in virtual coords (use getCharaY result)
-   */
-  setSpinePositionByGameCoord(idolId, posX, posY = 0, baseY = null) {
-    return this.spineManager?.setSpinePositionByGameCoord(idolId, posX, posY, baseY)
   }
 
   /** Bring a spine to the front (top z-order). */
@@ -1765,12 +1492,7 @@ export class PixiStageManager {
     if (!entry) return
     const { spine, wrapper } = entry
 
-    // Cancel slide tween if active
-    if (entry._slideTweenRaf) {
-      cancelAnimationFrame(entry._slideTweenRaf)
-      entry._slideTweenRaf = null
-      entry._positionTween = null
-    }
+    this._cancelActorTweens(entry)
 
     spine.customIsTalking = false
     this._destroySpineMarker(idolId)
@@ -1952,7 +1674,8 @@ export class PixiStageManager {
       stage_children: this.app?.stage?.children?.length ?? 0,
       spine_container_children: this.spineContainer?.children?.length ?? 0,
       debug_markers: this._debugOverlay?.children?.length ?? 0,
-      silhouette_relayout_jobs: Object.keys(this._silhouetteRelayoutJobs).length,
+      // Texture figures re-run the native layout synchronously on resize; nothing is deferred.
+      silhouette_relayout_jobs: 0,
       overlays: {
         ...overlays,
         active_count: Object.values(overlays).filter(overlay => overlay.visible && overlay.alpha > 0).length,

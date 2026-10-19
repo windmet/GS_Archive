@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { PixiStageManager } from '../src/core/PixiStageManager.js'
 import { SpineManager } from '../src/core/SpineManager.js'
-import { storyStageFrame, storyPortraitBaseY, STORY_PORTRAIT_SCALE } from '../src/core/StoryStageFraming.js'
+import { storyStageFrame } from '../src/core/StoryStageFraming.js'
+import { advHorizontalSqueeze, advStageUnit } from '../shared/story/AdvStageLayout.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 
 const saved = { requestAnimationFrame: globalThis.requestAnimationFrame, cancelAnimationFrame: globalThis.cancelAnimationFrame, ResizeObserver: globalThis.ResizeObserver }
@@ -15,88 +16,88 @@ globalThis.ResizeObserver = class {
 }
 const tick = () => { const pending = [...frames.values()]; frames.clear(); pending.forEach(callback => callback()) }
 const close = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-8, `${actual} != ${expected}`)
-function setup(responsiveSpinePositions) {
-  const spine = { x: 0, y: 0, alpha: 0.7, visible: true, scale: { x: 0.75, y: 0.75 } }
-  const entry = { spine, positioning: {}, modelId: 'fixture' }
+const point = () => ({ x: 0, y: 0, set(x, y = x) { this.x = x; this.y = y } })
+// Native skeleton root on a width x height stage: slot (posX, -50 + posY) + prefabY * zoom, 1/3 unit per px.
+const expected = (width, height, { posX = 0, posY = 0, zoom = 1 }, prefabY) => {
+  const unit = advStageUnit(width, height)
+  return { x: width / 2 + posX * unit * advHorizontalSqueeze(width, height), y: height / 2 - (-50 + posY + prefabY * zoom) * unit, scale: unit * zoom / 3 }
+}
+function setup() {
+  const spine = { alpha: 0.7, visible: true, position: point(), scale: point() }
+  Object.defineProperties(spine, { x: { get() { return this.position.x } }, y: { get() { return this.position.y } } })
+  const entry = { spine, modelId: 'fixture', figure: { prefabY: -600 } }
   const manager = Object.assign(Object.create(PixiStageManager.prototype), {
-    width: 390, height: 844, responsiveSpinePositions, spineInstances: { idol: entry },
-    app: { renderer: { resize() {} } }, _silhouetteSprites: {},
+    width: 390, height: 844, spineInstances: { idol: entry },
+    app: { renderer: { resize() {} } }, _silhouetteSprites: {}, _silhouettePending: {},
   })
   manager.spineManager = new SpineManager(manager)
   manager._observeResize()
   const resize = (width, height) => manager._resizeObserver.callback([{ contentRect: { width, height } }])
   return { manager, spine, entry, resize }
 }
+const check = (spine, width, height, placement, prefabY = -600) => {
+  const want = expected(width, height, placement, prefabY)
+  close(spine.x, want.x); close(spine.y, want.y); close(spine.scale.x, want.scale)
+}
 try {
-  const { manager, spine, entry, resize } = setup(true)
-  manager.setSpinePositionByGameCoord('idol', 100, 50, 780)
-  close(spine.x, 225.46875); close(spine.y, 764.765625)
-  resize(1280, 800)
-  close(spine.x, 740); close(spine.y, 730)
-  resize(320, 740)
-  close(spine.x, 185); close(spine.y, 767.5)
-  assert.equal(spine.alpha, 0.7)
-  assert.equal(spine.visible, true)
-  assert.deepEqual(spine.scale, { x: 0.75, y: 0.75 })
-  assert.equal(frames.size, 0, 'static resize must not start animation frames')
-  close(entry.positioning.finalRootY, spine.y)
-
+  const { manager, spine, entry, resize } = setup()
   const clock = new StoryClock({ nowMilliseconds: () => wall })
   clock.start()
-  manager.setSpinePositionByGameCoord('idol', -100, 0, 780)
-  manager.animateSpinePosition('idol', 185, 730, 2, () => clock.elapsed() * 1000, 780)
-  wall = 500; tick()
-  const eased = 1 - 0.75 ** 3
-  close(spine.x, 135 + 50 * eased)
-  clock.pause()
-  const pendingFrame = entry._slideTweenRaf
-  resize(1280, 800)
-  close(spine.x, 540 + 200 * eased)
-  close(spine.y, 780 - 200 * eased)
-  assert.equal(entry._slideTweenRaf, pendingFrame, 'resize preserves the scheduled tween')
-  assert.equal(frames.size, 1)
-  wall = 5000; tick()
-  close(spine.x, 540 + 200 * eased)
-  clock.resume()
-  wall = 6500; tick()
-  close(spine.x, 740); close(spine.y, 580)
-  assert.equal(entry._positionTween, null)
-  assert.equal(frames.size, 0)
+  const now = () => clock.elapsed() * 1000
+  manager.placeActor('idol', { posX: 100, posY: 50 })
+  check(spine, 390, 844, { posX: 100, posY: 50 })
+  // 1280x720 is 16:9: 720 px for the 626.087-unit view height.
+  resize(1280, 720)
+  check(spine, 1280, 720, { posX: 100, posY: 50 })
+  close(advStageUnit(1280, 720), 720 / 626.0869440000001)
   resize(320, 740)
-  close(spine.x, 185); close(spine.y, 730)
+  check(spine, 320, 740, { posX: 100, posY: 50 })
+  assert.equal(spine.alpha, 0.7)
+  assert.equal(spine.visible, true)
+  assert.equal(frames.size, 0, 'static resize must not start animation frames')
 
-  manager.animateSpinePosition('idol', 300, 700, 1, () => clock.elapsed() * 1000, 780)
+  // IdolCharacter tweens are linear; position and zoom run independently.
+  manager.placeActor('idol', { posX: -100 }, { nowMilliseconds: now })
+  manager.placeActor('idol', { posX: 200, zoom: 1.5 }, { position: { duration: 2 }, zoom: { duration: 1, delay: 1 }, nowMilliseconds: now })
+  wall = 500; tick()
+  check(spine, 320, 740, { posX: -100 + 300 * 0.25, zoom: 1 })
+  clock.pause()
+  resize(1280, 720)
+  check(spine, 1280, 720, { posX: -25, zoom: 1 })
+  assert.equal(frames.size, 2, 'resize keeps both scheduled tweens')
+  wall = 5000; tick()
+  check(spine, 1280, 720, { posX: -25, zoom: 1 })
+  clock.resume()
+  wall = 6000; tick()
+  check(spine, 1280, 720, { posX: 125, zoom: 1.25 })
+  wall = 7000; tick()
+  check(spine, 1280, 720, { posX: 200, zoom: 1.5 })
+  assert.deepEqual(entry._advTweens, {})
+  assert.equal(frames.size, 0)
+
+  // Size 1 without a zoom transition applies at once; the cancelled slide stays where it was.
+  manager.placeActor('idol', { posX: 0 }, { position: { duration: 1 }, nowMilliseconds: now })
   manager.cancelAllSpineTweens()
-  assert.equal(entry._positionTween, null)
-  resize(1280, 800)
-  close(spine.x, 740); close(spine.y, 580)
+  resize(390, 844)
+  check(spine, 390, 844, { posX: 200, zoom: 1 })
   assert.equal(frames.size, 0, 'cancelled tween must not restart on resize')
 
-  // Default Lab behavior remains pixel-based, including manually moved values.
-  const lab = setup(false)
-  lab.manager.setSpinePositionByGameCoord('idol', 100, 50, 780)
-  lab.spine.x = 123; lab.spine.y = 456
-  lab.resize(1280, 800)
-  close(lab.spine.x, 123); close(lab.spine.y, 456)
-  assert.equal(lab.entry._positionLayout, undefined)
   // No stale object can be repositioned after removal.
   delete manager.spineInstances.idol
-  resize(390, 844)
-  close(spine.x, 740)
+  resize(1280, 720)
+  check(spine, 390, 844, { posX: 200, zoom: 1 })
 } finally {
   Object.assign(globalThis, saved)
 }
-console.log('Stage resize verified: game-coordinate projection, fixed baseline, paused active tween, completion/cancel, no pose changes, removal and Lab pixel preservation')
+console.log('Stage resize verified: native ADV projection, linear position/zoom tweens across pause and resize, cancellation and removal')
 
-// A fixed design height keeps character/background ratios independent of CSS pixels.
+// A fixed design height keeps the render resolution independent of CSS pixels; geometry scales with the stage.
 for (const [width, height] of [[1280, 720], [1920, 1080], [1024, 768], [390, 632], [390, 844], [844, 390]]) {
   const frame = storyStageFrame(width, height)
   close(frame.width * frame.scale, width)
   close(frame.height * frame.scale, height)
-  close(storyPortraitBaseY(780) * frame.scale / height, storyPortraitBaseY(780) / 720)
-  close(0.26 * STORY_PORTRAIT_SCALE * frame.scale / height, 0.26 * STORY_PORTRAIT_SCALE / 720)
+  close(advStageUnit(frame.width, frame.height) * frame.scale, advStageUnit(width, height))
 }
 assert.equal(storyStageFrame(0, 720), null)
 assert.equal(storyStageFrame(390, 0), null)
-close(storyPortraitBaseY(860) - storyPortraitBaseY(780), 80 * STORY_PORTRAIT_SCALE)
-console.log('Portrait framing: screen coverage, size/baseline invariance and preserved character calibration passed')
+console.log('Portrait framing: screen coverage and placement invariance under the 720 px render frame passed')
