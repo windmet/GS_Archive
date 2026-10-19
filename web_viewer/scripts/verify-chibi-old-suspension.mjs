@@ -130,9 +130,11 @@ const spineSource=fs.readFileSync(new URL('../src/utils/liveChibiSpine.js',impor
 const start=spineSource.indexOf('export async function fetchLiveChibiStageEffectIndex(')
 const end=spineSource.indexOf('export ',spineSource.indexOf('export async function fetchLiveChibiOldSuspensionTrack(')+7)
 const section=spineSource.slice(start,end).replaceAll('export ','')
-const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeOldSuspension','validateOldSuspensionTrack',section+';return {index:fetchLiveChibiStageEffectIndex,track:fetchLiveChibiOldSuspensionTrack}')(
- transport,'/assets/live-chibi',webcrypto,attachNativeOldSuspension,validateOldSuspensionTrack)
-const transport={load:async path=>path==='/data/stage-old-suspension.json'?JSON.stringify(supplement):path.endsWith('/index.json')?indexText:trackText}
+const {attachNativeSuspensionSprites}=await import('../src/core/chibiSuspensionlights.js')
+const spriteSupplement=JSON.parse(fs.readFileSync(new URL('../public/data/stage-new-suspension-sprites.json',import.meta.url),'utf8'))
+const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeOldSuspension','validateOldSuspensionTrack','attachNativeSuspensionSprites',section+';return {index:fetchLiveChibiStageEffectIndex,track:fetchLiveChibiOldSuspensionTrack}')(
+ transport,'/assets/live-chibi',webcrypto,attachNativeOldSuspension,validateOldSuspensionTrack,attachNativeSuspensionSprites)
+const transport={load:async path=>path==='/data/stage-new-suspension-sprites.json'?JSON.stringify(spriteSupplement):path==='/data/stage-old-suspension.json'?JSON.stringify(supplement):path.endsWith('/index.json')?indexText:trackText}
 const loader=makeLoader(transport)
 assert.equal((await loader.index()).oldSuspensionlightContract,'native-old-suspension-v1')
 assert.equal((await loader.track(descriptor)).events.length,descriptor.eventCount)

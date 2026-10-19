@@ -10,6 +10,44 @@ const mix = (a, b, t) => a + (b - a) * t
 export const NEW_SUSPENSIONLIGHT_COMMANDS = ['create', 'normal_show', 'beat_show', 'coloranim', 'rotateanim', 'scaleanim', 'fade']
   .map(name => `NewSuspensionlight_${name}`)
 
+const digest = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+export function attachNativeSuspensionSprites(index, data, indexHash) {
+  if (data?.schemaVersion !== 1 || data.contract !== 'native-new-suspension-sprites-v1'
+      || !digest(indexHash) || data.stageEffectIndexSha256 !== indexHash
+      || index.newSuspensionlight?.layers?.length !== 1 || !data.sprites || Array.isArray(data.sprites))
+    throw Error('Native suspension sprites do not match stage effects')
+  const assets = { ...index.assets }, models = Object.create(null)
+  for (const [name, sprite] of Object.entries(data.sprites)) {
+    if (!name || Object.hasOwn(assets, name) || !digest(sprite.pngSha256)
+        || sprite.file !== `/data/stage-new-suspension-sprites/${sprite.pngSha256.slice(0,24)}.png`
+        || ![sprite.width,sprite.height,sprite.bytes].every(n => Number.isSafeInteger(n) && n > 0)
+        || ![sprite.anchorX,sprite.anchorY,sprite.pixelsToUnits].every(Number.isFinite)
+        || sprite.pixelsToUnits <= 0 || !digest(sprite.source?.spriteSha256)
+        || !digest(sprite.source?.textureSha256) || !digest(sprite.source?.bundleSha256)
+        || !sprite.source.serializedFile || !sprite.source.spritePathId || !sprite.source.texturePathId)
+      throw Error('Invalid native suspension sprite binding')
+    assets[name] = sprite
+    models[name] = { ...index.newSuspensionlight, spriteSource: sprite.source,
+      layers: [{ ...index.newSuspensionlight.layers[0], asset: name,
+        spritePathId: sprite.source.spritePathId, texturePathId: sprite.source.texturePathId,
+        anchorX: sprite.anchorX, anchorY: sprite.anchorY,
+        scaleX: 100 / sprite.pixelsToUnits, scaleY: 100 / sprite.pixelsToUnits }] }
+  }
+  const defaultAsset=index.newSuspensionlight.layers[0].asset
+  if (!data.songAssets || Array.isArray(data.songAssets)
+      || Object.keys(data.songAssets).length !== Object.keys(data.trackSha256 || {}).length
+      || Object.entries(data.songAssets).some(([song,names]) => !digest(data.trackSha256[song])
+        || !Array.isArray(names) || names.some(name => name !== defaultAsset && !Object.hasOwn(models,name))))
+    throw Error('Invalid native suspension song sprite bindings')
+  return { ...index, assets, newSuspensionlightSprites: models, newSuspensionlightSpriteAssets: data.songAssets }
+}
+
+export function suspensionlightModelForAsset(index, asset) {
+  const model = index?.newSuspensionlight
+  if (model?.layers?.[0]?.asset === asset) return model
+  return Object.hasOwn(index?.newSuspensionlightSprites || {}, asset) ? index.newSuspensionlightSprites[asset] : null
+}
+
 // ColorAnim (0x221f55c): HSV interpolation follows the authored direction,
 // including a full turn for equal hues. The return leg keeps that direction.
 function rgb(color) {

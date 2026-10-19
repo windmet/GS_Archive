@@ -21,7 +21,7 @@
 |---|---|---|
 | 门户 portal | `portal/20261014-portal-polish`（需先 merge origin/master） | 商店/兑换所从 wiki 整理；30 个无缩略图服装；真机检查；正式站发布与 noindex 决定 |
 | 翻译 i18n | `i18n/20261015-translation` | 新开的翻译线。`config/translation-audit/general-ui.json` 在各 worktree 常有只改元数据的未提交差异，提交前先确认 |
-| 舞台 stage | `stage/20261020-native-followup`，从最新 `origin/master` / `e6cd9641` 新开；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。优先 Change to Chance 自定义悬灯、Time Before Time 内置对象接线；旧悬灯为 96 supported / 9 partial，正常实例已可播放 |
+| 舞台 stage | `stage/20261020-native-followup`，从最新 `origin/master` / `e6cd9641` 新开；旧代已随 #55 合入 | 当前入口：[10-20 检查与修复路线](STAGE_FOLLOWUP_20261020.md)。[自定义新悬灯Sprite](NATIVE_NEW_SUSPENSION_SPRITES_20261020.md)已补公共消费者（7编排/265条Create），下一项Time Before Time内置对象；原片对照仍开放。旧悬灯为96 supported / 9 partial |
 
 ## 未合入但保留的分支
 

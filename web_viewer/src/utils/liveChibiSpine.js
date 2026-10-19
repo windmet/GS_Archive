@@ -2,6 +2,7 @@ import { attachObjectEmitters } from '../core/chibiObjectEmitters.js'
 import { attachSearchlights } from '../core/chibiSearchlights.js'
 import { attachWholeScreen } from '../core/chibiWholeScreen.js'
 import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
+import { attachNativeSuspensionSprites } from '../core/chibiSuspensionlights.js'
 import { attachNativeSpotlights } from '../core/chibiSpotlightTimeline.js'
 import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
 import { attachBloom } from '../core/chibiBloomParticles.js'
@@ -167,13 +168,14 @@ export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/i
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
 export const fetchLiveChibiImageObjectIndex = options => liveJson('image-objects/index.json',options,true)
 export async function fetchLiveChibiStageEffectIndex({signal}={}) {
-  const [text,native]=await Promise.all([
+  const [text,native,sprites]=await Promise.all([
     indexTransport.load(`${LIVE_CHIBI_BASE}/stage-effects/index.json`,{signal}),
     indexTransport.load('/data/stage-old-suspension.json',{signal}),
+    indexTransport.load('/data/stage-new-suspension-sprites.json',{signal}),
   ])
   const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return attachNativeOldSuspension(JSON.parse(text),JSON.parse(native),hash)
+  return attachNativeSuspensionSprites(attachNativeOldSuspension(JSON.parse(text),JSON.parse(native),hash),JSON.parse(sprites),hash)
 }
 export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
   const text=await indexTransport.load(`${LIVE_CHIBI_BASE}/${descriptor.file}`,{signal})

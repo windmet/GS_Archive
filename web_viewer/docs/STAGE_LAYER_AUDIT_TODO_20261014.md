@@ -20,7 +20,8 @@
 - [ ] syksai 第四层模板、背屏 RectTransform/视频有效画面几何、Passion Logo override，以及原版 HDR/深度缓冲完整链路。
 - [x] 背屏 value7 错当 Logo 渐变时长：已反查确认其为 GrowSprite alpha，限定预览 Logo 改为原版固定500ms/显示alpha0.8。
 - [ ] Time Before Time（tibeti）：APK `resources.assets` 的4个原版物件（overlight_1/2、water_1/2）已定位未接线；还差运行时索引的APK来源、蒙版关联、纹理发布、Sprite材质/动画消费与浏览器验收，见 [NATIVE_STAGE_FORMULA_CLOSEOUT_20261019.md](NATIVE_STAGE_FORMULA_CLOSEOUT_20261019.md)。
-- [ ] Change to Chance（cgtocc）：仅定位24.4秒的 `NewSuspensionlight_create/normal_show`（ID1401/1403），尚未修复；不能启用被注释的 `#Spotlight` 凑截图，同见收尾文档。
+- [x] Change to Chance（cgtocc）的自定义新悬灯Sprite接线：24.4秒ID1401此前被默认素材过滤条件跳过；现已按共用prefab→GetPreloadedSprite链修复，并同步接入另一张自定义图，见 [10-20续批](NATIVE_NEW_SUSPENSION_SPRITES_20261020.md)。normal_show原参数保持，未启用被注释的 `#Spotlight`。
+- [ ] Change to Chance 原片全画面差异仍需逐时间点对照；上述接线修复不代表所有灯光、HDR/深度或真机表现等价。
 - [ ] 后续处理用户暂无法描述的灯光差异，保留待办，不宣称全部灯光还原完成。
 
 验证边界：反编译、源资源、浏览器合成各自提供证据；源码构建不代表原版视频或真机视觉一致。

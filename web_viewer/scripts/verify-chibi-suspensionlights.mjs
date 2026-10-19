@@ -1,9 +1,71 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../src/core/chibiSuspensionlights.js'
+import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo, attachNativeSuspensionSprites, suspensionlightModelForAsset } from '../src/core/chibiSuspensionlights.js'
+import { createHash } from 'node:crypto'
+import vm from 'node:vm'
 import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
 
 const fixture = JSON.parse(fs.readFileSync(new URL('./fixtures/chibi-suspensionlight-ending.json', import.meta.url)))
+const spriteData = JSON.parse(fs.readFileSync(new URL('../public/data/stage-new-suspension-sprites.json',import.meta.url)))
+// Exercise source binding and failure behavior without a local asset corpus.
+const mockIndex = {assets:{},newSuspensionlight:{layers:[{asset:'new_suspension_light_sample',scaleX:1,scaleY:1}]}}
+const bound = attachNativeSuspensionSprites(mockIndex,spriteData,spriteData.stageEffectIndexSha256)
+assert.equal(suspensionlightModelForAsset(bound,'new_suspension_light_sample'),mockIndex.newSuspensionlight)
+assert.equal(suspensionlightModelForAsset(bound,'unknown'),null)
+assert.equal(suspensionlightModelForAsset(bound,'constructor'),null)
+for (const [name,sprite] of Object.entries(spriteData.sprites)) {
+  const model=suspensionlightModelForAsset(bound,name)
+  assert.equal(model.layers[0].asset,name)
+  assert.equal(model.layers[0].anchorX,sprite.source.geometry.pivot.x)
+  assert.equal(model.layers[0].anchorY,sprite.source.geometry.pivot.y)
+  const bytes=fs.readFileSync(new URL('../public'+sprite.file,import.meta.url))
+  assert.equal(bytes.length,sprite.bytes)
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),sprite.pngSha256)
+}
+assert.throws(()=>attachNativeSuspensionSprites(mockIndex,spriteData,'0'.repeat(64)),/do not match/)
+for (const mutation of [s=>s.anchorX=NaN,s=>s.pixelsToUnits=0,s=>s.file='/wrong.png',s=>s.source.spriteSha256='bad']) {
+  const broken=structuredClone(spriteData);mutation(Object.values(broken.sprites)[0])
+  assert.throws(()=>attachNativeSuspensionSprites(mockIndex,broken,spriteData.stageEffectIndexSha256),/Invalid/)
+}
+// Execute the actual SFC renderer branch: Create may reuse the same ID and
+// switch texture. Old runtimes must hide; unknown names never use the default.
+const sfc=fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
+const render=sfc.match(/function syncSuspensionlights\([^]*?\n\}/)[0]
+const runtimes=new Map(),installed=[]
+const renderer={runtimes,ensure(key,model){
+  if(!runtimes.has(key)){
+    const sprite={position:{set(){}},scale:{set(x,y){sprite.xy=[x,y]}}}
+    runtimes.set(key,{sprite});installed.push({key,asset:model.layers[0].asset})
+  }
+  return runtimes.get(key)
+}}
+const state={id:7,asset:'fx_in_inndgn_suspensionlight',alpha:1,color:'#ffffff',depth:1600}
+const context={app:{renderer:{width:1280,height:720,resolution:1}},cameraContainer:{},
+  selectedSong:{value:{id:'test'}},stageEffectIndex:{value:bound},suspensionTrackKey:'test:',
+  suspensionTrack:{value:{events:[]}},suspensionTempo:{value:120},stageTime:{value:0},
+  visibleSuspensionlightIds:{value:[]},beamEffectsEnabled:{value:true},environmentScale:{value:1},
+  suspensionSprites:renderer,newSuspensionlightsAt:()=>[state],suspensionlightModelForAsset,
+  suspensionlightLayout:()=>({x:0,y:0,scaleX:2,scaleY:3,rotation:0}),parseHexColor:()=>0xffffff}
+vm.createContext(context);vm.runInContext(render,context);context.syncSuspensionlights()
+state.asset='fx_in_stofft_suspensionlight';context.syncSuspensionlights()
+assert.deepEqual(installed.map(x=>x.asset),['fx_in_inndgn_suspensionlight','fx_in_stofft_suspensionlight'])
+assert.equal(runtimes.get(installed[0].key).sprite.visible,false)
+assert.equal(runtimes.get(installed[1].key).sprite.visible,true)
+assert.deepEqual(runtimes.get(installed[1].key).sprite.xy,[2,3])
+state.asset='unknown';context.syncSuspensionlights()
+assert.equal(installed.length,2)
+assert.ok([...runtimes.values()].every(r=>!r.sprite.visible))
+// Preload every authored Sprite for this song before seek/play, following
+// native PreloadEffect rather than discovering a custom texture on its frame.
+const prepared=[]
+renderer.prepare=async model=>{prepared.push(model.layers[0].asset);return true}
+Object.assign(context,{objectLayersEnabled:{value:false},lightingEnabled:{value:true},stageDisposed:false})
+context.selectedSong.value={id:'cgtocc_live_effect'}
+vm.runInContext(sfc.match(/async function prepareStageLighting\([^]*?\n\}/)[0],context)
+assert.equal(await context.prepareStageLighting(),true)
+assert.deepEqual(prepared,[...spriteData.songAssets.cgtocc_live_effect])
+renderer.prepare=async()=>false
+await assert.rejects(context.prepareStageLighting(),/资源尚未就绪/)
 const at = t => newSuspensionlightsAt(fixture.events, t)
 const visible = t => at(t).filter(s => s.alpha > .001)
 const close = (actual, expected) => assert.ok(Math.abs(actual-expected)<1e-10, `${actual} != ${expected}`)
@@ -131,7 +193,8 @@ assert.equal(beatCoverage(120).newSuspensionlightTempoPending,0)
 assert.equal(beatCoverage(120).newSuspensionlightUnimplementedCommands,0)
 assert.equal(buildStageVfxCoverage({id:'lazy'},{stageEffects:{newSuspensionlightSongs:{lazy:{eventCount:99,unimplementedCommands:8}}}}).newSuspensionlightUnimplementedCommands,null)
 if (process.argv.includes('--published-assets')) {
-  const index = JSON.parse(fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url)))
+  const indexText=fs.readFileSync(new URL('../public/assets/live-chibi/stage-effects/index.json',import.meta.url),'utf8')
+  const index = attachNativeSuspensionSprites(JSON.parse(indexText),spriteData,createHash('sha256').update(indexText).digest('hex'))
   assert.equal(Object.keys(index.newSuspensionlightSongs).length,19)
   assert.equal(Object.values(index.newSuspensionlightSongs).reduce((n,s)=>n+s.eventCount,0),60358)
   assert.deepEqual(index.newSuspensionlightSongs.tkstp1_live_effect.source,fixture.source)
@@ -150,6 +213,18 @@ if (process.argv.includes('--published-assets')) {
   for (const [song, descriptor] of Object.entries(index.newSuspensionlightSongs)) {
     const track = JSON.parse(fs.readFileSync(new URL(`../public/assets/live-chibi/${descriptor.file}`,import.meta.url)))
     corpusEvents += track.events.length
+    const trackBytes=fs.readFileSync(new URL(`../public/assets/live-chibi/${descriptor.file}`,import.meta.url))
+    assert.equal(createHash('sha256').update(trackBytes).digest('hex'),spriteData.trackSha256[song])
+    assert.deepEqual([...new Set(track.events.filter(e=>e.command==='NewSuspensionlight_create'&&!e.erase&&e.values[1]).map(e=>e.values[1]))],spriteData.songAssets[song])
+    for(const event of track.events.filter(e=>e.command==='NewSuspensionlight_create'&&!e.erase&&e.values[1]))
+      assert.ok(suspensionlightModelForAsset(index,event.values[1]),`${song}: unbound Sprite ${event.values[1]}`)
+    if(song==='cgtocc_live_effect'){
+      const lamps=newSuspensionlightsAt(track.events,26500)
+      const custom=lamps.find(s=>s.id===1401),standard=lamps.find(s=>s.id===1403)
+      assert.equal(custom.asset,'fx_in_inndgn_suspensionlight')
+      assert.equal(custom.alpha,.35)
+      assert.equal(standard.alpha,1)
+    }
     const chart = JSON.parse(fs.readFileSync(new URL(`../public/data/song_charts/${song.split('_')[0]}-1.json`,import.meta.url)))
     const tempo = constantSuspensionTempo(chart)
     const colorEvents = track.events.filter(e=>e.command==='NewSuspensionlight_coloranim')

@@ -582,7 +582,7 @@ import { syncNativeBodyColor, releaseNativeBodyColor, registerNativeBodyRenderer
 import { footUniformsAt } from '../core/chibiNativeFootColors.js'
 import { releaseFootLighting } from '../core/chibiFootLighting.js'
 import { stagelightStatesAt, sampleStagelight, createStagelightRuntime, applyNativeLampColor } from '../core/chibiStagelights.js'
-import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo } from '../core/chibiSuspensionlights.js'
+import { newSuspensionlightsAt, suspensionlightLayout, constantSuspensionTempo, suspensionlightModelForAsset } from '../core/chibiSuspensionlights.js'
 import { createPenlightSampler } from '../core/chibiPenlights.js'
 import { mouthFixAt } from '../core/chibiMouthFix.js'
 import { randomMotionDueTime, randomMotionGateAt } from '../core/chibiMotionOffset.js'
@@ -2436,17 +2436,20 @@ function syncSuspensionlights() {
   for (const runtime of suspensionSprites.runtimes.values()) runtime.sprite.visible = false
   if (!beamEffectsEnabled.value) return
   const track = suspensionTrack.value
-  const model = stageEffectIndex.value?.newSuspensionlight
-  if (!track || !model) return
+  if (!track) return
   const width = app.renderer.width / app.renderer.resolution
   const height = app.renderer.height / app.renderer.resolution
   for (const state of newSuspensionlightsAt(track.events, stageTime.value, { tempo: suspensionTempo.value })) {
-    if (state.alpha <= .001 || state.asset !== model.layers[0].asset) continue
-    const runtime = suspensionSprites.ensure(`${songId}:${state.id}`, model, stageEffectIndex.value.assets)
+    if (state.alpha <= .001) continue
+    const model = suspensionlightModelForAsset(stageEffectIndex.value, state.asset)
+    if (!model) continue
+    // Create may reuse an ID with a different Sprite. Keep texture identity in
+    // the runtime key so an earlier generation cannot keep its old beam.
+    const runtime = suspensionSprites.ensure(`${songId}:${state.id}:${state.asset}`, model, stageEffectIndex.value.assets)
     if (!runtime) continue
     const layout = suspensionlightLayout(state, width, height, environmentScale.value)
     runtime.sprite.position.set(layout.x, layout.y)
-    runtime.sprite.scale.set(layout.scaleX, layout.scaleY)
+    runtime.sprite.scale.set(layout.scaleX * model.layers[0].scaleX, layout.scaleY * model.layers[0].scaleY)
     runtime.sprite.rotation = layout.rotation
     runtime.sprite.alpha = state.alpha
     runtime.sprite.tint = parseHexColor(state.color)
@@ -3842,9 +3845,11 @@ async function prepareStageLighting() {
   for(const asset of pinAssets)
     jobs.push(pinspotlightSprites.prepare(pinspotlightModelForAsset(index.pinspotlight,index.assets,asset),index.assets))
   if(jobs.length)jobs.push(spotlightBackgroundSprites.prepare(index.spotlightBackground,index.assets))
+  if(beamEffectsEnabled.value)for(const asset of index.newSuspensionlightSpriteAssets?.[song.id] || [])
+    jobs.push(suspensionSprites.prepare(suspensionlightModelForAsset(index,asset),index.assets))
   const ready=await Promise.all(jobs)
   if(stageDisposed || selectedSong.value!==song)return false
-  if(!ready.every(Boolean))throw new Error('舞台聚光灯或蒙版资源尚未就绪')
+  if(!ready.every(Boolean))throw new Error('舞台灯光或蒙版资源尚未就绪')
   return true
 }
 
