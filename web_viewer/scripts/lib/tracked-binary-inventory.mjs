@@ -184,7 +184,7 @@ function classify(relativePath) {
     }
   }
 
-  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos|stage-new-suspension-sprites)\//)
+  const stageNativeTexture = relativePath.match(/^web_viewer\/public\/data\/(stage-object-emitters|stage-searchlights|stage-whole-screen|stage-backmonitor-logos|stage-new-suspension-sprites|stage-built-in-objects)\//)
   if (stageNativeTexture) {
     return {
       category: 'stable-promoted-asset',
@@ -192,7 +192,9 @@ function classify(relativePath) {
       consumer: ['ChibiStageViewer'],
       reason_tracked: 'RAW-derived native stage effect texture; identity is serialized file + PathID and the filename is its SHA-256 prefix',
       force_add_allowed: false,
-      owner_release: stageNativeTexture[1]==='stage-new-suspension-sprites'
+      owner_release: stageNativeTexture[1]==='stage-built-in-objects'
+        ? '2026-10-20-apk-built-in-objects-001'
+        : stageNativeTexture[1]==='stage-new-suspension-sprites'
         ? '2026-10-20-native-suspension-sprites-001'
         : stageNativeTexture[1]==='stage-backmonitor-logos'
         ? '2026-10-19-native-backmonitor-logos-001'

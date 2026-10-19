@@ -2,6 +2,7 @@
 import fs from 'node:fs'
 import crypto from 'node:crypto'
 import { attachObjectEmitters } from '../src/core/chibiObjectEmitters.js'
+import { attachBuiltInObjects } from '../src/core/chibiBuiltInObjects.js'
 import { attachChibiParticleLayers } from '../src/core/chibiParticleTimeline.js'
 import { attachChibiFloor } from '../src/core/chibiFloorParticles.js'
 import { attachBloom } from '../src/core/chibiBloomParticles.js'
@@ -16,12 +17,13 @@ const read = path => {
 const sourcePath = 'assets/live-chibi/object-layers/index.json'
 const source = read(sourcePath), songs = read('assets/live-chibi/choreography/index.json').songs
 let index = attachObjectEmitters(source, read('data/stage-object-emitters.json'), inputs[sourcePath], inputs['assets/live-chibi/choreography/index.json'])
+index = attachBuiltInObjects(index, read('data/stage-built-in-objects.json'), inputs[sourcePath])
 index = attachChibiParticleLayers(index, read('assets/live-chibi/particle-layers/index.json'))
 index = attachChibiFloor(index, read('assets/live-chibi/floor-particles/index.json'))
 index = attachBloom(index, read('data/stage-bloom-particles.json'), inputs[sourcePath])
 const assets = {}
 for (const song of songs) for (const event of song.objectLayerEvents || []) {
-  const name = event.asset, original = source.assets[name]
+  const name = event.asset, original = index.assets[name]
   const coverage = ['sprite', 'mixed'].includes(original?.kind)
     ? { consumer: 'spriteInstances', partialMarkers: [], deferredSystems: 0, status: 'mapped_unverified' }
     : objectParticleCoverage(index.assets[name])

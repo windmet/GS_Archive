@@ -4,6 +4,8 @@
 
 同日续批：[自定义新悬灯 Sprite](NATIVE_NEW_SUSPENSION_SPRITES_20261020.md) 已定位并修复公共资源选择，覆盖7份编排的265条Create；Change to Chance 24.4秒ID1401已能实际显示，normal_show参数无需改动。这里的“自定义prefab”假设由原生共用prefab换Sprite链取代。下一项为Time Before Time内置对象；原片全差异、完整Unity/设备等价继续保留。
 
+再续批：[Time Before Time内置对象](NATIVE_TIBETI_BUILT_IN_OBJECTS_20261020.md) 已补四个APK对象的来源与消费者，包含Sprite材质/几何、water粒子和两套AlphaTex。有效运行时源缺失从4降为0，native emitter为82；无consumer32种仍开放。新确认的下一公共问题是其他NativeLightQuad调用方的ADD_NPM独立alpha因子；本批已纠正object消费者，未外推到所有灯具。
+
 ## 当前基线
 
 - RAW 矩阵重新验证：118 份编排、58 类原始行、261,812 行，其中一行非时序说明。矩阵存在不代表字段或原片视觉完整。

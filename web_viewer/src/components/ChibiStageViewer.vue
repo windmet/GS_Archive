@@ -609,6 +609,7 @@ import { createPinspotlightSprites, destroyPinspotlightSprites, pinspotlightMode
 import { chibiGroundRegistration, projectChibiGround, chibiPositionStateAt, resolveChibiPlacement } from '../core/chibiStageCoordinates.js'
 import { characterShadowLayout, installCharacterShadowFollower } from '../core/chibiCharacterShadow.js'
 import { createSpotlightSpriteStore } from '../core/chibiSpotlightSprites.js'
+import { loadBuiltInObjectSprites } from '../core/chibiBuiltInObjects.js'
 import { backmonitorRegistration, projectChibiBackmonitor, chibiBackmonitorStateAt } from '../core/chibiBackmonitorCoordinates.js'
 import { imageObjectsAt, imageObjectLayout } from '../core/chibiImageObjects.js'
 import { loadChibiParticleLayer, updateChibiParticleLayer } from '../utils/chibiParticleLayers.js'
@@ -2912,6 +2913,7 @@ function objectLayerStatesAt(milliseconds) {
 }
 
 async function loadObjectLayerRuntime(entry) {
+  if(entry.nativeSpriteShader)return loadBuiltInObjectSprites(PIXI,app.renderer,entry,path=>loadImageLayerTexture(path))
   if(entry.nativeParticleAnimation)return {...await loadObjectEmitters(PIXI,entry.nativeParticleAnimation,path=>loadImageLayerTexture(path,15000)),entry}
   if (entry.bloomAnimation) return {...await loadChibiBloom(PIXI,entry.bloomAnimation,path=>loadImageLayerTexture(path,10000)),entry}
   if (entry.floorAnimation) {
@@ -2957,6 +2959,7 @@ async function loadObjectLayerRuntime(entry) {
 function destroyObjectLayerRuntime(runtime) {
   if (!runtime || runtime.destroyed) return
   runtime.destroyed = true
+  runtime.releaseNativeMaterials?.()
   releaseObjectRendererPlanes(runtime)
   runtime?.container?.removeFromParent()
   runtime?.container?.destroy({ children: true })

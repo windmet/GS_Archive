@@ -1,4 +1,23 @@
 """Source gates for the two per-particle mask materials supported by Web."""
+
+def native_mask_tree(obj):
+    """Read typed RAW or the same ToJ.Mask layout stripped in APK resources."""
+    import struct
+    tree=obj.read_typetree(check_read=False)
+    if '_isMaskingEnabled' in tree:return tree
+    script=obj.read(check_read=False).m_Script.read()
+    if (script.m_Namespace,script.m_ClassName)!=('ToJ','Mask'):
+        raise ValueError('Unknown stripped native mask class')
+    raw=obj.get_raw_data()
+    if len(raw)!=84 or tree.get('m_Name') or struct.unpack_from('<i',raw,28)[0]!=0:
+        raise ValueError('Unsupported stripped native mask layout')
+    enabled,horiz,vert,border,alpha,file,path,tx,ty,ox,oy,count=struct.unpack_from('<IIIfIiqffffi',raw,32)
+    if any(v not in (0,1) for v in [enabled,horiz,vert,alpha]) or count!=0:
+        raise ValueError('Unsupported stripped native mask flags/storage')
+    return {**tree,'_isMaskingEnabled':enabled,'_clampAlphaHorizontally':horiz,
+        '_clampAlphaVertically':vert,'_clampingBorder':border,'_useMaskAlphaChannel':alpha,
+        'mainTex':{'m_FileID':file,'m_PathID':path},'mainTexTiling':{'x':tx,'y':ty},
+        'mainTexOffset':{'x':ox,'y':oy},'createdMatsStorage':[]}
 def native_particle_texture_sampling(texture):
     settings=texture.m_TextureSettings
     if settings.m_FilterMode!=1 or settings.m_WrapU!=settings.m_WrapV or settings.m_WrapU not in [0,1]:

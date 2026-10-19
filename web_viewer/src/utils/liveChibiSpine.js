@@ -1,4 +1,5 @@
 import { attachObjectEmitters } from '../core/chibiObjectEmitters.js'
+import { attachBuiltInObjects } from '../core/chibiBuiltInObjects.js'
 import { attachSearchlights } from '../core/chibiSearchlights.js'
 import { attachWholeScreen } from '../core/chibiWholeScreen.js'
 import { attachNativeOldSuspension, validateOldSuspensionTrack } from '../core/chibiOldSuspensionlights.js'
@@ -187,11 +188,12 @@ export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,opti
 export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
   let index=await liveJson('object-layers/index.json',{signal},true)
   if (!index) return null
-  const [emitterText,objectText,choreographyText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal})])
+  const [emitterText,objectText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
   const objectHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(objectText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
   const choreographyHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
   index=attachObjectEmitters(index,JSON.parse(emitterText),objectHash,choreographyHash)
+  index=attachBuiltInObjects(index,JSON.parse(builtInText),objectHash)
   // Start refinements independently; never mutate the shared cached source.
   let refined=index
   for(const [file,attach] of [['particle-layers',attachChibiParticleLayers],['floor-particles',attachChibiFloor]]) {

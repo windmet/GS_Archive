@@ -26,7 +26,7 @@ export async function loadObjectEmitters(PIXI,model,loadTexture) {
       const sprites=Array.from({length:system.capacity},()=> {
         const sprite=new PIXI.Sprite(frames[0]);sprite.anchor.set(.5);sprite.visible=false;sprite.zIndex=system.sortingOrder
         sprite.blendMode=system.blend==='normal'?PIXI.BLEND_MODES.NORMAL_NPM:PIXI.BLEND_MODES.ADD_NPM
-        if(system.maskTexture)bindNativeParticleMask(sprite,{sprite:masks.get(system.maskTexture),kind:system.blend,materialTint:system.materialTint})
+        if(system.maskTexture || system.blend==='add')bindNativeParticleMask(sprite,{sprite:system.maskTexture?masks.get(system.maskTexture):null,kind:system.blend,materialTint:system.materialTint})
         container.addChild(sprite);return sprite
       })
       return {system,frames,sprites,w,h}
