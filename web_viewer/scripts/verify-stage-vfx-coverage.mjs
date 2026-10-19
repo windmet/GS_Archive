@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { buildStageVfxCoverage } from '../src/core/stageVfxCoverage.js'
+import { buildStageVfxCoverage, objectParticleCoverage } from '../src/core/stageVfxCoverage.js'
 
 const json = path => JSON.parse(readFileSync(new URL(`../public/assets/live-chibi/${path}`, import.meta.url), 'utf8'))
 const songs = json('choreography/index.json').songs
@@ -15,6 +15,8 @@ const indexes = {
 const coverages = songs.map(song => buildStageVfxCoverage(song, indexes))
 assert.equal(coverages.length, 118)
 const byId = Object.fromEntries(coverages.map(entry => [entry.songId, entry]))
+assert.equal(byId.grwsml_live_effect.backmonitorLogoStatus,'partial_native_selection_reference_clock')
+assert.equal(byId.drv999_live_effect.backmonitorLogoStatus,'partial_native_selection_reference_clock')
 assert.deepEqual(byId.drvalv_live_effect.objectParticles,
   ['fx_in_drvalv_panel', 'fx_in_tfmvmt_Incidentlight'])
 assert.deepEqual(byId.brndnf_live_effect.objectParticles, ['fx_in_brndnf_ring'])
@@ -30,6 +32,19 @@ assert.deepEqual(synthetic.objectMissing, ['missing_object'])
 assert.deepEqual(synthetic.objectOther, ['unknown_kind'])
 assert.deepEqual(synthetic.missingMedia, ['missing_movie', 'missing_image'])
 assert.equal(synthetic.status, 'partial')
+// Native consumers must not appear missing, and must supersede stale floor metadata.
+const nativeEntry = { kind: 'particle', nativeParticleAnimation: { systems: [{ partial: ['noise_preview'] }], deferred: [] },
+  floorAnimation: { deferredSystems: [{ reason: 'old' }] } }
+const nativeCoverage = buildStageVfxCoverage({id:'native',objectLayerEvents:[{asset:'native'}]},
+  {objectLayers:{assets:{native:nativeEntry}}})
+assert.deepEqual(nativeCoverage.objectParticlePilots, ['native'])
+assert.deepEqual(nativeCoverage.objectParticleUnimplemented, [])
+assert.deepEqual(nativeCoverage.objectParticlePartial, ['native'])
+assert.equal(nativeCoverage.objectParticleConsumers.native.deferredSystems, 0)
+assert.deepEqual(objectParticleCoverage({nativeParticleDeferred:{systems:[],deferred:[{}]}}),
+  {consumer:null,partialMarkers:[],deferredSystems:1,status:'missing'})
+assert.equal(objectParticleCoverage({nativeParticleAnimation:{systems:[{}],deferred:[]}}).status,'mapped_unverified')
+assert.equal(objectParticleCoverage({bloomAnimation:{systems:[]}}).consumer,'bloomAnimation')
 const unresolved = buildStageVfxCoverage({ id:'unaddressed',
   wholeScreenColorLayerEvents:[{time:16200,id:null,hide:true,unresolvedReason:'missing_layer_identity'}] })
 assert.equal(unresolved.sourceEvents.wholeScreenColorLayer, 1)

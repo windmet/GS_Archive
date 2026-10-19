@@ -63,7 +63,7 @@ for(const body of [1,2,3,4,5]) {
     namesById.set(id,names)
   }
   const actor=()=>{
-    const skeleton=new Skeleton(data),stateData=new AnimationStateData(data);stateData.defaultMix=.12
+    const skeleton=new Skeleton(data),stateData=new AnimationStateData(data);stateData.defaultMix=0
     const skin=new Skin('native-chain-base')
     for(const name of ['body','head','cos_defo']){const source=data.findSkin(name);if(source)skin.addSkin(source)}
     skeleton.setSkin(skin);skeleton.setToSetupPose()

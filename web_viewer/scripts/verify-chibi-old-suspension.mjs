@@ -1,9 +1,19 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-import { oldSuspensionlightsAt,oldSuspensionlightLayout } from '../src/core/chibiOldSuspensionlights.js'
+import { sampleStreamedCurve } from '../src/core/chibiNativeAnimation.js'
+import { createHash,webcrypto } from 'node:crypto'
+import { oldSuspensionlightsAt,oldSuspensionlightLayout,attachNativeOldSuspension,validateOldSuspensionTrack } from '../src/core/chibiOldSuspensionlights.js'
 import { nativeLightCameraAt,nativeLightScreenLayout,nativeLightLocalLayout } from '../src/core/chibiNativeLightProjection.js'
 const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`,import.meta.url)))
 const model=read('chibi-old-suspension-model.json'),moon=read('chibi-old-suspension-events.json')
+const nativeCurve=model.styles.Suspensionlight.clips.angle60.curve
+assert.ok(Number.isNaN(sampleStreamedCurve(nativeCurve,NaN)),
+ 'Invalid native time must not silently become the finite initial pose')
+assert.equal(sampleStreamedCurve(nativeCurve,-1),nativeCurve.initialValue)
+assert.equal(sampleStreamedCurve(nativeCurve,0),0)
+assert.equal(sampleStreamedCurve(nativeCurve,1),60)
+assert.equal(sampleStreamedCurve(nativeCurve,2),0)
+
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`)
 const row=(time,command='Suspensionlight',changes={})=>({time,command,id:1,erase:false,
  values:['1','1','1','2000','right','1000','30','10','360','#33f170','1650','3000','0','0','0'].map((v,i)=>changes[i+1]??v),extraValues:{}})
@@ -57,6 +67,79 @@ close(at(delayedPulse,750)[0].alpha,.5)
 close(at(delayedPulse,1250)[0].alpha,.5)
 assert.equal(at(delayedPulse,1750)[0].alpha,0)
 assert.deepEqual(at(changed,600),at(changed,600))
+// _4 is a native two-color RGBA Yoyo tween, not a hue or alpha pulse.
+const colorCycle=[row(0,'Suspensionlight_4',{10:'#ff000080',12:'2000',13:'#0000ff00',14:'500',15:'0'})]
+assert.equal(at(colorCycle,250)[0].color,'#ff0000')
+close(at(colorCycle,250)[0].alpha,128/255)
+assert.equal(at(colorCycle,1000)[0].color,'#800080')
+close(at(colorCycle,1000)[0].alpha,64/255)
+assert.equal(at(colorCycle,1500)[0].color,'#0000ff')
+assert.equal(at(colorCycle,1500)[0].alpha,0)
+assert.equal(at(colorCycle,2500)[0].color,'#ff0000')
+const reverseCycle=[row(0,'Suspensionlight_4',{10:'#ff0000',12:'2000',13:'#0000ff',14:'500',15:'1'})]
+assert.equal(at(reverseCycle,250)[0].color,'#0000ff')
+assert.equal(at(reverseCycle,1500)[0].color,'#ff0000')
+const fourthExit={...row(1200,'Suspensionlight_4'),erase:true,extraValues:{value101:'1'}}
+const exitColor=at([...colorCycle,fourthExit],1300)[0]
+assert.equal(exitColor.color,at(colorCycle,1200)[0].color)
+close(exitColor.alpha,at(colorCycle,1200)[0].alpha*.25)
+assert.equal(at([...colorCycle,fourthExit],1400).length,0)
+assert.deepEqual(at(colorCycle,1000),at(colorCycle,1000))
+const tempoHistory=t=>t<500?120:180
+const tempoCommands=[row(0,'Suspensionlight_2',{12:'1'}),row(1000,'Suspensionlight_2',{12:'1'})]
+close(oldSuspensionlightsAt(tempoCommands,250,model,{tempoAt:tempoHistory})[0].alpha,.25)
+close(oldSuspensionlightsAt(tempoCommands,1000+60000/180/2,model,{tempoAt:tempoHistory})[0].alpha,.25)
+
+// The native supplement, loader and MOON checks read the gitignored stage
+// catalog. Without it the SFC lifecycle runs on a three-song index that keeps
+// only the fields syncOldSuspensionlights reads.
+const publishedAssets=process.argv.includes('--published-assets')
+let nativeIndex={oldSuspensionlightSongs:{
+ bnckgy_live_effect:{nativeCapability:'supported',file:'bnckgy.json'},
+ infoct_live_effect:{nativeCapability:'supported',file:'infoct.json'},
+ steqmg_live_effect:{nativeCapability:'partial',file:'steqmg.json'}}}
+if(publishedAssets){
+const base=new URL('../public/assets/live-chibi/',import.meta.url)
+const indexText=fs.readFileSync(new URL('stage-effects/index.json',base),'utf8')
+const supplement=JSON.parse(fs.readFileSync(new URL('../public/data/stage-old-suspension.json',import.meta.url),'utf8'))
+const hash=text=>createHash('sha256').update(text).digest('hex')
+nativeIndex=attachNativeOldSuspension(JSON.parse(indexText),supplement,hash(indexText))
+assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='supported').length,96)
+assert.equal(Object.values(nativeIndex.oldSuspensionlightSongs).filter(d=>d.nativeCapability==='partial').length,9)
+assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.nativeCapability,'partial')
+assert.equal(nativeIndex.oldSuspensionlightSongs.steqmg_live_effect.reasons[0].reason,'nonpositive_animator_period')
+assert.equal(nativeIndex.oldSuspensionlightSongs.bnckgy_live_effect.nativeCapability,'supported')
+assert.throws(()=>attachNativeOldSuspension(JSON.parse(indexText),supplement,'0'.repeat(64)),/match/)
+const broken=structuredClone(supplement);broken.songs.bnckgy_live_effect.eventCount++
+assert.throws(()=>attachNativeOldSuspension(JSON.parse(indexText),broken,hash(indexText)),/capability/)
+for(const descriptor of Object.values(nativeIndex.oldSuspensionlightSongs)) {
+ const text=fs.readFileSync(new URL(descriptor.file,base),'utf8'),track=JSON.parse(text)
+ if(['supported','partial'].includes(descriptor.nativeCapability)) {
+  validateOldSuspensionTrack(track,descriptor,hash(text))
+  const sampleTimes=new Set(track.events.flatMap(e=>[e.time,e.time+100,e.time+1500]))
+  for(const t of sampleTimes)for(const state of oldSuspensionlightsAt(track.events,t,nativeIndex.oldSuspensionlight,{tempo:140}))
+    if(state.unresolved)assert.equal(state.alpha,0)
+    else for(const field of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(state[field]))
+ }
+}
+const descriptor=nativeIndex.oldSuspensionlightSongs.bnckgy_live_effect
+const trackText=fs.readFileSync(new URL(descriptor.file,base),'utf8')
+assert.throws(()=>validateOldSuspensionTrack(JSON.parse(trackText),descriptor,'0'.repeat(64)),/mismatch/)
+// Run actual bounded loaders with a controllable transport.
+const spineSource=fs.readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8')
+const start=spineSource.indexOf('export async function fetchLiveChibiStageEffectIndex(')
+const end=spineSource.indexOf('export ',spineSource.indexOf('export async function fetchLiveChibiOldSuspensionTrack(')+7)
+const section=spineSource.slice(start,end).replaceAll('export ','')
+const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeOldSuspension','validateOldSuspensionTrack',section+';return {index:fetchLiveChibiStageEffectIndex,track:fetchLiveChibiOldSuspensionTrack}')(
+ transport,'/assets/live-chibi',webcrypto,attachNativeOldSuspension,validateOldSuspensionTrack)
+const transport={load:async path=>path==='/data/stage-old-suspension.json'?JSON.stringify(supplement):path.endsWith('/index.json')?indexText:trackText}
+const loader=makeLoader(transport)
+assert.equal((await loader.index()).oldSuspensionlightContract,'native-old-suspension-v1')
+assert.equal((await loader.track(descriptor)).events.length,descriptor.eventCount)
+const abort=new AbortController();abort.abort()
+await assert.rejects(loader.track(descriptor,{signal:abort.signal}),{name:'AbortError'})
+await assert.rejects(makeLoader({load:async()=>{throw new Error('HTTP 404')}}).index(),/404/)
+}
 // Independent matrix oracle: root Rz * LeftRightBase Rx * fixed Rz60 *
 // Animator Rz(a), with texture/screen Y reflection. Check corners, not angles
 // alone, so a wrong reflection cannot pass by matching a beam's centre ray.
@@ -107,7 +190,7 @@ for(const rotation of [-90,0,30])for(const zoom of [1,2]){
  close(Math.sin(local.rotation+.3),Math.sin(projected.rotation))
  close(local.scaleX*.82,projected.scaleX)
 }
-for(const t of [0,6000,20000,105100])for(const s of at(moon,t))for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
+for(const t of [0,6000,20000,105100])for(const s of at(moon,t))if(!s.unresolved)for(const key of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[key]))
 if(process.argv.includes('--published-assets')){
  const base=new URL('../public/assets/live-chibi/',import.meta.url)
  const index=JSON.parse(fs.readFileSync(new URL('stage-effects/index.json',base)))
@@ -124,7 +207,7 @@ if(process.argv.includes('--published-assets')){
    const before=state(19999).find(s=>s.key==='Suspensionlight:1'),after=state(20000).find(s=>s.key==='Suspensionlight:1')
    assert.ok(after.phase>=before.phase && after.phase-before.phase<.000001)
   }
-  for(const t of [6000,19000,28385,112900])for(const s of at(events,t))for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
+  for(const t of [6000,19000,28385,112900])for(const s of at(events,t))if(!s.unresolved)for(const k of ['alpha','angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]),`${id} ${s.key} ${k}`)
  }
  const choreography=JSON.parse(fs.readFileSync(new URL('choreography/index.json',base)))
  for(const song of choreography.songs)for(const event of song.cameraEvents||[]){
@@ -137,3 +220,68 @@ if(process.argv.includes('--published-assets')){
  assert.equal(count,88647);assert.equal(driveVariants,20)
 }
 console.log('PASS old suspension: native hue/BPM/linear pulse, fixed erase, active phase continuity, slow periods, independent hierarchy matrix, seek and corpus')
+
+// Actual SFC load lifecycle: source-qualified track, stale result and guard.
+const viewer=fs.readFileSync(new URL('../src/components/ChibiStageViewer.vue',import.meta.url),'utf8')
+const syncSection=viewer.slice(viewer.indexOf('function syncOldSuspensionlights()'),viewer.indexOf('function releaseSpotlights()'))
+const pending=[];let releases=0,repaints=0
+const selected={value:{id:'bnckgy_live_effect'}}
+const resources={value:nativeIndex}
+const requests=async descriptor=>new Promise(resolve=>pending.push({descriptor,resolve}))
+const mockStore={runtimes:new Map(),release(){releases++},ensure(){return null}}
+const syncFactory=new Function('selectedSong','stageEffectIndex','fetchLiveChibiOldSuspensionTrack','oldSuspensionSprites','oldSuspensionlightsAt','oldSuspensionlightLayout','nativeMotionTempoAt',`
+ let oldSuspensionTrackKey='',oldSuspensionTrack=null,oldSuspensionAbort=null,stageDisposed=false;
+ const app={renderer:{width:1280,height:720,resolution:1}},cameraContainer={},beamEffectsEnabled={value:true};
+ const visibleOldSuspensionlightIds={value:[]},stageTime={value:12000},environmentScale={value:1},motionClockTrack={value:null};
+ const unresolvedOldSuspensionlightIds={value:[]};
+ const requestPausedSuspensionRender=()=>{},parseHexColor=()=>0;
+ ${syncSection}
+ return {sync:syncOldSuspensionlights,track:()=>oldSuspensionTrack};
+`)
+const actualSync=syncFactory(selected,resources,requests,mockStore,oldSuspensionlightsAt,oldSuspensionlightLayout,()=>140)
+actualSync.sync();assert.equal(pending.length,1)
+selected.value={id:'infoct_live_effect'};actualSync.sync();assert.equal(pending.length,2)
+const settle=()=>new Promise(resolve=>setTimeout(resolve,0))
+pending[0].resolve({events:[]});await settle()
+assert.equal(actualSync.track(),null,'Prior song result cannot install after switch')
+pending[1].resolve({events:[]});await settle()
+assert.deepEqual(actualSync.track(),{events:[]})
+selected.value={id:'steqmg_live_effect'};actualSync.sync()
+assert.equal(actualSync.track(),null)
+assert.equal(pending.length,3,'Partial tracks must load normal instances while guarding affected generations')
+assert.equal(releases,3)
+resources.value={oldSuspensionlightSongs:{unbound:{nativeCapability:'unsupported',file:'unbound.json'}}}
+selected.value={id:'unbound'};actualSync.sync()
+assert.equal(pending.length,3,'An unbound native profile cannot load')
+console.log('PASS actual SFC native capability, track cancellation and stale-song completion')
+
+// A malformed Show is an active-generation mutation, not a skipped command.
+// Guard its later finite updates too; only completed deactivation resets it.
+const guarded=[row(0),row(500,'Suspensionlight',{4:''}),row(1000),row(1500)]
+guarded[3].erase=true
+assert.equal(at(guarded,499)[0].unresolved,null)
+assert.deepEqual(at(guarded,500),[{key:'Suspensionlight:1',alpha:0,unresolved:'nonfinite_animator_time'}])
+assert.equal(at(guarded,1200)[0].unresolved,'nonfinite_animator_time')
+assert.equal(at(guarded,1600)[0].unresolved,'nonfinite_animator_time')
+assert.equal(at(guarded,1700).length,0)
+const cancelled=[...guarded,row(1600)]
+assert.equal(at(cancelled,1800)[0].unresolved,'nonfinite_animator_time','Show cancels pending Erase without resetting Animator')
+const reset=[...guarded,row(1700)]
+assert.equal(at(reset,1800)[0].unresolved,null,'Completed Erase creates a fresh finite generation')
+const independent=[...guarded,{...row(500,'Suspensionlight',{1:'2'}),id:2}].sort((a,b)=>a.time-b.time)
+assert.equal(at(independent,1200).find(s=>s.key==='Suspensionlight:2').unresolved,null)
+assert.deepEqual(at(independent,499),at(guarded,499),'Backward seek restores pre-invalid generation')
+
+if(publishedAssets){
+const base=new URL('../public/assets/live-chibi/',import.meta.url)
+const moonDescriptor=nativeIndex.oldSuspensionlightSongs.montns_live_effect
+const moonTrack=JSON.parse(fs.readFileSync(new URL(moonDescriptor.file,base)))
+assert.equal(moonDescriptor.nativeCapability,'partial')
+for(const t of [1800,6000,20000,60000,80000,100000]){
+ const states=at(moonTrack.events,t)
+ assert.ok(states.some(s=>s.alpha>.001&&!s.unresolved),`MOON normal source lights must render at ${t}`)
+ for(const s of states.filter(s=>!s.unresolved))for(const k of ['angle','scaleX','scaleY'])assert.ok(Number.isFinite(s[k]))
+}
+assert.ok(at(moonTrack.events,4300).some(s=>s.key==='Suspensionlight:301'&&s.unresolved==='nonfinite_animator_time'))
+}
+console.log(`PASS per-generation guard, cancelled/completed Erase, independent lamps and rewind${publishedAssets?', MOON source lights':''}`)

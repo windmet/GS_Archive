@@ -22,6 +22,7 @@ function hue(color,shift) {
 const hex = c => '#'+[c.r,c.g,c.b].map(x=>Math.round(clamp(x)*255).toString(16).padStart(2,'0')).join('')
 function phaseAt(s,time) {return s.phase + (time-s.phaseTime)/s.period*2}
 function channelsAt(s,time) {
+  if(s.animatorGuard)return {alpha:0,color:s.color,unresolved:s.animatorGuard}
   const v=s.event.values,age=Math.max(0,time-s.event.time)
   let color=s.color,alpha=color.a,unresolved=null
   if (s.event.command==='Suspensionlight') alpha=color.a+(1-color.a)*outQuad(age/200)
@@ -46,6 +47,20 @@ function channelsAt(s,time) {
       const t=mod(elapsed,period+wait)
       alpha=t<period/2?t/(period/2):t<period?2-t/(period/2):0
     } else unresolved='invalid_show_period'
+  }
+  if (s.event.command==='Suspensionlight_4') {
+    // Native DOColor: half-period duration, initial delay, infinite Yoyo,
+    // explicit Linear ease. value15 reverses the two complete RGBA colors.
+    const second=rgba(v[12])||{r:0,g:0,b:0,a:0}
+    const reverse=n(v,14)!==0,from=reverse?second:s.color,to=reverse?s.color:second
+    const duration=n(v,11)/2,elapsed=Math.max(0,age-n(v,13))
+    if (!(duration>0)) unresolved='invalid_color_period'
+    else {
+      const leg=Math.floor(elapsed/duration),fraction=elapsed%duration/duration
+      const t=leg%2?1-fraction:fraction
+      color=Object.fromEntries(['r','g','b','a'].map(k=>[k,from[k]+(to[k]-from[k])*t]))
+      alpha=color.a
+    }
   }
   if (s.event.command==='Suspensionlight_5') {
     const delay=n(v,12),period=n(v,11)
@@ -74,15 +89,25 @@ export function oldSuspensionlightsAt(events, time, model, registration = {}) {
       continue
     }
     const period=n(v,3),color=rgba(v[9])||previous?.color
-    if(!(period>0) || !color)continue
+    // A zero-period Show still calls ApplyData on the native active object.
+    // Its Animator clock cannot be repaired by a later finite speed change.
+    // Keep the affected generation guarded until Erase actually deactivates
+    // it; do not discard the row and accidentally carry a normal pose on.
+    const animatorGuard=previous?.animatorGuard || (!(period>0)?'nonfinite_animator_time':null)
+    if(!color && !animatorGuard)continue
     // ApplyData changes speed without Animator.Play/Rebind. Only an inactive
     // generation starts the controller's default state at phase zero.
     const tempo=typeof registration.tempoAt==='function'?registration.tempoAt(event.time):registration.tempo
-    instances.set(key,{key,event,color,period,tempo,phase:previous?phaseAt(previous,event.time):0,phaseTime:event.time})
+    instances.set(key,{key,event,color:color||rgba('#00000000'),period,tempo,animatorGuard,
+      phase:animatorGuard?null:previous?phaseAt(previous,event.time):0,phaseTime:event.time})
   }
   const result=[]
   for (const s of instances.values()) {
     if(s.exit && time>=s.exit.time+200)continue
+    if(s.animatorGuard){
+      result.push({key:s.key,alpha:0,unresolved:s.animatorGuard})
+      continue
+    }
     const v=s.event.values,m=model?.styles?.[s.event.command],clip=m?.clips?.angle60
     if(!clip)continue
     const channels=channelsAt(s,time),phase=mod(phaseAt(s,time),clip.duration)
@@ -98,4 +123,41 @@ export function oldSuspensionlightsAt(events, time, model, registration = {}) {
 }
 export function oldSuspensionlightLayout(s,width,height,environmentScale=1) {
   return nativeLightScreenLayout(s,width,height,environmentScale)
+}
+
+
+const digest=value=>typeof value==='string' && /^[a-f0-9]{64}$/.test(value)
+export function attachNativeOldSuspension(index,data,indexHash) {
+  if(data?.schemaVersion!==1 || data.contract!=='native-old-suspension-v1'
+      || !digest(indexHash) || data.stageEffectIndexSha256!==indexHash
+      || Object.keys(data.songs||{}).length!==Object.keys(index.oldSuspensionlightSongs||{}).length)
+    throw new Error('Native old suspension input does not match stage effects')
+  const styles=data.model?.styles
+  for(const command of ['Suspensionlight','Suspensionlight_2','Suspensionlight_3','Suspensionlight_4','Suspensionlight_5']) {
+    const model=styles?.[command]
+    if(!model?.clips?.angle60 || model.clips.angle60.duration!==2 || model.layers?.length!==1
+        || model.layers[0].asset!=='sidelight' || model.layers[0].anchorX!==.5 || model.layers[0].anchorY!==0)
+      throw new Error('Invalid native old suspension prefab')
+  }
+  const songs={}
+  for(const [id,descriptor] of Object.entries(index.oldSuspensionlightSongs)) {
+    const track=data.songs[id]
+    if(!track || track.file!==descriptor.file || track.eventCount!==descriptor.eventCount
+        || !digest(track.fileSha256) || JSON.stringify(track.source)!==JSON.stringify(descriptor.source)
+        || !['supported','partial','unsupported'].includes(track.nativeCapability) || !Array.isArray(track.reasons)
+        || (track.nativeCapability==='supported')!==(track.reasons.length===0)
+        || (track.nativeCapability==='partial' && track.reasons.some(row=>!['nonpositive_animator_period','nonpositive_channel_period'].includes(row.reason)))
+        || !track.commands?.length || track.commands.some(command=>!Object.hasOwn(styles,command)))
+      throw new Error('Invalid native old suspension capability/source')
+    songs[id]={...descriptor,...track,previewEnabled:['supported','partial'].includes(track.nativeCapability),referenceProjection:'native-stage-camera-v1'}
+  }
+  return {...index,oldSuspensionlight:data.model,oldSuspensionlightSongs:songs,oldSuspensionlightContract:data.contract}
+}
+
+export function validateOldSuspensionTrack(track,descriptor,hash) {
+  if(!digest(hash) || hash!==descriptor.fileSha256 || !['supported','partial'].includes(descriptor.nativeCapability)
+      || !Array.isArray(track?.events) || track.events.length!==descriptor.eventCount
+      || JSON.stringify(track.source)!==JSON.stringify(descriptor.source))
+    throw new Error('Native old suspension track/source mismatch')
+  return track
 }

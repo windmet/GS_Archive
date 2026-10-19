@@ -1,11 +1,10 @@
-// CSV depth coordinates and stage art must share a fixed design-space origin.
-// Study's platform centres (600,620), (950,750), (1300,660) in the
-// 1900x1060 art register CSV Y 270/140/230 at baseline 540 in 1280x720.
-// The former viewport-height * .82 placed every stage 50.4 design pixels
-// farther forward, and drifted relative to the art on letterboxed canvases.
-// This common 2D registration is reference-calibrated, not Unity projection.
+import { nativeCharacterGeometry } from './chibiNativeCharacterGeometry.js'
+
+// SetPosition (0x221bea0) uses the common ScriptPosToStagePos origin (0,360,0).
+// The former baseline540 + (180-scriptY) was algebraically the same result;
+// keep that registration while replacing its visual-calibration explanation.
 export function chibiGroundRegistration() {
-  return { baselineY: 540, id: 'design-space-ground-v1' }
+  return { originY: nativeCharacterGeometry.originY, id: 'native-character-plane-v1' }
 }
 
 // Independent position commands own formation and off-stage visibility.
@@ -29,9 +28,8 @@ export function resolveChibiPlacement(positionState, motionEvent, fallbackX) {
 export function projectChibiGround(songCode, coordinates, width, height) {
   const fit = Math.min(width / 1280, height / 720)
   const registration = chibiGroundRegistration(songCode)
-  const baseline = height * 0.5 + (registration.baselineY - 360) * fit
   return {
     x: width * 0.5 + coordinates.x * fit,
-    y: baseline + (180 - coordinates.y) * fit,
+    y: height * 0.5 + (registration.originY - coordinates.y) * fit,
   }
 }

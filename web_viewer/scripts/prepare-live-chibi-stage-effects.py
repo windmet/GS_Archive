@@ -24,6 +24,7 @@ from live_chibi_character_shadow import extract_character_shadow
 from live_chibi_old_suspension import old_suspension_model
 from live_chibi_backmonitor_logo import logo_model, extract_logo_source
 from live_chibi_backmonitor_layers import extract_backmonitor_layers
+from live_chibi_backmonitor_geometry import backmonitor_geometry
 from live_chibi_raw_semantics import text_asset_payload, sha256_file
 
 
@@ -137,7 +138,7 @@ def main() -> None:
     old_animation = {}
     old_roots = [audit.inspect_prefab(o, old_animation) for o in environment.objects
                  if o.type.name == 'GameObject' and o.read().m_Name in {
-                     'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_5'}]
+                     'LiveObjectSuspensionlight','LiveObjectSuspensionlight_2','LiveObjectSuspensionlight_3','LiveObjectSuspensionlight_4','LiveObjectSuspensionlight_5'}]
     old_suspension = old_suspension_model(old_roots, old_animation)
     backmonitor_logo = logo_model(extract_logo_source(environment))
     backmonitor_layers, backmonitor_assets = extract_backmonitor_layers(environment, output_root)
@@ -193,16 +194,14 @@ def main() -> None:
                 target.write_text(json.dumps(old_track,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
                 old_suspension_songs[script.m_Name] = {'file':f'stage-effects/{relative}',
                     'eventCount':len(old_events), 'source':old_track['source'],
-                    # Moon and the shared Growing/Drive families are recording
-                    # checked previews; unrelated director planes remain guarded.
-                    'previewEnabled':script.m_Name=='montns_live_effect' or script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')),
-                    'referenceProjection':'stage-rig-v1' if script.m_Name.startswith(('grwsml_live_effect','drvalv_live_effect')) else 'legacy-half-plane'}
+                    'previewEnabled':False,
+                    'referenceProjection':'native-stage-camera-v1'}
             events = suspensionlight_events(payload)
             if not events: continue
             if script.m_Name in suspension_songs:
                 raise ValueError('Ambiguous new-suspension track: ' + script.m_Name)
             track = {'events': events,
-                'status': 'partial_native_show_rotate_scale_fade_reference_projection',
+                'status': 'native_channels_reference_projection_constant_tempo_only',
                 'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
                            'serializedFile': obj.assets_file.name, 'pathId': str(obj.path_id),
                            'sha256': hashlib.sha256(payload).hexdigest()}}
@@ -215,7 +214,8 @@ def main() -> None:
                 'unimplementedCommands': sum(e['command'] not in {
                     'NewSuspensionlight_create', 'NewSuspensionlight_normal_show',
                     'NewSuspensionlight_rotateanim', 'NewSuspensionlight_scaleanim',
-                    'NewSuspensionlight_fade'} for e in events)}
+                    'NewSuspensionlight_fade', 'NewSuspensionlight_coloranim',
+                    'NewSuspensionlight_beat_show'} for e in events)}
         scripts = [obj for obj in bundle_environment.objects
                    if obj.type.name == 'TextAsset' and obj.read().m_Name == f'{code}_live_effect']
         if not scripts: continue
@@ -227,15 +227,15 @@ def main() -> None:
         # white lamps for unrecovered rainbow/color/director modes.
         unknown = sorted({e['asset'] for e in events if not e['hide'] and e['asset'] not in stagelights})
         modes = sorted({(e['alphaMode'], e['colorMode']) for e in events if not e['hide']
-                        and (e['alphaMode'] not in (0,1) or e['colorMode'] not in (1,2,5))},key=str)
+                        and (e['alphaMode'] not in range(8))},key=str)
         if code not in ('tkstp1','tkstp2'):
             for event in events:
                 if not event['hide']:
-                    event['previewSupported'] = event['asset'] in stagelights and event['alphaMode'] in (0,1) and event['colorMode'] in (1,2,5)
+                    event['previewSupported'] = event['asset'] in stagelights and event['alphaMode'] in range(8)
         stagelight_songs[code] = {'source': {'bundle': bundle.name, 'bundleSha256': sha256_file(bundle),
             'textAsset': f'{code}_live_effect', 'sha256': hashlib.sha256(payload).hexdigest()},
             'events': events, 'unsupportedAssets':unknown, 'unsupportedModes':modes,
-            'status':'native_bindings_partial_recording_guided_envelopes'}
+            'status':'native_director_channels_partial_projection_rng'}
     for model in (spotlight, background, pinspotlight, suspension, *old_suspension['styles'].values(), *stagelights.values()):
         for layer in model['layers']:
             source = assets[layer['asset']]['source']
@@ -259,6 +259,7 @@ def main() -> None:
         "oldSuspensionlight": old_suspension,
         "backmonitorLogo": backmonitor_logo,
         "backmonitorLayers": backmonitor_layers,
+        "backmonitorGeometry": backmonitor_geometry(environment),
         "oldSuspensionlightSongs": old_suspension_songs,
         "stagelights": dict(sorted(stagelights.items())),
         "stagelightSongs": stagelight_songs,

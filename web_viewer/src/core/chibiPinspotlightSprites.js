@@ -42,5 +42,7 @@ export function destroyPinspotlightSprites(runtime) {
 export function pinspotlightModelForAsset(model, assets, asset) {
   if (!model || !assets?.pinspotlight?.file) return null
   const actual = assets[asset]?.file ? asset : 'pinspotlight'
-  return { ...model, layers: model.layers.map(layer => ({ ...layer, asset: actual })) }
+  // PlayEffect writes _maskSpriteRenderer.sprite only (0x2223fec).
+  // The additive flash keeps the serialized pinspotlight Sprite.
+  return { ...model, layers: model.layers.map((layer, index) => ({ ...layer, asset: index === 0 ? actual : layer.asset })) }
 }

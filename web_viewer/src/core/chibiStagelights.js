@@ -1,71 +1,79 @@
-// Native ordered lamps and RAW colors; pulse/wave curves are a recording-guided
-// preview until the native director's tween/easing bodies have been decoded.
+// StageLightLiveSpriteEffectDirector: native alpha/color channels in RAW milliseconds.
 const clamp = value => Math.max(0, Math.min(1, value))
-const rgb = value => /^#[\da-f]{6}$/i.test(value || '') ? parseInt(value.slice(1), 16) : 0xffffff
-const mix = (a, b, t) => [16, 8, 0].reduce((color, shift) => color |
-  (Math.round(((a >> shift) & 255) * (1 - t) + ((b >> shift) & 255) * t) << shift), 0)
-const takeStar = asset => {
-  const match = /^fx_in_tkstp1_stagelight_(\d+)$/.exec(asset || '')
-  return match && Number(match[1]) >= 1 && Number(match[1]) <= 16
+const parse = value => /^#[\da-f]{6}([\da-f]{2})?$/i.test(value || '')
+  ? {color:parseInt(value.slice(1,7),16),alpha:value.length===9?parseInt(value.slice(7),16)/255:1} : null
+const mix = (a,b,t) => [16,8,0].reduce((out,shift)=>out |
+  (Math.round(((a>>shift)&255)*(1-t)+((b>>shift)&255)*t)<<shift),0)
+const outQuad = t => 1-(1-clamp(t))**2
+const triangle = t => 1-Math.abs(1-((t%2+2)%2))
+function rainbow(color,turn) {
+  const [r,g,b]=[16,8,0].map(s=>((color>>s)&255)/255),v=Math.max(r,g,b),d=v-Math.min(r,g,b)
+  const h=d===0?0:(v===r?(g-b)/d+(g<b?6:0):v===g?(b-r)/d+2:(r-g)/d+4)/6
+  const phase=((h+turn)%1+1)%1*6,c=d,x=c*(1-Math.abs(phase%2-1)),m=v-c
+  const values=phase<1?[c,x,0]:phase<2?[x,c,0]:phase<3?[0,c,x]:phase<4?[0,x,c]:phase<5?[x,0,c]:[c,0,x]
+  return values.reduce((out,n,i)=>out | (Math.round((n+m)*255)<<(16-i*8)),0)
 }
-
-function lampAt(state, time, index, count) {
-  if (!state || state.previewSupported === false) return { color: 0xffffff, alpha: 0 }
-  if (state.hideTime !== undefined) {
-    const start = lampAt({ ...state, hideTime: undefined }, state.hideTime, index, count)
-    return { color: start.color, alpha: start.alpha * (1 - clamp(
-      (time - state.hideTime) / Math.max(1, state.fadeDuration || 1))) }
-  }
-  const elapsed = Math.max(0, time - state.time)
-  const period = Math.max(1, state.period || 1)
-  let color = rgb(state.color)
-  let alpha = 1
-  if (state.colorMode === 2) color = mix(state.fromColor, color, clamp(elapsed / period))
-  if (state.colorMode === 1 && takeStar(state.asset)) {
-    // Take authors each hanging star as its own command. Odd/even groups restart
-    // 225 ms apart with a 450 ms period; do not phase all 16 by a shared index.
-    // Recording-guided continuous envelope, not a recovered Unity tween body.
-    const phase = elapsed % period
-    // The reference starts a star dim, then rises and falls. Ground mode 5
-    // starts bright; using that envelope here inverts the visible star phase.
-    alpha = 1 - Math.abs(2 * phase / period - 1)
-  }
-  if (state.colorMode === 5) {
-    // The interval belongs to successive entries in the native renderer array,
-    // not to a shared fade followed by a black hold. Take's 450/225 commands
-    // alternate adjacent lamps. A continuous triangular envelope is the bounded
-    // recording-guided approximation; native tween easing remains unverified.
-    const order = state.direction === 1 ? count - index - 1 : index
-    const phase = ((elapsed - order * (state.interval || 0)) % period + period) % period
-    alpha = Math.abs(2 * phase / period - 1)
-  }
-  if (state.alphaMode === 1 && count > 1) {
-    const order = state.direction === 1 ? count - index - 1 : index
-    const wavePeriod = Math.max(1, state.alphaPeriod || period)
-    const phase = ((elapsed / wavePeriod - order / count) % 1 + 1) % 1
-    alpha *= .5 + .5 * Math.cos(phase * Math.PI * 2)
-  }
-  return { color, alpha }
+// Native IListShuffle's RNG is not recovered. Use a stable permutation for seeks;
+// do not claim its per-renderer phase matches the original random stream.
+function shuffledRank(state,index,count) {
+  const order=Array.from({length:count},(_,i)=>i)
+  let seed=(state.sourceRow || 1)>>>0
+  for(let i=count-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[order[i],order[j]]=[order[j],order[i]]}
+  return order.indexOf(index)
 }
-
-export function stagelightStatesAt(events = [], time = 0) {
-  const states = new Map()
-  for (const event of events) {
-    if (event.time > time) break
-    const previous = states.get(event.id)
-    if (event.hide) {
-      if (previous) states.set(event.id, { ...previous, hideTime: event.time,
-        fadeDuration: event.fadeDuration })
-      continue
-    }
-    states.set(event.id, { ...event,
-      fromColor: previous ? lampAt(previous, event.time, 0, 1).color : rgb(event.color) })
+export function sampleStagelight(state,time,index=0,count=1,layer={}) {
+  if(!state || state.previewSupported===false || time<state.time)return {color:0,alpha:0}
+  const native=layer.nativeColor || {r:1,g:1,b:1,a:1}
+  const initial=parse(state.color) || (state.previous?sampleStagelight(state.previous,state.time,index,count,layer):
+    {color:[native.r,native.g,native.b].reduce((out,n,i)=>out|(Math.round(n*255)<<(16-i*8)),0),alpha:native.a})
+  const elapsed=time-state.time,half=Math.max(0,state.period || 0)/2,interval=Math.max(0,state.interval || 0)
+  const mode=state.alphaMode || 0
+  if(mode===0)return initial
+  const colorStart=parse(state.color) || {color:0,alpha:0}
+  let color=colorStart.color
+  if(state.colorMode===1) {
+    const duration=state.colorPeriod || 0,t=duration>0?elapsed/duration:0,end=parse(state.gradientColor)
+    color=end?mix(color,end.color,triangle(t)):rainbow(color,state.direction===0?t%1:1-t%1)
+  }
+  const pulse=(age,ease=false)=>{
+    if(age<0 || half<=0)return 0
+    return age<half?(ease?outQuad(age/half):age/half):age<half*2?(ease?1-outQuad((age-half)/half):2-age/half):0
+  }
+  let alpha=0
+  if(mode===1){const cycle=half*2+interval;alpha=cycle>0?pulse(elapsed%cycle,true):0}
+  if(mode===2)alpha=half>0?outQuad(elapsed/half):1
+  if(mode===3){const cycle=Math.max(half*2,interval*count),age=elapsed-shuffledRank(state,index,count)*interval;alpha=age>=0&&cycle>0?pulse(age%cycle,true):0}
+  if(mode===4){const beat=60000/state.tempo;alpha=Number.isFinite(beat)&&beat>0?1-(elapsed%beat)/beat:0}
+  if(mode===5){const age=elapsed-(index%2)*interval;alpha=age>=0&&half>0?triangle(age/half):0}
+  if(mode===6 || mode===7){const order=mode===6?index:count-index-1,age=elapsed-order*interval,cycle=count*interval;alpha=age>=0?pulse(cycle>0?age%cycle:age):0}
+  return {color,alpha:clamp(alpha)}
+}
+export function stagelightStatesAt(events=[],time=0,tempo=null) {
+  const states=new Map()
+  for(const event of events) {
+    if(event.time>time)break
+    const previous=states.get(event.id)
+    // EraseEffect destroys the prefab immediately; value102 is unused here.
+    if(event.hide){states.delete(event.id);continue}
+    states.set(event.id,{...event,asset:previous?.asset || event.asset,previous,tempo})
   }
   return states
 }
-
-export function sampleStagelight(state, time, index = 0, count = 1) {
-  return lampAt(state, time, index, count)
+export function validateStagelightData(data,hash) {
+  if(data?.schemaVersion!==1 || data.choreographyIndexSha256!==hash || !/^[a-f0-9]{64}$/.test(hash || ''))throw Error('Stagelight choreography mismatch')
+  let count=0
+  for(const track of Object.values(data.songs || {})) {
+    let previous=null
+    if(!Array.isArray(track.events)||!Array.isArray(track.tempo?.values))throw Error('Invalid Stagelight track')
+    for(const e of track.events){
+      if(!Number.isFinite(e.time)||!Number.isInteger(e.id)||!Number.isInteger(e.sourceRow)||typeof e.hide!=='boolean'
+        || !e.hide && (!e.asset || !Number.isInteger(e.alphaMode)||e.alphaMode<0||e.alphaMode>7)
+        || previous && (e.time<previous.time || e.time===previous.time&&e.sourceRow<=previous.sourceRow))throw Error('Invalid Stagelight event')
+      previous=e;count++
+    }
+  }
+  if(count!==data.eventCount)throw Error('Stagelight count mismatch')
+  return data
 }
 
 export function createStagelightRuntime(PIXI, parent, layers, textures) {
@@ -93,9 +101,5 @@ export function createStagelightRuntime(PIXI, parent, layers, textures) {
   return { container, sprites, frameTextures }
 }
 
-export function applyNativeLampColor(lamp, layer) {
-  const color = layer.nativeColor
-  if (!color) return lamp
-  return {color:[16,8,0].reduce((out,shift,i)=>out | (Math.round(((lamp.color>>shift)&255)*color[['r','g','b'][i]])<<shift),0),
-    alpha:lamp.alpha*color.a}
-}
+// SetColor assigns renderer RGBA; prefab color is only the initial fallback.
+export function applyNativeLampColor(lamp) { return lamp }

@@ -82,20 +82,23 @@ def stagelight_model(prefab, allow_general=False):
 
 
 def stagelight_events(payload, native_names=None):
+    """Read LiveEffectData names: value4=color, value5=alpha; widths vary."""
     events = []
-    for number, row in enumerate(csv.reader(io.StringIO(payload.decode('utf-8-sig'))), 1):
-        if not row or row[0] != 'Stagelight':
+    for number, row in enumerate(csv.DictReader(io.StringIO(payload.decode('utf-8-sig'))), 2):
+        if row.get('type') != 'Stagelight':
             continue
-        if len(row) < 19 or (native_names is None and len(row) != 24):
-            raise ValueError('Unexpected Stagelight command width')
-        def value(i):
-            return float(row[i]) if row[i].strip() else None
-        hide = row[17].strip() == '1'
-        if not hide and row[3] not in (NAMES if native_names is None else native_names):
+        def text(key): return (row.get(key) or '').strip()
+        def value(key):
+            result = float(text(key)) if text(key) else 0
+            if not math.isfinite(result): raise ValueError('Nonfinite Stagelight field')
+            return result
+        hide = text('value101') == '1'
+        asset = text('value2') or None
+        if not hide and native_names is not None and asset not in native_names:
             raise ValueError('Unregistered command target')
-        events.append({'time': value(1), 'id': value(2), 'asset': row[3] or None,
-            'depth': value(4), 'alphaMode': value(5), 'colorMode': value(6),
-            'color': row[7] or None, 'period': value(8), 'interval': value(9),
-            'parameter10': (row[10] if row[10].startswith('#') else value(10)), 'alphaPeriod': value(11), 'direction': value(12),
-            'hide': hide, 'fadeDuration': value(18) if hide else None, 'sourceRow': number})
+        events.append({'time': value('time'), 'id': value('value1'), 'asset': asset,
+            'depth': value('value3'), 'colorMode': value('value4'), 'alphaMode': value('value5'),
+            'color': text('value6') or None, 'period': value('value7'), 'interval': value('value8'),
+            'gradientColor': text('value9') or None, 'colorPeriod': value('value10'), 'direction': value('value11'),
+            'hide': hide, 'fadeDuration': value('value102') if hide else None, 'sourceRow': number})
     return sorted(events, key=lambda e: (e['time'], e['sourceRow']))

@@ -1,4 +1,4 @@
-"""Old sidelight sprite/Animator bindings; director projection is a preview."""
+"""Old sidelight sprite/Animator bindings; shared native hierarchy and Animator bindings."""
 import hashlib
 import struct
 from live_chibi_turnlaser import streamed
@@ -10,7 +10,7 @@ def old_suspension_model(prefabs, controllers):
     layers = {}
     for prefab in prefabs:
         name = prefab['name']
-        if name not in {'LiveObjectSuspensionlight', 'LiveObjectSuspensionlight_2', 'LiveObjectSuspensionlight_3', 'LiveObjectSuspensionlight_5'}:
+        if name not in {'LiveObjectSuspensionlight', 'LiveObjectSuspensionlight_2', 'LiveObjectSuspensionlight_3', 'LiveObjectSuspensionlight_4', 'LiveObjectSuspensionlight_5'}:
             continue
         def walk(n):
             yield n
@@ -69,5 +69,5 @@ def old_suspension_model(prefabs, controllers):
         layers[name.removeprefix('LiveObject')] = dict(serializedFile=prefab['serializedFile'],
             prefabPathId=prefab['pathId'],scriptSha256=script['sha256'],baseAngle=60,clips=clips,
             layers=[dict(asset=ASSET,texturePathId=sprite['texture']['pathId'],anchorX=.5,anchorY=0)])
-    require(len(layers)==4,'Incomplete old sidelight profiles')
+    require(len(layers)==5,'Incomplete old sidelight profiles')
     return dict(status='native_sprite_and_angle_curves_reference_director_projection',styles=layers)

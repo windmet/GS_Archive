@@ -105,7 +105,7 @@ const fire=catalog.assets.fx_in_knwonl_panel
 assert.equal(attached.assets[fire.asset].floorAnimation,fire)
 const fireCoverage=buildStageVfxCoverage({id:'fire',objectLayerEvents:[{asset:fire.asset}]},{objectLayers:attached})
 assert.deepEqual(fireCoverage.objectParticlePartial,[fire.asset])
-assert.deepEqual(fireCoverage.objectParticleUnimplemented,[fire.asset])
+assert.deepEqual(fireCoverage.objectParticleUnimplemented,[],'A partial floor consumer is tracked separately from an absent consumer')
 const zero=fire.systems.find(s=>s.delay===0),delayed=fire.systems.find(s=>s.delay>0)
 assert.equal(sampleFireSystem(delayed,90,0),null)
 assert.deepEqual([0,260,510,760,1010].map(t=>sampleFireSystem(zero,t,0).frame),[0,1,2,3,0])

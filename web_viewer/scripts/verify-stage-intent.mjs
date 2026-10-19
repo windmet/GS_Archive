@@ -3,6 +3,8 @@ import fs from 'node:fs'
 import vm from 'node:vm'
 import {createPlaybackIntent} from '../src/core/PlaybackIntent.js'
 import {withLoadDeadline} from '../src/core/AsyncLoadBoundary.js'
+import {nativeMotionSpeed,nativeMotionMixWindowMs} from '../src/core/chibiMotionClock.js'
+import * as nativeClock from '../src/core/chibiMotionClock.js'
 import {parseBatchBlobs,publicationGitSnapshot} from './lib/publication-git-snapshot.mjs'
 import {execFileSync} from 'node:child_process'
 import {SkeletonData, BoneData, Skeleton, Animation, RotateTimeline, AnimationState, AnimationStateData} from '@pixi-spine/runtime-3.8'
@@ -14,8 +16,11 @@ const ref=value=>({value})
 function fixture(boundary='audio'){
   const gate=deferred(),native=[],frames=new Set(),runtime={spine:{state:{}}},oneshot={starts:[],stops:0,rates:[],start(time){this.starts.push(time)},stop(){this.stops++},setPlaybackRate(rate){this.rates.push(rate)},update(){},release(){}},audios=[{paused:true,pauses:0,currentTime:0,play(){this.paused=false;const d=deferred();native.push(d);return d.promise},pause(){this.paused=true;this.pauses++}}]
   const c={app:null,lifetime:new AbortController(),stageDisposed:false,playing:ref(false),stageStarting:ref(false),stageTime:ref(100),stageDuration:ref(120000),preloading:ref(false),playbackSpeed:ref(1),
+    ...nativeClock,motionClockTrack:ref({bgmOffsetSeconds:0}),stageClockAudio:()=>audios[0],
+    stageAudioTailActive:false,lightingIncompleteFrames:ref(0),lightingLastIncompleteFrame:ref(''),
+    prepareStageLighting:()=>boundary==='lighting'?gate.promise:Promise.resolve(true),
     stageVocalEnabled:ref(boundary==='unlock'),stageVocalReady:ref(boundary==='unlock'),audioError:ref(''),stageIntent:createPlaybackIntent(()=>''),stageAudioOwners:new Map(),runtimes:new Map([[1,runtime]]),activePositions:ref([1]),activeSlots:ref([{}]),
-    stageVocalSession:{error:ref(''),currentTime:ref(0),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
+    stageVocalSession:{error:ref(''),currentTime:ref(0),duration:ref(120),unlock:()=>gate.promise,pause(){},seek(){},play:async()=>true,setPlaybackRate(){}},
     preloadSongMotions:()=>boundary==='preload'?gate.promise:Promise.resolve(true),syncSlotAtTime:()=>boundary==='slots'?gate.promise:Promise.resolve(),resetEventIndices(){},syncBackmonitor(){},syncStagePlaybackTime(){},stagePlaybackAudios:()=>audios,
     withLoadDeadline:(load,options)=>withLoadDeadline(load,{...options,timeoutMs:25}),performance,animationFrame:0,playbackStartOffset:0,playbackStartedAt:0,
     requestAnimationFrame(){frames.add(1);return 1},cancelAnimationFrame(id){frames.delete(id)},updateStage(){},backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,stageOneshot:oneshot,
@@ -25,6 +30,20 @@ function fixture(boundary='audio'){
   return {c,gate,native,frames,audios,runtime,oneshot}
 }
 let cases=0
+for(const vocal of [false,true]) {
+  const f=fixture();f.c.stageTime.value=121000;f.c.stageDuration.value=150000
+  f.audios[0].duration=120
+  f.c.stageVocalEnabled.value=vocal;f.c.stageVocalReady.value=vocal
+  let vocalPlays=0
+  f.c.stageVocalSession.unlock=async()=>true
+  f.c.stageVocalSession.play=async()=>{vocalPlays++;return true}
+  await f.c.toggleStage()
+  assert.equal(f.c.playing.value,true);assert.equal(f.c.stageAudioTailActive,true)
+  assert.equal(f.native.length,0);assert.equal(vocalPlays,0,'Silent stage tail must not replay audio sample zero')
+  f.c.stopStage();assert.equal(f.c.stageTime.value,121000)
+  await f.c.toggleStage();assert.equal(f.c.stageAudioTailActive,true)
+  f.c.stopStage();cases++
+}
 {
   // Actual SFC seek at an authored handoff must match the outgoing pose and
   // subsequent cross-fade seen during continuous playback, not setup pose.
@@ -34,7 +53,8 @@ let cases=0
     {time:1060,motion:3,speed:1000,mode:2},
     {time:1800,motion:4,speed:1000,mode:3},
   ]
-  function harness(eventList=events) {
+  const unitClock={tempos:[{timeMs:0,bpm:160}]}
+  function harness(eventList=events,clock=unitClock) {
     const data=new SkeletonData();data.bones.push(new BoneData(0,'root',null))
     for (let id=1;id<=4;id++) {
       const curve=new RotateTimeline(2);curve.boneIndex=0
@@ -42,7 +62,7 @@ let cases=0
       data.animations.push(new Animation(`motion${id}_3dance`,[curve],2))
       data.animations.push(new Animation(`motion${id}_4loop`,[curve],2))
     }
-    const stateData=new AnimationStateData(data);stateData.defaultMix=.12
+    const stateData=new AnimationStateData(data);stateData.defaultMix=0
     const skeleton=new Skeleton(data),state=new AnimationState(stateData)
     const runtime={skeletonData:data,spine:{state,skeleton,stateData,
       update(dt){state.update(dt);state.apply(skeleton);skeleton.updateWorldTransform()}}}
@@ -50,7 +70,7 @@ let cases=0
     const c={lifetime:new AbortController(),runtimes:new Map([[3,runtime]]),stageIntent:createPlaybackIntent(),stageDisposed:false,
       playing:ref(false),playbackSpeed:ref(1),motionCatalog:ref(new Map(events.map(e=>[e.motion,{id:e.motion}]))),
       injectLiveChibiMotion:async(_runtime,motion)=>[`motion${motion.id}_3dance`,`motion${motion.id}_4loop`],
-      layoutRuntime(){},eventsForPosition:()=>eventList}
+      layoutRuntime(){},eventsForPosition:()=>eventList,motionClockTrack:ref(clock),nativeMotionSpeed,nativeMotionMixWindowMs}
     vm.createContext(c)
     for(const name of ['playLiveChibiMotion','seekLiveChibiMotion'])
       vm.runInContext(motionSource.match(new RegExp(`export function ${name}\\([^]*?\\n\\}(?=\\r?\\n)`))[0].replace('export ',''),c)
@@ -58,13 +78,13 @@ let cases=0
       vm.runInContext(source.match(new RegExp(`async function ${name}\\([^]*?\\n\\}`))[0],c)
     return {c,slot,runtime}
   }
-  async function continuous(target) {
-    const f=harness()
+  async function continuous(target,clock=unitClock) {
+    const f=harness(events,clock)
     for(let index=0;index<events.length&&events[index].time<=target;index++) {
       const event=events[index]
       await f.c.playSlotEvent(f.slot,event,{reset:index===0})
       const until=Math.min(target,events[index+1]?.time??target)
-      let remaining=(until-event.time)/1000*event.speed/1000
+      let remaining=(until-event.time)/1000*nativeMotionSpeed(clock,event)
       f.runtime.spine.state.timeScale=1
       while(remaining>1e-9){const dt=Math.min(1/60,remaining);f.runtime.spine.update(dt);remaining-=dt}
       f.runtime.spine.state.timeScale=0
@@ -77,6 +97,15 @@ let cases=0
     assert(Math.abs(f.runtime.spine.skeleton.bones[0].rotation-expected)<.001,
       `Authored handoff at ${target} must retain playback pose`)
     assert.equal(f.runtime.spine.state.timeScale,0);cases++
+  }
+  // A .15 animation-second mix is longer than 150 song milliseconds at slow
+  // BPM/speed. The previous fixed lookback discarded its outgoing pose.
+  for(const clock of [{tempos:[{timeMs:0,bpm:80}]},
+    {tempos:[{timeMs:0,bpm:80},{timeMs:1050,bpm:320}]}])for(const target of [1030,1090,1200,1300]) {
+    const f=harness(events,clock);await f.c.syncSlotAtTime(f.slot,target,true)
+    assert(Math.abs(f.runtime.spine.skeleton.bones[0].rotation-await continuous(target,clock))<.001,
+      `Native BPM-latched handoff reconstruction must match playback at ${target}`)
+    cases++
   }
   const old=harness();await old.c.playSlotEvent(old.slot,events[1],{reset:true,seekTime:1000})
   assert(Math.abs(old.runtime.spine.skeleton.bones[0].rotation-await continuous(1000))>10,
@@ -171,7 +200,7 @@ let cases=0
   assert(f.c.playing.value);assert.equal(f.runtime.spine.state.timeScale,1)
   f.c.stopStage();assert.equal(f.runtime.spine.state.timeScale,0);cases++
 }
-for(const boundary of ['unlock','preload','slots']){
+for(const boundary of ['unlock','preload','lighting','slots']){
   const f=fixture(boundary),p=f.c.toggleStage();await flush();assert(f.c.stageStarting.value)
   f.c.stopStage();f.gate.resolve(true);await p
   assert(!f.c.playing.value&&!f.c.stageStarting.value);assert.equal(f.frames.size,0);assert.equal(f.native.length,0)

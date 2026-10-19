@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "binary": {
+    "name": "libunity.so",
+    "sha256": "acb1c40952097cb3b377de1e377f30de84c63d6b8dceeab4d1f35a2a3ddcaef0",
+    "ghidraImageBase": "0x100000"
+  },
+  "shapeModuleFields": {
+    "type": "0xc",
+    "angle": "0x48",
+    "radiusThickness": "0x50",
+    "arc": "0x68",
+    "arcMode": "0x6c"
+  },
+  "functions": {
+    "dispatch": "0x855d64",
+    "sphereRandom": "0x8590a8",
+    "hemisphereRandom": "0x85a818",
+    "coneRandom": "0x85bfac",
+    "circleRandom": "0x85f500",
+    "normalizeDirection": "0x8611d8"
+  },
+  "sphereThicknessInstructions": {
+    "ghidraStart": "0x8590c8",
+    "elfOffset": "0x7590c8",
+    "bytes": "0840009101c9404d005040bd3b0840f9086840bde163803d01102e1e2038201efa03072af30306aaf40305aaf50304aaf60302aaf70301aaf80300aa535be5970110211e0008211e4058e597027340bd"
+  },
+  "sourceBoundary": "Random arc with zero spread and constant radius; Web RNG and JS elementary functions are not Unity SIMD bit-equivalent",
+  "initialModuleProof": {
+    "birthInitialize": "0x70c12c",
+    "curveEvaluate": "0x6e1838",
+    "lifetimeField": "0x10",
+    "sizeField": "0x90",
+    "systemTimeField": "0x1b0",
+    "systemDurationField": "0x28",
+    "instructions": {
+      "ghidraStart": "0x6e1838",
+      "elfOffset": "0x5e1838",
+      "bytes": "ff0301d1f55302a9f37b03a9f40300aa000c40f9200040bdf50301aae1031faaf30302aa4cf4fd97810e40bde1031faa0008211ee01300bd800e40f9a00640bd45f4fd97810e40bde1031faa0008211ee01700bd800e40f9a00a40bd3ef4fd97810e40bde1031faa0008211ee01b00bd800e40f9a00e40bd37f4fd97810e40bd0008211ee01f00bd880a40791f09007161040054800a40f9a00240bde1031faa2df4fd97810e40bde1031faa0008211ee00300bd800a40f9a00640bd26f4fd97810e40bde1031faa0008211ee00700bd800a40f9a00a40bd1ff4fd97810e40bde1031faa0008211ee00b00bd800a40f9a00e40bd18f4fd97810e40bd0008211ee00f00bde00740ad6202c03d21d4a04e41dc216e00d4214e02000014e007c03df37b43a9f55342a9ff030191c0035fd6"
+    }
+  },
+  "distanceEmissionProof": {
+    "solver": "0x6eb868",
+    "velocityUpdate": "0x6d08f0",
+    "play": "0x6ce710",
+    "reset": "0x6d60fc",
+    "firstPositionFlag": "0x27",
+    "currentPosition": "0xbc",
+    "previousPosition": "0x130",
+    "velocity": "0x13c",
+    "formula": "rate * deltaTime * length(emitterVelocity), with fractional remainder",
+    "instructions": {
+      "ghidraStart": "0x6eb868",
+      "elfOffset": "0x5eb868",
+      "bytes": "243440bd8820201e61000054e0031faac0035fd6ff0301d1e81300fdf41700f9f37b03a908c040f8893c00b0481ca24e222147bd090840b9080400f9081440b92118231e292d094a2921494a2901084a081000b9284d484a081400b9085900120301231e6308221e2004044e6204044ee20300ad28584079f40302aaf30300aa"
+    }
+  },
+  "startDelayProof": {
+    "initialize": "0x6cde10",
+    "play": "0x6ce710",
+    "mainCurve": "0x8",
+    "stateRemainingDelay": "0x4",
+    "scope": "One sample on system initialization; not per particle or loop",
+    "instructions": {
+      "ghidraStart": "0x6cde10",
+      "elfOffset": "0x5cde10",
+      "bytes": "ffc300d1f37b02a9082040f9ff7f01a9aa738352eb679952093140b9aa56ad724b29ae72f30300aa2a2d0a1b292d094a4b01094a6921494a6b3d00f0602147bd29590012294d4a4a2101231e2108201e2004044ee003803d091940793f0d0071a0000054490100350851009100c9404d6b0000140009422d42d4a04e21dc226e"
+    }
+  }
+}
