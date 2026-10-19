@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import { sampleStreamedCurve } from '../src/core/chibiNativeAnimation.js'
@@ -132,7 +133,7 @@ const end=spineSource.indexOf('export ',spineSource.indexOf('export async functi
 const section=spineSource.slice(start,end).replaceAll('export ','')
 const {attachNativeSuspensionSprites}=await import('../src/core/chibiSuspensionlights.js')
 const spriteSupplement=JSON.parse(fs.readFileSync(new URL('../public/data/stage-new-suspension-sprites.json',import.meta.url),'utf8'))
-const makeLoader=transport=>new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeOldSuspension','validateOldSuspensionTrack','attachNativeSuspensionSprites',section+';return {index:fetchLiveChibiStageEffectIndex,track:fetchLiveChibiOldSuspensionTrack}')(
+const makeLoader=transport=>withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','crypto','attachNativeOldSuspension','validateOldSuspensionTrack','attachNativeSuspensionSprites',section+';return {index:fetchLiveChibiStageEffectIndex,track:fetchLiveChibiOldSuspensionTrack}'))(
  transport,'/assets/live-chibi',webcrypto,attachNativeOldSuspension,validateOldSuspensionTrack,attachNativeSuspensionSprites)
 const transport={load:async path=>path==='/data/stage-new-suspension-sprites.json'?JSON.stringify(spriteSupplement):path==='/data/stage-old-suspension.json'?JSON.stringify(supplement):path.endsWith('/index.json')?indexText:trackText}
 const loader=makeLoader(transport)

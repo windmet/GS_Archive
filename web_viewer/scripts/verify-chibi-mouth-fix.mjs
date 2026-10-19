@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
@@ -72,7 +73,7 @@ assert.throws(()=>validateMouthFixData({...data,eventCount:30},data.choreography
 const invalid=structuredClone(data);Object.values(invalid.songs).find(t=>t.events.length).events[0].duration=-1
 assert.throws(()=>validateMouthFixData(invalid,data.choreographyIndexSha256),/event\/order/)
 const loaderBody=source.match(/export async function fetchLiveChibiMouthFix\([^]*?\n\}/)[0]
-const makeLoader=new Function('indexTransport','LIVE_CHIBI_BASE','validateMouthFixData','crypto',loaderBody.replace('export async function','async function')+';return fetchLiveChibiMouthFix')
+const makeLoader=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validateMouthFixData','crypto',loaderBody.replace('export async function','async function')+';return fetchLiveChibiMouthFix'))
 const fakeIndex='{}',fixture={...data,choreographyIndexSha256:hash(fakeIndex)}
 const loader=makeLoader({async load(url){return url.startsWith('/data/')?JSON.stringify(fixture):fakeIndex}},'/assets/live-chibi',validateMouthFixData,globalThis.crypto)
 assert.equal((await loader('choreography/index.json')).eventCount,29)

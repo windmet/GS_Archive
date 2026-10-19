@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import { readFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -56,8 +57,8 @@ const source=readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.u
 const fn=source.match(/export async function fetchLiveChibiCommandInventory\([^]*?\n\}/)[0]
 const indexText='{"songs":[]}', indexHash=createHash('sha256').update(indexText).digest('hex')
 const realInventory={...inventory,choreographyIndexSha256:indexHash}
-const load=new Function('indexTransport','LIVE_CHIBI_BASE','validateStageCommandInventory','crypto',
-  fn.replace('export async function','async function')+';return fetchLiveChibiCommandInventory')
+const load=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validateStageCommandInventory','crypto',
+  fn.replace('export async function','async function')+';return fetchLiveChibiCommandInventory'))
 const requests=[]
 const loader=load({async load(url,{signal}){requests.push(url);if(signal?.aborted)throw new DOMException('cancel','AbortError');
   return url.startsWith('/data/')?JSON.stringify(realInventory):indexText}},'/assets/live-chibi',validateStageCommandInventory,globalThis.crypto)

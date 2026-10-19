@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import {createHash} from 'node:crypto'
@@ -49,8 +50,8 @@ assert.throws(()=>validateMotionClock(badTime,data.choreographyIndexSha256,songs
 
 const source=read('../src/utils/liveChibiSpine.js')
 const body=source.match(/export async function fetchLiveChibiMotionClock\([^]*?\n\}/)[0]
-const make=new Function('indexTransport','LIVE_CHIBI_BASE','validateMotionClock','crypto',
-  body.replace('export async function','async function')+';return fetchLiveChibiMotionClock')
+const make=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validateMotionClock','crypto',
+  body.replace('export async function','async function')+';return fetchLiveChibiMotionClock'))
 const choreographyText=JSON.stringify({songs}),fake={...data,choreographyIndexSha256:hash(choreographyText)}
 const load=make({async load(url){return url.startsWith('/data/')?JSON.stringify(fake):choreographyText}},'/assets/live-chibi',validateMotionClock,globalThis.crypto)
 assert.equal(Object.keys((await load('choreography/index.json')).tracks).length,60)

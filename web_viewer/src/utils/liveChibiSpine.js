@@ -9,6 +9,7 @@ import { attachObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js
 import { attachBloom } from '../core/chibiBloomParticles.js'
 import { validateStagelightData } from '../core/chibiStagelights.js'
 import {createBoundedTextTransport} from './BoundedTextTransport.js'
+import {createStageIndexTransport} from './StageIndexTransport.js'
 import * as PIXI from 'pixi.js'
 import {
   AtlasAttachmentLoader,
@@ -78,13 +79,13 @@ class CostumeAtlasAttachmentLoader extends AtlasAttachmentLoader {
   }
 }
 
-// Current authored choreography index is 8,982,299 bytes; keep an explicit
-// 12 MiB response ceiling while bounding retained raw JSON separately.
-const indexTransport = createBoundedTextTransport({maxBytes:12*1024*1024,cacheBytes:16*1024*1024,maxEntries:16})
+// Bound source-equivalent bytes; each retained document parses and hashes once.
+// Song sharding is still needed to reduce the size of the global inputs.
+const indexTransport = createStageIndexTransport()
 const binaryTransport = createBoundedTextTransport({binary:true,maxBytes:4*1024*1024,cacheBytes:8*1024*1024,maxEntries:48,timeoutMs:25000})
 async function liveJson(relativePath, options={}, optional=false) {
   const url=`${LIVE_CHIBI_BASE}/${relativePath}`
-  try {return JSON.parse(await indexTransport.load(url,options))}
+  try {return (await indexTransport.load(url,options)).data}
   catch(error) {if(error.status===404 && optional)return null; if(error.name!=='AbortError')indexTransport.invalidate(url); throw error}
 }
 export const fetchLiveChibiManifest = options => liveJson('manifest.json',options)
@@ -95,10 +96,9 @@ export async function fetchLiveChibiChoreography(file,{signal}={}) {
     indexTransport.load('/data/stage-whole-screen.json',{signal}),
     indexTransport.load('/data/stage-searchlights.json',{signal}),
   ])
-  const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))
+  const hash=await text.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  const hash=[...new Uint8Array(digest)].map(byte=>byte.toString(16).padStart(2,'0')).join('')
-  return attachSearchlights(attachWholeScreen(attachNativeSpotlights(JSON.parse(text),JSON.parse(spotlights),hash),JSON.parse(wholeScreen),hash),JSON.parse(searchlights),hash)
+  return attachSearchlights(attachWholeScreen(attachNativeSpotlights(text.data,spotlights.data,hash),wholeScreen.data,hash),searchlights.data,hash)
 }
 export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
   // Both texts use the bounded transport. Hash the actual loaded choreography,
@@ -107,10 +107,9 @@ export async function fetchLiveChibiCommandInventory(file, {signal} = {}) {
     indexTransport.load('/data/stage-command-inventory.json', {signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`, {signal}),
   ])
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(choreographyText))
+  const hash = await choreographyText.hash()
   if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError')
-  const hash = [...new Uint8Array(digest)].map(value => value.toString(16).padStart(2, '0')).join('')
-  return validateStageCommandInventory(JSON.parse(text), hash)
+  return validateStageCommandInventory(text.data, hash)
 }
 export const fetchLiveChibiMusicIndex = options => liveJson('music/index.json',options,true)
 export async function fetchLiveChibiPenlights(file, {signal}={}) {
@@ -119,51 +118,45 @@ export async function fetchLiveChibiPenlights(file, {signal}={}) {
     indexTransport.load(`${LIVE_CHIBI_BASE}/penlight/index.json`,{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const digest=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))]
-    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
-  const [choreographyHash,modelHash]=await Promise.all([digest(choreographyText),digest(modelText)])
+  const [choreographyHash,modelHash]=await Promise.all([choreographyText.hash(),modelText.hash()])
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return {commands:validatePenlightData(JSON.parse(text),choreographyHash,modelHash),model:JSON.parse(modelText)}
+  return {commands:validatePenlightData(text.data,choreographyHash,modelHash),model:modelText.data}
 }
 export async function fetchLiveChibiMouthFix(file,{signal}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-mouth-fix.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
-    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateMouthFixData(JSON.parse(text),hash)
+  return validateMouthFixData(text.data,hash)
 }
 export async function fetchLiveChibiMotionOffset(file,{signal}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-motion-offset.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
-    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateMotionOffsetData(JSON.parse(text),hash)
+  return validateMotionOffsetData(text.data,hash)
 }
 export async function fetchLiveChibiMotionClock(file,{signal}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-motion-clock.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
-    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateMotionClock(JSON.parse(text),hash,JSON.parse(choreographyText).songs)
+  return validateMotionClock(text.data,hash,choreographyText.data.songs)
 }
 export async function fetchLiveChibiStagelights(file,{signal}={}) {
   const [text,choreographyText]=await Promise.all([
     indexTransport.load('/data/stage-stagelight-commands.json',{signal}),
     indexTransport.load(`${LIVE_CHIBI_BASE}/${file}`,{signal}),
   ])
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))]
-    .map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await choreographyText.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateStagelightData(JSON.parse(text),hash)
+  return validateStagelightData(text.data,hash)
 }
 export const fetchLiveChibiBackmonitorIndex = options => liveJson('backmonitor/index.json',options,true)
 export const fetchLiveChibiImageLayerIndex = options => liveJson('image-layers/index.json',options,true)
@@ -174,26 +167,27 @@ export async function fetchLiveChibiStageEffectIndex({signal}={}) {
     indexTransport.load('/data/stage-old-suspension.json',{signal}),
     indexTransport.load('/data/stage-new-suspension-sprites.json',{signal}),
   ])
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await text.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return attachNativeSuspensionSprites(attachNativeOldSuspension(JSON.parse(text),JSON.parse(native),hash),JSON.parse(sprites),hash)
+  return attachNativeSuspensionSprites(attachNativeOldSuspension(text.data,native.data,hash),sprites.data,hash)
 }
 export async function fetchLiveChibiOldSuspensionTrack(descriptor,{signal}={}) {
   const text=await indexTransport.load(`${LIVE_CHIBI_BASE}/${descriptor.file}`,{signal})
-  const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)))].map(byte=>byte.toString(16).padStart(2,'0')).join('')
+  const hash=await text.hash()
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  return validateOldSuspensionTrack(JSON.parse(text),descriptor,hash)
+  return validateOldSuspensionTrack(text.data,descriptor,hash)
 }
 export const fetchLiveChibiLipSync = (file,options) => file ? liveJson(file,options) : Promise.resolve(null)
 export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
-  let index=await liveJson('object-layers/index.json',{signal},true)
-  if (!index) return null
-  const [emitterText,objectText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
-  const objectHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(objectText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
+  let objectText
+  try {objectText=await indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})}
+  catch(error) {if(error.status===404)return null;throw error}
+  let index=objectText.data
+  const [emitterText,choreographyText,builtInText]=await Promise.all([indexTransport.load('/data/stage-object-emitters.json',{signal}),indexTransport.load(`${LIVE_CHIBI_BASE}/choreography/index.json`,{signal}),indexTransport.load('/data/stage-built-in-objects.json',{signal})])
+  const [objectHash,choreographyHash]=await Promise.all([objectText.hash(),choreographyText.hash()])
   if(signal?.aborted)throw new DOMException('Request cancelled','AbortError')
-  const choreographyHash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(choreographyText)))].map(n=>n.toString(16).padStart(2,'0')).join('')
-  index=attachObjectEmitters(index,JSON.parse(emitterText),objectHash,choreographyHash)
-  index=attachBuiltInObjects(index,JSON.parse(builtInText),objectHash)
+  index=attachObjectEmitters(index,emitterText.data,objectHash,choreographyHash)
+  index=attachBuiltInObjects(index,builtInText.data,objectHash)
   // Start refinements independently; never mutate the shared cached source.
   let refined=index
   for(const [file,attach] of [['particle-layers',attachChibiParticleLayers],['floor-particles',attachChibiFloor]]) {
@@ -201,15 +195,11 @@ export async function fetchLiveChibiObjectLayerIndex({signal,onOptional}={}) {
       if(!signal?.aborted && extra) {refined=attach(refined,extra); onOptional?.(refined)}
     }).catch(error=> {if(error.name!=='AbortError')console.warn('[ChibiStage] optional particle index unavailable',error)})
   }
-  void Promise.all([indexTransport.load('/data/stage-bloom-particles.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
-      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
-      if(!signal?.aborted){refined=attachBloom(refined,JSON.parse(text),hash);onOptional?.(refined)}
+  void indexTransport.load('/data/stage-bloom-particles.json',{signal}).then(text=>{
+      if(!signal?.aborted){refined=attachBloom(refined,text.data,objectHash);onOptional?.(refined)}
     }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] bloom index unavailable',error)})
-  void Promise.all([indexTransport.load('/data/stage-object-sprite-geometry.json',{signal}),
-    indexTransport.load(`${LIVE_CHIBI_BASE}/object-layers/index.json`,{signal})]).then(async ([text,source])=>{
-      const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source)))].map(n=>n.toString(16).padStart(2,'0')).join('')
-      if(!signal?.aborted){refined=attachObjectSpriteGeometry(refined,JSON.parse(text),hash);onOptional?.(refined)}
+  void indexTransport.load('/data/stage-object-sprite-geometry.json',{signal}).then(text=>{
+      if(!signal?.aborted){refined=attachObjectSpriteGeometry(refined,text.data,objectHash);onOptional?.(refined)}
     }).catch(error=>{if(error.name!=='AbortError')console.warn('[ChibiStage] object Sprite geometry unavailable',error)})
   return index
 }

@@ -1,3 +1,4 @@
+import {withStageIndexTransport} from './lib/stage-index-harness.mjs'
 import assert from 'node:assert/strict'
 import {readFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
@@ -44,7 +45,7 @@ assert.throws(()=>validateMotionOffsetData(data,'a'.repeat(64)),/does not match/
 assert.throws(()=>validateMotionOffsetData({...data,eventCount:99},data.choreographyIndexSha256),/count mismatch/)
 const source=readFileSync(new URL('../src/utils/liveChibiSpine.js',import.meta.url),'utf8')
 const body=source.match(/export async function fetchLiveChibiMotionOffset\([^]*?\n\}/)[0]
-const makeLoader=new Function('indexTransport','LIVE_CHIBI_BASE','validateMotionOffsetData','crypto',body.replace('export async function','async function')+';return fetchLiveChibiMotionOffset')
+const makeLoader=withStageIndexTransport(new Function('indexTransport','LIVE_CHIBI_BASE','validateMotionOffsetData','crypto',body.replace('export async function','async function')+';return fetchLiveChibiMotionOffset'))
 const fakeIndex='{}',fixture={...data,choreographyIndexSha256:hash(fakeIndex)}
 const loader=makeLoader({async load(url){return url.startsWith('/data/')?JSON.stringify(fixture):fakeIndex}},'/assets/live-chibi',validateMotionOffsetData,globalThis.crypto)
 assert.equal((await loader('choreography/index.json')).eventCount,98)

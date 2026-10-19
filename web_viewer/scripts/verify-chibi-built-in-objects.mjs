@@ -1,3 +1,4 @@
+import {createStageIndexDocument} from '../src/utils/StageIndexTransport.js'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
@@ -88,7 +89,7 @@ const transport={load:async path=>path==='/data/stage-built-in-objects.json'?JSO
 const identity=index=>index
 const makeLoader=transport=>new Function('liveJson','indexTransport','LIVE_CHIBI_BASE','crypto','attachObjectEmitters','attachBuiltInObjects',
  'attachChibiParticleLayers','attachChibiFloor','attachBloom','attachObjectSpriteGeometry',loaderBody+';return fetchLiveChibiObjectLayerIndex')(
- async path=>path==='object-layers/index.json'?structuredClone(mockSource):null,transport,'/assets/live-chibi',crypto.webcrypto,
+ async path=>path==='object-layers/index.json'?structuredClone(mockSource):null,{load:async(...args)=>createStageIndexDocument(await transport.load(...args))},'/assets/live-chibi',crypto.webcrypto,
  attachObjectEmitters,attachBuiltInObjects,identity,identity,identity,identity)
 const refinements=[]
 let optionalComplete
