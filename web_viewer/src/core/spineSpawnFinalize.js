@@ -49,10 +49,9 @@ export function finalizeSpawnedSpine({
     marker,
     wrapper: fadeWrapper,
     spawnToken,
-    prefabMeta: options.prefabMeta || null,
-    scaleConfig: spine._scaleConfig || null,
-    positionMode: null,
-    targetVisualBottom: null,
+    // Costume prefab root (idol_figure_placement skeletons); adv is the IdolCharacter placement.
+    figure: options.figure || null,
+    adv: null,
     baselineCapturedAt: null,
     baselineCaptureReason: null,
     baselineBodyAnim: null,
@@ -79,6 +78,7 @@ export function finalizeSpawnedSpine({
     }
   }
 
+  manager.placeActor(idolId, options.placement || {})
   manager.lipSyncController?.prepare?.(idolId)
   spine.update(0)
   captureBaselineBounds(idolId)

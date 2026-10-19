@@ -46,7 +46,7 @@ assert.ok(
 )
 assert.match(
   stageSource.slice(directFallback, spineProbe),
-  /manager\.showSilhouette\(sid, modelId, posX, 0, rootY\)/,
+  /manager\.showSilhouette\(sid, modelId, texture, placement, transitions\)/,
 )
 
 const { resolveStaticSpineModels } = await import('../src/utils/StoryAssetAdapters.js')
@@ -56,7 +56,7 @@ const sourcePlan = { unresolved: [], assets: [
     dependencies: ['spine-skeleton:103kur_001_00', 'spine-atlas:103kur_001_00'], dependencyState: 'pending', pending: 'atlas-pages-and-model-adapter', uses: [use] },
   ...['spine-skeleton', 'spine-atlas'].map(kind => ({ key: `${kind}:103kur_001_00`, kind, id: '103kur_001_00', required: true,
     dependencies: [], dependencyState: 'complete', pending: null, uses: [use] })),
-  { key: 'idol-placement:103kur', kind: 'idol-placement', id: '103kur', required: true,
+  { key: 'costume-figure-placement:index', kind: 'costume-figure-placement', id: 'index', required: true,
     dependencies: [], dependencyState: 'complete', pending: null, uses: [use] },
   { key: 'idol-mouth:103kur', kind: 'idol-mouth', id: '103kur', required: true,
     dependencies: ['model-mouth:103kur/103kur_001_00'], dependencyState: 'complete', pending: null, uses: [use] },
@@ -65,10 +65,18 @@ const resolvedPlan = resolveStaticSpineModels(sourcePlan)
 assert.equal(sourcePlan.assets[0].dependencyState, 'pending', 'silhouette resolution does not mutate the source plan')
 assert.deepEqual(resolvedPlan.assets.find(asset => asset.kind === 'spine-bundle').dependencies,
   ['silhouette:103kur_001_00'])
-for (const kind of ['idol-placement', 'idol-mouth']) {
-  const asset = resolvedPlan.assets.find(candidate => candidate.kind === kind)
-  assert.equal(asset.required, false)
-  assert.match(asset.runtimeDisabled, /^silhouette-has-no-/)
+const mouth = resolvedPlan.assets.find(candidate => candidate.kind === 'idol-mouth')
+assert.equal(mouth.required, false)
+assert.equal(mouth.runtimeDisabled, 'silhouette-has-no-mouth-rig')
+// Texture figures take their rect and positionY from the shared figure placement.
+assert.equal(resolvedPlan.assets.find(candidate => candidate.kind === 'costume-figure-placement').required, true)
+const placement = JSON.parse(await import('node:fs/promises').then(({ readFile }) => readFile(sourceUrl('../public/data/idolsetting/idol_figure_placement.json'), 'utf8')))
+for (const modelId of SILHOUETTE_ONLY_MODEL_IDS) {
+  const texture = placement.textures[modelId]
+  assert.ok(texture, `${modelId} has a texture-figure rect`)
+  const { width, height } = await import('node:fs/promises').then(({ readFile }) => readFile(sourceUrl(`../public/assets/silhouette/${modelId}.png`)))
+    .then(bytes => ({ width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) }))
+  assert.deepEqual([width, height], texture.image, `${modelId} site PNG is the packed texture rect`)
 }
 
 console.log('Silhouette fallback: audited model bypasses known-missing Spine requests')

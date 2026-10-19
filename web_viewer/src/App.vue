@@ -101,10 +101,11 @@
         @open-idol="openHomeIdol"
         @open-chat="openHomeChat"
         @open-card="openHomeCard"
+        @open-other-voices="navigateArchiveSection('unused')"
       />
 
       <ArchiveAbout v-if="view === 'about'" />
-      <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" />
+      <ArchiveUnusedVoices v-if="view === 'unused_archive'" :idol-name="idolDisplayName" @preview-office-voice="previewOfficeVoice" />
       <ArchiveToolLanding v-if="view === 'live' || view === 'studio'" :kind="view" @charts="openChartTool" @photo="openPictureStudio()" @stage="openChibiStage()" @photo-catalog="openDomainCatalog('photos')" />
       <ArchiveIdolGrid
         v-if="view === 'idols'"
@@ -666,6 +667,7 @@ import {
   onArchivePopState,
   readArchiveRoute,
   writeArchiveRoute,
+  OFFICE_VOICE_CUE,
 } from './core/archiveRoute.js'
 import { COLLECTION_KINDS, collectionKindForEntity } from './core/CollectionRouteState.js'
 import { normalizeEventBrowseState } from './core/EventCatalogRouteState.js'
@@ -1074,9 +1076,21 @@ const {
   goHome, loadScenario, loadCardDetail: (...args) => loadCardDetail(...args),
 })
 
+// Story costume labels merge into Home profiles. They load beside the Home index instead of in the startup chunk.
+const storyCostumeMerge = shallowRef(null)
+let storyCostumeLoad = null
+function loadStoryCostumes() {
+  storyCostumeLoad ||= Promise.all([import('./data/archiveHomeState.js'), import('./data/storyCostumes.json')])
+    .then(([module, data]) => { storyCostumeMerge.value = { merge: module.withStoryCostumes, costumes: data.default.costumes } })
+    .catch(error => { storyCostumeLoad = null; throw error })
+  return storyCostumeLoad
+}
 const archiveStats = computed(() => homeReadModelIndex.value?.stats || [])
 const archiveHomeIdols = computed(() => homeReadModelIndex.value
-  ? homeReadModelIndex.value.idols.map(idol => homeReadModelProfiles.value[idol.id] || idol)
+  ? homeReadModelIndex.value.idols.map(idol => {
+    const profile = homeReadModelProfiles.value[idol.id] || idol
+    return storyCostumeMerge.value ? storyCostumeMerge.value.merge(profile, storyCostumeMerge.value.costumes) : profile
+  })
   : archiveBootstrap.idols.filter(idol => idol.home_available))
 const archivePickerIdols = computed(() => archiveBootstrap.idols)
 const validArchiveHomeIdols = computed(() => archiveHomeIdols.value.map(idol => idol.id))
@@ -1103,6 +1117,7 @@ const {
   portalFrom, detailSourceRoute, navigation, archiveBootstrap,
   readModelClient, currentArchiveRoute, openIdolPicker, commitView,
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+  loadHomeSupplements: loadStoryCostumes,
 })
 
 const {
@@ -1482,7 +1497,7 @@ const archiveTitle = computed(() => {
   if (view.value === 'live') return 'LIVE'
   if (view.value === 'studio') return '摄影工作台'
   if (view.value === 'about') return '关于本站'
-  if (view.value === 'unused_archive') return '未使用语音存档'
+  if (view.value === 'unused_archive') return '其他语音存档'
   if (view.value === 'archive_status') return '数据状态'
   if (view.value === 'collection_catalog') return archiveSectionTitle(view.value, currentCollectionState.value.kind)
   if (view.value === 'photo_catalog') return '摄影资源'
@@ -1773,6 +1788,7 @@ function updateArchiveFilter(key, value) {
 }
 
 async function restoreVoicePreview(route, intent) {
+  if (OFFICE_VOICE_CUE.test(route.voice || '')) return previewOfficeVoice(route.voice, { intent, syncRoute: false })
   const card = cardReadModelDetail.value?.id === route.card ? cardReadModelDetail.value.card : null
   if (!card || !route.voice) return false
   const cue = findCardVoiceCue(card, route.voice, card.operational_voice_cues || [])
@@ -1948,7 +1964,7 @@ async function applyArchiveRoute(route, { restoring = true, intent: inherited } 
     if (route.view === 'player' && route.voice) {
       if (await restoreVoicePreview(route, intent)) return
       if (!intent.isCurrent()) return
-      view.value = currentCard.value ? 'card_detail' : 'cards'
+      view.value = OFFICE_VOICE_CUE.test(route.voice) ? 'unused_archive' : currentCard.value ? 'card_detail' : 'cards'
       return
     }
     if (route.view === 'spine_lab') await spineViewerLoader()
@@ -2499,6 +2515,17 @@ async function openVoicePreview(card, cue, returnView) {
   loadingPurpose.value = 'story-playback'
   return playbackController.preview(() => scenario,
     typeof cue === 'string' ? cue : cue.cue, returnView)
+}
+
+// Yamamura's office lines open in the player from the other-voices archive and return there.
+async function officeVoiceScenario(cue) {
+  const [{ buildOfficeVoicePreviewScenario }] = await Promise.all([import('./data/officeVoicePreview.js'),
+    loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))])
+  return buildOfficeVoicePreviewScenario(cue, { translate: source => archiveNamedTranslation('office-voice', source, 'text') })
+}
+function previewOfficeVoice(cue, options = {}) {
+  loadingPurpose.value = 'story-playback'
+  return playbackController.preview(() => officeVoiceScenario(cue), cue, 'unused_archive', options)
 }
 
 async function restorePlaybackDestination(destination, route) {

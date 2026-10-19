@@ -83,6 +83,8 @@ const c={...clock,motionClockTrack:ref(offsetTrack),stageVocalEnabled:ref(false)
   stageAudioTailActive:false,
   stagePlaybackAudios:()=>[audio],stageClockAudio:()=>audio,stageIntent:{cancel(){}},
   animationFrame:1,cancelAnimationFrame(){},syncMotionPlaybackSpeed(){},
+  // Center-line oneshot voices follow the transport; verify-stage-intent checks those calls.
+  stageOneshot:{start(){},stop(){},update(){},setPlaybackRate(){},release(){}},
   backmonitorVideo:null,backmonitorTransitionVideo:null,backmonitorTransitionAlphaVideo:null,
   frameCap:()=>0,lastStageFrame:0,performance:{now:()=>0},selectedSong:ref({}),
   playbackStartOffset:0,playbackStartedAt:0,playbackSpeed:ref(1),stageTransportReady:ref(false),

@@ -1,6 +1,6 @@
 import { bindLegacyAliasNavigation } from './lib/legacy-alias-navigation-harness.mjs'
 import { isDirectScenarioEntry, playerReturnRoute, selectPlayerQueue } from '../src/core/PlayerEntryRequest.js'
-import { ownsArchiveSource } from '../src/core/archiveRoute.js'
+import { OFFICE_VOICE_CUE, ownsArchiveSource } from '../src/core/archiveRoute.js'
 import { normalizeEventBrowseState } from '../src/core/EventCatalogRouteState.js'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -59,6 +59,7 @@ function setup() {
     ...state, navigation, loading, loadingPurpose: { value: 'archive-data' }, preloadProgress: { value: 0 },
     EXTERNAL_STORY_RESOURCES_ENABLED: false,
     buildCardVoicePreviewScenario, findCardVoiceCue, idolDisplayName: id => `speaker:${id}`,
+    OFFICE_VOICE_CUE, previewOfficeVoice: async voice => { throw new Error(`Unexpected office voice preview ${voice}`) },
     loadArchiveNames: () => Promise.resolve(), archiveNamedTranslation: () => '',
     cardReadModelDetail: { value: null },
     archiveRouteReady: true,

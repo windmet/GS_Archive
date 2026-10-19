@@ -1,3 +1,5 @@
+import { backgroundPanelRect, cameraScreenTransform } from './AdvStageLayout.js'
+
 const clone = value => value == null ? null : JSON.parse(JSON.stringify(value))
 const clamp = value => Math.min(1, Math.max(0, value))
 const ease = value => 1 - (1 - value) ** 3
@@ -17,19 +19,22 @@ function finite(value, name, minimum = 0) {
   if (!Number.isFinite(value) || value < minimum) throw new TypeError(`Invalid projector ${name}`)
   return value
 }
-function cameraTransform(camera, viewport) {
-  const scale = camera?.zoom ?? 1
-  finite(scale, 'camera zoom', Number.MIN_VALUE)
+// Camera state in canvas units (Unity's upward-positive Y); StoryCamera.MoveCamera tweens it linearly.
+function cameraState(camera) {
+  const zoom = camera?.zoom ?? 1
+  finite(zoom, 'camera zoom', Number.MIN_VALUE)
   const x = camera?.offset_x ?? 0, y = camera?.offset_y ?? 0
   if (!Number.isFinite(x) || !Number.isFinite(y)) throw new TypeError('Invalid projector camera offset')
-  return { scale, x: viewport.width / 2 * (1 - scale) - x * viewport.width / 1280 * scale,
-    // Camera targets use Unity's upward-positive Y, matching CameraController.
-    y: viewport.height / 2 * (1 - scale) + y * viewport.width / 1280 * scale }
+  return { zoom, x, y }
 }
-function cameraAt(motion, time) {
+function cameraStateAt(motion, time) {
   if (!motion.cue) return motion.to
-  const t = ease(progress(motion.cue, time))
-  return Object.fromEntries(['scale', 'x', 'y'].map(key => [key, mix(motion.from[key], motion.to[key], t)]))
+  const t = progress(motion.cue, time)
+  return Object.fromEntries(['zoom', 'x', 'y'].map(key => [key, mix(motion.from[key], motion.to[key], t)]))
+}
+function cameraAt(motion, time, viewport) {
+  const { scale, x, y } = cameraScreenTransform(viewport.width, viewport.height, cameraStateAt(motion, time))
+  return { scale, x, y }
 }
 function initialScreen(overlay) {
   return {
@@ -109,7 +114,7 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
   for (const id of Object.keys(context.startedAt || {})) if (!ids.has(id)) throw new TypeError('Unknown cue start identity')
   const coverage = { status: 'partial', unsupported_cues: cues.filter(c => !supported.has(c.action)).map(c => c.cue_id),
     unmapped_fields: clone(step.normalization?.unmapped_legacy_fields || []), limitations: ['spine-animation', 'filters', 'particles', 'background-geometry', 'audio-side-effects'] }
-  let camera = { to: cameraTransform(entry.camera_zoom, viewport) }
+  let camera = { to: cameraState(entry.camera_zoom) }
   let background = { status: 'projected', layers: entry.bg ? [{ bg: entry.bg, alpha: 1 }] : [] }
   let backgroundCue = null, backgroundFrom = entry.bg || null
   const screen = initialScreen(entry.screen_overlay)
@@ -127,7 +132,7 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
       }
       tintMotions.set(cue.target, { from: tintAt(motion, cue.start), to, cue })
     } else if (cue.action === 'camera.transform') {
-      camera = { from: cameraAt(camera, cue.start), to: cameraTransform(p, viewport), cue }
+      camera = { from: cameraStateAt(camera, cue.start), to: cameraState(p), cue }
     } else if (cue.action === 'background.change') {
       if (p.type && p.type !== 'dissolve') {
         background.status = 'not-projected'; coverage.unsupported_cues.push(cue.cue_id)
@@ -158,9 +163,9 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
   const geometry = background.layers?.map(({ bg }) => {
     const size = context.backgroundTextures?.[bg]
     if (!(Number.isFinite(size?.width) && size.width > 0 && Number.isFinite(size?.height) && size.height > 0)) return null
-    const scale = viewport.height / size.height, width = size.width * scale
-    return { bg, x: Math.round((viewport.width - width) / 2), y: 0,
-      width, height: size.height * scale, scaleX: scale, scaleY: scale, anchorX: 0, anchorY: 0 }
+    const rect = backgroundPanelRect(viewport.width, viewport.height)
+    return { bg, x: rect.x, y: rect.y, width: rect.width, height: rect.height,
+      scaleX: rect.width / size.width, scaleY: rect.height / size.height, anchorX: 0, anchorY: 0 }
   })
   const geometryReady = !!geometry && geometry.every(Boolean)
   if (geometryReady) coverage.limitations = coverage.limitations.filter(item => item !== 'background-geometry')
@@ -168,7 +173,7 @@ export function projectStoryState(scenario, { stepIndex, time, viewport, context
     projector_version: 1, step_index: stepIndex, step_id: step.step_id, time,
     basis: { cue_policy: context.cuePolicy || 'replay', entry: context.entrySnapshot ? 'resolved-entry' : 'compiled-entry', history_id: context.historyId || null,
       timing: Object.keys(context.startedAt || {}).length ? 'explicit-starts' : 'asset-ready-semantic' },
-    background, camera: { status: 'projected', ...cameraAt(camera, time) }, screen: { status: 'projected', ...screen },
+    background, camera: { status: 'projected', ...cameraAt(camera, time, viewport) }, screen: { status: 'projected', ...screen },
     backgroundGeometry: { status: geometryReady ? 'projected' : 'not-projected',
       space: 'background-container-local', layers: geometryReady ? geometry : null },
     backgroundFilters: backgroundFilters(entry, time, context.backgroundFilterOrigins),

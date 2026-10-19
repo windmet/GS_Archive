@@ -1,14 +1,38 @@
 <template>
   <article class="unused-page" data-archive-scroll-container>
     <header class="unused-intro">
-      <p>游戏资源里有、但本站其他页面没有用到的语音，共 {{ total }} 条。除齋藤的 15 句以外，原始脚本里都没有文字，这里按原始编号列出，可以直接试听。</p>
+      <p>偶像、卡片与剧情页之外的游戏语音，共 {{ total }} 条：事务所山村的系统语音、登录时的标题呼号，以及游戏资源里有、但未使用或用途未确认的语音。没有文字的按原始编号列出，可以直接试听。</p>
     </header>
     <nav class="unused-families" aria-label="语音分组">
-      <button v-for="entry in ARCHIVE.families" :key="entry.id" type="button" :aria-pressed="entry.id === family.id" @click="select(entry.id)">
-        {{ entry.label }} <small>{{ entry.count }}</small>
-      </button>
+      <div v-for="group in GROUPS" :key="group.id" class="unused-family-group" :data-unused-group="group.id">
+        <h2>{{ group.label }}</h2>
+        <div>
+          <button v-for="entry in group.families" :key="entry.id" type="button" :aria-pressed="entry.id === family.id" @click="select(entry.id)">
+            {{ entry.label }} <small>{{ entry.count }}</small>
+          </button>
+        </div>
+      </div>
     </nav>
-    <section class="unused-family" :data-unused-family="family.id" aria-labelledby="unused-family-heading">
+    <section v-if="family.id === OFFICE.id" class="unused-family" data-unused-family="office" aria-labelledby="unused-family-heading">
+      <h3 id="unused-family-heading">{{ family.label }} <small>{{ family.count }} 句 · 编号 4_1_101_…</small></h3>
+      <p class="unused-note">{{ family.note }}</p>
+      <div class="unused-speaker office-speaker">
+        <ArchiveIdolAvatar :idol-code="OFFICE_VOICES.speaker.code" :size="34" :ring-width="0" :gap="0" decorative :fallback-text="speakerName(OFFICE_VOICES.speaker.code).slice(0, 1)" />
+        <strong>{{ speakerName(OFFICE_VOICES.speaker.code) }}</strong>
+      </div>
+      <section v-for="scene in OFFICE_VOICES.scenes" :key="scene.id" class="office-scene" :data-office-scene="scene.id">
+        <h4>{{ scene.label }} <small>{{ scene.lines.length }} 句</small></h4>
+        <p class="unused-note">{{ scene.note }}</p>
+        <ol class="unused-lines">
+          <li v-for="line in scene.lines" :key="line.cue" :data-office-cue="line.cue">
+            <button type="button" class="unused-play" :aria-pressed="playing === line.cue" :aria-label="`播放 ${scene.label} ${line.cue}`" @click="play(line.cue)"><component :is="playing === line.cue ? Pause : Play" :size="14" aria-hidden="true" /></button>
+            <span class="unused-text gs-flow" :lang="officeLine(line).lang" :class="{ 'is-pending': officeLine(line).pending }">{{ officeLine(line).text }}</span>
+            <button type="button" class="voice-preview-btn" :aria-label="`演出预览 ${line.cue}`" @click="preview(line.cue)">演出预览</button>
+          </li>
+        </ol>
+      </section>
+    </section>
+    <section v-else class="unused-family" :data-unused-family="family.id" aria-labelledby="unused-family-heading">
       <h3 id="unused-family-heading">{{ family.label }} <small>{{ family.count }} 条 · 编号 {{ family.id }}_…</small></h3>
       <p class="unused-note">{{ family.note }}</p>
       <ul class="unused-speakers" :class="{ 'has-lines': hasText }">
@@ -41,15 +65,28 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 import { Pause, Play } from '@lucide/vue'
 import ArchiveIdolAvatar from './ArchiveIdolAvatar.vue'
 import ARCHIVE from '../../data/unusedVoiceArchive.json'
+import OFFICE_VOICES from '../../data/officeSystemVoices.json'
 import { archiveLineText, loadArchiveNames } from './useArchiveNamedText.js'
 import { getVoiceUrl } from '../../utils/AssetResolver.js'
 const props = defineProps({ idolName: { type: Function, default: () => '' } })
+const emit = defineEmits(['preview-office-voice'])
 // The office staff are not archive idols; their names come from the source.
 const STAFF = { '101ken': '山村 賢', '102sha': '齋藤 孝司' }
-const total = ARCHIVE.families.reduce((sum, family) => sum + family.count, 0)
-const familyId = ref(ARCHIVE.families[0].id), playing = ref(''), failed = ref(''), audio = ref(null)
-const family = computed(() => ARCHIVE.families.find(entry => entry.id === familyId.value))
-const hasText = computed(() => family.value.speakers.some(speaker => speaker.cues.some(line => line.text)))
+// Yamamura's login-bonus and work-menu lines: scripted ADV steps (model, faces, lip curves), so each can
+// open in the story player like a card touch voice.
+const OFFICE = { id: 'office', label: '事务所 · 山村', count: OFFICE_VOICES.scenes.reduce((sum, scene) => sum + scene.lines.length, 0),
+  note: '登录奖励与工作画面里山村贤的提示语音。原始脚本带有模型、表情动作与口型数据，可以用「演出预览」在剧情播放器里观看。' }
+const GROUPS = [
+  { id: 'used', label: '有用途', families: [OFFICE, ...ARCHIVE.families.filter(entry => entry.use)] },
+  { id: 'unused', label: '未使用 / 用途未确认', families: ARCHIVE.families.filter(entry => !entry.use) },
+]
+const FAMILIES = GROUPS.flatMap(group => group.families)
+const total = FAMILIES.reduce((sum, family) => sum + family.count, 0)
+const familyId = ref(OFFICE.id), playing = ref(''), failed = ref(''), audio = ref(null)
+const family = computed(() => FAMILIES.find(entry => entry.id === familyId.value))
+const hasText = computed(() => family.value.speakers?.some(speaker => speaker.cues.some(line => line.text)))
+const officeLine = line => archiveLineText('card-lines', [['office-voice', 'text']], line.text)
+function preview(cue) { stop(); emit('preview-office-voice', cue) }
 const speakerName = code => props.idolName?.(code, STAFF[code]) || STAFF[code] || code
 const lineText = line => archiveLineText('card-lines', [['unused-voice', 'text']], line.text)
 void loadArchiveNames('card-lines').catch(error => console.warn('Card line translations unavailable', error))
@@ -72,7 +109,15 @@ onBeforeUnmount(() => { const el = audio.value; if (el) { el.pause(); el.removeA
 <style scoped>
 .unused-page { display: grid; align-content: start; gap: 18px; height: 100%; padding: var(--gs-space-8); overflow-y: auto; box-sizing: border-box; background: var(--gs-paper); color: var(--gs-ink-2); }
 .unused-intro p, .unused-note { margin: 0; max-width: 72ch; color: var(--gs-ink-3); font-size: var(--gs-text-ui); line-height: 1.7; }
-.unused-families { display: flex; flex-wrap: wrap; gap: 8px; }
+.unused-families { display: grid; gap: 10px; }
+.unused-family-group { display: grid; gap: 6px; }
+.unused-family-group h2 { margin: 0; color: var(--gs-ink-3); font-size: var(--gs-text-meta); font-weight: 700; }
+.unused-family-group > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.office-scene { display: grid; gap: 6px; padding-top: 8px; }
+.office-scene h4 { margin: 0; color: var(--gs-ink); font-size: var(--gs-text-ui); }
+.office-scene h4 small { margin-left: 4px; color: var(--gs-ink-3); font-weight: 400; }
+.voice-preview-btn { flex: none; align-self: center; min-height: 32px; padding: 0 10px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-mint-ink); font: inherit; font-size: var(--gs-text-meta); cursor: pointer; }
+.voice-preview-btn:hover { border-color: var(--gs-mint-ink); }
 .unused-families button { min-height: 36px; padding: 0 12px; border: 1px solid var(--gs-line); border-radius: var(--gs-radius-pill); background: var(--gs-surface); color: var(--gs-ink-2); font: inherit; font-size: var(--gs-text-ui); cursor: pointer; }
 .unused-families button small { margin-left: 4px; color: var(--gs-ink-3); }
 .unused-families button[aria-pressed='true'] { border-color: var(--gs-mint-ink); background: var(--gs-mint-wash); color: var(--gs-mint-ink); font-weight: 700; }

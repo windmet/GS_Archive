@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import { BackgroundEffectManager } from './BackgroundEffectManager.js'
 import { easeOutCubic, runRafTween } from './rafTween.js'
+import { backgroundPanelRect } from '../../shared/story/AdvStageLayout.js'
 
 export class BackgroundManager {
   constructor({
@@ -47,16 +48,16 @@ export class BackgroundManager {
     this._resizeBgEffects()
   }
 
+  // AdventureBackgroundPanel: the 1800x960 panel at orthographicSize / 5, centred on the view (4/3 of the
+  // view height); its Image stretches any sprite to the panel rect.
   _applyBgCover(sprite) {
     if (!sprite?.texture) return
-    const width = this.getWidth()
-    const height = this.getHeight()
-    sprite.width = width
-    sprite.height = height
-    sprite.scale.x = sprite.scale.y
+    const rect = backgroundPanelRect(this.getWidth(), this.getHeight())
     sprite.anchor.set(0, 0)
-    sprite.x = Math.round((width - sprite.width) / 2)
-    sprite.y = 0
+    sprite.width = rect.width
+    sprite.height = rect.height
+    sprite.x = rect.x
+    sprite.y = rect.y
   }
 
   async setBackground(bgId, transition = null) {

@@ -1,15 +1,21 @@
-export function sampleLipCurve(curve, elapsedSeconds) {
+// Client LipSyncPlayData starts 0.1 s into the curve and LipSyncData.GetScale reads the 60 fps sample at
+// (int)(time * 60) without interpolation or stretching to the audio length; past the end the mouth closes.
+export const LIP_FRAME_RATE = 60
+export const LIP_START_TIME = 0.1
+
+// Native lip sample {x, y} for elapsed voice time, or null once the curve is complete (mouth closed).
+export function sampleLipScale(curve, elapsedSeconds) {
   const scales = curve?.scales
-  if (!Array.isArray(scales) || scales.length === 0) return 0
-  const duration = Math.max(0.001, curve.duration || (scales.length / 60))
-  const t = Math.min(Math.max(elapsedSeconds / duration, 0), 1)
-  const pos = t * (scales.length - 1)
-  const i = Math.floor(pos)
-  const frac = pos - i
-  const a = Number(scales[i]?.y || 0)
-  const b = Number(scales[Math.min(i + 1, scales.length - 1)]?.y || 0)
-  const y = a + (b - a) * frac
-  return Math.min(1, Math.max(0, y * (curve.gain || 1)))
+  if (!Array.isArray(scales) || scales.length === 0) return null
+  const time = Math.max(0, Number(elapsedSeconds) || 0) + LIP_START_TIME
+  if (time >= scales.length / LIP_FRAME_RATE) return null
+  const sample = scales[Math.min(scales.length - 1, Math.floor(time * LIP_FRAME_RATE))] || {}
+  return { x: Number(sample.x ?? 1), y: Number(sample.y || 0) }
+}
+
+// Opening amount (the sample's y) for UI meters; 0 when closed.
+export function sampleLipCurve(curve, elapsedSeconds) {
+  return Math.min(1, Math.max(0, sampleLipScale(curve, elapsedSeconds)?.y || 0))
 }
 
 export function deriveMainLipPathFromVoice(voice) {

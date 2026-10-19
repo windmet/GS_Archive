@@ -282,6 +282,11 @@
               <label class="camera-toggle"><input v-model="stageVocalEnabled" type="checkbox" :disabled="booting" @change="handleStageVocalToggle" /><span>按编成偶像演唱<small>{{ stageVocalEnabled ? (stageVocalReady ? '各声部随演唱位切换' : stageVocalLoadingLabel) : '关闭时播放原曲混音' }}</small></span></label>
               <button type="button" class="lineup-vocal-mix" aria-label="声部与伴奏音量" title="声部与伴奏音量" @click="vocalSettingsOpen = true"><Music2 :size="17" /></button>
             </div>
+            <!-- Unit_serif: the mix leaves this line silent and the game plays the deck center card's own take. -->
+            <div v-if="oneshotAvailable" class="lineup-oneshot">
+              <label><span>Center 台词</span><select v-model="oneshotSelection" aria-label="Center 台词音轨" :disabled="booting"><option :value="ONESHOT_CENTER">跟随 Center · {{ oneshotIdolLabel(oneshotCenterIdolCode) || '空位' }}</option><option v-for="code in oneshotIdolCodes" :key="code" :value="code">{{ oneshotIdolLabel(code) }}</option><option :value="ONESHOT_OFF">关闭 · 保留原曲留白</option></select></label>
+              <small>{{ oneshotTriggerLabel }} 原曲在此留白，游戏播放编成 Center 卡偶像的台词；此处可任选 {{ oneshotIdolCodes.length }} 人试听。</small>
+            </div>
             <div v-if="editingSlot" class="slot-editor">
               <button class="idol-change-action" type="button" :disabled="booting || editingSlot.loading || !activePositions.includes(editingSlot.position)" :aria-label="`替换 ${editingSlot.position} 号位偶像`" @click="pickerPosition = editingSlot.position">
                 <ArchiveIdolAvatar :idol-code="editingSlot.characterId" :accent-color="stageIdolColor(characterForSlot(editingSlot))" :size="44" decorative />
@@ -617,6 +622,7 @@ import { applyObjectSpriteGeometry } from '../core/chibiObjectSpriteGeometry.js'
 import { loadChibiBloom, updateChibiBloom } from '../core/chibiBloomParticles.js'
 import { loadChibiFloor, updateChibiFloor } from '../core/chibiFloorParticles.js'
 import { useSongPerformanceSession } from '../composables/useSongPerformanceSession.js'
+import { ONESHOT_CENTER, ONESHOT_OFF, useStageOneshotVoice } from '../composables/useStageOneshotVoice.js'
 
 const emit = defineEmits(['back', 'open-lab', 'target-change'])
 const props = defineProps({
@@ -1076,6 +1082,27 @@ const stageVocalAvailable = computed(() => Boolean(
     ? activePositions.value.length === 1
     : (handoffLineup.value || activePositions.value.length === selectedStageVocalExperiment.value.stage_vocal.slot_count)),
 ))
+// The game picks the oneshot line by deck slot 1 (the center card); the stage page has
+// no deck, so "center" follows whoever stands in performer slot 1 of the lineup.
+const oneshotCenterIdolCode = computed(() => {
+  const stagePosition = stagePositionForPerformerSlot(1)
+  return (handoffLineup.value
+    ? handoffLineup.value[stagePosition - 1]
+    : slotByPosition(stagePosition)?.characterId) || ''
+})
+const stageOneshot = useStageOneshotVoice({
+  songCode: computed(() => selectedSong.value?.songCode || ''),
+  centerIdolCode: oneshotCenterIdolCode,
+  playbackRate: playbackSpeed,
+})
+const oneshotSelection = stageOneshot.selection
+const oneshotAvailable = stageOneshot.available
+const oneshotIdolCodes = stageOneshot.idolCodes
+function oneshotIdolLabel(code) {
+  return code ? stageIdolName(characters.value.find(character => character.id === code)) || code : ''
+}
+const oneshotTriggerLabel = computed(() => stageOneshot.triggers.value
+  .map(trigger => formatTime(trigger.time_ms)).join('、'))
 const stageVocalFactLabel = computed(() => isSoloChoreography.value ? 'Center 实验音频' : '编成偶像实验音频')
 const stageVocalLegend = computed(() => isSoloChoreography.value ? 'Center 声部实验' : '编成偶像声部实验')
 const stageVocalToggleLabel = computed(() => isSoloChoreography.value
@@ -1342,6 +1369,7 @@ onBeforeUnmount(() => {
   resizeObserver?.disconnect()
   releaseAudio()
   releaseStageVocalAudio()
+  stageOneshot.release()
   releaseBackmonitor()
   releaseImageLayers()
   releaseObjectLayers()
@@ -3948,6 +3976,7 @@ async function toggleStage() {
   }
   playing.value = true
   stageAudioTailActive = silentTail
+  stageOneshot.start(stageTime.value)
   syncMotionPlaybackSpeed()
   syncBackmonitor(true)
   if(app)app.ticker.lastTime=performance.now()
@@ -3996,6 +4025,7 @@ function updateStage(now) {
     )
   }
   if (!stageTransportReady.value) return
+  stageOneshot.update(stageTime.value)
   for (const slot of activeSlots.value) {
     const events = eventsForPosition(slot.position)
     let index = eventIndices.get(slot.position) || 0
@@ -4051,6 +4081,7 @@ function stopStage(reset = false) {
       nativeStageTimeFromAudio(motionClockTrack.value,stageClockAudio().currentTime)))
   }
   stagePlaybackAudios().forEach(audio => audio.pause())
+  stageOneshot.stop()
   backmonitorVideo?.pause()
   backmonitorTransitionVideo?.pause()
   backmonitorTransitionAlphaVideo?.pause()
@@ -4070,6 +4101,7 @@ function applyPlaybackSpeed() {
   if (stageStarting.value) stopStage()
   stageVocalSession.setPlaybackRate(playbackSpeed.value)
   stagePlaybackAudios().forEach(audio => { audio.playbackRate = playbackSpeed.value })
+  stageOneshot.setPlaybackRate(playbackSpeed.value)
   if (backmonitorVideo) backmonitorVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionVideo) backmonitorTransitionVideo.playbackRate = playbackSpeed.value
   if (backmonitorTransitionAlphaVideo) backmonitorTransitionAlphaVideo.playbackRate = playbackSpeed.value
@@ -4312,6 +4344,10 @@ select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lineup-vocal .camera-toggle { flex: 1; min-width: 0; }
 .lineup-vocal .camera-toggle span { display: grid; gap: 2px; }
 .lineup-vocal small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
+.lineup-oneshot { display: grid; gap: 4px; padding: 4px 0 8px; border-bottom: 1px solid var(--line); }
+.lineup-oneshot label { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; color: var(--gs-ink-2); font-size: var(--gs-text-ui); }
+.lineup-oneshot select { min-width: 0; min-height: 44px; padding: 0 8px; border: 1px solid var(--line); border-radius: var(--gs-radius-field); background: var(--gs-surface); color: var(--gs-ink); font-family: inherit; }
+.lineup-oneshot small { color: var(--muted); font-size: var(--gs-text-meta); line-height: 1.4; }
 .lineup-vocal-mix { display: grid; flex: none; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--gs-radius-control); background: none; color: var(--gs-ink-2); cursor: pointer; }
 .slot-editor { display: grid; gap: 8px; min-width: 0; }
 .idol-change-action { display: flex; width: 100%; align-items: center; gap: 12px; min-height: 60px; padding: 8px 0; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; cursor: pointer; text-align: left; }

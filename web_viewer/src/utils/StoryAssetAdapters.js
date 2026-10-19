@@ -1,7 +1,7 @@
 import { getBgUrl, getMobileBgUrl, getUnitMobileBgUrl,
   getMobileIconUrl, getStampUrl, getEmojiUrl, getSpineSkelUrl,
   isSilhouetteOnlyModel, getSpineAtlasUrl, getSilhouetteUrl,
-  getMouthSettingUrl, getOtherSettingUrl, getBodyTypeUrl, getCostumePrefabMetaUrl,
+  getMouthSettingUrl, getFigurePlacementUrl,
   getCostumeDictionaryUrl, getIdolMotionSettingUrl } from './AssetResolver.js'
 import { effectTextureUrl } from '../../shared/story/EffectTextures.js'
 
@@ -16,8 +16,7 @@ const imageUrls = {
   silhouette: getSilhouetteUrl,
 }
 const configUrls = {
-  'idol-placement': getOtherSettingUrl, 'idol-body-types': getBodyTypeUrl,
-  'idol-motion': getIdolMotionSettingUrl, 'costume-prefab-metadata': getCostumePrefabMetaUrl,
+  'idol-motion': getIdolMotionSettingUrl, 'costume-figure-placement': getFigurePlacementUrl,
   'costume-dictionary': getCostumeDictionaryUrl,
 }
 
@@ -26,7 +25,7 @@ const configUrls = {
 export function storyAssetAdapter(asset) {
   if (asset.required === false) return { state: 'excluded', reason: asset.runtimeDisabled }
   if (Object.hasOwn(configUrls, asset.kind)) return { state: 'discovered', operation: 'json',
-    urls: [configUrls[asset.kind](asset.id)], cache: import.meta.env?.DEV && ['idol-motion', 'costume-prefab-metadata'].includes(asset.kind) ? 'no-store' : 'default' }
+    urls: [configUrls[asset.kind](asset.id)], cache: import.meta.env?.DEV && ['idol-motion', 'costume-figure-placement'].includes(asset.kind) ? 'no-store' : 'default' }
   if (asset.kind === 'model-mouth') {
     if (isSilhouetteOnlyModel(asset.modelId)) return { state: 'excluded', reason: 'silhouette-has-no-mouth-rig' }
     return { state: 'discovered', operation: 'json', urls: asset.candidateIds.map(getMouthSettingUrl), cache: 'default' }
@@ -68,15 +67,12 @@ export function resolveStaticSpineModels(input) {
     bundle.pending = null
     bundle.modelKind = 'silhouette'
   }
-  // Static silhouettes are positioned directly from the scenario state and
-  // have no placement or mouth rig to warm. Keep a shared actor dependency
-  // when that actor also uses a real Spine model elsewhere in the scenario.
-  for (const asset of plan.assets.filter(asset => ['idol-placement', 'idol-mouth'].includes(asset.kind))) {
+  // Static silhouettes have no mouth rig to warm (their rect comes from the shared figure placement). Keep a
+  // shared actor dependency when that actor also uses a real Spine model elsewhere in the scenario.
+  for (const asset of plan.assets.filter(asset => asset.kind === 'idol-mouth')) {
     if (!asset.uses.length || !asset.uses.every(use => silhouetteUses.has(JSON.stringify(use)))) continue
     asset.required = false
-    asset.runtimeDisabled = asset.kind === 'idol-placement'
-      ? 'silhouette-has-no-placement-config'
-      : 'silhouette-has-no-mouth-rig'
+    asset.runtimeDisabled = 'silhouette-has-no-mouth-rig'
     asset.dependencies = []
     asset.dependencyState = 'complete'
     asset.pending = null

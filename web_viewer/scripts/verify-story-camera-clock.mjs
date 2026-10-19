@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { Container } from 'pixi.js'
 import { CameraController } from '../src/core/CameraController.js'
+import { advHorizontalSqueeze, advStageUnit, advToScreen } from '../shared/story/AdvStageLayout.js'
 import { StoryClock } from '../src/core/story-runtime/StoryClock.js'
 import { createCameraCueHandle } from '../src/core/story-runtime/CameraCueRuntime.js'
 
@@ -23,7 +24,7 @@ try {
   const bg = new Container()
   const controller = new CameraController({
     bgContainer: bg, spineContainer: spine,
-    getWidth: () => 1280, getHeight: () => 720, getBgSprite: () => null,
+    getWidth: () => 1280, getHeight: () => 720,
   })
   const stage = { cameraController: controller, setCameraZoom: value => controller.setCameraZoom(value) }
   const cue = {
@@ -36,19 +37,20 @@ try {
   await handle.start()
   wallTime += 1000
   tick()
-  close(spine.scale.x, 1.875)
-  close(spine.x, -560)
+  // StoryCamera.MoveCamera interpolates linearly.
+  close(spine.scale.x, 1.5)
+  close(spine.x, -320)
   clock.pause()
   await handle.pause()
   wallTime += 10000
   tick()
-  close(spine.scale.x, 1.875)
+  close(spine.scale.x, 1.5)
   clock.setRate(2)
   clock.resume()
   await handle.resume()
   wallTime += 250
   tick()
-  close(spine.scale.x, 1.984375)
+  close(spine.scale.x, 1.75)
   clock.setRate(0.5)
   wallTime += 1000
   tick()
@@ -88,19 +90,25 @@ try {
   controller.destroy()
   spine.destroy()
   bg.destroy()
-  // A source point at the camera target must stay at screen centre.
+  // A canvas point at the camera target stays at screen centre; the background zooms in with the camera
+  // but keeps its size when the camera widens (AdventureBackgroundPanel.UpdateBackGroundScale).
   for (const [width, height] of [[1280, 720], [1968, 1060], [390, 844]]) {
     const actors = new Container(), background = new Container()
     const camera = new CameraController({ bgContainer: background, spineContainer: actors,
-      getWidth: () => width, getHeight: () => height, getBgSprite: () => null })
-    for (const offset_y of [-90, 0, 90]) for (const zoom of [1, 1.3, 2]) {
-      const offset_x = 60, coordScale = width / 1280
+      getWidth: () => width, getHeight: () => height })
+    // Portrait squeezes horizontal canvas offsets (advHorizontalSqueeze); 1 elsewhere.
+    const unit = advStageUnit(width, height), squeeze = advHorizontalSqueeze(width, height)
+    for (const offset_y of [-90, 0, 90]) for (const zoom of [0.9, 1, 1.3, 2]) {
+      const offset_x = 60
       camera.setCameraZoom({ zoom, offset_x, offset_y, duration: 0 })
       close(actors.scale.x, zoom)
-      close(background.scale.x, zoom)
-      close(0.26 * actors.scale.x, 0.26 * background.scale.x)
-      close((width / 2 + offset_x * coordScale) * zoom + actors.x, width / 2)
-      close((height / 2 - offset_y * coordScale) * zoom + actors.y, height / 2)
+      close(background.scale.x, Math.max(1, zoom))
+      const target = advToScreen(width, height, offset_x, offset_y)
+      close(target.x * zoom + actors.x, width / 2)
+      close(target.y * zoom + actors.y, height / 2)
+      // The background panel centre (canvas origin) moves with the camera like any canvas point.
+      close(width / 2 * background.scale.x + background.x, width / 2 - offset_x * unit * squeeze * zoom)
+      close(height / 2 * background.scale.x + background.y, height / 2 + offset_y * unit * zoom)
     }
     camera.destroy(); actors.destroy(); background.destroy()
   }
@@ -110,4 +118,4 @@ try {
   if (originalCancel === undefined) delete globalThis.cancelAnimationFrame
   else globalThis.cancelAnimationFrame = originalCancel
 }
-console.log('Camera clock: easing, pause/resume, dynamic rates, cancel, paused settle and delayed instant transform passed')
+console.log('Camera clock: linear tween, pause/resume, dynamic rates, cancel, paused settle and delayed instant transform passed')

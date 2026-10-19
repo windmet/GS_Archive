@@ -65,7 +65,7 @@
             <span v-if="hasMovie(song, '3dmv')" class="badge badge-movie">3DMV</span>
             <span v-if="hasMovie(song, 'mvlive')" class="badge badge-movie">MV LIVE</span>
             <span v-if="song.audio_form === 'layered'" class="badge badge-layered">分轨演唱</span>
-            <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">演出语音</span>
+            <span v-if="song.audio_form === 'oneshot'" class="badge badge-oneshot">Center 台词</span>
           </span>
         </span>
       </button>
@@ -115,7 +115,7 @@ const filters = [
   { id: 'movie', label: '3DMV' },
   { id: 'mvlive', label: 'MV LIVE' },
   { id: 'layered', label: '分轨演唱' },
-  { id: 'oneshot', label: '演出语音' },
+  { id: 'oneshot', label: 'Center 台词' },
   { id: 'special', label: '特殊版本' },
 ]
 

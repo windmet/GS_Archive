@@ -8,6 +8,7 @@ export function useHomeNavigation({
   portalFrom, detailSourceRoute, navigation, archiveBootstrap,
   readModelClient, currentArchiveRoute, openIdolPicker, commitView,
   captureActiveArchiveView, restoreRoute, syncArchiveRoute, window,
+  loadHomeSupplements = null,
 }) {
   const recentHomeProfiles = []
 
@@ -17,6 +18,9 @@ export function useHomeNavigation({
 
   async function loadHomeIndex(options = navigation.getLoadOptions?.() || {}) {
     if (homeReadModelIndex.value) return homeReadModelIndex.value
+    // Supplements (story costume labels) load in parallel; the index is published only after them, so a
+    // costume route never sees a Home without its labels. A failed supplement leaves Home usable.
+    const supplements = Promise.resolve(loadHomeSupplements?.()).catch(error => console.warn('Home supplements unavailable', error))
     const index = await readModelClient.load(archiveBootstrap.domains.home, { ...options, validate: data => {
         const expected = archiveBootstrap.idols.filter(idol => idol.home_available).map(idol => idol.id)
         if (!Array.isArray(data.idols) || data.idols.length !== expected.length ||
@@ -24,6 +28,7 @@ export function useHomeNavigation({
           !Array.isArray(data.stats) || !Array.isArray(data.highlights))
           throw new Error('Home index does not match inline bootstrap')
     } })
+    await supplements
     options.signal?.throwIfAborted()
     homeReadModelIndex.value = index
     return index
