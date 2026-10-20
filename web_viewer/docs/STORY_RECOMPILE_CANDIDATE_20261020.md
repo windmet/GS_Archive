@@ -15,7 +15,9 @@ python scripts/report-story-recompile-candidate.py --candidate <同一目录>
 - voice 保持编译器原样输出，和已发布语料一致；播放器由 `AssetResolver.resolveVoiceFilenameCandidates` 解析。报告用 Node 直接 import 这个函数，对照 `public/assets/voice` 判断两边是否播放同一个文件，不写镜像规则。
 - 报告先按 `(type, text)` 对齐 step 再比字段，插入一步不会让后面全部错位。
 
-## 本轮结果（full2）
+## 本轮结果（full3）
+
+full3 = full2 + 裸 wait 原生化（见下节）+ 合入 #58（SE `sheet`，419 个文件 1225 处 `se_events[].sheet`）。risky 17 项与 full2 逐项相同，新增字段全部在 safe。
 
 3402 个已发布文件：3398 个候选 + 4 个 blocked，共 5382 个产物（bundle 1362 / legacy 2036）。
 
@@ -39,10 +41,21 @@ python scripts/report-story-recompile-candidate.py --candidate <同一目录>
 | `spines[].idol_zoom_y_offset` 移除 | 40 | 有意：e7aab177 删掉猜测偏移，运行时已不读 |
 | `spines[].anim_no_back` 移除 | 4 | 有意：de850b7e 原生 Spine 轨道 |
 | `bg_effects[].action/delay/duration` 移除 | 5 | 有意：73ab7983 `effect_bgstart[2]` 是粒子 alpha |
-| `step-removed`（stage） | 30 | 编译器既有「丢弃无演出的裸 wait」策略；f21db85b 后空 bgm 行不再算演出，所以多丢了一些 wait。节奏会变短（例：`1_1_012_03_g` 少 0.5s）。**待定**：原生客户端裸 wait 也会真的等待，是否改编译器另议 |
+| `step-removed`（stage） | 30 | f21db85b 后空 bgm 行不再算演出，这些 cut 不再出 stage step。它们的等待现在由 `post_wait` / `pre_wait` 保留（例：`1_1_012_03_g` 的 0.5s 落在前一步 `post_wait`），节奏不再变短 |
 | `voice:now-silent` | 22 / 102 处 | 全部是**已发布版错接**：Valentine `5_01_041_23`–`5_01_049_23` b 段现在播放主线 `1_1_001_01` 的语音。候选给的是正确的原生名，只是本地没有这批音频。属于修复；**跟进**：补抽这批语音 |
 | `presentation_context` 移除 | 2 | 由 `derive-chat-threads.py` 后处理产生，候选没跑后处理。晋升时必须重跑 |
 | `spines[].fade` / `idol_color(_transition)` / `timeline` 移除 | 9 / 2 / 2 | 都在 10-13/10-15 Spine 重构的范围内，**需逐例对照 RAW** |
+
+## 裸 wait（已定：照客户端）
+
+客户端 `ScenarioController.SetCutDataList` 按 `GetCutEnd()` 切 cut：除 `text_select` / `text_disable` / `image_icon` 外的文本命令（含 `wait`）、`screen_fadein/out`、`screen_slidein/out`、`screen_fadecolor`、除 `jump_point` 外的跳转命令都结束 cut（`data_pipeline/sidem_scenario/native_cuts.py` 记了 RVA）。
+`wait N` 写 `StoryView+0xe4`，`NextCutWaitCoroutine` 倒数、`WaitAnimationEnd` 等它归零；点击（`OnClickBackgroundPanel`）或 skip 清零。所以**只含 wait 的 cut 会让画面原样停 N 秒**，上一句仍在屏幕上。RAW 全量 126,633 个 cut 里有 48,268 个是这种 cut（约 42,000 s），旧编译器全部丢掉，talk/phone 完全没有等待。
+
+- 编译器不新增 step（step_id、text_ref、阅读控制流不变）：没出 step 的 wait cut 加到上一步 `post_wait`；跟在跳转标签后、或 part 里还没有 step 时，记成下一步 `pre_wait`；同一标签后的连续 wait 都算 `pre_wait`；part 结束时剩下的 `pre_wait` 并到最后一步。选择肢在下一条命令到来时才 flush，它属于选择肢自己的 cut，不吃掉标签后的 wait。
+- 播放器离开 step 时停 `post_wait(当前) + pre_wait(目标)`：点击跳过，skip 不停，自动模式等它走完，菜单 / 回看 / 暂停期间不倒数；选择肢按所选分支的目标停，再点一次立即进入；自动推进的转场 step 把停顿加进计时器。
+- full3：`post_wait` 4440 个文件 68,913 处，`pre_wait` 1219 个文件 3806 处。talk 的 `post_wait` 合计 16,810 s，与 RAW 普查 talk→talk 16,782 s 一致（聚合产物会重复计入 part，所以总和大于 RAW）。
+- 验证：`npm run verify:native-cut-wait`（编译器夹具 + 运行时真 StoryViewer 处理函数，均已变异检验）；编译器部分也在 `verify:scenario-package` 里。
+- 已知取舍：选择肢停顿期间按钮仍在屏幕上（通常 0.5 s）；同一 cut 里既换背景又 wait 而没出 step 时，停顿放在换背景之前。
 
 ## review 主体
 
@@ -57,7 +70,7 @@ python scripts/report-story-recompile-candidate.py --candidate <同一目录>
 
 ## 晋升前还要做
 
-1. 逐例确认 fade / idol_color / timeline 的 13 个文件，以及裸 wait 策略是否要改。
+1. 逐例确认 fade / idol_color / timeline 的 13 个文件。
 2. 晋升流程要包含后处理：chat threads、phone forks、reading_control_flow。
 3. 与 i18n 通道错开：晋升后重新生成翻译审计、manifest 和搜索本地化。
 4. 晋升属于发布事务（`publication/releases`），按 supersede 记账。
